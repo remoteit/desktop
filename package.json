@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "description": "remote.it desktop client application",
   "author": "remot3.it, Inc",
-  "main": "build/index.js",
+  "main": "build/main-process/index.js",
   "scripts": {
     "build": "npm-run-all -p build-main build-render",
-    "build-main": "tsc",
+    "build-main": "cd main-process && tsc",
     "build-render": "cd render-process && npm run build",
-    "electron": "concurrently \"BROWSER=none npm run start-render\" \"wait-on http://localhost:3000 && electron .\"",
-    "preelectron": "npm run build-main",
+    "electron": "wait-on http://localhost:3333 && electron .",
     "start": "npm-run-all -p start-main start-render electron",
-    "start-main": "npm run build-main -- --watch",
-    "start-render": "cd render-process && npm start"
+    "start-main": "cd main-process && tsc --watch",
+    "start-render": "cd render-process && npm start -- --no-open"
   },
   "dependencies": {
     "electron-is-dev": "1.0.1",
