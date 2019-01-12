@@ -29,7 +29,6 @@ export default class HostsFile {
     // 127.0.0.1 localhost`
     //     }
 
-    // @ts-ignore
     return fs.readFileSync(this.location).toString()
   }
 

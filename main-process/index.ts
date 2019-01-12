@@ -1,21 +1,21 @@
-import { app, BrowserWindow, Event } from 'electron'
-import path from 'path'
+import { app, BrowserWindow } from 'electron'
+// @ts-ignore
+// import path from 'path'
 import isDev from 'electron-is-dev'
-import HostsFile from './hosts-file'
-import Listener from './listener'
+// import HostsFile from './hosts-file'
+// import Listener from './listener'
+import Server from './server'
 import { DEV_SERVER_URL, RENDER_INDEX_FILE_LOCATION } from '../shared/constants'
-import { HOSTS_FILE_RAW } from '../shared/messages'
 
 let mainWindow: BrowserWindow | null
 
-require('electron-reload')(__dirname, {
-  electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
-  // electron: require('electron-prebuilt'),
-  // electron: require('electron'),
-})
+// require('electron-reload')(__dirname, {
+//   electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
+//   // electron: require('electron-prebuilt'),
+//   // electron: require('electron'),
+// })
 
 function createWindow() {
-  console.log('CREATED WINDOW')
   makeSingleInstance()
   mainWindow = new BrowserWindow({
     width: 900,
@@ -27,8 +27,16 @@ function createWindow() {
   )
   mainWindow.on('closed', () => (mainWindow = null))
 
-  mainWindow.webContents.send(HOSTS_FILE_RAW)
-  Listener.register(HOSTS_FILE_RAW, HostsFile.raw)
+  // Star the local server!
+  new Server()
+
+  app.setAsDefaultProtocolClient('remoteit')
+  // request => console.log('RECEIVED DEEP LINK:', request.url),
+  // error => console.error('DEEP LINK FAILED', error)
+
+  // Register message listeners
+  // Listener.register('hosts-file/raw', HostsFile.raw)
+  // Listener.register('hosts-file/entries', HostsFile.entries)
 }
 
 app.on('ready', createWindow)
