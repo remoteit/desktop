@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { execFile } from 'child_process'
 import { EventEmitter } from 'events'
 
 const port = 33001
@@ -37,7 +37,7 @@ export default class Connectd extends EventEmitter {
 
     //$EXE -s -c $base_username $base_password $DEVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG 2>&1 &
 
-    const connectd = spawn(cmd, args)
+    const connectd = execFile(cmd, args)
     // TODO: enable kill process behavior
     console.log('[Connectd.connect] connectd process created:', {
       pid: connectd.pid,
@@ -75,6 +75,12 @@ export default class Connectd extends EventEmitter {
       } else if (line.startsWith(connected)) {
         type = 'connected'
         message = line.replace(connected, '')
+      } else if (line.includes('connecttunnel')) {
+        type = 'open-tunnel'
+        message = 'Connection to service opened'
+      } else if (line.includes('closetunnel')) {
+        type = 'close-tunnel'
+        message = 'Connection to service closed'
       } else {
         type = 'unknown'
         message = line
@@ -86,7 +92,7 @@ export default class Connectd extends EventEmitter {
   }
 
   private handleError = (buff: Buffer) => {
-    console.error('⚠️  ERROR\t', buff)
+    console.error('⚠️  ERROR\t', buff.toString())
   }
 
   private handleClose = (code: number) => {
