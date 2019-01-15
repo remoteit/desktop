@@ -13,12 +13,12 @@ debug('desktop:server')('Creating server!')
 const app = express(feathers())
 const server = https.createServer({ key: KEY_FILE, cert: CERT_FILE }, app)
 
-app
-  .setup(server)
-  .use(cors())
-  .configure(io())
-  .configure(middleware)
-  .configure(services)
-  .use(express.errorHandler())
+app.configure(io())
+app.use(cors())
+app.setup(server)
+app.configure(middleware)
+app.configure(services)
+app.use(express.notFound())
+app.use(express.errorHandler())
 
 export default server
