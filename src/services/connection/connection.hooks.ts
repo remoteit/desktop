@@ -1,6 +1,14 @@
+import debug from 'debug'
+import { HookContext } from '@feathersjs/feathers'
+
+const d = debug('desktop:services:connection.hooks')
+
 export default {
   before: {
-    all: [],
+    all: [
+      (context: HookContext) =>
+        d(`[BEFORE]: ${context.path}#${context.method}`),
+    ],
     find: [],
     get: [],
     create: [],
@@ -10,7 +18,9 @@ export default {
   },
 
   after: {
-    all: [],
+    all: [
+      (context: HookContext) => d(`[AFTER]: ${context.path}#${context.method}`),
+    ],
     find: [],
     get: [],
     create: [],
@@ -20,7 +30,7 @@ export default {
   },
 
   error: {
-    all: [],
+    all: [(context: HookContext) => console.error('ERROR:', context.error)],
     find: [],
     get: [],
     create: [],

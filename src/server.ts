@@ -13,12 +13,20 @@ debug('desktop:server')('Creating server!')
 const app = express(feathers())
 const server = https.createServer({ key: KEY_FILE, cert: CERT_FILE }, app)
 
-app.configure(io())
-app.use(cors())
-app.setup(server)
-app.configure(middleware)
-app.configure(services)
-app.use(express.notFound())
-app.use(express.errorHandler())
+app
+  .configure(io())
+  .use(cors())
+  .configure(middleware)
+  .configure(services)
+  // .get('*', (req, res, next) => {
+  //   const sub = req.subdomains[1]
+  //   if (!sub) return next()
+  //   const conn = req.app.
+  //   res.send(sub)
+  // })
+  .use(express.notFound())
+  .use(express.errorHandler())
+
+app.setup(server) // keep at the end
 
 export default server

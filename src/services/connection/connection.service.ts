@@ -1,53 +1,27 @@
-import { ClientSideParams, Application } from '@feathersjs/feathers'
+import debug from 'debug'
+import Connection, { ConnectionData } from '../../models/connection'
+import ConnectionPool from '../../models/connection-pool'
 
-export interface Service {
-  id: string
-}
+const d = debug('desktop:services:connection')
 
-export interface Connection {
-  port: number
-  hostname: string
-  service: Service
-}
-
-export interface PeerConnection extends Connection {}
-
-export interface LocalProxy extends Connection {}
-
-export interface RemoteProxy extends Connection {}
-
-export interface ConnectionConfig extends Connection {
-  serviceID: string
-}
-
-const connections: Array<PeerConnection> = []
+const pool = new ConnectionPool()
 
 export default class ConnectionService {
-  async find(params: any): Promise<PeerConnection[]> {
-    console.log('[Connection.find]', params)
-    return connections
+  async find(params: any): Promise<Connection[]> {
+    d('[Connection.find]', params)
+    d('[Connection.find]: Connection pool:', pool.connections)
+    // return []
+    return pool.connections
+  }
+
+  async create(data: ConnectionData) {
+    d('[Connection.create] Creating connection:', data)
+    const conn = pool.register(data)
+    // d('[Connection.create] Created connection:', conn)
+    return conn.toJSON()
   }
 
   // async get(id, params) {},
-
-  async create(
-    data: ConnectionConfig,
-    params: ClientSideParams
-  ): Promise<PeerConnection> {
-    console.log('[Connection.create] Creating connection:', data, params)
-    connections.find(c => c.port === data.port)
-    const service = {
-      id: data.serviceID,
-    }
-    const conn = {
-      hostname: 'localhost',
-      port: data.port,
-      service,
-    }
-    connections.push(conn)
-    return conn
-  }
-
   // async update(id, data, params) {},
   // async patch(id, data, params) {},
   // async remove(id, params) {}

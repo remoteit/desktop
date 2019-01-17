@@ -10,5 +10,6 @@ server.listen(PORT, () => d(`Listening on ${PORT}`))
 app.on('ready', () => d('Desktop application ready!'))
 
 app.on('window-all-closed', () => {
+  d('All windows closed')
   if (process.platform !== 'darwin') app.quit()
 })
