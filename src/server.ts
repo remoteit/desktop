@@ -6,6 +6,7 @@ import https from 'https'
 import io from '@feathersjs/socketio'
 import middleware from './middleware'
 import services from './services'
+import subdomainProxy from './middleware/subdomain-proxy'
 import { CERT_FILE, KEY_FILE } from './constants'
 
 debug('desktop:server')('Creating server!')
@@ -18,12 +19,7 @@ app
   .use(cors())
   .configure(middleware)
   .configure(services)
-  // .get('*', (req, res, next) => {
-  //   const sub = req.subdomains[1]
-  //   if (!sub) return next()
-  //   const conn = req.app.
-  //   res.send(sub)
-  // })
+  .use(subdomainProxy)
   .use(express.notFound())
   .use(express.errorHandler())
 
