@@ -4,20 +4,19 @@ import ConnectionPool from '../../models/connection-pool'
 
 const d = debug('desktop:services:connection')
 
-const pool = new ConnectionPool()
+export const pool = new ConnectionPool()
 
 export default class ConnectionService {
   async find(params: any): Promise<Connection[]> {
     d('[Connection.find]', params)
     d('[Connection.find]: Connection pool:', pool.connections)
-    // return []
     return pool.connections
   }
 
   async create(data: ConnectionData) {
     d('[Connection.create] Creating connection:', data)
-    const conn = pool.register(data)
-    // d('[Connection.create] Created connection:', conn)
+    const conn = await pool.register(data)
+    d('[Connection.create] Created connection:', conn)
     return conn.toJSON()
   }
 

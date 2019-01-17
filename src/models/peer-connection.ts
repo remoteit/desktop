@@ -5,6 +5,7 @@ import { EventEmitter } from 'events'
 const d = debug('desktop:models.peer-connection')
 
 type Options = {
+  port: number
   serviceID: string
 }
 
@@ -14,14 +15,13 @@ export default class PeerConnection extends EventEmitter {
 
   constructor(opts: Options) {
     super()
-    // TODO: auto generate available port
-    this.port = 33000
-    this.serviceID = opts.serviceID
-    this.connect()
-  }
+    d('[PeerConnection.constructor] Creating PeerConnection:', opts)
 
-  public get url() {
-    return `http://localhost:${this.port}`
+    // TODO: auto generate available port
+    this.port = opts.port
+    this.serviceID = opts.serviceID
+
+    this.connect()
   }
 
   public connect = () => {
@@ -98,7 +98,7 @@ export default class PeerConnection extends EventEmitter {
         message = line
       }
 
-      console.info(`[${type}] ${message}`)
+      // d(`[${type}] ${message}`)
       this.emit('log', { message, type, serviceID: this.serviceID })
     }
   }
