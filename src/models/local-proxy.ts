@@ -17,7 +17,7 @@ export default class LocalProxy {
   public proxy: httpProxy
 
   constructor({ localPort, remoteAddress, remotePort }: Options) {
-    d('[LocalProxy.constructor] Creating LocalProxy:', {
+    d('Creating LocalProxy:', {
       localPort,
       remoteAddress,
       remotePort,
