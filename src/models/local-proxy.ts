@@ -1,6 +1,6 @@
 import debug from 'debug'
-import Proxy from './proxy'
-// import httpProxy from 'http-proxy'
+// import Proxy from './proxy'
+import httpProxy from 'http-proxy'
 
 const d = debug('desktop:models:local-proxy')
 
@@ -13,8 +13,8 @@ export default class LocalProxy {
   public localPort: number
   public remoteAddress: string
   public remotePort: number
-  public proxy: Proxy
-  // public proxy: httpProxy
+  // public proxy: Proxy
+  public proxy: httpProxy
 
   constructor({ localPort, remoteAddress, remotePort }: Options) {
     d('[LocalProxy.constructor] Creating LocalProxy:', {
@@ -27,6 +27,9 @@ export default class LocalProxy {
     this.remoteAddress = remoteAddress
     this.remotePort = remotePort
 
-    this.proxy = new Proxy({ localPort, remoteAddress, remotePort })
+    // this.proxy = new Proxy({ localPort, remoteAddress, remotePort })
+    this.proxy = httpProxy
+      .createProxyServer({ target: `http://${remoteAddress}:${remotePort}` })
+      .listen(localPort)
   }
 }

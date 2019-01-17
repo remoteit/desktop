@@ -2,7 +2,9 @@ import debug from 'debug'
 import { execFile } from 'child_process'
 import { EventEmitter } from 'events'
 
-const d = debug('desktop:models.peer-connection')
+const d = debug('desktop:models:peer-connection')
+
+const CONNECT_TIMEOUT = 30000
 
 type Options = {
   port: number
@@ -20,11 +22,9 @@ export default class PeerConnection extends EventEmitter {
     // TODO: auto generate available port
     this.port = opts.port
     this.serviceID = opts.serviceID
-
-    this.connect()
   }
 
-  public connect = () => {
+  public start = () => {
     // TODO: Get these details from the portal
     const username = 'dana@remote.it'
     const password = 'asdfasdf'
@@ -53,12 +53,27 @@ export default class PeerConnection extends EventEmitter {
     // TODO: enable kill process behavior
     d('[Connectd.connect] connectd process created:', {
       pid: connectd.pid,
+      port: this.port,
       serviceID: this.serviceID,
     })
     // pid, kill
     connectd.stdout.on('data', this.handleLog)
     connectd.stderr.on('data', this.handleError)
     connectd.on('close', this.handleClose)
+
+    return new Promise((success, failure) => {
+      const timeout = setTimeout(() => {
+        // TODO: Better error handling!!!!!!!!!
+        failure(
+          new Error('Could not connect to connectd peer-to-peer connection')
+        )
+      }, CONNECT_TIMEOUT)
+
+      this.on('connected', () => {
+        clearTimeout(timeout)
+        success()
+      })
+    })
   }
 
   private handleLog = (buff: Buffer) => {
@@ -87,6 +102,7 @@ export default class PeerConnection extends EventEmitter {
       } else if (line.startsWith(connected)) {
         type = 'connected'
         message = line.replace(connected, '')
+        this.emit('connected')
       } else if (line.includes('connecttunnel')) {
         type = 'open-tunnel'
         message = 'Connection to service opened'

@@ -3,11 +3,11 @@ import portfinder from 'portfinder'
 
 const d = debug('desktop:utils:free-port')
 
-export default async (range: number[]) => {
-  d('Checking port range:', range)
+export default async (start: number, end: number) => {
+  d('Checking port range:', { start, end })
   const port = await portfinder.getPortPromise({
-    port: range[0],
-    stopPort: range[1],
+    port: start,
+    stopPort: end,
   })
   d('Found available port:', port)
   return port

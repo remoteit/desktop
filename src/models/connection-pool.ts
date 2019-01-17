@@ -39,21 +39,30 @@ export default class ConnectionPool {
 
   private checkForDuplicates(opts: ConnectionData) {
     // Look for existing service with this port number.
-    const dupePort = this.connections.find(c => c.port === opts.port)
-    if (dupePort) return dupePort
+    const dupePort = this.connections.find(c => c.proxyPort === opts.proxyPort)
+    if (dupePort) {
+      d('Duplicate port!', dupePort)
+      return dupePort
+    }
 
     // Look for existing connection with this service ID
     const dupeService = this.connections.find(
       c => c.service.id === opts.serviceID
     )
-    if (dupeService) return dupeService
+    if (dupeService) {
+      d('Duplicate service ID!', dupeService)
+      return dupeService
+    }
 
     // Look for existing service with this subdomain
     if (opts.subdomain) {
       const dupeSubdomain = this.connections.find(
         c => c.subdomain === opts.subdomain
       )
-      if (dupeSubdomain) return dupeSubdomain
+      if (dupeSubdomain) {
+        d('Duplicate subdomain!', dupeSubdomain)
+        return dupeSubdomain
+      }
     }
   }
 }
