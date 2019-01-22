@@ -14,7 +14,7 @@
     "test": "npm-run-all -p test-unit tests-e2e",
     "test-unit": "jest tests/unit",
     "test-e2e": "wait-on https://desktop.rt3.io && jest tests/e2e",
-    "run-server": "DEBUG_COLORS=1 FORCE_COLOR=1 onchange -i -k 'src/**/*.ts' -- ts-node src",
+    "server": "DEBUG_COLORS=1 FORCE_COLOR=1 onchange -i -k 'src/**/*.ts' -- ts-node src",
     "start": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -l -p move-cert start-*",
     "start-electron": "onchange -i -k 'src/**/*.ts' -- electron .",
     "start-main": "tsc --watch"
