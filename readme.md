@@ -16,3 +16,21 @@ nvm use
 npm install
 npm start
 ```
+
+## Testing
+
+Tests are written using Jest. End-to-end tests are in `tests/e2e`.
+
+### Setup
+
+Copy the `.env.example` file to `.env` and then fill in the values for testing.
+
+### End-to-End Tests
+
+```shell
+# in one tab:
+npm run server
+
+# in another tab:
+npm run test-e2e
+```
