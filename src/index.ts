@@ -1,3 +1,8 @@
+import createServer from './server'
+
+createServer()
+
+/*
 import { app, BrowserWindow } from 'electron'
 import server from './server'
 import { PORT } from './constants'
@@ -13,3 +18,4 @@ app.on('window-all-closed', () => {
   d('All windows closed')
   if (process.platform !== 'darwin') app.quit()
 })
+*/

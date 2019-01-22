@@ -3,7 +3,8 @@ import freePort from '../utils/free-port'
 import LocalProxy from './local-proxy'
 import PeerConnection from './peer-connection'
 import Service from './service'
-import { PEER_PORT_RANGE, PROXY_PORT_RANGE } from '../constants'
+import { EVENTS, PEER_PORT_RANGE, PROXY_PORT_RANGE } from '../constants'
+import { EventEmitter } from 'events'
 
 const d = debug('desktop:models:connection')
 
@@ -18,74 +19,73 @@ type Options = {
 }
 
 export interface ConnectionData {
-  host: string
+  host?: string
   proxyPort?: number
   peerPort?: number
-  hostname: string
+  hostname?: string
   subdomain?: string
   serviceID: string
 }
 
-export default class Connection implements ConnectionData {
+export default class Connection extends EventEmitter implements ConnectionData {
   public proxyPort?: number
   public peerPort?: number
   public service: Service
   public serviceID: string
   public subdomain?: string
   public hostname: string = 'localhost'
-  public proxy?: LocalProxy
-  public peer?: PeerConnection
+  private proxy?: LocalProxy
+  private peer?: PeerConnection
 
   constructor(opts: Options) {
+    super()
     this.service = opts.service
     this.subdomain = opts.subdomain
     this.serviceID = opts.service.id
-    d('Creating connection:', opts)
+    d('Creating connection: %o', opts)
   }
 
-  public async start() {
-    const [peerPort, proxyPort] = await Promise.all([
-      freePort(startingPeerPort, PEER_PORT_RANGE[1]),
-      freePort(startingProxyPort, PROXY_PORT_RANGE[1]),
-    ])
-
-    d('Assigned ports to connection:', { peerPort, proxyPort })
-
-    // Save the port
+  /**
+   * Start the connection. Attempts to create a Peer-to-Peer
+   * connection and falls back to a proxy connection if that fails.
+   *
+   * Reports state of the connection using standard events.
+   */
+  public async connect() {
+    const [peerPort, proxyPort] = await this.getAvailablePorts()
     this.peerPort = peerPort
     this.proxyPort = proxyPort
-    startingPeerPort = peerPort + 1
-    startingProxyPort = proxyPort + 1
 
-    this.proxy = new LocalProxy({
-      localPort: proxyPort,
-      remotePort: peerPort,
-      remoteAddress: '127.0.0.1',
-    })
-    d('Created local reverse proxy at:', {
-      proxyPort,
-      peerPort,
-      serviceID: this.serviceID,
-    })
+    this.proxy = this.createLocalProxy(peerPort, proxyPort)
 
-    // Create a P2P connection then proxy requests to it.
     this.peer = new PeerConnection({
       port: peerPort,
       serviceID: this.serviceID,
     })
 
-    // Wait till connections establish before returning
-    await Promise.all([this.peer.start()])
-    d('Created P2P connection at:', { peerPort, serviceID: this.serviceID })
-
-    d('Started connection:', {
-      proxyPort: this.proxyPort,
-      peerPort: this.peerPort,
-      subdomain: this.subdomain,
-      serviceID: this.serviceID,
+    this.peer.on('connected', () => {
+      d('Peer-to-Peer connection connected')
+      this.emit(EVENTS.services.connected)
     })
+    this.peer.on('disconnected', () => {
+      d('Peer-to-Peer connection disconnected!')
+      this.emit('disconnected')
+    })
+
+    await this.peer.connect()
+
+    d('Started peer connection: %o', this.peer.toJSON())
   }
 
+  public async disconnect() {
+    if (!this.peer) return
+    this.peer.disconnect()
+  }
+
+  /**
+   * Get the host of the connection using the assigned subdomain
+   * which is used as the default URL for connections.
+   */
   public get host() {
     return `${this.subdomain}.desktop.rt3.io`
   }
@@ -99,5 +99,34 @@ export default class Connection implements ConnectionData {
       subdomain: this.subdomain,
       host: this.host,
     }
+  }
+
+  private async getAvailablePorts() {
+    const [peerPort, proxyPort] = await Promise.all([
+      freePort(startingPeerPort, PEER_PORT_RANGE[1]),
+      freePort(startingProxyPort, PROXY_PORT_RANGE[1]),
+    ])
+
+    d('Assigned ports to connection: %o', { peerPort, proxyPort })
+
+    // Save the port we are using so we can not have to
+    // iterate over every single port, just increment from the beginning
+    // Note: only time this should be a problem if we exhaust ports
+    // in this range, but that is 10,000 TCP ports, which is highly
+    // unlikely.
+    startingPeerPort = peerPort + 1
+    startingProxyPort = proxyPort + 1
+
+    return [peerPort, proxyPort]
+  }
+
+  private createLocalProxy(peerPort: number, proxyPort: number) {
+    const proxy = new LocalProxy({
+      localPort: proxyPort,
+      remotePort: peerPort,
+      remoteAddress: '127.0.0.1',
+    })
+    d('Created local reverse proxy: %o', this.toJSON())
+    return proxy
   }
 }

@@ -3,6 +3,7 @@ export default class Platform {
   static MAC = 'darwin'
   static BSD = 'freebsd'
   static LINUX = 'linux'
+  static ANDROID = 'android'
   // Other unsupported platforms: aix, sunos
 
   // public static get isElectron(): boolean {
@@ -10,6 +11,9 @@ export default class Platform {
   // }
 
   public static get current() {
+    if (typeof document != 'undefined') return 'broswer'
+    if (typeof navigator != 'undefined' && navigator.product == 'ReactNative')
+      return 'react-native'
     return process.platform
   }
 

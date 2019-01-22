@@ -1,10 +1,11 @@
 import debug from 'debug'
-import { execFile } from 'child_process'
+import Platform from './platform'
+import { execFile, ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
 
 const d = debug('desktop:models:peer-connection')
 
-const CONNECT_TIMEOUT = 30000
+const CONNECT_TIMEOUT = 20000
 
 type Options = {
   port: number
@@ -14,17 +15,69 @@ type Options = {
 export default class PeerConnection extends EventEmitter {
   public port: number
   public serviceID: string
+  public version?: string
+  private connection?: ChildProcess
 
   constructor(opts: Options) {
     super()
-    d('[PeerConnection.constructor] Creating PeerConnection:', opts)
+    d('Creating PeerConnection: %o', opts)
 
-    // TODO: auto generate available port
     this.port = opts.port
     this.serviceID = opts.serviceID
   }
 
-  public start = () => {
+  public async connect() {
+    this.connection = this.startConnectd()
+
+    // TODO: enable kill process behavior
+    d('connectd process created:', {
+      pid: this.connection.pid,
+      port: this.port,
+      serviceID: this.serviceID,
+    })
+
+    this.processOutput(this.connection)
+
+    return new Promise((success, failure) => {
+      const timeout = setTimeout(() => {
+        // TODO: Better error handling!!!!!!!!!
+        failure(
+          new Error('Could not connect to connectd peer-to-peer connection')
+        )
+      }, CONNECT_TIMEOUT)
+
+      this.on('connected', () => {
+        clearTimeout(timeout)
+        success()
+      })
+    })
+  }
+
+  public async disconnect() {
+    // TODO: How to handle error disconnecting?
+    if (!this.connection) return
+    d('Disconnect from service:', this.serviceID)
+
+    if (Platform.isWindows) {
+      execFile('(taskkill /pid ' + this.connection.pid + ' /T /F')
+    } else {
+      this.connection.kill('SIGINT')
+    }
+  }
+
+  public toObject() {
+    return { port: this.port, serviceID: this.serviceID }
+  }
+
+  public toJSON() {
+    return this.toObject()
+  }
+
+  public valueOf() {
+    return this.toObject()
+  }
+
+  private startConnectd() {
     // TODO: Get these details from the portal
     const username = 'dana@remote.it'
     const password = 'asdfasdf'
@@ -49,83 +102,78 @@ export default class PeerConnection extends EventEmitter {
 
     //$EXE -s -c $base_username $base_password $DEVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG 2>&1 &
 
-    const connectd = execFile(cmd, args)
-    // TODO: enable kill process behavior
-    d('[Connectd.connect] connectd process created:', {
-      pid: connectd.pid,
-      port: this.port,
-      serviceID: this.serviceID,
-    })
-    // pid, kill
-    connectd.stdout.on('data', this.handleLog)
-    connectd.stderr.on('data', this.handleError)
-    connectd.on('close', this.handleClose)
-
-    return new Promise((success, failure) => {
-      const timeout = setTimeout(() => {
-        // TODO: Better error handling!!!!!!!!!
-        failure(
-          new Error('Could not connect to connectd peer-to-peer connection')
-        )
-      }, CONNECT_TIMEOUT)
-
-      this.on('connected', () => {
-        clearTimeout(timeout)
-        success()
-      })
-    })
+    return execFile(cmd, args)
   }
 
-  private handleLog = (buff: Buffer) => {
+  private processOutput(connectd: ChildProcess) {
+    if (!connectd) return
+    connectd.stdout.on('data', this.processStandardOut)
+    connectd.stderr.on('data', this.processStandardError)
+    connectd.on('close', this.handleClose)
+  }
+
+  private processStandardOut = (buff: Buffer) => {
     const lines = buff
       .toString()
       .trim()
       .split(/\r?\n/)
 
+    const uptime = 'seconds since startup'
     const status = '!!status'
     const throughput = '!!throughput'
     const request = '!!request'
     const connected = '!!connected'
+    const disconnected = 'exit - process closed'
+    const tunnelOpened = 'connecttunnel'
+    const tunnelClosed = 'closetunnel'
+    const version = 'Version'
+    const localIP = 'primary local ip'
 
+    // Parse incoming messages and format messages for
+    // emitting.
     for (const line of lines) {
-      let message
       let type
-      if (line.startsWith(status)) {
-        message = line.replace(status, '')
+      if (line.includes(uptime)) {
+        type = 'uptime'
+      } else if (line.startsWith(status)) {
         type = 'status'
       } else if (line.startsWith(throughput)) {
-        message = line.replace(throughput, '')
         type = 'throughput'
       } else if (line.startsWith(request)) {
         type = 'request'
-        message = line.replace(request, '')
       } else if (line.startsWith(connected)) {
         type = 'connected'
-        message = line.replace(connected, '')
-        this.emit('connected')
-      } else if (line.includes('connecttunnel')) {
-        type = 'open-tunnel'
-        message = 'Connection to service opened'
-      } else if (line.includes('closetunnel')) {
-        type = 'close-tunnel'
-        message = 'Connection to service closed'
+      } else if (line.includes(tunnelOpened)) {
+        type = 'tunnel-opened'
+      } else if (line.includes(tunnelClosed)) {
+        type = 'tunnel-closed'
+      } else if (line.includes(disconnected)) {
+        type = 'disconnected'
+      } else if (line.includes(version)) {
+        type = 'version'
+        this.version = line
+      } else if (line.includes(localIP)) {
+        type = 'local-ip'
       } else {
         type = 'unknown'
-        message = line
       }
 
-      // d(`[${type}] ${message}`)
-      this.emit('log', { message, type, serviceID: this.serviceID })
+      const message = { type, raw: line, serviceID: this.serviceID }
+      d(`connectd message: %o`, message)
+      this.emit(type, message)
     }
   }
 
-  private handleError = (buff: Buffer) => {
-    console.error('⚠️  ERROR\t', buff.toString())
+  private processStandardError = (buff: Buffer) => {
+    const error = buff.toString()
+    this.emit('error', error)
+    console.error('⚠️  ERROR:', error)
   }
 
   private handleClose = (code: number) => {
+    this.emit('closed')
     if (code !== 0) {
-      console.error('⚠️  connectd closed with code:', code)
+      console.error('⚠️  CLOSE:', code)
     }
   }
 }

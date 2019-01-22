@@ -20,7 +20,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
   d('Connection found:', conn)
   if (!conn || !conn.proxy) return next()
 
+  // conn.proxy.proxy.proxy.emit('foo')
+
   const url = `http://localhost:${conn.proxyPort}`
   conn.proxy.proxy.web(req, res, { target: url })
-  // conn.proxy.proxy.proxy.emit('foo') //web(req, res, { target: url })
 }

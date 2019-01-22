@@ -8,8 +8,8 @@ export const pool = new ConnectionPool()
 
 export default class ConnectionService {
   async find(params: any): Promise<Connection[]> {
-    d('[Connection.find]', params)
-    d('[Connection.find]: Connection pool:', pool.connections)
+    d('[Connection.find] Params %o', params)
+    d('[Connection.find]: Connection pool: %o', pool.connections)
     return pool.connections
   }
 
