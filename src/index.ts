@@ -1,16 +1,10 @@
 import createServer from './server'
-
-createServer()
-
-/*
-import { app, BrowserWindow } from 'electron'
-import server from './server'
-import { PORT } from './constants'
 import debug from 'debug'
+import { app } from 'electron'
 
 const d = debug('desktop')
 
-server.listen(PORT, () => d(`Listening on ${PORT}`))
+createServer()
 
 app.on('ready', () => d('Desktop application ready!'))
 
@@ -18,4 +12,3 @@ app.on('window-all-closed', () => {
   d('All windows closed')
   if (process.platform !== 'darwin') app.quit()
 })
-*/

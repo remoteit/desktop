@@ -29,7 +29,7 @@ Copy the `.env.example` file to `.env` and then fill in the values for testing.
 
 ```shell
 # in one tab:
-npm run server
+npm start
 
 # in another tab:
 npm run test-e2e
