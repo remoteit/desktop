@@ -1,7 +1,8 @@
-import { config } from 'dotenv'
 import io from 'socket.io-client'
-import Connection, { ConnectionData } from '../../src/models/connection'
-import { EVENTS } from '../../src/constants'
+import { config } from 'dotenv'
+import { ConnectionData } from '../../src/models/connection'
+import { PeerConnection } from '../../src/models/peer-connection'
+import { Server } from '../../src/server'
 
 config()
 
@@ -26,32 +27,32 @@ describe('e2e/server', () => {
 
   describe('authentication', () => {
     test('should emit an error if not authorized', async done => {
-      socket.emit(EVENTS.services.list)
-      socket.on(EVENTS.error, (e: string) => {
+      socket.emit(Server.ACTIONS.list)
+      socket.on('error', (e: string) => {
         expect(e).toBe('not authorized')
         done()
       })
     })
 
     test('can set authentication', async done => {
-      socket.emit(EVENTS.client.authenticate, { username, authHash })
-      socket.on(EVENTS.client.authorized, (resp: { username: string }) => {
+      socket.emit(Server.EVENTS.authenticate, { username, authHash })
+      socket.on(Server.EVENTS.authorized, (resp: { username: string }) => {
         expect(resp.username).toBe(username)
         done()
       })
-      socket.on(EVENTS.client.unauthorized, () => {
+      socket.on(Server.EVENTS.unauthorized, () => {
         throw new Error('Not authorized!')
       })
     })
 
     test('can change authentication', async done => {
-      socket.emit(EVENTS.client.authenticate, { username, authHash })
-      socket.on(EVENTS.client.authorized, () => {
-        socket.emit(EVENTS.client.authenticate, {
+      socket.emit(Server.EVENTS.authenticate, { username, authHash })
+      socket.on(Server.EVENTS.authorized, () => {
+        socket.emit(Server.EVENTS.authenticate, {
           username: 'someguy',
           authHash,
         })
-        socket.on(EVENTS.client.authorized, (resp: { username: string }) => {
+        socket.on(Server.EVENTS.authorized, (resp: { username: string }) => {
           expect(resp.username).toBe('someguy')
           done()
         })
@@ -67,7 +68,7 @@ describe('e2e/server', () => {
     describe('creates a connection', () => {
       test('returns the connection in the callback', async () => {
         const conn = await emit<ConnectionData>(
-          EVENTS.services.connect,
+          Server.ACTIONS.connect,
           serviceID
         )
         expect(conn.serviceID).toEqual(serviceID)
@@ -76,24 +77,24 @@ describe('e2e/server', () => {
       })
 
       test('successful connection emits event', async () => {
-        socket.emit(EVENTS.services.connect, serviceID)
-        const conn = await on<ConnectionData>(EVENTS.services.connected)
+        socket.emit(Server.ACTIONS.connect, serviceID)
+        const conn = await on<ConnectionData>(PeerConnection.EVENTS.connected)
         expect(conn.serviceID).toEqual(serviceID)
       })
     })
 
     describe('disconnect from a service', () => {
       test('can remove a connection by service ID', async () => {
-        await emit(EVENTS.services.connect, serviceID)
-        await emit(EVENTS.services.disconnect, serviceID)
-        const conn = await emit<ConnectionData>(EVENTS.services.list)
+        await emit(Server.ACTIONS.connect, serviceID)
+        await emit(Server.ACTIONS.disconnect, serviceID)
+        const conn = await emit<ConnectionData>(Server.ACTIONS.list)
         expect(conn).toEqual([])
       })
 
       test('can disconnect from all services', async () => {
-        await emit(EVENTS.services.connect, serviceID)
-        await emit<ConnectionData>(EVENTS.services.disconnectAll)
-        const connections = await emit<ConnectionData[]>(EVENTS.services.list)
+        await emit(Server.ACTIONS.connect, serviceID)
+        await emit<ConnectionData>(Server.ACTIONS.disconnectAll)
+        const connections = await emit<ConnectionData[]>(Server.ACTIONS.list)
         expect(connections).toEqual([])
       })
 
@@ -103,7 +104,7 @@ describe('e2e/server', () => {
     describe('gets current connections', () => {
       test('sends current connections on authorization', async done => {
         socket.on(
-          EVENTS.client.authorized,
+          Server.EVENTS.authorized,
           (resp: { connections: ConnectionData[]; username: string }) => {
             expect(resp.connections).toEqual([])
             done()
@@ -113,11 +114,11 @@ describe('e2e/server', () => {
 
       test('can request current connections with event', async done => {
         socket.emit(
-          EVENTS.services.connect,
+          Server.ACTIONS.connect,
           serviceID,
           (connection: ConnectionData) => {
             socket.emit(
-              EVENTS.services.list,
+              Server.ACTIONS.list,
               (connections: ConnectionData[]) => {
                 expect(connections).toEqual([connection])
                 done()
@@ -130,7 +131,7 @@ describe('e2e/server', () => {
   })
 
   afterEach(() => {
-    socket.emit(EVENTS.services.disconnectAll)
+    socket.emit(Server.ACTIONS.disconnectAll)
     socket.close()
   })
 })

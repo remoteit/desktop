@@ -1,10 +1,11 @@
 import debug from 'debug'
 import freePort from '../utils/free-port'
 import LocalProxy from './local-proxy'
-import PeerConnection from './peer-connection'
+import { PeerConnection } from './peer-connection'
 import Service from './service'
-import { EVENTS, PEER_PORT_RANGE, PROXY_PORT_RANGE } from '../constants'
+import { PEER_PORT_RANGE, PROXY_PORT_RANGE } from '../constants'
 import { EventEmitter } from 'events'
+import { map } from 'lodash'
 
 const d = debug('desktop:models:connection')
 
@@ -42,6 +43,7 @@ export default class Connection extends EventEmitter implements ConnectionData {
     this.service = opts.service
     this.subdomain = opts.subdomain
     this.serviceID = opts.service.id
+
     d('Creating connection: %o', opts)
   }
 
@@ -51,7 +53,7 @@ export default class Connection extends EventEmitter implements ConnectionData {
    *
    * Reports state of the connection using standard events.
    */
-  public async connect() {
+  public connect = async () => {
     const [peerPort, proxyPort] = await this.getAvailablePorts()
     this.peerPort = peerPort
     this.proxyPort = proxyPort
@@ -63,14 +65,9 @@ export default class Connection extends EventEmitter implements ConnectionData {
       serviceID: this.serviceID,
     })
 
-    this.peer.on('connected', () => {
-      d('Peer-to-Peer connection connected')
-      this.emit(EVENTS.services.connected)
-    })
-    this.peer.on('disconnected', () => {
-      d('Peer-to-Peer connection disconnected!')
-      this.emit('disconnected')
-    })
+    if (this.peer) {
+      this.forwardPeerConnectionMessages(this.peer)
+    }
 
     await this.peer.connect()
 
@@ -99,6 +96,17 @@ export default class Connection extends EventEmitter implements ConnectionData {
       subdomain: this.subdomain,
       host: this.host,
     }
+  }
+
+  /**
+   * Forward all connectd P2P events so the consumercan act on them.
+   */
+  private forwardPeerConnectionMessages(peer: PeerConnection) {
+    map(PeerConnection.EVENTS, type => {
+      peer.on(type, payload => {
+        this.emit(type, payload)
+      })
+    })
   }
 
   private async getAvailablePorts() {

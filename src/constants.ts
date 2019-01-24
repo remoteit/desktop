@@ -12,21 +12,3 @@ export const GA_CODE = 'UA-76016818-10'
 
 export const PEER_PORT_RANGE = [33000, 42999]
 export const PROXY_PORT_RANGE = [43000, 52999]
-
-export const EVENTS = {
-  error: 'error',
-  client: {
-    connection: 'connection',
-    disconnect: 'disconnect',
-    authenticate: 'authenticate',
-    authorized: 'authorized',
-    unauthorized: 'unauthorized',
-  },
-  services: {
-    list: 'service:list',
-    connect: 'service:connect',
-    connected: 'service:connected',
-    disconnect: 'service:disconnect',
-    disconnectAll: 'service:disconnect:all',
-  },
-}

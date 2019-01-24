@@ -1,4 +1,5 @@
 import debug from 'debug'
+import path from 'path'
 import Platform from './platform'
 import { execFile, ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
@@ -12,11 +13,26 @@ type Options = {
   serviceID: string
 }
 
-export default class PeerConnection extends EventEmitter {
+export class PeerConnection extends EventEmitter {
   public port: number
   public serviceID: string
   public version?: string
+  public localIP?: string
   private connection?: ChildProcess
+  public static EVENTS = {
+    error: 'service:error',
+    uptime: 'service:uptime',
+    status: 'service:status',
+    throughput: 'service:throughput',
+    updated: 'service:updated',
+    request: 'service:request',
+    connecting: 'service:connecting',
+    connected: 'service:connected',
+    tunnelOpened: 'service:tunnel:opened',
+    tunnelClosed: 'service:tunnel:closed',
+    disconnected: 'service:disconnected',
+    unknown: 'service:unknown-event',
+  }
 
   constructor(opts: Options) {
     super()
@@ -29,7 +45,6 @@ export default class PeerConnection extends EventEmitter {
   public async connect() {
     this.connection = this.startConnectd()
 
-    // TODO: enable kill process behavior
     d('connectd process created:', {
       pid: this.connection.pid,
       port: this.port,
@@ -46,7 +61,7 @@ export default class PeerConnection extends EventEmitter {
         )
       }, CONNECT_TIMEOUT)
 
-      this.on('connected', () => {
+      this.on(PeerConnection.EVENTS.connected, () => {
         clearTimeout(timeout)
         success()
       })
@@ -78,6 +93,8 @@ export default class PeerConnection extends EventEmitter {
   }
 
   private startConnectd() {
+    this.emit(PeerConnection.EVENTS.connecting, this.toJSON())
+
     // TODO: Get these details from the portal
     const username = 'dana@remote.it'
     const password = 'asdfasdf'
@@ -102,7 +119,25 @@ export default class PeerConnection extends EventEmitter {
 
     //$EXE -s -c $base_username $base_password $DEVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG 2>&1 &
 
-    return execFile(cmd, args)
+    return execFile(
+      path.join(__dirname, cmd),
+      args,
+      {},
+      (
+        error: Error | null,
+        stdout: string | Buffer,
+        stderr: string | Buffer
+      ) => {
+        if (error) {
+          this.emit(PeerConnection.EVENTS.error, error.message)
+        }
+        if (stderr) {
+          console.log(stderr.toString())
+          this.emit(PeerConnection.EVENTS.error, stderr.toString())
+        }
+        console.log(stdout.toString())
+      }
+    )
   }
 
   private processOutput(connectd: ChildProcess) {
@@ -134,39 +169,43 @@ export default class PeerConnection extends EventEmitter {
     for (const line of lines) {
       let type
       if (line.includes(uptime)) {
-        type = 'uptime'
+        type = PeerConnection.EVENTS.uptime
       } else if (line.startsWith(status)) {
-        type = 'status'
+        type = PeerConnection.EVENTS.status
       } else if (line.startsWith(throughput)) {
-        type = 'throughput'
+        type = PeerConnection.EVENTS.throughput
       } else if (line.startsWith(request)) {
-        type = 'request'
+        type = PeerConnection.EVENTS.request
       } else if (line.startsWith(connected)) {
-        type = 'connected'
+        type = PeerConnection.EVENTS.connected
       } else if (line.includes(tunnelOpened)) {
-        type = 'tunnel-opened'
+        type = PeerConnection.EVENTS.tunnelOpened
       } else if (line.includes(tunnelClosed)) {
-        type = 'tunnel-closed'
+        type = PeerConnection.EVENTS.tunnelClosed
       } else if (line.includes(disconnected)) {
-        type = 'disconnected'
-      } else if (line.includes(version)) {
-        type = 'version'
-        this.version = line
-      } else if (line.includes(localIP)) {
-        type = 'local-ip'
+        type = PeerConnection.EVENTS.disconnected
       } else {
-        type = 'unknown'
+        type = PeerConnection.EVENTS.unknown
       }
 
-      const message = { type, raw: line, serviceID: this.serviceID }
-      d(`connectd message: %o`, message)
-      this.emit(type, message)
+      if (line.includes(version)) {
+        // TODO: parse version number
+        this.version = line
+        this.emit(PeerConnection.EVENTS.updated, this.toJSON())
+      } else if (line.includes(localIP)) {
+        this.localIP = localIP
+        this.emit(PeerConnection.EVENTS.updated, this.toJSON())
+      } else {
+        const message = { type, raw: line, serviceID: this.serviceID }
+        d(`connectd message: %o`, message)
+        this.emit(type, message)
+      }
     }
   }
 
   private processStandardError = (buff: Buffer) => {
     const error = buff.toString()
-    this.emit('error', error)
+    this.emit(PeerConnection.EVENTS.error, error)
     console.error('⚠️  ERROR:', error)
   }
 

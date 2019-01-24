@@ -1,13 +1,14 @@
 import debug from 'debug'
 import Connection, { ConnectionData } from './connection'
 import Service from './service'
-import io from 'socket.io'
-import { EVENTS } from '../constants'
 
 const d = debug('desktop:models:connection-pool')
 
 export default class ConnectionPool {
   public connections: Connection[] = []
+  private static EVENTS = {
+    error: 'connection:error',
+  }
 
   /**
    * Add a new connection to the connection pool.
