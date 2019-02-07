@@ -6,9 +6,6 @@ const d = debug('desktop:models:connection-pool')
 
 export default class ConnectionPool {
   public connections: Connection[] = []
-  private static EVENTS = {
-    error: 'connection:error',
-  }
 
   /**
    * Add a new connection to the connection pool.
@@ -19,12 +16,21 @@ export default class ConnectionPool {
     d('Attempting to register connection: %o', opts)
 
     const dupe = this.checkForDuplicates(opts)
-    if (dupe) return dupe
+    if (dupe) {
+      d('Duplicate connection found: %o', dupe)
+      return dupe
+    }
 
     d('Connection is not a duplicate, creating: %o', opts)
 
+    if (!opts.authHash || !opts.username)
+      throw new Error('No username or auth hash provided to register!')
+
     const conn = new Connection({
+      authHash: opts.authHash,
+      username: opts.username,
       subdomain: opts.subdomain,
+      deviceID: opts.deviceID,
       service: new Service({
         id: opts.serviceID,
       }),
@@ -76,7 +82,7 @@ export default class ConnectionPool {
     return this.connections.find(c => c.serviceID === serviceID)
   }
 
-  private checkForDuplicates(opts: ConnectionData) {
+  private checkForDuplicates(opts: ConnectionData): Connection | undefined {
     // Look for existing service with this port number.
     const dupePort = this.connections.find(c => c.proxyPort === opts.proxyPort)
     if (dupePort) {

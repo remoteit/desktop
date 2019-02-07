@@ -1,6 +1,6 @@
 import net from 'net'
 
-type Options = {
+interface Options {
   localPort: number
   remoteAddress: string
   remotePort: number

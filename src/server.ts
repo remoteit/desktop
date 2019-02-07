@@ -26,6 +26,7 @@ export class Server {
     disconnect: 'disconnect',
   }
   public static ACTIONS = {
+    resetAuth: 'authorization:reset',
     connect: 'connection:connect',
     disconnect: 'connection:disconnect',
     disconnectAll: 'connection:disconnect:all',
@@ -48,6 +49,7 @@ export class Server {
 
     this.pool = new ConnectionPool()
 
+    // A new client has connected to the WebSocket server.
     this.socket.on(Server.EVENTS.connection, (s: Socket) => {
       d('Client connected')
       track
@@ -60,6 +62,7 @@ export class Server {
       s.on(Server.ACTIONS.disconnect, this.serviceDisconnect)
       s.on(Server.ACTIONS.disconnectAll, this.serviceDisconnectAll)
       s.on(Server.ACTIONS.list, this.serviceList)
+      s.on(Server.ACTIONS.resetAuth, this.resetAuth)
     })
 
     this.server.listen(PORT, () => d('Listening on port', PORT))
@@ -72,15 +75,20 @@ export class Server {
     if (packet[0] === Server.EVENTS.authenticate) {
       this.username = packet[1].username
       this.authHash = packet[1].authHash
+
+      // If a callback is passed to authenticate, call it
+      if (packet[2]) packet[2]()
+    }
+
+    // If user credentials aren't present, we need to let
+    // them know they aren't authorized to connect.
+    if (!this.username || !this.authHash) {
+      next(new Error('not authorized'))
+      // this.socket.emit(Server.EVENTS.unauthorized)
+      return
     }
 
     track.set('uid', this.username)
-
-    if (!this.username || !this.authHash) {
-      next(new Error('not authorized'))
-      this.socket.emit(Server.EVENTS.unauthorized)
-      return
-    }
 
     this.socket.emit(Server.EVENTS.authorized, {
       username: this.username,
@@ -90,7 +98,7 @@ export class Server {
   }
 
   private serviceConnect = async (
-    serviceID: string,
+    { deviceID, serviceID }: { deviceID: string; serviceID: string },
     cb?: (conn: ConnectionData) => void
   ) => {
     track
@@ -101,10 +109,18 @@ export class Server {
         serviceID
       )
       .send()
-    d('Connect to service:', serviceID)
+    d('Connect to service:', { deviceID, serviceID })
 
     try {
-      const conn = await this.pool.register({ serviceID })
+      if (!this.authHash || !this.username)
+        throw new Error('No username or auth hash provided!')
+
+      const conn = await this.pool.register({
+        authHash: this.authHash,
+        serviceID,
+        deviceID,
+        username: this.username,
+      })
       d('Created connection: %o', conn.toJSON())
 
       map(PeerConnection.EVENTS, event => {
@@ -132,6 +148,14 @@ export class Server {
     const success = this.pool.disconnect(serviceID)
     d('Removed service successfully?', success)
     if (cb) cb(success)
+  }
+
+  private resetAuth = (cb?: () => void) => {
+    d('Resetting authentication')
+    this.username = undefined
+    this.authHash = undefined
+    // this.socket.emit(Server.EVENTS.unauthorized)
+    if (cb) cb()
   }
 
   private clientDisconnect = () => {

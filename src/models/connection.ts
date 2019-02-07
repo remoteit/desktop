@@ -14,35 +14,47 @@ const d = debug('desktop:models:connection')
 let startingPeerPort = PEER_PORT_RANGE[0]
 let startingProxyPort = PROXY_PORT_RANGE[0]
 
-type Options = {
+interface ConnectionOptions {
+  authHash: string
   service: Service
+  deviceID: string
   subdomain?: string
+  username: string
 }
 
 export interface ConnectionData {
+  authHash?: string
+  deviceID: string
   host?: string
   proxyPort?: number
   peerPort?: number
   hostname?: string
   subdomain?: string
   serviceID: string
+  username: string
 }
 
 export default class Connection extends EventEmitter implements ConnectionData {
+  public authHash: string
+  public deviceID: string
+  public hostname: string = 'localhost'
   public proxyPort?: number
   public peerPort?: number
   public service: Service
   public serviceID: string
   public subdomain?: string
-  public hostname: string = 'localhost'
+  public username: string
   private proxy?: LocalProxy
   private peer?: PeerConnection
 
-  constructor(opts: Options) {
+  constructor(opts: ConnectionOptions) {
     super()
     this.service = opts.service
     this.subdomain = opts.subdomain
     this.serviceID = opts.service.id
+    this.deviceID = opts.deviceID
+    this.authHash = opts.authHash
+    this.username = opts.username
 
     d('Creating connection: %o', opts)
   }
@@ -61,6 +73,8 @@ export default class Connection extends EventEmitter implements ConnectionData {
     this.proxy = this.createLocalProxy(peerPort, proxyPort)
 
     this.peer = new PeerConnection({
+      authHash: this.authHash,
+      username: this.username,
       port: peerPort,
       serviceID: this.serviceID,
     })
@@ -89,12 +103,14 @@ export default class Connection extends EventEmitter implements ConnectionData {
 
   public toJSON(): ConnectionData {
     return {
+      deviceID: this.deviceID,
+      host: this.host,
+      hostname: this.hostname,
       peerPort: this.peerPort,
       proxyPort: this.proxyPort,
-      hostname: this.hostname,
       serviceID: this.service.id,
       subdomain: this.subdomain,
-      host: this.host,
+      username: this.username,
     }
   }
 

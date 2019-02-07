@@ -11,14 +11,11 @@ const CONNECT_TIMEOUT = 20000
 type Options = {
   port: number
   serviceID: string
+  username: string
+  authHash: string
 }
 
 export class PeerConnection extends EventEmitter {
-  public port: number
-  public serviceID: string
-  public version?: string
-  public localIP?: string
-  private connection?: ChildProcess
   public static EVENTS = {
     error: 'service:error',
     uptime: 'service:uptime',
@@ -33,6 +30,13 @@ export class PeerConnection extends EventEmitter {
     disconnected: 'service:disconnected',
     unknown: 'service:unknown-event',
   }
+  public port: number
+  public serviceID: string
+  public username: string
+  public version?: string
+  public localIP?: string
+  private authHash: string
+  private connection?: ChildProcess
 
   constructor(opts: Options) {
     super()
@@ -40,6 +44,8 @@ export class PeerConnection extends EventEmitter {
 
     this.port = opts.port
     this.serviceID = opts.serviceID
+    this.username = opts.username
+    this.authHash = opts.authHash
   }
 
   public async connect() {
@@ -81,7 +87,12 @@ export class PeerConnection extends EventEmitter {
   }
 
   public toObject() {
-    return { port: this.port, serviceID: this.serviceID }
+    return {
+      port: this.port,
+      serviceID: this.serviceID,
+      version: this.version,
+      localIP: this.localIP,
+    }
   }
 
   public toJSON() {
@@ -95,23 +106,19 @@ export class PeerConnection extends EventEmitter {
   private startConnectd() {
     this.emit(PeerConnection.EVENTS.connecting, this.toJSON())
 
-    // TODO: Get these details from the portal
-    const username = 'dana@remote.it'
-    const password = 'asdfasdf'
-    const usernameBase64 = Buffer.from(username).toString('base64')
-    const passwordBase64 = Buffer.from(password).toString('base64')
-    // const authHash = 'E0F1772E575D74755B8BBE236C470550E7A9FB36'
+    const usernameBase64 = Buffer.from(this.username).toString('base64')
 
     const cmd = 'connectd'
     const args = [
       '-s',
-      '-c',
+      '-p',
       usernameBase64,
-      passwordBase64,
+      this.authHash,
       this.serviceID.trim(), // Service ID
       `T${this.port}`, // Bind port
       '1', // Encryption
       '127.0.0.1', // Bind address
+      '0.0.0.0', // Restricted connection IP
       '12', // Max out
       '0', // Lifetime
       '0', // Grace period
@@ -129,13 +136,12 @@ export class PeerConnection extends EventEmitter {
         stderr: string | Buffer
       ) => {
         if (error) {
-          this.emit(PeerConnection.EVENTS.error, error.message)
+          this.emit(PeerConnection.EVENTS.error, { error: error.message })
         }
         if (stderr) {
-          console.log(stderr.toString())
-          this.emit(PeerConnection.EVENTS.error, stderr.toString())
+          console.error(stderr.toString())
+          this.emit(PeerConnection.EVENTS.error, { error: stderr.toString() })
         }
-        console.log(stdout.toString())
       }
     )
   }
@@ -144,6 +150,7 @@ export class PeerConnection extends EventEmitter {
     if (!connectd) return
     connectd.stdout.on('data', this.processStandardOut)
     connectd.stderr.on('data', this.processStandardError)
+    connectd.on('error', error => this.emit('error', error))
     connectd.on('close', this.handleClose)
   }
 
@@ -189,8 +196,10 @@ export class PeerConnection extends EventEmitter {
       }
 
       if (line.includes(version)) {
-        // TODO: parse version number
-        this.version = line
+        const match = line.match(/Version ([\d\.]*)/)
+        if (match && match.length > 1) {
+          this.version = match[1]
+        }
         this.emit(PeerConnection.EVENTS.updated, this.toJSON())
       } else if (line.includes(localIP)) {
         this.localIP = localIP

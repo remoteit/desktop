@@ -4,7 +4,7 @@ import httpProxy from 'http-proxy'
 
 const d = debug('desktop:models:local-proxy')
 
-type Options = {
+interface Options {
   localPort: number
   remotePort: number
   remoteAddress: string

@@ -1,4 +1,4 @@
-type Options = {
+interface Options {
   id: string
 }
 
