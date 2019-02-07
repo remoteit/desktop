@@ -10,7 +10,7 @@
       type="text/css"
     />
   </head>
-  <body class="p-none m-none ff-sans-serif">
+  <body class="p-none m-none ff-sans-serif h-100">
     <header
       class="px-md py-md bg-info bb bc-gray-light pb-md df ai-center jc-center"
     >
@@ -22,13 +22,7 @@
         Clear logs
       </button>
     </header>
-    <main class="">
-      <div
-        id="event-log"
-        class="m-none of-auto"
-        style="max-height: 600px;"
-      ></div>
-    </main>
+    <main class="h-100"><div id="event-log" class="m-none of-auto"></div></main>
   </body>
   <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2.2.0/dist/socket.io.js"></script>
   <script>
@@ -48,7 +42,7 @@
     logEvent('service:updated')
     logEvent('service:tunnel:opened')
     logEvent('service:tunnel:closed')
-    logEvent('service:throughput')
+    // logEvent('service:throughput')
 
     function clearLogs() {
       log.innerHTML = ''
@@ -92,7 +86,8 @@
           'gray-lightest',
           'p-md',
           'm-none',
-          'txt-md'
+          'txt-md',
+          'of-auto'
         )
         json.style.display = 'none'
         json.append(JSON.stringify(data, null, 2))
