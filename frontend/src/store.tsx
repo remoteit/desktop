@@ -11,11 +11,12 @@ const d = debug('r3:state')
 // Initial state
 //--------------------------------------------------------------------------------
 
-export const state = {
+export const initialState = {
+  initializing: true,
   files: [] as IFile[],
 }
 
-type State = typeof state
+export type Store = typeof initialState
 
 //--------------------------------------------------------------------------------
 // Actions
@@ -27,8 +28,13 @@ export const FETCHED_FILES = 'files/fetched'
 // Reducer
 //--------------------------------------------------------------------------------
 
-export const reducer = (state: State, action: any) => {
-  const newState = produce(state, draft => {
+interface Action {
+  type: string
+  [key: string]: any
+}
+
+export const reducer = (store: Store, action: Action) => {
+  const newState = produce(store, draft => {
     switch (action.type) {
       case FETCHED_FILES:
         draft.files = action.files
@@ -36,7 +42,7 @@ export const reducer = (state: State, action: any) => {
   })
 
   d('ACTION:', action)
-  d('ORIGINAL STATE:', state)
+  d('ORIGINAL STATE:', store)
   d('NEW STATE:', newState)
 
   return newState
@@ -47,14 +53,14 @@ export const reducer = (state: State, action: any) => {
 //--------------------------------------------------------------------------------
 
 // @ts-ignore
-export const StateContext = React.createContext()
+export const StateContext = React.createContext<Store>({})
 
 export const StateProvider = ({
   children,
 }: {
-  children: React.ReactChildren
+  children: React.ReactChild | React.ReactChildren
 }) => (
-  <StateContext.Provider value={React.useReducer(reducer, state)}>
+  <StateContext.Provider value={React.useReducer(reducer, initialState)}>
     {children}
   </StateContext.Provider>
 )
@@ -63,4 +69,7 @@ export const StateProvider = ({
 // State hook
 //--------------------------------------------------------------------------------
 
-export const useStore = () => React.useContext(StateContext)
+export const useStore = (): [
+  Store,
+  React.Dispatch<React.ReducerAction<typeof reducer>>
+] => React.useContext(StateContext)

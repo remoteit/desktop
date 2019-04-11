@@ -9,11 +9,13 @@ import './App.css'
 import { Platform } from '../../services/Platform'
 import { useRoutes } from 'hookrouter'
 import { NotFoundPage } from '../NotFoundPage'
+import { SplashScreenPage } from '../SplashScreenPage'
+import { StateProvider } from '../../store'
 
 const routes = {
-  // '/': () => <HomePage />,
+  '/': () => <SplashScreenPage />,
   '/sign-in': () => <SignIn />,
-  // '/products': () => <ProductOverview />,
+  // '/products': () => <DevicePage />,
   // '/products/:id': ({id}) => <ProductDetails id={id} />
 }
 
@@ -28,10 +30,12 @@ const theme = createMuiTheme({
 export function App() {
   const routeResult = useRoutes(routes)
   return (
-    <MuiThemeProvider theme={theme}>
-      <CssBaseline />
-      <h1>Platform: {Platform.environment}</h1>
-      {routeResult || <NotFoundPage />}
-    </MuiThemeProvider>
+    <StateProvider>
+      <MuiThemeProvider theme={theme}>
+        <CssBaseline />
+        <h1>Platform: {Platform.environment}</h1>
+        {routeResult || <NotFoundPage />}
+      </MuiThemeProvider>
+    </StateProvider>
   )
 }
