@@ -2,10 +2,11 @@
   "name": "desktop",
   "version": "0.1.0",
   "private": true,
-  "main": "src/electron-starter.js",
+  "main": "scripts/electron-starter.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "dev": "nf start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",
@@ -23,6 +24,7 @@
     "@types/react-dom": "16.8.3",
     "cross-env": "5.2.0",
     "electron": "4.1.4",
+    "foreman": "3.0.1",
     "react-scripts": "2.1.8"
   },
   "eslintConfig": {
