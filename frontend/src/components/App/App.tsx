@@ -5,12 +5,12 @@ import {
   MuiThemeProvider,
 } from '@material-ui/core'
 import { SignIn } from '../SignIn'
-import './App.css'
 import { Platform } from '../../services/Platform'
 import { useRoutes } from 'hookrouter'
 import { NotFoundPage } from '../NotFoundPage'
 import { SplashScreenPage } from '../SplashScreenPage'
 import { StateProvider } from '../../store'
+import './App.css'
 
 const routes = {
   '/': () => <SplashScreenPage />,
@@ -33,7 +33,7 @@ export function App() {
     <StateProvider>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
-        <h1>Platform: {Platform.environment}</h1>
+        <p className="center my-md gray">Platform: {Platform.environment}</p>
         {routeResult || <NotFoundPage />}
       </MuiThemeProvider>
     </StateProvider>

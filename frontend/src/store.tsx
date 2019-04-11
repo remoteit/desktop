@@ -1,7 +1,7 @@
 import React from 'react'
 import produce from 'immer'
 import debug from 'debug'
-import { IFile } from 'remote.it'
+import { IUser } from 'remote.it'
 
 // https://medium.com/simply/state-management-with-react-hooks-and-context-api-at-10-lines-of-code-baf6be8302c
 
@@ -13,7 +13,7 @@ const d = debug('r3:state')
 
 export const initialState = {
   initializing: true,
-  files: [] as IFile[],
+  user: null as IUser | null,
 }
 
 export type Store = typeof initialState
@@ -36,8 +36,12 @@ interface Action {
 export const reducer = (store: Store, action: Action) => {
   const newState = produce(store, draft => {
     switch (action.type) {
-      case FETCHED_FILES:
-        draft.files = action.files
+      case 'INITIALIZED':
+        draft.initializing = false
+        break
+      case 'LOGIN':
+        draft.user = action.user
+        break
     }
   })
 
