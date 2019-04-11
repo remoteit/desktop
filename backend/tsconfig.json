@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
-    // "allowJs": true,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "isolatedModules": false,
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "isolatedModules": true,
+    "lib": ["esnext"],
     "module": "commonjs",
+    // "module": "esnext",
     "moduleResolution": "node",
+    // "noEmit": true,
     "outDir": "./build",
     "resolveJsonModule": true,
     "rootDirs": ["."],
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es5"
   },
   "exclude": ["node_modules"],
-  "include": ["./**/*.ts"]
+  "include": ["src"]
 }

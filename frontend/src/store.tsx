@@ -27,7 +27,7 @@ export const FETCHED_FILES = 'files/fetched'
 // Reducer
 //--------------------------------------------------------------------------------
 
-export const reducer = (state: State, action) => {
+export const reducer = (state: State, action: any) => {
   const newState = produce(state, draft => {
     switch (action.type) {
       case FETCHED_FILES:
@@ -49,7 +49,11 @@ export const reducer = (state: State, action) => {
 // @ts-ignore
 export const StateContext = React.createContext()
 
-export const StateProvider = ({ children }) => (
+export const StateProvider = ({
+  children,
+}: {
+  children: React.ReactChildren
+}) => (
   <StateContext.Provider value={React.useReducer(reducer, state)}>
     {children}
   </StateContext.Provider>

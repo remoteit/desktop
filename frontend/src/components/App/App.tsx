@@ -6,6 +6,7 @@ import {
 } from '@material-ui/core'
 import { SignIn } from '../SignIn'
 import './App.css'
+import { Platform } from '../../services/Platform'
 
 const theme = createMuiTheme({
   palette: {
@@ -27,6 +28,7 @@ export function App({ ...props }: Props) {
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
+      <h1>Platform: {Platform.environment}</h1>
       <SignIn />
     </MuiThemeProvider>
   )
