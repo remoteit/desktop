@@ -10,22 +10,38 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",
-    "electron-dev": "cross-env ELECTRON_START_URL=http://localhost:3000 electron ."
+    "electron-dev": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
+    "storybook": "start-storybook -p 9009 -s public",
+    "build-storybook": "build-storybook -s public",
+    "type-css": "tcm -s -c -p src/**/*.module.css"
   },
   "dependencies": {
+    "@material-ui/core": "3.9.3",
+    "@material-ui/styles": "3.0.0-alpha.10",
+    "@storybook/react": "5.0.6",
+    "classnames": "2.2.6",
+    "euphoria": "3.4.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "typescript": "3.4.3"
   },
   "devDependencies": {
+    "@storybook/addon-actions": "^5.0.6",
+    "@storybook/addon-knobs": "5.0.6",
+    "@storybook/addon-links": "^5.0.6",
+    "@storybook/react": "^5.0.6",
+    "@types/classnames": "2.2.7",
     "@types/jest": "24.0.11",
     "@types/node": "11.13.4",
     "@types/react": "16.8.13",
     "@types/react-dom": "16.8.3",
+    "@types/storybook__addon-knobs": "4.0.5",
+    "@types/storybook__react": "4.0.1",
     "cross-env": "5.2.0",
     "electron": "4.1.4",
     "foreman": "3.0.1",
-    "react-scripts": "2.1.8"
+    "react-scripts": "2.1.8",
+    "typed-css-modules": "0.4.2"
   },
   "eslintConfig": {
     "extends": "react-app"

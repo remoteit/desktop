@@ -1,0 +1,6 @@
+@import '~euphoria';
+
+html,
+body {
+  height: 100%;
+}
