@@ -9,10 +9,12 @@ import {
 } from '@material-ui/core'
 import classes from './SignIn.module.css'
 import classnames from 'classnames'
+import { useTitle } from 'hookrouter'
 
 export interface Props {}
 
 export function SignIn({ ...props }: Props) {
+  useTitle('Sign In')
   return (
     <div className="h-100 df ai-center jc-center fd-col p-md">
       <div className={classnames(classes.card, 'mx-auto my-auto')}>
