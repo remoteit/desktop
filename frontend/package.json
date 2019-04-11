@@ -38,6 +38,8 @@
     "@types/storybook__react": "4.0.1",
     "cross-env": "5.2.0",
     "electron": "4.1.4",
+    "enzyme": "3.9.0",
+    "enzyme-adapter-react-16": "1.12.1",
     "foreman": "3.0.1",
     "react-scripts": "2.1.8",
     "typed-css-modules": "0.4.2"

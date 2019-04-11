@@ -2,3 +2,4 @@ frontend: npm start
 storybook: npm run storybook
 electron: node scripts/electron-wait-react
 typecss: npm run type-css
+test: npm test
