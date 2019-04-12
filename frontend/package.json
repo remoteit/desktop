@@ -15,6 +15,7 @@
     "watch-storybook": "start-storybook -p 9009 -s public"
   },
   "dependencies": {
+    "@kevinwolf/formal-web": "0.1.0",
     "@material-ui/core": "3.9.3",
     "@material-ui/styles": "3.0.0-alpha.10",
     "classnames": "2.2.6",
@@ -26,7 +27,8 @@
     "react-dom": "^16.8.6",
     "remote.it": "0.29.0",
     "ts-node": "8.0.3",
-    "typescript": "3.4.3"
+    "typescript": "3.4.3",
+    "yup": "0.27.0"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^5.0.6",
@@ -41,6 +43,7 @@
     "@types/react-dom": "16.8.3",
     "@types/storybook__addon-knobs": "4.0.5",
     "@types/storybook__react": "4.0.1",
+    "@types/yup": "0.26.12",
     "cross-env": "5.2.0",
     "electron": "4.1.4",
     "enzyme": "3.9.0",

@@ -4,20 +4,12 @@ import {
   createMuiTheme,
   MuiThemeProvider,
 } from '@material-ui/core'
-import { SignIn } from '../SignIn'
 import { Platform } from '../../services/Platform'
 import { useRoutes } from 'hookrouter'
 import { NotFoundPage } from '../NotFoundPage'
-import { SplashScreenPage } from '../SplashScreenPage'
 import { StateProvider } from '../../store'
+import { routes } from '../../routes'
 import './App.css'
-
-const routes = {
-  '/': () => <SplashScreenPage />,
-  '/sign-in': () => <SignIn />,
-  // '/products': () => <DevicePage />,
-  // '/products/:id': ({id}) => <ProductDetails id={id} />
-}
 
 const theme = createMuiTheme({
   palette: {
@@ -33,8 +25,8 @@ export function App() {
     <StateProvider>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
-        <p className="center my-md gray">Platform: {Platform.environment}</p>
         {routeResult || <NotFoundPage />}
+        <p className="center my-md gray">Platform: {Platform.environment}</p>
       </MuiThemeProvider>
     </StateProvider>
   )
