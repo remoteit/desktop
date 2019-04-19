@@ -4,6 +4,7 @@ import url from 'url'
 import { server } from './server'
 import { install } from './connectd/install'
 import { LATEST_CONNECTD_RELEASE } from './constants'
+import './utils/errorReporting'
 // const electron = require('electron')
 // const path = require('path')
 // const url = require('url')
