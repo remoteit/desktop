@@ -147,7 +147,7 @@ export function SplashScreenPage() {
       )}
       <div className="mt-lg center">
         <Button
-          href="https://docs.remote.it/"
+          href="https://docs.remote.it/guides/connectd"
           target="_blank"
           color="secondary"
           variant="outlined"
