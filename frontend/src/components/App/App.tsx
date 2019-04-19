@@ -10,6 +10,7 @@ import { NotFoundPage } from '../NotFoundPage'
 import { StateProvider } from '../../store'
 import { routes } from '../../routes'
 import './App.css'
+import { SplashScreenPage } from '../SplashScreenPage'
 
 const theme = createMuiTheme({
   palette: {
@@ -25,8 +26,11 @@ export function App() {
     <StateProvider>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
-        {routeResult || <NotFoundPage />}
-        <p className="center my-md gray">Platform: {Platform.environment}</p>
+        <SplashScreenPage />
+        {/*routeResult || <NotFoundPage />*/}
+        <p className="txt-sm center my-md gray-lighter">
+          Platform: {Platform.environment}
+        </p>
       </MuiThemeProvider>
     </StateProvider>
   )

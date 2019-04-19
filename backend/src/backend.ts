@@ -1,6 +1,9 @@
 import electron from 'electron'
 import path from 'path'
 import url from 'url'
+import { server } from './server'
+import { install } from './connectd/install'
+import { LATEST_CONNECTD_RELEASE } from './constants'
 // const electron = require('electron')
 // const path = require('path')
 // const url = require('url')
@@ -14,9 +17,16 @@ const BrowserWindow = electron.BrowserWindow
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: electron.BrowserWindow | null
 
+// Install connectd on start automatically
+install(LATEST_CONNECTD_RELEASE)
+
+// Start the Socket.io server that the frontend React application
+// listens to.
+server()
+
 function createWindow() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({ width: 800, height: 600 })
+  mainWindow = new BrowserWindow({ width: 700, height: 560 })
 
   // and load the index.html of the app.
   const startUrl =
@@ -29,7 +39,7 @@ function createWindow() {
   mainWindow.loadURL(startUrl)
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {

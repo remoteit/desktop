@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "frontend": "cd frontend && npm start",
-    "backend": "cd backend && npm start",
-    "start": "npm-run-all -p frontend backend"
+    "build": "cd backend && npm run build",
+    "predist": "npm run build",
+    "dist": "cd backend && npm run dist",
+    "watch-frontend": "cd frontend && npm start",
+    "watch-backend": "cd backend && npm start",
+    "start": "DEBUG=r3* DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -p watch-*"
   },
   "dependencies": {},
   "devDependencies": {

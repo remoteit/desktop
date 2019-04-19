@@ -22,6 +22,7 @@ export type Store = typeof initialState
 // Actions
 //--------------------------------------------------------------------------------
 
+export const INITIALIZED = 'app/initialized'
 export const FETCHED_FILES = 'files/fetched'
 
 //--------------------------------------------------------------------------------
@@ -36,7 +37,7 @@ interface Action {
 export const reducer = (store: Store, action: Action) => {
   const newState = produce(store, draft => {
     switch (action.type) {
-      case 'INITIALIZED':
+      case INITIALIZED:
         draft.initializing = false
         break
       case 'LOGIN':

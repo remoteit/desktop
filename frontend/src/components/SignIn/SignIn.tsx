@@ -1,5 +1,8 @@
 import Button from '@material-ui/core/Button'
 import React from 'react'
+import classes from './SignIn.module.css'
+import classnames from 'classnames'
+import useFormal from '@kevinwolf/formal-web'
 import {
   Card,
   CardContent,
@@ -7,11 +10,9 @@ import {
   TextField,
   Link,
 } from '@material-ui/core'
-import classes from './SignIn.module.css'
-import classnames from 'classnames'
 import { useTitle } from 'hookrouter'
+import { User } from '../../models/User'
 import * as yup from 'yup'
-import useFormal from '@kevinwolf/formal-web'
 
 const schema = yup.object().shape({
   email: yup
@@ -37,7 +38,12 @@ export function SignIn({ ...props }: Props) {
 
   const formal = useFormal(initialValues, {
     schema,
-    onSubmit: values => console.log('Your values are:', values),
+    onSubmit: async values => {
+      console.log('Form values:', values)
+      // TODO: Handle errors!
+      const user = await User.login(values.email, values.password)
+      console.log('USER:', user)
+    },
   })
 
   const emailProps = formal.getFieldProps('email')
@@ -53,12 +59,12 @@ export function SignIn({ ...props }: Props) {
               <div className="mb-sm">
                 <TextField
                   {...{ ...emailProps, error: Boolean(emailProps.error) }}
-                  defaultValue=""
+                  autoFocus
                   fullWidth
                   id="user-email"
                   label="Email"
                   margin="normal"
-                  type="email"
+                  // type="email"
                   // variant="filled"
                 />
                 {formal.errors.email && (
@@ -69,7 +75,6 @@ export function SignIn({ ...props }: Props) {
               <div className="my-sm">
                 <TextField
                   {...{ ...passwordProps, error: Boolean(passwordProps.error) }}
-                  defaultValue=""
                   fullWidth
                   id="user-password"
                   label="Password"
