@@ -10,8 +10,24 @@ declare global {
     | 'warning'
     | 'danger'
     | 'info'
-    | 'muted'
     | 'white'
+    | 'gray'
+    | 'gray-light'
+    | 'gray-lighter'
+    | 'gray-lightest'
+    | 'gray-dark'
+    | 'gray-darker'
+    | 'gray-darkest'
+
+  /**
+   * Action which are called by components that are wrapped
+   * by the context API store.
+   */
+  export interface Action {
+    type: string
+    [key: string]: any
+  }
+
   interface Window {
     process?: {
       type?: string

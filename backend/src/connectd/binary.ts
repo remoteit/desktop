@@ -1,6 +1,6 @@
 import { execFileSync } from 'child_process'
 import { existsSync } from 'fs'
-import { targetPath } from './platform'
+import { targetPath } from './host'
 
 /**
  * Whether or not the connectd binary exists on this system.

@@ -1,10 +1,11 @@
 import React from 'react'
-import { SignIn } from './components/SignIn'
+import { SignInController } from './controllers/SignInController'
 import { SplashScreenPage } from './components/SplashScreenPage'
+import { DeviceListController } from './controllers/DeviceListController'
 
 export const routes = {
-  '/': () => <SplashScreenPage />,
-  '/sign-in': () => <SignIn />,
-  // '/products': () => <DevicePage />,
+  '/': () => <DeviceListController />,
+  '/config': () => <SplashScreenPage />,
+  '/sign-in': () => <SignInController />,
   // '/products/:id': ({id}) => <ProductDetails id={id} />
 }

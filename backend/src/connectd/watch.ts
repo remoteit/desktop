@@ -1,4 +1,4 @@
-import { targetPath } from './platform'
+import { targetPath } from './host'
 import chokidar from 'chokidar'
 import debug from 'debug'
 import { EventEmitter } from 'events'

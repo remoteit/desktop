@@ -1,7 +1,6 @@
 import React from 'react'
 import Typography from '@material-ui/core/Typography'
 import { useTitle } from 'hookrouter'
-// import styles from './NotFoundPage.module.css'
 
 export interface Props {}
 

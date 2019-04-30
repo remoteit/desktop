@@ -7,14 +7,9 @@ import { TextField, Button } from '@material-ui/core'
 import io from 'socket.io-client'
 import { Icon } from '../Icon'
 import { useClipboard } from 'use-clipboard-copy'
+import { socket } from '../../services/backend'
 
 const d = debug('r3:components:SplashScreenPage')
-
-// TODO: Move somewhere smart...
-const socket = io('http://localhost:29999')
-socket.on('connect', () => console.log('connect'))
-socket.on('event', (data: any) => console.log('event:', data))
-socket.on('disconnect', () => console.log('connect'))
 
 export function SplashScreenPage() {
   // const [{ initializing }, dispatch] = useStore()

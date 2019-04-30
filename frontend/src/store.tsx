@@ -1,80 +1,25 @@
 import React from 'react'
-import produce from 'immer'
-import debug from 'debug'
-import { IUser } from 'remote.it'
+import { initialState, reducer, Store } from './reducers'
 
 // https://medium.com/simply/state-management-with-react-hooks-and-context-api-at-10-lines-of-code-baf6be8302c
 
-const d = debug('r3:state')
-
-//--------------------------------------------------------------------------------
-// Initial state
-//--------------------------------------------------------------------------------
-
-export const initialState = {
-  initializing: true,
-  user: null as IUser | null,
-}
-
-export type Store = typeof initialState
-
-//--------------------------------------------------------------------------------
-// Actions
-//--------------------------------------------------------------------------------
-
-export const INITIALIZED = 'app/initialized'
-export const FETCHED_FILES = 'files/fetched'
-
-//--------------------------------------------------------------------------------
-// Reducer
-//--------------------------------------------------------------------------------
-
-interface Action {
-  type: string
-  [key: string]: any
-}
-
-export const reducer = (store: Store, action: Action) => {
-  const newState = produce(store, draft => {
-    switch (action.type) {
-      case INITIALIZED:
-        draft.initializing = false
-        break
-      case 'LOGIN':
-        draft.user = action.user
-        break
-    }
-  })
-
-  d('ACTION:', action)
-  d('ORIGINAL STATE:', store)
-  d('NEW STATE:', newState)
-
-  return newState
-}
-
-//--------------------------------------------------------------------------------
-// Providers
-//--------------------------------------------------------------------------------
-
+// TODO: Fix the need for the typescript ignore here
 // @ts-ignore
 export const StateContext = React.createContext<Store>({})
 
-export const StateProvider = ({
-  children,
-}: {
+interface StateProviderProps {
   children: React.ReactChild | React.ReactChildren
-}) => (
+}
+
+export const StateProvider = ({ children }: StateProviderProps) => (
   <StateContext.Provider value={React.useReducer(reducer, initialState)}>
     {children}
   </StateContext.Provider>
 )
 
-//--------------------------------------------------------------------------------
-// State hook
-//--------------------------------------------------------------------------------
-
-export const useStore = (): [
+type UseStoreProps = [
   Store,
   React.Dispatch<React.ReducerAction<typeof reducer>>
-] => React.useContext(StateContext)
+]
+
+export const useStore = (): UseStoreProps => React.useContext(StateContext)

@@ -1,15 +1,17 @@
 import debug from 'debug'
 import express from 'express'
-import os from 'os'
 import { install } from './connectd/install'
 import { watch } from './connectd/watch'
 import { toPercent } from './utils/toPercent'
 import { Server } from 'http'
 import socketIO from 'socket.io'
 import { exists, version } from './connectd/binary'
-import { targetPath } from './connectd/platform'
-import { LATEST_CONNECTD_RELEASE, PORT } from './constants'
+import { targetPath } from './connectd/host'
+import { LATEST_CONNECTD_RELEASE, PORT, PEER_PORT_RANGE } from './constants'
+import { IService, IUser } from 'remote.it'
 import * as track from './utils/analytics'
+import { register } from './connectd/pool'
+import { freePort } from './utils/freePort'
 
 const d = debug('r3:server')
 
@@ -35,6 +37,7 @@ export function server() {
 
     socket.on('connectd/info', routes.info)
     socket.on('connectd/install', routes.install)
+    socket.on('service/connect', routes.connect)
     socket.on('disconnect', routes.disconnect)
   })
 
@@ -43,6 +46,9 @@ export function server() {
 
 function router(socket: SocketIO.Socket) {
   return {
+    connect: async ({ service, user }: { service: IService; user: IUser }) => {
+      register({ port: await freePort(PEER_PORT_RANGE), service, user })
+    },
     install: async () => {
       d('Starting connectd install')
 
@@ -55,12 +61,7 @@ function router(socket: SocketIO.Socket) {
 
       d('Install of connectd complete')
 
-      track.event(
-        'connectd',
-        'install',
-        'Installing connectd',
-        `platform: ${os.platform()}, architecture: ${os.arch()}`
-      )
+      track.event('connectd', 'install', 'Installing connectd')
     },
     info: (callback: (data: any) => void) => {
       const params = {

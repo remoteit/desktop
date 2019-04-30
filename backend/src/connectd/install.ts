@@ -1,6 +1,6 @@
 import { download } from './download'
 import { renameSync, chmodSync } from 'fs'
-import * as platform from './platform'
+import * as host from './host'
 
 /**
  * Download connectd, move it to the PATH on the user's
@@ -12,9 +12,9 @@ export async function install(
   version: string,
   progress = (percent: number) => {}
 ) {
-  const targetPath = platform.targetPath()
-  const binaryName = platform.binaryName()
-  const tempDownloadPath = platform.tempDownloadPath()
+  const targetPath = host.targetPath()
+  const binaryName = host.binaryName()
+  const tempDownloadPath = host.tempDownloadPath()
 
   // Download the connectd binary from Github
   await download(version, binaryName, tempDownloadPath, progress)

@@ -1,10 +1,10 @@
 {
-  "name": "remote.it",
+  "name": "remoteit-desktop-backend",
   "version": "1.0.0",
   "private": true,
   "main": "build/backend.js",
   "scripts": {
-    "build": "npm-run-all -s clean compile build-frontend",
+    "build": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -s clean compile build-frontend",
     "clean": "rimraf build dist",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
     "compile": "tsc",
@@ -14,12 +14,13 @@
     "start": "npm-run-all -p watch-*",
     "postinstall": "electron-builder install-app-deps",
     "watch-build": "tsc --watch",
-    "watch-electron": "DEBUG=r3* onchange -i -k 'build/**/*' -- npm run electron"
+    "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron"
   },
   "devDependencies": {
     "@types/debug": "4.1.4",
     "@types/electron": "1.6.10",
     "@types/express": "4.16.1",
+    "@types/http-proxy": "1.17.0",
     "@types/node": "11.13.4",
     "@types/socket.io": "2.1.2",
     "@types/universal-analytics": "0.4.2",
@@ -38,7 +39,9 @@
     "cross-fetch": "3.0.2",
     "debug": "4.1.1",
     "express": "4.16.4",
+    "http-proxy": "1.17.0",
     "portfinder": "1.0.20",
+    "remote.it": "0.33.0",
     "socket.io": "2.2.0",
     "universal-analytics": "0.4.20",
     "winston": "3.2.1"

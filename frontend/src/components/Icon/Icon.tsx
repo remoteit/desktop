@@ -2,9 +2,10 @@ import classnames from 'classnames'
 import React from 'react'
 import './Icon.css'
 
-export interface Props {
+export declare interface Props {
   className?: string
   color?: BrandColors
+  fixedWidth?: boolean
   name: string
   title?: string
   size?: FontSizes
@@ -15,6 +16,7 @@ export interface Props {
 export function Icon({
   className,
   color,
+  fixedWidth = false,
   name,
   size,
   spin,
@@ -25,7 +27,7 @@ export function Icon({
     `fa${weight[0]}`,
     `fa-${name}`,
     color && color,
-    { [`txt-${size}`]: size, 'fa-spin': spin },
+    { [`txt-${size}`]: size, 'fa-spin': spin, 'fa-fw': fixedWidth },
     className
   )
   return <span className={classes} {...props} />

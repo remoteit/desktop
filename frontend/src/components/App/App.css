@@ -1,6 +1,61 @@
 @import '~euphoria';
 
+:root {
+  /* Colors */
+  --color-primary: #1699d6;
+  --color-primary-dark: #0c7baf;
+  --color-secondary: #034b9d;
+  --color-warning: #f8ac59;
+  --color-warning-dark: #e28d2f;
+  --color-warning-darker: #c97518;
+  --color-warning-darkest: #914c00;
+  --color-success: #65c10f;
+  --color-danger: #f45130;
+  --color-gray-darkest: #333;
+  --color-gray-darker: #2f4050;
+  --color-gray-dark: #999;
+  --color-gray: #bbb;
+  --color-gray-light: #dbdbdb;
+  --color-gray-lighter: #efefef;
+  --color-gray-lightest: #fafafa;
+
+  /* Spacing 
+  --spacing-xs: 3px;
+  --spacing-sm: 6px;
+  --spacing-md: 8px;
+  --spacing-lg: 16px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  */
+
+  /* Font sizes 
+  --font-size-base: 13px;
+  --font-size-xs: 10px;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --font-size-xxl: 32px;
+*/
+
+  /* Font families */
+  --font-family-sans-serif: 'Roboto', sans-serif;
+
+  /* Box shadows */
+  --box-shadow-1: 0 0 10px rgba(0, 0, 0, 0.1);
+  --box-shadow-2: 4px 4px 10px 0px rgba(0, 0, 0, 0.06);
+
+  /* Letter spacing */
+  /* --letter-spacing-lg: 0.2em;
+  --letter-spacing-xl: 0.3em;
+  --letter-spacing-xxl: 0.5em; */
+
+  /* Decorations */
+  /* --rounded-box: 4px; */
+}
+
 html,
 body {
+  background: var(--color-gray-lightest);
   height: 100%;
 }
