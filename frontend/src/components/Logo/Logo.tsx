@@ -3,7 +3,7 @@ import logoColor from './logo-color.png'
 import logoWhite from './logo-white.svg'
 import logomarkWhite from './logomark-white.svg'
 
-export interface Props extends React.HTMLProps<HTMLAnchorElement> {
+export interface LogoProps {
   mark?: boolean
   white?: boolean
   width?: number
@@ -14,7 +14,7 @@ export function Logo({
   mark = false,
   width = 150,
   ...props
-}: Props) {
+}: LogoProps & React.HTMLProps<HTMLAnchorElement>) {
   let logo = logoColor
   // TODO: add color mark
   if (white && mark) logo = logomarkWhite

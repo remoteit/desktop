@@ -1,8 +1,11 @@
 import React from 'react'
-// import styles from './NoDevicesMessage.module.css'
+import { Link } from '@material-ui/core'
 
-export interface Props {}
-
-export function NoDevicesMessage({ ...props }: Props) {
-  return <h1>You got no devices bro</h1>
+export function NoDevicesMessage() {
+  return (
+    <div className="center gray">
+      It appears you have no devices, please go to{' '}
+      <Link href="https://app.remote.it">app.remote.it</Link> to add devices.
+    </div>
+  )
 }

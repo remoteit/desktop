@@ -4,14 +4,14 @@
   "private": true,
   "main": "build/backend.js",
   "scripts": {
-    "build": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -s clean compile build-frontend",
+    "build": "npm-run-all -s clean compile build-frontend",
     "clean": "rimraf build dist",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
     "compile": "tsc",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
-    "start": "npm-run-all -p watch-*",
+    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -p watch-*",
     "postinstall": "electron-builder install-app-deps",
     "watch-build": "tsc --watch",
     "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron"

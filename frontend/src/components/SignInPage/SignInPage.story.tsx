@@ -6,4 +6,6 @@ import { action } from '@storybook/addon-actions'
 
 storiesOf('components/auth', module)
   .addDecorator(withKnobs)
-  .add('SignInPage', () => <SignInPage onSubmit={action('onSubmit')} />)
+  .add('SignInPage', () => (
+    <SignInPage login={action('login')} user={undefined} />
+  ))

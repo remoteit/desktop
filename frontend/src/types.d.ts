@@ -1,4 +1,19 @@
+import { DeviceState, ServiceState } from 'remote.it'
+
 declare global {
+  export type ConnectionState = DeviceState | ServiceState | 'connecting'
+  // | 'active'
+  // | 'inactive'
+  // | 'connecting'
+  // | 'connected'
+  // | 'restricted'
+  export interface ConnectdMessage {
+    type: string
+    raw: string
+    serviceID: string
+    port: number
+  }
+
   export type FontSizes = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
 
   export type IconWeight = 'light' | 'regular' | 'solid'
@@ -32,6 +47,15 @@ declare global {
     process?: {
       type?: string
     }
+  }
+}
+
+declare module 'remote.it' {
+  export interface IService {
+    // The port in which the service is connected to
+    connecting?: boolean
+    port?: number
+    pid?: number
   }
 }
 

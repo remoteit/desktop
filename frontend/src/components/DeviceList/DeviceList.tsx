@@ -3,7 +3,7 @@ import { IDevice } from 'remote.it'
 import { DeviceListItem } from '../DeviceListItem'
 import { List } from '@material-ui/core'
 
-export interface Props {
+export interface DeviceListProps {
   className?: string
   devices?: IDevice[]
 }
@@ -11,15 +11,15 @@ export interface Props {
 export function DeviceList({
   className = '',
   devices = [],
-}: Props & React.HTMLProps<HTMLDivElement>) {
+}: DeviceListProps & React.HTMLProps<HTMLDivElement>) {
   if (!devices || !devices.length) {
-    return <h1>No devices...</h1>
+    return <div className="p-md center gray italic">No devices to show...</div>
   }
 
   return (
     <List component="nav" className={className}>
-      {devices.map((device, key) => (
-        <DeviceListItem key={key} device={device} />
+      {devices.map(device => (
+        <DeviceListItem key={device.id} device={device} />
       ))}
     </List>
   )

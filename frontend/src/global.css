@@ -54,8 +54,14 @@
   /* --rounded-box: 4px; */
 }
 
-html,
+html {
+  height: 100%;
+}
+
 body {
   background: var(--color-gray-lightest);
   height: 100%;
+  font-family: var(--font-family-sans-serif);
+  margin: 0;
+  padding: 0;
 }

@@ -1,6 +1,5 @@
 import React from 'react'
-import { DeviceStateIcon } from '../DeviceStateIcon'
-import { ServiceController } from '../../controllers/ServiceController'
+import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { Icon } from '../Icon'
 import { IDevice } from 'remote.it'
 import {
@@ -12,15 +11,19 @@ import {
   Collapse,
   List,
   Divider,
-  Button,
 } from '@material-ui/core'
+import { ServiceList } from '../ServiceList'
 
-export interface Props {
+export interface DeviceListItemProps {
   device: IDevice
   startOpen?: boolean
 }
 
-export function DeviceListItem({ device, startOpen = false, ...props }: Props) {
+export function DeviceListItem({
+  device,
+  startOpen = false,
+  ...props
+}: DeviceListItemProps) {
   const [open, setOpen] = React.useState(startOpen)
 
   function handleClick() {
@@ -33,24 +36,24 @@ export function DeviceListItem({ device, startOpen = false, ...props }: Props) {
       <ListItem {...props} onClick={handleClick} button>
         <ListItemIcon>
           <Tooltip title={device.state}>
-            <DeviceStateIcon state={device.state} size="lg" className="pl-sm" />
+            <ConnectionStateIcon
+              state={device.state}
+              size="lg"
+              className="pl-sm"
+            />
           </Tooltip>
         </ListItemIcon>
         <ListItemText inset primary={device.name} />
-        <ListItemSecondaryAction>
+        <div className="ml-auto">
           {open ? (
-            <Icon name="chevron-up" color="gray" className="pr-md" />
+            <Icon name="chevron-up" color="gray" className="pr-sm" />
           ) : (
-            <Icon name="chevron-down" color="gray" className="pr-md" />
+            <Icon name="chevron-down" color="gray" className="pr-sm" />
           )}
-        </ListItemSecondaryAction>
+        </div>
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="nav" disablePadding>
-          {device.services.map((service, key) => (
-            <ServiceController service={service} key={key} />
-          ))}
-        </List>
+        <ServiceList services={device.services} />
       </Collapse>
       <Divider />
     </>

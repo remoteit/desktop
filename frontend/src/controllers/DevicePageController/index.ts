@@ -1,0 +1,1 @@
+export { DevicePageController } from './DevicePageController'

@@ -4,23 +4,29 @@ import {
   Tooltip,
   ListItemIcon,
   ListItemText,
-  Button,
+  IconButton,
 } from '@material-ui/core'
 import { Icon } from '../Icon'
-import { DeviceStateIcon } from '../DeviceStateIcon'
+import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { CopyableText } from '../CopyableText'
+import { ConnectButtonController } from '../../controllers/ConnectButtonController'
 import { IService } from 'remote.it'
+import { DisconnectButtonController } from '../../controllers/DisconnectButtonController/DisconnectButtonController'
 
-export interface Props {
-  connect: (service: IService) => void
+export interface ServiceListItemProps {
   service: IService
 }
 
-export function ServiceListItem({ connect, service }: Props) {
+export function ServiceListItem({ service }: ServiceListItemProps) {
   return (
     <ListItem button>
       <ListItemIcon>
         <Tooltip title={service.state}>
-          <DeviceStateIcon state={service.state} size="lg" className="pl-sm" />
+          <ConnectionStateIcon
+            state={service.state}
+            size="lg"
+            className="pl-sm"
+          />
         </Tooltip>
       </ListItemIcon>
       <ListItemText
@@ -32,22 +38,23 @@ export function ServiceListItem({ connect, service }: Props) {
             : service.type
         }
       />
-      {service.state === 'active' && (
-        <Button
-          variant="outlined"
-          size="small"
-          color="primary"
-          onClick={() => connect(service)}
-        >
-          <Icon name="plug" className="mr-sm" />
-          Connect
-        </Button>
+      {service.port && (
+        <CopyableText value={`localhost:${service.port}`} className="" />
       )}
       {service.state === 'connected' && (
-        <Button variant="outlined" size="small" color="primary">
-          <Icon name="rocket" className="mr-sm" />
-          Launch
-        </Button>
+        <>
+          {/*}
+          <Tooltip title="Launch">
+            <IconButton color="primary">
+              <Icon name="rocket" fixedWidth />
+            </IconButton>
+          </Tooltip>
+          */}
+          <DisconnectButtonController service={service} />
+        </>
+      )}
+      {service.state === 'active' && (
+        <ConnectButtonController service={service} />
       )}
     </ListItem>
   )

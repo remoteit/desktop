@@ -2,7 +2,7 @@ import classnames from 'classnames'
 import React from 'react'
 import './Icon.css'
 
-export declare interface Props {
+export declare interface IconProps {
   className?: string
   color?: BrandColors
   fixedWidth?: boolean
@@ -22,7 +22,7 @@ export function Icon({
   spin,
   weight = 'light',
   ...props
-}: Props) {
+}: IconProps) {
   const classes = classnames(
     `fa${weight[0]}`,
     `fa-${name}`,

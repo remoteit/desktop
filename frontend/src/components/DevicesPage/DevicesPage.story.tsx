@@ -1,8 +1,11 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import { withKnobs } from '@storybook/addon-knobs'
+import { withKnobs, boolean } from '@storybook/addon-knobs'
 import { DevicesPage } from './DevicesPage'
-import { device, service } from '../../helpers/mockData'
+import { device, service, user } from '../../helpers/mockData'
+import { action } from '@storybook/addon-actions'
+import { Provider } from 'react-redux'
+import { store } from '../../store'
 
 const devices = [
   device({ name: 'Doorlock', state: 'active', services: [service()] }),
@@ -26,4 +29,14 @@ const devices = [
 
 storiesOf('components/devices', module)
   .addDecorator(withKnobs)
-  .add('DevicesPage', () => <DevicesPage devices={devices} />)
+  .add('DevicesPage', () => (
+    <Provider store={store}>
+      <DevicesPage
+        devices={devices}
+        fetch={() => Promise.resolve(action('fetch'))}
+        getConnections={() => Promise.resolve(action('getConnections'))}
+        fetching={boolean('fetching', false)}
+        user={user()}
+      />
+    </Provider>
+  ))

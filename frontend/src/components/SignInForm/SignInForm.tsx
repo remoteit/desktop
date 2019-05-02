@@ -4,9 +4,9 @@ import { Button, TextField, Link } from '@material-ui/core'
 import * as yup from 'yup'
 
 const schema = yup.object().shape({
-  email: yup
+  username: yup
     .string()
-    .email()
+    // .email()
     .required(),
   password: yup
     .string()
@@ -17,36 +17,36 @@ const schema = yup.object().shape({
 
 const initialValues = {
   password: '',
-  email: '',
+  username: '',
 }
 
-export interface Props {
+export interface SignInFormProps {
   onSubmit: (value: typeof initialValues) => void
 }
 
-export function SignInForm({ onSubmit }: Props) {
+export function SignInForm({ onSubmit }: SignInFormProps) {
   const formal = useFormal(initialValues, {
     schema,
     onSubmit,
   })
 
-  const emailProps = formal.getFieldProps('email')
+  const usernameProps = formal.getFieldProps('username')
   const passwordProps = formal.getFieldProps('password')
   return (
     <form {...formal.getFormProps()}>
       <div className="mb-sm">
         <TextField
-          {...{ ...emailProps, error: Boolean(emailProps.error) }}
+          {...{ ...usernameProps, error: Boolean(usernameProps.error) }}
           autoFocus
           fullWidth
-          id="user-email"
-          label="Email"
+          id="user-username"
+          label="Email or Username"
           margin="normal"
           // type="email"
           // variant="filled"
         />
-        {formal.errors.email && (
-          <span className="danger txt-sm">{formal.errors.email}</span>
+        {formal.errors.username && (
+          <span className="danger txt-sm">{formal.errors.username}</span>
         )}
       </div>
 

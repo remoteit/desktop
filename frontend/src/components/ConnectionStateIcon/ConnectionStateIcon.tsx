@@ -1,13 +1,15 @@
 import React from 'react'
 import { Icon } from '../Icon'
-import { Props as IconProps } from '../Icon/Icon'
-import { DeviceState, ServiceState } from 'remote.it'
+import { IconProps } from '../Icon/Icon'
 
-export interface Props extends Partial<IconProps> {
-  state: DeviceState | ServiceState
+export interface ConnectionStateIconProps extends Partial<IconProps> {
+  state: ConnectionState
 }
 
-export function DeviceStateIcon({ state, ...props }: Props) {
+export function ConnectionStateIcon({
+  state,
+  ...props
+}: ConnectionStateIconProps) {
   let icon = 'question-circle'
   let color: BrandColors = 'warning'
   if (state === 'active') {
@@ -19,10 +21,21 @@ export function DeviceStateIcon({ state, ...props }: Props) {
   } else if (state === 'connected') {
     icon = 'scrubber'
     color = 'primary'
+  } else if (state === 'connecting') {
+    icon = 'spinner-third'
+    color = 'gray-light'
   } else if (state === 'restricted') {
     icon = 'times-circle'
     color = 'danger'
   }
 
-  return <Icon {...props} name={icon} color={color} />
+  return (
+    <Icon
+      {...props}
+      name={icon}
+      color={color}
+      spin={state === 'connecting'}
+      fixedWidth
+    />
+  )
 }

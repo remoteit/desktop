@@ -8,5 +8,6 @@ export const actions = {
   devices: {
     fetching: 'devices/fetching',
     fetched: 'devices/fetched',
+    connected: 'service/connected',
   },
 }

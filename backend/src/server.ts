@@ -10,8 +10,9 @@ import { targetPath } from './connectd/host'
 import { LATEST_CONNECTD_RELEASE, PORT, PEER_PORT_RANGE } from './constants'
 import { IService, IUser } from 'remote.it'
 import * as track from './utils/analytics'
-import { register } from './connectd/pool'
+import * as Pool from './connectd/pool'
 import { freePort } from './utils/freePort'
+import { EVENTS } from './connectd/connection'
 
 const d = debug('r3:server')
 
@@ -21,7 +22,9 @@ export function server() {
   const server = new Server(app)
   const io = socketIO(server)
 
-  app.get('/', (_, res) => res.send('Hi'))
+  app.get('/', (_, res) =>
+    res.send('Hi! You probably should not be here, but welcome anyways!')
+  )
 
   io.on('connection', socket => {
     d('User connected to WS server')
@@ -35,10 +38,12 @@ export function server() {
       .on('removed', routes.connectdAdded)
       .on('error', routes.watcherReady)
 
+    socket.on('connection/list', routes.list)
     socket.on('connectd/info', routes.info)
     socket.on('connectd/install', routes.install)
     socket.on('service/connect', routes.connect)
-    socket.on('disconnect', routes.disconnect)
+    socket.on('service/disconnect', routes.disconnect)
+    socket.on('disconnect', () => d('User disconnected from WS server'))
   })
 
   server.listen(PORT, () => d(`Listening on port ${PORT}`))
@@ -46,8 +51,32 @@ export function server() {
 
 function router(socket: SocketIO.Socket) {
   return {
-    connect: async ({ service, user }: { service: IService; user: IUser }) => {
-      register({ port: await freePort(PEER_PORT_RANGE), service, user })
+    list: async (callback: (connections: ConnectdProcess[]) => void) => {
+      d('Return list of connected services: %O', Pool.pool)
+      callback(Pool.pool)
+    },
+    connect: async (
+      { service, user }: { service: IService; user: IUser },
+      callback: (connection: ConnectdProcessData) => void
+    ) => {
+      const port = await freePort(PEER_PORT_RANGE)
+      const connection = await Pool.register({ port, service, user })
+
+      // Forward all events to the browser
+      Object.values(EVENTS).map(event => {
+        connection.on(event, (payload: any) => socket.emit(event, payload))
+      })
+
+      const data = { pid: connection.pid, port, service }
+      d('Created connection: %O', data)
+      connection.on(EVENTS.connected, () => callback(data))
+    },
+    disconnect: async (
+      service: IService,
+      callback: (success: boolean) => void
+    ) => {
+      const success = Pool.disconnect(service.id)
+      callback(success)
     },
     install: async () => {
       d('Starting connectd install')
@@ -80,7 +109,6 @@ function router(socket: SocketIO.Socket) {
       //   }`
       // )
     },
-    disconnect: () => d('User disconnected from WS server'),
     watcherReady: () => socket.emit('connectd/file/watching'),
     connectdAdded: (file: string) => socket.emit('connectd/file/added', file),
     connectdUpdated: (file: string) =>

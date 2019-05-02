@@ -1,4 +1,4 @@
-import { IDevice, IService } from 'remote.it'
+import { IDevice, IService, IUser } from 'remote.it'
 
 export function device({
   name = 'Mock Device',
@@ -6,7 +6,7 @@ export function device({
   ...other
 }: Partial<IDevice> = {}): IDevice {
   return {
-    id: 'some-device-id',
+    id: `some-device-id-${randomNumber()}`,
     name,
     owner: 'foo@bar.com',
     state,
@@ -35,7 +35,7 @@ export function service({
   return {
     contactedAt: new Date('mar 11 2019'),
     createdAt: new Date('aug 9, 2018'),
-    id: 'some-service-id',
+    id: `some-service-id-${randomNumber()}`,
     lastExternalIP: '77.777.77.777',
     name,
     protocol: 'nxwitness',
@@ -56,4 +56,21 @@ export function service({
     // url: string;
     // },
   }
+}
+
+export function user({ email = 'fake@example.com' } = {}): IUser {
+  return {
+    id: 'fake-user-id',
+    email,
+    username: email,
+    authHash: 'fake-auth-hash',
+    apiKey: 'fake-api-key',
+    token: 'fake-token',
+    pubSubChannel: 'fake-pubsub-channel',
+    language: 'en-us',
+  }
+}
+
+function randomNumber(start = 1, end = 1000) {
+  return Math.floor(Math.random() * end) + start
 }

@@ -3,6 +3,8 @@ import { storiesOf } from '@storybook/react'
 import { withKnobs } from '@storybook/addon-knobs'
 import { DeviceList } from './DeviceList'
 import { device } from '../../helpers/mockData'
+import { Provider } from 'react-redux'
+import { store } from '../../store'
 
 const devices = [
   device({ name: 'Doorlock', state: 'active' }),
@@ -12,4 +14,8 @@ const devices = [
 
 storiesOf('components/devices', module)
   .addDecorator(withKnobs)
-  .add('DeviceList', () => <DeviceList devices={devices} />)
+  .add('DeviceList', () => (
+    <Provider store={store}>
+      <DeviceList devices={devices} />
+    </Provider>
+  ))

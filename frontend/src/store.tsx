@@ -23,3 +23,19 @@ type UseStoreProps = [
 ]
 
 export const useStore = (): UseStoreProps => React.useContext(StateContext)
+
+// Rematch
+import { init, RematchRootState } from '@rematch/core'
+import * as models from './models'
+import immerPlugin from '@rematch/immer'
+
+const plugins = [immerPlugin()]
+
+export const store = init({ models, plugins })
+
+// export const { dispatch } = store
+
+// Export types
+export type Store = typeof store
+export type Dispatch = typeof store.dispatch
+export type ApplicationState = RematchRootState<typeof models>

@@ -1,8 +1,6 @@
 import React from 'react'
 import { LoadingMessage } from '../LoadingMessage'
 
-export interface Props {}
-
-export function DeviceLoadingMessage({ ...props }: Props) {
+export function DeviceLoadingMessage() {
   return <LoadingMessage message="Loading devices..." />
 }

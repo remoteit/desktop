@@ -37,6 +37,8 @@ export async function connect({
     username: user.username,
   })
 
+  // Start the connectd process and handle any errors that occur
+  // on initialization.
   const connectd = startConnectd(
     { port, service, user },
     (error: Error | null, stdout: string | Buffer, stderr: string | Buffer) => {
@@ -50,9 +52,13 @@ export async function connect({
     }
   )
 
+  // Add meta data about the connectd process so it can
+  // be retrieved later.
   connectd.service = service
   connectd.port = port
 
+  // Handle connectd messages and pass them along to any
+  // consumer.
   processConnectdLogs(connectd)
 
   return connectd
@@ -112,7 +118,7 @@ function startConnectd(
   return connectd
 }
 
-function processConnectdLogs(connectd: ChildProcess) {
+function processConnectdLogs(connectd: ConnectdProcess) {
   if (!connectd || !connectd.stderr || !connectd.stdout) {
     throw new Error('connectd process could not be called')
   }
@@ -131,7 +137,7 @@ function processConnectdLogs(connectd: ChildProcess) {
   })
 }
 
-function handleStdOut(connectd: ChildProcess) {
+function handleStdOut(connectd: ConnectdProcess) {
   return (buff: Buffer) => {
     // Split incoming lines from stdout so we can parse them
     // individually.
@@ -143,12 +149,11 @@ function handleStdOut(connectd: ChildProcess) {
     // Parse incoming messages and format messages for
     // emitting.
     for (const line of lines) {
-      console.log('LINE:', line)
       let type
       if (line.includes('seconds since startup')) {
         type = EVENTS.uptime
-      } else if (line.startsWith('!!status')) {
-        type = EVENTS.status
+        // } else if (line.startsWith('!!status')) {
+        //   type = EVENTS.status
       } else if (line.startsWith('!!throughput')) {
         type = EVENTS.throughput
       } else if (line.startsWith('!!request')) {
@@ -176,7 +181,13 @@ function handleStdOut(connectd: ChildProcess) {
         // localIP = localIP
         connectd.emit(EVENTS.updated, {}) //this.toJSON())
       } else {
-        const message = { type, raw: line, serviceID: '...' } // service.id }
+        const message = {
+          type,
+          raw: line,
+          serviceID: connectd.service.id,
+          port: connectd.port,
+        } // service.id }
+        d('Received message from connectd: %O', message)
         connectd.emit(type, message)
       }
     }
