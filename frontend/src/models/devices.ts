@@ -1,8 +1,7 @@
-import { r3 } from '../services/remote.it'
-import { IDevice, IService, IUser } from 'remote.it'
+import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
-import * as Service from '../services/service'
-import { ApplicationState } from '../store'
+import * as Service from '../services/Service'
+import * as Device from '../services/Device'
 import { AuthState } from './auth'
 
 interface DeviceState {
@@ -23,8 +22,7 @@ export default createModel({
     async fetch() {
       const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
       fetchStarted()
-      return r3.devices
-        .all()
+      return Device.all()
         .then(devices => setDevices(devices))
         .finally(() => fetchFinished())
     },

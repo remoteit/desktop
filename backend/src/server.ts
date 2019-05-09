@@ -1,20 +1,14 @@
 import debug from 'debug'
 import express from 'express'
-import { install } from './connectd/install'
-import { watch } from './connectd/watch'
-import { toPercent } from './utils/toPercent'
-import { Server } from 'http'
 import socketIO from 'socket.io'
-import { exists, version } from './connectd/binary'
-import { targetPath } from './connectd/host'
-import { LATEST_CONNECTD_RELEASE, PORT, PEER_PORT_RANGE } from './constants'
-import { IService, IUser } from 'remote.it'
-import * as track from './utils/analytics'
-import * as Pool from './connectd/pool'
-import { freePort } from './utils/freePort'
+import { Server } from 'http'
+import { PORT } from './constants'
+import { routes } from './routes'
+import { watcher } from './routes/watcher'
 import { EVENTS } from './connectd/connection'
+import { pool } from './connectd/pool'
 
-const d = debug('r3:server')
+const d = debug('r3:desktop:backend:server')
 
 export function server() {
   d('Starting server on port:', PORT)
@@ -29,92 +23,41 @@ export function server() {
   io.on('connection', socket => {
     d('User connected to WS server')
 
-    const routes = router(socket)
+    // Watch for changes to the connectd file and report those to the UI
+    watcher(socket)
 
-    watch()
-      .on('ready', routes.watcherReady)
-      .on('added', routes.connectdAdded)
-      .on('updated', routes.connectdAdded)
-      .on('removed', routes.connectdAdded)
-      .on('error', routes.watcherReady)
+    // Setup the routes by mapping over them to build
+    // the proper event listeners.
+    handleIncomingMessages(socket)
 
-    socket.on('connection/list', routes.list)
-    socket.on('connectd/info', routes.info)
-    socket.on('connectd/install', routes.install)
-    socket.on('service/connect', routes.connect)
-    socket.on('service/disconnect', routes.disconnect)
-    socket.on('disconnect', () => d('User disconnected from WS server'))
+    // Forward all events to the browser
+    forwardConnectdStatusMessages(socket)
   })
 
   server.listen(PORT, () => d(`Listening on port ${PORT}`))
 }
 
-function router(socket: SocketIO.Socket) {
-  return {
-    list: async (callback: (connections: ConnectdProcess[]) => void) => {
-      d('Return list of connected services: %O', Pool.pool)
-      callback(Pool.pool)
-    },
-    connect: async (
-      { service, user }: { service: IService; user: IUser },
-      callback: (connection: ConnectdProcessData) => void
-    ) => {
-      const port = await freePort(PEER_PORT_RANGE)
-      const connection = await Pool.register({ port, service, user })
+/**
+ * Handle incoming socket messages from connected clients and
+ * setup the route listeners for the messages to their
+ * appropriate functions.
+ */
+function handleIncomingMessages(socket: socketIO.Socket) {
+  Object.keys(routes).map((path: string) =>
+    socket.on(path, routes[path](socket))
+  )
+}
 
-      // Forward all events to the browser
-      Object.values(EVENTS).map(event => {
-        connection.on(event, (payload: any) => socket.emit(event, payload))
-      })
-
-      const data = { pid: connection.pid, port, service }
-      d('Created connection: %O', data)
-      connection.on(EVENTS.connected, () => callback(data))
-    },
-    disconnect: async (
-      service: IService,
-      callback: (success: boolean) => void
-    ) => {
-      const success = Pool.disconnect(service.id)
-      callback(success)
-    },
-    install: async () => {
-      d('Starting connectd install')
-
-      await install(LATEST_CONNECTD_RELEASE, percent => {
-        d(`Progress: ${toPercent(percent)}%`)
-        socket.emit('connectd/install/progress', toPercent(percent))
-      })
-
-      socket.emit('connectd/install/done', LATEST_CONNECTD_RELEASE)
-
-      d('Install of connectd complete')
-
-      track.event('connectd', 'install', 'Installing connectd')
-    },
-    info: (callback: (data: any) => void) => {
-      const params = {
-        exists: exists(),
-        path: targetPath(),
-        version: version(),
-      }
-      callback(params)
-
-      // track.event(
-      //   'connectd',
-      //   'info',
-      //   'Retrieved connectd info',
-      //   `exists: ${params.exists}, path: ${params.path}, version: ${
-      //     params.version
-      //   }`
-      // )
-    },
-    watcherReady: () => socket.emit('connectd/file/watching'),
-    connectdAdded: (file: string) => socket.emit('connectd/file/added', file),
-    connectdUpdated: (file: string) =>
-      socket.emit('connectd/file/updated', file),
-    connectdRemoved: (file: string) =>
-      socket.emit('connectd/file/removed', file),
-    watcherError: (error: Error) => socket.emit('connectd/file/error', error),
-  }
+/**
+ * Take messages that are emitted from the connectd child process
+ * and forward them to any socket listeners so they can display and
+ * react when connectd state changes.
+ */
+function forwardConnectdStatusMessages(socket: socketIO.Socket) {
+  d('Forwarding connectd status messages from pool:', pool.length)
+  pool.map(connection =>
+    Object.values(EVENTS).map(event => {
+      connection.on(event, (payload: any) => socket.emit(event, payload))
+    })
+  )
 }

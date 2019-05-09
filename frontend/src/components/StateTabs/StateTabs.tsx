@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Tabs, Tab } from '@material-ui/core'
 import { DeviceState } from 'remote.it'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
@@ -22,19 +22,26 @@ export function StateTabs({ handleChange, state = 'active' }: StateTabsProps) {
       variant="fullWidth"
       indicatorColor="primary"
       textColor="primary"
+      className="bb bc-gray-light"
     >
       {tabs.map(tab => (
         <Tab
-          label={labels[tab]}
-          key={tab}
-          icon={
-            <ConnectionStateIcon
-              key={tab}
-              state={tab as DeviceState}
-              fixedWidth
-              size="lg"
-            />
+          label={
+            <span className="df ai-center jc-center">
+              <ConnectionStateIcon
+                key={tab}
+                state={tab as DeviceState}
+                fixedWidth
+                size="lg"
+                className="mr-sm"
+              />
+              {labels[tab]}
+              {/*<span className="bg-gray-lighter rad-md gray px-xs py-xxs txt-xs ml-sm">
+                {23}
+              </span>*/}
+            </span>
           }
+          key={tab}
         />
       ))}
     </Tabs>

@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  ListItem,
-  Tooltip,
-  ListItemIcon,
-  ListItemText,
-  IconButton,
-} from '@material-ui/core'
-import { Icon } from '../Icon'
+import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { CopyableText } from '../CopyableText'
 import { ConnectButtonController } from '../../controllers/ConnectButtonController'
@@ -19,15 +12,13 @@ export interface ServiceListItemProps {
 
 export function ServiceListItem({ service }: ServiceListItemProps) {
   return (
-    <ListItem button>
+    <ListItem button className="bb bc-gray-lighter py-xs">
       <ListItemIcon>
-        <Tooltip title={service.state}>
-          <ConnectionStateIcon
-            state={service.state}
-            size="lg"
-            className="pl-sm"
-          />
-        </Tooltip>
+        <ConnectionStateIcon
+          state={service.state}
+          size="lg"
+          className="pl-sm"
+        />
       </ListItemIcon>
       <ListItemText
         inset
@@ -39,7 +30,7 @@ export function ServiceListItem({ service }: ServiceListItemProps) {
         }
       />
       {service.port && (
-        <CopyableText value={`localhost:${service.port}`} className="" />
+        <CopyableText value={`localhost:${service.port}`} className="txt-md" />
       )}
       {service.state === 'connected' && (
         <>

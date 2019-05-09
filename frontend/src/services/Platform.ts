@@ -1,14 +1,12 @@
-export class Platform {
-  static ELECTRON = 'electron'
-  static BROWSER = 'browser'
+const ELECTRON = 'electron'
+const BROWSER = 'browser'
 
-  static get environment() {
-    if (this.isElectron) return this.ELECTRON
-    return this.BROWSER
-  }
+export function environment() {
+  if (isElectron()) return ELECTRON
+  return BROWSER
+}
 
-  static get isElectron() {
-    const userAgent = navigator.userAgent.toLowerCase()
-    return userAgent.includes(' electron/')
-  }
+export function isElectron() {
+  const userAgent = navigator.userAgent.toLowerCase()
+  return userAgent.includes(' electron/')
 }

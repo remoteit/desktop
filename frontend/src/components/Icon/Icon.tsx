@@ -2,11 +2,12 @@ import classnames from 'classnames'
 import React from 'react'
 import './Icon.css'
 
-export declare interface IconProps {
+export interface IconProps {
   className?: string
   color?: BrandColors
   fixedWidth?: boolean
   name: string
+  onClick?: () => void
   title?: string
   size?: FontSizes
   spin?: boolean

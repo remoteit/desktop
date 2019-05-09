@@ -12,6 +12,7 @@ export function ConnectButton({
       <IconButton
         disabled={service.connecting}
         color="primary"
+        className="txt-md"
         onClick={() => connect(service)}
       >
         <Icon name="plug" fixedWidth />

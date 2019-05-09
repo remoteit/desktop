@@ -94,7 +94,7 @@ interface RawReleaseAsset {
 }
 
 interface RawReleaseAuthor {
-  login: string
+  signIn: string
   id: number
   node_id: string
   avatar_url: string

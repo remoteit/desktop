@@ -1,8 +1,8 @@
 import debug from 'debug'
 import { IService } from 'remote.it'
 import { connect } from './connection'
-import * as platform from '../services/platform'
 import { execFile } from 'child_process'
+import * as platform from '../services/platform'
 
 const d = debug('r3:backend:connectd:pool')
 

@@ -19,6 +19,7 @@ export async function connect(
   user: IUser
 ): Promise<ConnectResponse> {
   return new Promise(success => {
+    d('Attempting to connect to service: %O', service)
     socket.emit(
       'service/connect',
       { service, user },

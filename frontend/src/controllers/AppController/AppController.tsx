@@ -5,10 +5,11 @@ import { App } from '../../components/App'
 export type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
 const mapState = (state: ApplicationState) => ({
-  loginStarted: state.auth.loginStarted,
+  signInStarted: state.auth.signInStarted,
+  user: state.auth.user,
 })
 const mapDispatch = (dispatch: any) => ({
-  checkLogin: dispatch.auth.checkLogin,
+  checkSignIn: dispatch.auth.checkSignIn,
 })
 
 export const AppController = connect(
@@ -17,27 +18,27 @@ export const AppController = connect(
 )(App)
 
 // componentDidMount() {
-//   this.setState({ checkingLogin: true })
-//   checkLogin()
+//   this.setState({ checkingsignIn: true })
+//   checkSignIn()
 //     .then(user => this.setState({ user }))
 //     .catch(error => this.setState({ error }))
-//     .finally(() => this.setState({ checkingLogin: false }))
+//     .finally(() => this.setState({ checkingsignIn: false }))
 // }
 
 // const [{ auth }, dispatch] = useStore()
 
 // useEffect(() => {
-//   async function loginStart() {
-//     dispatch({ type: actions.auth.loginStart })
+//   async function signInStart() {
+//     dispatch({ type: actions.auth.signInStart })
 
-//     const user = await User.loginStart()
+//     const user = await User.signInStart()
 
 //     // Do nothing if we didn't get a user back
 //     if (!user) return
 
 //     // Store user info and send them to the homepage
-//     dispatch({ type: actions.auth.login, user })
-//     dispatch({ type: actions.auth.loginStopped })
+//     dispatch({ type: actions.auth.signIn, user })
+//     dispatch({ type: actions.auth.signInStopped })
 //     // navigate('/', true)
 //   }
 
@@ -59,7 +60,7 @@ export const AppController = connect(
 //     }
 //   }
 
-//   loginStart()
+//   signInStart()
 //   subscribe()
 
 //   return () => {

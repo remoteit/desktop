@@ -35,13 +35,11 @@ export function DeviceListItem({
     <>
       <ListItem {...props} onClick={handleClick} button>
         <ListItemIcon>
-          <Tooltip title={device.state}>
-            <ConnectionStateIcon
-              state={device.state}
-              size="lg"
-              className="pl-sm"
-            />
-          </Tooltip>
+          <ConnectionStateIcon
+            state={device.state}
+            size="lg"
+            className="pl-sm"
+          />
         </ListItemIcon>
         <ListItemText inset primary={device.name} />
         <div className="ml-auto">

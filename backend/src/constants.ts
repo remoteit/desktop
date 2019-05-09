@@ -19,3 +19,9 @@ export const AIRBRAKE_PROJECT_KEY =
 
 export const PEER_PORT_RANGE = [33000, 42999]
 export const LOCAL_PROXY_PORT_RANGE = [43000, 52999]
+
+// Remote.it API URL
+export const API_URL = process.env.API_URL || 'https://api.remot3.it/apv/v27'
+
+export const USERNAME_COOKIE = 'remoteit.username'
+export const AUTH_HASH_COOKIE = 'remoteit.authhash'

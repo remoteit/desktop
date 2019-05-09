@@ -1,20 +1,19 @@
 {
-  "name": "remoteit-desktop-backend",
+  "name": "remote.it-desktop-backend",
   "version": "1.0.0",
   "private": true,
   "main": "build/backend.js",
   "scripts": {
-    "build": "npm-run-all -s clean compile build-frontend",
+    "build": "npm-run-all -s clean compile build:frontend build:backend",
     "clean": "rimraf build dist",
-    "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
+    "build:frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
+    "build:backend": "electron-builder",
     "compile": "tsc",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
     "electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
-    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -p watch-*",
+    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -p watch:*",
     "postinstall": "electron-builder install-app-deps",
-    "watch-build": "tsc --watch",
-    "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron"
+    "watch:build": "tsc --watch",
+    "watch:electron": "onchange -i -k 'build/**/*' -- npm run electron"
   },
   "devDependencies": {
     "@types/debug": "4.1.4",
@@ -25,12 +24,14 @@
     "@types/socket.io": "2.1.2",
     "@types/universal-analytics": "0.4.2",
     "cross-env": "5.2.0",
-    "electron": "4.1.4",
+    "electron": "5.0.1",
     "electron-builder": "20.39.0",
+    "fsevents": "2.0.6",
     "npm-run-all": "4.1.5",
+    "onchange": "5.2.0",
     "rimraf": "2.6.3",
     "tslint": "5.16.0",
-    "typescript": "3.4.3"
+    "typescript": "3.4.5"
   },
   "dependencies": {
     "airbrake-js": "1.6.6",
@@ -49,6 +50,7 @@
   "build": {
     "appId": "com.remoteit.desktop",
     "copyright": "remot3.it, Inc",
+    "productName": "remote.it Desktop",
     "files": [
       "build/**/*",
       "node_modules/**/*",

@@ -1,4 +1,4 @@
-import { DevicesPage } from '../../components/DevicesPage'
+import { DevicesPage } from '../../pages/DevicesPage'
 import { ApplicationState } from '../../store'
 import { connect } from 'react-redux'
 

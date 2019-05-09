@@ -2,6 +2,7 @@ import React from 'react'
 import useFormal from '@kevinwolf/formal-web'
 import { Button, TextField, Link } from '@material-ui/core'
 import * as yup from 'yup'
+import { SignInFormControllerProps } from '../../controllers/SignInFormController/SignInFormController'
 
 const schema = yup.object().shape({
   username: yup
@@ -20,14 +21,16 @@ const initialValues = {
   username: '',
 }
 
-export interface SignInFormProps {
-  onSubmit: (value: typeof initialValues) => void
-}
-
-export function SignInForm({ onSubmit }: SignInFormProps) {
+export function SignInForm({ signIn }: SignInFormControllerProps) {
   const formal = useFormal(initialValues, {
     schema,
-    onSubmit,
+    onSubmit: ({
+      password,
+      username,
+    }: {
+      password: string
+      username: string
+    }) => signIn({ username, password }),
   })
 
   const usernameProps = formal.getFieldProps('username')

@@ -8,6 +8,6 @@ storiesOf('components/auth', module)
   .addDecorator(withKnobs)
   .add('SignInForm', () => (
     <div className="mx-auto my-lg" style={{ maxWidth: '600px' }}>
-      <SignInForm onSubmit={action('onSubmit')} />
+      <SignInForm signIn={action('onSubmit')} />
     </div>
   ))

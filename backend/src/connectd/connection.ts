@@ -1,7 +1,7 @@
-// import path from 'path'
 import debug from 'debug'
 import { IService } from 'remote.it'
-import { execFile, ChildProcess } from 'child_process'
+import { execFile } from 'child_process'
+import { targetPath } from './host'
 
 const d = debug('r3:desktop:connectd:connection')
 
@@ -91,7 +91,7 @@ function startConnectd(
   })
 
   const connectd = execFile(
-    'connectd',
+    targetPath(),
     [
       '-s',
       '-p',
@@ -179,7 +179,7 @@ function handleStdOut(connectd: ConnectdProcess) {
       } else if (line.includes('primary local ip')) {
         // TODO: return local IP
         // localIP = localIP
-        connectd.emit(EVENTS.updated, {}) //this.toJSON())
+        // connectd.emit(EVENTS.updated, {}) //this.toJSON())
       } else {
         const message = {
           type,

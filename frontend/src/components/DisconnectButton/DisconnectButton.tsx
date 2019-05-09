@@ -9,8 +9,12 @@ export function DisconnectButton({
 }: DisconnectButtonControllerProps) {
   return (
     <Tooltip title="Disconnect">
-      <IconButton color="secondary" onClick={() => disconnect(service)}>
-        <Icon name="trash-alt" fixedWidth />
+      <IconButton
+        color="secondary"
+        className="txt-md"
+        onClick={() => disconnect(service)}
+      >
+        <Icon name="times" fixedWidth />
       </IconButton>
     </Tooltip>
   )

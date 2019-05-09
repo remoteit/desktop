@@ -1,6 +1,7 @@
 import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
+import { Tooltip } from '@material-ui/core'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   state: ConnectionState
@@ -30,12 +31,14 @@ export function ConnectionStateIcon({
   }
 
   return (
-    <Icon
-      {...props}
-      name={icon}
-      color={color}
-      spin={state === 'connecting'}
-      fixedWidth
-    />
+    <Tooltip title={state}>
+      <Icon
+        {...props}
+        name={icon}
+        color={color}
+        spin={state === 'connecting'}
+        fixedWidth
+      />
+    </Tooltip>
   )
 }

@@ -2,6 +2,7 @@ import React from 'react'
 import { IDevice } from 'remote.it'
 import { DeviceListItem } from '../DeviceListItem'
 import { List } from '@material-ui/core'
+import classnames from 'classnames'
 
 export interface DeviceListProps {
   className?: string
@@ -17,7 +18,7 @@ export function DeviceList({
   }
 
   return (
-    <List component="nav" className={className}>
+    <List component="nav" className={classnames(className, 'py-none')}>
       {devices.map(device => (
         <DeviceListItem key={device.id} device={device} />
       ))}

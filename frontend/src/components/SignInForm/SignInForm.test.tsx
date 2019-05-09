@@ -4,6 +4,6 @@ import { SignInForm } from './SignInForm'
 
 describe('components/SignInForm', () => {
   test('should not explode', () => {
-    mount(<SignInForm />)
+    mount(<SignInForm signIn={jest.fn()} />)
   })
 })

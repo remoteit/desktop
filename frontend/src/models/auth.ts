@@ -1,49 +1,58 @@
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
-import * as user from '../services/user'
+import * as User from '../services/User'
 
 export interface AuthState {
-  loginStarted: boolean
+  signInStarted: boolean
   user?: IUser
 }
 
 const state: AuthState = {
-  loginStarted: false,
+  signInStarted: false,
   user: undefined,
 }
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async checkLogin() {
-      const { loginStarted, loginFinished, setUser } = dispatch.auth
-      loginStarted()
-      return user
-        .checkLogin()
-        .then(user => setUser(user))
-        .finally(loginFinished)
+    async checkSignIn() {
+      const { signInStarted, signInFinished, setUser } = dispatch.auth
+      signInStarted()
+      return User.checkSignIn()
+        .then(user => {
+          console.log('USER:', user)
+          if (!user) return
+          setUser(user)
+        })
+        .finally(signInFinished)
     },
-    async login({
+    async signIn({
       password,
       username,
     }: {
       password: string
       username: string
     }) {
-      const { loginStarted, loginFinished, setUser } = dispatch.auth
-      loginStarted()
-      return user
-        .login(username, password)
+      const { signInStarted, signInFinished, setUser } = dispatch.auth
+      signInStarted()
+      return User.signIn(username, password)
         .then((user: IUser) => setUser(user))
-        .finally(loginFinished)
+        .finally(signInFinished)
+    },
+    async signOut() {
+      const { signOutFinished } = dispatch.auth
+      return User.signOut().then(signOutFinished)
     },
   }),
   reducers: {
-    loginStarted(state: AuthState) {
-      state.loginStarted = true
+    signInStarted(state: AuthState) {
+      state.signInStarted = true
     },
-    loginFinished(state: AuthState) {
-      state.loginStarted = false
+    signInFinished(state: AuthState) {
+      state.signInStarted = false
+    },
+    signOutFinished(state: AuthState) {
+      state.user = undefined
     },
     setUser(state: AuthState, user: IUser) {
       state.user = user

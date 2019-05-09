@@ -14,6 +14,15 @@ declare global {
     port: number
   }
 
+  export type LogType = 'general' | 'connectd'
+
+  export interface Log {
+    type: LogType
+    message: string
+    data?: any
+    createdAt?: Date
+  }
+
   export type FontSizes = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
 
   export type IconWeight = 'light' | 'regular' | 'solid'
