@@ -1,5 +1,4 @@
 import React from 'react'
-import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { CopyableText } from '../CopyableText'
 import { ConnectButtonController } from '../../controllers/ConnectButtonController'
@@ -12,41 +11,30 @@ export interface ServiceListItemProps {
 
 export function ServiceListItem({ service }: ServiceListItemProps) {
   return (
-    <ListItem button className="bb bc-gray-lighter py-xs">
-      <ListItemIcon>
-        <ConnectionStateIcon
-          state={service.state}
-          size="lg"
-          className="pl-sm"
-        />
-      </ListItemIcon>
-      <ListItemText
-        inset
-        primary={service.name}
-        secondary={
-          service.name.toLowerCase() === service.type.toLowerCase()
-            ? null
-            : service.type
-        }
-      />
-      {service.port && (
-        <CopyableText value={`localhost:${service.port}`} className="txt-md" />
-      )}
-      {service.state === 'connected' && (
-        <>
-          {/*}
-          <Tooltip title="Launch">
-            <IconButton color="primary">
-              <Icon name="rocket" fixedWidth />
-            </IconButton>
-          </Tooltip>
-          */}
+    <div className="df ai-center bb bc-gray-lighter px-md py-xs">
+      <div className="mr-md">
+        <ConnectionStateIcon state={service.state} size="lg" />
+      </div>
+      <div>
+        <div className="txt-md gray-darkest">{service.name}</div>
+        {service.name.toLowerCase() !== service.type.toLowerCase() && (
+          <div className="txt-sm gray-light">{service.type}</div>
+        )}
+      </div>
+      <div className="ml-auto df ai-center">
+        {service.port && (
+          <CopyableText
+            value={`localhost:${service.port}`}
+            className="txt-md"
+          />
+        )}
+        {service.state === 'connected' && (
           <DisconnectButtonController service={service} />
-        </>
-      )}
-      {service.state === 'active' && (
-        <ConnectButtonController service={service} />
-      )}
-    </ListItem>
+        )}
+        {service.state === 'active' && (
+          <ConnectButtonController service={service} />
+        )}
+      </div>
+    </div>
   )
 }

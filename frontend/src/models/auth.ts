@@ -18,13 +18,17 @@ export default createModel({
     async checkSignIn() {
       const { signInStarted, signInFinished, setUser } = dispatch.auth
       signInStarted()
-      return User.checkSignIn()
-        .then(user => {
-          console.log('USER:', user)
-          if (!user) return
-          setUser(user)
-        })
-        .finally(signInFinished)
+      return (
+        User.checkSignIn()
+          .then(user => {
+            if (!user) return
+            setUser(user)
+          })
+          // Check if user should only search for devices
+          // rather than fetch all devices
+          .then(() => dispatch.devices.shouldSearchDevices())
+          .finally(signInFinished)
+      )
     },
     async signIn({
       password,
@@ -35,12 +39,18 @@ export default createModel({
     }) {
       const { signInStarted, signInFinished, setUser } = dispatch.auth
       signInStarted()
-      return User.signIn(username, password)
-        .then((user: IUser) => setUser(user))
-        .finally(signInFinished)
+      return (
+        User.signIn(username, password)
+          .then((user: IUser) => setUser(user))
+          // Check if user should only search for devices
+          // rather than fetch all devices
+          .then(() => dispatch.devices.shouldSearchDevices())
+          .finally(signInFinished)
+      )
     },
     async signOut() {
       const { signOutFinished } = dispatch.auth
+      dispatch.navigation.setPage('devices')
       return User.signOut().then(signOutFinished)
     },
   }),

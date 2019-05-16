@@ -11,19 +11,29 @@ export interface Props {
 export function DebugLogItem({ log }: Props) {
   const data = JSON.stringify(log.data, null, 2)
   const [opened, setOpen] = useState<boolean>(false)
+
   const isConnectd = log.type === 'connectd'
+  const isAlert = log.type === 'alert'
+
+  let title = 'General message'
+  let iconName = 'bell'
+  let iconColor = 'secondary' as BrandColors
+  if (isConnectd) {
+    title = 'connectd process message'
+    iconName = 'terminal'
+    iconColor = 'primary'
+  }
+  if (isAlert) {
+    title = 'Alert'
+    iconColor = 'danger'
+  }
+
   return (
     <div className="px-md py-sm bb bc-gray-lighter txt-sm">
       <div className="txt-sm df ai-center">
         <div className="txt-md mr-md">
-          <Tooltip
-            title={isConnectd ? 'connectd process message' : 'General message'}
-          >
-            <Icon
-              name={isConnectd ? 'terminal' : 'bell'}
-              color={isConnectd ? 'primary' : 'secondary'}
-              fixedWidth
-            />
+          <Tooltip title={title}>
+            <Icon name={iconName} color={iconColor} fixedWidth />
           </Tooltip>
         </div>
         {log.message}

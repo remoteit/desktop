@@ -43,9 +43,21 @@ export async function register({ port, service, user }: RegisterProps) {
  *
  * @param serviceID The service's ID
  */
-export function disconnect(serviceID: string) {
+export function disconnectByServiceID(serviceID: string) {
+  d('Disconnecting by service ID:', serviceID)
   const conn = findByServiceID(serviceID)
+  return disconnect(conn)
+}
+
+export function disconnectAll() {
+  d('Disconnecting all services')
+  pool.map(conn => disconnect(conn))
+}
+
+export function disconnect(conn?: ConnectdProcess) {
   if (!conn) return false
+
+  d('Disconnecting connection:', conn.pid)
 
   if (platform.isWindows) {
     execFile('(taskkill /pid ' + conn.pid + ' /T /F')

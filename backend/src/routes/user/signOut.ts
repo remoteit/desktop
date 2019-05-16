@@ -1,7 +1,7 @@
 import debug from 'debug'
 import * as storage from '../../services/storage'
-import { AUTH_HASH_COOKIE, USERNAME_COOKIE } from '../../constants'
 import { r3 } from '../../services/remote.it'
+import * as pool from '../../connectd/pool'
 
 const d = debug('r3:desktop:backend:routes:user:signIn')
 
@@ -11,6 +11,9 @@ export function signOut() {
 
     // Clear all cookies, localstorage, etc
     storage.clear()
+
+    // Disconnect all services
+    pool.disconnectAll()
 
     // Clear data from remote.it.js
     r3.token = undefined

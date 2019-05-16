@@ -4,7 +4,7 @@
   "private": true,
   "main": "build/backend.js",
   "scripts": {
-    "build": "npm-run-all -s clean compile build:frontend build:backend",
+    "build": "NODE_ENV=production npm-run-all -s clean compile build:frontend build:backend",
     "clean": "rimraf build dist",
     "build:frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
     "build:backend": "electron-builder",
@@ -42,15 +42,16 @@
     "express": "4.16.4",
     "http-proxy": "1.17.0",
     "portfinder": "1.0.20",
-    "remote.it": "0.33.0",
+    "remote.it": "0.36.0-beta.3",
     "socket.io": "2.2.0",
+    "sudo-prompt": "8.2.5",
     "universal-analytics": "0.4.20",
     "winston": "3.2.1"
   },
   "build": {
     "appId": "com.remoteit.desktop",
     "copyright": "remot3.it, Inc",
-    "productName": "remote.it Desktop",
+    "productName": "remote.it",
     "files": [
       "build/**/*",
       "node_modules/**/*",

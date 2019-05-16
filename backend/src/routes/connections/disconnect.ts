@@ -3,7 +3,7 @@ import { IService } from 'remote.it'
 
 export function disconnect() {
   return async (service: IService, callback: (success: boolean) => void) => {
-    const success = Pool.disconnect(service.id)
+    const success = Pool.disconnectByServiceID(service.id)
     callback(success)
   }
 }

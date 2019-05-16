@@ -51,7 +51,11 @@ export function DeviceListItem({
         </div>
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
-        <ServiceList services={device.services} />
+        <div className="bg-gray-lighter p-md">
+          <div className="bg-white ba bc-gray-light rad-sm">
+            <ServiceList services={device.services} />
+          </div>
+        </div>
       </Collapse>
       <Divider />
     </>

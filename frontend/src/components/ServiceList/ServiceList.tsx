@@ -1,19 +1,24 @@
 import React from 'react'
 import { IService } from 'remote.it'
-import { List } from '@material-ui/core'
 import { ServiceListItem } from '../ServiceListItem'
 // import styles from './ServiceList.module.css'
 
-export interface Props {
+export interface ServiceListProps {
   services: IService[]
 }
 
-export function ServiceList({ services }: Props) {
+export function ServiceList({ services = [] }: ServiceListProps) {
   return (
-    <List component="nav" disablePadding>
-      {services.map((service, key) => (
-        <ServiceListItem service={service} key={key} />
-      ))}
-    </List>
+    <>
+      {services.length ? (
+        services.map((service, key) => (
+          <ServiceListItem service={service} key={key} />
+        ))
+      ) : (
+        <div className="px-md py-sm italic gray-dark">
+          No services to show...
+        </div>
+      )}
+    </>
   )
 }

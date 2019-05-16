@@ -10,31 +10,36 @@ import { pool } from './connectd/pool'
 
 const d = debug('r3:desktop:backend:server')
 
-export function server() {
-  d('Starting server on port:', PORT)
-  const app = express()
-  const server = new Server(app)
-  const io = socketIO(server)
+export function server(): Promise<socketIO.Server> {
+  return new Promise(success => {
+    d('Starting server on port:', PORT)
+    const app = express()
+    const server = new Server(app)
+    const io = socketIO(server)
 
-  app.get('/', (_, res) =>
-    res.send('Hi! You probably should not be here, but welcome anyways!')
-  )
+    app.get('/', (_, res) =>
+      res.send('Hi! You probably should not be here, but welcome anyways!')
+    )
 
-  io.on('connection', socket => {
-    d('User connected to WS server')
+    io.on('connection', socket => {
+      d('User connected to WS server')
 
-    // Watch for changes to the connectd file and report those to the UI
-    watcher(socket)
+      // Watch for changes to the connectd file and report those to the UI
+      watcher(socket)
 
-    // Setup the routes by mapping over them to build
-    // the proper event listeners.
-    handleIncomingMessages(socket)
+      // Setup the routes by mapping over them to build
+      // the proper event listeners.
+      handleIncomingMessages(socket)
 
-    // Forward all events to the browser
-    forwardConnectdStatusMessages(socket)
+      // Forward all events to the browser
+      forwardConnectdStatusMessages(socket)
+    })
+
+    server.listen(PORT, () => {
+      d(`Listening on port ${PORT}`)
+      success(io)
+    })
   })
-
-  server.listen(PORT, () => d(`Listening on port ${PORT}`))
 }
 
 /**

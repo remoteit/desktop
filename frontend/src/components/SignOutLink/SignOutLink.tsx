@@ -4,7 +4,7 @@ import { Link } from '@material-ui/core'
 
 export function SignOutLink({ signOut }: SignOutLinkControllerProps) {
   return (
-    <Link onClick={() => signOut()} type="button">
+    <Link onClick={() => signOut()} type="button" className="c-pointer">
       Sign out
     </Link>
   )

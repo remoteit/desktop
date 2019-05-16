@@ -1,30 +1,61 @@
+import fuzzy from 'fuzzy'
 import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
 import * as Service from '../services/Service'
 import * as Device from '../services/Device'
 import { AuthState } from './auth'
+import { SEARCH_ONLY_SERVICE_LIMIT } from '../constants'
+
+interface Connection {
+  deviceID: string
+  serviceID: string
+  port: number
+}
 
 interface DeviceState {
   all: IDevice[]
+  connections: Connection[]
   fetched: boolean
   fetching: boolean
+  searchOnly: boolean
+  query: string
 }
 
 const state: DeviceState = {
   all: [],
+  connections: [],
   fetched: false,
   fetching: false,
+  searchOnly: false,
+  query: '',
 }
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
+    /**
+     * Decide if the user should only search for devices veruses
+     * us fetching all of their devices at the getgo.
+     */
+    async shouldSearchDevices() {
+      const { setSearchOnly } = dispatch.devices
+      return Device.count().then(count =>
+        setSearchOnly(count.total > SEARCH_ONLY_SERVICE_LIMIT)
+      )
+    },
     async fetch() {
       const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
       fetchStarted()
       return Device.all()
-        .then(devices => setDevices(devices))
-        .finally(() => fetchFinished())
+        .then(setDevices)
+        .finally(fetchFinished)
+    },
+    async remoteSearch(query: string) {
+      const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
+      fetchStarted()
+      return Device.search(query)
+        .then(setDevices)
+        .finally(fetchFinished)
     },
     async getConnections() {
       const { connected } = dispatch.devices
@@ -50,6 +81,12 @@ export default createModel({
     },
   }),
   reducers: {
+    localSearch(state: DeviceState, query: string) {
+      state.query = query
+    },
+    setSearchOnly(state: DeviceState, searchOnly: boolean) {
+      state.searchOnly = searchOnly
+    },
     fetchStarted(state: DeviceState) {
       state.fetched = false
       state.fetching = true
@@ -64,13 +101,28 @@ export default createModel({
     connectStart(state: DeviceState, service: IService) {
       const [serv] = findService(state.all, service)
       serv.connecting = true
+      console.log('CONNECT START')
     },
     connected(state: DeviceState, connection: Service.ConnectResponse) {
-      const [serv, device] = findService(state.all, connection.service)
+      const { service, port, pid } = connection
+
+      // Add to connection list
+      const existingConnections = state.connections.filter(
+        c => c.serviceID === service.id
+      ).length
+      if (!existingConnections) {
+        state.connections.push({
+          port,
+          serviceID: service.id,
+          deviceID: service.deviceID,
+        })
+      }
+
+      const [serv, device] = findService(state.all, service)
       device.state = 'connected'
       serv.state = 'connected'
-      serv.port = connection.port
-      serv.pid = connection.pid
+      serv.port = port
+      serv.pid = pid
       serv.connecting = false
     },
     disconnected(state: DeviceState, service: IService) {
@@ -87,7 +139,28 @@ export default createModel({
       serv.connecting = false
     },
   },
+  selectors: slice => ({
+    visible() {
+      return slice(
+        (devices: DeviceState): IDevice[] => {
+          return filterDevices(devices.all, devices.query)
+        }
+      )
+    },
+  }),
 })
+
+function filterDevices(devices: IDevice[], query: string) {
+  const options = {
+    extract: (dev: IDevice) => {
+      let matchString = dev.name
+      if (dev.services && dev.services.length)
+        matchString += dev.services.map(s => s.name).join('')
+      return matchString
+    },
+  }
+  return fuzzy.filter(query, devices, options).map(d => d.original)
+}
 
 /**
  * Helper to find a service and its device from the device list.

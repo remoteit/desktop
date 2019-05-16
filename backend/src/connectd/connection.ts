@@ -152,8 +152,8 @@ function handleStdOut(connectd: ConnectdProcess) {
       let type
       if (line.includes('seconds since startup')) {
         type = EVENTS.uptime
-        // } else if (line.startsWith('!!status')) {
-        //   type = EVENTS.status
+      } else if (line.startsWith('!!status')) {
+        type = EVENTS.status
       } else if (line.startsWith('!!throughput')) {
         type = EVENTS.throughput
       } else if (line.startsWith('!!request')) {

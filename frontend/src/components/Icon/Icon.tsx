@@ -9,7 +9,7 @@ export interface IconProps {
   name: string
   onClick?: () => void
   title?: string
-  size?: FontSizes
+  size?: FontSize
   spin?: boolean
   weight?: IconWeight
 }

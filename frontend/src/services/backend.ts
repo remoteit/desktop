@@ -1,11 +1,46 @@
+import { store } from '../store'
 import io from 'socket.io-client'
-
-// TODO: move to env var
-const PORT = 29999
+import { PORT } from '../constants'
 
 export const socket = io(`http://localhost:${PORT}`)
-socket.on('connect', () => console.log('connect'))
-socket.on('disconnect', () => console.log('connect'))
+socket.on('connect', () => console.log('Socket connect'))
+socket.on('disconnect', () => console.log('Socket disconnect'))
+
+export const MESSAGE_TYPES: ServerMessageType[] = [
+  'service/error',
+  // 'service/status',
+  'service/updated',
+  'service/request',
+  'service/connecting',
+  'service/connected',
+  'service/tunnel/opened',
+  'service/tunnel/closed',
+  'service/disconnected',
+  'service/unknown-event',
+  // 'service/throughput',
+  // 'service/uptime',
+  'connectd/install/error',
+]
+
+export function recordConnectdEvents() {
+  const { addLog } = store.dispatch.logs
+  addLog({
+    type: 'general',
+    message: 'Application starting up',
+    createdAt: new Date(),
+  })
+
+  MESSAGE_TYPES.map(event =>
+    socket.on(event, (data: ConnectLogMessage) =>
+      addLog({
+        type: data.error ? 'alert' : 'connectd',
+        message: data.error ? data.error.message : data.raw,
+        data,
+        createdAt: new Date(),
+      } as Log)
+    )
+  )
+}
 
 /**
  * A promisified version of the Socket.io event emitter

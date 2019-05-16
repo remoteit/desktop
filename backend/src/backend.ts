@@ -1,11 +1,10 @@
 import electron from 'electron'
 import debug from 'debug'
 import path from 'path'
-import os from 'os'
 import url from 'url'
+import socketIO from 'socket.io'
 import { server } from './server'
-import { install } from './connectd/install'
-import { LATEST_CONNECTD_RELEASE } from './constants'
+import { installConnectdIfMissing } from './connectd/install'
 import * as track from './utils/analytics'
 import './utils/errorReporting'
 
@@ -22,12 +21,15 @@ const BrowserWindow = electron.BrowserWindow
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: electron.BrowserWindow | null
 
-// Install connectd on start automatically
-install(LATEST_CONNECTD_RELEASE)
-
 // Start the Socket.io server that the frontend React application
 // listens to.
-server()
+server().then((io: socketIO.Server) =>
+  installConnectdIfMissing().catch(error =>
+    io.emit('connectd/install/error', {
+      error: { ...error, message: error.message },
+    })
+  )
+)
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

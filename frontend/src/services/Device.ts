@@ -10,3 +10,11 @@ export async function all() {
   d('Fetching devices')
   return r3.devices.all()
 }
+
+export async function count() {
+  return r3.devices.count()
+}
+
+export async function search(query: string) {
+  return r3.devices.search(query)
+}

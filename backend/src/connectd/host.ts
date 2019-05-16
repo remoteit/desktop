@@ -27,7 +27,7 @@ export function binaryName() {
  * Returns the absolute path to the connectd binary on
  * this system.
  */
-export function targetPath() {
+export function targetPath(): string {
   // TODO: make cross platform
   return '/usr/local/bin/connectd'
 }
@@ -40,4 +40,13 @@ export function targetPath() {
 export function tempDownloadPath() {
   // TODO: Make cross platform
   return `/tmp/${binaryName()}`
+}
+
+export function moveAndUpdatePermissionsCommand() {
+  // TODO: make cross platform
+  const target = targetPath()
+  const temp = tempDownloadPath()
+  const copyCmd = `cp ${temp} ${target}`
+  const permissionCmd = `chmod 755 ${target}`
+  return `${copyCmd} && ${permissionCmd}`
 }

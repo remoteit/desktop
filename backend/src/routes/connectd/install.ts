@@ -11,15 +11,19 @@ export function install(socket: socketIO.Socket) {
   return async () => {
     d('Starting connectd install')
 
-    await connectd.install(LATEST_CONNECTD_RELEASE, percent => {
-      d(`Progress: ${toPercent(percent)}%`)
-      socket.emit('connectd/install/progress', toPercent(percent))
-    })
+    try {
+      await connectd.install(LATEST_CONNECTD_RELEASE, percent => {
+        d(`Progress: ${toPercent(percent)}%`)
+        socket.emit('connectd/install/progress', toPercent(percent))
+      })
 
-    socket.emit('connectd/install/done', LATEST_CONNECTD_RELEASE)
+      socket.emit('connectd/install/done', LATEST_CONNECTD_RELEASE)
 
-    d('Install of connectd complete')
+      d('Install of connectd complete')
 
-    track.event('connectd', 'install', 'Installing connectd')
+      track.event('connectd', 'install', 'Installing connectd')
+    } catch (error) {
+      socket.emit('connectd/install/error', error)
+    }
   }
 }

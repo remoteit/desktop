@@ -32,10 +32,15 @@ storiesOf('components/devices', module)
   .add('DevicesPage', () => (
     <Provider store={store}>
       <DevicesPage
-        devices={devices}
+        allDevices={devices}
+        connections={[]}
+        visibleDevices={devices}
         fetch={() => Promise.resolve(action('fetch'))}
         getConnections={() => Promise.resolve(action('getConnections'))}
         fetching={boolean('fetching', false)}
+        searchOnly={boolean('searchOnly', false)}
+        localSearch={action('localSearch')}
+        remoteSearch={action('remoteSearch')}
         user={user()}
       />
     </Provider>

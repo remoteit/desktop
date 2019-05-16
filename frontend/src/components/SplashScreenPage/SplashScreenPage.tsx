@@ -1,8 +1,6 @@
 import debug from 'debug'
 import React, { useEffect, useState } from 'react'
-// import { INITIALIZED, useStore } from '../../store'
 import { Logo } from '../Logo'
-// import { navigate } from 'hookrouter'
 import { TextField, Button } from '@material-ui/core'
 import io from 'socket.io-client'
 import { Icon } from '../Icon'

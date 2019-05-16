@@ -1,11 +1,8 @@
 import React from 'react'
-import { useTitle } from 'hookrouter'
 import { Icon } from '../../components/Icon'
 import { Link } from '@material-ui/core'
 
 export function NotFoundPage() {
-  useTitle('Page Not Found')
-
   return (
     <div className="center mx-auto my-lg" style={{ maxWidth: '600px' }}>
       <Icon name="thumbs-down" size="xxxl" color="danger" />

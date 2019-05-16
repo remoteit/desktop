@@ -2,65 +2,81 @@ import React, { useState, useEffect } from 'react'
 import { DeviceList } from '../../components/DeviceList'
 import { IDevice, DeviceState, IService } from 'remote.it'
 import { StateTabs } from '../../components/StateTabs'
-import { useTitle } from 'hookrouter'
 import { Props } from '../../controllers/DevicePageController/DevicePageController'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
 import { NoDevicesMessage } from '../../components/NoDevicesMessage'
 import { ServiceList } from '../../components/ServiceList'
 import { Page } from '../Page'
 import { PageHeading } from '../../components/PageHeading'
+import { IconButton, Paper, Tooltip } from '@material-ui/core'
+import { Icon } from '../../components/Icon'
+import { SearchField } from '../../components/SearchField'
 
 export function DevicesPage({
-  devices,
+  allDevices,
+  connections,
+  visibleDevices,
   fetch,
   fetching,
   getConnections,
+  searchOnly,
+  localSearch,
+  remoteSearch,
 }: Props) {
   const [tab, setTab] = useState<DeviceState>('active')
 
-  useTitle('Devices') // TODO: Translate
-
   useEffect(() => {
-    fetch().then(() => getConnections())
+    if (searchOnly) {
+      // TODO: prompt them to search....
+      getConnections()
+    } else {
+      fetch().then(() => getConnections())
+    }
   }, [])
 
-  // If we are loading the user's devices, we should show
-  // them a nice loading indicator while we get their devices.
-  // TODO: only show this if there are no devices
-  if (fetching) {
-    return <DeviceLoadingMessage />
+  if (!searchOnly) {
+    // If we are loading the user's devices, we should show
+    // them a nice loading indicator while we get their devices.
+    // TODO: only show this if there are no devices
+    if (!allDevices.length && fetching) {
+      return <DeviceLoadingMessage />
+    }
+
+    // If the user has no devices associated with their account,
+    // we should show them a friendly message.
+    if (!allDevices || !allDevices.length) {
+      return <NoDevicesMessage />
+    }
   }
 
-  // If the user has no devices associated with their account,
-  // we should show them a friendly message.
-  if (!devices || !devices.length) {
-    return <NoDevicesMessage />
-  }
-
-  const visibleDevices = sortDevices(tab, devices)
+  const sortedDevices = sortDevices(tab, visibleDevices)
 
   return (
     <Page>
-      <PageHeading>Devices</PageHeading>
-      {/*<FormControl className="ml-auto" style={{ minWidth: '300px' }}>
-            <Input
-              id="input-with-icon-adornment"
-              startAdornment={
-                <InputAdornment position="start">
-                  <Icon name="search" />
-                </InputAdornment>
-              }
-              placeholder="Search devices and services..."
-            />
-            </FormControl>*/}
-      <div className="bg-white bs-2 mb-xl">
+      <PageHeading>
+        Devices
+        <Tooltip title="Refresh devices">
+          <IconButton
+            className="ml-sm"
+            onClick={() => fetch()}
+            disabled={fetching}
+          >
+            <Icon name="sync" spin={fetching} size="sm" />
+          </IconButton>
+        </Tooltip>
+      </PageHeading>
+      <div className="mb-md">
+        <SearchField search={searchOnly ? remoteSearch : localSearch} />
+      </div>
+      <Paper className="mb-xl">
+        {/*Connections: {connections.length}*/}
         <StateTabs
           state={tab}
           handleChange={(state: DeviceState) => setTab(state)}
         />
         {tab === 'connected' ? (
           <ServiceList
-            services={visibleDevices.reduce(
+            services={sortedDevices.reduce(
               (all, d) => {
                 const services = d.services.filter(s => s.state === 'connected')
                 return [...all, ...services]
@@ -69,9 +85,9 @@ export function DevicesPage({
             )}
           />
         ) : (
-          <DeviceList devices={visibleDevices} />
+          <DeviceList devices={sortedDevices} />
         )}
-      </div>
+      </Paper>
     </Page>
   )
 }

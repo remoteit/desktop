@@ -3,7 +3,7 @@ import { storiesOf } from '@storybook/react'
 import { select, withKnobs } from '@storybook/addon-knobs'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
 
-const sizes: FontSizes[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl', 'xxxl']
+const sizes: FontSize[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl', 'xxxl']
 const states: ConnectionState[] = [
   'active',
   'inactive',
@@ -19,7 +19,7 @@ storiesOf('components/devices', module)
       <h1>Custom</h1>
       <ConnectionStateIcon
         state={select('state', states, 'active') as ConnectionState}
-        size={select('size', sizes as FontSizes[], 'xxxl' as FontSizes)}
+        size={select('size', sizes as FontSize[], 'xxxl' as FontSize)}
       />
       <h1 className="mt-lg">States</h1>
       <table>

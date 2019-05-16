@@ -6,7 +6,7 @@ export interface Props {
 
 export function PageHeading({ children }: Props) {
   return (
-    <div className="center mb-md">
+    <div className="mb-md">
       <h3 className="txt-md fw-lighter upper ls-lg gray-dark my-none">
         {children}
       </h3>
