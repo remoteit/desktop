@@ -8,7 +8,7 @@ socket.on('disconnect', () => console.log('Socket disconnect'))
 
 export const MESSAGE_TYPES: ServerMessageType[] = [
   'service/error',
-  // 'service/status',
+  'service/status',
   'service/updated',
   'service/request',
   'service/connecting',
@@ -17,8 +17,8 @@ export const MESSAGE_TYPES: ServerMessageType[] = [
   'service/tunnel/closed',
   'service/disconnected',
   'service/unknown-event',
-  // 'service/throughput',
-  // 'service/uptime',
+  'service/throughput',
+  'service/uptime',
   'connectd/install/error',
 ]
 
