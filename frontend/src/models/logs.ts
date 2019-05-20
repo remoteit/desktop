@@ -11,6 +11,9 @@ const state: LogState = { all: [] }
 export default createModel({
   state,
   reducers: {
+    reset(state: LogState) {
+      state.all = []
+    },
     addLog(state: LogState, log: Log) {
       // Remove the first item from the array of logs
       // so it doesn't get too long and crash the browser.

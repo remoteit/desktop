@@ -45,13 +45,18 @@ export default createModel({
           // Check if user should only search for devices
           // rather than fetch all devices
           .then(() => dispatch.devices.shouldSearchDevices())
+          .then(dispatch.logs.reset)
           .finally(signInFinished)
       )
     },
     async signOut() {
       const { signOutFinished } = dispatch.auth
-      dispatch.navigation.setPage('devices')
-      return User.signOut().then(signOutFinished)
+
+      return User.signOut()
+        .then(signOutFinished)
+        .then(dispatch.devices.reset)
+        .then(() => dispatch.navigation.setPage('devices'))
+        .then(dispatch.logs.reset)
     },
   }),
   reducers: {

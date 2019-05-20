@@ -173,6 +173,13 @@ export default createModel({
       serv.pid = undefined
       serv.connecting = false
     },
+    // @ts-ignore
+    reset(state: DeviceState) {
+      state.all = []
+      state.connections = []
+      state.searchOnly = false
+      state.query = ''
+    },
   },
   selectors: slice => ({
     visible() {
