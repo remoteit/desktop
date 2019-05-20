@@ -1,6 +1,5 @@
 import React from 'react'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { CopyableText } from '../CopyableText'
 import { ConnectedServiceItem } from '../ConnectedServiceItem'
 import { ConnectButtonController } from '../../controllers/ConnectButtonController'
 import { IService } from 'remote.it'
@@ -10,16 +9,16 @@ export interface ServiceListItemProps {
 }
 
 export function ServiceListItem({ service }: ServiceListItemProps) {
-  // if (service.state === 'connected') {
-  //   return (
-  //     <ConnectedServiceItem
-  //       name={service.name}
-  //       port={service.port}
-  //       type={service.type}
-  //       serviceID={service.id}
-  //     />
-  //   )
-  // }
+  if (service.state === 'connected') {
+    return (
+      <ConnectedServiceItem
+        name={service.name}
+        port={service.port}
+        type={service.type}
+        serviceID={service.id}
+      />
+    )
+  }
 
   return (
     <div className="df ai-center bb bc-gray-lighter px-md py-xs">
