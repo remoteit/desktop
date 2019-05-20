@@ -57,8 +57,8 @@ app.on('activate', function() {
 function createMainWindow() {
   d('Showing main window')
   mainWindow = new BrowserWindow({
-    width: 700,
-    height: 560,
+    width: 800,
+    height: 700,
     minWidth: 400,
     minHeight: 300,
     icon: path.join(__dirname, 'images/icon-64x64.png'),
