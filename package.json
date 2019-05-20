@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "build": "cd backend && npm run build",
-    "predist": "npm run build",
-    "dist": "cd backend && npm run dist",
     "watch-frontend": "cd frontend && npm start",
     "watch-backend": "cd backend && npm start",
     "start": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -p watch-*"
