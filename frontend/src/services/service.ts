@@ -40,9 +40,9 @@ export async function getConnections(): Promise<ConnectResponse[]> {
   })
 }
 
-export async function disconnect(service: IService): Promise<boolean> {
+export async function disconnect(serviceID: string): Promise<boolean> {
   return new Promise(success => {
-    socket.emit('service/disconnect', service, (succeeded: boolean) => {
+    socket.emit('service/disconnect', serviceID, (succeeded: boolean) => {
       d('Shutdown succeeded? %O', succeeded)
       success(succeeded)
     })

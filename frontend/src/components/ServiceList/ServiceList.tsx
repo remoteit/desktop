@@ -1,7 +1,6 @@
 import React from 'react'
 import { IService } from 'remote.it'
 import { ServiceListItem } from '../ServiceListItem'
-// import styles from './ServiceList.module.css'
 
 export interface ServiceListProps {
   services: IService[]

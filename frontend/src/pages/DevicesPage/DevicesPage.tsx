@@ -5,12 +5,12 @@ import { StateTabs } from '../../components/StateTabs'
 import { Props } from '../../controllers/DevicePageController/DevicePageController'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
 import { NoDevicesMessage } from '../../components/NoDevicesMessage'
-import { ServiceList } from '../../components/ServiceList'
 import { Page } from '../Page'
 import { PageHeading } from '../../components/PageHeading'
 import { IconButton, Paper, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
+import { ConnectedServiceItem } from '../../components/ConnectedServiceItem'
 
 export function DevicesPage({
   allDevices,
@@ -26,12 +26,11 @@ export function DevicesPage({
   const [tab, setTab] = useState<DeviceState>('active')
 
   useEffect(() => {
-    if (searchOnly) {
-      // TODO: prompt them to search....
-      getConnections()
-    } else {
-      fetch().then(() => getConnections())
-    }
+    // Get any actively running connections
+    getConnections()
+
+    // If not in search only mode, fetch all devices.
+    if (!searchOnly) fetch()
   }, [])
 
   if (!searchOnly) {
@@ -55,15 +54,17 @@ export function DevicesPage({
     <Page>
       <PageHeading>
         Devices
-        <Tooltip title="Refresh devices">
-          <IconButton
-            className="ml-sm"
-            onClick={() => fetch()}
-            disabled={fetching}
-          >
-            <Icon name="sync" spin={fetching} size="sm" />
-          </IconButton>
-        </Tooltip>
+        {!searchOnly && (
+          <Tooltip title="Refresh devices">
+            <IconButton
+              className="ml-sm"
+              onClick={() => fetch()}
+              disabled={fetching}
+            >
+              <Icon name="sync" spin={fetching} size="sm" />
+            </IconButton>
+          </Tooltip>
+        )}
       </PageHeading>
       <div className="mb-md">
         <SearchField search={searchOnly ? remoteSearch : localSearch} />
@@ -75,15 +76,17 @@ export function DevicesPage({
           handleChange={(state: DeviceState) => setTab(state)}
         />
         {tab === 'connected' ? (
-          <ServiceList
-            services={sortedDevices.reduce(
-              (all, d) => {
-                const services = d.services.filter(s => s.state === 'connected')
-                return [...all, ...services]
-              },
-              [] as IService[]
-            )}
-          />
+          <>
+            {connections.map(c => (
+              <ConnectedServiceItem
+                key={c.serviceID}
+                name={c.serviceName}
+                port={c.port}
+                type={c.type}
+                serviceID={c.serviceID}
+              />
+            ))}
+          </>
         ) : (
           <DeviceList devices={sortedDevices} />
         )}

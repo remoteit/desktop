@@ -3,7 +3,7 @@ import { IService } from 'remote.it'
 import { DisconnectButton } from '../../components/DisconnectButton'
 
 export type DisconnectButtonControllerProps = {
-  service: IService
+  serviceID: string
 } & ReturnType<typeof mapDispatch>
 
 const mapDispatch = (dispatch: any) => ({

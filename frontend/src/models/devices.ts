@@ -6,12 +6,6 @@ import * as Device from '../services/Device'
 import { AuthState } from './auth'
 import { SEARCH_ONLY_SERVICE_LIMIT } from '../constants'
 
-interface Connection {
-  deviceID: string
-  serviceID: string
-  port: number
-}
-
 interface DeviceState {
   all: IDevice[]
   connections: Connection[]
@@ -22,6 +16,7 @@ interface DeviceState {
 }
 
 const state: DeviceState = {
+  // TODO: Store this as objects with keys based on ID?
   all: [],
   connections: [],
   fetched: false,
@@ -44,18 +39,40 @@ export default createModel({
       )
     },
     async fetch() {
-      const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
+      const {
+        getConnections,
+        fetchStarted,
+        fetchFinished,
+        setDevices,
+      } = dispatch.devices
       fetchStarted()
-      return Device.all()
-        .then(setDevices)
-        .finally(fetchFinished)
+      return (
+        Device.all()
+          .then(setDevices)
+          // Get connections again so we can update the incoming found
+          // device state against our list of locally connected services.
+          // TODO: Probably a cleaner way of doing this...
+          .then(getConnections)
+          .finally(fetchFinished)
+      )
     },
     async remoteSearch(query: string) {
-      const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
+      const {
+        getConnections,
+        fetchStarted,
+        fetchFinished,
+        setDevices,
+      } = dispatch.devices
       fetchStarted()
-      return Device.search(query)
-        .then(setDevices)
-        .finally(fetchFinished)
+      return (
+        Device.search(query)
+          .then(setDevices)
+          // Get connections again so we can update the incoming found
+          // device state against our list of locally connected services.
+          // TODO: Probably a cleaner way of doing this...
+          .then(getConnections)
+          .finally(fetchFinished)
+      )
     },
     async getConnections() {
       const { connected } = dispatch.devices
@@ -74,10 +91,10 @@ export default createModel({
         (connection: Service.ConnectResponse) => connected(connection)
       )
     },
-    async disconnect(service: IService) {
-      console.log('disconnect', service)
+    async disconnect(serviceID: string) {
+      console.log('disconnect', serviceID)
       const { disconnected } = dispatch.devices
-      return Service.disconnect(service).then(() => disconnected(service))
+      return Service.disconnect(serviceID).then(() => disconnected(serviceID))
     },
   }),
   reducers: {
@@ -99,9 +116,10 @@ export default createModel({
       state.fetching = false
     },
     connectStart(state: DeviceState, service: IService) {
-      const [serv] = findService(state.all, service)
+      const [serv] = findService(state.all, service.id)
+      if (!serv) return
+
       serv.connecting = true
-      console.log('CONNECT START')
     },
     connected(state: DeviceState, connection: Service.ConnectResponse) {
       const { service, port, pid } = connection
@@ -114,19 +132,36 @@ export default createModel({
         state.connections.push({
           port,
           serviceID: service.id,
+          serviceName: service.name,
           deviceID: service.deviceID,
+          type: service.type,
         })
       }
 
-      const [serv, device] = findService(state.all, service)
+      const [serv, device] = findService(state.all, service.id)
+      if (!device || !serv) {
+        console.error('Cannot find device/serivce', {
+          serv,
+          device,
+          service,
+          port,
+          pid,
+        })
+        return
+      }
+
       device.state = 'connected'
+
       serv.state = 'connected'
       serv.port = port
       serv.pid = pid
       serv.connecting = false
     },
-    disconnected(state: DeviceState, service: IService) {
-      const [serv, device] = findService(state.all, service)
+    disconnected(state: DeviceState, serviceID: string) {
+      removeConnectionByServiceID(state.connections, serviceID)
+
+      const [serv, device] = findService(state.all, serviceID)
+      if (!device || !serv) return
       // If device has only 1 active connection (e.g. the one we are in the
       // process of disconnecting from), clear its connected state as it has
       // no more active services.
@@ -150,6 +185,10 @@ export default createModel({
   }),
 })
 
+function removeConnectionByServiceID(connections: Connection[], id: string) {
+  connections.splice(connections.findIndex(c => c.serviceID === id), 1)
+}
+
 function filterDevices(devices: IDevice[], query: string) {
   const options = {
     extract: (dev: IDevice) => {
@@ -162,19 +201,16 @@ function filterDevices(devices: IDevice[], query: string) {
   return fuzzy.filter(query, devices, options).map(d => d.original)
 }
 
-/**
- * Helper to find a service and its device from the device list.
- */
-function findService(
-  devices: IDevice[],
-  service: IService
-): [IService, IDevice] {
-  const device = devices.find(d => d.id === service.deviceID)
-  if (!device)
-    throw new Error('Cannot find device with ID: ' + service.deviceID)
-
-  const serv = device.services.find(s => s.id === service.id)
-  if (!serv) throw new Error('Cannot find service with ID: ' + service.id)
-
-  return [serv, device]
+function findService(devices: IDevice[], id: string) {
+  return devices.reduce(
+    (all, d) => {
+      const service = d.services.find(s => s.id === id)
+      if (service) {
+        all[0] = service
+        all[1] = d
+      }
+      return all
+    },
+    [null, null] as [IService | null, IDevice | null]
+  )
 }

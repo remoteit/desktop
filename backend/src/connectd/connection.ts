@@ -5,6 +5,13 @@ import { targetPath } from './host'
 
 const d = debug('r3:desktop:connectd:connection')
 
+interface ConnectdMessage {
+  type: string
+  raw: string
+  serviceID: string
+  port: number
+}
+
 export const EVENTS = {
   error: 'service/error',
   uptime: 'service/uptime',
@@ -133,7 +140,27 @@ function processConnectdLogs(connectd: ConnectdProcess) {
   connectd.on('error', error => connectd.emit('error', error))
   connectd.on('close', (code: number) => {
     connectd.emit('closed')
-    if (code !== 0) console.error('⚠️  CLOSE:', code)
+    if (code !== 0) {
+      console.error('⚠️  Closing with error code:', code)
+      // TODO: Show code message:
+      // !!exit [001] : process lifetime expired
+      // !!exit [002] : shutdown packet received
+      // !!exit [003] : termination from windows signal
+      // !!exit [003] : termination from signal (all platforms except windows)
+      // !!exit [004] : Disabled By User Configuration
+      // !!exit [010] : bad user specified  (probably not possible at this time)
+      // !!exit [011] : authentication error (may be multiple because of retry)
+      // !!exit [012] : auto connect failed (Initiator p2p connect failed)
+      // !!exit [013] : Initiate session create failed (initiator p2p connect failed !autoconnect)
+      // !!exit [014] : Connection To remot3.it Service has Timed Out
+      // !!exit [015] : cannot get UID from service (not a initiator side error)
+      // !!exit [016] : Cannot Bind UDP Port (UDP P2P port)
+      // !!exit [017] : Cannot Bind Proxy Port (initiator port)
+      // !!exit [020] : connection to peer closed or timed out
+      // !!exit [021] : connection to peer failed (failed p2p connect)
+      // !!exit [025] : unknown reason (this should not happen)
+      // !!exit [030] : user console exit
+    }
   })
 }
 
@@ -161,11 +188,11 @@ function handleStdOut(connectd: ConnectdProcess) {
       } else if (line.startsWith('!!connected')) {
         type = EVENTS.connected
       } else if (line.includes('exit - process closed')) {
-        type = EVENTS.tunnelOpened
-      } else if (line.includes('connecttunnel')) {
-        type = EVENTS.tunnelClosed
-      } else if (line.includes('closetunnel')) {
         type = EVENTS.disconnected
+      } else if (line.includes('connecttunnel')) {
+        type = EVENTS.tunnelOpened
+      } else if (line.includes('closetunnel')) {
+        type = EVENTS.tunnelClosed
       } else {
         type = EVENTS.unknown
       }
@@ -181,7 +208,7 @@ function handleStdOut(connectd: ConnectdProcess) {
         // localIP = localIP
         // connectd.emit(EVENTS.updated, {}) //this.toJSON())
       } else {
-        const message = {
+        const message: ConnectdMessage = {
           type,
           raw: line,
           serviceID: connectd.service.id,

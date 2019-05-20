@@ -1,23 +1,16 @@
 import { connect } from 'react-redux'
-import { IService } from 'remote.it'
 import { ConnectButton } from '../../components/ConnectButton'
-import { ApplicationState } from '../../store'
+import { IService } from 'remote.it'
 
-export type ConnectButtonControllerProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
-const mapState = (
-  state: ApplicationState,
-  { service }: { service: IService }
-) => ({
-  service,
-})
+export type ConnectButtonControllerProps = {
+  service: IService
+} & ReturnType<typeof mapDispatch>
 
 const mapDispatch = (dispatch: any) => ({
   connect: dispatch.devices.connect,
 })
 
 export const ConnectButtonController = connect(
-  mapState,
+  null,
   mapDispatch
 )(ConnectButton)

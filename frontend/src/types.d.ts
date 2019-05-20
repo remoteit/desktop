@@ -1,6 +1,14 @@
 import { DeviceState, ServiceState } from 'remote.it'
 
 declare global {
+  export interface Connection {
+    deviceID: string
+    serviceID: string
+    serviceName: string
+    type: string
+    port: number
+  }
+
   export type ConnectionState = DeviceState | ServiceState | 'connecting'
   // | 'active'
   // | 'inactive'
