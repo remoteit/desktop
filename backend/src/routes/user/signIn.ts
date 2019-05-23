@@ -3,6 +3,7 @@ import { IUser } from 'remote.it'
 import { refreshAccessKey, r3 } from '../../services/remote.it'
 import { set } from '../../services/storage'
 import { AUTH_HASH_COOKIE, USERNAME_COOKIE } from '../../constants'
+import * as userFile from '../../connectd/UserCredentialsFile'
 
 const d = debug('r3:desktop:backend:routes:user:signIn')
 
@@ -27,6 +28,7 @@ export function signIn() {
 
     // Store signIn cookies so the user can signIn again without entering
     // their credentials
+    // TODO: Do we need this now that we store user in credentials file?
     await Promise.all([
       set(AUTH_HASH_COOKIE, user.authHash),
       set(USERNAME_COOKIE, user.username),
@@ -36,6 +38,13 @@ export function signIn() {
     // TODO: make this into a helper of some kind
     r3.authHash = user.authHash
     r3.token = user.token
+
+    // Store this user in our user credentials file
+    userFile.write({
+      authHash: user.authHash,
+      username: user.username,
+      language: user.language,
+    })
 
     callback(user)
   }

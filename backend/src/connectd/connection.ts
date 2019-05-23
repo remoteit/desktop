@@ -28,26 +28,23 @@ export const EVENTS = {
 }
 
 export interface ConnectProps {
-  port: number
-  service: IService
-  user: { authHash: string; username: string }
+  connection: Connection
+  user: User
 }
 
 export async function connect({
-  port,
-  service,
+  connection,
   user,
 }: ConnectProps): Promise<ConnectdProcess> {
   d('Connecting to connectd process: %O', {
-    port,
-    serviceID: service.id,
+    connection,
     username: user.username,
   })
 
   // Start the connectd process and handle any errors that occur
   // on initialization.
   const connectd = startConnectd(
-    { port, service, user },
+    { connection, user },
     (error: Error | null, stdout: string | Buffer, stderr: string | Buffer) => {
       if (error) {
         connectd.emit(EVENTS.error, { error: error.message })
@@ -61,8 +58,11 @@ export async function connect({
 
   // Add meta data about the connectd process so it can
   // be retrieved later.
-  connectd.service = service
-  connectd.port = port
+  // connectd.serviceID = serviceID
+  // connectd.serviceName = name
+  // connectd.deviceID = deviceID
+  // connectd.type = type
+  // connectd.port = port
 
   // Handle connectd messages and pass them along to any
   // consumer.
@@ -82,18 +82,17 @@ export async function connect({
 // }
 
 function startConnectd(
-  { port, service, user }: ConnectProps,
+  { connection, user }: ConnectProps,
   callback: (
     error: Error | null,
     stdout: string | Buffer,
     stderr: string | Buffer
   ) => void
-) {
+): ConnectdProcess {
   const usernameBase64 = Buffer.from(user.username).toString('base64')
 
   d('Creating connection:', {
-    port,
-    serviceID: service.id,
+    connection,
     username: user.username,
   })
 
@@ -104,8 +103,8 @@ function startConnectd(
       '-p',
       usernameBase64,
       user.authHash,
-      service.id.trim(), // Service ID
-      `T${port}`, // Bind port
+      connection.serviceID.trim(), // Service ID
+      `T${connection.port}`, // Bind port
       '1', // Encryption
       '127.0.0.1', // Bind address
       '0.0.0.0', // Restricted connection IP
@@ -122,7 +121,7 @@ function startConnectd(
     throw new Error('connectd process could not be called')
   }
 
-  return connectd
+  return Object.assign(connectd, connection)
 }
 
 function processConnectdLogs(connectd: ConnectdProcess) {
@@ -211,7 +210,7 @@ function handleStdOut(connectd: ConnectdProcess) {
         const message: ConnectdMessage = {
           type,
           raw: line,
-          serviceID: connectd.service.id,
+          serviceID: connectd.serviceID,
           port: connectd.port,
         } // service.id }
         d('Received message from connectd: %O', message)

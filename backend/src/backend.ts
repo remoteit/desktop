@@ -2,11 +2,11 @@ import electron from 'electron'
 import debug from 'debug'
 import path from 'path'
 import url from 'url'
-import socketIO from 'socket.io'
 import { server } from './server'
 import { installConnectdIfMissing } from './connectd/install'
 import * as track from './utils/analytics'
 import './utils/errorReporting'
+import * as pool from './connectd/pool'
 
 const d = debug('r3:backend:backend')
 
@@ -21,38 +21,59 @@ const BrowserWindow = electron.BrowserWindow
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: electron.BrowserWindow | null
 
-// Start the Socket.io server that the frontend React application
-// listens to.
-server().then((io: socketIO.Server) =>
-  installConnectdIfMissing().catch(error =>
+startSocketIOServer()
+
+app.on('ready', handleAppReady)
+app.on('window-all-closed', handleWindowsClosed)
+app.on('activate', handleActivate)
+
+/**
+ * Start the Socket.io server that the frontend React application
+ * listens to.
+ */
+async function startSocketIOServer() {
+  const io = await server()
+
+  // Try and install connectd if it doesn't exist on the current system.
+  // If it fails, let the user know by reporting an erro
+  // via Socket.io
+  try {
+    await installConnectdIfMissing()
+  } catch (error) {
     io.emit('connectd/install/error', {
       error: { ...error, message: error.message },
     })
-  )
-)
+  }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', () => {
+  pool.loadFromSavedConnectionsFile()
+}
+
+/**
+ * This method will be called when Electron has finished
+ * initialization and is ready to create browser windows.
+ * Some APIs can only be used after this event occurs.
+ */
+function handleAppReady() {
   createMainWindow()
   createTrayIcon()
-})
+}
 
-// Quit when all windows are closed.
-app.on('window-all-closed', function() {
+/**
+ * Quit when all windows are closed.
+ */
+function handleWindowsClosed() {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
     app.quit()
   }
-})
+}
 
-app.on('activate', function() {
+function handleActivate() {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createMainWindow()
-})
+}
 
 function createMainWindow() {
   d('Showing main window')
@@ -100,4 +121,4 @@ function createTrayIcon() {
   })
 }
 
-export {}
+// export {}

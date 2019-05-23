@@ -3,38 +3,82 @@ import { IService } from 'remote.it'
 import { connect } from './connection'
 import { execFile } from 'child_process'
 import * as platform from '../services/platform'
+import * as file from './SavedConnectionsFile'
+import * as userFile from './UserCredentialsFile'
 
 const d = debug('r3:backend:connectd:pool')
 
 export const pool: ConnectdProcess[] = []
 
 interface RegisterProps {
-  port: number
-  service: IService
-  user: { authHash: string; username: string }
+  connection: Connection
+  user: User
 }
 
 /**
  * Start a new connection and put it in the connection pool.
  */
-export async function register({ port, service, user }: RegisterProps) {
-  const meta = { serviceID: service.id, port }
-  d('Registering connection: %O', meta)
+export async function register({ connection, user }: RegisterProps) {
+  d('Registering connection: %O', connection)
+
+  // Update our saved copy of the user's credentials
+  userFile.write({
+    username: user.username,
+    authHash: user.authHash,
+    language: user.language,
+  })
 
   // If a connection with this signature already exists,
   // return that instead of creating a new connection.
-  const dupe = findDuplicateConnection(service.id, port)
+  const dupe = findDuplicateConnection(connection.serviceID, connection.port)
   if (dupe) {
-    d('Found duplicate connection to service: %O', meta)
+    d('Found duplicate connection to service: %O', connection)
     return dupe
   }
 
-  const connection = await connect({ port, service, user })
-  pool.push(connection)
+  const connectd = await addConectionToPool(connection)
 
-  d('Connections: %O', meta)
+  updateConnectionsFile()
 
-  return connection
+  d('Connections: %O', connection)
+
+  return connectd
+}
+
+async function addConectionToPool(connection: Connection) {
+  const user = userFile.read()
+  if (!user) return
+
+  const connectd = await connect({ connection, user })
+  pool.push(connectd)
+
+  return connectd
+}
+
+export async function loadFromSavedConnectionsFile() {
+  const connections = file.read()
+  if (!connections) return
+
+  d('Loading saved connections: %0', connections)
+
+  return Promise.all(
+    connections.map(connection => addConectionToPool(connection))
+  )
+}
+
+export function updateConnectionsFile() {
+  d('Updating connections file')
+  file.write(connectionsFromPool())
+}
+
+export function connectionsFromPool(): Connection[] {
+  return pool.map(c => ({
+    port: c.port,
+    serviceID: c.serviceID,
+    serviceName: c.serviceName,
+    type: c.type,
+    deviceID: c.deviceID,
+  }))
 }
 
 /**
@@ -68,11 +112,14 @@ export function disconnect(conn?: ConnectdProcess) {
   // Remove item from list of connections
   const index = pool.indexOf(conn)
   if (index > -1) pool.splice(index, 1)
+
+  updateConnectionsFile()
+
   return true
 }
 
 export function findByServiceID(id: string) {
-  return pool.find(c => c.service.id === id)
+  return pool.find(c => c.serviceID === id)
 }
 
 export function findByProxyPort(port: number) {

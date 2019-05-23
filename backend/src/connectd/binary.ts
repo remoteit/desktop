@@ -33,5 +33,6 @@ export function version() {
       }
     }
   }
+
   return null
 }
