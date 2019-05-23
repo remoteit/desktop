@@ -40,7 +40,9 @@ export function DeviceList({
       } else {
         return (
           <div className="px-md py-sm center gray italic">
-            Please search for a device or service above.
+            Unable to display your list because the number of devices in your
+            account is too large. Please search for a device or service above
+            instead.
           </div>
         )
       }
