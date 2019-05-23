@@ -67,7 +67,10 @@ export function DevicesPage({
         )}
       </PageHeading>
       <div className="mb-md">
-        <SearchField search={searchOnly ? remoteSearch : localSearch} />
+        <SearchField
+          search={searchOnly ? remoteSearch : localSearch}
+          searching={fetching}
+        />
       </div>
       <Paper className="mb-xl">
         {/*Connections: {connections.length}*/}
