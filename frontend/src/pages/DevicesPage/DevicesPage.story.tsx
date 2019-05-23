@@ -1,6 +1,6 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import { withKnobs, boolean } from '@storybook/addon-knobs'
+import { withKnobs, boolean, text } from '@storybook/addon-knobs'
 import { DevicesPage } from './DevicesPage'
 import { device, service, user } from '../../helpers/mockData'
 import { action } from '@storybook/addon-actions'
@@ -42,6 +42,7 @@ storiesOf('components/devices', module)
         localSearch={action('localSearch')}
         remoteSearch={action('remoteSearch')}
         user={user()}
+        query={text('query', '')}
       />
     </Provider>
   ))

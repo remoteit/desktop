@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { DeviceList } from '../../components/DeviceList'
-import { IDevice, DeviceState, IService } from 'remote.it'
 import { StateTabs } from '../../components/StateTabs'
 import { Props } from '../../controllers/DevicePageController/DevicePageController'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
@@ -10,7 +9,7 @@ import { PageHeading } from '../../components/PageHeading'
 import { IconButton, Paper, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
-import { ConnectedServiceItem } from '../../components/ConnectedServiceItem'
+import { ConnectionsList } from '../../components/ConnectionsList'
 
 export function DevicesPage({
   allDevices,
@@ -22,8 +21,9 @@ export function DevicesPage({
   searchOnly,
   localSearch,
   remoteSearch,
+  query,
 }: Props) {
-  const [tab, setTab] = useState<DeviceState>('active')
+  const [tab, setTab] = useState<Tab>('devices')
 
   useEffect(() => {
     // Get any actively running connections
@@ -48,8 +48,6 @@ export function DevicesPage({
     }
   }
 
-  const sortedDevices = sortDevices(tab, visibleDevices)
-
   return (
     <Page>
       <PageHeading>
@@ -73,46 +71,18 @@ export function DevicesPage({
         />
       </div>
       <Paper className="mb-xl">
-        {/*Connections: {connections.length}*/}
-        <StateTabs
-          state={tab}
-          handleChange={(state: DeviceState) => setTab(state)}
-        />
-        {tab === 'connected' ? (
-          <>
-            {connections.map(c => (
-              <ConnectedServiceItem
-                key={c.serviceID}
-                name={c.serviceName}
-                port={c.port}
-                type={c.type}
-                serviceID={c.serviceID}
-              />
-            ))}
-          </>
+        <StateTabs state={tab} handleChange={(state: Tab) => setTab(state)} />
+        {tab === 'connections' ? (
+          <ConnectionsList connections={connections} />
         ) : (
-          <DeviceList devices={sortedDevices} />
+          <DeviceList
+            devices={visibleDevices}
+            query={query}
+            searching={fetching}
+            searchOnly={searchOnly}
+          />
         )}
       </Paper>
     </Page>
-  )
-}
-
-function sortDevices(tab: DeviceState, devices: IDevice[]) {
-  let visibleDevices
-  if (tab === 'connected') {
-    visibleDevices = devices.filter(
-      d => d.services.filter(s => s.state === 'connected').length
-    )
-  } else if (tab === 'active') {
-    visibleDevices = devices.filter(
-      d => d.state === 'active' || d.state === 'connected'
-    )
-  } else {
-    visibleDevices = devices.filter(d => d.state === 'inactive')
-  }
-
-  return visibleDevices.sort((a, b) =>
-    a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   )
 }

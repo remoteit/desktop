@@ -56,13 +56,18 @@ export default createModel({
           .finally(fetchFinished)
       )
     },
+    async localSearch(query: string) {
+      dispatch.devices.setQuery(query)
+    },
     async remoteSearch(query: string) {
       const {
         getConnections,
         fetchStarted,
         fetchFinished,
         setDevices,
+        setQuery,
       } = dispatch.devices
+      setQuery(query)
       setDevices([])
       fetchStarted()
       return (
@@ -99,7 +104,7 @@ export default createModel({
     },
   }),
   reducers: {
-    localSearch(state: DeviceState, query: string) {
+    setQuery(state: DeviceState, query: string) {
       state.query = query
     },
     setSearchOnly(state: DeviceState, searchOnly: boolean) {

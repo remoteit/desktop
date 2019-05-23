@@ -1,24 +1,22 @@
 import React from 'react'
 import { Tabs, Tab } from '@material-ui/core'
-import { DeviceState } from 'remote.it'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 
 export interface StateTabsProps {
-  handleChange: (state: DeviceState) => void
-  state: DeviceState
+  handleChange: (state: Tab) => void
+  state: Tab
 }
 
-export function StateTabs({ handleChange, state = 'active' }: StateTabsProps) {
-  const tabs = ['connected', 'active', 'inactive']
+export function StateTabs({ handleChange, state = 'devices' }: StateTabsProps) {
+  const tabs = ['connections', 'devices']
   const labels: any = {
-    connected: 'Connected',
-    active: 'Online',
-    inactive: 'Offline',
+    connections: 'Connections',
+    devices: 'Devices',
   }
   return (
     <Tabs
       value={tabs.indexOf(state)}
-      onChange={(e, v) => handleChange(tabs[v] as DeviceState)}
+      onChange={(e, v) => handleChange(tabs[v] as Tab)}
       variant="fullWidth"
       indicatorColor="primary"
       textColor="primary"
@@ -30,7 +28,7 @@ export function StateTabs({ handleChange, state = 'active' }: StateTabsProps) {
             <span className="df ai-center jc-center">
               <ConnectionStateIcon
                 key={tab}
-                state={tab as DeviceState}
+                state={tab === 'connections' ? 'connected' : 'active'}
                 fixedWidth
                 size="lg"
                 className="mr-sm"

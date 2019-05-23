@@ -1,6 +1,6 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import { withKnobs } from '@storybook/addon-knobs'
+import { withKnobs, text, boolean } from '@storybook/addon-knobs'
 import { DeviceList } from './DeviceList'
 import { device } from '../../helpers/mockData'
 import { Provider } from 'react-redux'
@@ -16,6 +16,11 @@ storiesOf('components/devices', module)
   .addDecorator(withKnobs)
   .add('DeviceList', () => (
     <Provider store={store}>
-      <DeviceList devices={devices} />
+      <DeviceList
+        devices={devices}
+        query={text('query', '')}
+        searchOnly={boolean('searchOnly', false)}
+        searching={boolean('searching', false)}
+      />
     </Provider>
   ))

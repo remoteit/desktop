@@ -27,6 +27,7 @@ const mapState = (state: ApplicationState, props: any) => ({
   // })),
   ...visibleDevices(state, {}),
   fetching: state.devices.fetching,
+  query: state.devices.query,
   searchOnly: state.devices.searchOnly,
   user: state.auth.user,
 })
