@@ -7,7 +7,10 @@ const d = debug('r3:desktop:frontend:services:service')
 export interface ConnectResponse {
   port: number
   pid: number
-  service: IService
+  serviceID: string
+  deviceID: string
+  serviceName: string
+  type: string
 }
 
 /**

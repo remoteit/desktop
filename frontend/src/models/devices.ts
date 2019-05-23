@@ -35,7 +35,7 @@ export default createModel({
     async shouldSearchDevices() {
       const { setSearchOnly } = dispatch.devices
       return Device.count().then(count =>
-        setSearchOnly(count.total > SEARCH_ONLY_SERVICE_LIMIT)
+        setSearchOnly(count.services > SEARCH_ONLY_SERVICE_LIMIT)
       )
     },
     async fetch() {
@@ -63,6 +63,7 @@ export default createModel({
         fetchFinished,
         setDevices,
       } = dispatch.devices
+      setDevices([])
       fetchStarted()
       return (
         Device.search(query)
@@ -122,30 +123,20 @@ export default createModel({
       serv.connecting = true
     },
     connected(state: DeviceState, connection: Service.ConnectResponse) {
-      const { service, port, pid } = connection
-
       // Add to connection list
       const existingConnections = state.connections.filter(
-        c => c.serviceID === service.id
+        c => c.serviceID === connection.serviceID
       ).length
       if (!existingConnections) {
-        state.connections.push({
-          port,
-          serviceID: service.id,
-          serviceName: service.name,
-          deviceID: service.deviceID,
-          type: service.type,
-        })
+        state.connections.push(connection)
       }
 
-      const [serv, device] = findService(state.all, service.id)
+      const [serv, device] = findService(state.all, connection.serviceID)
       if (!device || !serv) {
         console.error('Cannot find device/serivce', {
           serv,
           device,
-          service,
-          port,
-          pid,
+          connection,
         })
         return
       }
@@ -153,8 +144,8 @@ export default createModel({
       device.state = 'connected'
 
       serv.state = 'connected'
-      serv.port = port
-      serv.pid = pid
+      serv.port = connection.port
+      serv.pid = connection.pid
       serv.connecting = false
     },
     disconnected(state: DeviceState, serviceID: string) {
