@@ -112,7 +112,9 @@ function startConnectd(
       '0', // Lifetime
       '0', // Grace period
     ],
-    {},
+    {
+      maxBuffer: Infinity,
+    },
     callback
   ) as ConnectdProcess
 
