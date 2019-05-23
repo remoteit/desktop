@@ -16,6 +16,8 @@ declare global {
   // | 'connected'
   // | 'restricted'
 
+  export type Tab = 'connections' | 'devices'
+
   export type Page = 'devices' | 'debug' | 'settings'
 
   export type Route = { [key in Page]: React.ReactNode }
