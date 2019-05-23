@@ -34,7 +34,7 @@ export function recordConnectdEvents() {
     socket.on(event, (data: ConnectLogMessage) =>
       addLog({
         type: data.error ? 'alert' : 'connectd',
-        message: data.error ? data.error.message : data.raw,
+        message: data.error ? data.error : data.raw,
         data,
         createdAt: new Date(),
       } as Log)
