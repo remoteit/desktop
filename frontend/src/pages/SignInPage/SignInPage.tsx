@@ -13,11 +13,11 @@ export function SignInPage() {
             <Logo />
           </div>
           <SignInFormController />
-          <div className="mt-lg center">
+          {/*<div className="mt-lg center">
             <Link href="https://app.remote.it/auth/#/sign-up" target="blank">
               Create an account
             </Link>
-          </div>
+          </div>*/}
         </div>
       </div>
     </Page>
