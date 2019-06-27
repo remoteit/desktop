@@ -1,7 +1,7 @@
-import { targetPath } from './host'
 import chokidar from 'chokidar'
 import debug from 'debug'
 import { EventEmitter } from 'events'
+import { REMOTEIT_BINARY_PATH } from '../constants'
 
 const d = debug('r3:connectd:watch')
 
@@ -25,7 +25,7 @@ export function watch() {
   const emitter = new EventEmitter()
 
   chokidar
-    .watch(targetPath)
+    .watch(REMOTEIT_BINARY_PATH)
     .on('ready', () => {
       d('Initial scan complete. Ready for changes')
       emitter.emit('ready')

@@ -3,6 +3,7 @@ import path from 'path'
 import os from 'os'
 import * as user from './UserCredentialsFile'
 import * as Platform from '../services/Platform'
+import { PATH_DIR } from '../constants'
 
 describe('connectd/UserCredentialsFile', () => {
   /**
@@ -20,7 +21,7 @@ describe('connectd/UserCredentialsFile', () => {
 
   describe('.directory', () => {
     test('should be correct', async () => {
-      expect(user.directory).toBe(Platform.pathDir)
+      expect(user.directory).toBe(PATH_DIR)
     })
   })
 
@@ -38,7 +39,7 @@ describe('connectd/UserCredentialsFile', () => {
 
   describe('.location', () => {
     test('should be located in user home directory .remoteit folder', async () => {
-      expect(user.location).toBe(path.join(Platform.pathDir, 'user.json'))
+      expect(user.location).toBe(path.join(PATH_DIR, 'user.json'))
     })
   })
 

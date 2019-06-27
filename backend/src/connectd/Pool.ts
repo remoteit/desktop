@@ -121,6 +121,7 @@ export function disconnectByServiceID(serviceID: string) {
 export function disconnectAll() {
   d('Disconnecting all services')
   pool.map(conn => disconnect(conn))
+  updateConnectionsFile()
 }
 
 export function disconnect(conn?: ConnectdProcess) {

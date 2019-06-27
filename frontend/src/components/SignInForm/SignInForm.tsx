@@ -96,7 +96,7 @@ export function SignInForm({ signIn }: SignInFormControllerProps) {
         disabled={loading}
         type="submit"
       >
-        {loading ? 'Signing In...' : 'Sign In'}
+        {loading ? 'Signing you in...' : 'Sign in'}
       </Button>
     </form>
   )

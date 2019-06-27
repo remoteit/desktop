@@ -1,7 +1,6 @@
 import debug from 'debug'
-// import { IService } from 'remote.it'
 import { execFile } from 'child_process'
-import { targetPath } from './host'
+import { REMOTEIT_BINARY_PATH } from '../constants'
 
 const d = debug('r3:desktop:connectd:connection')
 
@@ -79,7 +78,7 @@ function startConnectd(
   })
 
   const connectd = execFile(
-    targetPath,
+    REMOTEIT_BINARY_PATH,
     [
       '-s',
       '-p',

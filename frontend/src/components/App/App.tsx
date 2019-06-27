@@ -53,7 +53,7 @@ export function App({
         <BottomNavigationAction
           label="Devices"
           value="devices"
-          icon={<Icon name="robot" size="lg" className="pb-xs" />}
+          icon={<Icon name="chart-network" size="lg" className="pb-xs" />}
         />
         <BottomNavigationAction
           label="Settings"

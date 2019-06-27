@@ -1,7 +1,32 @@
+import path from 'path'
+import os from 'os'
+import * as Platform from './services/Platform'
+
 export const ENVIRONMENT = process.env.NODE_ENV || 'development'
 
 export const LATEST_CONNECTD_RELEASE =
   process.env.LATEST_CONNECTD_RELEASE || 'v4.5'
+
+// Paths
+export const REMOTEIT_ROOT_DIR = Platform.isWindows
+  ? '/remoteit'
+  : path.join(os.homedir(), '.remoteit')
+export const REMOTEIT_BINARY_DIR = Platform.isWindows
+  ? '/remoteit/bin/'
+  : '/usr/local/bin/'
+export const REMOTEIT_BINARY_PATH = path.join(
+  REMOTEIT_BINARY_DIR,
+  Platform.isWindows ? 'connectd.exe' : 'connectd'
+)
+export const PATH_DIR = Platform.isWindows
+  ? '/remoteit/bin/'
+  : '/usr/local/bin/'
+/**
+ * NOTE: On Mac, os.tmpdir() returns a generated temp path but we want
+ * users to check a standard location (eg "/tmp").
+ */
+export const TEMP_DIR = path.join(REMOTEIT_ROOT_DIR, 'tmp')
+export const LOG_DIR = path.join(REMOTEIT_ROOT_DIR, 'logs')
 
 // Port for the Socket.io websocket server
 export const PORT = process.env.PORT || 29999

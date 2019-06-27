@@ -1,6 +1,6 @@
 import path from 'path'
 import * as winston from 'winston'
-import { logDir } from '../services/Platform'
+import { LOG_DIR } from '../constants'
 
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
 const MAX_LOG_FILES = 5
@@ -13,14 +13,14 @@ const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.File({
-      filename: path.join(logDir, 'remoteit.error.log'),
+      filename: path.join(LOG_DIR, 'remoteit.error.log'),
       level: 'error',
       maxsize: MAX_LOG_SIZE_BYTES, // in bytes
       maxFiles: MAX_LOG_FILES,
       tailable: true,
     }),
     new winston.transports.File({
-      filename: path.join(logDir, 'remoteit.combined.log'),
+      filename: path.join(LOG_DIR, 'remoteit.combined.log'),
       maxsize: MAX_LOG_SIZE_BYTES, // in bytes
       maxFiles: MAX_LOG_FILES,
       tailable: true,

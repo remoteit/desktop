@@ -1,11 +1,11 @@
 import fs from 'fs'
 import path from 'path'
-import { homeDir, remoteitDir } from '../services/Platform'
 import logger from '../utils/logger'
+import { REMOTEIT_ROOT_DIR } from '../constants'
 
 export const fileName = 'connections.json'
 
-export const location = path.join(remoteitDir, fileName)
+export const location = path.join(REMOTEIT_ROOT_DIR, fileName)
 
 /**
  * Checks to see if the connections file exists on the
@@ -61,7 +61,7 @@ export function remove() {
  * of initial connections.
  */
 export function write(content: ConnectionInfo[] = []): ConnectionInfo[] {
-  fs.mkdirSync(remoteitDir, { recursive: true })
+  fs.mkdirSync(REMOTEIT_ROOT_DIR, { recursive: true })
   fs.writeFileSync(location, JSON.stringify(content, null, 2))
   return content
 }

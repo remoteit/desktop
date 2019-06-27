@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-import { homeDir, remoteitDir } from '../services/Platform'
 import logger from '../utils/logger'
+import { REMOTEIT_ROOT_DIR } from '../constants'
 
-export const directory = remoteitDir
+export const directory = REMOTEIT_ROOT_DIR
 export const location = path.join(directory, 'user.json')
 
 /**

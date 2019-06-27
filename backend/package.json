@@ -57,10 +57,22 @@
     "universal-analytics": "0.4.20",
     "winston": "3.2.1"
   },
+  "homepage": "https://github.com/remoteit/desktop",
+  "repository": {
+    "url": "git+ssh://git@github.com/remoteit/desktop.git",
+    "type": "git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "remote.it",
+    "email": "support@remote.it"
+  },
   "build": {
     "appId": "it.remote.desktop",
     "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
+    "productName": "remote.it",
+    "artifactName": "${productName}-${version}.${ext}",
     "win": {
       "target": "NSIS"
     },
@@ -75,7 +87,6 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist"
     },
-    "productName": "remote.it",
     "files": [
       "build/**/*",
       "node_modules/**/*",

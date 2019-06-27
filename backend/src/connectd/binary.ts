@@ -1,12 +1,12 @@
 import { execFileSync } from 'child_process'
 import { existsSync } from 'fs'
-import { targetPath } from './host'
+import { REMOTEIT_BINARY_PATH } from '../constants'
 
 /**
  * Whether or not the connectd binary exists on this system.
  */
 export function exists() {
-  return existsSync(targetPath)
+  return existsSync(REMOTEIT_BINARY_PATH)
 }
 
 /**
@@ -18,7 +18,7 @@ export function version() {
   if (!exists()) return null
 
   try {
-    execFileSync(targetPath)
+    execFileSync(REMOTEIT_BINARY_PATH)
   } catch (error) {
     const out = error.stdout
     if (!out) return null

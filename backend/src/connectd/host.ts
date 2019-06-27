@@ -1,6 +1,6 @@
 import os from 'os'
-import path from 'path'
-import { isWindows, isMac, pathDir } from '../services/Platform'
+import * as Platform from '../services/Platform'
+import { REMOTEIT_BINARY_PATH } from '../constants'
 
 const arch = os.arch()
 
@@ -13,41 +13,31 @@ const arch = os.arch()
  * - Arch: 'arm' 'arm64' 'ia32' 'mips' 'mipsel' 'ppc' 'ppc64' 's390' 's390x' 'x32' 'x64'.
  * - Platform: 'aix' 'darwin' 'freebsd' 'linux' 'openbsd' 'sunos' 'win32'
  */
-export const binaryName = isWindows
+export const binaryName = Platform.isWindows
   ? 'connectd.exe'
   : arch === 'x64'
   ? 'connectd.x86_64-osx'
   : 'connectd.x86-osx'
 
 /**
- * Returns the absolute path to the connectd binary on
- * this system.
- */
-export const targetPath = path.join(
-  pathDir,
-  isWindows ? 'connectd.exe' : 'connectd'
-)
-
-/**
  * Returns a temporary path on the given platform where
  * the connectd binary can be downloaded before moving to its
  * final location in the user's "PATH".
  */
-export const tempDownloadPath = targetPath
-// export const tempDownloadPath = path.join(tmpDir, binaryName)
+export const tempDownloadPath = REMOTEIT_BINARY_PATH
 
 // TODO: make cross platform
 export function moveAndUpdatePermissionsCommand() {
-  if (isMac) {
-    // const copyCmd = `cp ${tempDownloadPath} ${targetPath}`
-    // const permissionCmd = `chmod 755 ${targetPath}`
+  if (Platform.isMac) {
+    // const copyCmd = `cp ${tempDownloadPath} ${REMOTEIT_BINARY_PATH}`
+    // const permissionCmd = `chmod 755 ${REMOTEIT_BINARY_PATH}`
     // return `${copyCmd} && ${permissionCmd}`
-    return `chmod 755 ${targetPath}`
+    return `chmod 755 ${REMOTEIT_BINARY_PATH}`
   }
 
-  if (isWindows) {
-    const copyCmd = `copy ${tempDownloadPath} ${targetPath}`
-    // const permissionCmd = `attrib 755 ${targetPath}`
+  if (Platform.isWindows) {
+    const copyCmd = `copy ${tempDownloadPath} ${REMOTEIT_BINARY_PATH}`
+    // const permissionCmd = `attrib 755 ${REMOTEIT_BINARY_PATH}`
     return copyCmd //`${copyCmd} && ${permissionCmd}`
   }
 

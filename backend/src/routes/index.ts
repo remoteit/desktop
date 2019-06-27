@@ -6,9 +6,10 @@ import { install } from './connectd/install'
 import { start } from './connections/start'
 import { r3 } from '../services/remote.it'
 import { exists, version } from '../connectd/binary'
-import { targetPath } from '../connectd/host'
 import * as storage from '../services/storage'
 import * as Pool from '../connectd/Pool'
+import { REMOTEIT_BINARY_PATH } from '../constants'
+import * as UserCredentialsFile from '../connectd/UserCredentialsFile'
 
 const d = debug('r3:desktop:backend:routes')
 
@@ -34,10 +35,14 @@ const signOut = () => async ({}, callback: () => void) => {
   d('Signing out user')
 
   // Clear all cookies, localstorage, etc
+  storage.flush()
   storage.clear()
 
   // Disconnect all services
   Pool.disconnectAll()
+
+  // Clear saved user
+  UserCredentialsFile.remove()
 
   // Clear data from remote.it.js
   r3.token = undefined
@@ -56,7 +61,7 @@ const list = () => async (
 const info = () => async (callback: (data: any) => void) => {
   const params = {
     exists: exists(),
-    path: targetPath,
+    path: REMOTEIT_BINARY_PATH,
     version: version(),
   }
   // track.event(

@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import * as file from './SavedConnectionsFile'
-import { remoteitDir } from '../services/Platform'
+import { REMOTEIT_ROOT_DIR } from '../constants'
 
 describe('connectd/SavedConnectionsFile', () => {
   /**
@@ -39,7 +39,7 @@ describe('connectd/SavedConnectionsFile', () => {
   describe('.location', () => {
     test('should be located in user home directory .remoteit folder', async () => {
       expect(file.location).toBe(
-        path.join(os.homedir(), remoteitDir, file.fileName)
+        path.join(os.homedir(), REMOTEIT_ROOT_DIR, file.fileName)
       )
     })
   })
