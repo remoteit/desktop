@@ -1,16 +1,30 @@
+import path from 'path'
 import * as winston from 'winston'
+import { logDir } from '../services/Platform'
+
+const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
+const MAX_LOG_FILES = 5
 
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.json(),
-  // defaultMeta: {service: 'user-service'},
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
   transports: [
-    //
-    // - Write to all logs with level `info` and below to `combined.log`
-    // - Write all logs error (and below) to `error.log`.
-    //
-    // new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    // new winston.transports.File({ filename: 'combined.log' })
+    new winston.transports.File({
+      filename: path.join(logDir, 'remoteit.error.log'),
+      level: 'error',
+      maxsize: MAX_LOG_SIZE_BYTES, // in bytes
+      maxFiles: MAX_LOG_FILES,
+      tailable: true,
+    }),
+    new winston.transports.File({
+      filename: path.join(logDir, 'remoteit.combined.log'),
+      maxsize: MAX_LOG_SIZE_BYTES, // in bytes
+      maxFiles: MAX_LOG_FILES,
+      tailable: true,
+    }),
   ],
 })
 
@@ -25,3 +39,5 @@ if (process.env.NODE_ENV !== 'production') {
     })
   )
 }
+
+export default logger

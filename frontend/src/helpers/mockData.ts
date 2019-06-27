@@ -71,6 +71,28 @@ export function user({ email = 'fake@example.com' } = {}): IUser {
   }
 }
 
+export function log(message = 'Some log messate'): Log {
+  return {
+    type: 'alert',
+    message,
+    data: { foo: 'bar' },
+  }
+}
+
+export function connection(
+  serviceName = 'Some service name',
+  port = 33001
+): ConnectionInfo {
+  return {
+    // deviceID: string
+    serviceID: 'some-service-id',
+    serviceName,
+    type: 'SSH',
+    port,
+    // pid?: number
+  }
+}
+
 function randomNumber(start = 1, end = 1000) {
   return Math.floor(Math.random() * end) + start
 }

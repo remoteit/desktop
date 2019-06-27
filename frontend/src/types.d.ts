@@ -1,15 +1,20 @@
 import { DeviceState, ServiceState } from 'remote.it'
 
 declare global {
-  export interface Connection {
-    deviceID: string
+  export interface ConnectionInfo {
+    deviceID?: string
     serviceID: string
     serviceName: string
     type: string
-    port: number
+    port?: number
+    pid?: number
   }
 
-  export type ConnectionState = DeviceState | ServiceState | 'connecting'
+  export type ConnectionState =
+    | DeviceState
+    | ServiceState
+    | 'connecting'
+    | 'disconnected'
   // | 'active'
   // | 'inactive'
   // | 'connecting'
@@ -18,7 +23,7 @@ declare global {
 
   export type Tab = 'connections' | 'devices'
 
-  export type Page = 'devices' | 'debug' | 'settings'
+  export type Page = 'connections' | 'devices' | 'settings'
 
   export type Route = { [key in Page]: React.ReactNode }
 

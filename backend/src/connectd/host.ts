@@ -1,4 +1,8 @@
 import os from 'os'
+import path from 'path'
+import { isWindows, isMac, pathDir } from '../services/Platform'
+
+const arch = os.arch()
 
 /**
  * Return the binary name of connectd based on the current
@@ -9,44 +13,43 @@ import os from 'os'
  * - Arch: 'arm' 'arm64' 'ia32' 'mips' 'mipsel' 'ppc' 'ppc64' 's390' 's390x' 'x32' 'x64'.
  * - Platform: 'aix' 'darwin' 'freebsd' 'linux' 'openbsd' 'sunos' 'win32'
  */
-export function binaryName() {
-  const platform = os.platform()
-  const arch = os.arch()
-
-  if (platform === 'win32') return 'connectd.exe'
-
-  if (platform === 'darwin') {
-    return arch === 'x64' ? 'connectd.x86_64-osx' : 'connectd.x86-osx'
-  }
-
-  // TODO: Handle Linux....
-  throw new Error('Platform not supported yet!')
-}
+export const binaryName = isWindows
+  ? 'connectd.exe'
+  : arch === 'x64'
+  ? 'connectd.x86_64-osx'
+  : 'connectd.x86-osx'
 
 /**
  * Returns the absolute path to the connectd binary on
  * this system.
  */
-export function targetPath(): string {
-  // TODO: make cross platform
-  return '/usr/local/bin/connectd'
-}
+export const targetPath = path.join(
+  pathDir,
+  isWindows ? 'connectd.exe' : 'connectd'
+)
 
 /**
  * Returns a temporary path on the given platform where
  * the connectd binary can be downloaded before moving to its
  * final location in the user's "PATH".
  */
-export function tempDownloadPath() {
-  // TODO: Make cross platform
-  return `/tmp/${binaryName()}`
-}
+export const tempDownloadPath = targetPath
+// export const tempDownloadPath = path.join(tmpDir, binaryName)
 
+// TODO: make cross platform
 export function moveAndUpdatePermissionsCommand() {
-  // TODO: make cross platform
-  const target = targetPath()
-  const temp = tempDownloadPath()
-  const copyCmd = `cp ${temp} ${target}`
-  const permissionCmd = `chmod 755 ${target}`
-  return `${copyCmd} && ${permissionCmd}`
+  if (isMac) {
+    // const copyCmd = `cp ${tempDownloadPath} ${targetPath}`
+    // const permissionCmd = `chmod 755 ${targetPath}`
+    // return `${copyCmd} && ${permissionCmd}`
+    return `chmod 755 ${targetPath}`
+  }
+
+  if (isWindows) {
+    const copyCmd = `copy ${tempDownloadPath} ${targetPath}`
+    // const permissionCmd = `attrib 755 ${targetPath}`
+    return copyCmd //`${copyCmd} && ${permissionCmd}`
+  }
+
+  throw new Error('Platform not supported!')
 }

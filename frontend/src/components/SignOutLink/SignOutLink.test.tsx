@@ -4,6 +4,6 @@ import { SignOutLink } from './SignOutLink'
 
 describe('components/SignOutLink', () => {
   test('should not explode', () => {
-    mount(<SignOutLink />)
+    mount(<SignOutLink signOut={jest.fn()} />)
   })
 })

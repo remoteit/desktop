@@ -4,6 +4,6 @@ import { CopyableText } from './CopyableText'
 
 describe('components/CopyableText', () => {
   test('should not explode', () => {
-    mount(<CopyableText />)
+    mount(<CopyableText value="Copy me!" />)
   })
 })

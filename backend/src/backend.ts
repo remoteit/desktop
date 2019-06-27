@@ -2,11 +2,13 @@ import electron from 'electron'
 import debug from 'debug'
 import path from 'path'
 import url from 'url'
+import logger from './utils/logger'
 import { server } from './server'
 import { installConnectdIfMissing } from './connectd/install'
 import * as track from './utils/analytics'
+import * as Pool from './connectd/Pool'
+import * as Platform from './services/Platform'
 import './utils/errorReporting'
-import * as pool from './connectd/pool'
 
 const d = debug('r3:backend:backend')
 
@@ -14,12 +16,15 @@ d('Starting up Electron application!')
 
 track.event('app', 'startup', 'remote.it Desktop application has started')
 
+logger.info('Desktop starting up!')
+logger.info('Platform info', Platform)
+
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow: electron.BrowserWindow | null
+export let mainWindow: electron.BrowserWindow | undefined
 
 startSocketIOServer()
 
@@ -32,6 +37,7 @@ app.on('activate', handleActivate)
  * listens to.
  */
 async function startSocketIOServer() {
+  logger.info('Starting WebSocket server')
   const io = await server()
 
   // Try and install connectd if it doesn't exist on the current system.
@@ -45,7 +51,7 @@ async function startSocketIOServer() {
     })
   }
 
-  pool.loadFromSavedConnectionsFile()
+  Pool.loadFromSavedConnectionsFile()
 }
 
 /**
@@ -55,13 +61,14 @@ async function startSocketIOServer() {
  */
 function handleAppReady() {
   createMainWindow()
-  createTrayIcon()
+  // createTrayIcon()
 }
 
 /**
  * Quit when all windows are closed.
  */
 function handleWindowsClosed() {
+  logger.info('Window closed')
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
@@ -70,12 +77,14 @@ function handleWindowsClosed() {
 }
 
 function handleActivate() {
+  logger.info('Window activated')
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createMainWindow()
+  if (!mainWindow) createMainWindow()
 }
 
 function createMainWindow() {
+  logger.info('Creating main window')
   d('Showing main window')
   mainWindow = new BrowserWindow({
     width: 800,
@@ -102,7 +111,7 @@ function createMainWindow() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    mainWindow = null
+    mainWindow = undefined
   })
 }
 
@@ -111,14 +120,20 @@ function focusMainWindow() {
 }
 
 function createTrayIcon() {
+  logger.info('Create tray icon')
   // TODO: Handle OSX dark/light modes
   const iconPath = path.join(__dirname, 'images', 'r3.png')
   d('Tray icon path:', iconPath)
   const tray = new electron.Tray(iconPath)
   tray.on('click', () => {
+    logger.info('Clicked tray icon')
     createMainWindow()
     focusMainWindow()
   })
 }
 
 // export {}
+
+process.on('uncaughtException', function(err) {
+  logger.error('Caught exception: ' + err)
+})

@@ -1,12 +1,11 @@
 import fs from 'fs'
 import path from 'path'
-import os from 'os'
+import { homeDir, remoteitDir } from '../services/Platform'
+import logger from '../utils/logger'
 
 export const fileName = 'connections.json'
 
-export const directory = path.join(os.homedir(), '.remoteit')
-
-export const location = path.join(directory, fileName)
+export const location = path.join(remoteitDir, fileName)
 
 /**
  * Checks to see if the connections file exists on the
@@ -20,8 +19,10 @@ export function exists() {
  * Read the connections file and return it or
  * undefined if it is missing or invalid.
  */
-export function read(): Connection[] | undefined {
+export function read(): ConnectionInfo[] | undefined {
   if (!exists()) return
+
+  logger.info('Loading saved connections file:', { location })
 
   const content = fs.readFileSync(location)
   if (!content || !content.toString()) return
@@ -29,6 +30,8 @@ export function read(): Connection[] | undefined {
   try {
     const json = JSON.parse(content.toString())
     if (!json) return
+
+    logger.info('Read saved connections file:', json)
 
     return json
   } catch (error) {
@@ -57,8 +60,8 @@ export function remove() {
  * Create a new connections file with an optional set
  * of initial connections.
  */
-export function write(content: Connection[] = []): Connection[] {
-  fs.mkdirSync(directory, { recursive: true })
+export function write(content: ConnectionInfo[] = []): ConnectionInfo[] {
+  fs.mkdirSync(remoteitDir, { recursive: true })
   fs.writeFileSync(location, JSON.stringify(content, null, 2))
   return content
 }
@@ -68,7 +71,9 @@ export function write(content: Connection[] = []): Connection[] {
  * Creates the connections file if missing and does not
  * create duplicate connections.
  */
-export function addConnection(conn: Connection): Connection[] | undefined {
+export function addConnection(
+  conn: ConnectionInfo
+): ConnectionInfo[] | undefined {
   const content = read()
   if (!content) return write([conn])
 

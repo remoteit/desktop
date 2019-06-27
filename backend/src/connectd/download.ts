@@ -37,21 +37,3 @@ export function download(
       .on('error', reject)
   })
 }
-
-// import axios from 'axios'
-// import debug from 'debug'
-// import { writeFileSync } from 'fs'
-
-// const d = debug('r3:ConnectdDownloader')
-
-// export class ConnectdDownloader {
-//   static async download(tag: string, binaryName: string, path: string) {
-//     const url = `https://github.com/remoteit/connectd/releases/download/${tag}/${binaryName}`
-//     d('Downloading connectd from:', url)
-
-//     const { data } = await axios.get(url, { responseType: 'blob' })
-
-//     d('Writing file to:', path)
-//     writeFileSync(path, data)
-//   }
-// }

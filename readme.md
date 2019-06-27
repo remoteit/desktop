@@ -34,3 +34,7 @@ npm start
 # in another tab:
 npm run test-e2e
 ```
+
+### Packaging
+
+- [Notarizing on Mac OS](https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/)

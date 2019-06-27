@@ -29,11 +29,11 @@ export function DebugLogItem({ log }: Props) {
   }
 
   return (
-    <div className="px-md py-sm bb bc-gray-lighter txt-sm">
+    <div className="px-md py-xs bb bc-gray-lighter txt-sm">
       <div className="txt-sm df ai-center">
         <div className="txt-md mr-md">
           <Tooltip title={title}>
-            <Icon name={iconName} color={iconColor} fixedWidth />
+            <Icon name={iconName} size="sm" color={iconColor} fixedWidth />
           </Tooltip>
         </div>
         {log.message}
@@ -43,7 +43,7 @@ export function DebugLogItem({ log }: Props) {
         {data && (
           <Icon
             name={opened ? 'chevron-up' : 'chevron-down'}
-            size="lg"
+            size="sm"
             color="gray"
             className="ml-md c-pointer"
             onClick={() => setOpen(!opened)}

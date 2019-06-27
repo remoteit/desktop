@@ -1,15 +1,27 @@
 import { session } from 'electron'
+import logger from '../utils/logger'
+import { mainWindow } from '../backend'
 
 export async function set(name: string, value: string) {
+  // Set expiration to a long time into the future. set()
+  // expects a unix epoch, in seconds
+  const durationYears = 1
+  const date = new Date()
+  date.setFullYear(date.getFullYear() + durationYears)
+  const expirationDate = Math.floor(date.getTime() / 1000)
+
+  logger.info('Setting cookie', { name, value, expirationDate })
+
   return getCookies().set({
-    url: '/',
+    url: mainWindow ? mainWindow.webContents.getURL() : 'http://localhost:3000',
     name,
     value,
-    path: '/',
+    // path: '/',
     // secure: true,
-    expirationDate: 999999999999999.0,
+    expirationDate,
   })
 }
+
 export async function flush() {
   return getCookies().flushStore()
 }
@@ -26,6 +38,7 @@ export async function clear() {
 export async function get(name: string) {
   // @ts-ignore
   const [cookie] = await getCookies().get({ path: '/', name })
+  logger.info('Get cookie:', { cookie })
   if (!cookie) return undefined
   return cookie.value as string
 }

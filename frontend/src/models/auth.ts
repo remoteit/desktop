@@ -3,11 +3,13 @@ import { createModel } from '@rematch/core'
 import * as User from '../services/User'
 
 export interface AuthState {
+  checkSignInStarted: boolean
   signInStarted: boolean
   user?: IUser
 }
 
 const state: AuthState = {
+  checkSignInStarted: false,
   signInStarted: false,
   user: undefined,
 }
@@ -16,18 +18,20 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     async checkSignIn() {
-      const { signInStarted, signInFinished, setUser } = dispatch.auth
-      signInStarted()
+      const { checkSignInStarted, checkSignInFinished, setUser } = dispatch.auth
+      checkSignInStarted()
       return (
         User.checkSignIn()
           .then(user => {
+            console.log('USER:', user)
             if (!user) return
             setUser(user)
+            return user
           })
           // Check if user should only search for devices
           // rather than fetch all devices
-          .then(() => dispatch.devices.shouldSearchDevices())
-          .finally(signInFinished)
+          // .then(() => dispatch.devices.shouldSearchDevices())
+          .finally(checkSignInFinished)
       )
     },
     async signIn({
@@ -45,7 +49,7 @@ export default createModel({
           // Check if user should only search for devices
           // rather than fetch all devices
           .then(() => dispatch.devices.shouldSearchDevices())
-          .then(dispatch.logs.reset)
+          // .then(dispatch.logs.reset)
           .finally(signInFinished)
       )
     },
@@ -60,6 +64,12 @@ export default createModel({
     },
   }),
   reducers: {
+    checkSignInStarted(state: AuthState) {
+      state.checkSignInStarted = true
+    },
+    checkSignInFinished(state: AuthState) {
+      state.checkSignInStarted = false
+    },
     signInStarted(state: AuthState) {
       state.signInStarted = true
     },

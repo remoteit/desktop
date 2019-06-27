@@ -7,7 +7,7 @@ import { Page } from '../Page'
 export function LoadingPage() {
   return (
     <Page className="h-100">
-      <LoadingMessage message="Loading awesome!" />
+      <LoadingMessage message="Siging in..." />
     </Page>
   )
 }

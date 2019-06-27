@@ -4,6 +4,6 @@ import { CopyButton } from './CopyButton'
 
 describe('components/CopyButton', () => {
   test('should not explode', () => {
-    mount(<CopyButton />)
+    mount(<CopyButton text="Copy me!" />)
   })
 })

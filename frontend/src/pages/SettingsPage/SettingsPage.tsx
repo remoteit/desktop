@@ -10,7 +10,7 @@ export interface Props {}
 
 export function SettingsPage({ ...props }: Props) {
   return (
-    <Page>
+    <Page className="p-md">
       <PageHeading>Settings</PageHeading>
       <Paper className="p-md">
         <SignOutLinkController />

@@ -6,7 +6,7 @@ import { targetPath } from './host'
  * Whether or not the connectd binary exists on this system.
  */
 export function exists() {
-  return existsSync(targetPath())
+  return existsSync(targetPath)
 }
 
 /**
@@ -18,7 +18,7 @@ export function version() {
   if (!exists()) return null
 
   try {
-    execFileSync(targetPath())
+    execFileSync(targetPath)
   } catch (error) {
     const out = error.stdout
     if (!out) return null

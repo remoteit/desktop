@@ -1,5 +1,4 @@
 import { connect } from 'react-redux'
-import { IService } from 'remote.it'
 import { DisconnectButton } from '../../components/DisconnectButton'
 
 export type DisconnectButtonControllerProps = {

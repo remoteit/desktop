@@ -4,6 +4,6 @@ import { PageHeading } from './PageHeading'
 
 describe('components/PageHeading', () => {
   test('should not explode', () => {
-    mount(<PageHeading />)
+    mount(<PageHeading>Foo</PageHeading>)
   })
 })

@@ -22,6 +22,9 @@ export function ConnectionStateIcon({
   } else if (state === 'connected') {
     icon = 'scrubber'
     color = 'primary'
+  } else if (state === 'disconnected') {
+    icon = 'scrubber'
+    color = 'warning'
   } else if (state === 'connecting') {
     icon = 'spinner-third'
     color = 'gray-light'

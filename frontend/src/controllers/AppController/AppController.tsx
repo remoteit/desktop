@@ -5,7 +5,7 @@ import { App } from '../../components/App'
 export type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
 const mapState = (state: ApplicationState) => ({
-  signInStarted: state.auth.signInStarted,
+  checkSignInStarted: state.auth.checkSignInStarted,
   user: state.auth.user,
   page: state.navigation.page,
 })

@@ -7,7 +7,7 @@ import * as connectd from '../../connectd/install'
 
 const d = debug('r3:desktop:backend:routes:connectd:install')
 
-export function install(socket: socketIO.Socket) {
+export function install({ socket }: { socket: socketIO.Socket }) {
   return async () => {
     d('Starting connectd install')
 

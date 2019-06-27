@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import * as user from './UserCredentialsFile'
+import * as Platform from '../services/Platform'
 
 describe('connectd/UserCredentialsFile', () => {
   /**
@@ -17,15 +18,9 @@ describe('connectd/UserCredentialsFile', () => {
 
   beforeEach(() => user.remove())
 
-  describe('.fileName', () => {
-    test('should be correct', async () => {
-      expect(user.fileName).toBe('user.json')
-    })
-  })
-
   describe('.directory', () => {
     test('should be correct', async () => {
-      expect(user.directory).toBe(path.join(os.homedir(), '.remoteit'))
+      expect(user.directory).toBe(Platform.pathDir)
     })
   })
 
@@ -43,9 +38,7 @@ describe('connectd/UserCredentialsFile', () => {
 
   describe('.location', () => {
     test('should be located in user home directory .remoteit folder', async () => {
-      expect(user.location).toBe(
-        path.join(os.homedir(), '.remoteit', user.fileName)
-      )
+      expect(user.location).toBe(path.join(Platform.pathDir, 'user.json'))
     })
   })
 

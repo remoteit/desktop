@@ -12,10 +12,13 @@ export function ServiceListItem({ service }: ServiceListItemProps) {
   if (service.state === 'connected') {
     return (
       <ConnectedServiceItem
-        name={service.name}
-        port={service.port}
-        type={service.type}
-        serviceID={service.id}
+        connection={{
+          serviceName: service.name,
+          serviceID: service.id,
+          type: service.type,
+          port: service.port,
+          pid: service.pid,
+        }}
       />
     )
   }

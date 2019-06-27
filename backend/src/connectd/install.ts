@@ -1,9 +1,11 @@
 import debug from 'debug'
+import fs from 'fs'
 import { download } from './download'
-import * as host from './host'
-import * as sudo from 'sudo-prompt'
 import { LATEST_CONNECTD_RELEASE } from '../constants'
 import { existsSync } from 'fs'
+import * as host from './host'
+import * as sudo from 'sudo-prompt'
+import * as Platform from '../services/Platform'
 
 const d = debug('r3:desktop:backend:connectd:install')
 
@@ -12,21 +14,22 @@ const d = debug('r3:desktop:backend:connectd:install')
  * system and then make it writable.
  */
 export function install(version: string, progress = (percent: number) => {}) {
-  const targetPath = host.targetPath()
-  const binaryName = host.binaryName()
-  const tempDownloadPath = host.tempDownloadPath()
   const permission = 0o755
 
   d('Attempting to install connectd: %O', {
-    targetPath,
-    binaryName,
-    tempDownloadPath,
+    host,
     permission,
   })
 
+  fs.mkdirSync(Platform.pathDir, { recursive: true })
+
   // Download the connectd binary from Github
-  return download(version, binaryName, tempDownloadPath, progress).then(
-    moveAndUpdatePermissions
+  return download(version, host.binaryName, host.targetPath, progress).then(
+    () => {
+      if (Platform.isMac) {
+        moveAndUpdatePermissions()
+      }
+    }
   )
 }
 
@@ -48,7 +51,7 @@ export async function installConnectdIfMissing() {
 export function isConnectdInstalled() {
   // TODO: we should probably make sure the output of connectd is what
   // we expect it to be and it is the right version
-  return existsSync(host.targetPath())
+  return existsSync(host.targetPath)
 }
 
 function moveAndUpdatePermissions() {

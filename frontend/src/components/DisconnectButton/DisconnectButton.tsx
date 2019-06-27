@@ -14,7 +14,7 @@ export function DisconnectButton({
         className="txt-md"
         onClick={() => disconnect(serviceID)}
       >
-        <Icon name="times" fixedWidth />
+        <Icon name="stop-circle" fixedWidth />
       </IconButton>
     </Tooltip>
   )

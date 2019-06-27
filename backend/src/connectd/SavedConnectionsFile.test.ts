@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import * as file from './SavedConnectionsFile'
+import { remoteitDir } from '../services/Platform'
 
 describe('connectd/SavedConnectionsFile', () => {
   /**
@@ -9,7 +10,7 @@ describe('connectd/SavedConnectionsFile', () => {
    * file and restore after test run. This way, you can run a real
    * test locally (no mocking) yet not destroy your existing connections.
    */
-  let cachedConnectionsFile: Connection[] | undefined
+  let cachedConnectionsFile: ConnectionInfo[] | undefined
   beforeAll(() => (cachedConnectionsFile = file.read()))
   afterAll(() =>
     cachedConnectionsFile ? file.write(cachedConnectionsFile) : file.remove()
@@ -20,12 +21,6 @@ describe('connectd/SavedConnectionsFile', () => {
   describe('.fileName', () => {
     test('should be correct', async () => {
       expect(file.fileName).toBe('connections.json')
-    })
-  })
-
-  describe('.directory', () => {
-    test('should be correct', async () => {
-      expect(file.directory).toBe(path.join(os.homedir(), '.remoteit'))
     })
   })
 
@@ -44,7 +39,7 @@ describe('connectd/SavedConnectionsFile', () => {
   describe('.location', () => {
     test('should be located in user home directory .remoteit folder', async () => {
       expect(file.location).toBe(
-        path.join(os.homedir(), '.remoteit', file.fileName)
+        path.join(os.homedir(), remoteitDir, file.fileName)
       )
     })
   })
@@ -172,7 +167,7 @@ function createFileWithContent() {
       type: 'SSH',
       port: 33000,
     },
-  ] as Connection[]
+  ] as ConnectionInfo[]
   fs.writeFileSync(file.location, JSON.stringify(content))
   return content
 }

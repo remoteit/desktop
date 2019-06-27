@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { DeviceList } from '../../components/DeviceList'
-import { StateTabs } from '../../components/StateTabs'
 import { Props } from '../../controllers/DevicePageController/DevicePageController'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
 import { NoDevicesMessage } from '../../components/NoDevicesMessage'
 import { Page } from '../Page'
-import { PageHeading } from '../../components/PageHeading'
 import { IconButton, Paper, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
@@ -50,10 +48,13 @@ export function DevicesPage({
 
   return (
     <Page>
-      <PageHeading>
-        Devices
+      <div className="df ai-center p-sm">
+        <SearchField
+          search={searchOnly ? remoteSearch : localSearch}
+          searching={fetching}
+        />
         {!searchOnly && (
-          <Tooltip title="Refresh devices">
+          <Tooltip title="Refresh devices" className="ml-md">
             <IconButton
               className="ml-sm"
               onClick={() => fetch()}
@@ -63,15 +64,8 @@ export function DevicesPage({
             </IconButton>
           </Tooltip>
         )}
-      </PageHeading>
-      <div className="mb-md">
-        <SearchField
-          search={searchOnly ? remoteSearch : localSearch}
-          searching={fetching}
-        />
       </div>
       <Paper className="mb-xl">
-        <StateTabs state={tab} handleChange={(state: Tab) => setTab(state)} />
         {tab === 'connections' ? (
           <ConnectionsList connections={connections} />
         ) : (

@@ -3,16 +3,18 @@ import { IService } from 'remote.it'
 import httpProxy from 'http-proxy'
 
 declare global {
-  export interface Connection {
-    deviceID: string
+  export interface ConnectionInfo {
+    deviceID?: string
     serviceID: string
     serviceName: string
     type: string
-    port: number
+    port?: number
     pid?: number
   }
 
-  export interface ConnectdProcess extends ChildProcess, Connection {}
+  export interface ConnectdProcess extends ChildProcess {
+    info: ConnectionInfo
+  }
 
   export interface User {
     authHash: string

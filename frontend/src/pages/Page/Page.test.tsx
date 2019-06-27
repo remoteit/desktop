@@ -4,6 +4,10 @@ import { Page } from './Page'
 
 describe('components/Page', () => {
   test('should not explode', () => {
-    mount(<Page />)
+    mount(
+      <Page>
+        <h1>Hi!</h1>
+      </Page>
+    )
   })
 })

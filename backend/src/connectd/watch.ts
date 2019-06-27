@@ -25,7 +25,7 @@ export function watch() {
   const emitter = new EventEmitter()
 
   chokidar
-    .watch(targetPath())
+    .watch(targetPath)
     .on('ready', () => {
       d('Initial scan complete. Ready for changes')
       emitter.emit('ready')

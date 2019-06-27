@@ -1,4 +1,5 @@
 import debug from 'debug'
+import electron from 'electron'
 import express from 'express'
 import socketIO from 'socket.io'
 import { Server } from 'http'
@@ -6,13 +7,16 @@ import { PORT } from './constants'
 import { routes } from './routes'
 import { watcher } from './routes/watcher'
 import { EVENTS } from './connectd/connection'
-import { pool } from './connectd/pool'
+import * as Pool from './connectd/Pool'
+import logger from './utils/logger'
 
 const d = debug('r3:desktop:backend:server')
 
 export function server(): Promise<socketIO.Server> {
   return new Promise(success => {
     d('Starting server on port:', PORT)
+    logger.info('Starting server on port:', PORT)
+
     const app = express()
     const server = new Server(app)
     const io = socketIO(server)
@@ -23,6 +27,7 @@ export function server(): Promise<socketIO.Server> {
 
     io.on('connection', socket => {
       d('User connected to WS server')
+      logger.info('User connected to WebSocket server')
 
       // Watch for changes to the connectd file and report those to the UI
       watcher(socket)
@@ -37,6 +42,7 @@ export function server(): Promise<socketIO.Server> {
 
     server.listen(PORT, () => {
       d(`Listening on port ${PORT}`)
+      logger.info(`Listening on port ${PORT}`)
       success(io)
     })
   })
@@ -49,7 +55,7 @@ export function server(): Promise<socketIO.Server> {
  */
 function handleIncomingMessages(socket: socketIO.Socket) {
   Object.keys(routes).map((path: string) =>
-    socket.on(path, routes[path](socket))
+    socket.on(path, routes[path]({ socket }))
   )
 }
 
@@ -59,8 +65,8 @@ function handleIncomingMessages(socket: socketIO.Socket) {
  * react when connectd state changes.
  */
 function forwardConnectdStatusMessages(socket: socketIO.Socket) {
-  d('Forwarding connectd status messages from pool:', pool.length)
-  pool.map(connection =>
+  d('Forwarding connectd status messages from Pool:', Pool.pool.length)
+  Pool.pool.map(connection =>
     Object.values(EVENTS).map(event => {
       connection.on(event, (payload: any) => socket.emit(event, payload))
     })

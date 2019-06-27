@@ -1,9 +1,10 @@
 import debug from 'debug'
 import { IUser } from 'remote.it'
 import { refreshAccessKey, r3 } from '../../services/remote.it'
-import { set } from '../../services/storage'
+import * as Storage from '../../services/storage'
 import { AUTH_HASH_COOKIE, USERNAME_COOKIE } from '../../constants'
-import * as userFile from '../../connectd/UserCredentialsFile'
+import * as UserCredentialsFile from '../../connectd/UserCredentialsFile'
+import logger from '../../utils/logger'
 
 const d = debug('r3:desktop:backend:routes:user:signIn')
 
@@ -15,37 +16,52 @@ export interface LoginRouteData {
 export function signIn() {
   return async (
     { password, username }: LoginRouteData,
-    callback: (user: IUser) => void
+    callback: (error: string | undefined, user?: IUser) => void
   ) => {
-    d('Logging in user:', username)
+    try {
+      d('Logging in user:', username)
+      logger.info('Loggin in user', { username })
 
-    await refreshAccessKey()
-    const user = await r3.user.login(username, password)
+      await refreshAccessKey()
 
-    d('Got user:', user)
+      d('Updated access key')
+      logger.info('Updated access key')
 
-    if (!user) throw new Error('Invalid username or password')
+      const user = await r3.user.login(username, password)
 
-    // Store signIn cookies so the user can signIn again without entering
-    // their credentials
-    // TODO: Do we need this now that we store user in credentials file?
-    await Promise.all([
-      set(AUTH_HASH_COOKIE, user.authHash),
-      set(USERNAME_COOKIE, user.username),
-    ])
+      d('Got user:', user)
+      logger.info('Got user', { user })
 
-    // Store accesskey in remote.it.js
-    // TODO: make this into a helper of some kind
-    r3.authHash = user.authHash
-    r3.token = user.token
+      if (!user) return callback('Invalid username or password')
 
-    // Store this user in our user credentials file
-    userFile.write({
-      authHash: user.authHash,
-      username: user.username,
-      language: user.language,
-    })
+      // Store signIn cookies so the user can signIn again without entering
+      // their credentials
+      // TODO: Do we need this now that we store user in credentials file?
+      await Promise.all([
+        Storage.set(AUTH_HASH_COOKIE, user.authHash),
+        Storage.set(USERNAME_COOKIE, user.username),
+      ])
 
-    callback(user)
+      logger.info('Set login cookies')
+
+      // Store accesskey in remote.it.js
+      // TODO: make this into a helper of some kind
+      r3.authHash = user.authHash
+      r3.token = user.token
+
+      // Store this user in our user credentials file
+      UserCredentialsFile.write({
+        authHash: user.authHash,
+        username: user.username,
+        language: user.language,
+      })
+
+      logger.info('Write user to file')
+
+      callback(undefined, user)
+    } catch (error) {
+      console.error('Sign in error', error)
+      callback(error.message)
+    }
   }
 }

@@ -1,7 +1,9 @@
 import socketIO from 'socket.io'
 import { watch } from '../connectd/watch'
+import logger from '../utils/logger'
 
 export function watcher(socket: socketIO.Socket) {
+  logger.info('Watching for file change')
   return watch()
     .on('ready', () => socket.emit('connectd/file/watching'))
     .on('added', (file: string) => socket.emit('connectd/file/added', file))

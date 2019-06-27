@@ -30,12 +30,7 @@ export function Page({
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
-      <div
-        className="h-100 mx-auto mt-md mb-xl p-sm"
-        style={{ maxWidth: '720px' }}
-      >
-        {children}
-      </div>
+      <div {...props}>{children}</div>
     </MuiThemeProvider>
   )
 }

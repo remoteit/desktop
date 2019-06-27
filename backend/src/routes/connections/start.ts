@@ -3,17 +3,17 @@ import { freePort } from '../../utils/freePort'
 import { EVENTS } from '../../connectd/connection'
 import { IService } from 'remote.it'
 import { PEER_PORT_RANGE } from '../../constants'
-import { register } from '../../connectd/pool'
+import * as Pool from '../../connectd/Pool'
 import debug from 'debug'
 
 const d = debug('r3:desktop:backend:routes:connections:start')
 
 let initialPort = PEER_PORT_RANGE[0]
 
-export function start(socket: socketIO.Socket) {
+export function start({ socket }: { socket: socketIO.Socket }) {
   return async (
     { service, user }: { service: IService; user: User },
-    callback: (connection: Connection) => void
+    callback: (connection: ConnectionInfo) => void
   ) => {
     const port = await freePort([initialPort, PEER_PORT_RANGE[1]])
 
@@ -26,7 +26,7 @@ export function start(socket: socketIO.Socket) {
       deviceID: service.deviceID,
       type: service.type,
     }
-    const connectd = await register({ connection, user })
+    const connectd = await Pool.register({ connection, user })
 
     if (!connectd) return
 

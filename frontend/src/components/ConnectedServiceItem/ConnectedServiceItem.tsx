@@ -2,36 +2,50 @@ import React from 'react'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { CopyableText } from '../CopyableText'
 import { DisconnectButtonController } from '../../controllers/DisconnectButtonController/DisconnectButtonController'
+import { RestartButton } from '../RestartButton'
+import { ForgetButton } from '../ForgetButton'
 
 export interface ConnectedServiceItemProps {
-  name: string
-  serviceID: string
-  port?: number
-  type?: string
+  connection: ConnectionInfo
 }
 
 export function ConnectedServiceItem({
-  name,
-  port,
-  serviceID,
-  type = '',
+  connection,
 }: ConnectedServiceItemProps) {
+  if (!connection) return <p>No connection...</p>
+
   return (
     <div className="df ai-center bb bc-gray-lighter px-md py-xs">
       <div className="mr-md">
-        <ConnectionStateIcon state="connected" size="lg" />
+        <ConnectionStateIcon
+          state={connection.pid ? 'connected' : 'disconnected'}
+          size="lg"
+        />
       </div>
       <div>
-        <div className="txt-md gray-darkest">{name}</div>
-        {name.toLowerCase() !== type.toLowerCase() && (
-          <div className="txt-sm gray-light">{type}</div>
+        <div className="txt-md gray-darkest">{connection.serviceName}</div>
+        {connection.type &&
+          connection.serviceName.toLowerCase() !==
+            connection.type.toLowerCase() && (
+            <span className="txt-sm gray-light mr-md">{connection.type}</span>
+          )}
+        {connection.pid && (
+          <span className="gray-light txt-sm">PID# {connection.pid}</span>
         )}
       </div>
       <div className="ml-auto df ai-center">
-        {port && (
-          <CopyableText value={`localhost:${port}`} className="txt-md" />
+        {connection.port && (
+          <CopyableText
+            value={`localhost:${connection.port}`}
+            className="txt-md"
+          />
         )}
-        <DisconnectButtonController serviceID={serviceID} />
+        <RestartButton serviceID={connection.serviceID} />
+        {connection.pid ? (
+          <DisconnectButtonController serviceID={connection.serviceID} />
+        ) : (
+          <ForgetButton serviceID={connection.serviceID} />
+        )}
       </div>
     </div>
   )

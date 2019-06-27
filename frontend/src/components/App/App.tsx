@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import { Page } from '../../pages/Page'
+import React, { useEffect } from 'react'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { Props } from '../../controllers/AppController/AppController'
 import { DevicePageController } from '../../controllers/DevicePageController'
-import { DebugPage } from '../../pages/DebugPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { Icon } from '../Icon'
+import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { ConnectionsPage } from '../ConnectionsPage'
 
 const routes: Route = {
+  connections: <ConnectionsPage />,
   devices: <DevicePageController />,
-  debug: <DebugPage />,
   settings: <SettingsPage />,
 }
 
@@ -19,14 +19,14 @@ export function App({
   checkSignIn,
   page,
   setPage,
-  signInStarted = false,
+  checkSignInStarted = false,
   user,
 }: Props) {
   useEffect(() => {
     checkSignIn()
   }, [])
 
-  if (signInStarted) return <LoadingPage />
+  if (checkSignInStarted) return <LoadingPage />
   if (!user) return <SignInPage />
 
   return (
@@ -40,14 +40,20 @@ export function App({
         style={{ bottom: 0 }}
       >
         <BottomNavigationAction
+          label="Connections"
+          value="connections"
+          icon={
+            <ConnectionStateIcon
+              state="connected"
+              size="lg"
+              className="pb-xs"
+            />
+          }
+        />
+        <BottomNavigationAction
           label="Devices"
           value="devices"
           icon={<Icon name="robot" size="lg" className="pb-xs" />}
-        />
-        <BottomNavigationAction
-          label="Debug"
-          value="debug"
-          icon={<Icon name="bug" size="lg" className="pb-xs" />}
         />
         <BottomNavigationAction
           label="Settings"

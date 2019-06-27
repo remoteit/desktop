@@ -1,7 +1,7 @@
 import { IUser } from 'remote.it'
 import { emit } from './backend'
+import { socket } from '../services/backend'
 import {
-  r3,
   refreshAccessKey,
   updateUserCredentials,
   clearUserCredentials,
@@ -18,10 +18,22 @@ export async function signIn(
   // TODO: this shouldn't need to be called here
   await refreshAccessKey()
 
-  const user = await emit<IUser>('user/sign-in', { password, username })
-  updateUserCredentials(user)
-
-  return user
+  // const user = await emit<IUser>('user/sign-in', { password, username })
+  return new Promise((success, failure) => {
+    socket.emit(
+      'user/sign-in',
+      { username, password },
+      (error: string | undefined, user: IUser | undefined) => {
+        console.log('Sign in error:', error)
+        if (error) return failure(error)
+        if (!user) return failure('Could not login')
+        // d('User: %O', user)
+        updateUserCredentials(user)
+        console.log('SUCCESS', user)
+        success(user)
+      }
+    )
+  })
 }
 
 /**

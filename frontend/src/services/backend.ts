@@ -24,21 +24,23 @@ export const MESSAGE_TYPES: ServerMessageType[] = [
 
 export function recordConnectdEvents() {
   const { addLog } = store.dispatch.logs
+  const { disconnected } = store.dispatch.devices
   addLog({
     type: 'general',
     message: 'Application starting up',
-    createdAt: new Date(),
   })
 
   MESSAGE_TYPES.map(event =>
-    socket.on(event, (data: ConnectLogMessage) =>
+    socket.on(event, (data: ConnectLogMessage) => {
+      // Trigger a service disconnect on disconnect.
+      if (event === 'service/disconnected') disconnected(data.serviceID)
+
       addLog({
         type: data.error ? 'alert' : 'connectd',
         message: data.error ? data.error : data.raw,
         data,
-        createdAt: new Date(),
       } as Log)
-    )
+    })
   )
 }
 

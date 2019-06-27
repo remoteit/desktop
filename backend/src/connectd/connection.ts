@@ -1,5 +1,5 @@
 import debug from 'debug'
-import { IService } from 'remote.it'
+// import { IService } from 'remote.it'
 import { execFile } from 'child_process'
 import { targetPath } from './host'
 
@@ -9,7 +9,7 @@ interface ConnectdMessage {
   type: string
   raw: string
   serviceID: string
-  port: number
+  port?: number
 }
 
 export const EVENTS = {
@@ -28,7 +28,7 @@ export const EVENTS = {
 }
 
 export interface ConnectProps {
-  connection: Connection
+  connection: ConnectionInfo
   user: User
 }
 
@@ -56,30 +56,12 @@ export async function connect({
     }
   )
 
-  // Add meta data about the connectd process so it can
-  // be retrieved later.
-  // connectd.serviceID = serviceID
-  // connectd.serviceName = name
-  // connectd.deviceID = deviceID
-  // connectd.type = type
-  // connectd.port = port
-
   // Handle connectd messages and pass them along to any
   // consumer.
   processConnectdLogs(connectd)
 
   return connectd
 }
-
-// export function disconnect() {
-//   if (!connection) return
-//   d('Disconnect from service:', this.serviceID)
-//   if (Platform.isWindows) {
-//     execFile('(taskkill /pid ' + this.connection.pid + ' /T /F')
-//   } else {
-//     this.connection.kill('SIGINT')
-//   }
-// }
 
 function startConnectd(
   { connection, user }: ConnectProps,
@@ -97,7 +79,7 @@ function startConnectd(
   })
 
   const connectd = execFile(
-    targetPath(),
+    targetPath,
     [
       '-s',
       '-p',
@@ -123,7 +105,8 @@ function startConnectd(
     throw new Error('connectd process could not be called')
   }
 
-  return Object.assign(connectd, connection)
+  connectd.info = connection
+  return connectd
 }
 
 function processConnectdLogs(connectd: ConnectdProcess) {
@@ -140,7 +123,12 @@ function processConnectdLogs(connectd: ConnectdProcess) {
 
   connectd.on('error', error => connectd.emit('error', error))
   connectd.on('close', (code: number) => {
-    connectd.emit('closed')
+    connectd.emit(EVENTS.disconnected, {
+      type: EVENTS.disconnected,
+      raw: `Closed with code "${code}"`,
+      port: connectd.info.port,
+      serviceID: connectd.info.serviceID,
+    })
     if (code !== 0) {
       console.error('⚠️  Closing with error code:', code)
       // TODO: Show code message:
@@ -198,26 +186,26 @@ function handleStdOut(connectd: ConnectdProcess) {
         type = EVENTS.unknown
       }
 
-      if (line.includes('Version')) {
-        const match = line.match(/Version ([\d\.]*)/)
-        if (match && match.length > 1) {
-          // version = match[1]
-        }
-        // connection.emit(EVENTS.updated, this.toJSON())
-      } else if (line.includes('primary local ip')) {
-        // TODO: return local IP
-        // localIP = localIP
-        // connectd.emit(EVENTS.updated, {}) //this.toJSON())
-      } else {
-        const message: ConnectdMessage = {
-          type,
-          raw: line,
-          serviceID: connectd.serviceID,
-          port: connectd.port,
-        } // service.id }
-        d('Received message from connectd: %O', message)
-        connectd.emit(type, message)
-      }
+      // if (line.includes('Version')) {
+      //   const match = line.match(/Version ([\d\.]*)/)
+      //   if (match && match.length > 1) {
+      //     version = match[1]
+      //   }
+      //   // connection.emit(EVENTS.updated, this.toJSON())
+      // } else if (line.includes('primary local ip')) {
+      //   // TODO: return local IP
+      //   // localIP = localIP
+      //   // connectd.emit(EVENTS.updated, {}) //this.toJSON())
+      // } else {
+      const message: ConnectdMessage = {
+        type,
+        raw: line,
+        serviceID: connectd.info.serviceID,
+        port: connectd.info.port,
+      } // service.id }
+      d('Received message from connectd: %O', message)
+      connectd.emit(type, message)
+      // }
     }
   }
 }

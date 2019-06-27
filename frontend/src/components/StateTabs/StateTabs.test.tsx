@@ -4,6 +4,6 @@ import { StateTabs } from './StateTabs'
 
 describe('components/StateTabs', () => {
   test('should not explode', () => {
-    mount(<StateTabs />)
+    mount(<StateTabs handleChange={jest.fn()} state="connections" />)
   })
 })
