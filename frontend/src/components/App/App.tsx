@@ -8,6 +8,8 @@ import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ConnectionsPage } from '../ConnectionsPage'
+import classnames from 'classnames'
+import styles from './App.module.css'
 
 const routes: Route = {
   connections: <ConnectionsPage />,
@@ -31,7 +33,7 @@ export function App({
 
   return (
     <>
-      <div className="title-bar">remote.it</div>
+      <div className={classnames(styles.titleBar, 'dragable')}>remote.it</div>
       {routes[page]}
       <BottomNavigation
         value={page}

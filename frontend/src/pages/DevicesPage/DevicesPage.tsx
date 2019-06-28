@@ -8,6 +8,8 @@ import { IconButton, Paper, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
 import { ConnectionsList } from '../../components/ConnectionsList'
+import { Body } from '../../components/Body'
+import styles from './DevicesPage.module.css'
 
 export function DevicesPage({
   allDevices,
@@ -48,7 +50,7 @@ export function DevicesPage({
 
   return (
     <Page>
-      <div className="search-header">
+      <div className={styles.searchHeader}>
         <SearchField
           search={searchOnly ? remoteSearch : localSearch}
           searching={fetching}
@@ -65,7 +67,7 @@ export function DevicesPage({
           </Tooltip>
         )}
       </div>
-      <Paper className="body search">
+      <Body withSearch={true} className="bg-white">
         {tab === 'connections' ? (
           <ConnectionsList connections={connections} />
         ) : (
@@ -76,7 +78,7 @@ export function DevicesPage({
             searchOnly={searchOnly}
           />
         )}
-      </Paper>
+      </Body>
     </Page>
   )
 }

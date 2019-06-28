@@ -2,6 +2,7 @@ import React from 'react'
 import { ConnectionsList } from '../ConnectionsList'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { Body } from '../Body'
 
 export type ConnectionsPageProps = ReturnType<typeof mapState> &
   ReturnType<typeof mapDispatch>
@@ -17,8 +18,8 @@ export const ConnectionsPage = connect(
   mapDispatch
 )(({ connections }: ConnectionsPageProps) => {
   return (
-    <div className="body bg-white">
+    <Body className="bg-white">
       <ConnectionsList connections={connections} />
-    </div>
+    </Body>
   )
 })
