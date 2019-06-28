@@ -13,24 +13,25 @@ import './utils/errorReporting'
 const d = debug('r3:backend:backend')
 
 d('Starting up Electron application!')
-
 track.event('app', 'startup', 'remote.it Desktop application has started')
-
 logger.info('Desktop starting up!')
 logger.info('Platform info', Platform)
 
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-export let mainWindow: electron.BrowserWindow | undefined
+// Keep a global reference of the window and try objects, if you don't, they window will
+// be removed automatically when the JavaScript object is garbage collected.
+export let mainWindow: electron.BrowserWindow
+export let systemTray: electron.Tray
 
-startSocketIOServer()
+let quitSelected = false
 
 app.on('ready', handleAppReady)
-app.on('window-all-closed', handleWindowsClosed)
 app.on('activate', handleActivate)
+app.on('before-quit', () => (quitSelected = true))
+
+startSocketIOServer()
 
 /**
  * Start the Socket.io server that the frontend React application
@@ -61,34 +62,22 @@ async function startSocketIOServer() {
  */
 function handleAppReady() {
   createMainWindow()
-  // createTrayIcon()
-}
-
-/**
- * Quit when all windows are closed.
- */
-function handleWindowsClosed() {
-  logger.info('Window closed')
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  createTrayIcon()
 }
 
 function handleActivate() {
   logger.info('Window activated')
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (!mainWindow) createMainWindow()
+  mainWindow.show()
 }
 
 function createMainWindow() {
+  if (mainWindow) return
+
   logger.info('Creating main window')
   d('Showing main window')
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 700,
+    width: 700,
+    height: 600,
     minWidth: 400,
     minHeight: 300,
     icon: path.join(__dirname, 'images/icon-64x64.png'),
@@ -106,33 +95,26 @@ function createMainWindow() {
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = undefined
+  mainWindow.on('close', e => {
+    if (!quitSelected) {
+      e.preventDefault()
+      mainWindow.hide()
+    }
   })
-}
-
-function focusMainWindow() {
-  if (mainWindow) mainWindow.focus()
 }
 
 function createTrayIcon() {
   logger.info('Create tray icon')
-  // TODO: Handle OSX dark/light modes
-  const iconPath = path.join(__dirname, 'images', 'r3.png')
-  d('Tray icon path:', iconPath)
-  const tray = new electron.Tray(iconPath)
-  tray.on('click', () => {
+
+  const iconPath = path.join(__dirname, 'images', 'iconTemplate.png')
+  systemTray = new electron.Tray(iconPath)
+
+  systemTray.on('click', () => {
     logger.info('Clicked tray icon')
-    createMainWindow()
-    focusMainWindow()
+    mainWindow.show()
+    mainWindow.focus()
   })
 }
-
-// export {}
 
 process.on('uncaughtException', function(err) {
   logger.error('Caught exception: ' + err)
