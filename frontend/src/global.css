@@ -57,10 +57,49 @@
 html,
 body {
   height: 100%;
-  background: var(--color-gray-lighter);
+  background-color: var(--color-gray-lighter);
 }
 
 body {
   font-family: var(--font-family-sans-serif);
   margin: 0;
+}
+
+.title-bar {
+  background-color: var(--color-gray-lighter);
+  color: var(--color-gray);
+  font-size: 16px;
+  font-weight: 300;
+  height: 38px;
+  line-height: 36px;
+  position: fixed;
+  text-align: center;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+
+.search-header {
+  align-items: center;
+  display: flex;
+  padding: 0 var(--spacing-sm) var(--spacing-sm);
+  position: fixed;
+  top: 38px;
+  width: 100%;
+  z-index: 1;
+  background-color: var(--color-gray-lighter);
+  border-bottom: 1px solid var(--color-gray-light);
+}
+
+.body {
+  position: fixed;
+  top: 38px;
+  width: 100%;
+  bottom: 55px;
+  overflow: scroll;
+}
+.body.search {
+  top: 110px;
 }

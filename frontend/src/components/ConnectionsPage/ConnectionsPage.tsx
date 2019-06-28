@@ -17,7 +17,7 @@ export const ConnectionsPage = connect(
   mapDispatch
 )(({ connections }: ConnectionsPageProps) => {
   return (
-    <div className="bg-white">
+    <div className="body bg-white">
       <ConnectionsList connections={connections} />
     </div>
   )

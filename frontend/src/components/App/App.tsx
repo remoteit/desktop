@@ -31,12 +31,13 @@ export function App({
 
   return (
     <>
+      <div className="title-bar">remote.it</div>
       {routes[page]}
       <BottomNavigation
         value={page}
         onChange={(_, newValue) => setPage(newValue)}
         showLabels
-        className="fixed w-100"
+        className="fixed w-100 bt bc-secondary-lighter"
         style={{ bottom: 0 }}
       >
         <BottomNavigationAction

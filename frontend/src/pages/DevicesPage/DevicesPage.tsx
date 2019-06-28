@@ -48,13 +48,13 @@ export function DevicesPage({
 
   return (
     <Page>
-      <div className="df ai-center p-sm">
+      <div className="search-header">
         <SearchField
           search={searchOnly ? remoteSearch : localSearch}
           searching={fetching}
         />
         {!searchOnly && (
-          <Tooltip title="Refresh devices" className="ml-md">
+          <Tooltip title="Refresh devices" className="ml-sm">
             <IconButton
               className="ml-sm"
               onClick={() => fetch()}
@@ -65,7 +65,7 @@ export function DevicesPage({
           </Tooltip>
         )}
       </div>
-      <Paper className="mb-xl">
+      <Paper className="body search">
         {tab === 'connections' ? (
           <ConnectionsList connections={connections} />
         ) : (
