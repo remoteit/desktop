@@ -31,6 +31,7 @@ app.on('ready', handleAppReady)
 app.on('activate', handleActivate)
 app.on('before-quit', () => (quitSelected = true))
 
+app.dock.hide()
 startSocketIOServer()
 
 /**
@@ -81,6 +82,8 @@ function createMainWindow() {
     minWidth: 400,
     minHeight: 300,
     icon: path.join(__dirname, 'images/icon-64x64.png'),
+    frame: false,
+    titleBarStyle: 'hiddenInset',
   })
 
   const startUrl =
