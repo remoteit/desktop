@@ -6,10 +6,8 @@ import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { Icon } from '../Icon'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ConnectionsPage } from '../ConnectionsPage'
-import classnames from 'classnames'
-import styles from './App.module.css'
+import { Page } from '../../pages/Page'
 
 const routes: Route = {
   connections: <ConnectionsPage />,
@@ -28,12 +26,21 @@ export function App({
     checkSignIn()
   }, [])
 
-  if (checkSignInStarted) return <LoadingPage />
-  if (!user) return <SignInPage />
+  if (checkSignInStarted)
+    return (
+      <Page>
+        <LoadingPage />
+      </Page>
+    )
+  if (!user)
+    return (
+      <Page>
+        <SignInPage />
+      </Page>
+    )
 
   return (
-    <>
-      <div className={classnames(styles.titleBar, 'dragable')}>remote.it</div>
+    <Page>
       {routes[page]}
       <BottomNavigation
         value={page}
@@ -45,26 +52,21 @@ export function App({
         <BottomNavigationAction
           label="Connections"
           value="connections"
-          icon={
-            <ConnectionStateIcon
-              state="connected"
-              size="lg"
-              className="pb-xs"
-            />
-          }
+          icon={<Icon name="scrubber" size="lg" />}
         />
         <BottomNavigationAction
           label="Devices"
           value="devices"
-          icon={<Icon name="chart-network" size="lg" className="pb-xs" />}
+          icon={<Icon name="chart-network" size="lg" />}
         />
         <BottomNavigationAction
           label="Settings"
           value="settings"
-          icon={<Icon name="cog" size="lg" className="pb-xs" />}
+          classes={{ selected: '' }}
+          icon={<Icon name="cog" size="lg" />}
         />
       </BottomNavigation>
-    </>
+    </Page>
   )
 }
 

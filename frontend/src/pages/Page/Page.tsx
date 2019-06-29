@@ -4,6 +4,8 @@ import {
   createMuiTheme,
   MuiThemeProvider,
 } from '@material-ui/core'
+import classnames from 'classnames'
+import styles from './Page.module.css'
 
 const theme = createMuiTheme({
   typography: {
@@ -30,7 +32,8 @@ export function Page({
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
-      <div {...props}>{children}</div>
+      <div className={classnames(styles.titleBar, 'dragable')}>remote.it</div>
+      {children}
     </MuiThemeProvider>
   )
 }

@@ -6,8 +6,8 @@ import { Page } from '../Page'
 
 export function LoadingPage() {
   return (
-    <Page className="h-100">
+    <div className="h-100">
       <LoadingMessage message="Signing you in..." />
-    </Page>
+    </div>
   )
 }

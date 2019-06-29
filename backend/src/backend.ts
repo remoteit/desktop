@@ -82,6 +82,7 @@ function createMainWindow() {
     minWidth: 400,
     minHeight: 300,
     icon: path.join(__dirname, 'images/icon-64x64.png'),
+    fullscreen: false,
     frame: false,
     titleBarStyle: 'hiddenInset',
   })
@@ -112,10 +113,15 @@ function createTrayIcon() {
   const iconPath = path.join(__dirname, 'images', 'iconTemplate.png')
   systemTray = new electron.Tray(iconPath)
 
-  systemTray.on('click', () => {
-    logger.info('Clicked tray icon')
+  systemTray.on('click', event => {
+    logger.info('Clicked tray icon ' + JSON.stringify(event))
     mainWindow.show()
     mainWindow.focus()
+
+    // Show devtools when command clicked
+    if (process.defaultApp && event.metaKey) {
+      mainWindow.webContents.openDevTools({ mode: 'detach' })
+    }
   })
 }
 

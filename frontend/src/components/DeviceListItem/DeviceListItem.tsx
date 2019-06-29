@@ -13,6 +13,7 @@ import {
   Divider,
 } from '@material-ui/core'
 import { ServiceList } from '../ServiceList'
+import styles from './DeviceListItem.module.css'
 
 export interface DeviceListItemProps {
   device: IDevice
@@ -33,7 +34,12 @@ export function DeviceListItem({
   // className="df ai-center px-md py-sm bb bc-gray-lighter bg-white hov-bg-gray-lightest c-pointer"
   return (
     <>
-      <ListItem {...props} onClick={handleClick} button>
+      <ListItem
+        {...props}
+        className={styles.listItem}
+        onClick={handleClick}
+        button
+      >
         <ListItemIcon>
           <ConnectionStateIcon
             state={device.state}
