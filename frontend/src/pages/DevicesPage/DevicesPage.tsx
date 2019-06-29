@@ -67,7 +67,7 @@ export function DevicesPage({
           </Tooltip>
         )}
       </div>
-      <Body withSearch={true} className="bg-white">
+      <Body withSearch className="bg-white">
         {tab === 'connections' ? (
           <ConnectionsList connections={connections} />
         ) : (
