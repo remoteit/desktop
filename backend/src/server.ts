@@ -7,7 +7,7 @@ import { PORT } from './constants'
 import { routes } from './routes'
 import { watcher } from './routes/watcher'
 import { EVENTS } from './connectd/connection'
-import * as Pool from './connectd/Pool'
+import ConnectionPool from './connectd/ConnectionPool'
 import logger from './utils/logger'
 
 const d = debug('r3:desktop:backend:server')
@@ -65,8 +65,11 @@ function handleIncomingMessages(socket: socketIO.Socket) {
  * react when connectd state changes.
  */
 function forwardConnectdStatusMessages(socket: socketIO.Socket) {
-  d('Forwarding connectd status messages from Pool:', Pool.pool.length)
-  Pool.pool.map(connection =>
+  d(
+    'Forwarding connectd status messages from Pool:',
+    ConnectionPool.pool.length
+  )
+  ConnectionPool.processes.map(connection =>
     Object.values(EVENTS).map(event => {
       connection.on(event, (payload: any) => socket.emit(event, payload))
     })

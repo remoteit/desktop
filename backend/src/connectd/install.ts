@@ -4,7 +4,7 @@ import { download } from './download'
 import {
   LATEST_CONNECTD_RELEASE,
   REMOTEIT_BINARY_PATH,
-  PATH_DIR,
+  REMOTEIT_BINARY_NAME,
 } from '../constants'
 import { existsSync } from 'fs'
 import * as host from './host'
@@ -25,12 +25,12 @@ export function install(version: string, progress = (percent: number) => {}) {
     permission,
   })
 
-  fs.mkdirSync(PATH_DIR, { recursive: true })
+  fs.mkdirSync(REMOTEIT_BINARY_PATH, { recursive: true })
 
   // Download the connectd binary from Github
   return download(
     version,
-    host.binaryName,
+    REMOTEIT_BINARY_NAME,
     REMOTEIT_BINARY_PATH,
     progress
   ).then(() => {

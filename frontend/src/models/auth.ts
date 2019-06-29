@@ -28,6 +28,7 @@ export default createModel({
             setUser(user)
             return user
           })
+          // TODO: After sign in, fetch devices (if not search onlY) and connections
           // Check if user should only search for devices
           // rather than fetch all devices
           // .then(() => dispatch.devices.shouldSearchDevices())
@@ -59,8 +60,8 @@ export default createModel({
       return User.signOut()
         .then(signOutFinished)
         .then(dispatch.devices.reset)
-        .then(() => dispatch.navigation.setPage('devices'))
         .then(dispatch.logs.reset)
+        .then(() => dispatch.navigation.setPage('devices'))
     },
   }),
   reducers: {

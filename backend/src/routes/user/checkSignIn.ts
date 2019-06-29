@@ -1,9 +1,9 @@
 import { r3, refreshAccessKey } from '../../services/remote.it'
-import { get, remove } from '../../services/storage'
+import { remove } from '../../services/storage'
 import { AUTH_HASH_COOKIE, USERNAME_COOKIE } from '../../constants'
 import { IUser } from 'remote.it'
 import logger from '../../utils/logger'
-import * as UserCredentialsFile from '../../connectd/UserCredentialsFile'
+import UserCredentialsFile from '../../connectd/UserCredentialsFile'
 // import cookies from 'js-cookie'
 
 export function checkSignIn() {

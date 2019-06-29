@@ -1,9 +1,9 @@
 import socketIO from 'socket.io'
-import { freePort } from '../../utils/freePort'
+import PortScanner from '../../utils/PortScanner'
 import { EVENTS } from '../../connectd/connection'
 import { IService } from 'remote.it'
 import { PEER_PORT_RANGE } from '../../constants'
-import * as Pool from '../../connectd/Pool'
+import ConnectionPool from '../../connectd/ConnectionPool'
 import debug from 'debug'
 
 const d = debug('r3:desktop:backend:routes:connections:start')
@@ -15,7 +15,10 @@ export function start({ socket }: { socket: socketIO.Socket }) {
     { service, user }: { service: IService; user: User },
     callback: (connection: ConnectionInfo) => void
   ) => {
-    const port = await freePort([initialPort, PEER_PORT_RANGE[1]])
+    const port = await PortScanner.findFreePortInRange(
+      initialPort,
+      PEER_PORT_RANGE[1]
+    )
 
     d('Starting connection to service on port: %O', { service, port })
 
@@ -26,7 +29,7 @@ export function start({ socket }: { socket: socketIO.Socket }) {
       deviceID: service.deviceID,
       type: service.type,
     }
-    const connectd = await Pool.register({ connection, user })
+    const connectd = await ConnectionPool.register({ connection, user })
 
     if (!connectd) return
 

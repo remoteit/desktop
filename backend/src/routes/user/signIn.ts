@@ -3,7 +3,7 @@ import { IUser } from 'remote.it'
 import { refreshAccessKey, r3 } from '../../services/remote.it'
 import * as Storage from '../../services/storage'
 import { AUTH_HASH_COOKIE, USERNAME_COOKIE } from '../../constants'
-import * as UserCredentialsFile from '../../connectd/UserCredentialsFile'
+import UserCredentialsFile from '../../connectd/UserCredentialsFile'
 import logger from '../../utils/logger'
 
 const d = debug('r3:desktop:backend:routes:user:signIn')

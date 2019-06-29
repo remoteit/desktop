@@ -6,7 +6,7 @@ import logger from './utils/logger'
 import { server } from './server'
 import { installConnectdIfMissing } from './connectd/install'
 import * as track from './utils/analytics'
-import * as Pool from './connectd/Pool'
+import ConnectionPool from './connectd/ConnectionPool'
 import * as Platform from './services/Platform'
 import './utils/errorReporting'
 
@@ -52,7 +52,7 @@ async function startSocketIOServer() {
     })
   }
 
-  Pool.loadFromSavedConnectionsFile()
+  ConnectionPool.loadFromSavedConnectionsFile()
 }
 
 /**

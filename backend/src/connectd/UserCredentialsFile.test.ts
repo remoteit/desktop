@@ -1,9 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import os from 'os'
-import * as user from './UserCredentialsFile'
-import * as Platform from '../services/Platform'
-import { PATH_DIR } from '../constants'
+import UserCredentialsFile from './UserCredentialsFile'
+import { REMOTEIT_ROOT_DIR } from '../constants'
 
 describe('connectd/UserCredentialsFile', () => {
   /**
@@ -12,55 +10,59 @@ describe('connectd/UserCredentialsFile', () => {
    * test locally (no mocking) yet not destroy your existing connections.
    */
   let cachedUserCredentials: User | undefined
-  beforeAll(() => (cachedUserCredentials = user.read()))
+  beforeAll(() => (cachedUserCredentials = UserCredentialsFile.read()))
   afterAll(() =>
-    cachedUserCredentials ? user.write(cachedUserCredentials) : user.remove()
+    cachedUserCredentials
+      ? UserCredentialsFile.write(cachedUserCredentials)
+      : UserCredentialsFile.remove()
   )
 
-  beforeEach(() => user.remove())
+  beforeEach(() => UserCredentialsFile.remove())
 
   describe('.directory', () => {
     test('should be correct', async () => {
-      expect(user.directory).toBe(PATH_DIR)
+      expect(UserCredentialsFile.directory).toBe(REMOTEIT_ROOT_DIR)
     })
   })
 
   describe('.exists', () => {
     test('should return false if it does not exist', async () => {
-      user.remove()
-      expect(user.exists()).toBe(false)
+      UserCredentialsFile.remove()
+      expect(UserCredentialsFile.exists()).toBe(false)
     })
 
     test('should return true if it exists', async () => {
       createBlankUserObjectFile()
-      expect(user.exists()).toBe(true)
+      expect(UserCredentialsFile.exists()).toBe(true)
     })
   })
 
   describe('.location', () => {
     test('should be located in user home directory .remoteit folder', async () => {
-      expect(user.location).toBe(path.join(PATH_DIR, 'user.json'))
+      expect(UserCredentialsFile.location).toBe(
+        path.join(REMOTEIT_ROOT_DIR, 'user.json')
+      )
     })
   })
 
   describe('.read', () => {
     test('should return undefined if missing', async () => {
-      expect(user.read()).toBe(undefined)
+      expect(UserCredentialsFile.read()).toBe(undefined)
     })
 
     test('should return undefined if invalid', async () => {
       createInvalidFile()
-      expect(user.read()).toBe(undefined)
+      expect(UserCredentialsFile.read()).toBe(undefined)
     })
 
     test('should return undefined if user is valid but empty', async () => {
       createBlankUserObjectFile()
-      expect(user.read()).toBeUndefined()
+      expect(UserCredentialsFile.read()).toBeUndefined()
     })
 
     test('should return content', async () => {
       const content = createFileWithContent()
-      expect(user.read()).toEqual(content)
+      expect(UserCredentialsFile.read()).toEqual(content)
     })
   })
 
@@ -70,29 +72,29 @@ describe('connectd/UserCredentialsFile', () => {
         username: 'foo@bar.com',
         authHash: 'some-auth-hash',
       }
-      user.write(u)
-      expect(user.read()).toEqual(u)
+      UserCredentialsFile.write(u)
+      expect(UserCredentialsFile.read()).toEqual(u)
     })
   })
 
   describe('.isValid', () => {
     test('should return true if exists and is parsable', async () => {
       createFileWithContent()
-      expect(user.isValid()).toBe(true)
+      expect(UserCredentialsFile.isValid()).toBe(true)
     })
 
     test('should return false if user is missing', async () => {
-      expect(user.isValid()).toBe(false)
+      expect(UserCredentialsFile.isValid()).toBe(false)
     })
 
     test('should return false if user is empty', async () => {
       createEmptyFile()
-      expect(user.isValid()).toBe(false)
+      expect(UserCredentialsFile.isValid()).toBe(false)
     })
 
     test('should return false if not parsable', async () => {
       createInvalidFile()
-      expect(user.isValid()).toBe(false)
+      expect(UserCredentialsFile.isValid()).toBe(false)
     })
   })
 })
@@ -102,18 +104,18 @@ function createFileWithContent() {
     username: 'someone@example.com',
     authHash: 'some-auth-hash',
   } as User
-  fs.writeFileSync(user.location, JSON.stringify(content))
+  fs.writeFileSync(UserCredentialsFile.location, JSON.stringify(content))
   return content
 }
 
 function createInvalidFile() {
-  fs.writeFileSync(user.location, 'invalid content!')
+  fs.writeFileSync(UserCredentialsFile.location, 'invalid content!')
 }
 
 function createEmptyFile() {
-  fs.writeFileSync(user.location, '')
+  fs.writeFileSync(UserCredentialsFile.location, '')
 }
 
 function createBlankUserObjectFile() {
-  fs.writeFileSync(user.location, '')
+  fs.writeFileSync(UserCredentialsFile.location, '')
 }

@@ -9,10 +9,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build-storybook": "build-storybook -s public",
+    "storybook": "start-storybook -p 9009 -s public",
     "type-css": "tcm -s -c -p src/**/*.module.css",
     "watch-react": "react-scripts start",
-    "watch-type-css": "onchange -i -k 'src/**/*.module.css' -- npm run type-css",
-    "watch-storybook": "start-storybook -p 9009 -s public"
+    "watch-type-css": "onchange -i -k 'src/**/*.module.css' -- npm run type-css"
   },
   "dependencies": {
     "@kevinwolf/formal-web": "0.1.0",

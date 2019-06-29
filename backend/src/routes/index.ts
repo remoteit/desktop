@@ -6,10 +6,11 @@ import { install } from './connectd/install'
 import { start } from './connections/start'
 import { r3 } from '../services/remote.it'
 import { exists, version } from '../connectd/binary'
-import * as storage from '../services/storage'
-import * as Pool from '../connectd/Pool'
+import * as Storage from '../services/storage'
+import ConnectionPool from '../connectd/ConnectionPool'
 import { REMOTEIT_BINARY_PATH } from '../constants'
-import * as UserCredentialsFile from '../connectd/UserCredentialsFile'
+import UserCredentialsFile from '../connectd/UserCredentialsFile'
+import SavedConnectionsFile from '../connectd/SavedConnectionsFile'
 
 const d = debug('r3:desktop:backend:routes')
 
@@ -24,25 +25,28 @@ interface Routes {
 const disconnect = () => async (
   serviceID: string,
   callback: (success: boolean) => void
-) => callback(Pool.disconnectByServiceID(serviceID))
+) => callback(ConnectionPool.disconnectByServiceID(serviceID))
 
 const restart = () => async (
   serviceID: string,
   callback: (connection: ConnectionInfo | undefined) => void
-) => callback(await Pool.restartByServiceID(serviceID))
+) => callback(await ConnectionPool.restartByServiceID(serviceID))
 
 const signOut = () => async ({}, callback: () => void) => {
   d('Signing out user')
 
   // Clear all cookies, localstorage, etc
-  storage.flush()
-  storage.clear()
+  Storage.flush()
+  Storage.clear()
 
   // Disconnect all services
-  Pool.disconnectAll()
+  ConnectionPool.disconnectAll()
 
   // Clear saved user
   UserCredentialsFile.remove()
+
+  // Clear saved connections
+  SavedConnectionsFile.remove()
 
   // Clear data from remote.it.js
   r3.token = undefined
@@ -54,8 +58,8 @@ const signOut = () => async ({}, callback: () => void) => {
 const list = () => async (
   callback: (connections: ConnectionInfo[]) => void
 ) => {
-  d('Return list of connected services:', Pool.pool.length)
-  callback(Pool.getPool())
+  d('Return list of connected services:', ConnectionPool.pool.length)
+  callback(ConnectionPool.pool)
 }
 
 const info = () => async (callback: (data: any) => void) => {
@@ -78,7 +82,7 @@ const info = () => async (callback: (data: any) => void) => {
 const forget = () => async (
   serviceID: string,
   callback: (connections?: ConnectionInfo[]) => void
-) => callback(Pool.forgetByServiceID(serviceID))
+) => callback(ConnectionPool.forgetByServiceID(serviceID))
 
 export const routes: Routes = {
   'user/sign-in': signIn,
