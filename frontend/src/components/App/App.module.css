@@ -1,0 +1,13 @@
+.titleBar {
+  background-color: var(--color-gray-lighter);
+  color: var(--color-gray);
+  font-size: 16px;
+  font-weight: 300;
+  height: 38px;
+  line-height: 36px;
+  position: fixed;
+  text-align: center;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
