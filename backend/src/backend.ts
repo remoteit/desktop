@@ -118,7 +118,7 @@ function createTrayIcon() {
     mainWindow.show()
     mainWindow.focus()
 
-    // Show devtools when command clicked
+    // Show devtools when command+option clicked
     if (process.defaultApp && event.metaKey) {
       mainWindow.webContents.openDevTools({ mode: 'detach' })
     }
