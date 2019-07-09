@@ -1,6 +1,11 @@
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
-import * as User from '../services/User'
+import BackendAdapter from '../services/BackendAdapter'
+import {
+  clearUserCredentials,
+  refreshAccessKey,
+  updateUserCredentials,
+} from '../services/remote.it'
 
 export interface AuthState {
   checkSignInStarted: boolean
@@ -18,50 +23,41 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     async checkSignIn() {
-      const { checkSignInStarted, checkSignInFinished, setUser } = dispatch.auth
-      checkSignInStarted()
-      return (
-        User.checkSignIn()
-          .then(user => {
-            console.log('USER:', user)
-            if (!user) return
-            setUser(user)
-            return user
-          })
-          // TODO: After sign in, fetch devices (if not search onlY) and connections
-          // Check if user should only search for devices
-          // rather than fetch all devices
-          // .then(() => dispatch.devices.shouldSearchDevices())
-          .finally(checkSignInFinished)
-      )
+      dispatch.auth.checkSignInStarted()
+      dispatch.devices.getConnections()
+      await refreshAccessKey()
+      BackendAdapter.emit('user/check-sign-in')
     },
-    async signIn({
-      password,
-      username,
-    }: {
-      password: string
-      username: string
-    }) {
-      const { signInStarted, signInFinished, setUser } = dispatch.auth
-      signInStarted()
-      return (
-        User.signIn(username, password)
-          .then((user: IUser) => setUser(user))
-          // Check if user should only search for devices
-          // rather than fetch all devices
-          .then(() => dispatch.devices.shouldSearchDevices())
-          // .then(dispatch.logs.reset)
-          .finally(signInFinished)
-      )
+    async signIn(credentials: { password: string; username: string }) {
+      dispatch.auth.signInStarted()
+      BackendAdapter.emit('user/sign-in', credentials)
     },
+    async signedIn(user: IUser) {
+      dispatch.auth.signInFinished()
+      dispatch.auth.checkSignInFinished()
+      dispatch.auth.setUser(user)
+      // TODO: Deal with device search only UI
+      // dispatch.devices.shouldSearchDevices()
+      dispatch.devices.fetch()
+      updateUserCredentials(user)
+    },
+    /**
+     * Triggers a signout via the backend process
+     */
     async signOut() {
-      const { signOutFinished } = dispatch.auth
+      // const { signOutFinished } = dispatch.auth
 
-      return User.signOut()
-        .then(signOutFinished)
-        .then(dispatch.devices.reset)
-        .then(dispatch.logs.reset)
-        .then(() => dispatch.navigation.setPage('devices'))
+      BackendAdapter.emit('user/sign-out')
+    },
+    /**
+     * Gets called when the backend signs the user out
+     */
+    async signedOut() {
+      dispatch.auth.signOutFinished()
+      dispatch.devices.reset()
+      dispatch.logs.reset()
+      dispatch.navigation.setPage('devices')
+      clearUserCredentials()
     },
   }),
   reducers: {

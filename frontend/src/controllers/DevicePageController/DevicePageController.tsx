@@ -19,23 +19,18 @@ export type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
 const mapState = (state: ApplicationState, props: any) => ({
   allDevices: state.devices.all,
-  connections: state.devices.connections,
-  // visibleDevices: state.devices.all,
-  // visibleDevices: visible(state.devices.all),
-  // ...store.select(models => ({
-  //   visibleDevices: models.devices.visible,
-  // })),
   ...visibleDevices(state, {}),
   fetching: state.devices.fetching,
   query: state.devices.query,
   searchOnly: state.devices.searchOnly,
   user: state.auth.user,
+  sort: state.devices.sort,
 })
 const mapDispatch = (dispatch: any) => ({
   fetch: dispatch.devices.fetch,
   localSearch: dispatch.devices.localSearch,
   remoteSearch: dispatch.devices.remoteSearch,
-  getConnections: dispatch.devices.getConnections,
+  changeSort: dispatch.devices.changeSort,
 })
 
 export const DevicePageController = connect(

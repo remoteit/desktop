@@ -5,14 +5,16 @@ import { DisconnectButtonControllerProps } from '../../controllers/DisconnectBut
 
 export function DisconnectButton({
   disconnect,
-  serviceID,
+  disabled = false,
+  id,
 }: DisconnectButtonControllerProps) {
   return (
     <Tooltip title="Disconnect">
       <IconButton
         color="secondary"
         className="txt-md"
-        onClick={() => disconnect(serviceID)}
+        disabled={disabled}
+        onClick={() => disconnect(id)}
       >
         <Icon name="stop-circle" fixedWidth />
       </IconButton>

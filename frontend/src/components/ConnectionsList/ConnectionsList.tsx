@@ -8,7 +8,10 @@ export interface Props {
 export function ConnectionsList({ connections }: Props) {
   if (!connections || !connections.length) {
     return (
-      <div className="px-md py-sm gray italic center">
+      <div
+        className="px-md py-md gray mx-auto italic center"
+        style={{ maxWidth: '400px' }}
+      >
         <strong>You have no running connections yet.</strong> Please find a
         service to connect to and press the connect button and you will see them
         in this list.
@@ -19,7 +22,7 @@ export function ConnectionsList({ connections }: Props) {
   return (
     <>
       {connections.map(c => (
-        <ConnectedServiceItem key={c.serviceID} connection={c} />
+        <ConnectedServiceItem key={c.id} connection={c} />
       ))}
     </>
   )

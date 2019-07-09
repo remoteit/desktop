@@ -10,7 +10,6 @@ describe('components/DevicesPage', () => {
         allDevices={[]}
         visibleDevices={[]}
         connections={[]}
-        getConnections={jest.fn()}
         fetch={jest.fn()}
         localSearch={jest.fn()}
         remoteSearch={jest.fn()}

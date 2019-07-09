@@ -5,4 +5,4 @@ import { RestartButton } from './RestartButton'
 
 storiesOf('components', module)
   .addDecorator(withKnobs)
-  .add('RestartButton', () => <RestartButton serviceID="some-id" />)
+  .add('RestartButton', () => <RestartButton id="some-id" />)

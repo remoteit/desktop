@@ -5,4 +5,4 @@ import { ForgetButton } from './ForgetButton'
 
 storiesOf('components', module)
   .addDecorator(withKnobs)
-  .add('ForgetButton', () => <ForgetButton serviceID="foo" />)
+  .add('ForgetButton', () => <ForgetButton id="foo" />)

@@ -18,7 +18,7 @@ const logs = [
       type: 'connectd',
       raw:
         '!!request to connect from remot3.it ID or device owned by yusuke@remot3.it  <34726>',
-      serviceID: '80:00:00:F7:EB:00:08:D9',
+      id: '80:00:00:F7:EB:00:08:D9',
       port: 33004,
     },
   },
@@ -29,7 +29,7 @@ const logs = [
       type: 'service/connected',
       raw:
         '!!connected local=0 encryption=1 session=C06179712DAE6B525C47822476E799B8BEF7C0C4 ip=126.208.165.148:40801 at time 2  <34729>',
-      serviceID: '80:00:00:F7:EB:00:08:D9',
+      id: '80:00:00:F7:EB:00:08:D9',
       port: 33004,
     },
     createdAt: new Date(),
@@ -41,7 +41,7 @@ const logs = [
     data: {
       type: 'service/throughput',
       raw: '!!throughput txBps=11 rxBps=26 pl=100000',
-      serviceID: '80:00:00:00:01:00:45:78',
+      id: '80:00:00:00:01:00:45:78',
       port: 33003,
     },
   },

@@ -1,22 +1,18 @@
 import { DeviceState, ServiceState } from 'remote.it'
 
 declare global {
-  export interface ConnectionInfo {
-    deviceID?: string
-    serviceID: string
-    serviceName: string
-    type: string
-    port?: number
-    pid?: number
-  }
+  /**
+   * Device sort options. Defaults to 'alpha'
+   */
+  export type SortType = 'alpha' | 'state'
 
   export type ConnectionState =
     | DeviceState
     | ServiceState
     | 'connecting'
     | 'disconnected'
-  // | 'active'
-  // | 'inactive'
+  // | 'active''
+  // | 'inactive
   // | 'connecting'
   // | 'connected'
   // | 'restricted'
@@ -41,14 +37,6 @@ declare global {
     | 'service/throughput'
     | 'service/uptime'
     | 'connectd/install/error'
-
-  export interface ConnectLogMessage {
-    type: string
-    raw: string
-    serviceID: string
-    port: number
-    error?: Error
-  }
 
   export type LogType = 'general' | 'connectd' | 'alert'
 
@@ -97,7 +85,6 @@ declare global {
 
 declare module 'remote.it' {
   export interface IService {
-    // The port in which the service is connected to
     connecting?: boolean
     port?: number
     pid?: number

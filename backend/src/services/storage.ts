@@ -1,6 +1,6 @@
 import { session } from 'electron'
 import logger from '../utils/logger'
-import { mainWindow } from '../backend'
+import { application } from '../backend'
 
 export async function set(name: string, value: string) {
   // Set expiration to a long time into the future. set()
@@ -13,7 +13,7 @@ export async function set(name: string, value: string) {
   logger.info('Setting cookie', { name, value, expirationDate })
 
   return getCookies().set({
-    url: mainWindow ? mainWindow.webContents.getURL() : 'http://localhost:3000',
+    url: application.url || 'http://localhost:3000',
     name,
     value,
     // path: '/',

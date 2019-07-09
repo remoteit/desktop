@@ -1,1 +1,0 @@
-export { SplashScreenPage } from './SplashScreenPage'

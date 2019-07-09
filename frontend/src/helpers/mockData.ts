@@ -80,13 +80,13 @@ export function log(message = 'Some log messate'): Log {
 }
 
 export function connection(
-  serviceName = 'Some service name',
+  name = 'Some service name',
   port = 33001
 ): ConnectionInfo {
   return {
     // deviceID: string
-    serviceID: 'some-service-id',
-    serviceName,
+    id: 'some-service-id',
+    name,
     type: 'SSH',
     port,
     // pid?: number

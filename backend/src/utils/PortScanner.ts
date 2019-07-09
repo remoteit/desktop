@@ -2,7 +2,7 @@ import net from 'net'
 import debug from 'debug'
 // import portfinder from 'portfinder'
 import logger from './logger'
-import ConnectionPool from '../connectd/ConnectionPool'
+// import ConnectionPool from '../connectd/ConnectionPool'
 
 const d = debug('r3:desktop:utils:free-port')
 
@@ -11,12 +11,12 @@ export interface ServerError extends Error {
 }
 
 export default class PortScanner {
-  static async findFreePortInRange(
+  public static async findFreePortInRange(
     start: number,
-    end: number
+    end: number,
+    reservedPorts: number[] = []
   ): Promise<number | undefined> {
     d('Checking port range:', { start, end })
-    const reservedPorts = ConnectionPool.usedPorts()
 
     // Create a range between start and end port numbers
     const range = [...Array(end - start).keys()]
@@ -35,7 +35,10 @@ export default class PortScanner {
     }
   }
 
-  static async isPortFree(port: number): Promise<boolean> {
+  public static async isPortFree(
+    port: number,
+    host: string = 'localhost'
+  ): Promise<boolean> {
     return new Promise(function(resolve) {
       const server = net.createServer()
 
@@ -52,7 +55,7 @@ export default class PortScanner {
         server.close()
       })
 
-      server.listen(port)
+      server.listen(port, host)
     })
   }
 }

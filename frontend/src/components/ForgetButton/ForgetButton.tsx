@@ -4,7 +4,8 @@ import { Icon } from '../Icon'
 import { connect } from 'react-redux'
 
 export type ForgetButtonProps = {
-  serviceID: string
+  id: string
+  disabled?: boolean
 } & ReturnType<typeof mapDispatch>
 
 const mapDispatch = (dispatch: any) => ({
@@ -14,13 +15,14 @@ const mapDispatch = (dispatch: any) => ({
 export const ForgetButton = connect(
   null,
   mapDispatch
-)(({ forget, serviceID }: ForgetButtonProps) => {
+)(({ disabled = false, forget, id }: ForgetButtonProps) => {
   return (
     <Tooltip title="Forget this connection">
       <IconButton
         color="secondary"
         className="txt-md"
-        onClick={() => forget(serviceID)}
+        disabled={disabled}
+        onClick={() => forget(id)}
       >
         <Icon name="times" fixedWidth />
       </IconButton>

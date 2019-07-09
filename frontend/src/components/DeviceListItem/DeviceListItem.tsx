@@ -4,12 +4,9 @@ import { Icon } from '../Icon'
 import { IDevice } from 'remote.it'
 import {
   ListItem,
-  Tooltip,
   ListItemIcon,
   ListItemText,
-  ListItemSecondaryAction,
   Collapse,
-  List,
   Divider,
 } from '@material-ui/core'
 import { ServiceList } from '../ServiceList'

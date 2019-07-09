@@ -4,12 +4,8 @@ import { AppController } from './controllers/AppController'
 import * as serviceWorker from './serviceWorker'
 import { Provider } from 'react-redux'
 import { store } from './store'
-import * as backend from './services/backend'
 import './global.css'
-
-// Listen for any incoming connectd events from the backend and
-// forward them to our logging store.
-backend.recordConnectdEvents()
+import './services/BackendAdapter'
 
 ReactDOM.render(
   <Provider store={store}>

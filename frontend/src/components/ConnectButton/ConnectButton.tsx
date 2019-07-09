@@ -15,7 +15,11 @@ export function ConnectButton({
         className="txt-md"
         onClick={() => connect(service)}
       >
-        <Icon name="plug" fixedWidth />
+        <Icon
+          name={service.connecting ? 'spinner-third' : 'plug'}
+          spin={service.connecting}
+          fixedWidth
+        />
       </IconButton>
     </Tooltip>
   )

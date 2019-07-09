@@ -13,8 +13,8 @@ export function ServiceListItem({ service }: ServiceListItemProps) {
     return (
       <ConnectedServiceItem
         connection={{
-          serviceName: service.name,
-          serviceID: service.id,
+          name: service.name,
+          id: service.id,
           type: service.type,
           port: service.port,
           pid: service.pid,

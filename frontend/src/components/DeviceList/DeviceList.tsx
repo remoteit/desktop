@@ -23,29 +23,28 @@ export function DeviceList({
 }: DeviceListProps & React.HTMLProps<HTMLDivElement>) {
   if (searching) {
     return (
-      <div className="px-md py-sm center gray italic">
+      <div className="px-md py-md center gray italic">
         <Icon name="spinner-third" spin className="mr-sm" /> Searching...
       </div>
     )
   }
 
   if (!devices || !devices.length) {
-    if (searchOnly) {
-      if (query) {
-        return (
-          <div className="px-md py-sm center bg-warning white fw-bold">
-            Your search didn't match any results, please try a different search.
-          </div>
-        )
-      } else {
-        return (
-          <div className="px-md py-sm center gray italic">
-            Unable to display your list because the number of devices in your
-            account is too large. Please search for a device or service above
-            instead.
-          </div>
-        )
-      }
+    if (query) {
+      return (
+        <div className="px-md py-sm center bg-warning white fw-bold">
+          Your search didn't match any results, please try a different search.
+        </div>
+      )
+    }
+    if (searchOnly && !query) {
+      return (
+        <div className="px-md py-sm center gray italic">
+          Unable to display your list because the number of devices in your
+          account is too large. Please search for a device or service above
+          instead.
+        </div>
+      )
     }
 
     return (

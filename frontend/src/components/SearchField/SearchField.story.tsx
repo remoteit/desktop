@@ -8,7 +8,7 @@ storiesOf('components', module)
   .addDecorator(withKnobs)
   .add('SearchField', () => (
     <SearchField
-      search={action('search')}
+      onSubmit={action('search')}
       searching={boolean('searching', false)}
     />
   ))

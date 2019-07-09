@@ -1,10 +1,11 @@
 import path from 'path'
 import * as winston from 'winston'
-import { LOG_DIR } from '../constants'
+import { REMOTEIT_ROOT_DIR } from '../constants'
 
 const ENV = process.env.NODE_ENV
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
 const MAX_LOG_FILES = 5
+export const LOG_DIR = path.join(REMOTEIT_ROOT_DIR, 'logs')
 
 const transports = [
   new winston.transports.File({
@@ -23,7 +24,10 @@ const transports = [
     silent: ENV === 'test',
   }),
   new winston.transports.Console({
-    format: winston.format.simple(),
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    ),
     silent: ENV === 'test',
   }),
 ]

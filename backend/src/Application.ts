@@ -1,0 +1,779 @@
+import debug from 'debug'
+import electron from 'electron'
+import express from 'express'
+import fs from 'fs'
+import http from 'http'
+import path from 'path'
+import SocketIO from 'socket.io'
+import url from 'url'
+import { execFile, ChildProcess } from 'child_process'
+import { EventEmitter } from 'events'
+import {
+  PORT,
+  PEER_PORT_RANGE,
+  REMOTEIT_ROOT_DIR,
+  REMOTEIT_BINARY_PATH,
+} from './constants'
+import PortScanner from './utils/PortScanner'
+import logger from './utils/logger'
+import { r3, refreshAccessKey } from './services/remote.it'
+
+const d = debug('r3:backend:Application')
+
+const EVENTS = {
+  user: {
+    checkSignIn: 'user/check-sign-in',
+    signOut: 'user/sign-out',
+    signedOut: 'user/signed-out',
+    signIn: 'user/sign-in',
+    signedIn: 'user/signed-in',
+  },
+  pool: {
+    updated: 'pool/updated',
+  },
+  connections: {
+    // Actions
+    connect: 'service/connect',
+    disconnect: 'service/disconnect',
+    forget: 'service/forget',
+    list: 'connections/list',
+    restart: 'service/restart',
+
+    // Connection events
+    connected: 'service/connected',
+    disconnected: 'service/disconnected',
+    forgotten: 'service/forgotten',
+
+    // Process output
+    error: 'service/error',
+    status: 'service/status',
+    uptime: 'service/uptime',
+    request: 'service/request',
+    tunnelOpened: 'service/tunnel-opened',
+    tunnelClosed: 'service/tunnel-closed',
+    throughput: 'service/throughput',
+    version: 'service/version',
+    unknown: 'service/unknown',
+  },
+}
+
+interface UserCredentials {
+  username: string
+  authHash: string
+}
+
+interface ConnectionData {
+  id: string
+  port: number
+  name?: string
+  pid?: number
+}
+
+interface ConnectionArgs {
+  authHash: string
+  host?: string
+  id: string
+  name?: string
+  port?: number
+  username: string
+}
+
+interface SavedConnection {
+  id: string
+  port: number
+  name?: string
+}
+
+class ElectronApp extends EventEmitter {
+  private window?: electron.BrowserWindow
+  private tray?: electron.Tray
+  private app: electron.App
+  private quitSelected: boolean
+
+  constructor() {
+    super()
+
+    this.app = electron.app
+    // const BrowserWindow = electron.BrowserWindow
+    // Keep a global reference of the window and try objects, if you don't, they window will
+    // be removed automatically when the JavaScript object is garbage collected.
+
+    this.quitSelected = false
+
+    this.app.on('ready', this.handleAppReady)
+    this.app.on('activate', this.handleActivate)
+    this.app.on('before-quit', () => (this.quitSelected = true))
+
+    // Make sure to never show the doc icon
+    // TODO: Have this configurable via a setting!
+    this.app.dock.hide()
+  }
+
+  get url() {
+    if (!this.window) return
+    return this.window.webContents.getURL()
+  }
+
+  /**
+   * This method will be called when Electron has finished
+   * initialization and is ready to create browser windows.
+   * Some APIs can only be used after this event occurs.
+   */
+  handleAppReady = () => {
+    this.createMainWindow()
+    this.createTrayIcon()
+    this.emit('ready')
+  }
+
+  handleActivate = () => {
+    // logger.info('Window activated')
+    if (this.window) this.window.show()
+  }
+
+  createMainWindow = () => {
+    if (this.window) return
+
+    // logger.info('Creating main window')
+    // d('Showing main window')
+    this.window = new electron.BrowserWindow({
+      width: 700,
+      height: 600,
+      minWidth: 400,
+      minHeight: 300,
+      icon: path.join(__dirname, 'images/icon-64x64.png'),
+      frame: false,
+      titleBarStyle: 'hiddenInset',
+    })
+
+    const startUrl =
+      process.env.ELECTRON_START_URL ||
+      url.format({
+        pathname: path.join(__dirname, '../build/index.html'),
+        protocol: 'file:',
+        slashes: true,
+      })
+    this.window.loadURL(startUrl)
+
+    // Open the DevTools.
+    // mainWindow.webContents.openDevTools()
+
+    this.window.on('close', e => {
+      if (!this.quitSelected) {
+        e.preventDefault()
+        if (this.window) this.window.hide()
+      }
+    })
+  }
+
+  createTrayIcon() {
+    // logger.info('Create tray icon')
+
+    const iconPath = path.join(__dirname, 'images', 'iconTemplate.png')
+    this.tray = new electron.Tray(iconPath)
+
+    this.tray.on('click', () => {
+      // logger.info('Clicked tray icon')
+      if (this.window) {
+        this.window.show()
+        this.window.focus()
+      }
+    })
+  }
+}
+
+class ConnectdInstaller {
+  static async installIfMissing() {}
+}
+
+class JSONFile<T> {
+  public location: string
+
+  constructor(location: string) {
+    this.location = location
+  }
+
+  // get fileName() {
+  //   return 'connections.json'
+  // }
+
+  // get location() {
+  //   return path.join(REMOTEIT_ROOT_DIR, this.fileName)
+  // }
+
+  /**
+   * Checks to see if the connections file exists on the
+   * file system.
+   */
+  exists = () => fs.existsSync(this.location)
+
+  /**
+   * Read the connections file and return it or
+   * undefined if it is missing or invalid.
+   */
+  read(): T | undefined {
+    if (!this.exists()) return
+
+    // logger.info('Loading saved connections file:', { location: this.location })
+
+    const content = fs.readFileSync(this.location)
+    if (!content || !content.toString()) return
+
+    try {
+      const json = JSON.parse(content.toString())
+      if (!json) return
+
+      // logger.info('Read saved connections file:', json)
+
+      return json
+    } catch (error) {
+      return
+    }
+  }
+
+  /**
+   * Returns whether the file is valid or not.
+   * This includes a check to see if it exists and has
+   * valid JSON contents.
+   */
+  isValid = () => Boolean(this.read())
+
+  /**
+   * Remove the file from the filesystem.
+   */
+  remove = () => this.exists() && fs.unlinkSync(this.location)
+
+  /**
+   * Create a new file.
+   */
+  write = (content: T) => {
+    // Make sure containing folder exists.
+    fs.mkdirSync(path.parse(this.location).dir, { recursive: true })
+
+    // Write the contents as a indented/formatted JSON value.
+    fs.writeFileSync(this.location, JSON.stringify(content, null, 2))
+  }
+}
+
+class Environment {
+  static get connectdPath() {
+    return REMOTEIT_BINARY_PATH
+  }
+}
+
+/**
+ * Forward a set of events from one EventEmitter to another.
+ */
+class EventRelay {
+  constructor(events: string[], from: EventEmitter, to: EventEmitter) {
+    events.map(event =>
+      from.on(event, (...args: any[]) => to.emit(event, ...args))
+    )
+  }
+}
+
+class Connection extends EventEmitter {
+  private authHash: string
+  public id: string
+  public host?: string
+  public name?: string
+  public pid?: number
+  public port: number
+  private username: string
+  // private password?: string
+  private process?: ChildProcess
+
+  constructor(args: {
+    id: string
+    port: number
+    username: string
+    authHash: string
+    host?: string
+    name?: string
+  }) {
+    super()
+    this.authHash = args.authHash
+    this.id = args.id
+    this.host = args.host || 'localhost'
+    this.port = args.port
+    this.name = args.name || `${this.host}:${this.port}`
+    this.username = args.username
+  }
+
+  async start() {
+    const usernameBase64 = Buffer.from(this.username).toString('base64')
+    this.process = execFile(
+      Environment.connectdPath,
+      [
+        // TODO: Support password login too?
+        '-s',
+        '-p',
+        usernameBase64,
+        this.authHash,
+        this.id, // Service ID
+        `T${this.port}`, // Bind port
+        '1', // Encryption
+        '127.0.0.1', // Bind address
+        '0.0.0.0', // Restricted connection IP
+        '12', // Max out
+        '0', // Lifetime
+        '0', // Grace period
+      ],
+      {
+        maxBuffer: Infinity,
+      },
+      (
+        error: Error | null,
+        stdout: string | Buffer,
+        stderr: string | Buffer
+      ) => {
+        let message = 'Unknown error'
+        if (error) message = error.message
+        if (stderr) message = stderr.toString()
+        logger.error(message)
+        // this.emit(EVENTS.connections.error, {
+        //   error: message,
+        //   connection: this.toJSON(),
+        // })
+      }
+    )
+
+    if (!this.process || !this.process.stdout || !this.process.stderr)
+      throw new Error('Could not start connectd process!')
+
+    this.process.stdout.on('data', this.handleStdOut)
+    this.process.stderr.on('data', this.handleStdErr)
+    this.process.on('error', this.handleError)
+    this.process.on('close', this.handleClose)
+  }
+
+  async kill() {
+    logger.info('Killing connection:', this.toJSON())
+    if (this.process) this.process.kill()
+    this.process = undefined
+  }
+
+  async stop() {
+    this.kill()
+    this.emit(EVENTS.connections.disconnected, {
+      connection: this.toJSON(),
+    } as ConnectdMessage)
+  }
+
+  async restart() {
+    if (this.process && this.process.pid) this.stop()
+    this.start()
+  }
+
+  toJSON = (): ConnectionData => {
+    return {
+      id: this.id,
+      pid: this.process ? this.process.pid : undefined,
+      port: this.port,
+      name: this.name,
+    }
+  }
+
+  private handleError = (error: Error) => {
+    logger.error('connectd error: ' + error.message)
+    this.emit('error', { error: error.message })
+  }
+
+  private handleClose = (code: number) => {
+    logger.error(`Connection closed with code: ${code}`)
+
+    // Make sure kill the process.
+    this.kill()
+
+    this.emit(EVENTS.connections.disconnected, {
+      connection: this.toJSON(),
+      raw: `Connection closed`,
+    } as ConnectdMessage)
+
+    if (code && code !== 0) {
+      const messages: { [code: string]: string } = {
+        1: 'process lifetime expired',
+        2: 'shutdown packet received',
+        3: 'termination from signal',
+        4: 'Disabled By User Configuration',
+        10: 'bad user specified  (probably not possible at this time)',
+        11: 'authentication error (may be multiple because of retry)',
+        12: 'auto connect failed (Initiator p2p connect failed)',
+        13: 'Initiate session create failed (initiator p2p connect failed !autoconnect)',
+        14: 'Connection To remot3.it Service has Timed Out',
+        15: 'cannot get UID from service (not a initiator side error)',
+        16: 'Cannot Bind UDP Port (UDP P2P port)',
+        17: 'Cannot Bind Proxy Port (initiator port)',
+        20: 'connection to peer closed or timed out',
+        21: 'connection to peer failed (failed p2p connect)',
+        25: 'unknown reason (this should not happen)',
+        30: 'user console exit',
+      }
+      const message = messages[String(code)]
+
+      console.error('⚠️  Closing with error code:', code, message)
+
+      this.emit(EVENTS.connections.error, {
+        code,
+        connection: this.toJSON(),
+        error: message,
+      } as ConnectionErrorMessage)
+    }
+  }
+
+  private handleStdOut = (buff: Buffer) => {
+    // Split incoming lines from stdout so we can parse them
+    // individually.
+    const lines = buff
+      .toString()
+      .trim()
+      .split(/\r?\n/)
+
+    // Parse incoming messages and format messages for
+    // emitting.
+    for (const line of lines) {
+      let name
+      let extra: any
+      if (line.includes('seconds since startup')) {
+        name = EVENTS.connections.uptime
+      } else if (line.startsWith('!!status')) {
+        name = EVENTS.connections.status
+      } else if (line.startsWith('!!throughput')) {
+        name = EVENTS.connections.throughput
+      } else if (line.startsWith('!!request')) {
+        name = EVENTS.connections.request
+      } else if (line.startsWith('!!connected')) {
+        this.emit(EVENTS.connections.connected, this.toJSON())
+        return
+      } else if (line.includes('exit - process closed')) {
+        name = EVENTS.connections.disconnected
+      } else if (line.includes('connecttunnel')) {
+        name = EVENTS.connections.tunnelOpened
+      } else if (line.includes('closetunnel')) {
+        name = EVENTS.connections.tunnelClosed
+      } else if (line.includes('Version')) {
+        name = EVENTS.connections.version
+        const match = line.match(/Version ([\d\.]*)/)
+        if (match && match.length > 1) extra = { version: match[1] }
+        // TODO: return local IP
+        // } else if (line.includes('primary local ip')) {
+        //   localIP = localIP
+        //   connectd.emit(EVENTS.updated, {}) //this.toJSON())
+      } else {
+        name = EVENTS.connections.unknown
+      }
+
+      this.emit(name, {
+        connection: this.toJSON(),
+        extra,
+        raw: line,
+      } as ConnectdMessage)
+    }
+  }
+
+  private handleStdErr = (buff: Buffer) => {
+    const error = buff.toString()
+    this.emit(EVENTS.connections.error, {
+      connection: this.toJSON(),
+      error,
+    } as ConnectionErrorMessage)
+    console.error('⚠️  CONNECTD ERROR:', error)
+  }
+}
+
+class ConnectionPool extends EventEmitter {
+  public user?: UserCredentials
+  private pool: { [id: string]: Connection } = {}
+
+  initialize = async (
+    connections?: ConnectionData[],
+    user?: UserCredentials
+  ) => {
+    logger.info('Initializing connections pool', { connections })
+
+    if (!connections || !connections.length || !user) return
+    this.user = user
+
+    connections.map(conn => this.connect(conn))
+  }
+
+  connect = async (args: { id: string; port?: number; name?: string }) => {
+    if (!this.user) throw new Error('No user to authenticate connection!')
+
+    const port = args.port || (await this.freePort())
+
+    if (!port) throw new Error('No port could be assigned to connection!')
+
+    logger.info('Connecting to service', args)
+
+    // TODO: De-dupe connections!
+
+    const connection = new Connection({
+      port,
+      username: this.user.username,
+      authHash: this.user.authHash,
+      ...args,
+    })
+    this.pool[args.id] = connection
+    await this.start(args.id)
+
+    // Trigger a save of the connections file
+    this.updated()
+
+    // Emit all events comming from the Connection to the
+    // ConnectionPool so they can be listened to
+    const events = Object.values(EVENTS.connections)
+    new EventRelay(events, connection, this)
+
+    return connection
+  }
+
+  find = (id: string) => {
+    const conn = this.pool[id]
+    if (!conn) throw new Error(`Connection with ID ${id} could not be found!`)
+    return conn
+  }
+
+  start = async (id: string) => {
+    return this.find(id).start()
+  }
+
+  stop = async (id: string) => {
+    return this.find(id).stop()
+  }
+
+  stopAll = async () => {
+    return Object.keys(this.pool).map(id => this.stop(id))
+  }
+
+  forget = async (id: string) => {
+    await this.stop(id)
+    delete this.pool[id]
+    this.updated()
+    await this.emit(EVENTS.connections.forgotten, id)
+  }
+
+  restart = async (id: string) => {
+    return this.find(id).restart()
+  }
+
+  updated = async () => {
+    this.emit(EVENTS.pool.updated, this.toJSON())
+  }
+
+  toJSON = (): ConnectionData[] => {
+    const ids = Object.keys(this.pool)
+    return ids.map(id => this.pool[id].toJSON())
+  }
+
+  private freePort = async () => {
+    return await PortScanner.findFreePortInRange(
+      PEER_PORT_RANGE[0],
+      PEER_PORT_RANGE[1],
+      this.usedPorts
+    )
+  }
+
+  private get usedPorts() {
+    return Object.keys(this.pool).map(id => this.pool[id].port)
+  }
+}
+
+class Server extends EventEmitter {
+  private pool: ConnectionPool
+  private io: SocketIO.Server
+  private user?: UserCredentials
+
+  constructor(pool: ConnectionPool, user?: UserCredentials) {
+    super()
+
+    this.pool = pool
+    this.user = user
+
+    logger.info('Starting up server!')
+
+    const app = express()
+    const server = new http.Server(app)
+    this.io = SocketIO(server)
+
+    this.io.on('connection', socket => {
+      socket.on(EVENTS.user.checkSignIn, this.checkSignIn)
+      socket.on(EVENTS.user.signIn, this.signIn)
+      socket.on(EVENTS.user.signOut, this.signOut)
+      socket.on(EVENTS.connections.list, this.list)
+      socket.on(EVENTS.connections.connect, this.connect)
+      socket.on(EVENTS.connections.disconnect, this.disconnect)
+      socket.on(EVENTS.connections.forget, this.forget)
+      socket.on(EVENTS.connections.restart, this.restart)
+    })
+
+    // Forward all connection pool events to the server SocketIO process.
+    const events = Object.values(EVENTS.connections)
+    new EventRelay(events, this.pool, this.io.sockets)
+
+    server.listen(PORT, () => {
+      logger.info(`Server listening on port ${PORT}`)
+
+      // d(`Listening on port ${PORT}`)
+      // logger.info(`Listening on port ${PORT}`)
+      this.emit('ready')
+    })
+  }
+
+  // on = (event: string, listener: (...args: any[]) => void) => {
+  //   this.io.on(event, listener)
+  //   return this
+  // }
+
+  send = (event: string, ...args: any[]) => {
+    this.emit(event, ...args)
+    this.io.sockets.emit(event, ...args)
+    return true
+  }
+
+  checkSignIn = async () => {
+    logger.info('Check sign in')
+
+    if (!this.user) return
+
+    logger.info('Attempting auth hash login')
+
+    await refreshAccessKey()
+    const user = await r3.user.authHashLogin(
+      this.user.username,
+      this.user.authHash
+    )
+
+    // Set the user on the pool so we can
+    // authenticate requests.
+    this.pool.user = user
+
+    logger.info('User', { user })
+    if (user) this.send(EVENTS.user.signedIn, user)
+  }
+
+  signIn = () => {
+    logger.warn('TOD: SIGN IN USER!')
+    this.send(EVENTS.user.signedIn)
+  }
+
+  signOut = () => {
+    logger.info('Sign out user')
+    this.send(EVENTS.user.signedOut)
+  }
+
+  list = (cb: (pool: ConnectionData[]) => void) => {
+    cb(this.pool.toJSON())
+  }
+
+  connect = async (args: ConnectionArgs) => {
+    logger.info('Connect to service:', args)
+    return this.pool.connect(args)
+  }
+
+  disconnect = async (id: string) => {
+    await this.pool.stop(id)
+  }
+
+  forget = async (id: string) => {
+    await this.pool.forget(id)
+  }
+
+  restart = async (id: string) => {
+    await this.pool.restart(id)
+  }
+
+  install = () => {}
+}
+
+export default class Application {
+  private server: Server
+  private pool: ConnectionPool
+  private connectionsFile: JSONFile<SavedConnection[]>
+  private userFile: JSONFile<UserCredentials>
+  private window: ElectronApp
+
+  constructor() {
+    logger.info('Application starting up!')
+
+    this.window = new ElectronApp()
+
+    this.connectionsFile = new JSONFile<SavedConnection[]>(
+      path.join(REMOTEIT_ROOT_DIR, 'connections.json')
+    )
+    this.userFile = new JSONFile<UserCredentials>(
+      path.join(REMOTEIT_ROOT_DIR, 'user.json')
+    )
+
+    const userCredentials = this.userFile.read()
+
+    // Start pool and load connections from filestystem
+    this.pool = new ConnectionPool()
+    this.pool.initialize(this.connectionsFile.read(), userCredentials)
+    this.pool.on(EVENTS.pool.updated, this.handlePoolUpdated)
+
+    // win.on('ready', async () => {})
+
+    // Start server and listen to events.
+    this.server = new Server(this.pool, userCredentials)
+    this.server.on('ready', this.handleServerReady)
+    this.server.on(EVENTS.user.signedIn, this.handleSignedIn)
+    this.server.on(EVENTS.user.signedOut, this.handleSignedOut)
+  }
+
+  get url() {
+    return this.window.url
+  }
+
+  /**
+   * When the pool is updated, persist it to the saved connections
+   * file on disk.
+   */
+  private handlePoolUpdated = (pool: ConnectionData[]) => {
+    logger.info('Pool updated', { pool })
+    this.connectionsFile.write(pool)
+  }
+
+  /**
+   *  Make sure connectd is installed on startup of server
+   */
+  private handleServerReady = () => {
+    logger.info('Server is ready')
+    ConnectdInstaller.installIfMissing().catch(error =>
+      this.server.emit('connectd/install/error', error.message)
+    )
+  }
+
+  /**
+   * When a user is signed in, persist them to the user credentials
+   * file on disk.
+   */
+
+  private handleSignedIn = (user: UserCredentials) => {
+    logger.info('User signed in', { username: user.username })
+
+    // Set the user on the pool so we can
+    // authenticate requests.
+    this.pool.user = user
+
+    // Save the user to the user JSON file.
+    this.userFile.write(user)
+  }
+
+  /**
+   * When a user logs out, remove their credentials from the
+   * saved connections file.
+   */
+
+  private handleSignedOut = async () => {
+    // Stop all connections cleanly
+    await this.pool.stopAll()
+
+    // Clear out the authenticatd user in the connection
+    // pool so future connections don't start.
+    this.pool.user = undefined
+
+    // Remove files from system.
+    this.userFile.remove()
+    this.connectionsFile.remove()
+  }
+}

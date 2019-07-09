@@ -33,16 +33,16 @@ storiesOf('components/devices', module)
     <Provider store={store}>
       <DevicesPage
         allDevices={devices}
-        connections={[]}
         visibleDevices={devices}
         fetch={() => Promise.resolve(action('fetch'))}
-        getConnections={() => Promise.resolve(action('getConnections'))}
         fetching={boolean('fetching', false)}
         searchOnly={boolean('searchOnly', false)}
         localSearch={action('localSearch')}
         remoteSearch={action('remoteSearch')}
+        changeSort={action('changeSort')}
         user={user()}
         query={text('query', '')}
+        sort={text('sort', 'alpha') as SortType}
       />
     </Provider>
   ))

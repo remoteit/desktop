@@ -1,20 +1,33 @@
-import debug from 'debug'
-import { r3, refreshAccessKey } from '../services/remote.it'
+import { IDevice } from 'remote.it'
 
-const d = debug('r3:desktop:frontend:services:Device')
+export default class Device {
+  public static sort(devices: IDevice[], sort: SortType = 'alpha'): IDevice[] {
+    const sorted = [...devices]
+    // Always sort by alpha initially
+    sorted.sort((a, b) => {
+      if (a.name.toLowerCase() < b.name.toLowerCase()) return -1
+      if (a.name.toLowerCase() > b.name.toLowerCase()) return 1
+      return 0
+    })
 
-export async function all() {
-  d('Refreshing access key')
-  await refreshAccessKey()
+    if (sort === 'state') {
+      sorted.sort((a, b) => {
+        if (a.state === b.state) return 0
+        if (
+          a.state === 'connected' &&
+          (b.state === 'active' || b.state === 'inactive')
+        )
+          return -1
+        if (a.state === 'active' && b.state === 'inactive') return -1
+        if (
+          a.state === 'inactive' &&
+          (b.state === 'active' || b.state === 'connected')
+        )
+          return 1
+        return 0
+      })
+    }
 
-  d('Fetching devices')
-  return r3.devices.all()
-}
-
-export async function count() {
-  return r3.devices.count()
-}
-
-export async function search(query: string) {
-  return r3.devices.search(query)
+    return sorted
+  }
 }

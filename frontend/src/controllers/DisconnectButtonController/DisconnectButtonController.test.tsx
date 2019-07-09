@@ -5,6 +5,6 @@ import { text } from '@storybook/addon-knobs'
 
 describe('components/DisconnectButtonController', () => {
   test('should not explode', () => {
-    mount(<DisconnectButtonController serviceID={text('serviceID', '')} />)
+    mount(<DisconnectButtonController id={text('id', '')} />)
   })
 })

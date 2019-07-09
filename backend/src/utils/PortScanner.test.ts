@@ -1,5 +1,5 @@
 import PortScanner, { ServerError } from './PortScanner'
-import { ConnectionPool } from '../connectd/ConnectionPool'
+// import { ConnectionPool } from '../connectd/ConnectionPool'
 import net, { Server } from 'net'
 import { EventEmitter } from 'events'
 
@@ -10,19 +10,19 @@ describe('backend/utils/PortScanner', () => {
     test('returns the next available port in a range', async () => {
       const expected = 33002
       // Simulate a saved connection existing for port 33000
-      const spy: jest.SpyInstance = jest
-        .spyOn(ConnectionPool.prototype, 'usedPorts')
-        .mockReturnValue([33000])
+      // const spy: jest.SpyInstance = jest
+      // .spyOn(ConnectionPool.prototype, 'usedPorts')
+      // .mockReturnValue([33000])
 
       // Simulate the first port not being free
       jest
         .spyOn(PortScanner, 'isPortFree')
         .mockImplementationOnce(() => Promise.resolve(false))
 
-      const port = await PortScanner.findFreePortInRange(33000, 42999)
+      const port = await PortScanner.findFreePortInRange(33000, 42999, [33000])
 
       expect(port).toBe(expected)
-      expect(spy).toBeCalled()
+      // expect(spy).toBeCalled()
     })
   })
 

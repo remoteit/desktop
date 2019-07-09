@@ -4,7 +4,8 @@ import { Icon } from '../Icon'
 import { connect } from 'react-redux'
 
 export type RestartButtonProps = {
-  serviceID: string
+  id: string
+  disabled?: boolean
 } & ReturnType<typeof mapDispatch>
 
 const mapDispatch = (dispatch: any) => ({
@@ -14,13 +15,14 @@ const mapDispatch = (dispatch: any) => ({
 export const RestartButton = connect(
   null,
   mapDispatch
-)(({ restart, serviceID }: RestartButtonProps) => {
+)(({ disabled = false, restart, id }: RestartButtonProps) => {
   return (
     <Tooltip title="Restart">
       <IconButton
         color="primary"
         className="txt-md"
-        onClick={() => restart(serviceID)}
+        disabled={disabled}
+        onClick={() => restart(id)}
       >
         <Icon name="redo" fixedWidth />
       </IconButton>

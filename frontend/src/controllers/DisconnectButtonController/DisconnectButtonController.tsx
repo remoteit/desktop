@@ -2,7 +2,8 @@ import { connect } from 'react-redux'
 import { DisconnectButton } from '../../components/DisconnectButton'
 
 export type DisconnectButtonControllerProps = {
-  serviceID: string
+  id: string
+  disabled?: boolean
 } & ReturnType<typeof mapDispatch>
 
 const mapDispatch = (dispatch: any) => ({

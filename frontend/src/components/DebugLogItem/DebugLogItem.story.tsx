@@ -14,7 +14,7 @@ storiesOf('components', module)
         data: {
           type: 'service/throughput',
           raw: '!!throughput txBps=11 rxBps=26 pl=100000',
-          serviceID: '80:00:00:00:01:00:45:78',
+          id: '80:00:00:00:01:00:45:78',
           port: 33003,
         },
       }}
