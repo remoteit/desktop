@@ -1,8 +1,7 @@
 .titleBar {
   background-color: var(--color-gray-lighter);
-  color: var(--color-gray);
+  color: var(--color-primary);
   font-size: 16px;
-  font-weight: 300;
   height: 38px;
   line-height: 36px;
   position: fixed;

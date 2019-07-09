@@ -1,5 +1,4 @@
 import React from 'react'
-import { Page } from '../Page'
 import { PageHeading } from '../../components/PageHeading'
 import { SignOutLinkController } from '../../controllers/SignOutLinkController'
 import { Link, Paper } from '@material-ui/core'
@@ -10,23 +9,21 @@ export interface Props {}
 
 export function SettingsPage({ ...props }: Props) {
   return (
-    <Page>
-      <Body className="px-md">
-        <PageHeading>Settings</PageHeading>
-        <Paper className="p-md">
-          <SignOutLinkController />
-          <div className="mt-md">
-            <Link
-              href={encodeURI(
-                `mailto:support@remote.it?subject=Desktop Application Feedback`
-              )}
-            >
-              <Icon name="envelope" className="mr-sm" />
-              Send feedback
-            </Link>
-          </div>
-        </Paper>
-      </Body>
-    </Page>
+    <Body className="px-md">
+      <PageHeading>Settings</PageHeading>
+      <Paper className="p-md">
+        <SignOutLinkController />
+        <div className="mt-md">
+          <Link
+            href={encodeURI(
+              `mailto:support@remote.it?subject=Desktop Application Feedback`
+            )}
+          >
+            <Icon name="envelope" className="mr-sm" />
+            Send feedback
+          </Link>
+        </div>
+      </Paper>
+    </Body>
   )
 }

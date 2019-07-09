@@ -166,16 +166,21 @@ class ElectronApp extends EventEmitter {
   }
 
   createTrayIcon() {
-    // logger.info('Create tray icon')
+    logger.info('Create tray icon')
 
     const iconPath = path.join(__dirname, 'images', 'iconTemplate.png')
     this.tray = new electron.Tray(iconPath)
 
-    this.tray.on('click', () => {
+    this.tray.on('click', event => {
       // logger.info('Clicked tray icon')
       if (this.window) {
         this.window.show()
         this.window.focus()
+
+        // Show devtools when command+option clicked
+        if (process.defaultApp && event.metaKey) {
+          this.window.webContents.openDevTools({ mode: 'detach' })
+        }
       }
     })
   }

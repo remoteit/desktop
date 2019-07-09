@@ -3,8 +3,7 @@ import { DeviceList } from '../../components/DeviceList'
 import { Props } from '../../controllers/DevicePageController/DevicePageController'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
 import { NoDevicesMessage } from '../../components/NoDevicesMessage'
-import { Page } from '../Page'
-import { IconButton, Paper, Tooltip } from '@material-ui/core'
+import { IconButton, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
 import { Body } from '../../components/Body'
@@ -27,7 +26,7 @@ export function DevicesPage({
   if (!fetching && !allDevices.length) <NoDevicesMessage />
 
   return (
-    <Page>
+    <>
       <div className={styles.searchHeader}>
         <SearchField
           onSubmit={searchOnly && remoteSearch}
@@ -66,6 +65,6 @@ export function DevicesPage({
           searchOnly={searchOnly}
         />
       </Body>
-    </Page>
+    </>
   )
 }

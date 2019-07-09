@@ -16,6 +16,7 @@ nvm use
 npm install
 npm start
 ```
+Click the system tray icon with command+option to open with dev tools.
 
 ## Testing
 

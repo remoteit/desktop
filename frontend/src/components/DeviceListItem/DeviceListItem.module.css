@@ -1,1 +1,5 @@
 /* Put your CSS here... */
+.listItem:hover,
+.listItem:focus {
+  background-color: var(--color-gray-lightest) !important;
+}
