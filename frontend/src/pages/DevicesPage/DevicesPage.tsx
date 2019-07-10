@@ -11,14 +11,14 @@ import styles from './DevicesPage.module.css'
 
 export function DevicesPage({
   allDevices,
-  changeSort,
+  // changeSort,
   fetch,
   fetching,
   searchOnly,
   localSearch,
   remoteSearch,
   query,
-  sort,
+  // sort,
   visibleDevices,
 }: Props) {
   if (fetching && !allDevices.length) return <DeviceLoadingMessage />
@@ -34,6 +34,7 @@ export function DevicesPage({
           searching={fetching}
           initialValue={query}
         />
+        {/* 
         <Tooltip
           title={
             sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'
@@ -49,6 +50,7 @@ export function DevicesPage({
             />
           </IconButton>
         </Tooltip>
+        */}
         {!searchOnly && (
           <Tooltip title="Refresh devices" className="ml-sm">
             <IconButton onClick={() => fetch()} disabled={fetching}>

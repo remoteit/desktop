@@ -45,7 +45,7 @@ const handlers: EventHandlers = {
     store.dispatch.devices.connectionError(msg),
   'service/status': (msg: ConnectdMessage) =>
     console.log('service/status', msg),
-  'service/forgotten': (id: string) => console.log('service/forgotten', id),
+  'service/forgotten': (id: string) => store.dispatch.devices.forgotten(id),
   'service/updated': (msg: ConnectdMessage) =>
     console.log('service/updated', msg),
   'service/request': (msg: ConnectdMessage) =>

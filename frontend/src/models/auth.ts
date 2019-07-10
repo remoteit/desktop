@@ -53,6 +53,7 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     async signedOut() {
+      dispatch.auth.checkSignInFinished()
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()

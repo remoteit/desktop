@@ -3,22 +3,24 @@ import electron from 'electron'
 import express from 'express'
 import fs from 'fs'
 import http from 'http'
+import https from 'https'
+import logger from './utils/logger'
+import os from 'os'
 import path from 'path'
+import PortScanner from './utils/PortScanner'
 import SocketIO from 'socket.io'
 import url from 'url'
+import { existsSync } from 'fs'
 import { execFile, ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
-import {
-  PORT,
-  PEER_PORT_RANGE,
-  REMOTEIT_ROOT_DIR,
-  REMOTEIT_BINARY_PATH,
-} from './constants'
-import PortScanner from './utils/PortScanner'
-import logger from './utils/logger'
+import { PORT } from './constants'
 import { r3, refreshAccessKey } from './services/remote.it'
+import * as sudo from 'sudo-prompt'
 
 const d = debug('r3:backend:Application')
+
+const PEER_PORT_RANGE = [33000, 42999]
+//  const LOCAL_PROXY_PORT_RANGE = [43000, 52999]
 
 const EVENTS = {
   user: {
@@ -54,6 +56,11 @@ const EVENTS = {
     throughput: 'service/throughput',
     version: 'service/version',
     unknown: 'service/unknown',
+  },
+  install: {
+    done: 'connectd/install/done',
+    progress: 'connectd/install/progress',
+    error: 'connectd/install/done',
   },
 }
 
@@ -186,8 +193,155 @@ class ElectronApp extends EventEmitter {
   }
 }
 
+export class Environment {
+  static get isWindows() {
+    return os.platform() === 'win32'
+  }
+
+  static get isMac() {
+    return os.platform() === 'darwin'
+  }
+
+  static get remoteitDirectory() {
+    return this.isWindows ? '/remoteit' : path.join(os.homedir(), '.remoteit')
+  }
+
+  static get connectdBinaryDirectory() {
+    return this.isWindows ? '/remoteit/bin/' : '/usr/local/bin/'
+  }
+
+  static get connectdBinaryName() {
+    return this.isWindows ? 'connectd.exe' : 'connectd'
+  }
+
+  static get connectdPath() {
+    return path.join(this.connectdBinaryDirectory, this.connectdBinaryName)
+  }
+}
+
+type ProgressCallback = (percent: number) => void
+
 class ConnectdInstaller {
-  static async installIfMissing() {}
+  /**
+   * Download connectd, move it to the PATH on the user's
+   * system and then make it writable.
+   */
+  static install(cb?: ProgressCallback) {
+    const permission = 0o755
+    const version = 'v4.6'
+
+    d('Attempting to install connectd: %O', {
+      permission,
+      path: Environment.connectdPath,
+      version,
+    })
+
+    try {
+      d('Creating binary path: ', Environment.connectdBinaryDirectory)
+      fs.mkdirSync(Environment.connectdBinaryDirectory, { recursive: true })
+    } catch (error) {
+      d('Error creating binary path:', error)
+    }
+
+    // Download the connectd binary from Github
+    return this.download(version, cb).then(() => {
+      if (Environment.isMac) {
+        this.moveAndUpdatePermissions()
+      }
+    })
+  }
+
+  /**
+   * Install connectd if it is missing from the host system.
+   */
+  static async installIfMissing(cb?: ProgressCallback) {
+    if (this.isConnectdInstalled()) return
+    d('connectd is not installed, attempting to install now')
+    return this.install(cb)
+  }
+
+  /**
+   * Return whether or not connectd exists where we expect it. Used
+   * to decide if we install connectd or not on startup.
+   */
+  private static isConnectdInstalled() {
+    // TODO: we should probably make sure the output of connectd is what
+    // we expect it to be and it is the right version
+    return existsSync(Environment.connectdPath)
+  }
+
+  private static download(tag: string, progress: ProgressCallback = () => {}) {
+    return new Promise((resolve, reject) => {
+      const url = `https://github.com/remoteit/connectd/releases/download/${tag}/${
+        this.downloadFileName
+      }`
+
+      d('Downloading connectd', url)
+
+      progress(0)
+
+      https
+        .get(url, res1 => {
+          if (!res1 || !res1.headers || !res1.headers.location)
+            return reject(new Error('No response from download URL!'))
+          https
+            .get(res1.headers.location, res2 => {
+              if (!res2 || !res2.headers || !res2.headers['content-length'])
+                return reject(new Error('No response from location URL!'))
+              const total = parseInt(res2.headers['content-length'], 10)
+              let completed = 0
+              const w = fs.createWriteStream(this.downloadPath)
+              res2.pipe(w)
+              res2.on('data', data => {
+                completed += data.length
+                progress(completed / total)
+              })
+              res2.on('progress', progress)
+              res2.on('error', reject)
+              res2.on('end', resolve)
+            })
+            .on('error', reject)
+        })
+        .on('error', reject)
+    })
+  }
+
+  private static moveAndUpdatePermissions() {
+    return new Promise((success, failure) => {
+      var options = {
+        name: 'remoteit',
+        // icns: '/Applications/Electron.app/Contents/Resources/Electron.icns', // (optional)
+      }
+      const cmd = `mv ${this.downloadPath} ${
+        Environment.connectdPath
+      } && chmod 755 ${Environment.connectdPath}`
+      d('Running command:', cmd)
+      sudo.exec(cmd, options, (error: Error, stdout: any, stderr: any) => {
+        d('Command error:', error)
+        d('Command stderr:', stderr)
+        d('Command stdout:', stdout)
+        if (error) return failure(error)
+        if (stderr) return failure(stderr)
+        success(stdout)
+      })
+    })
+  }
+
+  private static get downloadFileName() {
+    return Environment.isWindows
+      ? 'connectd.exe'
+      : os.arch() === 'x64'
+      ? 'connectd.x86_64-osx'
+      : 'connectd.x86-osx'
+  }
+
+  private static get downloadDirectory() {
+    return Environment.isWindows ? '/remoteit/tmp/' : '/tmp/'
+  }
+
+  private static get downloadPath() {
+    return path.join(this.downloadDirectory, Environment.connectdBinaryName)
+  }
 }
 
 class JSONFile<T> {
@@ -196,14 +350,6 @@ class JSONFile<T> {
   constructor(location: string) {
     this.location = location
   }
-
-  // get fileName() {
-  //   return 'connections.json'
-  // }
-
-  // get location() {
-  //   return path.join(REMOTEIT_ROOT_DIR, this.fileName)
-  // }
 
   /**
    * Checks to see if the connections file exists on the
@@ -256,12 +402,6 @@ class JSONFile<T> {
 
     // Write the contents as a indented/formatted JSON value.
     fs.writeFileSync(this.location, JSON.stringify(content, null, 2))
-  }
-}
-
-class Environment {
-  static get connectdPath() {
-    return REMOTEIT_BINARY_PATH
   }
 }
 
@@ -638,7 +778,10 @@ class Server extends EventEmitter {
   checkSignIn = async () => {
     logger.info('Check sign in')
 
-    if (!this.user) return
+    if (!this.user) {
+      this.send(EVENTS.user.signedOut)
+      return
+    }
 
     logger.info('Attempting auth hash login')
 
@@ -656,13 +799,40 @@ class Server extends EventEmitter {
     if (user) this.send(EVENTS.user.signedIn, user)
   }
 
-  signIn = () => {
-    logger.warn('TOD: SIGN IN USER!')
-    this.send(EVENTS.user.signedIn)
+  signIn = async ({
+    username,
+    password,
+  }: {
+    username: string
+    password: string
+  }) => {
+    logger.info('Loggin in user', { username })
+
+    await refreshAccessKey()
+
+    d('Updated access key')
+
+    const user = await r3.user.login(username, password)
+
+    d('Got user:', user)
+
+    if (!user) {
+      d('Could not login user: %O', { username, password })
+      logger.error('Could not log in user:', { username })
+      return
+    }
+
+    // Store accesskey in remote.it.js
+    // TODO: make this into a helper of some kind
+    r3.authHash = user.authHash
+    r3.token = user.token
+
+    this.send(EVENTS.user.signedIn, user)
   }
 
   signOut = () => {
     logger.info('Sign out user')
+    this.user = undefined
     this.send(EVENTS.user.signedOut)
   }
 
@@ -703,10 +873,10 @@ export default class Application {
     this.window = new ElectronApp()
 
     this.connectionsFile = new JSONFile<SavedConnection[]>(
-      path.join(REMOTEIT_ROOT_DIR, 'connections.json')
+      path.join(Environment.remoteitDirectory, 'connections.json')
     )
     this.userFile = new JSONFile<UserCredentials>(
-      path.join(REMOTEIT_ROOT_DIR, 'user.json')
+      path.join(Environment.remoteitDirectory, 'user.json')
     )
 
     const userCredentials = this.userFile.read()
@@ -743,9 +913,11 @@ export default class Application {
    */
   private handleServerReady = () => {
     logger.info('Server is ready')
-    ConnectdInstaller.installIfMissing().catch(error =>
-      this.server.emit('connectd/install/error', error.message)
+    ConnectdInstaller.installIfMissing((progress: number) =>
+      this.server.emit(EVENTS.install.progress, progress)
     )
+      .then(() => this.server.emit(EVENTS.install.done))
+      .catch(error => this.server.emit(EVENTS.install.error, error.message))
   }
 
   /**
@@ -761,7 +933,10 @@ export default class Application {
     this.pool.user = user
 
     // Save the user to the user JSON file.
-    this.userFile.write(user)
+    this.userFile.write({
+      username: user.username,
+      authHash: user.authHash,
+    })
   }
 
   /**
@@ -770,6 +945,8 @@ export default class Application {
    */
 
   private handleSignedOut = async () => {
+    logger.info('Signing out user')
+
     // Stop all connections cleanly
     await this.pool.stopAll()
 
