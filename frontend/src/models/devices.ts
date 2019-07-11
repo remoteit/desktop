@@ -1,5 +1,4 @@
 import fuzzy from 'fuzzy'
-import cookie from 'js-cookie'
 import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
 import Device from '../services/Device'
@@ -9,8 +8,8 @@ import { r3 } from '../services/remote.it'
 // Slightly below the API limit for search of 300 services.
 const SEARCH_ONLY_SERVICE_LIMIT = 300
 
-const SORT_COOKIE_NAME = 'sort'
-const SEARCH_ONLY_COOKIE_NAME = 'search-only'
+const SORT_SETTING_KEY = 'sort'
+const SEARCH_ONLY_SETTING_KEY = 'search-only'
 
 interface DeviceState {
   all: IDevice[]
@@ -34,7 +33,7 @@ const state: DeviceState = {
   searching: false,
   searchOnly: false,
   query: '',
-  sort: (cookie.get(SORT_COOKIE_NAME) || 'state') as SortType,
+  sort: (window.localStorage.getItem(SORT_SETTING_KEY) || 'state') as SortType,
 }
 
 export default createModel({
@@ -46,7 +45,7 @@ export default createModel({
      */
     async shouldSearchDevices() {
       // First see if they have already decided on their preference
-      const pref = cookie.get(SEARCH_ONLY_COOKIE_NAME)
+      const pref = window.localStorage.getItem(SEARCH_ONLY_SETTING_KEY)
       if (typeof pref === 'string') {
         dispatch.devices.setSearchOnly(pref === 'true')
         dispatch.devices.fetch()
@@ -158,7 +157,7 @@ export default createModel({
     },
     setSearchOnly(state: DeviceState, searchOnly: boolean) {
       state.searchOnly = searchOnly
-      cookie.set(SEARCH_ONLY_COOKIE_NAME, String(searchOnly))
+      window.localStorage.setItem(SEARCH_ONLY_SETTING_KEY, String(searchOnly))
     },
     fetchStarted(state: DeviceState) {
       state.fetched = false
@@ -167,7 +166,7 @@ export default createModel({
     changeSort(state: DeviceState, sort: SortType) {
       state.sort = sort
       state.all = Device.sort(state.all, sort)
-      cookie.set(SORT_COOKIE_NAME, sort)
+      window.localStorage.setItem(SORT_SETTING_KEY, sort)
     },
     setDevices(state: DeviceState, devices: IDevice[]) {
       state.all = Device.sort(devices, state.sort)
