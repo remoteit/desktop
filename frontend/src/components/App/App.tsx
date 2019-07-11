@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { Props } from '../../controllers/AppController/AppController'
-import { DevicePageController } from '../../controllers/DevicePageController'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { ConnectionsPage } from '../ConnectionsPage'
 import { Page } from '../../pages/Page'
+import { DevicesPage } from '../DevicesPage'
 
 const routes: Route = {
   connections: <ConnectionsPage />,
-  devices: <DevicePageController />,
+  devices: <DevicesPage />,
   settings: <SettingsPage />,
 }
 
