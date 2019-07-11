@@ -8,72 +8,60 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../Icon'
 
-export interface Props {
-  onSubmit?: (query: string) => void
-  onChange?: (query: string) => void
-  initialValue?: string
+export interface SearchFieldProps {
+  onSubmit?: () => void
+  onChange: (query: string) => void
+  value?: string
   searching: boolean
+  searchOnly: boolean
 }
 
 export function SearchField({
-  initialValue,
+  value,
   onSubmit,
   onChange,
   searching = false,
+  searchOnly = false,
   ...props
-}: Props) {
-  const input = useRef<HTMLInputElement>(null)
-  const hasValue = initialValue || (input.current && input.current.value)
+}: SearchFieldProps) {
+  const disabled = Boolean(searching || !value)
+
   return (
     <Paper className="px-xs py-xxs df ai-center w-100" elevation={1} {...props}>
       <form
         onSubmit={e => {
-          if (!onSubmit) return
           e.preventDefault()
-          if (!input || !input.current) return
-          onSubmit(input.current.value)
+          if (searchOnly && onSubmit) {
+            onSubmit()
+          }
         }}
         className="w-100"
       >
         <FormControl className="w-100 df ai-center fd-row">
           <InputBase
             autoFocus
-            disabled={searching}
+            autoCapitalize="off"
+            autoCorrect="off"
+            autoComplete="off"
             className="px-sm py-xs w-100"
-            onChange={e => {
-              if (!onChange) return
-              e.preventDefault()
-              if (!input || !input.current) return
-              onChange(input.current.value)
-            }}
+            onChange={e => onChange(e.target.value)}
             id="input-with-icon-adornment"
             placeholder="Search devices and services..."
-            inputRef={input}
-            defaultValue={initialValue}
+            value={value}
           />
-          {hasValue && (
+          {value && (
             <Tooltip title="Clear search">
               <IconButton
                 className="p-sm"
                 type="button"
-                onClick={() => {
-                  if (!input.current || !input.current.value) return
-                  input.current.value = ''
-                  if (onChange) onChange('')
-                }}
+                onClick={() => onChange('')}
               >
                 <Icon name="times" size="sm" />
               </IconButton>
             </Tooltip>
           )}
           <Tooltip title="Search">
-            <IconButton
-              className="p-sm"
-              type="submit"
-              disabled={
-                searching || Boolean(!input.current || !input.current.value)
-              }
-            >
+            <IconButton className="p-sm" type="submit" disabled={disabled}>
               <Icon
                 name={searching ? 'spinner-third' : 'search'}
                 spin={searching}

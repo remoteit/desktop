@@ -9,14 +9,16 @@ describe('components/DevicesPage', () => {
       <DevicesPage
         allDevices={[]}
         visibleDevices={[]}
-        connections={[]}
         fetch={jest.fn()}
         localSearch={jest.fn()}
         remoteSearch={jest.fn()}
         fetching={boolean('fetching', false)}
+        searchPerformed={boolean('searchPerformed', false)}
         user={undefined}
         query={text('query', '')}
         searchOnly={boolean('searchOnly', false)}
+        setQuery={jest.fn()}
+        searching={boolean('searching', false)}
       />
     )
   })

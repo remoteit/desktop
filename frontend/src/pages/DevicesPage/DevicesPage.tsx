@@ -2,37 +2,45 @@ import React from 'react'
 import { DeviceList } from '../../components/DeviceList'
 import { Props } from '../../controllers/DevicePageController/DevicePageController'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
-import { NoDevicesMessage } from '../../components/NoDevicesMessage'
+// import { NoDevicesMessage } from '../../components/NoDevicesMessage'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
 import { Body } from '../../components/Body'
 import styles from './DevicesPage.module.css'
+// import { LoadingMessage } from '../../components/LoadingMessage'
 
 export function DevicesPage({
   allDevices,
-  // changeSort,
+  searchPerformed,
   fetch,
   fetching,
-  searchOnly,
   localSearch,
-  remoteSearch,
   query,
-  // sort,
+  remoteSearch,
+  searching,
+  searchOnly,
+  setQuery,
   visibleDevices,
-}: Props) {
+}: // changeSort,
+// sort,
+Props) {
   if (fetching && !allDevices.length) return <DeviceLoadingMessage />
-  if (fetching && searchOnly) return <DeviceLoadingMessage />
-  if (!fetching && !allDevices.length) <NoDevicesMessage />
+  // if (fetching && searchOnly) return <DeviceLoadingMessage />
+  // if (!fetching && !allDevices.length) <NoDevicesMessage />
 
   return (
     <>
       <div className={styles.searchHeader}>
         <SearchField
-          onSubmit={searchOnly && remoteSearch}
-          onChange={!searchOnly && localSearch}
-          searching={fetching}
-          initialValue={query}
+          onSubmit={remoteSearch}
+          onChange={(query: string) => {
+            setQuery(query)
+            if (!searchOnly) localSearch(query)
+          }}
+          searching={searching}
+          searchOnly={searchOnly}
+          value={query}
         />
         {/* 
         <Tooltip
@@ -62,8 +70,11 @@ export function DevicesPage({
       <Body withSearch className="bg-white">
         <DeviceList
           devices={visibleDevices}
+          searchPerformed={
+            searchOnly ? searchPerformed : Boolean(visibleDevices.length)
+          }
           query={query}
-          searching={fetching}
+          searching={searching}
           searchOnly={searchOnly}
         />
       </Body>

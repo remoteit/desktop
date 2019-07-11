@@ -5,16 +5,21 @@ import { createModel } from '@rematch/core'
 import Device from '../services/Device'
 import BackendAdapter from '../services/BackendAdapter'
 import { r3 } from '../services/remote.it'
-// import { SEARCH_ONLY_SERVICE_LIMIT } from '../constants'
+
+// Slightly below the API limit for search of 300 services.
+const SEARCH_ONLY_SERVICE_LIMIT = 300
 
 const SORT_COOKIE_NAME = 'sort'
+const SEARCH_ONLY_COOKIE_NAME = 'search-only'
 
 interface DeviceState {
   all: IDevice[]
   connections: ConnectionInfo[]
+  searchPerformed: boolean
   fetched: boolean
   fetching: boolean
   searchOnly: boolean
+  searching: boolean
   query: string
   sort: SortType
 }
@@ -23,11 +28,13 @@ const state: DeviceState = {
   // TODO: Store this as objects with keys based on ID?
   all: [],
   connections: [],
+  searchPerformed: false,
   fetched: false,
   fetching: false,
+  searching: false,
   searchOnly: false,
   query: '',
-  sort: (cookie.get(SORT_COOKIE_NAME) || 'alpha') as SortType,
+  sort: (cookie.get(SORT_COOKIE_NAME) || 'state') as SortType,
 }
 
 export default createModel({
@@ -38,10 +45,22 @@ export default createModel({
      * us fetching all of their devices at the getgo.
      */
     async shouldSearchDevices() {
-      // const { setSearchOnly } = dispatch.devices
-      // return r3.devices.count().then(count =>
-      //   setSearchOnly(count.services > SEARCH_ONLY_SERVICE_LIMIT)
-      // )
+      // First see if they have already decided on their preference
+      const pref = cookie.get(SEARCH_ONLY_COOKIE_NAME)
+      if (typeof pref === 'string') {
+        dispatch.devices.setSearchOnly(pref === 'true')
+        dispatch.devices.fetch()
+        return
+      }
+
+      // If they have too many services, show search only.
+      return r3.devices
+        .count()
+        .then(count =>
+          dispatch.devices.setSearchOnly(
+            count.services > SEARCH_ONLY_SERVICE_LIMIT
+          )
+        )
     },
     async fetch() {
       // TODO: Deal with device search only UI
@@ -63,29 +82,27 @@ export default createModel({
           .finally(fetchFinished)
       )
     },
-    async localSearch(query: string) {
+    async localSearch(_, globalState: any) {
+      const query = globalState.devices.query
       dispatch.devices.setQuery(query)
     },
-    async remoteSearch(query: string) {
-      const {
-        getConnections,
-        fetchStarted,
-        fetchFinished,
-        setDevices,
-        setQuery,
-      } = dispatch.devices
-      setQuery(query)
-      setDevices([])
-      fetchStarted()
+    async remoteSearch(_, globalState: any) {
+      const query = globalState.devices.query
+      dispatch.devices.setDevices([])
+      dispatch.devices.setSearching(true)
+      dispatch.devices.setSearchPerformed(true)
       return (
         r3.devices
           .search(query)
-          .then(setDevices)
+          .then(devices => {
+            dispatch.devices.setDevices(devices)
+            dispatch.devices.setSearchPerformed(true)
+          })
           // Get connections again so we can update the incoming found
           // device state against our list of locally connected services.
           // TODO: Probably a cleaner way of doing this...
-          .then(getConnections)
-          .finally(fetchFinished)
+          .then(dispatch.devices.getConnections)
+          .finally(() => dispatch.devices.setSearching(false))
       )
     },
     async getConnections() {
@@ -114,13 +131,34 @@ export default createModel({
     async forgotten(id: string) {
       dispatch.devices.remove(id)
     },
+    async changeSearchOnly(searchOnly: boolean) {
+      dispatch.devices.setSearchOnly(searchOnly)
+      dispatch.devices.setQuery('')
+      if (searchOnly) {
+        dispatch.devices.setDevices([])
+      } else {
+        dispatch.devices.setDevices([])
+        dispatch.devices.fetch()
+      }
+    },
+    async reset() {
+      dispatch.devices.setDevices([])
+      dispatch.devices.setConnections([])
+      dispatch.devices.setSearchOnly(false)
+      dispatch.devices.setQuery('')
+    },
   }),
   reducers: {
     setQuery(state: DeviceState, query: string) {
       state.query = query
+      if (state.searchOnly) {
+        state.all = []
+        state.searchPerformed = false
+      }
     },
     setSearchOnly(state: DeviceState, searchOnly: boolean) {
       state.searchOnly = searchOnly
+      cookie.set(SEARCH_ONLY_COOKIE_NAME, String(searchOnly))
     },
     fetchStarted(state: DeviceState) {
       state.fetched = false
@@ -187,6 +225,9 @@ export default createModel({
         serv.connecting = false
       }
     },
+    setConnections(state: DeviceState, connections: ConnectionInfo[]) {
+      state.connections = connections
+    },
     disconnected(state: DeviceState, msg: ConnectdMessage) {
       const id = msg.connection.id
       const conn = state.connections.find(c => c.id === id)
@@ -211,12 +252,6 @@ export default createModel({
         service.connecting = false
       }
     },
-    reset(state: DeviceState) {
-      state.all = []
-      state.connections = []
-      state.searchOnly = false
-      state.query = ''
-    },
     remove(state: DeviceState, id: string) {
       const conn = state.connections.find(c => c.id === id)
       const [serv] = findService(state.all, id)
@@ -235,6 +270,12 @@ export default createModel({
       // TODO: decide if device should be connected
       // if (device) device.state = 'connected'
     },
+    setSearching(state: DeviceState, searching: boolean) {
+      state.searching = searching
+    },
+    setSearchPerformed(state: DeviceState, searchPerformed: boolean) {
+      state.searchPerformed = searchPerformed
+    },
   },
   selectors: slice => ({
     visible() {
@@ -242,8 +283,8 @@ export default createModel({
         (state: DeviceState): IDevice[] => {
           const filtered = filterDevices(state.all, state.query)
           const sorted = Device.sort(filtered, state.sort)
-          console.log('FILTERED:', filtered)
-          console.log('SORTED:', state.sort, sorted)
+          // console.log('FILTERED:', filtered)
+          // console.log('SORTED:', state.sort, sorted)
           return sorted
         }
       )

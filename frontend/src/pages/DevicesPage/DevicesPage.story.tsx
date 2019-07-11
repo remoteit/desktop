@@ -36,13 +36,16 @@ storiesOf('components/devices', module)
         visibleDevices={devices}
         fetch={() => Promise.resolve(action('fetch'))}
         fetching={boolean('fetching', false)}
+        searchPerformed={boolean('searchPerformed', false)}
         searchOnly={boolean('searchOnly', false)}
+        searching={boolean('searching', false)}
+        setQuery={action('setQuery')}
         localSearch={action('localSearch')}
         remoteSearch={action('remoteSearch')}
-        changeSort={action('changeSort')}
+        // changeSort={action('changeSort')}
         user={user()}
         query={text('query', '')}
-        sort={text('sort', 'alpha') as SortType}
+        // sort={text('sort', 'alpha') as SortType}
       />
     </Provider>
   ))

@@ -39,7 +39,6 @@ export default createModel({
       dispatch.auth.checkSignInFinished()
       dispatch.auth.setUser(user)
       dispatch.devices.shouldSearchDevices()
-      // dispatch.devices.fetch()
       updateUserCredentials(user)
     },
     /**

@@ -17,20 +17,23 @@ const visibleDevices: (state: any, props: any) => SelectResponse = select(
 
 export type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
-const mapState = (state: ApplicationState, props: any) => ({
+const mapState = (state: ApplicationState) => ({
   allDevices: state.devices.all,
   ...visibleDevices(state, {}),
+  searchPerformed: state.devices.searchPerformed,
   fetching: state.devices.fetching,
   query: state.devices.query,
   searchOnly: state.devices.searchOnly,
+  searching: state.devices.searching,
   user: state.auth.user,
-  sort: state.devices.sort,
+  // sort: state.devices.sort,
 })
 const mapDispatch = (dispatch: any) => ({
   fetch: dispatch.devices.fetch,
   localSearch: dispatch.devices.localSearch,
   remoteSearch: dispatch.devices.remoteSearch,
-  changeSort: dispatch.devices.changeSort,
+  setQuery: dispatch.devices.setQuery,
+  // changeSort: dispatch.devices.changeSort,
 })
 
 export const DevicePageController = connect(

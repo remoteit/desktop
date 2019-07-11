@@ -3,16 +3,44 @@ import { IDevice } from 'remote.it'
 import { DeviceListItem } from '../DeviceListItem'
 import { List } from '@material-ui/core'
 import classnames from 'classnames'
-import { LoadingMessage } from '../LoadingMessage'
+// import { LoadingMessage } from '../LoadingMessage'
 import { Icon } from '../Icon'
 
 export interface DeviceListProps {
   className?: string
   devices?: IDevice[]
+  searchPerformed: boolean
   searchOnly: boolean
   searching: boolean
   query: string
 }
+
+const NoDevicesMessage = () => (
+  <div className="px-md py-sm center bg-warning white fw-bold">
+    You have no devices, please a device to your account and you will see it
+    here.
+  </div>
+)
+
+const NoResultsMessage = () => (
+  <div className="px-md py-sm center bg-warning white fw-bold">
+    Your search didn't match any results, please try a different search.
+  </div>
+)
+
+const SearchOnlyMessage = () => (
+  <div className="px-md py-sm center gray italic">
+    Unable to display your device list because the number of devices in your
+    account is too large. Please search for a device or service above instead.
+  </div>
+)
+
+const SearchingMessage = () => (
+  <div className="px-md py-md center gray italic">
+    <Icon name="spinner-third" spin className="mr-sm" /> Searching for devices
+    and services...
+  </div>
+)
 
 export function DeviceList({
   className = '',
@@ -20,54 +48,23 @@ export function DeviceList({
   searchOnly = false,
   query = '',
   searching = false,
+  searchPerformed = false,
 }: DeviceListProps & React.HTMLProps<HTMLDivElement>) {
-  if (searching) {
-    return (
-      <div className="px-md py-md center gray italic">
-        <Icon name="spinner-third" spin className="mr-sm" /> Searching...
-      </div>
-    )
+  if (searching) return <SearchingMessage />
+
+  if (searchOnly) {
+    if (!searchPerformed) return <SearchOnlyMessage />
+    if (!devices.length) return <NoDevicesMessage />
+  } else {
+    if (query && !devices.length) return <NoResultsMessage />
+    if (!devices.length) return <NoDevicesMessage />
   }
-
-  if (!devices || !devices.length) {
-    if (query) {
-      return (
-        <div className="px-md py-sm center bg-warning white fw-bold">
-          Your search didn't match any results, please try a different search.
-        </div>
-      )
-    }
-    if (searchOnly && !query) {
-      return (
-        <div className="px-md py-sm center gray italic">
-          Unable to display your list because the number of devices in your
-          account is too large. Please search for a device or service above
-          instead.
-        </div>
-      )
-    }
-
-    return (
-      <div className="px-md py-sm center bg-warning white fw-bold">
-        You have no devices, please a device to your account and you will see it
-        here.
-      </div>
-    )
-  }
-
-  const sortedDevices = sortDevices(devices)
 
   return (
     <List component="nav" className={classnames(className, 'py-none')}>
-      {sortedDevices.map(device => (
+      {devices.map(device => (
         <DeviceListItem key={device.id} device={device} />
       ))}
     </List>
-  )
-}
-
-function sortDevices(devices: IDevice[]) {
-  return devices.sort((a, b) =>
-    a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   )
 }

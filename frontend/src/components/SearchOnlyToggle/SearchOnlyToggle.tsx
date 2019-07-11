@@ -1,6 +1,4 @@
 import React from 'react'
-import { Tooltip, IconButton } from '@material-ui/core'
-import { Icon } from '../Icon'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 
@@ -12,13 +10,13 @@ const mapState = (state: ApplicationState) => ({
 })
 
 const mapDispatch = (dispatch: any) => ({
-  setSearchOnly: dispatch.devices.setSearchOnly,
+  changeSearchOnly: dispatch.devices.changeSearchOnly,
 })
 
 export const SearchOnlyToggle = connect(
   mapState,
   mapDispatch
-)(({ setSearchOnly, searchOnly }: SearchOnlyToggleProps) => {
+)(({ changeSearchOnly, searchOnly }: SearchOnlyToggleProps) => {
   return (
     <>
       <label>
@@ -26,7 +24,7 @@ export const SearchOnlyToggle = connect(
           className="mr-sm"
           type="checkbox"
           checked={searchOnly}
-          onChange={e => setSearchOnly(e.target.checked)}
+          onChange={e => changeSearchOnly(e.target.checked)}
         />
         Show search only interface
       </label>

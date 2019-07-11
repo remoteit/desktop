@@ -218,6 +218,17 @@ export class Environment {
   static get connectdPath() {
     return path.join(this.connectdBinaryDirectory, this.connectdBinaryName)
   }
+
+  static toJSON() {
+    return {
+      isWindows: this.isWindows,
+      isMac: this.isMac,
+      remoteitDirectory: this.remoteitDirectory,
+      connectdBinaryDirectory: this.connectdBinaryDirectory,
+      connectdBinaryName: this.connectdBinaryName,
+      connectdPath: this.connectdPath,
+    }
+  }
 }
 
 type ProgressCallback = (percent: number) => void
@@ -356,14 +367,16 @@ class JSONFile<T> {
    * Checks to see if the connections file exists on the
    * file system.
    */
-  exists = () => fs.existsSync(this.location)
+  get exists() {
+    return fs.existsSync(this.location)
+  }
 
   /**
    * Read the connections file and return it or
    * undefined if it is missing or invalid.
    */
   read(): T | undefined {
-    if (!this.exists()) return
+    if (!this.exists) return
 
     // logger.info('Loading saved connections file:', { location: this.location })
 
@@ -392,12 +405,14 @@ class JSONFile<T> {
   /**
    * Remove the file from the filesystem.
    */
-  remove = () => this.exists() && fs.unlinkSync(this.location)
+  remove = () => this.exists && fs.unlinkSync(this.location)
 
   /**
    * Create a new file.
    */
   write = (content: T) => {
+    logger.info('Writing file', { location: this.location, content })
+
     // Make sure containing folder exists.
     fs.mkdirSync(path.parse(this.location).dir, { recursive: true })
 
@@ -777,9 +792,10 @@ class Server extends EventEmitter {
   }
 
   checkSignIn = async () => {
-    logger.info('Check sign in')
+    logger.info('Check sign in:', { user: this.user })
 
     if (!this.user) {
+      logger.warn('No user, signing out...')
       this.send(EVENTS.user.signedOut)
       return
     }
@@ -887,6 +903,8 @@ export default class Application {
     )
 
     const userCredentials = this.userFile.read()
+
+    logger.info('Reading user credentials:', { user: userCredentials })
 
     // Start pool and load connections from filestystem
     this.pool = new ConnectionPool()

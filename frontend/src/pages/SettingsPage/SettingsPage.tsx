@@ -4,6 +4,7 @@ import { SignOutLinkController } from '../../controllers/SignOutLinkController'
 import { Link, Paper } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
+import { SearchOnlyToggle } from '../../components/SearchOnlyToggle'
 
 export interface Props {}
 
@@ -13,7 +14,7 @@ export function SettingsPage({ ...props }: Props) {
       <PageHeading>Settings</PageHeading>
       <Paper className="p-md">
         <SignOutLinkController />
-        <div className="mt-md">
+        <div className="my-md">
           <Link
             href={encodeURI(
               `mailto:support@remote.it?subject=Desktop Application Feedback`
@@ -23,6 +24,7 @@ export function SettingsPage({ ...props }: Props) {
             Send feedback
           </Link>
         </div>
+        <SearchOnlyToggle />
       </Paper>
     </Body>
   )

@@ -19,6 +19,7 @@ storiesOf('components/devices', module)
       <DeviceList
         devices={devices}
         query={text('query', '')}
+        searchPerformed={boolean('searchPerformed', true)}
         searchOnly={boolean('searchOnly', false)}
         searching={boolean('searching', false)}
       />

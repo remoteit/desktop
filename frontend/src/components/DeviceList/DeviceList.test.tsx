@@ -7,8 +7,9 @@ describe('components/DeviceList', () => {
   test('should not explode', () => {
     mount(
       <DeviceList
-        searchOnly={boolean('searchOnly', false)}
-        searching={boolean('searching', false)}
+        searchPerformed={true}
+        searchOnly={false}
+        searching={false}
         query=""
       />
     )
