@@ -10,12 +10,14 @@ import {
 export interface AuthState {
   checkSignInStarted: boolean
   signInStarted: boolean
+  signInError?: string
   user?: IUser
 }
 
 const state: AuthState = {
   checkSignInStarted: false,
   signInStarted: false,
+  signInError: undefined,
   user: undefined,
 }
 
@@ -36,9 +38,8 @@ export default createModel({
       dispatch.auth.signInFinished()
       dispatch.auth.checkSignInFinished()
       dispatch.auth.setUser(user)
-      // TODO: Deal with device search only UI
-      // dispatch.devices.shouldSearchDevices()
-      dispatch.devices.fetch()
+      dispatch.devices.shouldSearchDevices()
+      // dispatch.devices.fetch()
       updateUserCredentials(user)
     },
     /**
@@ -48,6 +49,10 @@ export default createModel({
       // const { signOutFinished } = dispatch.auth
 
       BackendAdapter.emit('user/sign-out')
+    },
+    async signInError(error: string) {
+      dispatch.auth.signInFinished()
+      dispatch.auth.setError(error)
     },
     /**
      * Gets called when the backend signs the user out
@@ -77,8 +82,12 @@ export default createModel({
     signOutFinished(state: AuthState) {
       state.user = undefined
     },
+    setError(state: AuthState, error: string) {
+      state.signInError = error
+    },
     setUser(state: AuthState, user: IUser) {
       state.user = user
+      state.signInError = undefined
     },
   },
 })

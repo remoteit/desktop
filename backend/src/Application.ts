@@ -28,6 +28,7 @@ const EVENTS = {
     signOut: 'user/sign-out',
     signedOut: 'user/signed-out',
     signIn: 'user/sign-in',
+    signInError: 'user/sign-in/error',
     signedIn: 'user/signed-in',
   },
   pool: {
@@ -812,7 +813,13 @@ class Server extends EventEmitter {
 
     d('Updated access key')
 
-    const user = await r3.user.login(username, password)
+    let user
+    try {
+      user = await r3.user.login(username, password)
+    } catch (error) {
+      this.send(EVENTS.user.signInError, error.message)
+      return
+    }
 
     d('Got user:', user)
 

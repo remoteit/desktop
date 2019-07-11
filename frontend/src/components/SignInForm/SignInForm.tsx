@@ -21,10 +21,11 @@ const initialValues = {
   username: '',
 }
 
-export function SignInForm({ signIn }: SignInFormControllerProps) {
-  const [error, setError] = React.useState<string | undefined>()
-  const [loading, setLoading] = React.useState<boolean>(false)
-
+export function SignInForm({
+  signInError,
+  signInStarted,
+  signIn,
+}: SignInFormControllerProps) {
   const formal = useFormal(initialValues, {
     schema,
     onSubmit: ({
@@ -34,13 +35,7 @@ export function SignInForm({ signIn }: SignInFormControllerProps) {
       password: string
       username: string
     }) => {
-      setError(undefined)
-      setLoading(true)
-      signIn({ username, password }).catch((error: string) => {
-        console.error('SIGN IN ERROR', error)
-        setError(error)
-        setLoading(false)
-      })
+      signIn({ username, password })
     },
   })
 
@@ -48,7 +43,9 @@ export function SignInForm({ signIn }: SignInFormControllerProps) {
   const passwordProps = formal.getFieldProps('password')
   return (
     <form {...formal.getFormProps()}>
-      {error && <div className="bg-danger py-sm px-md white">{error}</div>}
+      {signInError && (
+        <div className="bg-danger py-sm px-md mb-md white">{signInError}</div>
+      )}
       <div className="mb-sm">
         <TextField
           {...{ ...usernameProps, error: Boolean(usernameProps.error) }}
@@ -93,10 +90,10 @@ export function SignInForm({ signIn }: SignInFormControllerProps) {
         variant="contained"
         fullWidth
         className="mt-md"
-        disabled={loading}
+        disabled={signInStarted}
         type="submit"
       >
-        {loading ? 'Signing you in...' : 'Sign in'}
+        {signInStarted ? 'Signing you in...' : 'Sign in'}
       </Button>
     </form>
   )

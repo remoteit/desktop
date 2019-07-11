@@ -68,6 +68,8 @@ const handlers: EventHandlers = {
   'connectd/install/done': () => console.log('connectd/install/done'),
 
   // User/auth
+  'user/sign-in/error': (error: string) =>
+    store.dispatch.auth.signInError(error),
   'user/signed-out': () => store.dispatch.auth.signedOut(),
   'user/signed-in': (user: IUser) => store.dispatch.auth.signedIn(user),
 }
