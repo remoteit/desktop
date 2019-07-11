@@ -24,7 +24,7 @@ export function ConnectedServiceItem({
 
   return (
     <>
-      <div className="df ai-center bb bc-gray-lighter px-md py-xs">
+      <div className="df ai-center bb bc-gray-lighter px-md py-xs bg-white">
         <div className="mr-md">
           <ConnectionStateIcon state={state} size="lg" />
         </div>
