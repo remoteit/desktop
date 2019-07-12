@@ -1,14 +1,22 @@
 import React from 'react'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ConnectedServiceItem } from '../ConnectedServiceItem'
-import { ConnectButtonController } from '../../controllers/ConnectButtonController'
 import { IService } from 'remote.it'
+import { connect } from 'react-redux'
+import { ListItem } from '@material-ui/core'
 
-export interface ServiceListItemProps {
+export type ServiceListItemProps = {
   service: IService
-}
+} & ReturnType<typeof mapDispatch>
 
-export function ServiceListItem({ service }: ServiceListItemProps) {
+const mapDispatch = (dispatch: any) => ({
+  connect: dispatch.devices.connect,
+})
+
+export const ServiceListItem = connect(
+  null,
+  mapDispatch
+)(({ connect, service }: ServiceListItemProps) => {
   if (service.state === 'connected') {
     return (
       <ConnectedServiceItem
@@ -24,9 +32,16 @@ export function ServiceListItem({ service }: ServiceListItemProps) {
   }
 
   return (
-    <div className="df ai-center bb bc-gray-lighter px-md py-xs">
+    <ListItem
+      button
+      className="df ai-center bb bc-gray-lighter px-md py-xs c-pointer"
+      onClick={() => connect(service)}
+    >
       <div className="mr-md">
-        <ConnectionStateIcon state={service.state} size="lg" />
+        <ConnectionStateIcon
+          state={service.connecting ? 'connecting' : service.state}
+          size="lg"
+        />
       </div>
       <div>
         <div className="txt-md gray-darkest">{service.name}</div>
@@ -34,11 +49,6 @@ export function ServiceListItem({ service }: ServiceListItemProps) {
           <div className="txt-sm gray-light">{service.type}</div>
         )}
       </div>
-      <div className="ml-auto df ai-center">
-        {service.state === 'active' && (
-          <ConnectButtonController service={service} />
-        )}
-      </div>
-    </div>
+    </ListItem>
   )
-}
+})

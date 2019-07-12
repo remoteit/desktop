@@ -33,6 +33,8 @@ const handlers: EventHandlers = {
   disconnect: () => console.log('Socket disconnect'),
 
   // Servicesb
+  'service/connect/started': (conn: ConnectionInfo) =>
+    store.dispatch.devices.connectStart(conn.id),
   'service/connected': (conn: ConnectionInfo) =>
     store.dispatch.devices.connected(conn),
   'service/disconnected': (msg: ConnectdMessage) =>

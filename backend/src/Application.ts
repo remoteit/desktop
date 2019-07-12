@@ -43,6 +43,7 @@ const EVENTS = {
     restart: 'service/restart',
 
     // Connection events
+    started: 'service/connect/started',
     connected: 'service/connected',
     disconnected: 'service/disconnected',
     forgotten: 'service/forgotten',
@@ -461,6 +462,8 @@ class Connection extends EventEmitter {
   }
 
   async start() {
+    this.emit(EVENTS.connections.started, this.toJSON())
+    logger.info('Starting connection:', this.toJSON())
     const usernameBase64 = Buffer.from(this.username).toString('base64')
     this.process = execFile(
       Environment.connectdPath,
@@ -514,15 +517,17 @@ class Connection extends EventEmitter {
   }
 
   async stop() {
-    this.kill()
+    logger.info('Stopping connection:', this.toJSON())
+    await this.kill()
     this.emit(EVENTS.connections.disconnected, {
       connection: this.toJSON(),
     } as ConnectdMessage)
   }
 
   async restart() {
-    if (this.process && this.process.pid) this.stop()
-    this.start()
+    logger.info('Restarting connection:', this.toJSON())
+    if (this.process && this.process.pid) await this.stop()
+    await this.start()
   }
 
   toJSON = (): ConnectionData => {
@@ -539,11 +544,14 @@ class Connection extends EventEmitter {
     this.emit('error', { error: error.message })
   }
 
-  private handleClose = (code: number) => {
+  private handleClose = async (code: number) => {
     logger.error(`Connection closed with code: ${code}`)
 
+    // If terminated by signal code is received, do nothing.
+    if (code === 3) return
+
     // Make sure kill the process.
-    this.kill()
+    await this.kill()
 
     this.emit(EVENTS.connections.disconnected, {
       connection: this.toJSON(),
@@ -572,6 +580,8 @@ class Connection extends EventEmitter {
       const message = messages[String(code)]
 
       console.error('⚠️  Closing with error code:', code, message)
+
+      if (code === 3) return
 
       this.emit(EVENTS.connections.error, {
         code,
