@@ -723,6 +723,11 @@ class ConnectionPool extends EventEmitter {
     await this.emit(EVENTS.connections.forgotten, id)
   }
 
+  reset = async () => {
+    await this.stopAll()
+    this.pool = {}
+  }
+
   restart = async (id: string) => {
     return this.find(id).restart()
   }
@@ -983,7 +988,7 @@ export default class Application {
     logger.info('Signing out user')
 
     // Stop all connections cleanly
-    await this.pool.stopAll()
+    await this.pool.reset()
 
     // Clear out the authenticatd user in the connection
     // pool so future connections don't start.
