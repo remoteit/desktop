@@ -49,7 +49,6 @@ export default createModel({
       BackendAdapter.emit('user/sign-out')
     },
     async quit() {
-      console.log('QUIT')
       BackendAdapter.emit('user/quit')
     },
     async signInError(error: string) {
