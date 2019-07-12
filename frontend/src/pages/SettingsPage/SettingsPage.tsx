@@ -1,6 +1,7 @@
 import React from 'react'
 import { PageHeading } from '../../components/PageHeading'
 import { SignOutLinkController } from '../../controllers/SignOutLinkController'
+import { QuitLinkController } from '../../controllers/QuitLinkController'
 import { Link } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
@@ -23,6 +24,7 @@ export function SettingsPage() {
           Send feedback
         </Link>
       </div>
+      <QuitLinkController />
       <h4 className="mt-lg">Advanced</h4>
       <SearchOnlyToggle />
     </Body>

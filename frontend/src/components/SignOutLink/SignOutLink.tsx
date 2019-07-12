@@ -5,7 +5,7 @@ import { Icon } from '../Icon'
 
 export function SignOutLink({ signOut }: SignOutLinkControllerProps) {
   return (
-    <Link onClick={() => signOut()} type="button" className="c-pointer">
+    <Link onClick={signOut} type="button" className="c-pointer">
       <Icon name="sign-out" className="mr-sm" />
       Sign out
     </Link>
