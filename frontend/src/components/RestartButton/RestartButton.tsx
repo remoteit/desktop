@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 
 export type RestartButtonProps = {
   id: string
+  connected: boolean
   disabled?: boolean
 } & ReturnType<typeof mapDispatch>
 
@@ -15,7 +16,7 @@ const mapDispatch = (dispatch: any) => ({
 export const RestartButton = connect(
   null,
   mapDispatch
-)(({ disabled = false, restart, id }: RestartButtonProps) => {
+)(({ connected, disabled = false, restart, id }: RestartButtonProps) => {
   return (
     <Tooltip title="Restart">
       <IconButton
@@ -24,7 +25,7 @@ export const RestartButton = connect(
         disabled={disabled}
         onClick={() => restart(id)}
       >
-        <Icon name="redo" fixedWidth />
+        <Icon name={connected ? 'redo' : 'play'} fixedWidth />
       </IconButton>
     </Tooltip>
   )
