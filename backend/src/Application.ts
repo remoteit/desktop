@@ -16,6 +16,7 @@ import { EventEmitter } from 'events'
 import { PORT } from './constants'
 import { r3, refreshAccessKey } from './services/remote.it'
 import * as sudo from 'sudo-prompt'
+import { IUser } from 'remote.it'
 
 const d = debug('r3:backend:Application')
 
@@ -762,6 +763,8 @@ class Server extends EventEmitter {
   constructor(pool: ConnectionPool, user?: UserCredentials) {
     super()
 
+    logger.info('Setting user:', { user })
+
     this.pool = pool
     this.user = user
 
@@ -772,6 +775,7 @@ class Server extends EventEmitter {
     this.io = SocketIO(server)
 
     this.io.on('connection', socket => {
+      logger.info('New connection')
       socket.on(EVENTS.user.checkSignIn, this.checkSignIn)
       socket.on(EVENTS.user.signIn, this.signIn)
       socket.on(EVENTS.user.signOut, this.signOut)
@@ -787,18 +791,11 @@ class Server extends EventEmitter {
     new EventRelay(events, this.pool, this.io.sockets)
 
     server.listen(PORT, () => {
-      logger.info(`Server listening on port ${PORT}`)
-
-      // d(`Listening on port ${PORT}`)
-      // logger.info(`Listening on port ${PORT}`)
+      d(`Listening on port ${PORT}`)
+      logger.info(`Listening on port ${PORT}`)
       this.emit('ready')
     })
   }
-
-  // on = (event: string, listener: (...args: any[]) => void) => {
-  //   this.io.on(event, listener)
-  //   return this
-  // }
 
   send = (event: string, ...args: any[]) => {
     this.emit(event, ...args)
@@ -965,7 +962,7 @@ export default class Application {
    * file on disk.
    */
 
-  private handleSignedIn = (user: UserCredentials) => {
+  private handleSignedIn = (user: IUser) => {
     logger.info('User signed in', { username: user.username })
 
     // Set the user on the pool so we can

@@ -45,7 +45,11 @@ export function ConnectedServiceItem({
               className="txt-md"
             />
           )}
-          <RestartButton id={connection.id} disabled={connection.connecting} />
+          <RestartButton
+            connected={Boolean(connection.pid)}
+            id={connection.id}
+            disabled={connection.connecting}
+          />
           {connection.connecting ? (
             <DisconnectButtonController id={connection.id} />
           ) : (
