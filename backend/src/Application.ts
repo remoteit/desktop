@@ -31,6 +31,7 @@ const EVENTS = {
     signIn: 'user/sign-in',
     signInError: 'user/sign-in/error',
     signedIn: 'user/signed-in',
+    quit: 'user/quit'
   },
   pool: {
     updated: 'pool/updated',
@@ -151,6 +152,8 @@ class ElectronApp extends EventEmitter {
       minWidth: 400,
       minHeight: 300,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
+      fullscreen: false,
+      fullscreenable: false,
       frame: false,
       titleBarStyle: 'hiddenInset',
     })
@@ -184,8 +187,14 @@ class ElectronApp extends EventEmitter {
     this.tray.on('click', event => {
       // logger.info('Clicked tray icon')
       if (this.window) {
-        this.window.show()
-        this.window.focus()
+
+        if (this.window.isVisible() && this.window.isFocused()) {
+          this.window.hide()
+        } 
+        else {
+          this.window.show()
+          this.window.focus()
+        }
 
         // Show devtools when command+option clicked
         if (process.defaultApp && event.metaKey) {
@@ -779,6 +788,7 @@ class Server extends EventEmitter {
       socket.on(EVENTS.user.checkSignIn, this.checkSignIn)
       socket.on(EVENTS.user.signIn, this.signIn)
       socket.on(EVENTS.user.signOut, this.signOut)
+      socket.on(EVENTS.user.quit, electron.app.quit)
       socket.on(EVENTS.connections.list, this.list)
       socket.on(EVENTS.connections.connect, this.connect)
       socket.on(EVENTS.connections.disconnect, this.disconnect)

@@ -46,8 +46,10 @@ export default createModel({
      */
     async signOut() {
       // const { signOutFinished } = dispatch.auth
-
       BackendAdapter.emit('user/sign-out')
+    },
+    async quit() {
+      BackendAdapter.emit('user/quit')
     },
     async signInError(error: string) {
       dispatch.auth.signInFinished()
