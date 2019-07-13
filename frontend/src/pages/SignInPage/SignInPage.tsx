@@ -5,7 +5,7 @@ import { SignInFormController } from '../../controllers/SignInFormController/Sig
 
 export function SignInPage() {
   return (
-    <div className="h-100 df ai-center jc-center fd-col">
+    <div className="h-100 df ai-center jc-center fd-col bg-white">
       <div className="mx-auto my-auto" style={{ width: '400px' }}>
         <div className="center mb-md">
           <Logo />

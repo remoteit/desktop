@@ -4,8 +4,6 @@ import { CopyableText } from '../CopyableText'
 import { DisconnectButtonController } from '../../controllers/DisconnectButtonController/DisconnectButtonController'
 import { RestartButton } from '../RestartButton'
 import { ForgetButton } from '../ForgetButton'
-import { IconButton } from '@material-ui/core'
-import { Icon } from '../Icon'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 
 export interface ConnectedServiceItemProps {
@@ -24,8 +22,8 @@ export function ConnectedServiceItem({
 
   return (
     <>
-      <div className="df ai-center bb bc-gray-lighter px-md py-xs bg-white">
-        <div className="mr-md">
+      <div className="df ai-center bb bc-gray-lighter p-sm bg-white">
+        <div className="mr-sm">
           <ConnectionStateIcon state={state} size="lg" />
         </div>
         <div>
@@ -38,7 +36,7 @@ export function ConnectedServiceItem({
             <span className="gray-light txt-sm">PID# {connection.pid}</span>
           )}
         </div>
-        <div className="ml-auto df ai-center">
+        <div className="ml-auto df ai-center ws-nowrap">
           {connection.port && (
             <CopyableText
               value={`localhost:${connection.port}`}

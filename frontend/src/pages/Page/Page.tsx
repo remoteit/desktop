@@ -19,6 +19,27 @@ const theme = createMuiTheme({
     // secondary: { main: '#034b9d' },
     error: { main: '#f45130' },
   },
+  overrides: {
+    MuiListItem: {
+      button: {
+        '&:hover, &:focus': {
+          backgroundColor: 'var(--color-gray-lightest)',
+        },
+      },
+    },
+    MuiLink: {
+      root: {
+        display: 'block',
+        padding: 'var(--spacing-sm) var(--spacing-md)',
+      },
+      underlineHover: {
+        '&:hover': {
+          backgroundColor: 'var(--color-gray-lightest)',
+          textDecoration: 'none',
+        },
+      },
+    },
+  },
 })
 
 export interface Props {

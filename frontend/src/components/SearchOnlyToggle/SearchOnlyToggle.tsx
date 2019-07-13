@@ -19,7 +19,7 @@ export const SearchOnlyToggle = connect(
 )(({ changeSearchOnly, searchOnly }: SearchOnlyToggleProps) => {
   return (
     <>
-      <label>
+      <label className="gray-darker">
         <input
           className="mr-sm"
           type="checkbox"
@@ -28,7 +28,7 @@ export const SearchOnlyToggle = connect(
         />
         Show search only interface
       </label>
-      <div className="mt-sm txt-sm gray">
+      <div className="mt-sm txt-sm gray-dark">
         This will speed up the application if you have a very large device list.
       </div>
     </>

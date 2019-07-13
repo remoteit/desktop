@@ -34,10 +34,10 @@ export const ServiceListItem = connect(
   return (
     <ListItem
       button
-      className="df ai-center bb bc-gray-lighter px-md py-xs c-pointer"
+      className="df ai-center bb bc-gray-lighter"
       onClick={() => connect(service)}
     >
-      <div className="mr-md">
+      <div className="mr-sm">
         <ConnectionStateIcon
           state={service.connecting ? 'connecting' : service.state}
           size="lg"
@@ -46,7 +46,7 @@ export const ServiceListItem = connect(
       <div>
         <div className="txt-md gray-darkest">{service.name}</div>
         {service.name.toLowerCase() !== service.type.toLowerCase() && (
-          <div className="txt-sm gray-light">{service.type}</div>
+          <div className="txt-sm gray">{service.type}</div>
         )}
       </div>
     </ListItem>

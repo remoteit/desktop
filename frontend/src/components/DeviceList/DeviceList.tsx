@@ -17,8 +17,7 @@ export interface DeviceListProps {
 
 const NoDevicesMessage = () => (
   <div className="px-md py-sm center bg-warning white fw-bold">
-    You have no devices, please a device to your account and you will see it
-    here.
+    You have no devices, please add a device to your account to see it here.
   </div>
 )
 

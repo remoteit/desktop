@@ -11,10 +11,10 @@ export interface Props {}
 
 export function SettingsPage() {
   return (
-    <Body className="bg-white p-lg">
-      <PageHeading>Settings</PageHeading>
-      <SignOutLinkController />
-      <div className="my-md">
+    <Body className="bg-grey px-lg py-md p-md">
+      <PageHeading className="mb-md">Settings</PageHeading>
+      <div className="bg-white rad-sm py-sm">
+        <SignOutLinkController />
         <Link
           href={encodeURI(
             `mailto:support@remote.it?subject=Desktop Application Feedback`
@@ -23,10 +23,11 @@ export function SettingsPage() {
           <Icon name="envelope" className="mr-sm" />
           Send feedback
         </Link>
+        <QuitLinkController />
       </div>
-      <QuitLinkController />
-      <h4 className="mt-lg">Advanced</h4>
-      <SearchOnlyToggle />
+      <div className="bg-white rad-sm p-md mt-md">
+        <SearchOnlyToggle />
+      </div>
     </Body>
   )
 }
