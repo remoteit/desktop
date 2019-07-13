@@ -23,49 +23,39 @@ const d = debug('r3:backend:Application')
 const PEER_PORT_RANGE = [33000, 42999]
 //  const LOCAL_PROXY_PORT_RANGE = [43000, 52999]
 
-const EVENTS = {
-  user: {
-    checkSignIn: 'user/check-sign-in',
-    signOut: 'user/sign-out',
-    signedOut: 'user/signed-out',
-    signIn: 'user/sign-in',
-    signInError: 'user/sign-in/error',
-    signedIn: 'user/signed-in',
-    quit: 'user/quit'
-  },
-  pool: {
-    updated: 'pool/updated',
-  },
-  connections: {
-    // Actions
-    connect: 'service/connect',
-    disconnect: 'service/disconnect',
-    forget: 'service/forget',
-    list: 'connections/list',
-    restart: 'service/restart',
+const EVENTS: { [name: string]: SocketEvent } = {
+  // user/auth
+  userSignedOut: 'user/signed-out',
+  userSignInError: 'user/sign-in/error',
+  userSignedIn: 'user/signed-in',
 
-    // Connection events
-    started: 'service/connect/started',
-    connected: 'service/connected',
-    disconnected: 'service/disconnected',
-    forgotten: 'service/forgotten',
+  // connections
+  poolUpdated: 'pool/updated',
+  connectionStarted: 'service/connect/started',
+  connectionConnected: 'service/connected',
+  connectionDisconnected: 'service/disconnected',
+  connectionForgotten: 'service/forgotten',
+  connectionError: 'service/error',
+  connectionStatus: 'service/status',
+  connectionUptime: 'service/uptime',
+  connectionRequest: 'service/request',
+  connectionTunnelOpened: 'service/tunnel/opened',
+  connectionTunnelClosed: 'service/tunnel/closed',
+  connectionThroughput: 'service/throughput',
+  connectionVersion: 'service/version',
+  connectionUnknown: 'service/unknown-event',
 
-    // Process output
-    error: 'service/error',
-    status: 'service/status',
-    uptime: 'service/uptime',
-    request: 'service/request',
-    tunnelOpened: 'service/tunnel-opened',
-    tunnelClosed: 'service/tunnel-closed',
-    throughput: 'service/throughput',
-    version: 'service/version',
-    unknown: 'service/unknown',
-  },
-  install: {
-    done: 'connectd/install/done',
-    progress: 'connectd/install/progress',
-    error: 'connectd/install/done',
-  },
+  // connectd
+  connectdInstallStart: 'connectd/install/start',
+  connectdInstallProgress: 'connectd/install/progress',
+  connectdInstallError: 'connectd/install/done',
+  connectdInstallDone: 'connectd/install/done',
+
+  // demuxerk
+  demuxerInstallStart: 'demuxer/install/start',
+  demuxerInstallProgress: 'demuxer/install/progress',
+  demuxerInstallError: 'demuxer/install/done',
+  demuxerInstallDone: 'demuxer/install/done',
 }
 
 interface UserCredentials {
@@ -187,11 +177,9 @@ class ElectronApp extends EventEmitter {
     this.tray.on('click', event => {
       // logger.info('Clicked tray icon')
       if (this.window) {
-
         if (this.window.isVisible() && this.window.isFocused()) {
           this.window.hide()
-        } 
-        else {
+        } else {
           this.window.show()
           this.window.focus()
         }
@@ -218,86 +206,101 @@ export class Environment {
     return this.isWindows ? '/remoteit' : path.join(os.homedir(), '.remoteit')
   }
 
-  static get connectdBinaryDirectory() {
-    return this.isWindows ? '/remoteit/bin/' : '/usr/local/bin/'
-  }
-
-  static get connectdBinaryName() {
-    return this.isWindows ? 'connectd.exe' : 'connectd'
-  }
-
-  static get connectdPath() {
-    return path.join(this.connectdBinaryDirectory, this.connectdBinaryName)
-  }
-
   static toJSON() {
     return {
       isWindows: this.isWindows,
       isMac: this.isMac,
       remoteitDirectory: this.remoteitDirectory,
-      connectdBinaryDirectory: this.connectdBinaryDirectory,
-      connectdBinaryName: this.connectdBinaryName,
-      connectdPath: this.connectdPath,
     }
   }
 }
 
 type ProgressCallback = (percent: number) => void
 
-class ConnectdInstaller {
+interface InstallerArgs {
+  name: string
+  repoName: string
+  version: string
+}
+
+class Installer {
+  name: string
+  repoName: string
+  version: string
+
+  constructor(args: InstallerArgs) {
+    this.name = args.name
+    this.repoName = args.repoName
+    this.version = args.version
+  }
+
   /**
-   * Download connectd, move it to the PATH on the user's
+   * Download the binary, move it to the PATH on the user's
    * system and then make it writable.
    */
-  static install(cb?: ProgressCallback) {
+  install(cb?: ProgressCallback) {
     const permission = 0o755
-    const version = 'v4.6'
 
-    d('Attempting to install connectd: %O', {
+    d('Attempting to install binary: %O', {
+      name: this.name,
       permission,
-      path: Environment.connectdPath,
-      version,
+      path: this.binaryPath,
+      version: this.version,
+      repoName: this.repoName,
     })
 
     try {
-      d('Creating binary path: ', Environment.connectdBinaryDirectory)
-      fs.mkdirSync(Environment.connectdBinaryDirectory, { recursive: true })
+      d('Creating binary path: ', this.targetDirectory)
+      fs.mkdirSync(this.targetDirectory, { recursive: true })
     } catch (error) {
       d('Error creating binary path:', error)
     }
 
-    // Download the connectd binary from Github
-    return this.download(version, cb).then(() => {
-      if (Environment.isMac) {
-        this.moveAndUpdatePermissions()
-      }
-    })
+    // Download the binary from Github
+    return this.download(this.version, cb)
+  }
+
+  get targetDirectory() {
+    const { dir } = path.parse(this.binaryPath)
+    return dir
   }
 
   /**
    * Install connectd if it is missing from the host system.
    */
-  static async installIfMissing(cb?: ProgressCallback) {
-    if (this.isConnectdInstalled()) return
+  async installIfMissing(cb?: ProgressCallback) {
+    if (this.isInstalled) return
     d('connectd is not installed, attempting to install now')
     return this.install(cb)
+  }
+
+  get binaryPath() {
+    return path.join(this.binaryDirectory, this.binaryName)
+  }
+
+  get binaryName() {
+    return Environment.isWindows ? this.name + '.exe' : this.name
+  }
+
+  get binaryDirectory() {
+    return Environment.isWindows ? '/remoteit/bin/' : '/usr/local/bin/'
   }
 
   /**
    * Return whether or not connectd exists where we expect it. Used
    * to decide if we install connectd or not on startup.
    */
-  private static isConnectdInstalled() {
-    // TODO: we should probably make sure the output of connectd is what
+  private get isInstalled() {
+    // TODO: we should probably make sure the output of the binary is what
     // we expect it to be and it is the right version
-    return existsSync(Environment.connectdPath)
+    return existsSync(this.binaryPath)
   }
 
-  private static download(tag: string, progress: ProgressCallback = () => {}) {
+  private download(tag: string, progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url = `https://github.com/remoteit/connectd/releases/download/${tag}/${
-        this.downloadFileName
-      }`
+      const url = `https://github.com/${this.repoName}/releases/download/${
+        this.version
+      }/${this.downloadFileName}`
 
       d('Downloading connectd', url)
 
@@ -329,43 +332,34 @@ class ConnectdInstaller {
     })
   }
 
-  private static moveAndUpdatePermissions() {
-    return new Promise((success, failure) => {
-      var options = {
-        name: 'remoteit',
-        // icns: '/Applications/Electron.app/Contents/Resources/Electron.icns', // (optional)
-      }
-      const cmd = `mv ${this.downloadPath} ${
-        Environment.connectdPath
-      } && chmod 755 ${Environment.connectdPath}`
-      d('Running command:', cmd)
-      sudo.exec(cmd, options, (error: Error, stdout: any, stderr: any) => {
-        d('Command error:', error)
-        d('Command stderr:', stderr)
-        d('Command stdout:', stdout)
-        if (error) return failure(error)
-        if (stderr) return failure(stderr)
-        success(stdout)
-      })
-    })
+  get downloadPath() {
+    return path.join(this.downloadDirectory, this.binaryName)
   }
 
-  private static get downloadFileName() {
+  private get downloadFileName() {
     return Environment.isWindows
-      ? 'connectd.exe'
+      ? `${this.name}.exe`
       : os.arch() === 'x64'
-      ? 'connectd.x86_64-osx'
-      : 'connectd.x86-osx'
+      ? `${this.name}.x86_64-osx`
+      : `${this.name}.x86-osx`
   }
 
-  private static get downloadDirectory() {
+  private get downloadDirectory() {
     return Environment.isWindows ? '/remoteit/tmp/' : '/tmp/'
   }
-
-  private static get downloadPath() {
-    return path.join(this.downloadDirectory, Environment.connectdBinaryName)
-  }
 }
+
+const connectdInstaller = new Installer({
+  name: 'connectd',
+  repoName: 'remoteit/connectd',
+  version: 'v4.6',
+})
+
+const demuxerInstaller = new Installer({
+  name: 'demuxer',
+  repoName: 'remoteit/multiport',
+  version: 'v0.3-alpha',
+})
 
 class JSONFile<T> {
   public location: string
@@ -472,11 +466,11 @@ class Connection extends EventEmitter {
   }
 
   async start() {
-    this.emit(EVENTS.connections.started, this.toJSON())
+    this.emit(EVENTS.connectionStarted, this.toJSON())
     logger.info('Starting connection:', this.toJSON())
     const usernameBase64 = Buffer.from(this.username).toString('base64')
     this.process = execFile(
-      Environment.connectdPath,
+      connectdInstaller.binaryPath,
       [
         // TODO: Support password login too?
         '-s',
@@ -504,7 +498,7 @@ class Connection extends EventEmitter {
         if (error) message = error.message
         if (stderr) message = stderr.toString()
         logger.error(message)
-        // this.emit(EVENTS.connections.error, {
+        // this.emit(EVENTS.connectionError, {
         //   error: message,
         //   connection: this.toJSON(),
         // })
@@ -529,7 +523,7 @@ class Connection extends EventEmitter {
   async stop() {
     logger.info('Stopping connection:', this.toJSON())
     await this.kill()
-    this.emit(EVENTS.connections.disconnected, {
+    this.emit(EVENTS.connectionDisconnected, {
       connection: this.toJSON(),
     } as ConnectdMessage)
   }
@@ -563,7 +557,7 @@ class Connection extends EventEmitter {
     // Make sure kill the process.
     await this.kill()
 
-    this.emit(EVENTS.connections.disconnected, {
+    this.emit(EVENTS.connectionDisconnected, {
       connection: this.toJSON(),
       raw: `Connection closed`,
     } as ConnectdMessage)
@@ -593,7 +587,7 @@ class Connection extends EventEmitter {
 
       if (code === 3) return
 
-      this.emit(EVENTS.connections.error, {
+      this.emit(EVENTS.connectionError, {
         code,
         connection: this.toJSON(),
         error: message,
@@ -615,24 +609,24 @@ class Connection extends EventEmitter {
       let name
       let extra: any
       if (line.includes('seconds since startup')) {
-        name = EVENTS.connections.uptime
+        name = EVENTS.connectionUptime
       } else if (line.startsWith('!!status')) {
-        name = EVENTS.connections.status
+        name = EVENTS.connectionStatus
       } else if (line.startsWith('!!throughput')) {
-        name = EVENTS.connections.throughput
+        name = EVENTS.connectionThroughput
       } else if (line.startsWith('!!request')) {
-        name = EVENTS.connections.request
+        name = EVENTS.connectionRequest
       } else if (line.startsWith('!!connected')) {
-        this.emit(EVENTS.connections.connected, this.toJSON())
+        this.emit(EVENTS.connectionConnected, this.toJSON())
         return
       } else if (line.includes('exit - process closed')) {
-        name = EVENTS.connections.disconnected
+        name = EVENTS.connectionDisconnected
       } else if (line.includes('connecttunnel')) {
-        name = EVENTS.connections.tunnelOpened
+        name = EVENTS.connectionTunnelOpened
       } else if (line.includes('closetunnel')) {
-        name = EVENTS.connections.tunnelClosed
+        name = EVENTS.connectionTunnelClosed
       } else if (line.includes('Version')) {
-        name = EVENTS.connections.version
+        name = EVENTS.connectionVersion
         const match = line.match(/Version ([\d\.]*)/)
         if (match && match.length > 1) extra = { version: match[1] }
         // TODO: return local IP
@@ -640,7 +634,7 @@ class Connection extends EventEmitter {
         //   localIP = localIP
         //   connectd.emit(EVENTS.updated, {}) //this.toJSON())
       } else {
-        name = EVENTS.connections.unknown
+        name = EVENTS.connectionUnknown
       }
 
       this.emit(name, {
@@ -653,7 +647,7 @@ class Connection extends EventEmitter {
 
   private handleStdErr = (buff: Buffer) => {
     const error = buff.toString()
-    this.emit(EVENTS.connections.error, {
+    this.emit(EVENTS.connectionError, {
       connection: this.toJSON(),
       error,
     } as ConnectionErrorMessage)
@@ -702,7 +696,7 @@ class ConnectionPool extends EventEmitter {
 
     // Emit all events comming from the Connection to the
     // ConnectionPool so they can be listened to
-    const events = Object.values(EVENTS.connections)
+    const events = Object.values(EVENTS)
     new EventRelay(events, connection, this)
 
     return connection
@@ -730,7 +724,7 @@ class ConnectionPool extends EventEmitter {
     await this.stop(id)
     delete this.pool[id]
     this.updated()
-    await this.emit(EVENTS.connections.forgotten, id)
+    await this.emit(EVENTS.connectionForgotten, id)
   }
 
   reset = async () => {
@@ -743,7 +737,7 @@ class ConnectionPool extends EventEmitter {
   }
 
   updated = async () => {
-    this.emit(EVENTS.pool.updated, this.toJSON())
+    this.emit(EVENTS.poolUpdated, this.toJSON())
   }
 
   toJSON = (): ConnectionData[] => {
@@ -785,19 +779,20 @@ class Server extends EventEmitter {
 
     this.io.on('connection', socket => {
       logger.info('New connection')
-      socket.on(EVENTS.user.checkSignIn, this.checkSignIn)
-      socket.on(EVENTS.user.signIn, this.signIn)
-      socket.on(EVENTS.user.signOut, this.signOut)
-      socket.on(EVENTS.user.quit, electron.app.quit)
-      socket.on(EVENTS.connections.list, this.list)
-      socket.on(EVENTS.connections.connect, this.connect)
-      socket.on(EVENTS.connections.disconnect, this.disconnect)
-      socket.on(EVENTS.connections.forget, this.forget)
-      socket.on(EVENTS.connections.restart, this.restart)
+
+      socket.on('user/check-sign-in' as SocketAction, this.checkSignIn)
+      socket.on('user/sign-in' as SocketAction, this.signIn)
+      socket.on('user/sign-out' as SocketAction, this.signOut)
+      socket.on('user/quit' as SocketAction, electron.app.quit)
+      socket.on('connections/list' as SocketAction, this.list)
+      socket.on('service/connect' as SocketAction, this.connect)
+      socket.on('service/disconnect' as SocketAction, this.disconnect)
+      socket.on('service/forget' as SocketAction, this.forget)
+      socket.on('service/restart' as SocketAction, this.restart)
     })
 
     // Forward all connection pool events to the server SocketIO process.
-    const events = Object.values(EVENTS.connections)
+    const events = Object.values(EVENTS)
     new EventRelay(events, this.pool, this.io.sockets)
 
     server.listen(PORT, () => {
@@ -818,7 +813,7 @@ class Server extends EventEmitter {
 
     if (!this.user) {
       logger.warn('No user, signing out...')
-      this.send(EVENTS.user.signedOut)
+      this.send(EVENTS.userSignedOut)
       return
     }
 
@@ -835,7 +830,7 @@ class Server extends EventEmitter {
     this.pool.user = user
 
     logger.info('User', { user })
-    if (user) this.send(EVENTS.user.signedIn, user)
+    if (user) this.send(EVENTS.userSignedIn, user)
   }
 
   signIn = async ({
@@ -855,7 +850,7 @@ class Server extends EventEmitter {
     try {
       user = await r3.user.login(username, password)
     } catch (error) {
-      this.send(EVENTS.user.signInError, error.message)
+      this.send(EVENTS.userSignInError, error.message)
       return
     }
 
@@ -872,13 +867,13 @@ class Server extends EventEmitter {
     r3.authHash = user.authHash
     r3.token = user.token
 
-    this.send(EVENTS.user.signedIn, user)
+    this.send(EVENTS.userSignedIn, user)
   }
 
   signOut = () => {
     logger.info('Sign out user')
     this.user = undefined
-    this.send(EVENTS.user.signedOut)
+    this.send(EVENTS.userSignedOut)
   }
 
   list = (cb: (pool: ConnectionData[]) => void) => {
@@ -902,7 +897,7 @@ class Server extends EventEmitter {
     await this.pool.restart(id)
   }
 
-  install = () => {}
+  // install = () => {}
 }
 
 export default class Application {
@@ -931,15 +926,15 @@ export default class Application {
     // Start pool and load connections from filestystem
     this.pool = new ConnectionPool()
     this.pool.initialize(this.connectionsFile.read(), userCredentials)
-    this.pool.on(EVENTS.pool.updated, this.handlePoolUpdated)
+    this.pool.on(EVENTS.poolUpdated, this.handlePoolUpdated)
 
     // win.on('ready', async () => {})
 
     // Start server and listen to events.
     this.server = new Server(this.pool, userCredentials)
     this.server.on('ready', this.handleServerReady)
-    this.server.on(EVENTS.user.signedIn, this.handleSignedIn)
-    this.server.on(EVENTS.user.signedOut, this.handleSignedOut)
+    this.server.on(EVENTS.userSignedIn, this.handleSignedIn)
+    this.server.on(EVENTS.userSignedOut, this.handleSignedOut)
   }
 
   get url() {
@@ -955,16 +950,57 @@ export default class Application {
     this.connectionsFile.write(pool)
   }
 
+  private installBinaries = async () => {
+    // Download connectd and demuxer
+    await Promise.all([
+      connectdInstaller
+        .installIfMissing((progress: number) =>
+          this.server.emit(EVENTS.connectdInstallProgress, progress)
+        )
+        .then(() => this.server.emit(EVENTS.connectdInstallDone))
+        .catch(error =>
+          this.server.emit(EVENTS.connectdInstallError, error.message)
+        ),
+
+      demuxerInstaller
+        .installIfMissing((progress: number) =>
+          this.server.emit(EVENTS.deumxerInstallProgress, progress)
+        )
+        .then(() => this.server.emit(EVENTS.demuxerInstallDone))
+        .catch(error =>
+          this.server.emit(EVENTS.demuxerInstallError, error.message)
+        ),
+    ])
+
+    if (!Environment.isWindows) {
+      const options = { name: 'remoteit' }
+      const cmds = [
+        `mv ${connectdInstaller.downloadPath} ${connectdInstaller.binaryPath}`,
+        `mv ${demuxerInstaller.downloadPath} ${demuxerInstaller.binaryPath}`,
+        `chmod 755 ${connectdInstaller.binaryPath}`,
+        `chmod 755 ${demuxerInstaller.binaryPath}`,
+      ]
+      const cmd = cmds.join(' && ')
+      d('Running command:', cmd)
+      sudo.exec(cmd, options, (error: Error, stdout: any, stderr: any) => {
+        d('Command error:', error)
+        d('Command stderr:', stderr)
+        d('Command stdout:', stdout)
+
+        // if (error) return failure(error)
+        // if (stderr) return failure(stderr)
+        // success(stdout)
+      })
+    }
+  }
+
   /**
    *  Make sure connectd is installed on startup of server
    */
-  private handleServerReady = () => {
+  private handleServerReady = async () => {
     logger.info('Server is ready')
-    ConnectdInstaller.installIfMissing((progress: number) =>
-      this.server.emit(EVENTS.install.progress, progress)
-    )
-      .then(() => this.server.emit(EVENTS.install.done))
-      .catch(error => this.server.emit(EVENTS.install.error, error.message))
+
+    await this.installBinaries()
   }
 
   /**

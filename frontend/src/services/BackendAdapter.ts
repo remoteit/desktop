@@ -12,27 +12,26 @@ class BackendAdapter extends EventEmitter {
 
     for (const eventName in handlers) {
       if (handlers.hasOwnProperty(eventName)) {
-        const handle = handlers[eventName]
+        const handle = handlers[eventName as SocketEvent]
         this.socket.on(eventName, handle)
       }
     }
   }
 
-  public emit(event: string, ...args: any[]): boolean {
+  public emit(event: SocketAction, ...args: any[]): boolean {
     this.socket.emit(event, ...args)
     return true
   }
 }
 
-interface EventHandlers {
-  [name: string]: (data?: any) => any
-}
+type EventHandlers = { [event in SocketEvent]: (data?: any) => any }
 
 const handlers: EventHandlers = {
   connect: () => console.log('Socket connect'),
   disconnect: () => console.log('Socket disconnect'),
 
-  // Servicesb
+  // Connections
+  'pool/updated': (pool: ConnectionInfo[]) => console.log('pool/updated', pool),
   'service/connect/started': (conn: ConnectionInfo) =>
     store.dispatch.devices.connectStart(conn.id),
   'service/connected': (conn: ConnectionInfo) =>
@@ -48,8 +47,8 @@ const handlers: EventHandlers = {
   'service/status': (msg: ConnectdMessage) =>
     console.log('service/status', msg),
   'service/forgotten': (id: string) => store.dispatch.devices.forgotten(id),
-  'service/updated': (msg: ConnectdMessage) =>
-    console.log('service/updated', msg),
+  // 'service/updated': (msg: ConnectdMessage) =>
+  //   console.log('service/updated', msg),
   'service/request': (msg: ConnectdMessage) =>
     console.log('service/request', msg),
   'service/connecting': (msg: ConnectdMessage) =>
@@ -62,12 +61,18 @@ const handlers: EventHandlers = {
     console.log('service/version', msg),
   'service/uptime': (msg: ConnectdMessage) =>
     console.log('service/uptime', msg),
-  'service/unknown': (...args) => console.log('service/unknown', ...args),
 
   // connectd binary
+  'connectd/install/start': () => console.log('connectd/install/start'),
   'connectd/install/error': () => console.log('connectd/install/error'),
   'connectd/install/progress': () => console.log('connectd/install/progress'),
   'connectd/install/done': () => console.log('connectd/install/done'),
+
+  // demuxer binary
+  'demuxer/install/start': () => console.log('demuxer/install/start'),
+  'demuxer/install/error': () => console.log('demuxer/install/error'),
+  'demuxer/install/progress': () => console.log('demuxer/install/progress'),
+  'demuxer/install/done': () => console.log('demuxer/install/done'),
 
   // User/auth
   'user/sign-in/error': (error: string) =>
