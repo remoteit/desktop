@@ -5,7 +5,11 @@ import { Icon } from '../Icon'
 
 export function QuitLink({ quit }: QuitLinkControllerProps) {
   function warning() {
-    if (confirm('Are you sure? Quitting will close all active connections.')) {
+    if (
+      window.confirm(
+        'Are you sure? Quitting will close all active connections.'
+      )
+    ) {
       quit()
     }
   }
