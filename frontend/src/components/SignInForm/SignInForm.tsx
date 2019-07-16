@@ -75,15 +75,6 @@ export function SignInForm({
           <span className="danger txt-sm">{formal.errors.password}</span>
         )}
       </div>
-
-      <div className="right">
-        <Link
-          href="https://app.remote.it/auth/#/forgot-password"
-          className="txt-sm"
-        >
-          Forgot your password?
-        </Link>
-      </div>
       <Button
         {...formal.getSubmitButtonProps()}
         color="primary"
