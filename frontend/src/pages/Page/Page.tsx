@@ -1,14 +1,8 @@
 import React from 'react'
-import {
-  CssBaseline,
-  createMuiTheme,
-  MuiThemeProvider,
-} from '@material-ui/core'
+import { CssBaseline, createMuiTheme } from '@material-ui/core'
+import { ThemeProvider } from '@material-ui/styles'
 
 const theme = createMuiTheme({
-  typography: {
-    useNextVariants: true,
-  },
   palette: {
     background: {
       default: 'transparent',
@@ -46,9 +40,9 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   return (
-    <MuiThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {children}
-    </MuiThemeProvider>
+    </ThemeProvider>
   )
 }
