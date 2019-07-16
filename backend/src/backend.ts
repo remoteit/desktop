@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 import debug from 'debug'
 import logger from './utils/logger'
 import Tracker from './utils/analytics'
