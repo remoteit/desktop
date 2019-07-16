@@ -1,0 +1,20 @@
+{
+  "name": "remote.it-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd backend && npm run build",
+    "watch-frontend": "cd frontend && npm start",
+    "watch-backend": "cd backend && npm start",
+    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -p watch-*",
+    "postinstall": "npm-run-all -p install-*",
+    "install-backend": "cd backend && npm i",
+    "install-frontend": "cd frontend && npm i"
+  },
+  "dependencies": {
+    "keyboardjs": "2.5.1"
+  },
+  "devDependencies": {
+    "npm-run-all": "4.1.5"
+  }
+}
