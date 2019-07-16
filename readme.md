@@ -6,6 +6,10 @@
 
 The desktop application serves one primary purpose which is to create a Peer-to-Peer connection to a remote.it device. It downloads and installs connectd on the current system and then runs connectd to establish a Peer-to-Peer connection.
 
+## Usage
+
+- Your connections are persisted to `~/.remoteit/connections.json`. You can add/remove connection manually if you'd like. Make sure to restart the desktop if you change this file.
+
 ## Development
 
 ```shell
@@ -23,7 +27,7 @@ Tests are written using Jest. End-to-end tests are in `tests/e2e`.
 
 ### Setup
 
-Copy the `.env.example` file to `.env` and then fill in the values for testing.
+Copy the `backend/.env.example` file to `backend/.env` and then fill in the values.
 
 ### End-to-End Tests
 
