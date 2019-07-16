@@ -1,18 +1,15 @@
 import React from 'react'
 import { mount } from 'enzyme'
 import { App } from './App'
-import { boolean } from '@storybook/addon-knobs'
+import { Provider } from 'react-redux'
+import { store } from '../../store'
 
 describe('components/App', () => {
   test('should not explode', () => {
     mount(
-      <App
-        signInStarted={boolean('signInStarted', false)}
-        user={undefined}
-        page="devices"
-        checkSignIn={jest.fn()}
-        setPage={jest.fn()}
-      />
+      <Provider store={store}>
+        <App />
+      </Provider>
     )
   })
 })
