@@ -68,6 +68,13 @@ export function user({ email = 'fake@example.com' } = {}): IUser {
     token: 'fake-token',
     pubSubChannel: 'fake-pubsub-channel',
     language: 'en-us',
+    plan: {
+      commercial: false,
+      trial: false,
+      name: 'free',
+      price: 0,
+      quantity: 0,
+    },
   }
 }
 
