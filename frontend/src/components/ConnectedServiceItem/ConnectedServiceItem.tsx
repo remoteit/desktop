@@ -26,7 +26,12 @@ export function ConnectedServiceItem({
         <div className="mr-sm">
           <ConnectionStateIcon state={state} size="lg" />
         </div>
-        <div>
+        <div
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           <div className="txt-md gray-darkest">{connection.name}</div>
           {connection.type &&
             connection.name.toLowerCase() !== connection.type.toLowerCase() && (
@@ -36,12 +41,9 @@ export function ConnectedServiceItem({
             <span className="gray-light txt-sm">PID# {connection.pid}</span>
           )}
         </div>
-        <div className="ml-auto df ai-center ws-nowrap">
+        <div className="ml-auto df ai-center">
           {connection.port && (
-            <CopyableText
-              value={`localhost:${connection.port}`}
-              className="txt-md"
-            />
+            <CopyableText value={`localhost:${connection.port}`} />
           )}
           <RestartButton
             connected={Boolean(connection.pid)}

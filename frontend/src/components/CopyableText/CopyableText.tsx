@@ -11,14 +11,14 @@ export function CopyableText({
   ...props
 }: CopyableTextProps & React.HTMLProps<HTMLDivElement>) {
   return (
-    <div {...props}>
+    <>
       <TextField
         type="text"
         value={value}
         onFocus={e => e.target.select()}
         InputProps={{ className: 'gray-dark', readOnly: true }}
       />
-      <CopyButton text={value} />
-    </div>
+      <CopyButton style={{ display: 'inline-flex' }} text={value} />
+    </>
   )
 }
