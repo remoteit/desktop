@@ -37,7 +37,7 @@ export function DeviceListItem({
             className="pl-sm"
           />
         </ListItemIcon>
-        <ListItemText inset primary={device.name} />
+        <ListItemText primary={device.name} />
         <div className="ml-auto">
           {open ? (
             <Icon name="chevron-up" color="gray" className="pr-sm" />
