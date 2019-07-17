@@ -1,6 +1,6 @@
 {
   "name": "remote.it-desktop-backend",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "private": true,
   "main": "build/backend.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "build-backend": "electron-builder -m",
+    "build-backend": "electron-builder -mw",
     "compile": "tsc",
     "electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
     "test": "NODE_ENV=test jest",
@@ -30,7 +30,6 @@
     "@types/socket.io": "2.1.2",
     "@types/universal-analytics": "0.4.2",
     "cross-env": "5.2.0",
-    "dotenv": "8.0.0",
     "electron": "5.0.6",
     "electron-builder": "21.0.15",
     "electron-notarize": "0.1.1",
@@ -50,6 +49,7 @@
     "chokidar": "3.0.2",
     "cross-fetch": "3.0.4",
     "debug": "4.1.1",
+    "dotenv": "8.0.0",
     "express": "4.17.1",
     "http-proxy": "1.17.0",
     "portfinder": "1.0.21",
