@@ -153,9 +153,11 @@ class ElectronApp extends EventEmitter {
       height: 600,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       frame: false,
+      resizable: false,
       transparent: true,
       titleBarStyle: 'customButtonsOnHover',
     })
+    this.window.setVisibleOnAllWorkspaces(true)
 
     const startUrl =
       process.env.ELECTRON_START_URL ||
