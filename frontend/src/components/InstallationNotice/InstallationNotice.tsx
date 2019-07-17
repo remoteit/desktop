@@ -12,6 +12,7 @@ export type InstallationNoticeProps = ReturnType<typeof mapState> &
 const mapState = (state: ApplicationState, props: any) => ({
   error: state.binaries.error,
   installing: state.binaries.installing,
+  connected: state.ui.connected,
   installed:
     state.binaries.connectdInstalled &&
     state.binaries.muxerInstalled &&
@@ -28,12 +29,14 @@ export const InstallationNotice = connect(
   mapDispatch
 )(
   ({
+    connected,
     clearError,
     error,
     installing,
     installed,
     install,
   }: InstallationNoticeProps) => {
+    if (!connected) return null
     if (installed) return null
     return (
       <div className="h-100 bg-gray-lightest gray-dark df ai-center jc-center">

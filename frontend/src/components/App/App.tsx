@@ -50,6 +50,13 @@ export const App = connect(
       checkSignIn()
     }, [])
 
+    if (checkSignInStarted)
+      return (
+        <Page>
+          <LoadingPage />
+        </Page>
+      )
+
     if (!installed)
       return (
         <Page>
@@ -57,12 +64,6 @@ export const App = connect(
         </Page>
       )
 
-    if (checkSignInStarted)
-      return (
-        <Page>
-          <LoadingPage />
-        </Page>
-      )
     if (!user)
       return (
         <Page>

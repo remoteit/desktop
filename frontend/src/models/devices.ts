@@ -112,6 +112,10 @@ export default createModel({
           connections.map(conn => dispatch.devices.connected(conn))
         }
       )
+
+      const devices = localStorage.getItem('devices')
+      if (devices && devices.length)
+        dispatch.devices.setDevices(JSON.parse(devices))
     },
     async connect(service: IService) {
       dispatch.devices.connectStart(service.id)
@@ -170,6 +174,7 @@ export default createModel({
       window.localStorage.setItem(SORT_SETTING_KEY, sort)
     },
     setDevices(state: DeviceState, devices: IDevice[]) {
+      localStorage.setItem('devices', JSON.stringify(devices))
       state.all = Device.sort(devices, state.sort)
     },
     fetchFinished(state: DeviceState) {

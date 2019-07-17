@@ -13,4 +13,6 @@ export const AIRBRAKE_PROJECT_KEY =
 
 // Remote.it API URL
 export const API_URL = process.env.API_URL || 'https://api.remot3.it/apv/v27'
-export const DEVELOPER_KEY = process.env.DEVELOPER_KEY
+export const DEVELOPER_KEY =
+  process.env.DEVELOPER_KEY ||
+  'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'

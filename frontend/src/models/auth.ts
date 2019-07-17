@@ -3,7 +3,6 @@ import { createModel } from '@rematch/core'
 import BackendAdapter from '../services/BackendAdapter'
 import {
   clearUserCredentials,
-  refreshAccessKey,
   updateUserCredentials,
 } from '../services/remote.it'
 
@@ -25,9 +24,17 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     async checkSignIn() {
+      const user = localStorage.getItem('user')
       dispatch.auth.checkSignInStarted()
       dispatch.devices.getConnections()
-      await refreshAccessKey()
+      if (user) {
+        dispatch.auth.setUser(JSON.parse(user))
+        dispatch.auth.signInFinished()
+        dispatch.auth.checkSignInFinished()
+        dispatch.devices.shouldSearchDevices()
+        return
+        // } else {
+      }
       BackendAdapter.emit('user/check-sign-in')
     },
     async signIn(credentials: { password: string; username: string }) {
@@ -39,7 +46,6 @@ export default createModel({
       dispatch.auth.checkSignInFinished()
       dispatch.auth.setUser(user)
       dispatch.devices.shouldSearchDevices()
-      updateUserCredentials(user)
     },
     /**
      * Triggers a signout via the backend process
@@ -64,7 +70,6 @@ export default createModel({
       dispatch.devices.reset()
       dispatch.logs.reset()
       dispatch.navigation.setPage('devices')
-      clearUserCredentials()
     },
   }),
   reducers: {
@@ -82,6 +87,9 @@ export default createModel({
     },
     signOutFinished(state: AuthState) {
       state.user = undefined
+      clearUserCredentials()
+      localStorage.removeItem('devices')
+      localStorage.removeItem('user')
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
@@ -89,6 +97,8 @@ export default createModel({
     setUser(state: AuthState, user: IUser) {
       state.user = user
       state.signInError = undefined
+      localStorage.setItem('user', JSON.stringify(user))
+      updateUserCredentials(user)
     },
   },
 })

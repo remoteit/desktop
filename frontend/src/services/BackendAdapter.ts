@@ -12,13 +12,24 @@ class BackendAdapter extends EventEmitter {
 
     for (const eventName in handlers) {
       if (handlers.hasOwnProperty(eventName)) {
-        const handle = handlers[eventName as SocketEvent]
-        this.socket.on(eventName, handle)
+        const name = eventName as SocketEvent
+        const handler = handlers[name]
+        this.on(name, handler)
       }
     }
   }
 
-  public emit(event: SocketAction, ...args: any[]): boolean {
+  on(eventName: SocketEvent, handler: (...args: any[]) => void) {
+    this.socket.on(eventName, handler)
+    return this
+  }
+
+  off(eventName: SocketEvent) {
+    this.socket.off(eventName)
+    return this
+  }
+
+  emit(event: SocketAction, ...args: any[]): boolean {
     this.socket.emit(event, ...args)
     return true
   }
@@ -27,8 +38,8 @@ class BackendAdapter extends EventEmitter {
 type EventHandlers = { [event in SocketEvent]: (data?: any) => any }
 
 const handlers: EventHandlers = {
-  connect: () => console.log('Socket connect'),
-  disconnect: () => console.log('Socket disconnect'),
+  connect: () => store.dispatch.ui.connected(),
+  disconnect: () => store.dispatch.ui.disconnected(),
 
   // Connections
   'pool/updated': (pool: ConnectionInfo[]) => console.log('pool/updated', pool),
