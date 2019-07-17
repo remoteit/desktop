@@ -350,14 +350,14 @@ class Installer {
 
   private get downloadFileName() {
     return Environment.isWindows
-      ? `${this.name}.exe`
+      ? `${this.name}.x86_64-64.exe`
       : os.arch() === 'x64'
       ? `${this.name}.x86_64-osx`
       : `${this.name}.x86-osx`
   }
 
   private get downloadDirectory() {
-    return Environment.isWindows ? '/remoteit/tmp/' : '/tmp/'
+    return Environment.isWindows ? '/remoteit/bin/' : '/tmp/'
   }
 }
 
@@ -390,13 +390,6 @@ class BinaryInstaller extends EventEmitter {
 
   async install() {
     return new Promise(async (resolve, reject) => {
-      // if (
-      //   connectdInstaller.isInstalled &&
-      //   muxerInstaller.isInstalled &&
-      //   demuxerInstaller.isInstalled
-      // )
-      //   return
-
       // Download and install binaries
       await Promise.all(
         this.installers.map(installer =>
@@ -592,8 +585,10 @@ class Connection extends EventEmitter {
       }
     )
 
-    if (!this.process || !this.process.stdout || !this.process.stderr)
+    if (!this.process || !this.process.stdout || !this.process.stderr) {
+      logger.error('Could not start connectd process!')
       throw new Error('Could not start connectd process!')
+    }
 
     this.process.stdout.on('data', this.handleStdOut)
     this.process.stderr.on('data', this.handleStdErr)
