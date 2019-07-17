@@ -42,33 +42,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div
-        style={{
-          position: 'absolute',
-          top: 3,
-          left: '50%',
-          marginLeft: -8,
-          height: 16,
-          width: 16,
-          borderRadius: 2,
-          transform: 'rotate(45deg)',
-          backgroundColor: 'var(--color-gray-lighter)',
-        }}
-      />
-      <div
-        style={{
-          position: 'fixed',
-          backgroundColor: 'var(--color-gray-lighter)',
-          top: 10,
-          borderRadius: 4,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          overflow: 'hidden',
-        }}
-      >
-        {children}
-      </div>
+      {children}
     </ThemeProvider>
   )
 }

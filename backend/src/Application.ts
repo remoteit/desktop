@@ -119,7 +119,7 @@ class ElectronApp extends EventEmitter {
 
     // Make sure to never show the doc icon
     // TODO: Have this configurable via a setting!
-    this.app.dock.hide()
+    // this.app.dock.hide()
   }
 
   get url() {
@@ -133,14 +133,14 @@ class ElectronApp extends EventEmitter {
    * Some APIs can only be used after this event occurs.
    */
   handleAppReady = () => {
-    this.createTrayIcon()
     this.createMainWindow()
+    this.createTrayIcon()
     this.emit('ready')
   }
 
   handleActivate = () => {
     // logger.info('Window activated')
-    if (this.window) this.showWindow()
+    if (this.window) this.window.show()
   }
 
   createMainWindow = () => {
@@ -149,12 +149,15 @@ class ElectronApp extends EventEmitter {
     // logger.info('Creating main window')
     // d('Showing main window')
     this.window = new electron.BrowserWindow({
-      width: 500,
+      width: 700,
       height: 600,
+      minWidth: 400,
+      minHeight: 300,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
+      fullscreen: false,
+      fullscreenable: false,
       frame: false,
-      transparent: true,
-      titleBarStyle: 'customButtonsOnHover',
+      titleBarStyle: 'hiddenInset',
     })
 
     const startUrl =
@@ -166,12 +169,8 @@ class ElectronApp extends EventEmitter {
       })
     this.window.loadURL(startUrl)
 
-    this.showWindow()
-
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
-
-    this.window.on('blur', () => this.window && this.window.hide())
 
     this.window.on('close', e => {
       if (!this.quitSelected) {
@@ -193,7 +192,8 @@ class ElectronApp extends EventEmitter {
         if (this.window.isVisible() && this.window.isFocused()) {
           this.window.hide()
         } else {
-          this.showWindow()
+          this.window.show()
+          this.window.focus()
         }
 
         // Show devtools when command+option clicked
@@ -202,31 +202,6 @@ class ElectronApp extends EventEmitter {
         }
       }
     })
-  }
-
-  showWindow() {
-    if (this.window && this.tray) {
-      const position = this.getWindowPosition()
-      if (!position) return
-      this.window.setPosition(position.x, position.y, false)
-      this.window.show()
-      this.window.focus()
-    }
-  }
-
-  getWindowPosition() {
-    if (!this.window || !this.tray) return
-
-    const windowBounds = this.window.getBounds()
-    const trayBounds = this.tray.getBounds()
-    // const displayBounds = electron.screen.getDisplayMatching(windowBounds).workArea
-
-    return {
-      x: Math.round(
-        trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2
-      ),
-      y: Math.round(trayBounds.y + trayBounds.height),
-    }
   }
 }
 

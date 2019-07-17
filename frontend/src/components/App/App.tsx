@@ -76,9 +76,9 @@ export const App = connect(
           className="w-100 h-100 df ai-stretch"
           style={{ flexFlow: 'column' }}
         >
-          {/* <div className="df ai-center jc-center py-xs center dragable primary txt-md bg-gray-lighter">
+          <div className="df ai-center jc-center py-xs center dragable primary txt-md bg-gray-lighter">
             remote.it
-          </div> */}
+          </div>
           <div className="of-auto fg-1 relative">{routes[page]}</div>
           <BottomNavigation
             value={page}
