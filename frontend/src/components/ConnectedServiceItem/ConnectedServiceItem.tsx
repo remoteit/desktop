@@ -5,6 +5,7 @@ import { DisconnectButtonController } from '../../controllers/DisconnectButtonCo
 import { RestartButton } from '../RestartButton'
 import { ForgetButton } from '../ForgetButton'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
+import { CopyButton } from '../CopyButton'
 
 export interface ConnectedServiceItemProps {
   connection: ConnectionInfo
@@ -37,13 +38,18 @@ export function ConnectedServiceItem({
             connection.name.toLowerCase() !== connection.type.toLowerCase() && (
               <span className="txt-sm gray-light mr-md">{connection.type}</span>
             )}
-          {connection.pid && (
-            <span className="gray-light txt-sm">PID# {connection.pid}</span>
+          {connection.port && (
+            <span className="txt-sm italic gray">
+              localhost:{connection.port}
+            </span>
           )}
         </div>
         <div className="ml-auto df ai-center">
           {connection.port && (
-            <CopyableText value={`localhost:${connection.port}`} />
+            <CopyButton
+              title="Copy connection URL"
+              text={`localhost:${connection.port}`}
+            />
           )}
           <RestartButton
             connected={Boolean(connection.pid)}

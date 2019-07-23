@@ -1,8 +1,8 @@
 import ua from 'universal-analytics'
-import { GOOGLE_ANALYTICS_CODE } from '../constants'
+import { GOOGLE_ANALYTICS_CODE } from './constants'
 import debug from 'debug'
 
-const d = debug('r3:backend:utils:analytics')
+const d = debug('r3:backend:Tracker')
 
 class Tracker {
   private ua: ua.Visitor

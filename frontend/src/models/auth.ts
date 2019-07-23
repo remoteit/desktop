@@ -33,7 +33,6 @@ export default createModel({
         dispatch.auth.checkSignInFinished()
         dispatch.devices.shouldSearchDevices()
         return
-        // } else {
       }
       BackendAdapter.emit('user/check-sign-in')
     },

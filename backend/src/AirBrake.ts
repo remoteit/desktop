@@ -3,7 +3,7 @@ import {
   AIRBRAKE_PROJECT_ID,
   AIRBRAKE_PROJECT_KEY,
   ENVIRONMENT,
-} from '../constants'
+} from './constants'
 
 const airbrake = new AirbrakeClient({
   projectId: AIRBRAKE_PROJECT_ID,
@@ -11,4 +11,4 @@ const airbrake = new AirbrakeClient({
   environment: ENVIRONMENT,
 })
 
-export const { notify } = airbrake
+export default airbrake

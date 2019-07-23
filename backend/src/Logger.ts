@@ -1,6 +1,6 @@
 import path from 'path'
+import Environment from './Environment'
 import * as winston from 'winston'
-import { Environment } from '../Application'
 
 const ENV = process.env.NODE_ENV
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb

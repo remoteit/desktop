@@ -43,21 +43,18 @@ export default createModel({
     installing(state: BinariesState) {
       state.installing = true
     },
-    installed(
-      state: BinariesState,
-      { binary, info }: { binary: BinaryName; info: InstallationInfo }
-    ) {
+    installed(state: BinariesState, info: InstallationInfo) {
       state.installing = false
 
       // Clear errors
       state.error = undefined
 
       // @ts-ignore
-      state[binary + 'Installed'] = true
+      state[info.name + 'Installed'] = true
       // @ts-ignore
-      state[binary + 'Path'] = info.path
+      state[info.name + 'Path'] = info.path
       // @ts-ignore
-      state[binary + 'Version'] = info.version
+      state[info.name + 'Version'] = info.version
     },
     notInstalled(state: BinariesState, binary: BinaryName) {
       state.installing = false

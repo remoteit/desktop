@@ -42,7 +42,6 @@ const handlers: EventHandlers = {
   disconnect: () => store.dispatch.ui.disconnected(),
 
   // Connections
-  'pool/updated': (pool: ConnectionInfo[]) => console.log('pool/updated', pool),
   'service/connect/started': (conn: ConnectionInfo) =>
     store.dispatch.devices.connectStart(conn.id),
   'service/connected': (conn: ConnectionInfo) =>
@@ -73,34 +72,16 @@ const handlers: EventHandlers = {
   'service/uptime': (msg: ConnectdMessage) => {},
   // console.log('service/uptime', msg),
 
-  // General install
-  'install/error': error => store.dispatch.binaries.installError(error),
-
-  // connectd binary
-  'connectd/install/start': () => console.log('connectd/install/start'),
-  'connectd/install/error': () => console.log('connectd/install/error'),
-  'connectd/install/progress': () => console.log('connectd/install/progress'),
-  'connectd/installed': (info: InstallationInfo) =>
-    store.dispatch.binaries.installed({ binary: 'connectd', info }),
-  'connectd/not-installed': () =>
-    store.dispatch.binaries.notInstalled('connectd'),
-
   // muxer binary
-  'muxer/install/start': () => console.log('muxer/install/start'),
-  'muxer/install/error': () => console.log('muxer/install/error'),
-  'muxer/install/progress': () => console.log('muxer/install/progress'),
-  'muxer/installed': (info: InstallationInfo) =>
-    store.dispatch.binaries.installed({ binary: 'muxer', info }),
-  'muxer/not-installed': () => store.dispatch.binaries.notInstalled('muxer'),
-
-  // demuxer binary
-  'demuxer/install/start': () => console.log('demuxer/install/start'),
-  'demuxer/install/error': () => console.log('demuxer/install/error'),
-  'demuxer/install/progress': () => console.log('demuxer/install/progress'),
-  'demuxer/installed': (info: InstallationInfo) =>
-    store.dispatch.binaries.installed({ binary: 'demuxer', info }),
-  'demuxer/not-installed': () =>
-    store.dispatch.binaries.notInstalled('demuxer'),
+  'binary/install/start': () => console.log('binary/install/start'),
+  'binary/install/error': (error: string) =>
+    store.dispatch.binaries.installError(error),
+  'binary/install/progress': (progress: number) =>
+    console.log('binary/install/progress', progress),
+  'binary/installed': (info: InstallationInfo) =>
+    store.dispatch.binaries.installed(info),
+  'binary/not-installed': (binary: string) =>
+    store.dispatch.binaries.notInstalled(binary),
 
   // User/auth
   'user/sign-in/error': (error: string) =>

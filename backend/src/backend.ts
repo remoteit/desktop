@@ -1,22 +1,24 @@
 require('dotenv').config()
 
+import AirBrake from './AirBrake'
+import Application from './Application'
 import debug from 'debug'
-import logger from './utils/logger'
-import Tracker from './utils/analytics'
-import './utils/errorReporting'
-import Application, { Environment } from './Application'
+import Environment from './Environment'
+import Logger from './Logger'
+import Tracker from './Tracker'
 
 const d = debug('r3:backend:backend')
 
 d('Starting up Electron application!')
+Logger.info('Environment info:', Environment.toJSON())
+
 Tracker.pageView('/')
 Tracker.event('app', 'startup', 'remote.it Desktop application has started')
-logger.info('Desktop starting up!')
+Logger.info('Desktop starting up!')
 
-process.on('uncaughtException', function(err) {
-  logger.error('Caught exception: ' + err)
+process.on('uncaughtException', err => {
+  AirBrake.notify(err)
+  Logger.error('Caught exception: ' + err)
 })
 
 export const application = new Application()
-
-logger.info('Environment info:', Environment.toJSON())

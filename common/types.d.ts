@@ -27,7 +27,6 @@ declare global {
     | 'user/signed-in'
 
     // connections
-    | 'pool/updated'
     | 'service/connecting'
     | 'service/connect/started'
     | 'service/connected'
@@ -43,33 +42,17 @@ declare global {
     | 'service/version'
     | 'service/unknown-event'
 
-    // General installation
-    | 'install/error'
-
-    // connectd
-    | 'connectd/install/start'
-    | 'connectd/install/progress'
-    | 'connectd/install/error'
-    | 'connectd/installed'
-    | 'connectd/not-installed'
-
-    // muxer
-    | 'muxer/install/start'
-    | 'muxer/install/progress'
-    | 'muxer/install/error'
-    | 'muxer/installed'
-    | 'muxer/not-installed'
-
-    // demuxer
-    | 'demuxer/install/start'
-    | 'demuxer/install/progress'
-    | 'demuxer/install/error'
-    | 'demuxer/installed'
-    | 'demuxer/not-installed'
+    // binary
+    | 'binary/install/start'
+    | 'binary/install/progress'
+    | 'binary/install/error'
+    | 'binary/installed'
+    | 'binary/not-installed'
 
   type BinaryName = 'connectd' | 'muxer' | 'demuxer'
 
   interface InstallationInfo {
+    name: string
     path: string
     version: string
   }

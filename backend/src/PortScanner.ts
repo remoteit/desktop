@@ -1,10 +1,10 @@
 import net from 'net'
 import debug from 'debug'
+import Logger from './Logger'
 // import portfinder from 'portfinder'
-import logger from './logger'
 // import ConnectionPool from '../connectd/ConnectionPool'
 
-const d = debug('r3:desktop:utils:free-port')
+const d = debug('r3:desktop:PortScanner')
 
 export interface ServerError extends Error {
   code?: string
@@ -29,7 +29,7 @@ export default class PortScanner {
     for (const port of range) {
       const free = await this.isPortFree(port)
       if (free) {
-        logger.info('Found free port:', { free })
+        Logger.info('Found free port:', { free })
         return port
       }
     }

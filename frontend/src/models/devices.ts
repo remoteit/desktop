@@ -78,6 +78,17 @@ export default createModel({
           // device state against our list of locally connected services.
           // TODO: Probably a cleaner way of doing this...
           .then(() => getConnections())
+          .catch(error => {
+            console.error('Fetch error:', error, error.response)
+            if (
+              error &&
+              error.response &&
+              (error.response.status === 401 || error.response.status === 403)
+            ) {
+              setDevices([])
+              dispatch.auth.signedOut()
+            }
+          })
           .finally(fetchFinished)
       )
     },
