@@ -43,7 +43,7 @@ export default class Connection extends EventEmitter {
     super()
     this.authHash = args.authHash
     this.id = args.id
-    this.host = args.host || 'localhost'
+    this.host = args.host || '127.0.0.1'
     this.port = args.port
     this.name = args.name || `${this.host}:${this.port}`
     this.username = args.username
@@ -66,7 +66,7 @@ export default class Connection extends EventEmitter {
         this.id, // Service ID
         `T${this.port}`, // Bind port
         '2', // Encryption
-        '127.0.0.1', // Bind address
+        this.host, // Bind address
         '0.0.0.0', // Restricted connection IP
         '12', // Max out
         '0', // Lifetime
