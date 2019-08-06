@@ -1,4 +1,5 @@
 import electron from 'electron'
+import Environment from './Environment'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
@@ -29,7 +30,7 @@ export default class ElectronApp {
 
     // Make sure to never show the doc icon
     // TODO: Have this configurable via a setting!
-    this.app.dock.hide()
+    if (this.app.dock) this.app.dock.hide()
 
     this.handleOpenAtLogin(true)
   }
@@ -137,15 +138,38 @@ export default class ElectronApp {
   getWindowPosition() {
     if (!this.window || !this.tray) return
 
-    const windowBounds = this.window.getBounds()
-    const trayBounds = this.tray.getBounds()
-    // const displayBounds = electron.screen.getDisplayMatching(windowBounds).workArea
+    const padding = 12
+    const window = this.window.getBounds()
+    const tray = this.tray.getBounds()
+    const display = electron.screen.getDisplayMatching(tray).bounds
 
-    return {
-      x: Math.round(
-        trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2
-      ),
-      y: Math.round(trayBounds.y + trayBounds.height),
+    Logger.info('--------------------:')
+    // Logger.info('-----------------win:' + JSON.stringify(window))
+    // Logger.info('----------------tray:' + JSON.stringify(tray))
+    // Logger.info('-------------display:' + JSON.stringify(display))
+
+    let position = {
+      x: Math.round(tray.x + tray.width / 2 - window.width / 2),
+      y: Math.round(tray.y - window.height),
     }
+
+    if (Environment.isMac) {
+      position.y = Math.round(tray.y + tray.height)
+    }
+
+    // out of bounds
+    const windowRightEdge = position.x + window.width
+    const displayRightEdge = display.x + display.width - padding
+    const overlap = displayRightEdge - windowRightEdge
+    if (overlap < 0) position.x += overlap
+
+    Logger.info(
+      '-------------------rightEdge: "' + windowRightEdge.toString() + '"'
+    )
+    Logger.info(
+      '-------------------display: "' + (display.x + display.width) + '"'
+    )
+
+    return position
   }
 }
