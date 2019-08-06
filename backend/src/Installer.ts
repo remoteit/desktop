@@ -93,7 +93,6 @@ export default class Installer {
   get isInstalled() {
     // TODO: we should probably make sure the output of the binary is what
     // we expect it to be and it is the right version
-    d('Check if is installed', this.binaryPath)
     return existsSync(this.binaryPath)
   }
 

@@ -143,11 +143,6 @@ export default class ElectronApp {
     const tray = this.tray.getBounds()
     const display = electron.screen.getDisplayMatching(tray).bounds
 
-    Logger.info('--------------------:')
-    // Logger.info('-----------------win:' + JSON.stringify(window))
-    // Logger.info('----------------tray:' + JSON.stringify(tray))
-    // Logger.info('-------------display:' + JSON.stringify(display))
-
     let position = {
       x: Math.round(tray.x + tray.width / 2 - window.width / 2),
       y: Math.round(tray.y - window.height),
@@ -157,18 +152,11 @@ export default class ElectronApp {
       position.y = Math.round(tray.y + tray.height)
     }
 
-    // out of bounds
+    // out of bounds check
     const windowRightEdge = position.x + window.width
     const displayRightEdge = display.x + display.width - padding
     const overlap = displayRightEdge - windowRightEdge
     if (overlap < 0) position.x += overlap
-
-    Logger.info(
-      '-------------------rightEdge: "' + windowRightEdge.toString() + '"'
-    )
-    Logger.info(
-      '-------------------display: "' + (display.x + display.width) + '"'
-    )
 
     return position
   }
