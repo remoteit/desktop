@@ -1,6 +1,6 @@
 {
   "name": "remote.it-desktop-backend",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "private": true,
   "main": "build/backend.js",
   "scripts": {
