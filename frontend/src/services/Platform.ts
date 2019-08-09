@@ -11,7 +11,7 @@ export function isElectron() {
   return userAgent.includes(' electron/')
 }
 
-export function isMac() {
+export const isMac = () => {
   const platform = navigator.platform.toLowerCase()
   return platform.includes('mac')
 }

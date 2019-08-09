@@ -55,7 +55,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
   }
 
-  if (isMac())
+  if (isMac)
     containerStyle = {
       position: 'fixed',
       backgroundColor: 'var(--color-gray-lighter)',
@@ -70,7 +70,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {isMac() && (
+      {isMac && (
         <div
           style={{
             position: 'absolute',
