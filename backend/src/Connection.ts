@@ -8,7 +8,7 @@ import { EventEmitter } from 'events'
 export default class Connection extends EventEmitter {
   private authHash: string
   public id: string
-  public host?: string
+  public host: string
   public name?: string
   public pid?: number
   public port: number
