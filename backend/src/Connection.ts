@@ -1,9 +1,12 @@
 import ConnectdInstaller from './ConnectdInstaller'
+import debug from 'debug'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import Tracker from './Tracker'
 import { execFile, ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
+
+const d = debug('r3:backend:Connection')
 
 export default class Connection extends EventEmitter {
   private authHash: string
