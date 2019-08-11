@@ -1,4 +1,5 @@
 import React from 'react'
+import { isMac } from '../../services/Platform'
 import { CssBaseline, createMuiTheme } from '@material-ui/core'
 import { ThemeProvider } from '@material-ui/styles'
 
@@ -39,36 +40,52 @@ export interface Props {
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
+  let containerStyle: any = {
+    position: 'fixed',
+    backgroundColor: 'var(--color-gray-lighter)',
+    top: 0,
+    borderRadius: 4,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+    borderColor: 'var(--color-primary)',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
+  }
+
+  if (isMac)
+    containerStyle = {
+      position: 'fixed',
+      backgroundColor: 'var(--color-gray-lighter)',
+      top: 10,
+      borderRadius: 4,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      overflow: 'hidden',
+    }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div
-        style={{
-          position: 'absolute',
-          top: 3,
-          left: '50%',
-          marginLeft: -8,
-          height: 16,
-          width: 16,
-          borderRadius: 2,
-          transform: 'rotate(45deg)',
-          backgroundColor: 'var(--color-gray-lighter)',
-        }}
-      />
-      <div
-        style={{
-          position: 'fixed',
-          backgroundColor: 'var(--color-gray-lighter)',
-          top: 10,
-          borderRadius: 4,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          overflow: 'hidden',
-        }}
-      >
-        {children}
-      </div>
+      {isMac && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 3,
+            left: '50%',
+            marginLeft: -8,
+            height: 16,
+            width: 16,
+            borderRadius: 2,
+            transform: 'rotate(45deg)',
+            backgroundColor: 'var(--color-gray-lighter)',
+          }}
+        />
+      )}
+      <div style={containerStyle}>{children}</div>
     </ThemeProvider>
   )
 }
