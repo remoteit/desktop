@@ -40,6 +40,7 @@ export interface Props {
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
+  const showArrow = isMac()
   let containerStyle: any = {
     position: 'fixed',
     backgroundColor: 'var(--color-gray-lighter)',
@@ -55,7 +56,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
   }
 
-  if (isMac)
+  if (showArrow)
     containerStyle = {
       position: 'fixed',
       backgroundColor: 'var(--color-gray-lighter)',
@@ -70,7 +71,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {isMac && (
+      {showArrow && (
         <div
           style={{
             position: 'absolute',
