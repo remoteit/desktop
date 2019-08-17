@@ -150,9 +150,6 @@ export default class Connection extends EventEmitter {
     Logger.error(`Connection closed with code: ${code}`)
     Tracker.event('connection', 'connection-closed', `connection closed`, code)
 
-    // If terminated by signal code is received, do nothing.
-    if (code === 3) return
-
     // Make sure kill the process.
     await this.kill()
 
