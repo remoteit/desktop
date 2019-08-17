@@ -20,13 +20,18 @@ export default class ConnectionPool {
 
     this.user = user
 
-    connections.map(conn => this.connect(conn))
+    // Only turn on connections the user had open last time.
+    connections.map(conn => this.connect(conn, Boolean(conn.pid)))
 
     EventBus.on(User.EVENTS.signedIn, (user: IUser) => (this.user = user))
     EventBus.on(User.EVENTS.signedOut, () => (this.user = undefined))
+    EventBus.on(Connection.EVENTS.disconnected, () => this.updated())
   }
 
-  connect = async (args: { id: string; port?: number; name?: string }) => {
+  connect = async (
+    args: { id: string; port?: number; name?: string },
+    start = true
+  ) => {
     if (!this.user) throw new Error('No user to authenticate connection!')
 
     const port = args.port || (await this.freePort())
@@ -43,7 +48,8 @@ export default class ConnectionPool {
       authHash: this.user.authHash,
       ...args,
     })
-    this.pool[args.id] = connection
+    if (start) this.pool[args.id] = connection
+
     await this.start(args.id)
 
     // Trigger a save of the connections file
