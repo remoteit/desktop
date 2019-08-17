@@ -4,7 +4,7 @@ import { SignOutLinkController } from '../../controllers/SignOutLinkController'
 import { QuitLinkController } from '../../controllers/QuitLinkController'
 import { Link, Button } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
-import { Body } from '../../components/Body'
+// import { Body } from '../../components/Body'
 import { SearchOnlyToggle } from '../../components/SearchOnlyToggle'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
@@ -18,6 +18,7 @@ const mapState = (state: ApplicationState, props: any) => ({
     state.binaries.connectdInstalled &&
     state.binaries.muxerInstalled &&
     state.binaries.demuxerInstalled,
+  openOnLogin: state.auth.openOnLogin,
   // connectdInstalled: state.binaries.connectdInstalled,
   // connectdPath: state.binaries.connectdPath,
   // connectdVersion: state.binaries.connectdVersion,
@@ -31,32 +32,51 @@ const mapState = (state: ApplicationState, props: any) => ({
 
 const mapDispatch = (dispatch: any) => ({
   install: dispatch.binaries.install,
+  toggleOpenOnLogin: dispatch.auth.toggleOpenOnLogin,
 })
 
 export const SettingsPage = connect(
   mapState,
   mapDispatch
-)(({ installing, installed, install }: SettingsPageProps) => {
-  return (
-    <div className="bg-grey px-md">
-      <PageHeading className="my-md">Settings</PageHeading>
-      <div className="bg-white rad-sm py-sm my-md">
-        <SignOutLinkController />
-        <Link
-          href={encodeURI(
-            `mailto:support@remote.it?subject=Desktop Application Feedback`
-          )}
-        >
-          <Icon name="envelope" className="mr-sm" />
-          Send feedback
-        </Link>
-        <QuitLinkController />
-      </div>
-      <div className="bg-white rad-sm p-md my-md">
-        <SearchOnlyToggle />
-      </div>
-      <div className="bg-white rad-sm p-md my-md">
-        {/*
+)(
+  ({
+    installing,
+    installed,
+    install,
+    openOnLogin,
+    toggleOpenOnLogin,
+  }: SettingsPageProps) => {
+    return (
+      <div className="bg-grey px-md">
+        <PageHeading className="my-md">Settings</PageHeading>
+        <Box>
+          <SignOutLinkController />
+          <Link
+            href={encodeURI(
+              `mailto:support@remote.it?subject=Desktop Application Feedback`
+            )}
+          >
+            <Icon name="envelope" className="mr-sm" />
+            Send feedback
+          </Link>
+          <QuitLinkController />
+        </Box>
+        <Box padding="md">
+          <div className="mb-md">
+            <label>
+              <input
+                type="checkbox"
+                checked={openOnLogin}
+                onChange={toggleOpenOnLogin}
+                className="mr-sm"
+              />
+              Open remote.it Desktop on login
+            </label>
+          </div>
+          <SearchOnlyToggle />
+        </Box>
+        <Box padding="md">
+          {/*
           <div className="df ai-center mb-xs">
             <h3 className="my-none txt-md">
               connectd
@@ -80,24 +100,39 @@ export const SettingsPage = connect(
             )}
           </div>
           */}
-        <div className="">
-          <Button
-            disabled={installing}
-            onClick={() => install()}
-            variant="contained"
-            color={installed ? 'default' : 'primary'}
-          >
-            {installing ? (
-              'Installing...'
-            ) : (
-              <>{installed ? 'Reinstall' : 'Install'} command line tools</>
-            )}
-          </Button>
-        </div>
-        <div className="mt-md txt-sm gray">
-          Installing command line tools requires administrator permissions.
-        </div>
+          <div className="">
+            <Button
+              disabled={installing}
+              onClick={() => install()}
+              variant="contained"
+              color={installed ? 'default' : 'primary'}
+            >
+              {installing ? (
+                'Installing...'
+              ) : (
+                <>{installed ? 'Reinstall' : 'Install'} command line tools</>
+              )}
+            </Button>
+          </div>
+          <div className="mt-md txt-sm gray">
+            Installing command line tools requires administrator permissions.
+          </div>
+        </Box>
       </div>
+    )
+  }
+)
+
+function Box({
+  children,
+  padding,
+}: {
+  children: React.ReactNode
+  padding?: 'sm' | 'md' | 'lg'
+}) {
+  return (
+    <div className={`bg-white rad-sm ${padding ? `p-${padding}` : ''} my-md`}>
+      {children}
     </div>
   )
-})
+}

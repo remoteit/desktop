@@ -16,6 +16,9 @@ declare global {
     | 'service/forget'
     | 'service/restart'
 
+    // App / settings
+    | 'app/open-on-login'
+
   export type SocketEvent =
     // built-in events
     | 'connect'

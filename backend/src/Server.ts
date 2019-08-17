@@ -15,6 +15,7 @@ import Logger from './Logger'
 import SocketIO from 'socket.io'
 import User from './User'
 import { PORT } from './constants'
+import ElectronApp from './ElectronApp'
 
 const d = debug('r3:backend:Server')
 
@@ -66,6 +67,7 @@ export default class Server {
       socket.on('service/forget', this.forget)
       socket.on('service/restart', this.restart)
       socket.on('binaries/install', this.installBinaries)
+      socket.on('app/open-on-login', this.openOnLogin)
     })
 
     server.listen(PORT, () => {
@@ -125,5 +127,10 @@ export default class Server {
     return installer
       .install()
       .catch(error => EventBus.emit(Installer.EVENTS.error, error))
+  }
+
+  openOnLogin = (open: boolean) => {
+    d('Open on login:', open)
+    EventBus.emit(ElectronApp.EVENTS.openOnLogin, open)
   }
 }

@@ -1,9 +1,12 @@
+import debug from 'debug'
 import electron from 'electron'
 import Environment from './Environment'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
 import url from 'url'
+
+const d = debug('r3:backend:ElectronApp')
 
 export default class ElectronApp {
   private window?: electron.BrowserWindow
@@ -13,6 +16,7 @@ export default class ElectronApp {
 
   static EVENTS = {
     ready: 'app/ready',
+    openOnLogin: 'app/open-on-login',
   }
 
   constructor() {
@@ -32,7 +36,9 @@ export default class ElectronApp {
     // TODO: Have this configurable via a setting!
     if (this.app.dock) this.app.dock.hide()
 
-    this.handleOpenAtLogin(true)
+    EventBus.on(ElectronApp.EVENTS.openOnLogin, (open: boolean) =>
+      this.handleOpenAtLogin(open)
+    )
   }
 
   get url() {
@@ -57,6 +63,7 @@ export default class ElectronApp {
   }
 
   private handleOpenAtLogin = (open: boolean) => {
+    d('Handling open at login:', open)
     this.app.setLoginItemSettings({
       openAtLogin: open,
     })

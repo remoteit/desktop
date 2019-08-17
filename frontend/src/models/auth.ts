@@ -6,8 +6,12 @@ import {
   updateUserCredentials,
 } from '../services/remote.it'
 
+const USER_KEY = 'user'
+const OPEN_ON_LOGIN_KEY = 'open-on-login'
+
 export interface AuthState {
   checkSignInStarted: boolean
+  openOnLogin: boolean
   signInStarted: boolean
   signInError?: string
   user?: IUser
@@ -15,6 +19,7 @@ export interface AuthState {
 
 const state: AuthState = {
   checkSignInStarted: false,
+  openOnLogin: false,
   signInStarted: false,
   signInError: undefined,
   user: undefined,
@@ -24,9 +29,13 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     async checkSignIn() {
-      const user = localStorage.getItem('user')
+      const user = localStorage.getItem(USER_KEY)
       dispatch.auth.checkSignInStarted()
       dispatch.devices.getConnections()
+
+      // Get "open on login" setting
+      dispatch.auth.getOpenOnLoginState()
+
       if (user) {
         dispatch.auth.setUser(JSON.parse(user))
         dispatch.auth.signInFinished()
@@ -70,6 +79,15 @@ export default createModel({
       dispatch.logs.reset()
       dispatch.navigation.setPage('devices')
     },
+    async getOpenOnLoginState() {
+      // Get "open on login" setting
+      const openOnLogin = localStorage.getItem(OPEN_ON_LOGIN_KEY)
+      dispatch.auth.setOpenOnLogin(openOnLogin === 'true')
+    },
+    async toggleOpenOnLogin(_, state) {
+      const open = !state.auth.openOnLogin
+      dispatch.auth.setOpenOnLogin(open)
+    },
   }),
   reducers: {
     checkSignInStarted(state: AuthState) {
@@ -88,7 +106,7 @@ export default createModel({
       state.user = undefined
       clearUserCredentials()
       localStorage.removeItem('devices')
-      localStorage.removeItem('user')
+      localStorage.removeItem(USER_KEY)
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
@@ -96,8 +114,13 @@ export default createModel({
     setUser(state: AuthState, user: IUser) {
       state.user = user
       state.signInError = undefined
-      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem(USER_KEY, JSON.stringify(user))
       updateUserCredentials(user)
+    },
+    setOpenOnLogin(state: AuthState, open: boolean) {
+      BackendAdapter.emit('app/open-on-login', open)
+      localStorage.setItem(OPEN_ON_LOGIN_KEY, open.toString())
+      state.openOnLogin = open
     },
   },
 })
