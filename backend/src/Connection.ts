@@ -235,6 +235,7 @@ export default class Connection extends EventEmitter {
         name = events.unknown
       }
 
+      d('connectd std out:', line)
       EventBus.emit(name, {
         connection: this.toJSON(),
         extra,
