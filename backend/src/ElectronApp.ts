@@ -59,7 +59,7 @@ export default class ElectronApp {
 
   private handleActivate = () => {
     // Logger.info('Window activated')
-    if (this.window) this.showWindow()
+    this.showWindow()
   }
 
   private handleOpenAtLogin = (open: boolean) => {
@@ -95,8 +95,6 @@ export default class ElectronApp {
       })
     this.window.loadURL(startUrl)
 
-    this.showWindow()
-
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
 
@@ -109,6 +107,8 @@ export default class ElectronApp {
         if (this.window) this.window.hide()
       }
     })
+
+    this.window.once('ready-to-show', () => this.showWindow())
   }
 
   private createTrayIcon() {
