@@ -1,6 +1,8 @@
+import debug from 'debug'
 import fs from 'fs'
-import Logger from './Logger'
 import path from 'path'
+
+const d = debug('r3:backend:JSONFile')
 
 export default class JSONFile<T> {
   public location: string
@@ -57,7 +59,7 @@ export default class JSONFile<T> {
    * Create a new file.
    */
   write = (content: T) => {
-    Logger.info('Writing file', { location: this.location, content })
+    d('Writing file', { location: this.location, content })
 
     // Make sure containing folder exists.
     fs.mkdirSync(path.parse(this.location).dir, { recursive: true })

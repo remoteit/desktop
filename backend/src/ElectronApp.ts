@@ -70,6 +70,7 @@ export default class ElectronApp {
   }
 
   private createMainWindow = () => {
+    d('Create main window')
     if (this.window) return
 
     // Logger.info('Creating main window')
@@ -102,6 +103,7 @@ export default class ElectronApp {
     this.window.on('blur', () => this.window && this.window.hide())
 
     this.window.on('close', e => {
+      d('Window closed')
       if (!this.quitSelected) {
         e.preventDefault()
         if (this.window) this.window.hide()
@@ -110,6 +112,7 @@ export default class ElectronApp {
   }
 
   private createTrayIcon() {
+    d('Create tray icon')
     Logger.info('Create tray icon')
 
     const iconPath = path.join(__dirname, 'images', 'iconTemplate.png')
@@ -133,6 +136,7 @@ export default class ElectronApp {
   }
 
   private showWindow() {
+    d('Showing window')
     if (this.window && this.tray) {
       const position = this.getWindowPosition()
       if (!position) return

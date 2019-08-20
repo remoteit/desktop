@@ -29,6 +29,7 @@ export default class Installer {
   }
 
   constructor(args: InstallerArgs) {
+    d('Creating installer:', args)
     this.name = args.name
     this.repoName = args.repoName
     this.version = args.version

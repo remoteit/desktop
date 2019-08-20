@@ -1,9 +1,12 @@
+import debug from 'debug'
 import Connection from './Connection'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import PortScanner from './PortScanner'
 import User from './User'
 import { IUser } from 'remote.it'
+
+const d = debug('r3:backend:ConnectionPool')
 
 const PEER_PORT_RANGE = [33000, 42999]
 
@@ -32,13 +35,15 @@ export default class ConnectionPool {
     args: { id: string; port?: number; name?: string },
     start = true
   ) => {
+    d('Connecting:', { ...args, start })
+
     if (!this.user) throw new Error('No user to authenticate connection!')
 
     const port = args.port || (await this.freePort())
 
     if (!port) throw new Error('No port could be assigned to connection!')
 
-    Logger.info('Connecting to service', args)
+    Logger.info('Connecting to service:', args)
 
     // TODO: De-dupe connections!
 
@@ -48,7 +53,11 @@ export default class ConnectionPool {
       authHash: this.user.authHash,
       ...args,
     })
-    if (start) this.pool[args.id] = connection
+    if (!start) return
+
+    this.pool[args.id] = connection
+
+    d('Starting connection:', { port, id: args.id })
 
     await this.start(args.id)
 
@@ -59,16 +68,21 @@ export default class ConnectionPool {
   }
 
   find = (id: string) => {
+    d('Find connection with ID:', { id, pool: this.pool })
+
     const conn = this.pool[id]
     if (!conn) throw new Error(`Connection with ID ${id} could not be found!`)
+    d('Connection found:', { id, port: conn.port, pid: conn.pid })
     return conn
   }
 
   start = async (id: string) => {
+    d('Starting service:', id)
     return this.find(id).start()
   }
 
   stop = async (id: string) => {
+    d('Stopping service:', id)
     return this.find(id).stop()
   }
 
@@ -89,6 +103,7 @@ export default class ConnectionPool {
   }
 
   restart = async (id: string) => {
+    d('Restart service:', id)
     return this.find(id).restart()
   }
 

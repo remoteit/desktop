@@ -62,6 +62,7 @@ export default class Application {
   }
 
   private handleConnection = () => {
+    d('Server connected')
     Logger.info('Checking install status:', {
       connectdInstalled: ConnectdInstaller.isInstalled,
       muxerInstalled: MuxerInstaller.isInstalled,
@@ -117,6 +118,7 @@ export default class Application {
    * file on disk.
    */
   private handlePoolUpdated = (pool: ConnectionData[]) => {
+    d('Pool updated:', pool)
     Logger.info('Pool updated', { pool })
     this.connectionsFile.write(pool)
   }
@@ -125,6 +127,7 @@ export default class Application {
    *  Make sure connectd is installed on startup of server
    */
   private handleServerReady = async () => {
+    d('Server ready')
     Logger.info('Server is ready')
   }
 
@@ -134,6 +137,7 @@ export default class Application {
    */
 
   private handleSignedIn = (user: IUser) => {
+    d('User signed in:', user.username)
     Logger.info('User signed in', { username: user.username })
 
     // Save the user to the user JSON file.

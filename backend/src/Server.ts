@@ -89,24 +89,29 @@ export default class Server {
     username: string
     password: string
   }) => {
+    d('Sign in:', username)
     this.user = await User.signIn(username, password)
   }
 
   signOut = () => {
+    d('Sign out')
     User.signOut()
     this.user = undefined
   }
 
   list = (cb: (pool: ConnectionData[]) => void) => {
+    d('List connections')
     cb(this.pool.toJSON())
   }
 
   connect = async (args: ConnectionArgs) => {
+    d('Connect:', args)
     Logger.info('Connect to service:', args)
     return this.pool.connect(args)
   }
 
   disconnect = async (id: string) => {
+    d('Disconnect service:', id)
     await this.pool.stop(id)
   }
 
@@ -115,6 +120,7 @@ export default class Server {
   }
 
   restart = async (id: string) => {
+    d('Restarting service:', id)
     await this.pool.restart(id)
   }
 

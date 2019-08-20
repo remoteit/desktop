@@ -20,16 +20,16 @@ export default class Connection extends EventEmitter {
   private process?: ChildProcess
 
   static EVENTS: { [name: string]: SocketEvent } = {
-    started: 'service/connect/started',
-    connected: 'service/connected',
-    disconnected: 'service/disconnected',
-    forgotten: 'service/forgotten',
-    error: 'service/error',
+    started: 'service/connect/started', // save log for 1yr
+    connected: 'service/connected', // save log for 1yr
+    disconnected: 'service/disconnected', // save log for 1yr
+    forgotten: 'service/forgotten', // save log for 1yr
+    error: 'service/error', // save log for 1yr
     status: 'service/status',
     uptime: 'service/uptime',
     request: 'service/request',
-    tunnelOpened: 'service/tunnel/opened',
-    tunnelClosed: 'service/tunnel/closed',
+    tunnelOpened: 'service/tunnel/opened', // save log for 1yr
+    tunnelClosed: 'service/tunnel/closed', // save log for 1yr
     throughput: 'service/throughput',
     version: 'service/version',
     unknown: 'service/unknown-event',
@@ -106,6 +106,7 @@ export default class Connection extends EventEmitter {
   }
 
   async kill() {
+    d('Killing service:', this.id)
     Logger.info('Killing connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.id}/kill`)
     Tracker.event('connection', 'kill', 'kill service')
@@ -114,6 +115,7 @@ export default class Connection extends EventEmitter {
   }
 
   async stop() {
+    d('Stopping service:', this.id)
     Logger.info('Stopping connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.id}/stop`)
     Tracker.event('connection', 'stop', 'stopping service')
@@ -127,7 +129,11 @@ export default class Connection extends EventEmitter {
     Logger.info('Restarting connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.id}/restart`)
     Tracker.event('connection', 'restart', `restarting service: ${this.id}`)
+
+    d('Restart - stopping service:', this.id)
     if (this.process && this.process.pid) await this.stop()
+
+    d('Restart - starting service:', this.id)
     await this.start()
   }
 
@@ -147,11 +153,15 @@ export default class Connection extends EventEmitter {
   }
 
   private handleClose = async (code: number) => {
+    // If we intentially kill a process, we don't
+    // want to go further
+    if (code === 15) return
+
     Logger.error(`Connection closed with code: ${code}`)
     Tracker.event('connection', 'connection-closed', `connection closed`, code)
 
     // Make sure kill the process.
-    await this.kill()
+    // await this.kill()
 
     EventBus.emit(Connection.EVENTS.disconnected, {
       connection: this.toJSON(),
