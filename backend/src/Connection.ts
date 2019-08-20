@@ -9,14 +9,14 @@ import { EventEmitter } from 'events'
 const d = debug('r3:backend:Connection')
 
 export default class Connection extends EventEmitter {
+  autoStart: boolean
+  id: string
+  host: string
+  name?: string
+  pid?: number
+  port: number
   private authHash: string
-  public id: string
-  public host: string
-  public name?: string
-  public pid?: number
-  public port: number
   private username: string
-  // private password?: string
   private process?: ChildProcess
 
   static EVENTS: { [name: string]: SocketEvent } = {
@@ -36,6 +36,7 @@ export default class Connection extends EventEmitter {
   }
 
   constructor(args: {
+    autoStart?: boolean
     id: string
     port: number
     username: string
@@ -44,6 +45,8 @@ export default class Connection extends EventEmitter {
     name?: string
   }) {
     super()
+    this.autoStart =
+      typeof args.autoStart === 'undefined' ? true : args.autoStart
     this.authHash = args.authHash
     this.id = args.id
     this.host = args.host || '127.0.0.1'
@@ -53,10 +56,16 @@ export default class Connection extends EventEmitter {
   }
 
   async start() {
+    // If the user indicates they want to start this connection,
+    // we assume they want to start it on future sessions
+    this.autoStart = true
+
+    // Listen to events to synchronize state
     EventBus.emit(Connection.EVENTS.started, this.toJSON())
     Tracker.pageView(`/connections/${this.id}/start`)
     Tracker.event('connection', 'start', `connecting to service: ${this.id}`)
     Logger.info('Starting connection:', this.toJSON())
+
     const usernameBase64 = Buffer.from(this.username).toString('base64')
     this.process = execFile(
       ConnectdInstaller.binaryPath,
@@ -110,16 +119,24 @@ export default class Connection extends EventEmitter {
     Logger.info('Killing connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.id}/kill`)
     Tracker.event('connection', 'kill', 'kill service')
+
     if (this.process) this.process.kill()
     this.process = undefined
   }
 
   async stop() {
+    // If the user manually stops a connection, we assume they
+    // don't want it to automatically start on future connections.
+    this.autoStart = false
+
     d('Stopping service:', this.id)
     Logger.info('Stopping connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.id}/stop`)
     Tracker.event('connection', 'stop', 'stopping service')
+
+    // Make sure the process is completely dead.
     await this.kill()
+
     EventBus.emit(Connection.EVENTS.disconnected, {
       connection: this.toJSON(),
     } as ConnectdMessage)
@@ -139,6 +156,7 @@ export default class Connection extends EventEmitter {
 
   toJSON = (): ConnectionData => {
     return {
+      autoStart: this.autoStart,
       id: this.id,
       pid: this.process ? this.process.pid : undefined,
       port: this.port,

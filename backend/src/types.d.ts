@@ -9,6 +9,7 @@ declare global {
   }
 
   interface ConnectionData {
+    autoStart?: boolean
     id: string
     port: number
     name?: string
