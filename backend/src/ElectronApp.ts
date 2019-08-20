@@ -115,12 +115,7 @@ export default class ElectronApp {
     d('Create tray icon')
     Logger.info('Create tray icon')
 
-    let iconFile = 'iconTemplate.png'
-    if (Environment.isWindows) {
-      iconFile = electron.systemPreferences.isInvertedColorScheme()
-        ? 'icontraywhite.ico'
-        : 'icontrayblack.ico'
-    }
+    const iconFile = Environment.isWindows ? 'iconwin.ico' : 'iconTemplate.png'
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
 
