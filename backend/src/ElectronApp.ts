@@ -32,10 +32,6 @@ export default class ElectronApp {
     this.app.on('before-quit', () => (this.quitSelected = true))
     // this.on('open-at-login', this.handleOpenAtLogin)
 
-    // Make sure to never show the doc icon
-    // TODO: Have this configurable via a setting!
-    if (this.app.dock) this.app.dock.hide()
-
     EventBus.on(ElectronApp.EVENTS.openOnLogin, (open: boolean) =>
       this.handleOpenAtLogin(open)
     )
@@ -59,7 +55,7 @@ export default class ElectronApp {
 
   private handleActivate = () => {
     // Logger.info('Window activated')
-    this.showWindow()
+    this.openWindow()
   }
 
   private handleOpenAtLogin = (open: boolean) => {
@@ -73,16 +69,14 @@ export default class ElectronApp {
     d('Create main window')
     if (this.window) return
 
-    // Logger.info('Creating main window')
-    // d('Showing main window')
     this.window = new electron.BrowserWindow({
       width: 500,
       height: 600,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       frame: false,
-      resizable: false,
-      transparent: true,
-      titleBarStyle: 'customButtonsOnHover',
+      titleBarStyle: 'hiddenInset',
+      // resizable: false,
+      // transparent: true,
     })
     this.window.setVisibleOnAllWorkspaces(true)
 
@@ -95,20 +89,15 @@ export default class ElectronApp {
       })
     this.window.loadURL(startUrl)
 
-    // Open the DevTools.
-    // mainWindow.webContents.openDevTools()
-
-    this.window.on('blur', () => this.window && this.window.hide())
-
     this.window.on('close', e => {
       d('Window closed')
       if (!this.quitSelected) {
         e.preventDefault()
-        if (this.window) this.window.hide()
+        this.closeWindow()
       }
     })
 
-    this.window.once('ready-to-show', () => this.showWindow())
+    this.window.once('ready-to-show', () => this.openWindow())
   }
 
   private createTrayIcon() {
@@ -119,35 +108,46 @@ export default class ElectronApp {
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
 
-    this.tray.on('click', event => {
-      // Logger.info('Clicked tray icon')
-      if (this.window) {
-        if (this.window.isVisible() && this.window.isFocused()) {
-          this.window.hide()
-        } else {
-          this.showWindow()
-        }
+    const contextMenu = electron.Menu.buildFromTemplate([
+      { label: 'Service One', type: 'checkbox' },
+      { label: 'Service Two', type: 'checkbox' },
+      { label: 'Service Three', type: 'checkbox', checked: true },
+      { type: 'separator' },
+      {
+        label: 'Open remote.it settings...',
+        type: 'normal',
+        click: (menuItem, browserWindow, event) => {
+          if (this.window) {
+            this.openWindow()
 
-        // Show devtools when command+option clicked
-        if (process.defaultApp && event.metaKey) {
-          this.window.webContents.openDevTools({ mode: 'detach' })
-        }
-      }
-    })
+            // Show devtools when command+option clicked
+            if (process.defaultApp && event.metaKey) {
+              this.window.webContents.openDevTools({ mode: 'detach' })
+            }
+          }
+        },
+      },
+    ])
+    this.tray.setToolTip('This is my application.')
+    this.tray.setContextMenu(contextMenu)
   }
 
-  private showWindow() {
+  private openWindow() {
     d('Showing window')
     if (this.window && this.tray) {
-      const position = this.getWindowPosition()
-      if (!position) return
-      this.window.setPosition(position.x, position.y, false)
+      this.setWindowPosition()
       this.window.show()
       this.window.focus()
+      this.app.dock.show()
     }
   }
 
-  private getWindowPosition() {
+  private closeWindow() {
+    if (this.window) this.window.hide()
+    if (this.app.dock) this.app.dock.hide()
+  }
+
+  private setWindowPosition() {
     if (!this.window || !this.tray) return
 
     const padding = 12
@@ -156,12 +156,8 @@ export default class ElectronApp {
     const display = electron.screen.getDisplayMatching(tray).bounds
 
     let position = {
-      x: Math.round(tray.x + tray.width / 2 - window.width / 2),
-      y: Math.round(tray.y - window.height),
-    }
-
-    if (Environment.isMac) {
-      position.y = Math.round(tray.y + tray.height)
+      x: Math.round(display.x + display.width / 2 - window.width / 2),
+      y: Math.round(display.y + display.height / 2 - window.height / 2),
     }
 
     // out of bounds check
@@ -170,6 +166,6 @@ export default class ElectronApp {
     const overlap = displayRightEdge - windowRightEdge
     if (overlap < 0) position.x += overlap
 
-    return position
+    this.window.setPosition(position.x, position.y)
   }
 }

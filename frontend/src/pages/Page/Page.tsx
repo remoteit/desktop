@@ -40,7 +40,7 @@ export interface Props {
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
-  const showArrow = isMac()
+  const showArrow = false // Disable arrow
   let containerStyle: any = {
     position: 'fixed',
     backgroundColor: 'var(--color-gray-lighter)',
