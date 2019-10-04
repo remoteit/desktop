@@ -2,7 +2,11 @@ import React, { useEffect } from 'react'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
-import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
+import {
+  BottomNavigation,
+  BottomNavigationAction,
+  IconButton,
+} from '@material-ui/core'
 import { Icon } from '../Icon'
 import { ConnectionsPage } from '../ConnectionsPage'
 import { Page } from '../../pages/Page'
@@ -70,15 +74,27 @@ export const App = connect(
           <SignInPage />
         </Page>
       )
-
+    console.log('page', page)
     return (
       <Page>
         <div
           className="w-100 h-100 df ai-stretch"
           style={{ flexFlow: 'column' }}
         >
-          <div className="df ai-center jc-center py-xs center dragable primary txt-md bg-gray-lighter">
-            remote.it
+          <div>
+            <IconButton
+              style={{ position: 'absolute', right: 0 }}
+              onClick={() => setPage('settings')}
+            >
+              <Icon
+                name="cog"
+                color={page === 'settings' ? 'primary' : undefined}
+                size="md"
+              />
+            </IconButton>
+            <div className="df ai-center jc-center py-xs center dragable primary txt-md bg-gray-lighter">
+              remote.it
+            </div>
           </div>
           <div className="of-auto fg-1 relative">{routes[page]}</div>
           <BottomNavigation
@@ -98,11 +114,21 @@ export const App = connect(
               icon={<Icon name="chart-network" size="lg" />}
             />
             <BottomNavigationAction
+              label="Setup"
+              value="setup"
+              icon={<Icon name="hdd" size="lg" />}
+            />
+            <BottomNavigationAction
+              label="Network"
+              value="network"
+              icon={<Icon name="network-wired" size="lg" />}
+            />
+            {/* <BottomNavigationAction
               label="Settings"
               value="settings"
               classes={{ selected: '' }}
               icon={<Icon name="cog" size="lg" />}
-            />
+            /> */}
           </BottomNavigation>
         </div>
       </Page>
