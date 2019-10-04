@@ -3,15 +3,15 @@ import { Tooltip, IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { connect } from 'react-redux'
 
+const mapDispatch = (dispatch: any) => ({
+  restart: dispatch.devices.restart,
+})
+
 export type RestartButtonProps = {
   id: string
   connected: boolean
   disabled?: boolean
 } & ReturnType<typeof mapDispatch>
-
-const mapDispatch = (dispatch: any) => ({
-  restart: dispatch.devices.restart,
-})
 
 export const RestartButton = connect(
   null,

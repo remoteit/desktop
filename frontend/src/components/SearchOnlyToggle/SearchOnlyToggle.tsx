@@ -2,9 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 
-export type SearchOnlyToggleProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
 const mapState = (state: ApplicationState) => ({
   searchOnly: state.devices.searchOnly,
 })
@@ -12,6 +9,9 @@ const mapState = (state: ApplicationState) => ({
 const mapDispatch = (dispatch: any) => ({
   changeSearchOnly: dispatch.devices.changeSearchOnly,
 })
+
+export type SearchOnlyToggleProps = ReturnType<typeof mapState> &
+  ReturnType<typeof mapDispatch>
 
 export const SearchOnlyToggle = connect(
   mapState,

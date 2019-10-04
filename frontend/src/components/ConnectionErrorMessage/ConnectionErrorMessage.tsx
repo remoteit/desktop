@@ -3,13 +3,13 @@ import { connect } from 'react-redux'
 import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 
-export type ConnectionErrorMessageProps = {
-  connection: ConnectionInfo
-} & ReturnType<typeof mapDispatch>
-
 const mapDispatch = (dispatch: any) => ({
   clearConnectionError: dispatch.devices.clearConnectionError,
 })
+
+export type ConnectionErrorMessageProps = {
+  connection: ConnectionInfo
+} & ReturnType<typeof mapDispatch>
 
 export const ConnectionErrorMessage = connect(
   null,

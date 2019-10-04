@@ -3,14 +3,14 @@ import { Tooltip, IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { connect } from 'react-redux'
 
+const mapDispatch = (dispatch: any) => ({
+  forget: dispatch.devices.forget,
+})
+
 export type ForgetButtonProps = {
   id: string
   disabled?: boolean
 } & ReturnType<typeof mapDispatch>
-
-const mapDispatch = (dispatch: any) => ({
-  forget: dispatch.devices.forget,
-})
 
 export const ForgetButton = connect(
   null,

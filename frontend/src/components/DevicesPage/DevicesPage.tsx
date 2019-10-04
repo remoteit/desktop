@@ -20,9 +20,6 @@ const visibleDevices: (state: any, props: any) => SelectResponse = select(
   })
 )
 
-export type DevicesPageProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
 const mapState = (state: ApplicationState) => ({
   allDevices: state.devices.all,
   ...visibleDevices(state, {}),
@@ -42,6 +39,9 @@ const mapDispatch = (dispatch: any) => ({
   setQuery: dispatch.devices.setQuery,
   changeSort: dispatch.devices.changeSort,
 })
+
+export type DevicesPageProps = ReturnType<typeof mapState> &
+  ReturnType<typeof mapDispatch>
 
 export const DevicesPage = connect(
   mapState,
@@ -68,7 +68,7 @@ export const DevicesPage = connect(
 
     return (
       <div className="df ai-stretch h-100" style={{ flexFlow: 'column' }}>
-        <div className="df ai-center jc-center p-sm center bg-gray-lighter bb bc-gray-light">
+        <div className="df ai-center jc-center px-sm pb-sm center bg-gray-lighter bb bc-gray-light">
           <SearchField
             onSubmit={remoteSearch}
             onChange={(query: string) => {

@@ -6,11 +6,6 @@ import { connect } from 'react-redux'
 import { ListItem } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 
-export type ServiceListItemProps = {
-  service: IService
-} & ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
 const mapState = (state: ApplicationState, props: { service: IService }) => ({
   connection: state.devices.connections.find(c => c.id === props.service.id),
 })
@@ -18,6 +13,11 @@ const mapState = (state: ApplicationState, props: { service: IService }) => ({
 const mapDispatch = (dispatch: any) => ({
   connect: dispatch.devices.connect,
 })
+
+export type ServiceListItemProps = {
+  service: IService
+} & ReturnType<typeof mapState> &
+  ReturnType<typeof mapDispatch>
 
 export const ServiceListItem = connect(
   mapState,

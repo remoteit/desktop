@@ -1,6 +1,5 @@
 import React from 'react'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { CopyableText } from '../CopyableText'
 import { DisconnectButtonController } from '../../controllers/DisconnectButtonController/DisconnectButtonController'
 import { RestartButton } from '../RestartButton'
 import { ForgetButton } from '../ForgetButton'

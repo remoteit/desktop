@@ -17,9 +17,6 @@ const routes: Route = {
   settings: <SettingsPage />,
 }
 
-export type AppProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
 const mapState = (state: ApplicationState) => ({
   checkSignInStarted: state.auth.checkSignInStarted,
   user: state.auth.user,
@@ -33,6 +30,9 @@ const mapDispatch = (dispatch: any) => ({
   checkSignIn: dispatch.auth.checkSignIn,
   setPage: dispatch.navigation.setPage,
 })
+
+export type AppProps = ReturnType<typeof mapState> &
+  ReturnType<typeof mapDispatch>
 
 export const App = connect(
   mapState,
@@ -48,7 +48,7 @@ export const App = connect(
   }: AppProps) => {
     useEffect(() => {
       checkSignIn()
-    }, [])
+    }, [checkSignIn])
 
     if (checkSignInStarted)
       return (

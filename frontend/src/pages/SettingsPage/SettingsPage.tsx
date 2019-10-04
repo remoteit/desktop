@@ -9,9 +9,6 @@ import { SearchOnlyToggle } from '../../components/SearchOnlyToggle'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 
-export type SettingsPageProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
 const mapState = (state: ApplicationState, props: any) => ({
   installing: state.binaries.installing,
   installed:
@@ -34,6 +31,9 @@ const mapDispatch = (dispatch: any) => ({
   install: dispatch.binaries.install,
   toggleOpenOnLogin: dispatch.auth.toggleOpenOnLogin,
 })
+
+export type SettingsPageProps = ReturnType<typeof mapState> &
+  ReturnType<typeof mapDispatch>
 
 export const SettingsPage = connect(
   mapState,

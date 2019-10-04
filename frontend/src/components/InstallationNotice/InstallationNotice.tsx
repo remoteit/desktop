@@ -6,9 +6,6 @@ import { Icon } from '../Icon'
 import { Alert } from '../Alert'
 import { Logo } from '../Logo'
 
-export type InstallationNoticeProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
 const mapState = (state: ApplicationState, props: any) => ({
   error: state.binaries.error,
   installing: state.binaries.installing,
@@ -23,6 +20,9 @@ const mapDispatch = (dispatch: any) => ({
   install: dispatch.binaries.install,
   clearError: dispatch.binaries.clearError,
 })
+
+export type InstallationNoticeProps = ReturnType<typeof mapState> &
+  ReturnType<typeof mapDispatch>
 
 export const InstallationNotice = connect(
   mapState,

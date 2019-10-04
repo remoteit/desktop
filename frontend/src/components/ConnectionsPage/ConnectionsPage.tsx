@@ -3,14 +3,14 @@ import { ConnectionsList } from '../ConnectionsList'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 
-export type ConnectionsPageProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
-
 const mapState = (state: ApplicationState, props: any) => ({
   connections: state.devices.connections,
 })
 
 const mapDispatch = (dispatch: any) => ({})
+
+export type ConnectionsPageProps = ReturnType<typeof mapState> &
+  ReturnType<typeof mapDispatch>
 
 export const ConnectionsPage = connect(
   mapState,
