@@ -40,7 +40,6 @@ export interface Props {
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
-  const showArrow = false // Disable arrow
   let containerStyle: any = {
     position: 'fixed',
     backgroundColor: 'var(--color-gray-lighter)',
@@ -50,42 +49,21 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     left: 0,
     right: 0,
     overflow: 'hidden',
-    borderColor: 'var(--color-primary)',
-    borderWidth: 1,
-    borderStyle: 'solid',
-    boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
   }
 
-  if (showArrow)
+  if (!isMac()) {
     containerStyle = {
-      position: 'fixed',
-      backgroundColor: 'var(--color-gray-lighter)',
-      top: 10,
-      borderRadius: 4,
-      bottom: 0,
-      left: 0,
-      right: 0,
-      overflow: 'hidden',
+      ...containerStyle,
+      borderColor: 'var(--color-primary)',
+      borderWidth: 1,
+      borderStyle: 'solid',
+      boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
     }
+  }
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {showArrow && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 3,
-            left: '50%',
-            marginLeft: -8,
-            height: 16,
-            width: 16,
-            borderRadius: 2,
-            transform: 'rotate(45deg)',
-            backgroundColor: 'var(--color-gray-lighter)',
-          }}
-        />
-      )}
       <div style={containerStyle}>{children}</div>
     </ThemeProvider>
   )
