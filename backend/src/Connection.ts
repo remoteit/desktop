@@ -14,6 +14,7 @@ export default class Connection extends EventEmitter {
   host: string
   name?: string
   pid?: number
+  error?: Error
   port: number
   private authHash: string
   private username: string
@@ -43,10 +44,10 @@ export default class Connection extends EventEmitter {
     authHash: string
     host?: string
     name?: string
+    error?: Error
   }) {
     super()
-    this.autoStart =
-      typeof args.autoStart === 'undefined' ? true : args.autoStart
+    this.autoStart = typeof args.autoStart === 'undefined' ? true : args.autoStart
     this.authHash = args.authHash
     this.id = args.id
     this.host = args.host || '127.0.0.1'
@@ -87,11 +88,7 @@ export default class Connection extends EventEmitter {
       {
         maxBuffer: Infinity,
       },
-      (
-        error: Error | null,
-        stdout: string | Buffer,
-        stderr: string | Buffer
-      ) => {
+      (error: Error | null, stdout: string | Buffer, stderr: string | Buffer) => {
         let message = 'Unknown error'
         if (error) message = error.message
         if (stderr) message = stderr.toString()
@@ -161,6 +158,7 @@ export default class Connection extends EventEmitter {
       pid: this.process ? this.process.pid : undefined,
       port: this.port,
       name: this.name,
+      error: this.error,
     }
   }
 
@@ -168,6 +166,7 @@ export default class Connection extends EventEmitter {
     Logger.error('connectd error: ' + error.message)
     Tracker.event('connection', 'error', `connection error: ${this.id}`)
     EventBus.emit('error', { error: error.message })
+    this.error = error
   }
 
   private handleClose = async (code: number) => {
@@ -236,6 +235,7 @@ export default class Connection extends EventEmitter {
       let extra: any
       if (line.includes('seconds since startup')) {
         name = events.uptime
+        return
       } else if (line.startsWith('!!status')) {
         name = events.status
       } else if (line.startsWith('!!throughput')) {

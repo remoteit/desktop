@@ -1,6 +1,8 @@
 import debug from 'debug'
 import electron from 'electron'
 import Environment from './Environment'
+import ConnectionPool from './ConnectionPool'
+import TrayMenu from './TrayMenu'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
@@ -9,13 +11,14 @@ import url from 'url'
 const d = debug('r3:backend:ElectronApp')
 
 export default class ElectronApp {
+  public tray?: electron.Tray
   private window?: electron.BrowserWindow
-  private tray?: electron.Tray
   private app: electron.App
   private quitSelected: boolean
 
   static EVENTS = {
     ready: 'app/ready',
+    open: 'app/open',
     openOnLogin: 'app/open-on-login',
   }
 
@@ -24,7 +27,6 @@ export default class ElectronApp {
     // const BrowserWindow = electron.BrowserWindow
     // Keep a global reference of the window and try objects, if you don't, they window will
     // be removed automatically when the JavaScript object is garbage collected.
-
     this.quitSelected = false
 
     this.app.on('ready', this.handleAppReady)
@@ -32,9 +34,8 @@ export default class ElectronApp {
     this.app.on('before-quit', () => (this.quitSelected = true))
     // this.on('open-at-login', this.handleOpenAtLogin)
 
-    EventBus.on(ElectronApp.EVENTS.openOnLogin, (open: boolean) =>
-      this.handleOpenAtLogin(open)
-    )
+    EventBus.on(ElectronApp.EVENTS.openOnLogin, this.handleOpenAtLogin)
+    EventBus.on(ElectronApp.EVENTS.open, this.openWindow)
   }
 
   get url() {
@@ -50,7 +51,7 @@ export default class ElectronApp {
   private handleAppReady = () => {
     this.createTrayIcon()
     this.createMainWindow()
-    EventBus.emit(ElectronApp.EVENTS.ready)
+    EventBus.emit(ElectronApp.EVENTS.ready, this.tray)
   }
 
   private handleActivate = () => {
@@ -96,8 +97,6 @@ export default class ElectronApp {
         this.closeWindow()
       }
     })
-
-    this.window.once('ready-to-show', () => this.openWindow())
   }
 
   private createTrayIcon() {
@@ -107,39 +106,23 @@ export default class ElectronApp {
     const iconFile = Environment.isWindows ? 'iconwin.ico' : 'iconTemplate.png'
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
-
-    const contextMenu = electron.Menu.buildFromTemplate([
-      { label: 'Service One', type: 'checkbox' },
-      { label: 'Service Two', type: 'checkbox' },
-      { label: 'Service Three', type: 'checkbox', checked: true },
-      { type: 'separator' },
-      {
-        label: 'Open remote.it settings...',
-        type: 'normal',
-        click: (menuItem, browserWindow, event) => {
-          if (this.window) {
-            this.openWindow()
-
-            // Show devtools when command+option clicked
-            if (process.defaultApp && event.metaKey) {
-              this.window.webContents.openDevTools({ mode: 'detach' })
-            }
-          }
-        },
-      },
-    ])
-    this.tray.setToolTip('This is my application.')
-    this.tray.setContextMenu(contextMenu)
+    console.log('this.tray =>', this.tray)
+    new TrayMenu(this.tray)
   }
 
-  private openWindow() {
+  private openWindow = (openDevTools?: boolean) => {
+    if (!this.window || !this.tray) return
     d('Showing window')
-    if (this.window && this.tray) {
+
+    if (!this.window.isVisible()) {
       this.setWindowPosition()
       this.window.show()
-      this.window.focus()
       this.app.dock.show()
     }
+
+    this.window.focus()
+
+    if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
   }
 
   private closeWindow() {

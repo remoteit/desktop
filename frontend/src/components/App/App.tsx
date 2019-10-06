@@ -74,7 +74,7 @@ export const App = connect(
           <SignInPage />
         </Page>
       )
-    console.log('page', page)
+
     return (
       <Page>
         <div

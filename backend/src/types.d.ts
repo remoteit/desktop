@@ -14,6 +14,7 @@ declare global {
     port: number
     name?: string
     pid?: number
+    error?: Error
   }
 
   interface ConnectionArgs {

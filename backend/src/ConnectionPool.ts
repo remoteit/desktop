@@ -3,6 +3,7 @@ import Connection from './Connection'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import PortScanner from './PortScanner'
+import ElectronApp from './ElectronApp'
 import User from './User'
 import { IUser } from 'remote.it'
 
@@ -31,6 +32,7 @@ export default class ConnectionPool {
     EventBus.on(User.EVENTS.signedOut, () => (this.user = undefined))
     EventBus.on(Connection.EVENTS.disconnected, () => this.updated())
     EventBus.on(Connection.EVENTS.started, () => this.updated())
+    EventBus.on(ElectronApp.EVENTS.ready, () => this.updated())
   }
 
   connect = async (args: {
