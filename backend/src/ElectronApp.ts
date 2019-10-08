@@ -1,7 +1,6 @@
 import debug from 'debug'
 import electron from 'electron'
 import Environment from './Environment'
-import ConnectionPool from './ConnectionPool'
 import TrayMenu from './TrayMenu'
 import EventBus from './EventBus'
 import Logger from './Logger'
@@ -96,6 +95,11 @@ export default class ElectronApp {
         e.preventDefault()
         this.closeWindow()
       }
+    })
+
+    this.window.webContents.on('new-window', (event, url) => {
+      event.preventDefault()
+      electron.shell.openExternal(url)
     })
   }
 

@@ -1,8 +1,7 @@
 import electron from 'electron'
-import Environment from './Environment'
+import { application } from './backend'
 import ElectronApp from './ElectronApp'
 import { IUser } from 'remote.it'
-import { application } from './backend'
 import ConnectionPool from './ConnectionPool'
 import User from './User'
 import EventBus from './EventBus'
@@ -21,27 +20,30 @@ export default class TrayMenu {
     this.user = {}
     this.connections = []
 
-    EventBus.on(ConnectionPool.EVENTS.updated, this.updateConnections)
     EventBus.on(User.EVENTS.signedIn, this.updateUser)
     EventBus.on(User.EVENTS.signedOut, this.updateUser)
+    EventBus.on(ConnectionPool.EVENTS.updated, this.updateConnectionMenu)
   }
 
-  updateConnections = (pool: ConnectionData[]) => {
+  private updateUser = (user: IUser) => {
+    this.user = user
+    this.render()
+  }
+
+  private updateConnectionMenu = (pool: ConnectionData[]) => {
     this.connections = pool.map(connection => ({
       label: connection.name,
       icon: connection.pid ? iconConnected : iconOnline,
       submenu: [
-        { label: !connection.pid ? 'Connect' : 'Disconnect' },
+        !connection.pid
+          ? { label: 'Connect', click: () => this.connect(connection.id) }
+          : { label: 'Disconnect', click: () => this.disconnect(connection.id) },
         { type: 'separator' },
         { label: 'localhost:' + connection.port, enabled: false },
-        { label: 'Copy', value: 'localhost:' + connection.port },
+        { label: 'Copy', click: () => this.copy(connection.port) },
+        { label: 'Open', click: () => this.launch(connection.port) },
       ],
     }))
-    this.render()
-  }
-
-  updateUser = (user: IUser) => {
-    this.user = user
     this.render()
   }
 
@@ -82,4 +84,20 @@ export default class TrayMenu {
       // Open dev tools when command+option clicked
       process.defaultApp && event.metaKey
     )
+
+  private connect(id: string) {
+    application.pool.restart(id)
+  }
+
+  private disconnect(id: string) {
+    application.pool.stop(id)
+  }
+
+  private copy(port: number) {
+    electron.clipboard.writeText(`localhost:${port}`)
+  }
+
+  private launch(port: number) {
+    electron.shell.openExternal(`http://localhost:${port}`)
+  }
 }

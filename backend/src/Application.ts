@@ -18,7 +18,7 @@ import User from './User'
 const d = debug('r3:backend:Application')
 
 export default class Application {
-  private pool: ConnectionPool
+  public pool: ConnectionPool
   private connectionsFile: JSONFile<SavedConnection[]>
   private userFile: JSONFile<UserCredentials>
   private window: ElectronApp
@@ -42,10 +42,7 @@ export default class Application {
     d('Reading user credentials:', { user: userCredentials })
 
     // Start pool and load connections from filestystem
-    this.pool = new ConnectionPool(
-      this.connectionsFile.read() || [],
-      userCredentials
-    )
+    this.pool = new ConnectionPool(this.connectionsFile.read() || [], userCredentials)
 
     // Start server and listen to events.
     new Server(this.pool, userCredentials)

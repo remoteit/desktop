@@ -1,9 +1,9 @@
 import React from 'react'
-import { DeviceList } from '../DeviceList'
-import { DeviceLoadingMessage } from '../DeviceLoadingMessage'
+import { DeviceList } from '../../components/DeviceList'
+import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
 import { IconButton, Tooltip } from '@material-ui/core'
-import { Icon } from '../Icon'
-import { SearchField } from '../SearchField'
+import { Icon } from '../../components/Icon'
+import { SearchField } from '../../components/SearchField'
 import { ApplicationState, select } from '../../store'
 import { connect } from 'react-redux'
 import { IDevice } from 'remote.it'
@@ -40,8 +40,7 @@ const mapDispatch = (dispatch: any) => ({
   changeSort: dispatch.devices.changeSort,
 })
 
-export type DevicesPageProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
+export type DevicesPageProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
 export const DevicesPage = connect(
   mapState,
@@ -80,18 +79,11 @@ export const DevicesPage = connect(
             value={query}
           />
           <Tooltip
-            title={
-              sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'
-            }
+            title={sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'}
             className="ml-sm"
           >
-            <IconButton
-              onClick={() => changeSort(sort === 'alpha' ? 'state' : 'alpha')}
-            >
-              <Icon
-                name={sort === 'alpha' ? 'font-case' : 'scrubber'}
-                size="sm"
-              />
+            <IconButton onClick={() => changeSort(sort === 'alpha' ? 'state' : 'alpha')}>
+              <Icon name={sort === 'alpha' ? 'font-case' : 'scrubber'} size="sm" />
             </IconButton>
           </Tooltip>
           {!searchOnly && (
@@ -104,9 +96,7 @@ export const DevicesPage = connect(
         </div>
         <DeviceList
           devices={visibleDevices}
-          searchPerformed={
-            searchOnly ? searchPerformed : Boolean(visibleDevices.length)
-          }
+          searchPerformed={searchOnly ? searchPerformed : Boolean(visibleDevices.length)}
           query={query}
           searching={searching}
           searchOnly={searchOnly}

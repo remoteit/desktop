@@ -64,7 +64,9 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div style={containerStyle}>{children}</div>
+      <div className="dragable" style={containerStyle}>
+        {children}
+      </div>
     </ThemeProvider>
   )
 }

@@ -1,11 +1,12 @@
 import io from 'socket.io-client'
+import { ITarget, IDevice, IScanData, IInterface } from '../jump/common/types'
 import { store } from '../store'
 import { PORT } from '../constants'
 import { EventEmitter } from 'events'
 import { IUser } from 'remote.it'
 
 class BackendAdapter extends EventEmitter {
-  private socket = io(`http://localhost:${PORT}`)
+  socket = io(`http://localhost:${PORT}`)
 
   constructor(handlers: EventHandlers) {
     super()
@@ -37,19 +38,21 @@ class BackendAdapter extends EventEmitter {
 
 type EventHandlers = { [event in SocketEvent]: (data?: any) => any }
 
+const { devices, binaries, auth, jump } = store.dispatch
+
 const handlers: EventHandlers = {
   connect: () => store.dispatch.ui.connected(),
   disconnect: () => store.dispatch.ui.disconnected(),
 
   // Connections
-  'service/connect/started': (conn: ConnectionInfo) => store.dispatch.devices.connectStart(conn.id),
-  'service/connected': (conn: ConnectionInfo) => store.dispatch.devices.connected(conn),
-  'service/disconnected': (msg: ConnectdMessage) => store.dispatch.devices.disconnected(msg),
+  'service/connect/started': (conn: ConnectionInfo) => devices.connectStart(conn.id),
+  'service/connected': (conn: ConnectionInfo) => devices.connected(conn),
+  'service/disconnected': (msg: ConnectdMessage) => devices.disconnected(msg),
   'service/tunnel/opened': (msg: ConnectdMessage) => console.log('service/tunnel/opened', msg),
   'service/tunnel/closed': (msg: ConnectdMessage) => console.log('service/tunnel/closed', msg),
-  'service/error': (msg: ConnectionErrorMessage) => store.dispatch.devices.connectionError(msg),
+  'service/error': (msg: ConnectionErrorMessage) => devices.connectionError(msg),
   'service/status': (msg: ConnectdMessage) => console.log('service/status', msg),
-  'service/forgotten': (id: string) => store.dispatch.devices.forgotten(id),
+  'service/forgotten': (id: string) => devices.forgotten(id),
   // 'service/updated': (msg: ConnectdMessage) =>
   //   console.log('service/updated', msg),
   'service/request': (msg: ConnectdMessage) => console.log('service/request', msg),
@@ -62,15 +65,42 @@ const handlers: EventHandlers = {
 
   // muxer binary
   'binary/install/start': () => console.log('binary/install/start'),
-  'binary/install/error': (error: string) => store.dispatch.binaries.installError(error),
+  'binary/install/error': (error: string) => binaries.installError(error),
   'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
-  'binary/installed': (info: InstallationInfo) => store.dispatch.binaries.installed(info),
-  'binary/not-installed': (binary: string) => store.dispatch.binaries.notInstalled(binary),
+  'binary/installed': (info: InstallationInfo) => binaries.installed(info),
+  'binary/not-installed': (binary: string) => binaries.notInstalled(binary),
 
   // User/auth
-  'user/sign-in/error': (error: string) => store.dispatch.auth.signInError(error),
-  'user/signed-out': () => store.dispatch.auth.signedOut(),
-  'user/signed-in': (user: IUser) => store.dispatch.auth.signedIn(user),
+  'user/sign-in/error': (error: string) => auth.signInError(error),
+  'user/signed-out': () => auth.signedOut(),
+  'user/signed-in': (user: IUser) => auth.signedIn(user),
+
+  // jump
+  'jump/connect': () => jump.setError(false),
+  'jump/connect_error': () => jump.setError(true),
+  'jump/targets': (result: ITarget[]) => {
+    console.log('socket targets', result)
+    if (result) {
+      jump.setAdded(undefined)
+      jump.setTargets(result)
+    }
+  },
+  'jump/device': (result: IDevice) => {
+    console.log('socket device', result)
+    if (result) jump.setDevice(result)
+  },
+  // 'jump/user': (result: IUser) => {
+  //   console.log('socket user', result)
+  //   if (result) jump.setUser(result)
+  // },
+  'jump/scan': (result: IScanData) => {
+    console.log('socket scan', result)
+    if (result) jump.setScanData(result)
+  },
+  'jump/interfaces': (result: IInterface[]) => {
+    console.log('socket interfaces', result)
+    if (result) jump.setInterfaces(result)
+  },
 }
 
 export default new BackendAdapter(handlers)

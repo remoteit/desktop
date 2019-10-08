@@ -52,6 +52,14 @@ declare global {
     | 'binary/installed'
     | 'binary/not-installed'
 
+    // jump
+    | 'jump/connect'
+    | 'jump/connect_error'
+    | 'jump/targets'
+    | 'jump/device'
+    | 'jump/scan'
+    | 'jump/interfaces'
+
   type BinaryName = 'connectd' | 'muxer' | 'demuxer'
 
   interface InstallationInfo {

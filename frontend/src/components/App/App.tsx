@@ -2,15 +2,13 @@ import React, { useEffect } from 'react'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
-import {
-  BottomNavigation,
-  BottomNavigationAction,
-  IconButton,
-} from '@material-ui/core'
+import { BottomNavigation, BottomNavigationAction, IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { ConnectionsPage } from '../ConnectionsPage'
 import { Page } from '../../pages/Page'
-import { DevicesPage } from '../DevicesPage'
+import { SetupPage } from '../../pages/SetupPage'
+import { NetworkPage } from '../../pages/NetworkPage'
+import { DevicesPage } from '../../pages/DevicesPage'
 import { InstallationNotice } from '../InstallationNotice'
 import { ApplicationState } from '../../store'
 import { connect } from 'react-redux'
@@ -18,7 +16,9 @@ import { connect } from 'react-redux'
 const routes: Route = {
   connections: <ConnectionsPage />,
   devices: <DevicesPage />,
+  setup: <SetupPage />,
   settings: <SettingsPage />,
+  network: <NetworkPage />,
 }
 
 const mapState = (state: ApplicationState) => ({
@@ -35,21 +35,13 @@ const mapDispatch = (dispatch: any) => ({
   setPage: dispatch.navigation.setPage,
 })
 
-export type AppProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
+export type AppProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
 export const App = connect(
   mapState,
   mapDispatch
 )(
-  ({
-    checkSignIn,
-    installed,
-    page,
-    setPage,
-    checkSignInStarted = false,
-    user,
-  }: AppProps) => {
+  ({ checkSignIn, installed, page, setPage, checkSignInStarted = false, user }: AppProps) => {
     useEffect(() => {
       checkSignIn()
     }, [checkSignIn])
@@ -77,20 +69,13 @@ export const App = connect(
 
     return (
       <Page>
-        <div
-          className="w-100 h-100 df ai-stretch"
-          style={{ flexFlow: 'column' }}
-        >
+        <div className="w-100 h-100 df ai-stretch" style={{ flexFlow: 'column' }}>
           <div>
             <IconButton
               style={{ position: 'absolute', right: 0 }}
               onClick={() => setPage('settings')}
             >
-              <Icon
-                name="cog"
-                color={page === 'settings' ? 'primary' : undefined}
-                size="md"
-              />
+              <Icon name="cog" color={page === 'settings' ? 'primary' : undefined} size="md" />
             </IconButton>
             <div className="df ai-center jc-center py-xs center dragable primary txt-md bg-gray-lighter">
               remote.it

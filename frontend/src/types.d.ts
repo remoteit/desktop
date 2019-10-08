@@ -6,11 +6,7 @@ declare global {
    */
   export type SortType = 'alpha' | 'state'
 
-  export type ConnectionState =
-    | DeviceState
-    | ServiceState
-    | 'connecting'
-    | 'disconnected'
+  export type ConnectionState = DeviceState | ServiceState | 'connecting' | 'disconnected'
   // | 'active''
   // | 'inactive
   // | 'connecting'
@@ -19,7 +15,7 @@ declare global {
 
   export type Tab = 'connections' | 'devices'
 
-  export type Page = 'connections' | 'devices' | 'settings'
+  export type Page = 'connections' | 'devices' | 'setup' | 'settings' | 'network'
 
   export type Route = { [key in Page]: React.ReactNode }
 
