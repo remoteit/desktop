@@ -1,7 +1,7 @@
-import electron from 'electron'
 import { application } from './backend'
-import ElectronApp from './ElectronApp'
 import { IUser } from 'remote.it'
+import electron from 'electron'
+import ElectronApp from './ElectronApp'
 import ConnectionPool from './ConnectionPool'
 import User from './User'
 import EventBus from './EventBus'
@@ -48,7 +48,7 @@ export default class TrayMenu {
   }
 
   private render() {
-    const menuItems = this.user ? this.connectionsMenu() : this.signinMenu()
+    const menuItems = this.user ? this.connectionsMenu() : this.signInMenu()
     const contextMenu = electron.Menu.buildFromTemplate(menuItems)
     this.tray.setContextMenu(contextMenu)
   }
@@ -67,7 +67,7 @@ export default class TrayMenu {
     ]
   }
 
-  private signinMenu() {
+  private signInMenu() {
     return [
       { label: 'remote.it', enabled: false },
       {

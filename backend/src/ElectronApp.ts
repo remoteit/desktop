@@ -70,7 +70,7 @@ export default class ElectronApp {
     if (this.window) return
 
     this.window = new electron.BrowserWindow({
-      width: 500,
+      width: 800,
       height: 600,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       frame: false,

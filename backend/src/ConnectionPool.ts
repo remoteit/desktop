@@ -30,17 +30,13 @@ export default class ConnectionPool {
     // Listen to events to synchronize state
     EventBus.on(User.EVENTS.signedIn, (user: IUser) => (this.user = user))
     EventBus.on(User.EVENTS.signedOut, () => (this.user = undefined))
-    EventBus.on(Connection.EVENTS.disconnected, () => this.updated())
-    EventBus.on(Connection.EVENTS.started, () => this.updated())
-    EventBus.on(ElectronApp.EVENTS.ready, () => this.updated())
+    EventBus.on(Connection.EVENTS.disconnected, this.updated)
+    EventBus.on(Connection.EVENTS.connected, this.updated)
+    EventBus.on(Connection.EVENTS.started, this.updated)
+    EventBus.on(ElectronApp.EVENTS.ready, this.updated)
   }
 
-  connect = async (args: {
-    id: string
-    port?: number
-    name?: string
-    autoStart?: boolean
-  }) => {
+  connect = async (args: { id: string; port?: number; name?: string; autoStart?: boolean }) => {
     d('Connecting:', args)
 
     if (!this.user) throw new Error('No user to authenticate connection!')
