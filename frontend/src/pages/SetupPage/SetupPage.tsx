@@ -1,11 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import BackendAdaptor from '../../services/BackendAdapter'
 import { ITarget, IDevice } from '../../jump/common/types'
 import Device from '../../jump/components/Device'
-
-const socket: SocketIOClient.Socket = BackendAdaptor.socket
 
 const mapState = (state: ApplicationState) => ({
   device: state.jump.device,
@@ -23,12 +21,16 @@ export const SetupPage = connect(
   mapState,
   mapDispatch
 )(({ device, targets, added, setAdded }: SetupPageProps) => {
-  const updateTargets = (t: ITarget[]) => socket.emit('jump/targets', t)
-  const updateDevice = (d: IDevice) => socket.emit('jump/device', d)
+  const updateTargets = (t: ITarget[]) => BackendAdaptor.emit('jump/targets', t)
+  const updateDevice = (d: IDevice) => BackendAdaptor.emit('jump/device', d)
   const deleteDevice = () => {
-    socket.emit('jump/device', 'DELETE')
-    socket.emit('jump/auth')
+    BackendAdaptor.emit('jump/device', 'DELETE')
+    BackendAdaptor.emit('jump/init')
   }
+
+  useEffect(() => {
+    BackendAdaptor.emit('jump/init')
+  }, [])
 
   return (
     <Device

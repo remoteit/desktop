@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { TextField, FormControl, Select, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
+import {
+  TextField,
+  FormControl,
+  Select,
+  MenuItem,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+} from '@material-ui/core'
 import { DeleteRounded, ClearRounded, DoneRounded } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes, emptyServiceType } from '../config/serviceTypes'
@@ -89,7 +97,11 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
         </FormControl>
       </td>
       <td>
-        <TextField value={state.port} disabled={disabled} onChange={event => update('port', +event.target.value)} />
+        <TextField
+          value={state.port}
+          disabled={disabled}
+          onChange={event => update('port', +event.target.value)}
+        />
       </td>
       <td>
         <TextField

@@ -14,6 +14,7 @@ import { IUser } from 'remote.it'
 import EventBus from './EventBus'
 import Installer from './Installer'
 import User from './User'
+import JumpBox from './jump'
 
 const d = debug('r3:backend:Application')
 
@@ -45,7 +46,9 @@ export default class Application {
     this.pool = new ConnectionPool(this.connectionsFile.read() || [], userCredentials)
 
     // Start server and listen to events.
-    new Server(this.pool, userCredentials)
+    const server = new Server(this.pool, userCredentials)
+
+    new JumpBox(server.io, userCredentials)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.ready, this.handleServerReady)

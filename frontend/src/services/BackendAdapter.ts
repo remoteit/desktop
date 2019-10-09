@@ -6,7 +6,7 @@ import { EventEmitter } from 'events'
 import { IUser } from 'remote.it'
 
 class BackendAdapter extends EventEmitter {
-  socket = io(`http://localhost:${PORT}`)
+  private socket = io(`http://localhost:${PORT}`)
 
   constructor(handlers: EventHandlers) {
     super()

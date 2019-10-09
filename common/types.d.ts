@@ -19,6 +19,13 @@ declare global {
     // App / settings
     | 'app/open-on-login'
 
+    // Jump
+    | 'jump/init'
+    | 'jump/targets'
+    | 'jump/device'
+    | 'jump/scan'
+    | 'jump/interfaces'
+
   export type SocketEvent =
     // built-in events
     | 'connect'

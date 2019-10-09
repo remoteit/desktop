@@ -1,10 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import Network from '../../jump/components/Network'
 import BackendAdaptor from '../../services/BackendAdapter'
-
-const socket: SocketIOClient.Socket = BackendAdaptor.socket
 
 const mapState = (state: ApplicationState) => ({
   scanData: state.jump.scanData,
@@ -23,7 +21,11 @@ export const NetworkPage = connect(
   mapState,
   mapDispatch
 )(({ scanData, targets, interfaces, setAdded, setPage }: NetworkPageProps) => {
-  const scan = (interfaceName: string) => socket.emit('scan', interfaceName)
+  const scan = (interfaceName: string) => BackendAdaptor.emit('jump/scan', interfaceName)
+
+  useEffect(() => {
+    BackendAdaptor.emit('jump/interfaces')
+  }, [])
 
   return (
     <Network

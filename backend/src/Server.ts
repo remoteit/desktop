@@ -20,8 +20,8 @@ import ElectronApp from './ElectronApp'
 const d = debug('r3:backend:Server')
 
 export default class Server {
+  public io: SocketIO.Server
   private pool: ConnectionPool
-  private io: SocketIO.Server
   private user?: UserCredentials
 
   static EVENTS = {
@@ -82,13 +82,7 @@ export default class Server {
     if (user) this.user = user
   }
 
-  signIn = async ({
-    username,
-    password,
-  }: {
-    username: string
-    password: string
-  }) => {
+  signIn = async ({ username, password }: { username: string; password: string }) => {
     d('Sign in:', username)
     this.user = await User.signIn(username, password)
   }
@@ -125,14 +119,8 @@ export default class Server {
   }
 
   installBinaries = async () => {
-    const installer = new BinaryInstaller([
-      ConnectdInstaller,
-      MuxerInstaller,
-      DemuxerInstaller,
-    ])
-    return installer
-      .install()
-      .catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    const installer = new BinaryInstaller([ConnectdInstaller, MuxerInstaller, DemuxerInstaller])
+    return installer.install().catch(error => EventBus.emit(Installer.EVENTS.error, error))
   }
 
   openOnLogin = (open: boolean) => {
