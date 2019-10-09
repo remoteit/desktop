@@ -110,7 +110,6 @@ export default class ElectronApp {
     const iconFile = Environment.isWindows ? 'iconwin.ico' : 'iconTemplate.png'
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
-    console.log('this.tray =>', this.tray)
     new TrayMenu(this.tray)
   }
 
