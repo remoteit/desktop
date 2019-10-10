@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react'
+import styles from '../../styling'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { BottomNavigation, BottomNavigationAction, IconButton } from '@material-ui/core'
+import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
 import { ConnectionsPage } from '../ConnectionsPage'
 import { Page } from '../../pages/Page'
@@ -25,10 +27,7 @@ const mapState = (state: ApplicationState) => ({
   checkSignInStarted: state.auth.checkSignInStarted,
   user: state.auth.user,
   page: state.navigation.page,
-  installed:
-    state.binaries.connectdInstalled &&
-    state.binaries.muxerInstalled &&
-    state.binaries.demuxerInstalled,
+  installed: state.binaries.connectdInstalled && state.binaries.muxerInstalled && state.binaries.demuxerInstalled,
 })
 const mapDispatch = (dispatch: any) => ({
   checkSignIn: dispatch.auth.checkSignIn,
@@ -40,89 +39,73 @@ export type AppProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispat
 export const App = connect(
   mapState,
   mapDispatch
-)(
-  ({ checkSignIn, installed, page, setPage, checkSignInStarted = false, user }: AppProps) => {
-    useEffect(() => {
-      checkSignIn()
-    }, [checkSignIn])
+)(({ checkSignIn, installed, page, setPage, checkSignInStarted = false, user }: AppProps) => {
+  const css = useStyles()
 
-    if (checkSignInStarted)
-      return (
-        <Page>
-          <LoadingPage />
-        </Page>
-      )
+  useEffect(() => {
+    checkSignIn()
+  }, [checkSignIn])
 
-    if (!installed)
-      return (
-        <Page>
-          <InstallationNotice />
-        </Page>
-      )
-
-    if (!user)
-      return (
-        <Page>
-          <SignInPage />
-        </Page>
-      )
-
+  if (checkSignInStarted)
     return (
       <Page>
-        <div className="w-100 h-100 df ai-stretch" style={{ flexFlow: 'column' }}>
-          <div>
-            <IconButton
-              style={{ position: 'absolute', right: 0 }}
-              onClick={() => setPage('settings')}
-            >
-              <Icon name="cog" color={page === 'settings' ? 'primary' : undefined} size="md" />
-            </IconButton>
-            <div className="df ai-center jc-center py-xs center dragable primary txt-md bg-gray-lighter">
-              remote.it
-            </div>
-          </div>
-          <div className="of-auto fg-1 relative">{routes[page]}</div>
-          <BottomNavigation
-            value={page}
-            onChange={(_, newValue) => setPage(newValue)}
-            showLabels
-            className="bt bc-secondary-lighter"
-          >
-            <BottomNavigationAction
-              label="Connections"
-              value="connections"
-              icon={<Icon name="scrubber" size="lg" />}
-            />
-            <BottomNavigationAction
-              label="Devices"
-              value="devices"
-              icon={<Icon name="chart-network" size="lg" />}
-            />
-            <BottomNavigationAction
-              label="Setup"
-              value="setup"
-              icon={<Icon name="hdd" size="lg" />}
-            />
-            <BottomNavigationAction
-              label="Network"
-              value="network"
-              icon={<Icon name="network-wired" size="lg" />}
-            />
-            {/* <BottomNavigationAction
-              label="Settings"
-              value="settings"
-              classes={{ selected: '' }}
-              icon={<Icon name="cog" size="lg" />}
-            /> */}
-          </BottomNavigation>
-        </div>
+        <LoadingPage />
       </Page>
     )
-  }
 
-  /* signInStarted ? (
-        <LoadingMessage message="Loading awesome!" />
-      ) : (
-        routeResult || <NotFoundPage />
-      )*/
-)
+  if (!installed)
+    return (
+      <Page>
+        <InstallationNotice />
+      </Page>
+    )
+
+  if (!user)
+    return (
+      <Page>
+        <SignInPage />
+      </Page>
+    )
+
+  return (
+    <Page>
+      <div className={css.body}>{routes[page]}</div>
+      <BottomNavigation className={css.footer} value={page} onChange={(_, newValue) => setPage(newValue)} showLabels>
+        <BottomNavigationAction label="Connections" value="connections" icon={<Icon name="scrubber" size="lg" />} />
+        <BottomNavigationAction label="Devices" value="devices" icon={<Icon name="chart-network" size="lg" />} />
+        <BottomNavigationAction label="Setup" value="setup" icon={<Icon name="hdd" size="lg" />} />
+        <BottomNavigationAction label="Network" value="network" icon={<Icon name="network-wired" size="lg" />} />
+        <BottomNavigationAction label="Settings" value="settings" icon={<Icon name="cog" size="lg" />} />
+      </BottomNavigation>
+    </Page>
+  )
+})
+
+const useStyles = makeStyles({
+  body: {
+    overflowY: 'auto',
+    flexGrow: 1,
+    position: 'relative',
+    '-webkit-overflow-scrolling': 'touch',
+    '&::-webkit-scrollbar': { display: 'none' },
+    '& section': {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: `${styles.spacing.xl}px 0`,
+      borderTop: `1px solid ${styles.colors.grayLighter}`,
+    },
+    '& h2': {
+      textTransform: 'uppercase',
+      fontSize: 12,
+      letterSpacing: '0.6em',
+      fontWeight: 500,
+      color: styles.colors.gray,
+      marginTop: styles.spacing.lg,
+    },
+  },
+  footer: {
+    borderTop: `1px solid ${styles.colors.grayLighter}`,
+    minHeight: 62,
+    '& .MuiButtonBase-root': { maxWidth: '18%' },
+  },
+})

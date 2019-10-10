@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import Targets from './Targets'
-import { ITarget, IDevice } from '../common/types'
-import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar } from '@material-ui/core'
+import {
+  TextField,
+  Button,
+  CircularProgress,
+  Tooltip,
+  IconButton,
+  Snackbar,
+} from '@material-ui/core'
 import { DoneRounded, DeleteRounded } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/styles'
-import styles from '../styling/styling'
+import styles from '../../styling'
 
 type Props = {
   targets: ITarget[]
@@ -81,7 +87,11 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
         >
           {registered ? 'Registered' : 'Register'}
           {registering ? (
-            <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
+            <CircularProgress
+              className={css.registering}
+              size={styles.fontSizes.lg}
+              thickness={4}
+            />
           ) : (
             <DoneRounded />
           )}

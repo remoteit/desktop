@@ -1,7 +1,6 @@
 import { ConfigFile } from '@remote.it/core'
 import { execSync } from 'child_process'
 import { removeNameExt } from './common-copy/serviceNameHelper'
-import { ITarget, IDevice } from './common-copy/types'
 import defaults from './common-copy/defaults'
 import config from './config'
 

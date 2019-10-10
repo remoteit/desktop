@@ -1,5 +1,4 @@
 import React from 'react'
-import { ITarget, IScanData, IInterface } from '../common/types'
 import Scan from './Scan'
 
 type Props = {

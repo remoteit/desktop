@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { Tooltip } from '@material-ui/core'
-import { colors, spacing, fontSizes } from '../styling/styling'
+import { colors, spacing, fontSizes } from '../../styling'
 
 const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
   const css = useStyles()
@@ -19,14 +19,15 @@ export default OutOfBand
 
 const useStyles = makeStyles({
   oob: {
-    border: `2px solid ${colors.grayLightest}`,
+    // border: `1px solid ${colors.grayLightest}`,
     padding: `${spacing.sm}px ${spacing.md}px`,
     borderRadius: spacing.sm,
     display: 'inline-flex',
-    color: colors.grayLighter,
+    color: colors.gray,
+    backgroundColor: colors.grayLightest,
     alignItems: 'center',
     '& small': {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: fontSizes.xs,
       textTransform: 'uppercase',
       letterSpacing: 1,

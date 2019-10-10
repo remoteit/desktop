@@ -12,8 +12,7 @@ import { DeleteRounded, ClearRounded, DoneRounded } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes, emptyServiceType } from '../config/serviceTypes'
 import { addNameExt } from '../common/serviceNameHelper'
-import { ITarget, IDevice } from '../common/types'
-import styles from '../styling/styling'
+import styles from '../../styling'
 
 type Props = {
   init?: boolean

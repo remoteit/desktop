@@ -1,5 +1,14 @@
 import React, { useState } from 'react'
-import { List, ListItem, ListItemText, ListItemIcon, Collapse, Button, Link, Typography } from '@material-ui/core'
+import {
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Collapse,
+  Button,
+  Link,
+  Typography,
+} from '@material-ui/core'
 import {
   ExpandLessRounded,
   ExpandMoreRounded,
@@ -14,9 +23,8 @@ import {
 } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes } from '../config/serviceTypes'
-import { ITarget, IScan, IInterfaceType } from '../common/types'
 import defaults from '../common/defaults'
-import styles from '../styling/styling'
+import styles from '../../styling'
 
 type Props = {
   data: IScan[]

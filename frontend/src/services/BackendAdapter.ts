@@ -1,5 +1,4 @@
 import io from 'socket.io-client'
-import { ITarget, IDevice, IScanData, IInterface } from '../jump/common/types'
 import { store } from '../store'
 import { PORT } from '../constants'
 import { EventEmitter } from 'events'

@@ -1,72 +1,53 @@
 import React from 'react'
+import styles from '../../styling'
+import { makeStyles } from '@material-ui/styles'
 import { isMac } from '../../services/Platform'
-import { CssBaseline, createMuiTheme } from '@material-ui/core'
-import { ThemeProvider } from '@material-ui/styles'
-
-const theme = createMuiTheme({
-  palette: {
-    background: {
-      default: 'rgba(255,255,255,0)',
-    },
-    primary: { main: '#1699d6' },
-    // secondary: { main: '#034b9d' },
-    error: { main: '#f45130' },
-  },
-  overrides: {
-    MuiListItem: {
-      button: {
-        '&:hover, &:focus': {
-          backgroundColor: 'var(--color-gray-lightest)',
-        },
-      },
-    },
-    MuiLink: {
-      root: {
-        display: 'block',
-        padding: 'var(--spacing-sm) var(--spacing-md)',
-      },
-      underlineHover: {
-        '&:hover': {
-          backgroundColor: 'var(--color-gray-lightest)',
-          textDecoration: 'none',
-        },
-      },
-    },
-  },
-})
+import { Header } from '../../jump/components/Header'
 
 export interface Props {
   children: React.ReactNode
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
-  let containerStyle: any = {
+  const css = useStyles()
+  let containerCss: any = css.page
+
+  if (!isMac()) containerCss += ' ' + css.win
+
+  return (
+    <div className={containerCss}>
+      <Header />
+      {children}
+    </div>
+  )
+}
+
+const useStyles = makeStyles({
+  page: {
     position: 'fixed',
-    backgroundColor: 'var(--color-gray-lighter)',
+    backgroundColor: styles.colors.grayLighter,
+    borderRadius: 10,
     top: 0,
-    borderRadius: 4,
     bottom: 0,
     left: 0,
     right: 0,
     overflow: 'hidden',
-  }
-
-  if (!isMac()) {
-    containerStyle = {
-      ...containerStyle,
-      borderColor: 'var(--color-primary)',
-      borderWidth: 1,
-      borderStyle: 'solid',
-      boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
-    }
-  }
-
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <div className="dragable" style={containerStyle}>
-        {children}
-      </div>
-    </ThemeProvider>
-  )
-}
+    display: 'flex',
+    flexFlow: 'column',
+    justifyContent: 'space-between',
+    flexWrap: 'nowrap',
+  },
+  win: {
+    borderColor: styles.colors.primary,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
+  },
+  // content: {
+  //   padding: `${styles.page.marginVertical}px ${styles.page.marginHorizontal}px`,
+  //   height: '100%',
+  //   'overflow-y': 'scroll',
+  //   '-webkit-overflow-scrolling': 'touch',
+  //   '&::-webkit-scrollbar': { display: 'none' },
+  // },
+})

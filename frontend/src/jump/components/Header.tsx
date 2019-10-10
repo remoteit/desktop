@@ -2,14 +2,26 @@ import React, { useState } from 'react'
 import { Typography, Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { FullscreenRounded, FullscreenExitRounded } from '@material-ui/icons'
-import { IInterface } from '../common/types'
-import { IUser } from 'remote.it'
+import { connect } from 'react-redux'
+import { ApplicationState } from '../../store'
+import { Icon } from '../../components/Icon'
 import * as screenfull from 'screenfull'
 import OutOfBand from './OutOfBand'
-import logo from '../assets/logo.svg'
-import styles from '../styling/styling'
+import styles from '../../styling'
 
-const Header: React.FC<{ user: IUser; interfaces: IInterface[] }> = ({ user, interfaces }) => {
+const mapState = (state: ApplicationState) => ({
+  page: state.navigation.page,
+  user: state.auth.user,
+  interfaces: state.jump.interfaces,
+})
+
+const mapDispatch = (dispatch: any) => ({
+  setPage: dispatch.navigation.setPage,
+})
+
+type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
+
+const Component: React.FC<Props> = ({ user, interfaces, page, setPage }) => {
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
   const css = useStyles()
@@ -21,44 +33,52 @@ const Header: React.FC<{ user: IUser; interfaces: IInterface[] }> = ({ user, int
 
   return (
     <div className={css.header}>
-      <img src={logo} alt="remote.it" />
-      <Typography variant="caption">{user.username}</Typography>
-      {fullscreenEnabled && (
-        <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
-          <IconButton onClick={toggleFullscreen}>
-            {fullscreen ? <FullscreenExitRounded /> : <FullscreenRounded />}
-          </IconButton>
-        </Tooltip>
-      )}
+      <Typography>remote.it</Typography>
       <div className={css.oob}>
         <OutOfBand active={interfaces.length > 1} />
       </div>
+      {fullscreenEnabled && (
+        <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
+          <IconButton onClick={toggleFullscreen}>
+            <Icon name={fullscreen ? 'compress' : 'expand'} size="md" />
+          </IconButton>
+        </Tooltip>
+      )}
+      <Tooltip title="Settings">
+        <IconButton onClick={() => setPage('settings')}>
+          <Icon name="cog" color={page === 'settings' ? 'primary' : undefined} size="md" />
+        </IconButton>
+      </Tooltip>
     </div>
   )
 }
 
-export default Header
+export const Header = connect(
+  mapState,
+  mapDispatch
+)(Component)
 
 const useStyles = makeStyles({
   header: {
-    paddingTop: styles.spacing.md,
-    paddingBottom: styles.spacing.lg,
+    padding: `${styles.spacing.xs}px ${styles.spacing.sm}px`,
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'flex-start',
+    '-webkit-user-select': 'none',
+    '-webkit-app-region': 'drag',
     '& img': {
       width: 120,
     },
-    '& .MuiTypography-caption': {
-      flexGrow: 1,
-      color: styles.colors.grayLight,
-      textAlign: 'right',
-      marginTop: 16,
-      marginRight: styles.spacing.sm,
+    '& .MuiTypography-root': {
+      position: 'absolute',
+      color: styles.colors.primary,
+      textAlign: 'center',
+      marginTop: 9,
+      width: '100%',
     },
   },
   oob: {
-    marginTop: 10,
-    marginLeft: 8,
+    marginTop: 5,
+    marginRight: styles.spacing.md,
   },
 })

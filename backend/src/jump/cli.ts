@@ -1,4 +1,3 @@
-import { ITarget } from './common-copy/types'
 import File from './file'
 
 class Settings extends File {

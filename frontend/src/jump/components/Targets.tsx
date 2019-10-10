@@ -3,8 +3,7 @@ import Target from './Target'
 import NewTarget from './NewTarget'
 import { InputLabel } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { ITarget, IDevice } from '../common/types'
-import styles from '../styling/styling'
+import styles from '../../styling'
 
 type Props = {
   targets: ITarget[]

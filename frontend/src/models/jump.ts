@@ -1,6 +1,5 @@
 import { createModel } from '@rematch/core'
 import defaults from '../jump/common/defaults'
-import { ITarget, IDevice, IScanData, IInterface } from '../jump/common/types'
 
 interface IJumpState {
   device: IDevice
@@ -43,20 +42,3 @@ export default createModel({
     },
   },
 })
-
-/* 
-const updateTargets = (t: ITarget[]) => socket.emit('jump/targets', t)
-const updateDevice = (d: IDevice) => socket.emit('jump/device', d)
-const signIn = (u: IUser) => {
-  socket.emit('jump/user', u)
-  socket.emit('jump/auth')
-}
-const deleteDevice = () => {
-  socket.emit('jump/device', 'DELETE')
-  socket.emit('jump/auth')
-}
-
-const scan = (interfaceName: string) => socket.emit('jump/scan', interfaceName)
-
-useEffect(() => socket.emit('jump/auth'), [socket])
- */

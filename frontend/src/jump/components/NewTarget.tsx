@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Button } from '@material-ui/core'
 import { AddRounded } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/styles'
-import { ITarget, IDevice } from '../common/types'
 import Target from './Target'
 import defaults from '../common/defaults'
-import styles from '../styling/styling'
+import styles from '../../styling'
 
 type Props = {
   count: number

@@ -21,8 +21,8 @@ const visibleDevices: (state: any, props: any) => SelectResponse = select(
 )
 
 const mapState = (state: ApplicationState) => ({
-  allDevices: state.devices.all,
   ...visibleDevices(state, {}),
+  allDevices: state.devices.all,
   searchPerformed: state.devices.searchPerformed,
   fetching: state.devices.fetching,
   query: state.devices.query,
@@ -66,7 +66,7 @@ export const DevicesPage = connect(
     // if (!fetching && !allDevices.length) <NoDevicesMessage />
 
     return (
-      <div className="df ai-stretch h-100" style={{ flexFlow: 'column' }}>
+      <div className="df ai-stretch" style={{ flexFlow: 'column' }}>
         <div className="df ai-center jc-center px-sm pb-sm center bg-gray-lighter bb bc-gray-light">
           <SearchField
             onSubmit={remoteSearch}
@@ -78,10 +78,7 @@ export const DevicesPage = connect(
             searchOnly={searchOnly}
             value={query}
           />
-          <Tooltip
-            title={sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'}
-            className="ml-sm"
-          >
+          <Tooltip title={sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'} className="ml-sm">
             <IconButton onClick={() => changeSort(sort === 'alpha' ? 'state' : 'alpha')}>
               <Icon name={sort === 'alpha' ? 'font-case' : 'scrubber'} size="sm" />
             </IconButton>

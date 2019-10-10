@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import BackendAdaptor from '../../services/BackendAdapter'
-import { ITarget, IDevice } from '../../jump/common/types'
 import Device from '../../jump/components/Device'
 
 const mapState = (state: ApplicationState) => ({

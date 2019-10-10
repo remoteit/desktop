@@ -1,5 +1,5 @@
 import React from 'react'
-import logoColor from './logo-color.png'
+import logoColor from '../../jump/assets/logo.svg'
 import logoWhite from './logo-white.svg'
 import logomarkWhite from './logomark-white.svg'
 
@@ -12,10 +12,10 @@ export interface LogoProps {
 export function Logo({
   white = false,
   mark = false,
-  width = 150,
+  width = 125,
 }: LogoProps & React.HTMLProps<HTMLAnchorElement>) {
   let logo = logoColor
-  // TODO: add color mark
+
   if (white && mark) logo = logomarkWhite
   if (white && !mark) logo = logoWhite
 

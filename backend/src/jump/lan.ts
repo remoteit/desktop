@@ -1,7 +1,6 @@
 import Logger from '../Logger'
 import { execFile } from 'child_process'
 import { getPath } from './config'
-import { IScan, IScanData, IInterface } from './common-copy/types'
 import nm from 'netmask'
 import nw from 'network'
 

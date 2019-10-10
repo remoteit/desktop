@@ -1,6 +1,5 @@
 // import { io } from './server'
 import socketIO from 'socket.io'
-import { ITarget, IDevice } from './common-copy/types'
 import cli from './cli'
 import lan from './lan'
 
