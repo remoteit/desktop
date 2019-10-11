@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Typography, Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { FullscreenRounded, FullscreenExitRounded } from '@material-ui/icons'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Icon } from '../../components/Icon'
+import { isElectron } from '../../services/Platform'
 import * as screenfull from 'screenfull'
 import OutOfBand from './OutOfBand'
 import styles from '../../styling'
@@ -34,21 +34,16 @@ const Component: React.FC<Props> = ({ user, interfaces, page, setPage }) => {
   return (
     <div className={css.header}>
       <Typography>remote.it</Typography>
-      <div className={css.oob}>
+      <span>
         <OutOfBand active={interfaces.length > 1} />
-      </div>
-      {fullscreenEnabled && (
+      </span>
+      {!isElectron() && fullscreenEnabled && (
         <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
           <IconButton onClick={toggleFullscreen}>
             <Icon name={fullscreen ? 'compress' : 'expand'} size="md" />
           </IconButton>
         </Tooltip>
       )}
-      <Tooltip title="Settings">
-        <IconButton onClick={() => setPage('settings')}>
-          <Icon name="cog" color={page === 'settings' ? 'primary' : undefined} size="md" />
-        </IconButton>
-      </Tooltip>
     </div>
   )
 }
@@ -60,25 +55,30 @@ export const Header = connect(
 
 const useStyles = makeStyles({
   header: {
-    padding: `${styles.spacing.xs}px ${styles.spacing.sm}px`,
+    backgroundColor: styles.colors.grayLighter,
+    padding: `${styles.spacing.xs}px ${styles.spacing.md}px`,
     display: 'flex',
     justifyContent: 'flex-end',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    minHeight: 40,
     '-webkit-user-select': 'none',
     '-webkit-app-region': 'drag',
     '& img': {
       width: 120,
     },
-    '& .MuiTypography-root': {
+    '& > span': {
+      top: 8,
       position: 'absolute',
-      color: styles.colors.primary,
+      right: styles.spacing.md,
+    },
+    '& .MuiButtonBase-root': {
+      position: 'absolute',
+      left: styles.spacing.sm,
+    },
+    '& .MuiTypography-root': {
+      color: styles.colors.grayDarker,
       textAlign: 'center',
-      marginTop: 9,
       width: '100%',
     },
-  },
-  oob: {
-    marginTop: 5,
-    marginRight: styles.spacing.md,
   },
 })

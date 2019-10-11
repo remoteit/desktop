@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Targets from './Targets'
-import {
-  TextField,
-  Button,
-  CircularProgress,
-  Tooltip,
-  IconButton,
-  Snackbar,
-} from '@material-ui/core'
-import { DoneRounded, DeleteRounded } from '@material-ui/icons'
+import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar } from '@material-ui/core'
+import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
 
@@ -33,13 +26,13 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
   useEffect(() => {
     if (registering && device.uid) setRegistering(false)
     if (deleting && !device.uid) setDeleting(false)
-  }, [device])
+  }, [device, deleting, registering])
 
   return (
     <div>
       <h2>Device</h2>
       <section>
-        <div>
+        <div className={css.name}>
           <TextField
             label="Device Name"
             className={css.input}
@@ -61,16 +54,15 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
               <IconButton
                 onClick={() => {
                   if (
-                    window.confirm(
-                      "Are you sure? You are about to permanently remove this device and all of it's services."
-                    )
+                    window.confirm(`Are you sure?
+                      You are about to permanently remove this device and all of it's services.`)
                   ) {
                     onDelete()
                     setDeleting(true)
                   }
                 }}
               >
-                <DeleteRounded />
+                <Icon name="trash-alt" size="md" />
               </IconButton>
             </Tooltip>
           )}
@@ -87,13 +79,9 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
         >
           {registered ? 'Registered' : 'Register'}
           {registering ? (
-            <CircularProgress
-              className={css.registering}
-              size={styles.fontSizes.lg}
-              thickness={4}
-            />
+            <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
           ) : (
-            <DoneRounded />
+            <Icon name="check" weight="regular" inline />
           )}
         </Button>
       </section>
@@ -119,6 +107,12 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
 export default Device
 
 const useStyles = makeStyles({
+  name: {
+    '& button': {
+      marginTop: styles.spacing.md,
+      marginLeft: styles.spacing.md,
+    },
+  },
   register: {
     marginTop: styles.spacing.md,
     marginRight: 0,

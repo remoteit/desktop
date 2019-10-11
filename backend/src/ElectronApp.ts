@@ -75,7 +75,6 @@ export default class ElectronApp {
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       frame: false,
       titleBarStyle: 'hiddenInset',
-      transparent: true,
     })
     this.window.setVisibleOnAllWorkspaces(true)
 

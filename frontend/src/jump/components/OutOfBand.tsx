@@ -19,30 +19,35 @@ export default OutOfBand
 
 const useStyles = makeStyles({
   oob: {
-    // border: `1px solid ${colors.grayLightest}`,
-    padding: `${spacing.sm}px ${spacing.md}px`,
+    border: `1px solid ${colors.grayLight}`,
+    padding: `${spacing.xs}px ${spacing.md}px`,
     borderRadius: spacing.sm,
     display: 'inline-flex',
     color: colors.gray,
-    backgroundColor: colors.grayLightest,
     alignItems: 'center',
     '& small': {
       fontWeight: 400,
-      fontSize: fontSizes.xs,
+      fontSize: fontSizes.xxs,
       textTransform: 'uppercase',
       letterSpacing: 1,
+    },
+    '& span': {
+      width: spacing.sm,
+      height: spacing.sm,
+      borderRadius: '50%',
+      display: 'block',
+      marginRight: spacing.sm,
+      backgroundColor: colors.grayLight,
     },
   },
   active: {
     border: 0,
     backgroundColor: colors.primary,
     color: colors.white,
+    '& small': {
+      fontWeight: 500,
+    },
     '& span': {
-      width: spacing.sm,
-      height: spacing.sm,
-      borderRadius: '50%',
-      display: 'block',
-      marginRight: spacing.md,
       backgroundColor: colors.white,
       boxShadow: `0 0 8px ${colors.white}`,
     },

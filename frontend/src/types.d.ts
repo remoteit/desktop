@@ -43,8 +43,6 @@ declare global {
     createdAt?: Date
   }
 
-  export type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
-
   export type IconWeight = 'light' | 'regular' | 'solid'
 
   export type BrandColors =

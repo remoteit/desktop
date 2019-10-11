@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  Paper,
-  FormControl,
-  InputBase,
-  IconButton,
-  Tooltip,
-} from '@material-ui/core'
+import { Paper, FormControl, InputBase, IconButton, Tooltip } from '@material-ui/core'
 import { Icon } from '../Icon'
 
 export interface SearchFieldProps {
@@ -27,7 +21,7 @@ export function SearchField({
   const disabled = Boolean(searching || !value)
 
   return (
-    <Paper className="px-xs py-xxs df ai-center w-100" elevation={1} {...props}>
+    <Paper className="px-xs py-xxs df ai-center w-100 mr-sm" elevation={1} {...props}>
       <form
         onSubmit={e => {
           e.preventDefault()
@@ -51,23 +45,17 @@ export function SearchField({
           />
           {value && (
             <Tooltip title="Clear search">
-              <IconButton
-                className="p-sm"
-                type="button"
-                onClick={() => onChange('')}
-              >
+              <IconButton className="p-sm" type="button" onClick={() => onChange('')}>
                 <Icon name="times" size="sm" />
               </IconButton>
             </Tooltip>
           )}
           <Tooltip title="Search">
-            <IconButton className="p-sm" type="submit" disabled={disabled}>
-              <Icon
-                name={searching ? 'spinner-third' : 'search'}
-                spin={searching}
-                size="sm"
-              />
-            </IconButton>
+            <div>
+              <IconButton className="p-sm" type="submit" disabled={disabled}>
+                <Icon name={searching ? 'spinner-third' : 'search'} spin={searching} size="sm" />
+              </IconButton>
+            </div>
           </Tooltip>
         </FormControl>
       </form>

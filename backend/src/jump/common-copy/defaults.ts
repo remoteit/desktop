@@ -1,4 +1,3 @@
-import { ITarget, IDevice } from './types'
 const defaults: ITarget | IDevice = {
   hardwareID: '',
   hostname: '',

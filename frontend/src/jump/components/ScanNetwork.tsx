@@ -1,26 +1,6 @@
 import React, { useState } from 'react'
-import {
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Collapse,
-  Button,
-  Link,
-  Typography,
-} from '@material-ui/core'
-import {
-  ExpandLessRounded,
-  ExpandMoreRounded,
-  AddRounded,
-  CheckRounded,
-  WifiRounded,
-  SettingsEthernetRounded,
-  WhatshotRounded,
-  FlashOnRounded,
-  BluetoothRounded,
-  UsbRounded,
-} from '@material-ui/icons'
+import { List, ListItem, ListItemText, ListItemIcon, Collapse, Button, Link, Typography } from '@material-ui/core'
+import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes } from '../config/serviceTypes'
 import defaults from '../common/defaults'
@@ -36,12 +16,12 @@ type Props = {
 type IInterfaceIcon = { [interfaceType in IInterfaceType]: any }
 
 const InterfaceIcon: IInterfaceIcon = {
-  Wireless: <WifiRounded />,
-  Wired: <SettingsEthernetRounded />,
-  FireWire: <WhatshotRounded />,
-  Thunderbolt: <FlashOnRounded />,
-  Bluetooth: <BluetoothRounded />,
-  Other: <UsbRounded />,
+  Wireless: <Icon name="wifi" weight="solid" />,
+  Wired: <Icon name="ethernet" weight="solid" />,
+  FireWire: <Icon name="fire" weight="solid" />,
+  Thunderbolt: <Icon name="bolt" weight="solid" />,
+  Bluetooth: <Icon name="bluetooth-b" weight="solid" />,
+  Other: <Icon name="usb" weight="solid" />,
 }
 
 const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) => {
@@ -80,7 +60,7 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
         <Typography variant="caption">Select a device to add a jump connection</Typography>
         <Link onClick={toggleAll} color="inherit" component="button" className={css.toggle}>
           {allClosed ? 'Expand All' : 'Close All'}
-          {allClosed ? <ExpandMoreRounded /> : <ExpandLessRounded />}
+          {allClosed ? <Icon name="angle-down" inline /> : <Icon name="angle-up" inline />}
         </Link>
       </div>
       {data.map((ip, row) => (
@@ -88,7 +68,7 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
           <ListItem button onClick={() => toggle(row)}>
             <ListItemIcon>{InterfaceIcon[interfaceType]}</ListItemIcon>
             <ListItemText primary={ip[0]} />
-            {open.includes(row) ? <ExpandLessRounded /> : <ExpandMoreRounded />}
+            {open.includes(row) ? <Icon name="angle-up" /> : <Icon name="angle-down" />}
           </ListItem>
           <Collapse in={open.includes(row)} timeout="auto">
             {ip[1].map((port, key) => (
@@ -98,7 +78,7 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
                 {targets.find(target => target.hostname === ip[0] && target.port === port[0]) ? (
                   <Button disabled size="small">
                     Added
-                    <CheckRounded />
+                    <Icon name="check" />
                   </Button>
                 ) : (
                   <Button
@@ -117,7 +97,7 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
                     }
                   >
                     Add
-                    <AddRounded />
+                    <Icon name="plus" inline />
                   </Button>
                 )}
               </ListItem>

@@ -2,13 +2,7 @@ import React from 'react'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { Icon } from '../Icon'
 import { IDevice } from 'remote.it'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Collapse,
-  Divider,
-} from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText, Collapse, Divider } from '@material-ui/core'
 import { ServiceList } from '../ServiceList'
 
 export interface DeviceListItemProps {
@@ -16,11 +10,7 @@ export interface DeviceListItemProps {
   startOpen?: boolean
 }
 
-export function DeviceListItem({
-  device,
-  startOpen = false,
-  ...props
-}: DeviceListItemProps) {
+export function DeviceListItem({ device, startOpen = false, ...props }: DeviceListItemProps) {
   const [open, setOpen] = React.useState(startOpen)
 
   function handleClick() {
@@ -31,11 +21,7 @@ export function DeviceListItem({
     <div className="bg-white">
       <ListItem {...props} onClick={handleClick} button>
         <ListItemIcon>
-          <ConnectionStateIcon
-            state={device.state}
-            size="lg"
-            className="pl-sm"
-          />
+          <ConnectionStateIcon state={device.state} size="lg" className="ml-sm" />
         </ListItemIcon>
         <ListItemText primary={device.name} />
         <div className="ml-auto">

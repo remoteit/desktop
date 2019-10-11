@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button } from '@material-ui/core'
-import { AddRounded } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/styles'
+import { Icon } from '../../components/Icon'
 import Target from './Target'
 import defaults from '../common/defaults'
 import styles from '../../styling'
@@ -34,7 +34,7 @@ const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
         <td colSpan={6}>
           <Button onClick={() => setShowNew(false)} className={css.button}>
             New
-            <AddRounded />
+            <Icon name="plus" inline />
           </Button>
         </td>
       </tr>
@@ -58,5 +58,7 @@ const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
 export default NewTarget
 
 const useStyles = makeStyles({
-  button: { marginTop: styles.spacing.lg },
+  button: {
+    marginTop: styles.spacing.lg,
+  },
 })

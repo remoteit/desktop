@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import {
-  TextField,
-  FormControl,
-  Select,
-  MenuItem,
-  IconButton,
-  Tooltip,
-  CircularProgress,
-} from '@material-ui/core'
-import { DeleteRounded, ClearRounded, DoneRounded } from '@material-ui/icons'
+import { TextField, FormControl, Select, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
+import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes, emptyServiceType } from '../config/serviceTypes'
 import { addNameExt } from '../common/serviceNameHelper'
@@ -96,11 +88,7 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
         </FormControl>
       </td>
       <td>
-        <TextField
-          value={state.port}
-          disabled={disabled}
-          onChange={event => update('port', +event.target.value)}
-        />
+        <TextField value={state.port} disabled={disabled} onChange={event => update('port', +event.target.value)} />
       </td>
       <td>
         <TextField
@@ -114,7 +102,7 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
         {changed && !loading && (
           <Tooltip title="Save">
             <IconButton color="primary" onClick={save}>
-              <DoneRounded />
+              <Icon name="check" size="md" />
             </IconButton>
           </Tooltip>
         )}
@@ -125,7 +113,7 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
         ) : changed ? (
           <Tooltip title="Cancel">
             <IconButton onClick={cancel}>
-              <ClearRounded />
+              <Icon name="times" size="md" />
             </IconButton>
           </Tooltip>
         ) : (
@@ -136,7 +124,7 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
                 setLoading(true)
               }}
             >
-              <DeleteRounded />
+              <Icon name="trash-alt" size="md" />
             </IconButton>
           </Tooltip>
         )}

@@ -48,23 +48,28 @@ export default class TrayMenu {
   }
 
   private render() {
-    const menuItems = this.user ? this.connectionsMenu() : this.signInMenu()
+    const menuItems = this.user ? this.remoteitMenu() : this.signInMenu()
     const contextMenu = electron.Menu.buildFromTemplate(menuItems)
     this.tray.setContextMenu(contextMenu)
   }
 
-  private connectionsMenu() {
+  private remoteitMenu() {
     return [
       { label: 'remote.it', enabled: false },
       {
-        label: 'Open settings...',
+        label: 'Open...',
         type: 'normal',
         click: this.handleOpen,
       },
       { type: 'separator' },
-      { label: 'Connections', enabled: false },
-      ...this.connections,
+      ...this.connectionsMenu(),
     ]
+  }
+
+  private connectionsMenu() {
+    return this.connections.length
+      ? [{ label: 'Connections', enabled: false }, ...this.connections]
+      : [{ label: 'No recent connections', enabled: false }]
   }
 
   private signInMenu() {

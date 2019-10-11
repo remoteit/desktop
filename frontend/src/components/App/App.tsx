@@ -1,27 +1,21 @@
 import React, { useEffect } from 'react'
 import styles from '../../styling'
+import { connect } from 'react-redux'
+import { makeStyles } from '@material-ui/styles'
+import { Page } from '../../pages/Page'
+import { Header } from '../../jump/components/Header'
+import { Body } from '../Body'
+import { Icon } from '../Icon'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
-import { BottomNavigation, BottomNavigationAction, IconButton } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
-import { Icon } from '../Icon'
 import { ConnectionsPage } from '../ConnectionsPage'
-import { Page } from '../../pages/Page'
+import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { SetupPage } from '../../pages/SetupPage'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
 import { InstallationNotice } from '../InstallationNotice'
 import { ApplicationState } from '../../store'
-import { connect } from 'react-redux'
-
-const routes: Route = {
-  connections: <ConnectionsPage />,
-  devices: <DevicesPage />,
-  setup: <SetupPage />,
-  settings: <SettingsPage />,
-  network: <NetworkPage />,
-}
 
 const mapState = (state: ApplicationState) => ({
   checkSignInStarted: state.auth.checkSignInStarted,
@@ -63,13 +57,29 @@ export const App = connect(
   if (!user)
     return (
       <Page>
+        <Header />
         <SignInPage />
       </Page>
     )
 
   return (
     <Page>
-      <div className={css.body}>{routes[page]}</div>
+      <Header />
+      <Body show={page === 'connections'}>
+        <ConnectionsPage />
+      </Body>
+      <Body show={page === 'devices'}>
+        <DevicesPage />
+      </Body>
+      <Body show={page === 'setup'} inset>
+        <SetupPage />
+      </Body>
+      <Body show={page === 'network'} inset>
+        <NetworkPage />
+      </Body>
+      <Body show={page === 'settings'} inset>
+        <SettingsPage />
+      </Body>
       <BottomNavigation className={css.footer} value={page} onChange={(_, newValue) => setPage(newValue)} showLabels>
         <BottomNavigationAction label="Connections" value="connections" icon={<Icon name="scrubber" size="lg" />} />
         <BottomNavigationAction label="Devices" value="devices" icon={<Icon name="chart-network" size="lg" />} />
@@ -82,27 +92,6 @@ export const App = connect(
 })
 
 const useStyles = makeStyles({
-  body: {
-    overflowY: 'auto',
-    flexGrow: 1,
-    position: 'relative',
-    '-webkit-overflow-scrolling': 'touch',
-    '&::-webkit-scrollbar': { display: 'none' },
-    '& section': {
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: `${styles.spacing.xl}px 0`,
-      borderTop: `1px solid ${styles.colors.grayLighter}`,
-    },
-    '& h2': {
-      textTransform: 'uppercase',
-      fontSize: 12,
-      letterSpacing: '0.6em',
-      fontWeight: 500,
-      color: styles.colors.gray,
-      marginTop: styles.spacing.lg,
-    },
-  },
   footer: {
     borderTop: `1px solid ${styles.colors.grayLighter}`,
     minHeight: 62,

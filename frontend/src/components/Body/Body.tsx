@@ -1,20 +1,39 @@
-import React, { Props } from 'react'
-import styles from './Body.module.css'
-import classnames from 'classnames'
+import React from 'react'
+import styles from '../../styling'
+import { makeStyles } from '@material-ui/styles'
 
-export interface BodyProps
-  extends React.DetailedHTMLProps<
-    React.HTMLAttributes<HTMLDivElement>,
-    HTMLDivElement
-  > {
-  withSearch?: boolean
-}
-
-export function Body(props: BodyProps) {
-  const css = classnames(
-    props.className,
-    styles.body,
-    props.withSearch && styles.withSearch
+export const Body: React.FC<{ show?: boolean; inset?: boolean }> = ({ show, inset, children }) => {
+  const css = useStyles()
+  return (
+    <div style={{ display: show ? 'block' : 'none' }} className={css.content + (inset ? ' ' + css.inset : '')}>
+      {children}
+    </div>
   )
-  return <div className={css}>{props.children}</div>
 }
+
+const useStyles = makeStyles({
+  content: {
+    overflowY: 'auto',
+    flexGrow: 1,
+    position: 'relative',
+    '-webkit-overflow-scrolling': 'touch',
+    '&::-webkit-scrollbar': { display: 'none' },
+    '& section': {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: `${styles.spacing.xl}px 0`,
+      borderTop: `1px solid ${styles.colors.grayLighter}`,
+    },
+    '& h2': {
+      textTransform: 'uppercase',
+      fontSize: 12,
+      letterSpacing: '0.6em',
+      fontWeight: 500,
+      color: styles.colors.gray,
+      marginTop: styles.spacing.lg,
+    },
+  },
+  inset: {
+    padding: `${styles.spacing.sm}px ${styles.spacing.xl}px`,
+  },
+})

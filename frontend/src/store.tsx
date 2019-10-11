@@ -5,9 +5,9 @@ import selectPlugin from '@rematch/select'
 import logger from 'redux-logger'
 
 const plugins = [immerPlugin(), selectPlugin()]
-const middlewares = []
+let middlewares: any[] = []
 
-if (process.env.NODE_ENV !== 'test') middlewares.push(logger)
+// if (process.env.NODE_ENV !== 'test') middlewares.push(logger)
 
 export const store = init({ models, plugins, redux: { middlewares } })
 
