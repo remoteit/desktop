@@ -12,6 +12,8 @@ const mapState = (state: ApplicationState, props: any) => ({
 })
 
 const mapDispatch = (dispatch: any) => ({
+  quit: dispatch.auth.quit,
+  signOut: dispatch.auth.signOut,
   install: dispatch.binaries.install,
   toggleOpenOnLogin: dispatch.auth.toggleOpenOnLogin,
   toggleSearchOnly: dispatch.devices.toggleSearchOnly,
@@ -24,6 +26,8 @@ export const SettingsPage = connect(
   mapDispatch
 )(
   ({
+    quit,
+    signOut,
     installing,
     installed,
     install,
@@ -32,6 +36,12 @@ export const SettingsPage = connect(
     toggleOpenOnLogin,
     toggleSearchOnly,
   }: SettingsPageProps) => {
+    function warning() {
+      if (window.confirm('Are you sure? Quitting will close all active connections.')) {
+        quit()
+      }
+    }
+
     return (
       <div>
         <h2>Settings</h2>
@@ -73,8 +83,8 @@ export const SettingsPage = connect(
         </List>
         <Divider />
         <List>
-          <SettingsListItem button label="Sign out" icon="sign-out" />
-          <SettingsListItem button label="Quit" icon="skull-crossbones" />
+          <SettingsListItem button label="Sign out" icon="sign-out" onClick={signOut} />
+          <SettingsListItem button label="Quit" icon="skull-crossbones" onClick={warning} />
         </List>
       </div>
     )
