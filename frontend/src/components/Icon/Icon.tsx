@@ -7,7 +7,7 @@ export interface IconProps {
   className?: string
   color?: BrandColors
   fixedWidth?: boolean
-  name: string
+  name?: string
   onClick?: () => void
   title?: string
   size?: FontSize
@@ -20,6 +20,8 @@ export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef<Ref, IconProps>(
   ({ className, color, fixedWidth = false, name, size, spin, weight = 'light', inline, ...props }, ref) => {
+    if (!name) return null
+
     const classes = classnames(
       { 'fa-spin': spin, 'fa-fw': fixedWidth, '': inline },
       `fa${weight[0]}`,

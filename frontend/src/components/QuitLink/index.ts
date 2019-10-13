@@ -1,1 +1,0 @@
-export { QuitLink } from './QuitLink'

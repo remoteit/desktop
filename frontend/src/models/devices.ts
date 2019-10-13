@@ -55,20 +55,11 @@ export default createModel({
       // If they have too many services, show search only.
       return r3.devices
         .count()
-        .then(count =>
-          dispatch.devices.setSearchOnly(
-            count.services > SEARCH_ONLY_SERVICE_LIMIT
-          )
-        )
+        .then(count => dispatch.devices.setSearchOnly(count.services > SEARCH_ONLY_SERVICE_LIMIT))
     },
     async fetch() {
       // TODO: Deal with device search only UI
-      const {
-        getConnections,
-        fetchStarted,
-        fetchFinished,
-        setDevices,
-      } = dispatch.devices
+      const { getConnections, fetchStarted, fetchFinished, setDevices } = dispatch.devices
       fetchStarted()
       return (
         r3.devices
@@ -80,11 +71,7 @@ export default createModel({
           .then(() => getConnections())
           .catch(error => {
             console.error('Fetch error:', error, error.response)
-            if (
-              error &&
-              error.response &&
-              (error.response.status === 401 || error.response.status === 403)
-            ) {
+            if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
               setDevices([])
               dispatch.auth.signedOut()
             }
@@ -116,17 +103,13 @@ export default createModel({
       )
     },
     async getConnections() {
-      BackendAdapter.emit(
-        'connections/list',
-        (connections: ConnectionInfo[]) => {
-          console.log('CONNECTIONS:', connections)
-          connections.map(conn => dispatch.devices.connected(conn))
-        }
-      )
+      BackendAdapter.emit('connections/list', (connections: ConnectionInfo[]) => {
+        console.log('CONNECTIONS:', connections)
+        connections.map(conn => dispatch.devices.connected(conn))
+      })
 
       const devices = localStorage.getItem('devices')
-      if (devices && devices.length)
-        dispatch.devices.setDevices(JSON.parse(devices))
+      if (devices && devices.length) dispatch.devices.setDevices(JSON.parse(devices))
     },
     async connect(service: IService) {
       dispatch.devices.connectStart(service.id)
@@ -145,7 +128,9 @@ export default createModel({
     async forgotten(id: string) {
       dispatch.devices.remove(id)
     },
-    async changeSearchOnly(searchOnly: boolean) {
+    async toggleSearchOnly(_, state) {
+      const searchOnly = !state.devices.searchOnly
+
       dispatch.devices.setSearchOnly(searchOnly)
       dispatch.devices.setQuery('')
       if (searchOnly) {
@@ -217,17 +202,13 @@ export default createModel({
         }
     },
     connected(state: DeviceState, connection: ConnectionInfo) {
-      let existingConnection = state.connections.find(
-        c => c.id === connection.id
-      )
+      let existingConnection = state.connections.find(c => c.id === connection.id)
 
       connection.connecting = false
       connection.error = undefined
 
       existingConnection
-        ? (state.connections[
-            state.connections.indexOf(existingConnection)
-          ] = connection)
+        ? (state.connections[state.connections.indexOf(existingConnection)] = connection)
         : state.connections.push(connection)
 
       const [serv, device] = findService(state.all, connection.id)
@@ -295,15 +276,13 @@ export default createModel({
   },
   selectors: slice => ({
     visible() {
-      return slice(
-        (state: DeviceState): IDevice[] => {
-          const filtered = filterDevices(state.all, state.query)
-          const sorted = Device.sort(filtered, state.sort)
-          // console.log('FILTERED:', filtered)
-          // console.log('SORTED:', state.sort, sorted)
-          return sorted
-        }
-      )
+      return slice((state: DeviceState): IDevice[] => {
+        const filtered = filterDevices(state.all, state.query)
+        const sorted = Device.sort(filtered, state.sort)
+        // console.log('FILTERED:', filtered)
+        // console.log('SORTED:', state.sort, sorted)
+        return sorted
+      })
     },
   }),
 })
@@ -312,8 +291,7 @@ function filterDevices(devices: IDevice[], query: string) {
   const options = {
     extract: (dev: IDevice) => {
       let matchString = dev.name
-      if (dev.services && dev.services.length)
-        matchString += dev.services.map(s => s.name).join('')
+      if (dev.services && dev.services.length) matchString += dev.services.map(s => s.name).join('')
       return matchString
     },
   }

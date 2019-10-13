@@ -22,7 +22,6 @@ const useStyles = makeStyles({
       display: 'flex',
       justifyContent: 'space-between',
       padding: `${styles.spacing.xl}px 0`,
-      borderTop: `1px solid ${styles.colors.grayLighter}`,
     },
     '& h2': {
       textTransform: 'uppercase',
@@ -31,6 +30,8 @@ const useStyles = makeStyles({
       fontWeight: 500,
       color: styles.colors.gray,
       marginTop: styles.spacing.lg,
+      borderBottom: `1px solid ${styles.colors.grayLighter}`,
+      paddingBottom: styles.spacing.sm,
     },
   },
   inset: {

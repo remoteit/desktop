@@ -1,17 +1,28 @@
 import React from 'react'
-import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
+import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch } from '@material-ui/core'
 import { Icon } from '../Icon'
 
-export const SettingsListItem: React.FC<{ show?: boolean; inset?: boolean }> = ({ show, inset, children }) => {
+type Props = React.ComponentProps<typeof ListItem> & {
+  icon?: string
+  label: string
+  subLabel?: string
+  value?: boolean
+  onClick?: () => void
+}
+
+export const SettingsListItem: React.FC<Props> = ({ icon, label, subLabel, value, onClick, ...props }) => {
+  const showToggle = value !== undefined
   return (
-    <ListItem>
+    <ListItem onClick={onClick} {...props}>
       <ListItemIcon>
-        <Icon name="sign-out" />
+        <Icon name={icon} size="md" weight="regular" />
       </ListItemIcon>
-      <ListItemText primary="Sign out" />
-      <ListItemSecondaryAction>
-        <Icon name="sign-out" />
-      </ListItemSecondaryAction>
+      <ListItemText primary={label} secondary={subLabel} />
+      {showToggle && (
+        <ListItemSecondaryAction>
+          <Switch edge="end" checked={value} onClick={onClick} />
+        </ListItemSecondaryAction>
+      )}
     </ListItem>
   )
 }

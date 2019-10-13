@@ -6,7 +6,7 @@ import { App } from './components/App'
 import * as serviceWorker from './serviceWorker'
 import { Provider } from 'react-redux'
 import { store } from './store'
-import { colors, spacing } from './styling'
+import { colors, spacing, fontSizes } from './styling'
 import './styling/index.css'
 import './styling/global.css'
 import './services/BackendAdapter'
@@ -18,6 +18,11 @@ const theme = createMuiTheme({
     error: { main: colors.danger },
   },
   overrides: {
+    MuiListItemText: {
+      secondary: {
+        fontSize: fontSizes.sm,
+      },
+    },
     MuiFormHelperText: {
       root: { fontSize: 10, color: colors.grayLight },
     },
