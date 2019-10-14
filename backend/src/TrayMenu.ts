@@ -40,8 +40,8 @@ export default class TrayMenu {
           : { label: 'Disconnect', click: () => this.disconnect(connection.id) },
         { type: 'separator' },
         { label: 'localhost:' + connection.port, enabled: false },
-        { label: 'Copy', click: () => this.copy(connection.port) },
-        { label: 'Open', click: () => this.launch(connection.port) },
+        { label: 'Copy to clipboard', click: () => this.copy(connection.port) },
+        { label: 'Launch', click: () => this.launch(connection.port) },
       ],
     }))
     this.render()
