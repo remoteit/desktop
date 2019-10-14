@@ -15,6 +15,25 @@
   --color-gray-darker: #595959;
   --color-gray-darkest: #333;
 
+  /* Font sizes */
+  --font-size-xxs: 10px;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 16px;
+  --font-size-lg: 19px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 36px;
+  --font-size-xxxl: 48px;
+
+  /* Spacing */
+  --spacing-xxs: 3px;
+  --spacing-xs: 6px;
+  --spacing-sm: 12px;
+  --spacing-md: 18px;
+  --spacing-lg: 24px;
+  --spacing-xl: 48px;
+  --spacing-xxl: 96px;
+
   /* Font families */
   --font-family-sans-serif: 'Roboto', sans-serif;
 

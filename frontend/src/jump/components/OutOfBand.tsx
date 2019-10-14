@@ -20,8 +20,8 @@ export default OutOfBand
 const useStyles = makeStyles({
   oob: {
     border: `1px solid ${colors.grayLight}`,
-    padding: `${spacing.xs}px ${spacing.md}px`,
-    borderRadius: spacing.sm,
+    padding: `${spacing.xxs}px ${spacing.sm}px`,
+    borderRadius: spacing.xs,
     display: 'inline-flex',
     color: colors.gray,
     alignItems: 'center',
@@ -32,11 +32,11 @@ const useStyles = makeStyles({
       letterSpacing: 1,
     },
     '& span': {
-      width: spacing.sm,
-      height: spacing.sm,
+      width: spacing.xs,
+      height: spacing.xs,
       borderRadius: '50%',
       display: 'block',
-      marginRight: spacing.sm,
+      marginRight: spacing.xs,
       backgroundColor: colors.grayLight,
     },
   },

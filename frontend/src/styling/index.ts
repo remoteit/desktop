@@ -4,8 +4,8 @@ export const fontSizes: { [key in FontSize]: number } = {
   xxs: 10,
   xs: 11,
   sm: 12,
-  base: 16,
   md: 16,
+  base: 14,
   lg: 19,
   xl: 24,
   xxl: 36,
@@ -57,13 +57,13 @@ export const colors: { [key in Color]: string } = {
   black: 'black',
 }
 
-export type Spacing = 'xs' | 'sm' | 'md' | 'reg' | 'lg' | 'xl' | 'xxl'
+export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 
 export const spacing: { [key in Spacing]: number } = {
-  xs: 3,
-  sm: 6,
-  md: 12,
-  reg: 18,
+  xxs: 3,
+  xs: 6,
+  sm: 12,
+  md: 18,
   lg: 24,
   xl: 48,
   xxl: 96,

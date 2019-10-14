@@ -20,7 +20,7 @@ const theme = createMuiTheme({
   overrides: {
     MuiListItemText: {
       secondary: {
-        fontSize: fontSizes.sm,
+        fontSize: fontSizes.xs,
       },
     },
     MuiFormHelperText: {
@@ -29,15 +29,15 @@ const theme = createMuiTheme({
     MuiButton: {
       root: {
         '& .MuiSvgIcon-root': {
-          marginLeft: spacing.md,
+          marginLeft: spacing.sm,
         },
         backgroundColor: colors.grayLightest,
         color: colors.grayDark,
-        marginRight: spacing.lg,
-        padding: `${spacing.md}px ${spacing.lg}px`,
+        marginRight: spacing.md,
+        padding: `${spacing.sm}px ${spacing.md}px`,
       },
       text: {
-        padding: `${spacing.md}px ${spacing.lg}px`,
+        padding: `${spacing.sm}px ${spacing.md}px`,
       },
     },
     MuiListItem: {
@@ -50,7 +50,7 @@ const theme = createMuiTheme({
     MuiLink: {
       root: {
         display: 'block',
-        padding: `${spacing.sm}px ${spacing.sm}px`,
+        padding: `${spacing.xs}px ${spacing.xs}px`,
       },
       underlineHover: {
         '&:hover': {

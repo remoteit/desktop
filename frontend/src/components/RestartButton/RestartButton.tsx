@@ -9,7 +9,7 @@ const mapDispatch = (dispatch: any) => ({
 
 export type RestartButtonProps = {
   id: string
-  connected: boolean
+  connected?: boolean
   disabled?: boolean
 } & ReturnType<typeof mapDispatch>
 
@@ -18,14 +18,9 @@ export const RestartButton = connect(
   mapDispatch
 )(({ connected, disabled = false, restart, id }: RestartButtonProps) => {
   return (
-    <Tooltip title="Restart">
-      <IconButton
-        color="primary"
-        className="txt-md"
-        disabled={disabled}
-        onClick={() => restart(id)}
-      >
-        <Icon name={connected ? 'redo' : 'play'} fixedWidth />
+    <Tooltip title="Connect">
+      <IconButton disabled={disabled} onClick={() => restart(id)}>
+        <Icon name={connected ? 'redo' : 'arrow-right'} color="primary" size="md" weight="regular" fixedWidth />
       </IconButton>
     </Tooltip>
   )

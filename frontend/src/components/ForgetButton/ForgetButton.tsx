@@ -18,13 +18,8 @@ export const ForgetButton = connect(
 )(({ disabled = false, forget, id }: ForgetButtonProps) => {
   return (
     <Tooltip title="Forget this connection">
-      <IconButton
-        color="secondary"
-        className="txt-md"
-        disabled={disabled}
-        onClick={() => forget(id)}
-      >
-        <Icon name="times" fixedWidth />
+      <IconButton disabled={disabled} onClick={() => forget(id)}>
+        <Icon name="trash-alt" color="gray" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

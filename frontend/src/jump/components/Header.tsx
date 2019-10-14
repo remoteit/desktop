@@ -56,7 +56,7 @@ export const Header = connect(
 const useStyles = makeStyles({
   header: {
     backgroundColor: styles.colors.grayLighter,
-    padding: `${styles.spacing.xs}px ${styles.spacing.md}px`,
+    padding: `${styles.spacing.xxs}px ${styles.spacing.sm}px`,
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
@@ -69,11 +69,11 @@ const useStyles = makeStyles({
     '& > span': {
       top: 8,
       position: 'absolute',
-      right: styles.spacing.md,
+      right: styles.spacing.sm,
     },
     '& .MuiButtonBase-root': {
       position: 'absolute',
-      left: styles.spacing.sm,
+      left: styles.spacing.xs,
     },
     '& .MuiTypography-root': {
       color: styles.colors.grayDarker,

@@ -18,7 +18,7 @@ export function CopyButton({ color = 'gray', size = 'md', text, title = 'Copy', 
     <span {...props}>
       <Tooltip title={title}>
         <IconButton onClick={clipboard.copy}>
-          <Icon name="copy" color={clipboard.copied ? 'success' : color} size={size} fixedWidth />
+          <Icon name="clipboard" color={clipboard.copied ? 'success' : color} size={size} fixedWidth />
         </IconButton>
       </Tooltip>
       <input type="hidden" className="dn" ref={clipboard.target} value={text} />
