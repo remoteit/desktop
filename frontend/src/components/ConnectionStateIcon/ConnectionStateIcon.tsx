@@ -11,10 +11,10 @@ export function ConnectionStateIcon({ state, ...props }: ConnectionStateIconProp
   let icon = 'question-circle'
   let color: BrandColors = 'warning'
 
-  if (state === 'active') {
+  if (state === 'active' || state === 'disconnected') {
     icon = 'check-circle'
     color = 'success'
-  } else if (state === 'inactive' || state === 'disconnected') {
+  } else if (state === 'inactive') {
     icon = 'minus-circle'
     color = 'gray-light'
   } else if (state === 'connected') {

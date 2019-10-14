@@ -204,6 +204,7 @@ export default createModel({
     connected(state: DeviceState, connection: ConnectionInfo) {
       let existingConnection = state.connections.find(c => c.id === connection.id)
 
+      // FIXME - seems like this should be set server side
       connection.connecting = false
       connection.error = undefined
 
@@ -213,13 +214,13 @@ export default createModel({
 
       const [serv, device] = findService(state.all, connection.id)
 
-      if (device) device.state = 'connected'
-
       if (serv) {
-        serv.state = 'connected'
+        serv.state = connection.pid ? 'connected' : 'active'
         serv.port = connection.port
         serv.pid = connection.pid
         serv.connecting = false
+
+        if (device && serv.pid) device.state = 'connected'
       }
     },
     setConnections(state: DeviceState, connections: ConnectionInfo[]) {
@@ -238,7 +239,7 @@ export default createModel({
         // If device has only 1 active connection (e.g. the one we are in the
         // process of disconnecting from), clear its connected state as it has
         // no more active services.
-        if (device.services.filter(s => s.state === 'connected').length < 2) {
+        if (device.services.filter(s => s.state === 'connected').length < 1) {
           device.state = 'active'
         }
       }
