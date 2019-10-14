@@ -15,6 +15,5 @@ export const ConnectionsPage = connect(
   mapState,
   mapDispatch
 )(({ connections }: ConnectionsPageProps) => {
-  connections.sort((a: ConnectionInfo) => (a.pid ? -1 : 1))
   return <ConnectionsList connections={connections} />
 })

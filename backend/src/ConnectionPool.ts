@@ -116,15 +116,11 @@ export default class ConnectionPool {
 
   toJSON = (): ConnectionData[] => {
     const ids = Object.keys(this.pool)
-    return ids.map(id => this.pool[id].toJSON())
+    return ids.map(id => this.pool[id].toJSON()).sort((c: ConnectionData) => (c.pid ? -1 : 1))
   }
 
   private freePort = async () => {
-    return await PortScanner.findFreePortInRange(
-      PEER_PORT_RANGE[0],
-      PEER_PORT_RANGE[1],
-      this.usedPorts
-    )
+    return await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
   }
 
   private get usedPorts() {
