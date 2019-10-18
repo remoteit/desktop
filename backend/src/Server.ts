@@ -7,15 +7,16 @@ import electron from 'electron'
 import EventBus from './EventBus'
 import EventRelay from './EventRelay'
 import express from 'express'
-import http from 'http'
+import path from 'path'
 import Installer from './Installer'
 import MuxerInstaller from './MuxerInstaller'
 import DemuxerInstaller from './DemuxerInstaller'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
 import User from './User'
-import { PORT } from './constants'
 import ElectronApp from './ElectronApp'
+import { createServer } from 'http'
+import { PORT } from './constants'
 
 const d = debug('r3:backend:Server')
 
@@ -35,10 +36,17 @@ export default class Server {
     this.pool = pool
     this.user = user
 
-    Logger.info('Starting up server!')
+    const dir = path.join(__dirname, '../build')
+    const app = express().use(express.static(dir))
+    const server = createServer(app).listen(PORT, () => {
+      d(`Listening on port ${PORT}`)
+      console.log('---------------------------------------------\n\n')
+      console.log('serving: ' + dir)
+      console.log(`Listening on localhost:${PORT}`)
+      console.log('\n\n---------------------------------------------')
+      EventBus.emit(Server.EVENTS.ready)
+    })
 
-    const app = express()
-    const server = new http.Server(app)
     this.io = SocketIO(server)
 
     new EventRelay(
@@ -68,12 +76,6 @@ export default class Server {
       socket.on('service/restart', this.restart)
       socket.on('binaries/install', this.installBinaries)
       socket.on('app/open-on-login', this.openOnLogin)
-    })
-
-    server.listen(PORT, () => {
-      d(`Listening on port ${PORT}`)
-      Logger.info(`Listening on port ${PORT}`)
-      EventBus.emit(Server.EVENTS.ready)
     })
   }
 

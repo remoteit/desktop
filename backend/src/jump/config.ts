@@ -7,7 +7,7 @@ const config: IConfig = {
   REMOTEIT_EXEC: 'remoteit',
   WEB_PATH: '/../../client/build',
   SETTINGS_PATH: '/../../settings.json',
-  SCRIPT_PATH: '/../../bin/',
+  SCRIPT_PATH: '/../bin/',
 }
 
 export function getPath(key: string) {

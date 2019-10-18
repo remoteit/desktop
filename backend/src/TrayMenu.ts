@@ -1,6 +1,7 @@
 import { application } from './backend'
 import { IUser } from 'remote.it'
 import electron from 'electron'
+import Environment from './Environment'
 import ElectronApp from './ElectronApp'
 import ConnectionPool from './ConnectionPool'
 import User from './User'
@@ -19,6 +20,12 @@ export default class TrayMenu {
     this.tray = tray
     this.user = {}
     this.connections = []
+
+    if (Environment.isWindows) {
+      this.tray.on('click', () => {
+        this.tray.popUpContextMenu()
+      })
+    }
 
     EventBus.on(User.EVENTS.signedIn, this.updateUser)
     EventBus.on(User.EVENTS.signedOut, this.updateUser)

@@ -1,9 +1,10 @@
-import debug from 'debug'
+import { Titlebar, Color } from 'custom-electron-titlebar'
 import electron from 'electron'
 import Environment from './Environment'
 import TrayMenu from './TrayMenu'
 import EventBus from './EventBus'
 import Logger from './Logger'
+import debug from 'debug'
 import path from 'path'
 import url from 'url'
 
@@ -73,9 +74,11 @@ export default class ElectronApp {
       width: 800,
       height: 600,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
-      frame: false,
       titleBarStyle: 'hiddenInset',
+      frame: Environment.isWindows,
+      autoHideMenuBar: true,
     })
+
     this.window.setVisibleOnAllWorkspaces(true)
 
     const startUrl =
@@ -99,6 +102,10 @@ export default class ElectronApp {
       event.preventDefault()
       electron.shell.openExternal(url)
     })
+
+    new Titlebar({
+      backgroundColor: Color.fromHex('#ECECEC'),
+    })
   }
 
   private createTrayIcon() {
@@ -118,7 +125,7 @@ export default class ElectronApp {
     if (!this.window.isVisible()) {
       this.setWindowPosition()
       this.window.show()
-      this.app.dock.show()
+      if (this.app.dock) this.app.dock.show()
     }
 
     this.window.focus()

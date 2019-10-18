@@ -1,4 +1,3 @@
-// import { io } from './server'
 import socketIO from 'socket.io'
 import cli from './cli'
 import lan from './lan'

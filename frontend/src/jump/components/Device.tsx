@@ -50,21 +50,23 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
           {deleting ? (
             <CircularProgress className={css.loading} size={styles.fontSizes.lg} />
           ) : (
-            <Tooltip title="Delete">
-              <IconButton
-                onClick={() => {
-                  if (
-                    window.confirm(`Are you sure?
+            device.uid && (
+              <Tooltip title="Delete">
+                <IconButton
+                  onClick={() => {
+                    if (
+                      window.confirm(`Are you sure?
                       You are about to permanently remove this device and all of it's services.`)
-                  ) {
-                    onDelete()
-                    setDeleting(true)
-                  }
-                }}
-              >
-                <Icon name="trash-alt" size="md" />
-              </IconButton>
-            </Tooltip>
+                    ) {
+                      onDelete()
+                      setDeleting(true)
+                    }
+                  }}
+                >
+                  <Icon name="trash-alt" size="md" />
+                </IconButton>
+              </Tooltip>
+            )
           )}
         </div>
         <Button

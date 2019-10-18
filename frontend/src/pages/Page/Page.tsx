@@ -1,7 +1,6 @@
 import React from 'react'
 import styles from '../../styling'
 import { makeStyles } from '@material-ui/styles'
-import { isMac } from '../../services/Platform'
 
 export interface Props {
   children: React.ReactNode
@@ -9,11 +8,7 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const css = useStyles()
-  let containerCss: any = css.page
-
-  if (!isMac()) containerCss += ' ' + css.win
-
-  return <div className={containerCss}>{children}</div>
+  return <div className={css.page}>{children}</div>
 }
 
 const useStyles = makeStyles({
@@ -29,11 +24,5 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     flexWrap: 'nowrap',
     backgroundColor: styles.colors.white,
-  },
-  win: {
-    borderColor: styles.colors.primary,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.2)',
   },
 })
