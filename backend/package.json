@@ -2,10 +2,11 @@
   "name": "remote.it-desktop-backend",
   "version": "1.9.3",
   "private": true,
-  "main": "build/backend.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "NODE_ENV=production run-s clean compile copy-* build-*",
     "copy-images": "cp -R ./src/images ./build/",
+    "copy-scripts": "cp -R ./src/bin ./build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",

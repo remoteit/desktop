@@ -1,6 +1,6 @@
 import socketIO from 'socket.io'
 import Controller from './controller'
-import cli from './cli'
+import cli from '../CLIInterface'
 import User from '../User'
 import EventBus from '../EventBus'
 

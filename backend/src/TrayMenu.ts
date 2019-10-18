@@ -1,4 +1,4 @@
-import { application } from './backend'
+import { application } from '.'
 import { IUser } from 'remote.it'
 import electron from 'electron'
 import Environment from './Environment'

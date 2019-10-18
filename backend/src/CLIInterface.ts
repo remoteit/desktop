@@ -1,6 +1,6 @@
-import File from './file'
+import File from './File'
 
-class Settings extends File {
+class CLIInterface extends File {
   set(key: string, value: any) {
     switch (key) {
       case 'targets':
@@ -44,14 +44,10 @@ class Settings extends File {
   diff(smaller: ITarget[], larger: ITarget[]) {
     const result = larger.find((target, index) => {
       // @FIXME might be able to check by uid
-      return (
-        !smaller[index] ||
-        target.port !== smaller[index].port ||
-        target.hostname !== smaller[index].hostname
-      )
+      return !smaller[index] || target.port !== smaller[index].port || target.hostname !== smaller[index].hostname
     })
     return result
   }
 }
 
-export default new Settings()
+export default new CLIInterface()

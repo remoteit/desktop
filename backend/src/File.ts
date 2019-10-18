@@ -1,8 +1,8 @@
 import { ConfigFile } from '@remote.it/core'
 import { execSync } from 'child_process'
-import { removeNameExt } from './common-copy/serviceNameHelper'
-import defaults from './common-copy/defaults'
-import config from './config'
+import { removeNameExt } from './helpers/serviceNameHelper'
+import { REMOTEIT_EXEC } from './constants'
+import defaults from './helpers/defaults'
 
 export default class File {
   data: { device: IDevice; targets: ITarget[] } = {
@@ -63,8 +63,8 @@ export default class File {
 
   exec(command: string) {
     try {
-      console.log('EXEC: ' + config.REMOTEIT_EXEC + ' ' + command)
-      const result = execSync(config.REMOTEIT_EXEC + ' ' + command)
+      console.log('EXEC: ' + REMOTEIT_EXEC + ' ' + command)
+      const result = execSync(REMOTEIT_EXEC + ' ' + command)
       console.log(result.toString())
     } catch (error) {
       console.log(`*** ERROR *** EXEC ${command}: `, error.toString())

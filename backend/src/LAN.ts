@@ -1,6 +1,6 @@
-import Logger from '../Logger'
+import Logger from './Logger'
 import { execFile } from 'child_process'
-import { getPath } from './config'
+import { SCRIPT_PATH } from './constants'
 import nm from 'netmask'
 import nw from 'network'
 
@@ -18,11 +18,11 @@ class LAN {
     return new Promise<IInterface[]>((success, failure) => {
       nw.get_interfaces_list((listErr: Error, list: any) => {
         if (listErr) failure(listErr)
-        Logger.info('INTERFACE list', list)
+        console.log('INTERFACE list', list)
         nw.get_active_interface((activeErr: Error, active: any) => {
-          if (activeErr) Logger.warn('INTERFACE active', activeErr)
+          if (activeErr) console.warn('INTERFACE active', activeErr)
           active = active || {}
-          Logger.warn('INTERFACE active', active)
+          console.warn('INTERFACE active', active)
           this.interfaces = list.reduce((result: IInterface[], item: any) => {
             if (item.ip_address) {
               result.push({
@@ -37,7 +37,7 @@ class LAN {
             }
             return result
           }, [])
-          Logger.info('GET INTERFACES:', this.interfaces)
+          console.log('GET INTERFACES:', this.interfaces)
           success()
         })
       })
@@ -45,37 +45,37 @@ class LAN {
   }
 
   async scan(interfaceName: string) {
-    Logger.info('SCAN start', interfaceName)
+    console.log('SCAN start', interfaceName)
     if (!interfaceName) return
 
     try {
       const ipMask = this.findNetmask(interfaceName)
-      Logger.info('IPMASK:', ipMask)
+      console.log('IPMASK:', ipMask)
       const result = await this.exec(ipMask)
-      Logger.info('SCAN raw:', result)
+      console.log('SCAN raw:', result)
       this.parse(interfaceName, result)
-      Logger.info('SCAN complete', this.data[interfaceName])
+      console.log('SCAN complete', this.data[interfaceName])
     } catch (error) {
-      Logger.warn('SCAN error', error)
+      console.warn('SCAN error', error)
       this.data[interfaceName] = []
     }
   }
 
   findNetmask(interfaceName: string) {
-    const network =
-      !!this.interfaces && this.interfaces.find((i: IInterface) => i.name === interfaceName)
-    Logger.info('NETWORK', network)
-    const netmask = network && new Netmask(network.ip + '/' + network.netmask)
-    Logger.info('Find Mac netmask', interfaceName, netmask.toString())
+    const network = !!this.interfaces && this.interfaces.find((i: IInterface) => i.name === interfaceName)
+    console.log('NETWORK', network)
+    if (!network) return ''
+    const netmask = new Netmask(network.ip + '/' + network.netmask)
+    console.log('Find netmask', interfaceName, netmask.toString())
     return netmask.toString()
   }
 
   exec(ipMask: string) {
-    Logger.info('START scan:', getPath('SCRIPT') + `scan.sh ${ipMask}`)
+    console.log('START scan:', `${SCRIPT_PATH}scan.sh ${ipMask}`)
     return new Promise<string>((success, failure) => {
-      execFile(getPath('SCRIPT') + 'scan.sh', [ipMask], (error, result) => {
+      execFile(SCRIPT_PATH + 'scan.sh', [ipMask], (error, result) => {
         if (error) {
-          Logger.info('*** ERROR *** EXEC scan', error.toString())
+          console.log('*** ERROR *** EXEC scan', error.toString())
           failure()
         }
         success(result.toString())

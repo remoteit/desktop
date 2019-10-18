@@ -1,6 +1,6 @@
 import socketIO from 'socket.io'
-import cli from './cli'
-import lan from './lan'
+import cli from '../CLIInterface'
+import lan from '../LAN'
 
 class Controller {
   server: socketIO.Server
