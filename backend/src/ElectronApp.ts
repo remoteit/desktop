@@ -1,4 +1,3 @@
-import { Titlebar, Color } from 'custom-electron-titlebar'
 import electron from 'electron'
 import Environment from './Environment'
 import TrayMenu from './TrayMenu'
@@ -101,10 +100,6 @@ export default class ElectronApp {
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()
       electron.shell.openExternal(url)
-    })
-
-    new Titlebar({
-      backgroundColor: Color.fromHex('#ECECEC'),
     })
   }
 
