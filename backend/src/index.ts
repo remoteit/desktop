@@ -18,7 +18,7 @@ Logger.info('Desktop starting up!')
 
 process.on('uncaughtException', err => {
   AirBrake.notify(err)
-  Logger.error('Caught exception: ', err)
+  console.error('Caught exception: ', err)
 })
 
 export const application = new Application()

@@ -1,5 +1,6 @@
 import ConnectdInstaller from './ConnectdInstaller'
 import ConnectionPool from './ConnectionPool'
+import Controller from './Controller'
 import debug from 'debug'
 import DemuxerInstaller from './DemuxerInstaller'
 import Environment from './Environment'
@@ -10,11 +11,10 @@ import MuxerInstaller from './MuxerInstaller'
 import path from 'path'
 import Server from './Server'
 import Tracker from './Tracker'
-import { IUser } from 'remote.it'
+import cli from './CLIInterface'
 import EventBus from './EventBus'
 import Installer from './Installer'
 import User from './User'
-import JumpBox from './jump'
 
 const d = debug('r3:backend:Application')
 
@@ -31,24 +31,24 @@ export default class Application {
 
     this.window = new ElectronApp()
 
-    this.connectionsFile = new JSONFile<SavedConnection[]>(
-      path.join(Environment.remoteitDirectory, 'connections.json')
-    )
-    this.userFile = new JSONFile<UserCredentials>(
-      path.join(Environment.remoteitDirectory, 'user.json')
-    )
+    this.connectionsFile = new JSONFile<SavedConnection[]>(path.join(Environment.remoteitDirectory, 'connections.json'))
+    this.userFile = new JSONFile<UserCredentials>(path.join(Environment.remoteitDirectory, 'user.json'))
 
     const userCredentials = this.userFile.read()
 
     d('Reading user credentials:', { user: userCredentials })
+    Logger.info('Setting user:', userCredentials)
 
     // Start pool and load connections from filestystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [], userCredentials)
 
     // Start server and listen to events.
-    const server = new Server(this.pool, userCredentials)
+    const server = new Server()
 
-    new JumpBox(server.io, userCredentials)
+    // create the event controller
+    new Controller(server.io, this.pool, userCredentials)
+
+    // if (user) this.signIn(user) -- NEED?
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.ready, this.handleServerReady)
@@ -63,6 +63,8 @@ export default class Application {
 
   private handleConnection = () => {
     d('Server connected')
+    cli.read()
+
     Logger.info('Checking install status:', {
       connectdInstalled: ConnectdInstaller.isInstalled,
       muxerInstalled: MuxerInstaller.isInstalled,
@@ -136,9 +138,15 @@ export default class Application {
    * file on disk.
    */
 
-  private handleSignedIn = (user: IUser) => {
+  private handleSignedIn = (user: UserCredentials) => {
     d('User signed in:', user.username)
     Logger.info('User signed in', { username: user.username })
+
+    // cli add user data - @DANA can this be shared?
+    cli.write('user', {
+      username: user.username,
+      authHash: user.authHash,
+    })
 
     // Save the user to the user JSON file.
     this.userFile.write({
@@ -158,7 +166,10 @@ export default class Application {
     // Stop all connections cleanly
     await this.pool.reset()
 
-    // Clear out the authenticatd user in the connection
+    // cli clear user data
+    cli.write('user', {})
+
+    // Clear out the authenticated user in the connection
     // pool so future connections don't start.
     this.pool.user = undefined
 
