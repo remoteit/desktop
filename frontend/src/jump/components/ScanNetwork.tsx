@@ -78,7 +78,7 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
                 {targets.find(target => target.hostname === ip[0] && target.port === port[0]) ? (
                   <Button disabled size="small">
                     Added
-                    <Icon name="check" />
+                    <Icon name="check" inline />
                   </Button>
                 ) : (
                   <Button

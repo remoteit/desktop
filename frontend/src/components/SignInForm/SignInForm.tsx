@@ -1,8 +1,10 @@
 import React from 'react'
 import useFormal from '@kevinwolf/formal-web'
-import { Button, TextField } from '@material-ui/core'
-import * as yup from 'yup'
+import { makeStyles } from '@material-ui/styles'
+import { Button, TextField, Link } from '@material-ui/core'
 import { SignInFormControllerProps } from '../../controllers/SignInFormController/SignInFormController'
+import styles from '../../styling'
+import * as yup from 'yup'
 
 const schema = yup.object().shape({
   username: yup
@@ -21,20 +23,11 @@ const initialValues = {
   username: '',
 }
 
-export function SignInForm({
-  signInError,
-  signInStarted,
-  signIn,
-}: SignInFormControllerProps) {
+export function SignInForm({ signInError, signInStarted, signIn }: SignInFormControllerProps) {
+  const css = useStyles()
   const formal = useFormal(initialValues, {
     schema,
-    onSubmit: ({
-      password,
-      username,
-    }: {
-      password: string
-      username: string
-    }) => {
+    onSubmit: ({ password, username }: { password: string; username: string }) => {
       signIn({ username, password })
     },
   })
@@ -43,10 +36,8 @@ export function SignInForm({
   const passwordProps = formal.getFieldProps('password')
   return (
     <form {...formal.getFormProps()}>
-      {signInError && (
-        <div className="bg-danger py-sm px-md mb-md white">{signInError}</div>
-      )}
-      <div className="mb-sm">
+      {signInError && <div className={css.error}>{signInError}</div>}
+      <div className={css.section}>
         <TextField
           {...{ ...usernameProps, error: Boolean(usernameProps.error) }}
           autoFocus
@@ -57,12 +48,9 @@ export function SignInForm({
           // type="email"
           // variant="filled"
         />
-        {formal.errors.username && (
-          <span className="danger txt-sm">{formal.errors.username}</span>
-        )}
+        {formal.errors.username && <span className={css.fieldError}>{formal.errors.username}</span>}
       </div>
-
-      <div className="my-sm">
+      <div className={css.section}>
         <TextField
           {...{ ...passwordProps, error: Boolean(passwordProps.error) }}
           fullWidth
@@ -71,21 +59,44 @@ export function SignInForm({
           margin="normal"
           type="password"
         />
-        {formal.errors.password && (
-          <span className="danger txt-sm">{formal.errors.password}</span>
-        )}
+        {formal.errors.password && <span className={css.fieldError}>{formal.errors.password}</span>}
       </div>
-      <Button
-        {...formal.getSubmitButtonProps()}
-        color="primary"
-        variant="contained"
-        fullWidth
-        className="mt-md"
-        disabled={signInStarted}
-        type="submit"
-      >
-        {signInStarted ? 'Signing you in...' : 'Sign in'}
-      </Button>
+      <div className={css.signIn}>
+        <Button
+          {...formal.getSubmitButtonProps()}
+          color="primary"
+          variant="contained"
+          disabled={signInStarted}
+          type="submit"
+        >
+          {signInStarted ? 'Signing you in...' : 'Sign in'}
+        </Button>
+        <Link href="https://app.remote.it/auth/#/sign-up" target="_blank">
+          Create an account
+        </Link>
+      </div>
     </form>
   )
 }
+
+const useStyles = makeStyles({
+  error: {
+    backgroundColor: styles.colors.danger,
+    padding: `${styles.spacing.sm}px ${styles.spacing.md}px`,
+    marginBottom: styles.spacing.md,
+    color: styles.colors.white,
+  },
+  section: {
+    marginBottom: styles.spacing.sm,
+  },
+  fieldError: {
+    color: styles.colors.danger,
+    fontSize: styles.fontSizes.sm,
+  },
+  signIn: {
+    marginTop: styles.spacing.xl,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+})

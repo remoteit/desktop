@@ -1,5 +1,4 @@
 import React from 'react'
-import { Link } from '@material-ui/core'
 import { Logo } from '../../components/Logo'
 import { SignInFormController } from '../../controllers/SignInFormController/SignInFormController'
 
@@ -11,11 +10,6 @@ export function SignInPage() {
           <Logo />
         </div>
         <SignInFormController />
-        <div className="mt-lg center">
-          <Link href="https://app.remote.it/auth/#/sign-up" target="_blank">
-            Create an account
-          </Link>
-        </div>
       </div>
     </div>
   )
