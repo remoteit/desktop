@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { List, ListItem, ListItemText, ListItemIcon, Collapse, Button, Link, Typography } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
+import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
-import { serviceTypes } from '../config/serviceTypes'
-import defaults from '../common/defaults'
+import { serviceTypes } from '../../types/serviceTypes'
+import { DEFAULT_TARGET } from '../../constants'
 import styles from '../../styling'
 
 type Props = {
@@ -88,7 +88,7 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
                     disabled={disabled}
                     onClick={() =>
                       onAdd({
-                        ...defaults,
+                        ...DEFAULT_TARGET,
                         type: getType(port[0]),
                         hostname: ip[0],
                         port: port[0],

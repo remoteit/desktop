@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import defaults from '../jump/common/defaults'
+import { DEFAULT_TARGET } from '../constants'
 
 interface IJumpState {
   device: IDevice
@@ -11,7 +11,7 @@ interface IJumpState {
 }
 
 const state: IJumpState = {
-  device: defaults,
+  device: DEFAULT_TARGET,
   targets: [],
   scanData: { wlan0: [] },
   interfaces: [],

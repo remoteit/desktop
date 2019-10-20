@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { TextField, FormControl, Select, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
+import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
-import { serviceTypes, emptyServiceType } from '../config/serviceTypes'
-import { addNameExt } from '../common/serviceNameHelper'
+import { serviceTypes, emptyServiceType } from '../../types/serviceTypes'
+import { addNameExt } from '../../helpers/serviceNameHelper'
 import styles from '../../styling'
 
 type Props = {

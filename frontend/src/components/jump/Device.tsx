@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Targets from './Targets'
 import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
+import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
 

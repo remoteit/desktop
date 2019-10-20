@@ -38,10 +38,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
       <h2>Network Scan</h2>
       <section className={css.controls}>
         <FormControl>
-          <Select
-            value={interfaceName}
-            onChange={event => setInterfaceName(event.target.value as string)}
-          >
+          <Select value={interfaceName} onChange={event => setInterfaceName(event.target.value as string)}>
             {interfaces.map((i: IInterface) => (
               <MenuItem key={i.name} value={i.name}>
                 {i.type} &nbsp; <samp>{i.name}</samp>
@@ -68,12 +65,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
           )}
         </Button>
       </section>
-      <ScanNetwork
-        onAdd={onAdd}
-        data={selectedData || []}
-        targets={targets}
-        interfaceType={interfaceType()}
-      />
+      <ScanNetwork onAdd={onAdd} data={selectedData || []} targets={targets} interfaceType={interfaceType()} />
       <section className={css.loading}>{noResults && 'No results'}</section>
     </>
   )

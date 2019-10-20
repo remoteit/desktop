@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
-import Network from '../../jump/components/Network'
+import Network from '../../components/jump/Network'
 import BackendAdaptor from '../../services/BackendAdapter'
 
 const mapState = (state: ApplicationState) => ({

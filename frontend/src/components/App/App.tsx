@@ -3,7 +3,7 @@ import styles from '../../styling'
 import { connect } from 'react-redux'
 import { makeStyles } from '@material-ui/styles'
 import { Page } from '../../pages/Page'
-import { Header } from '../../jump/components/Header'
+import { Header } from '../jump/Header'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { LoadingPage } from '../../pages/LoadingPage'
@@ -82,8 +82,8 @@ export const App = connect(
       </Body>
       <BottomNavigation className={css.footer} value={page} onChange={(_, newValue) => setPage(newValue)} showLabels>
         <BottomNavigationAction label="Connections" value="connections" icon={<Icon name="scrubber" size="lg" />} />
-        <BottomNavigationAction label="Devices" value="devices" icon={<Icon name="chart-network" size="lg" />} />
-        <BottomNavigationAction label="Setup" value="setup" icon={<Icon name="hdd" size="lg" />} />
+        <BottomNavigationAction label="Remote" value="devices" icon={<Icon name="chart-network" size="lg" />} />
+        <BottomNavigationAction label="Local" value="setup" icon={<Icon name="hdd" size="lg" />} />
         <BottomNavigationAction label="Network" value="network" icon={<Icon name="network-wired" size="lg" />} />
         <BottomNavigationAction label="Settings" value="settings" icon={<Icon name="cog" size="lg" />} />
       </BottomNavigation>
