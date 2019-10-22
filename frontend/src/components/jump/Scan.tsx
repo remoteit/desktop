@@ -14,19 +14,25 @@ type Props = {
 
 const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => {
   const css = useStyles()
+  const [timestamp, setTimestamp] = useState<{ [interfaceName: string]: number }>({})
   const [loading, setLoading] = useState<{ [interfaceName: string]: boolean }>({})
   const [interfaceName, setInterfaceName] = useState<string>('')
-  const selectedData = data[interfaceName]
+  const selected = data[interfaceName] || {}
+  const selectedTimestamp = timestamp[interfaceName]
   const selectedLoading = loading[interfaceName]
-  const noResults = selectedData && !selectedData.length
+  const noResults = selected.data && !selected.data.length
 
   useEffect(() => {
     if (interfaces.length && !interfaceName) setInterfaceName(interfaces[0].name)
   }, [interfaces, interfaceName])
 
   useEffect(() => {
-    if (selectedData && selectedLoading) setLoading({ [interfaceName]: false })
-  }, [selectedData, selectedLoading, interfaceName])
+    if (selected.timestamp !== selectedTimestamp && selectedLoading) {
+      setLoading({ [interfaceName]: false })
+      setTimestamp({ [interfaceName]: selected.timestamp })
+    }
+  }, [selected.timestamp, selectedTimestamp, selectedLoading, interfaceName])
+  console.log(selected.timestamp, selectedTimestamp, 'loading:' + selectedLoading)
 
   function interfaceType() {
     const i = interfaces.find(i => i.name === interfaceName)
@@ -51,6 +57,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
           variant="contained"
           onClick={() => {
             onScan(interfaceName)
+            setTimestamp({ [interfaceName]: selected.timestamp })
             setLoading({ [interfaceName]: true })
           }}
           disabled={selectedLoading}
@@ -65,7 +72,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
           )}
         </Button>
       </section>
-      <ScanNetwork onAdd={onAdd} data={selectedData || []} targets={targets} interfaceType={interfaceType()} />
+      <ScanNetwork onAdd={onAdd} data={selected.data || []} targets={targets} interfaceType={interfaceType()} />
       <section className={css.loading}>{noResults && 'No results'}</section>
     </>
   )

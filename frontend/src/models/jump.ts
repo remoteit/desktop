@@ -13,7 +13,7 @@ interface IJumpState {
 const state: IJumpState = {
   device: DEFAULT_TARGET,
   targets: [],
-  scanData: { wlan0: [] },
+  scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
   added: undefined,
   error: false,

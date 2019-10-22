@@ -117,17 +117,16 @@ declare global {
 
   export type IScan = [string, [number, string][]] // address, port, type string
 
-  export type IScanData = { [networkName: string]: IScan[] }
+  export type IScanData = {
+    [networkName: string]: {
+      timestamp: number
+      data: IScan[]
+    }
+  }
 
   export type IInterface = { [key: string]: any }
 
-  export type IInterfaceType =
-    | 'Wired'
-    | 'Wireless'
-    | 'FireWire'
-    | 'Thunderbolt'
-    | 'Bluetooth'
-    | 'Other'
+  export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
 
   // export enum ConnectdEvent {
   //   error = 'service/error',

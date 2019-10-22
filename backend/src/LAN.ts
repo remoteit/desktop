@@ -57,7 +57,7 @@ class LAN {
       console.log('SCAN complete', this.data[interfaceName])
     } catch (error) {
       console.warn('SCAN error', error)
-      this.data[interfaceName] = []
+      this.data[interfaceName] = { timestamp: Date.now(), data: [] }
     }
   }
 
@@ -103,7 +103,7 @@ class LAN {
       if (ports.length) result.push([ip, ports])
       return result
     }, [])
-    this.data[interfaceName] = data
+    this.data[interfaceName] = { timestamp: Date.now(), data }
   }
 }
 
