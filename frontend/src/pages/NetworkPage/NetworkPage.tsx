@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react'
+import React from 'react'
+import { useHistory } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import Network from '../../components/jump/Network'
@@ -12,7 +13,6 @@ const mapState = (state: ApplicationState) => ({
 
 const mapDispatch = (dispatch: any) => ({
   setAdded: dispatch.jump.setAdded,
-  setPage: dispatch.navigation.setPage,
 })
 
 export type NetworkPageProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
@@ -20,12 +20,9 @@ export type NetworkPageProps = ReturnType<typeof mapState> & ReturnType<typeof m
 export const NetworkPage = connect(
   mapState,
   mapDispatch
-)(({ scanData, targets, interfaces, setAdded, setPage }: NetworkPageProps) => {
+)(({ scanData, targets, interfaces, setAdded }: NetworkPageProps) => {
+  const history = useHistory()
   const scan = (interfaceName: string) => BackendAdaptor.emit('jump/scan', interfaceName)
-
-  useEffect(() => {
-    BackendAdaptor.emit('jump/interfaces')
-  }, [])
 
   return (
     <Network
@@ -34,8 +31,8 @@ export const NetworkPage = connect(
       interfaces={interfaces}
       onScan={scan}
       onAdd={target => {
+        history.push('/setup')
         setAdded(target)
-        setPage('setup')
       }}
     />
   )

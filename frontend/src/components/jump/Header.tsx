@@ -10,18 +10,15 @@ import OutOfBand from './OutOfBand'
 import styles from '../../styling'
 
 const mapState = (state: ApplicationState) => ({
-  page: state.navigation.page,
   user: state.auth.user,
   interfaces: state.jump.interfaces,
 })
 
-const mapDispatch = (dispatch: any) => ({
-  setPage: dispatch.navigation.setPage,
-})
+const mapDispatch = (dispatch: any) => ({})
 
 type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
-const Component: React.FC<Props> = ({ user, interfaces, page, setPage }) => {
+const Component: React.FC<Props> = ({ user, interfaces }) => {
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
   const css = useStyles()

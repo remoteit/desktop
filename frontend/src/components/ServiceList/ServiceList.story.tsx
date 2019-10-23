@@ -21,6 +21,7 @@ storiesOf('components/devices', module)
           }),
           service({ name: 'Webcam', type: 'NX Witness', state: 'inactive' }),
         ]}
+        connections={{}}
       />
     </Provider>
   ))

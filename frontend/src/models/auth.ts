@@ -1,10 +1,7 @@
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import BackendAdapter from '../services/BackendAdapter'
-import {
-  clearUserCredentials,
-  updateUserCredentials,
-} from '../services/remote.it'
+import { clearUserCredentials, updateUserCredentials } from '../services/remote.it'
 
 const USER_KEY = 'user'
 const OPEN_ON_LOGIN_KEY = 'open-on-login'
@@ -77,7 +74,6 @@ export default createModel({
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
-      dispatch.navigation.setPage('devices')
     },
     async getOpenOnLoginState() {
       // Get "open on login" setting

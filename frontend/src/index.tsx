@@ -3,10 +3,11 @@ import ReactDOM from 'react-dom'
 import { CssBaseline, createMuiTheme } from '@material-ui/core'
 import { ThemeProvider } from '@material-ui/styles'
 import { App } from './components/App'
-import * as serviceWorker from './serviceWorker'
+import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store } from './store'
 import { colors, spacing, fontSizes } from './styling'
+import * as serviceWorker from './serviceWorker'
 import './styling/index.css'
 import './styling/global.css'
 import './services/BackendAdapter'
@@ -19,6 +20,10 @@ const theme = createMuiTheme({
   },
   overrides: {
     MuiListItemText: {
+      root: {
+        // fontSize: fontSizes.base,
+        // fontFamily: 'Roboto Mono',
+      },
       secondary: {
         fontSize: fontSizes.xs,
       },
@@ -42,9 +47,22 @@ const theme = createMuiTheme({
     },
     MuiListItem: {
       button: {
+        paddingLeft: spacing.sm,
+        paddingRight: spacing.xl,
         '&:hover, &:focus': {
           backgroundColor: colors.grayLightest,
         },
+      },
+    },
+    MuiListItemIcon: {
+      root: {
+        // minWidth: 74,
+        justifyContent: 'center',
+      },
+    },
+    MuiCollapse: {
+      wrapper: {
+        padding: spacing.md,
       },
     },
     MuiLink: {
@@ -66,7 +84,9 @@ ReactDOM.render(
   <Provider store={store}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <HashRouter>
+        <App />
+      </HashRouter>
     </ThemeProvider>
   </Provider>,
   document.getElementById('root')

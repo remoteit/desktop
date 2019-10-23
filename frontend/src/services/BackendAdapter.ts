@@ -88,10 +88,6 @@ const handlers: EventHandlers = {
     console.log('socket device', result)
     if (result) jump.setDevice(result)
   },
-  // 'jump/user': (result: IUser) => {
-  //   console.log('socket user', result)
-  //   if (result) jump.setUser(result)
-  // },
   'jump/scan': (result: IScanData) => {
     console.log('socket scan', result)
     if (result) jump.setScanData(result)

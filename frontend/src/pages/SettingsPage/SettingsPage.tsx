@@ -41,28 +41,20 @@ export const SettingsPage = connect(
         quit()
       }
     }
-
+    installed = false
     return (
       <div>
         <h2>Settings</h2>
         <List>
           <SettingsListItem
-            button
             label="Send feedback"
             icon="envelope"
             onClick={() =>
               (window.location.href = encodeURI('mailto:support@remote.it?subject=Desktop Application Feedback'))
             }
           />
+          <SettingsListItem label="Open at login" icon="rocket" value={openOnLogin} onClick={toggleOpenOnLogin} />
           <SettingsListItem
-            button
-            label="Open at login"
-            icon="rocket"
-            value={openOnLogin}
-            onClick={toggleOpenOnLogin}
-          />
-          <SettingsListItem
-            button
             label="Search only device list"
             icon="search"
             subLabel="Speed up the application by only showing search results. Use with a very large device list."
@@ -73,18 +65,16 @@ export const SettingsPage = connect(
         <Divider />
         <List>
           <SettingsListItem
-            button
             label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}
-            color={installed ? 'default' : 'primary'}
-            icon="terminal"
             disabled={installing}
+            icon="terminal"
             onClick={() => install()}
           />
         </List>
         <Divider />
         <List>
-          <SettingsListItem button label="Sign out" icon="sign-out" onClick={signOut} />
-          <SettingsListItem button label="Quit" icon="skull-crossbones" onClick={warning} />
+          <SettingsListItem label="Sign out" icon="sign-out" onClick={signOut} />
+          <SettingsListItem label="Quit" icon="skull-crossbones" onClick={warning} />
         </List>
       </div>
     )

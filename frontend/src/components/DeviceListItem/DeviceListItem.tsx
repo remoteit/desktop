@@ -1,45 +1,46 @@
 import React from 'react'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { connect } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { Icon } from '../Icon'
 import { IDevice } from 'remote.it'
-import { ListItem, ListItemIcon, ListItemText, Collapse, Divider } from '@material-ui/core'
+import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Collapse, Divider } from '@material-ui/core'
 import { ServiceList } from '../ServiceList'
 
-export interface DeviceListItemProps {
+const mapState = (state: ApplicationState) => ({
+  connections: state.devices.connections.reduce((result: ConnectionLookup, c: ConnectionInfo) => {
+    result[c.id] = c
+    return result
+  }, {}),
+})
+
+export type DeviceListItemProps = ReturnType<typeof mapState> & {
   device: IDevice
-  startOpen?: boolean
+  key?: string
 }
 
-export function DeviceListItem({ device, startOpen = false, ...props }: DeviceListItemProps) {
-  const [open, setOpen] = React.useState(startOpen)
-
+export const DeviceListItem = connect(
+  mapState,
+  null
+)(({ device, connections, key }: DeviceListItemProps) => {
   function handleClick() {
-    setOpen(!open)
+    console.log('click')
   }
 
   return (
-    <div className="bg-white">
-      <ListItem {...props} onClick={handleClick} button>
+    <>
+      <ListItem key={key} onClick={handleClick} button>
         <ListItemIcon>
-          <ConnectionStateIcon state={device.state} size="lg" className="ml-sm" />
+          <ConnectionStateIcon state={device.state} size="lg" />
         </ListItemIcon>
         <ListItemText primary={device.name} />
-        <div className="ml-auto">
-          {open ? (
-            <Icon name="chevron-up" color="gray" className="pr-sm" />
-          ) : (
-            <Icon name="chevron-down" color="gray" className="pr-sm" />
-          )}
-        </div>
+        <ListItemSecondaryAction>
+          <Icon name="chevron-right" />
+        </ListItemSecondaryAction>
       </ListItem>
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <div className="bg-gray-lightest pb-sm pt-none px-sm">
-          <div className="bg-white ba bc-gray-light rad-sm">
-            <ServiceList services={device.services} />
-          </div>
-        </div>
+      <Collapse in={true} timeout="auto" unmountOnExit>
+        <ServiceList services={device.services} connections={connections} />
       </Collapse>
-      <Divider />
-    </div>
+    </>
   )
-}
+})

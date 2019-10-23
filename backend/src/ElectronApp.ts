@@ -74,7 +74,7 @@ export default class ElectronApp {
       height: 600,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
-      frame: Environment.isWindows,
+      frame: !Environment.isMac,
       autoHideMenuBar: true,
     })
 
@@ -107,7 +107,7 @@ export default class ElectronApp {
     d('Create tray icon')
     Logger.info('Create tray icon')
 
-    const iconFile = Environment.isWindows ? 'iconwin.ico' : 'iconTemplate.png'
+    const iconFile = Environment.isMac ? 'iconTemplate.png' : Environment.isWindows ? 'iconwin.ico' : 'iconLinux.png'
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
     new TrayMenu(this.tray)

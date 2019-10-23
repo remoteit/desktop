@@ -32,7 +32,6 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
       setTimestamp({ [interfaceName]: selected.timestamp })
     }
   }, [selected.timestamp, selectedTimestamp, selectedLoading, interfaceName])
-  console.log(selected.timestamp, selectedTimestamp, 'loading:' + selectedLoading)
 
   function interfaceType() {
     const i = interfaces.find(i => i.name === interfaceName)

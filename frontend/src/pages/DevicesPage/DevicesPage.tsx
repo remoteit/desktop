@@ -2,11 +2,13 @@ import React from 'react'
 import { DeviceList } from '../../components/DeviceList'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
 import { IconButton, Tooltip } from '@material-ui/core'
+import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
 import { ApplicationState, select } from '../../store'
 import { connect } from 'react-redux'
 import { IDevice } from 'remote.it'
+import styles from '../../styling'
 
 // const visible = store.select.devices.visible
 interface SelectResponse {
@@ -61,13 +63,15 @@ export const DevicesPage = connect(
     sort,
     visibleDevices,
   }: DevicesPageProps) => {
+    const css = useStyles()
+
     if (fetching && !allDevices.length) return <DeviceLoadingMessage />
     // if (fetching && searchOnly) return <DeviceLoadingMessage />
     // if (!fetching && !allDevices.length) <NoDevicesMessage />
 
     return (
-      <div className="df ai-stretch" style={{ flexFlow: 'column' }}>
-        <div className="df ai-center jc-center px-sm pb-sm center bg-gray-lighter bb bc-gray-light">
+      <div className={css.container}>
+        <div className={css.fixed}>
           <SearchField
             onSubmit={remoteSearch}
             onChange={(query: string) => {
@@ -105,4 +109,19 @@ export const DevicesPage = connect(
   }
 )
 
-// import { LoadingMessage } from '../../components/LoadingMessage'
+const useStyles = makeStyles({
+  container: {
+    display: 'flex',
+    alignItems: 'stretch',
+    flexFlow: 'column',
+    height: '100%',
+  },
+  fixed: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: styles.colors.grayLighter,
+    borderBottom: `1px solid ${styles.colors.grayLight}`,
+    padding: styles.spacing.xs,
+  },
+})

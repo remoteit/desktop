@@ -1,50 +1,35 @@
 import React from 'react'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { ConnectedServiceItem } from '../ConnectedServiceItem'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Tooltip, IconButton } from '@material-ui/core'
 import { IService } from 'remote.it'
 import { connect } from 'react-redux'
-import { ListItem } from '@material-ui/core'
-import { ApplicationState } from '../../store'
-
-const mapState = (state: ApplicationState, props: { service: IService }) => ({
-  connection: state.devices.connections.find(c => c.id === props.service.id),
-})
+import { Icon } from '../Icon'
 
 const mapDispatch = (dispatch: any) => ({
   connect: dispatch.devices.connect,
 })
 
-export type ServiceListItemProps = {
+export type ServiceListItemProps = ReturnType<typeof mapDispatch> & {
   service: IService
-} & ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
+}
 
 export const ServiceListItem = connect(
-  mapState,
+  null,
   mapDispatch
-)(({ connect, connection, service }: ServiceListItemProps) => {
-  if (service.state === 'connected' && connection) {
-    return <ConnectedServiceItem connection={connection} />
-  }
-
+)(({ connect, service }: ServiceListItemProps) => {
   return (
-    <ListItem
-      button
-      className="df ai-center bb bc-gray-lighter"
-      onClick={() => connect(service)}
-    >
-      <div className="mr-sm">
-        <ConnectionStateIcon
-          state={service.connecting ? 'connecting' : service.state}
-          size="lg"
-        />
-      </div>
-      <div>
-        <div className="txt-md gray-darkest">{service.name}</div>
-        {service.name.toLowerCase() !== service.type.toLowerCase() && (
-          <div className="txt-sm gray">{service.type}</div>
-        )}
-      </div>
+    <ListItem>
+      <ListItemIcon>
+        <ConnectionStateIcon state={service.connecting ? 'connecting' : service.state} size="lg" />
+      </ListItemIcon>
+      <ListItemText primary={service.name} />
+      <ListItemSecondaryAction>
+        <Tooltip title="Connect">
+          <IconButton disabled={service.connecting} onClick={() => connect(service.id)}>
+            <Icon name="arrow-right" color="primary" size="md" weight="regular" fixedWidth />
+          </IconButton>
+        </Tooltip>
+      </ListItemSecondaryAction>
     </ListItem>
   )
 })

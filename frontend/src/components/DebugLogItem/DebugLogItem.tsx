@@ -37,9 +37,7 @@ export function DebugLogItem({ log }: Props) {
           </Tooltip>
         </div>
         {log.message}
-        <span className="ml-auto txt-xs gray-light">
-          {moment(log.createdAt).fromNow()}
-        </span>
+        <span className="ml-auto txt-xs gray-light">{moment(log.createdAt).fromNow()}</span>
         {data && (
           <Icon
             name={opened ? 'chevron-up' : 'chevron-down'}
@@ -55,9 +53,7 @@ export function DebugLogItem({ log }: Props) {
           <div className="fr mt-sm mr-sm">
             <CopyButton text={data} />
           </div>
-          <pre className="ff-mono txt-sm p-md bg-gray-lightest secondary">
-            {data}
-          </pre>
+          <pre className="ff-mono txt-sm p-md bg-gray-lightest secondary">{data}</pre>
         </div>
       )}
     </div>

@@ -89,6 +89,9 @@ declare global {
     }
   }
 
+  export interface ConnectionLookup {
+    [id: string]: ConnectionInfo
+  }
   export interface ConnectdMessage {
     connection: ConnectionInfo
     raw?: string

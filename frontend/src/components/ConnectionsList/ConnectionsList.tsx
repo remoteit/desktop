@@ -1,4 +1,5 @@
 import React from 'react'
+import { List } from '@material-ui/core'
 import { ConnectedServiceItem } from '../../components/ConnectedServiceItem'
 
 export interface Props {
@@ -18,10 +19,10 @@ export function ConnectionsList({ connections }: Props) {
   }
 
   return (
-    <>
+    <List>
       {connections.map(c => (
         <ConnectedServiceItem key={c.id} connection={c} />
       ))}
-    </>
+    </List>
   )
 }

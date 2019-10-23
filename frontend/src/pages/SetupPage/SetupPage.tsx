@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import BackendAdaptor from '../../services/BackendAdapter'
@@ -26,10 +26,6 @@ export const SetupPage = connect(
     BackendAdaptor.emit('jump/device', 'DELETE')
     BackendAdaptor.emit('jump/init')
   }
-
-  useEffect(() => {
-    BackendAdaptor.emit('jump/init')
-  }, [])
 
   return (
     <Device

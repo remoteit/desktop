@@ -4,8 +4,8 @@ export const fontSizes: { [key in FontSize]: number } = {
   xxs: 10,
   xs: 11,
   sm: 12,
-  md: 16,
   base: 14,
+  md: 16,
   lg: 19,
   xl: 24,
   xxl: 36,
@@ -65,8 +65,8 @@ export const spacing: { [key in Spacing]: number } = {
   sm: 12,
   md: 18,
   lg: 24,
-  xl: 48,
-  xxl: 96,
+  xl: 36,
+  xxl: 48,
 }
 
 export const page = {

@@ -31,11 +31,12 @@
   --spacing-sm: 12px;
   --spacing-md: 18px;
   --spacing-lg: 24px;
-  --spacing-xl: 48px;
-  --spacing-xxl: 96px;
+  --spacing-xl: 36px;
+  --spacing-xxl: 48px;
 
   /* Font families */
   --font-family-sans-serif: 'Roboto', sans-serif;
+  --font-family-mono: 'Roboto Mono', monospace;
 
   /* Box shadows */
   --box-shadow-1: 0 0 10px rgba(0, 0, 0, 0.1);

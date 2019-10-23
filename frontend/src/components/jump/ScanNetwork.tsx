@@ -1,10 +1,20 @@
 import React, { useState } from 'react'
-import { List, ListItem, ListItemText, ListItemIcon, Collapse, Button, Link, Typography } from '@material-ui/core'
+import {
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  Collapse,
+  Button,
+  Link,
+  Typography,
+} from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes } from '../../types/serviceTypes'
 import { DEFAULT_TARGET } from '../../constants'
-import styles from '../../styling'
+import styles, { spacing } from '../../styling'
 
 type Props = {
   data: IScan[]
@@ -60,51 +70,57 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
         <Typography variant="caption">Select a device to add a jump connection</Typography>
         <Link onClick={toggleAll} color="inherit" component="button" className={css.toggle}>
           {allClosed ? 'Expand All' : 'Close All'}
-          {allClosed ? <Icon name="angle-down" inline /> : <Icon name="angle-up" inline />}
+          {allClosed ? <Icon name="chevron-down" inline /> : <Icon name="chevron-up" inline />}
         </Link>
       </div>
-      {data.map((ip, row) => (
-        <List key={row} className={css.list}>
-          <ListItem button onClick={() => toggle(row)}>
-            <ListItemIcon>{InterfaceIcon[interfaceType]}</ListItemIcon>
-            <ListItemText primary={ip[0]} />
-            {open.includes(row) ? <Icon name="angle-up" /> : <Icon name="angle-down" />}
-          </ListItem>
-          <Collapse in={open.includes(row)} timeout="auto">
-            {ip[1].map((port, key) => (
-              <ListItem key={key} dense className={css.port}>
-                <ListItemText primary={port[0]} />
-                <ListItemText primary={port[1]} />
-                {targets.find(target => target.hostname === ip[0] && target.port === port[0]) ? (
-                  <Button disabled size="small">
-                    Added
-                    <Icon name="check" inline />
-                  </Button>
-                ) : (
-                  <Button
-                    color="primary"
-                    variant="contained"
-                    size="small"
-                    disabled={disabled}
-                    onClick={() =>
-                      onAdd({
-                        ...DEFAULT_TARGET,
-                        type: getType(port[0]),
-                        hostname: ip[0],
-                        port: port[0],
-                        name: port[1],
-                      })
-                    }
-                  >
-                    Add
-                    <Icon name="plus" inline />
-                  </Button>
-                )}
-              </ListItem>
-            ))}
-          </Collapse>
-        </List>
-      ))}
+      <List className={css.list}>
+        {data.map((ip, row) => (
+          <>
+            <ListItem button key={row} onClick={() => toggle(row)}>
+              <ListItemIcon>{InterfaceIcon[interfaceType]}</ListItemIcon>
+              <ListItemText primary={ip[0]} />
+              <ListItemSecondaryAction>
+                {open.includes(row) ? <Icon name="chevron-up" /> : <Icon name="chevron-down" />}
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Collapse in={open.includes(row)} timeout="auto">
+              {ip[1].map((port, key) => (
+                <ListItem key={key} dense className={css.port}>
+                  <ListItemText primary={port[0]} />
+                  <ListItemText primary={port[1]} />
+                  <ListItemSecondaryAction>
+                    {targets.find(target => target.hostname === ip[0] && target.port === port[0]) ? (
+                      <Button disabled size="small">
+                        Added
+                        <Icon name="check" inline />
+                      </Button>
+                    ) : (
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        size="small"
+                        disabled={disabled}
+                        onClick={() =>
+                          onAdd({
+                            ...DEFAULT_TARGET,
+                            type: getType(port[0]),
+                            hostname: ip[0],
+                            port: port[0],
+                            name: port[1],
+                          })
+                        }
+                      >
+                        Add
+                        <Icon name="plus" inline />
+                      </Button>
+                    )}
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </Collapse>
+          </>
+        ))}
+      </List>
     </>
   )
 }
@@ -118,23 +134,21 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    // marginBottom: -styles.spacing.xl,
-    marginLeft: styles.spacing.sm,
-    marginRight: styles.spacing.sm,
+    paddingLeft: spacing.lg,
   },
   toggle: {
-    padding: '6px 12px 12px 22px',
+    padding: '6px 22px 12px 22px',
     '& .MuiSvgIcon-root': {
       marginBottom: -6,
-      marginLeft: styles.spacing.sm,
+      marginLeft: spacing.sm,
     },
   },
   list: {
     borderTop: `1px solid ${styles.colors.grayLighter}`,
   },
   port: {
-    paddingLeft: 74,
-    paddingRight: styles.spacing.lg,
+    paddingLeft: 54,
+    paddingRight: spacing.lg,
     '& div.MuiListItemText-root:nth-child(1)': {
       maxWidth: '20%',
     },
@@ -144,7 +158,7 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     '& p': {
       fontSize: styles.fontSizes.sm,
-      margin: styles.spacing.lg,
+      margin: spacing.lg,
       color: styles.colors.grayLight,
     },
   },

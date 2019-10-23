@@ -2,13 +2,9 @@ import React from 'react'
 import styles from '../../styling'
 import { makeStyles } from '@material-ui/styles'
 
-export const Body: React.FC<{ show?: boolean; inset?: boolean }> = ({ show, inset, children }) => {
+export const Body: React.FC<{ inset?: boolean }> = ({ inset, children }) => {
   const css = useStyles()
-  return (
-    <div style={{ display: show ? 'block' : 'none' }} className={css.content + (inset ? ' ' + css.inset : '')}>
-      {children}
-    </div>
-  )
+  return <div className={css.content + (inset ? ' ' + css.inset : '')}>{children}</div>
 }
 
 const useStyles = makeStyles({
@@ -21,7 +17,7 @@ const useStyles = makeStyles({
     '& section': {
       display: 'flex',
       justifyContent: 'space-between',
-      padding: `${styles.spacing.xl}px 0`,
+      padding: `${styles.spacing.xl}px`,
     },
     '& h2': {
       textTransform: 'uppercase',
@@ -32,6 +28,7 @@ const useStyles = makeStyles({
       marginTop: styles.spacing.lg,
       borderBottom: `1px solid ${styles.colors.grayLighter}`,
       paddingBottom: styles.spacing.sm,
+      paddingLeft: styles.spacing.lg,
     },
   },
   inset: {
