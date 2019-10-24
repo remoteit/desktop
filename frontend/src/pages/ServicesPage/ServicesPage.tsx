@@ -2,6 +2,7 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 
 const mapState = (state: ApplicationState, params: any) => ({
@@ -32,5 +33,10 @@ export const ServicesPage = connect(
 
   if (!device) return <div>No device found.</div>
 
-  return <ServiceList services={device.services} connections={connections} />
+  return (
+    <>
+      <Breadcrumbs />
+      <ServiceList services={device.services} connections={connections} />
+    </>
+  )
 })

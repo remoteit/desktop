@@ -7,14 +7,13 @@ import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@
 
 export type DeviceListItemProps = {
   device: IDevice
-  key?: string
 }
 
-export const DeviceListItem = ({ device, key }: DeviceListItemProps) => {
+export const DeviceListItem = ({ device }: DeviceListItemProps) => {
   const history = useHistory()
 
   return (
-    <ListItem key={key} onClick={() => history.push(`/devices/${device.id}`)} button>
+    <ListItem onClick={() => history.push(`/devices/${device.id}`)} button>
       <ListItemIcon>
         <ConnectionStateIcon state={device.state} size="lg" />
       </ListItemIcon>

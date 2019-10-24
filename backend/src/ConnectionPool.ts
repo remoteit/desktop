@@ -39,6 +39,8 @@ export default class ConnectionPool {
   connect = async (args: { id: string; port?: number; name?: string; autoStart?: boolean }) => {
     d('Connecting:', args)
 
+    if (!args.id) throw new Error('No service id to create a connection!')
+
     if (!this.user) throw new Error('No user to authenticate connection!')
 
     const port = args.port || (await this.freePort())

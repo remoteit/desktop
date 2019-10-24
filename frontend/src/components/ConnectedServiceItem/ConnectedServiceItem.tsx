@@ -19,22 +19,25 @@ export function ConnectedServiceItem({ connection }: ConnectedServiceItemProps) 
   if (connection.pid) state = 'connected'
   if (connection.connecting) state = 'connecting'
 
+  // connection.error = { code: 69, message: 'Shit just got real.' }
   return (
-    <ListItem>
-      <ListItemIcon>
-        <ConnectionStateIcon state={state} size="lg" />
-      </ListItemIcon>
-      <ListItemText primary={connection.name} secondary={`localhost:${connection.port}`} />
-      <ListItemSecondaryAction>
-        {connection.port && <CopyButton title="Copy connection URL" text={`localhost:${connection.port}`} />}
-        {connection.connecting || connection.pid ? (
-          <DisconnectButtonController id={connection.id} />
-        ) : (
-          <ForgetButton id={connection.id} />
-        )}
-        {!connection.pid && !connection.connecting && <RestartButton id={connection.id} />}
-      </ListItemSecondaryAction>
+    <>
+      <ListItem>
+        <ListItemIcon>
+          <ConnectionStateIcon state={state} size="lg" />
+        </ListItemIcon>
+        <ListItemText primary={connection.name} secondary={`localhost:${connection.port}`} />
+        <ListItemSecondaryAction>
+          {connection.port && <CopyButton title="Copy connection URL" text={`localhost:${connection.port}`} />}
+          {connection.connecting || connection.pid ? (
+            <DisconnectButtonController id={connection.id} />
+          ) : (
+            <ForgetButton id={connection.id} />
+          )}
+          {!connection.pid && !connection.connecting && <RestartButton id={connection.id} />}
+        </ListItemSecondaryAction>
+      </ListItem>
       {connection.error && <ConnectionErrorMessage connection={connection} />}
-    </ListItem>
+    </>
   )
 }
