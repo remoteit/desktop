@@ -3,11 +3,11 @@ import { DeviceList } from '../../components/DeviceList'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { Icon } from '../../components/Icon'
 import { SearchField } from '../../components/SearchField'
 import { ApplicationState, select } from '../../store'
 import { connect } from 'react-redux'
 import { IDevice } from 'remote.it'
+import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 
 // const visible = store.select.devices.visible

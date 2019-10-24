@@ -15,6 +15,7 @@ import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { SetupPage } from '../../pages/SetupPage'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
+import { ServicesPage } from '../../pages/ServicesPage'
 import { InstallationNotice } from '../InstallationNotice'
 import { ApplicationState } from '../../store'
 import BackendAdaptor from '../../services/BackendAdapter'
@@ -37,6 +38,11 @@ export const App = connect(
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
+
+  const match = location.pathname.match(/^\/(\w+)/g)
+  const menu = match ? match[0] : '/'
+
+  console.log('location', location)
 
   useEffect(() => {
     checkSignIn()
@@ -76,7 +82,14 @@ export const App = connect(
         </Route>
         <Route path="/devices">
           <Body>
-            <DevicesPage />
+            <Switch>
+              <Route path="/devices/:id">
+                <ServicesPage />
+              </Route>
+              <Route>
+                <DevicesPage />
+              </Route>
+            </Switch>
           </Body>
         </Route>
         <Route path="/setup">
@@ -100,7 +113,7 @@ export const App = connect(
       </Switch>
       <BottomNavigation
         className={css.footer}
-        value={location.pathname}
+        value={menu}
         onChange={(_, newValue) => history.push(newValue)}
         showLabels
       >

@@ -104,7 +104,6 @@ export default createModel({
     },
     async getConnections() {
       BackendAdapter.emit('connections/list', (connections: ConnectionInfo[]) => {
-        console.log('CONNECTIONS:', connections)
         connections.map(conn => dispatch.devices.connected(conn))
       })
 

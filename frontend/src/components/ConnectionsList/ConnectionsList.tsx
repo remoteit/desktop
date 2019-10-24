@@ -17,11 +17,11 @@ export function ConnectionsList({ connections }: Props) {
       </div>
     )
   }
-
+  console.log(connections.map(c => c.id))
   return (
     <List>
       {connections.map(c => (
-        <ConnectedServiceItem key={c.id} connection={c} />
+        <ConnectedServiceItem key={c.id || 0} connection={c} />
       ))}
     </List>
   )
