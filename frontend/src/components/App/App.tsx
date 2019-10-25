@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import styles from '../../styling'
 import { connect } from 'react-redux'
@@ -38,16 +38,28 @@ export const App = connect(
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
+  const [navigation, setNavigation] = useState<{ [menu: string]: string }>({})
 
   const match = location.pathname.match(/^\/(\w+)/g)
   const menu = match ? match[0] : '/'
 
+  const changeNavigation = (_: any, selected: string) => {
+    const stored = navigation[selected]
+    if (!stored || stored === location.pathname) history.push(selected)
+    else history.push(stored)
+  }
+
   console.log('location', location)
+  console.log('navigationState', navigation)
 
   useEffect(() => {
     checkSignIn()
     BackendAdaptor.emit('jump/init')
   }, [checkSignIn])
+
+  useEffect(() => {
+    setNavigation({ ...navigation, [menu]: location.pathname })
+  }, [location, menu])
 
   if (checkSignInStarted)
     return (
@@ -111,12 +123,7 @@ export const App = connect(
           <Redirect to="/devices" />
         </Route>
       </Switch>
-      <BottomNavigation
-        className={css.footer}
-        value={menu}
-        onChange={(_, newValue) => history.push(newValue)}
-        showLabels
-      >
+      <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
         <BottomNavigationAction label="Connections" value="/connections" icon={<Icon name="scrubber" size="lg" />} />
         <BottomNavigationAction label="Remote" value="/devices" icon={<Icon name="chart-network" size="lg" />} />
         <BottomNavigationAction label="Local" value="/setup" icon={<Icon name="hdd" size="lg" />} />
