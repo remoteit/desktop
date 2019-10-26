@@ -1,44 +1,48 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { Typography, Tooltip, IconButton } from '@material-ui/core'
+import { Tooltip, IconButton, Link } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { connect } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { pageName } from '../../helpers/pageNameHelper'
 import { Icon } from '../Icon'
-// import styles from '../../styling'
+import { LAST_PATH } from '../../helpers/regEx'
+import styles from '../../styling'
 
-const mapState = (state: ApplicationState) => ({
-  user: state.auth.user,
-  interfaces: state.jump.interfaces,
-})
-
-const mapDispatch = (dispatch: any) => ({})
-
-type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
-
-const Component: React.FC<Props> = ({ user, interfaces }) => {
+export const Breadcrumbs: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
-  const navigateUp = () => history.push(location.pathname.replace(/\/[^\/]+$/g, ''))
+  const parentPath = location.pathname.replace(LAST_PATH, '')
+  const crumbs = parentPath.substr(1).split('/')
+
+  let breadcrumb: string = ''
 
   return (
     <div className={css.header}>
-      <h2>Services</h2>
       <Tooltip title="back">
-        <IconButton onClick={navigateUp}>
+        <IconButton onClick={() => history.push(parentPath)}>
           <Icon name="chevron-left" size="md" fixedWidth />
         </IconButton>
       </Tooltip>
+      {crumbs.map((crumb, index) => {
+        const crumbPath = (breadcrumb += `/${crumb}`)
+        return (
+          <Link key={index} onClick={() => history.push(crumbPath)}>
+            {pageName(crumbPath)} /
+          </Link>
+        )
+      })}
     </div>
   )
 }
 
-export const Breadcrumbs = connect(
-  mapState,
-  mapDispatch
-)(Component)
-
 const useStyles = makeStyles({
-  header: {},
+  header: {
+    backgroundColor: styles.colors.grayLighter,
+    '& .MuiLink-root': {
+      fontFamily: 'Roboto Mono',
+      color: styles.colors.grayDarker,
+      fontSize: styles.fontSizes.xs,
+      letterSpacing: 2,
+    },
+  },
 })

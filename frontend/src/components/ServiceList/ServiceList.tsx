@@ -14,13 +14,9 @@ export const ServiceList = ({ services = [], connections }: ServiceListProps) =>
 
   return (
     <List>
-      {services.map((service, key) =>
-        service.id && !!connections[service.id] ? (
-          <ConnectedServiceItem connection={connections[service.id]} key={key} />
-        ) : (
-          <ServiceListItem service={service} key={key} />
-        )
-      )}
+      {services.map((service, key) => (
+        <ConnectedServiceItem connection={connections[service.id]} service={service} key={key} />
+      ))}
     </List>
   )
 }

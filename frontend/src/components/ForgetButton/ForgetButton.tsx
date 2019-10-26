@@ -17,9 +17,9 @@ export const ForgetButton = connect(
   mapDispatch
 )(({ disabled = false, forget, id }: ForgetButtonProps) => {
   return (
-    <Tooltip title="Remove this connection">
+    <Tooltip title="Forget this connection">
       <IconButton disabled={disabled} onClick={() => forget(id)}>
-        <Icon name="trash-alt" color="gray" size="md" fixedWidth />
+        <Icon name="times" color="gray" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

@@ -18,6 +18,7 @@ import { DevicesPage } from '../../pages/DevicesPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { InstallationNotice } from '../InstallationNotice'
 import { ApplicationState } from '../../store'
+import { FIRST_PATH } from '../../helpers/regEx'
 import BackendAdaptor from '../../services/BackendAdapter'
 
 const mapState = (state: ApplicationState) => ({
@@ -40,7 +41,7 @@ export const App = connect(
   const location = useLocation()
   const [navigation, setNavigation] = useState<{ [menu: string]: string }>({})
 
-  const match = location.pathname.match(/^\/(\w+)/g)
+  const match = location.pathname.match(FIRST_PATH)
   const menu = match ? match[0] : '/'
 
   const changeNavigation = (_: any, selected: string) => {

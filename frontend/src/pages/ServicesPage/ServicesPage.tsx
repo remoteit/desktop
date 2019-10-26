@@ -29,13 +29,12 @@ export const ServicesPage = connect(
   const { id } = useParams()
   const device = devices.find(d => d.id === id)
 
-  console.log('SERVICES PAGE PARAMS', id)
-
   if (!device) return <div>No device found.</div>
 
   return (
     <>
       <Breadcrumbs />
+      <h2>Services</h2>
       <ServiceList services={device.services} connections={connections} />
     </>
   )

@@ -3,41 +3,65 @@ import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { DisconnectButtonController } from '../../controllers/DisconnectButtonController'
 import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { RestartButton } from '../RestartButton'
+import { ConnectButtonController } from '../../controllers/ConnectButtonController'
 import { ForgetButton } from '../ForgetButton'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { CopyButton } from '../CopyButton'
+import { IService } from 'remote.it'
 
 export interface ConnectedServiceItemProps {
-  connection: ConnectionInfo
+  connection?: ConnectionInfo
+  service?: IService
 }
 
-export function ConnectedServiceItem({ connection }: ConnectedServiceItemProps) {
-  if (!connection) return <p>No connection...</p>
-
+export function ConnectedServiceItem({ connection, service }: ConnectedServiceItemProps) {
   let state: ConnectionState = 'disconnected'
-  // TODO: show loading state when connection is establishing
-  if (connection.pid) state = 'connected'
-  if (connection.connecting) state = 'connecting'
+  let connected: boolean = false
+  let connecting: boolean = false
+  let name: string = ''
+  let port: number | undefined
+  let error: boolean = false
 
-  // connection.error = { code: 69, message: 'Shit just got real.' }
+  if (connection) {
+    connected = !!connection.pid
+    connecting = !!connection.connecting
+    error = !!connection.error
+    port = connection.port
+    name = connection.name
+  }
+
+  if (service) {
+    connecting = connecting || !!service.connecting
+    name = service.name
+  }
+
+  if (connected) state = 'connected'
+  if (connecting) state = 'connecting'
+
   return (
     <>
       <ListItem>
         <ListItemIcon>
           <ConnectionStateIcon state={state} size="lg" />
         </ListItemIcon>
-        <ListItemText primary={connection.name} secondary={`localhost:${connection.port}`} />
+        <ListItemText primary={name} secondary={port && `localhost:${port}`} />
         <ListItemSecondaryAction>
-          {connection.port && <CopyButton title="Copy connection URL" text={`localhost:${connection.port}`} />}
-          {connection.connecting || connection.pid ? (
-            <DisconnectButtonController id={connection.id} />
+          {port && <CopyButton title="Copy connection URL" text={`localhost:${port}`} />}
+          {connection ? (
+            <>
+              {connecting || connected ? (
+                <DisconnectButtonController id={connection.id} />
+              ) : (
+                <ForgetButton id={connection.id} />
+              )}
+              {!connected && !connecting && <RestartButton id={connection.id} />}
+            </>
           ) : (
-            <ForgetButton id={connection.id} />
+            service && <ConnectButtonController service={service} />
           )}
-          {!connection.pid && !connection.connecting && <RestartButton id={connection.id} />}
         </ListItemSecondaryAction>
       </ListItem>
-      {connection.error && <ConnectionErrorMessage connection={connection} />}
+      {connection && error && <ConnectionErrorMessage connection={connection} />}
     </>
   )
 }

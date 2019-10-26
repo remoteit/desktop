@@ -65,11 +65,18 @@ const theme = createMuiTheme({
         padding: spacing.md,
       },
     },
-    MuiLink: {
-      root: {
-        display: 'block',
-        padding: `${spacing.xs}px ${spacing.xs}px`,
+    MuiInput: {
+      underline: {
+        '&.Mui-disabled:before': {
+          borderCo: colors.grayLight,
+        },
       },
+    },
+    MuiLink: {
+      // root: {
+      //   display: 'block',
+      //   padding: `${spacing.xs}px ${spacing.xs}px`,
+      // },
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.grayLightest,

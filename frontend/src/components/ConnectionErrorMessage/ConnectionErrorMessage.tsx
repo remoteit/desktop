@@ -27,7 +27,7 @@ export const ConnectionErrorMessage = connect(
   return (
     <ListItem className={css.container}>
       <ListItemIcon>
-        <Tooltip title="back">
+        <Tooltip title="clear">
           <IconButton onClick={() => clearConnectionError(connection.id)}>
             <Icon name="times" color="white" size="md" fixedWidth />
           </IconButton>
