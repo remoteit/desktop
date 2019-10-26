@@ -236,15 +236,15 @@ export default class Connection extends EventEmitter {
       if (line.includes('seconds since startup')) {
         name = events.uptime
         return
+      } else if (line.startsWith('!!connected') || line.includes('Connected to server')) {
+        EventBus.emit(events.connected, this.toJSON())
+        name = events.status
       } else if (line.startsWith('!!status')) {
         name = events.status
       } else if (line.startsWith('!!throughput')) {
         name = events.throughput
       } else if (line.startsWith('!!request')) {
         name = events.request
-      } else if (line.startsWith('!!connected')) {
-        EventBus.emit(events.connected, this.toJSON())
-        return
       } else if (line.includes('exit - process closed')) {
         name = events.disconnected
       } else if (line.includes('connecttunnel')) {
