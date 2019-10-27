@@ -45,7 +45,7 @@ const handlers: EventHandlers = {
 
   // Connections
   'service/connect/started': (conn: ConnectionInfo) => devices.connectStart(conn.id),
-  'service/connected': (conn: ConnectionInfo) => devices.connected(conn),
+  'service/connected': (msg: ConnectdMessage) => devices.connected(msg.connection),
   'service/disconnected': (msg: ConnectdMessage) => devices.disconnected(msg),
   'service/tunnel/opened': (msg: ConnectdMessage) => console.log('service/tunnel/opened', msg),
   'service/tunnel/closed': (msg: ConnectdMessage) => console.log('service/tunnel/closed', msg),

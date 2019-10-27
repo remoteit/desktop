@@ -60,7 +60,7 @@ export default class ConnectionPool {
 
     this.pool[args.id] = connection
 
-    d('Starting connection:', { port, id: args.id })
+    d(`Starting connection - port:${port}, id: ${args.id}`)
 
     if (!connection.autoStart) return
 

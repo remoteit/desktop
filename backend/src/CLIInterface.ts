@@ -1,4 +1,5 @@
 import File from './File'
+import Logger from './Logger'
 
 class CLIInterface extends File {
   set(key: string, value: any) {
@@ -10,11 +11,11 @@ class CLIInterface extends File {
       case 'device':
         if (!this.data.device.uid && value.name) {
           this.register(value)
-          console.log('REGISTER', value.name)
+          Logger.info('REGISTER ' + value.name)
           this.readDevice()
         } else if (value === 'DELETE') {
           this.delete()
-          console.log('DELETE', this.data.device.name)
+          Logger.info('DELETE ' + this.data.device.name)
           this.readDevice()
         }
         break
@@ -27,15 +28,15 @@ class CLIInterface extends File {
     if (targets.length === length) {
       // @FIXME not currently supported by cli
       this.write('targets', targets)
-      console.log('UPDATE')
+      Logger.info('UPDATE', targets)
     } else if (targets.length < length) {
       const target = this.diff(targets, this.data.targets)
       if (target) this.removeTarget(target)
-      console.log('DELETE', target)
+      Logger.info('DELETE', target)
     } else if (targets.length > length) {
       const target = this.diff(this.data.targets, targets)
       if (target) this.addTarget(target)
-      console.log('ADD', target)
+      Logger.info('ADD', target)
     }
 
     this.readTargets()

@@ -38,6 +38,7 @@ export const Breadcrumbs: React.FC = () => {
 const useStyles = makeStyles({
   header: {
     backgroundColor: styles.colors.grayLighter,
+    borderBottom: `1px solid ${styles.colors.grayLight}`,
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
       color: styles.colors.grayDarker,

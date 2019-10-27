@@ -201,6 +201,7 @@ export default createModel({
         }
     },
     connected(state: DeviceState, connection: ConnectionInfo) {
+      console.log('CONNECTED', connection)
       let existingConnection = state.connections.find(c => c.id === connection.id)
 
       // FIXME - seems like this should be set server side

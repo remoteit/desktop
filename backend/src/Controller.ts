@@ -97,7 +97,6 @@ class Controller {
 
   connect = async (args: ConnectionArgs) => {
     d('Connect:', args)
-    console.log('Connect to service:', args)
     return this.pool.connect(args)
   }
 

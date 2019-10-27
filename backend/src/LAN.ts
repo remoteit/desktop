@@ -18,11 +18,10 @@ class LAN {
     return new Promise<IInterface[]>((success, failure) => {
       nw.get_interfaces_list((listErr: Error, list: any) => {
         if (listErr) failure(listErr)
-        console.log('INTERFACE list', list)
         nw.get_active_interface((activeErr: Error, active: any) => {
-          if (activeErr) console.warn('INTERFACE active', activeErr)
+          if (activeErr) Logger.warn('INTERFACE active', activeErr)
+          else Logger.info('INTERFACE active', active)
           active = active || {}
-          console.warn('INTERFACE active', active)
           this.interfaces = list.reduce((result: IInterface[], item: any) => {
             if (item.ip_address) {
               result.push({
@@ -37,7 +36,7 @@ class LAN {
             }
             return result
           }, [])
-          console.log('GET INTERFACES:', this.interfaces)
+          Logger.info('GET INTERFACES:', this.interfaces)
           success()
         })
       })
@@ -45,37 +44,33 @@ class LAN {
   }
 
   async scan(interfaceName: string) {
-    console.log('SCAN start', interfaceName)
+    Logger.info('SCAN start', interfaceName)
     if (!interfaceName) return
 
     try {
       const ipMask = this.findNetmask(interfaceName)
-      console.log('IPMASK:', ipMask)
+      Logger.info('IPMASK:', ipMask)
       const result = await this.exec(ipMask)
-      console.log('SCAN raw:', result)
       this.parse(interfaceName, result)
-      console.log('SCAN complete', this.data[interfaceName])
+      Logger.info('SCAN complete', this.data[interfaceName])
     } catch (error) {
-      console.warn('SCAN error', error)
+      Logger.error('SCAN error', error)
       this.data[interfaceName] = { timestamp: Date.now(), data: [] }
     }
   }
 
   findNetmask(interfaceName: string) {
     const network = !!this.interfaces && this.interfaces.find((i: IInterface) => i.name === interfaceName)
-    console.log('NETWORK', network)
     if (!network) return ''
     const netmask = new Netmask(network.ip + '/' + network.netmask)
-    console.log('Find netmask', interfaceName, netmask.toString())
     return netmask.toString()
   }
 
   exec(ipMask: string) {
-    console.log('START scan:', `${SCRIPT_PATH}scan.sh ${ipMask}`)
     return new Promise<string>((success, failure) => {
       execFile(SCRIPT_PATH + 'scan.sh', [ipMask], (error, result) => {
         if (error) {
-          console.log('*** ERROR *** EXEC scan', error.toString())
+          Logger.error('*** ERROR *** EXEC scan', error.toString())
           failure()
         }
         success(result.toString())

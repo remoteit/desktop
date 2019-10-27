@@ -24,20 +24,14 @@ const transports = [
     silent: ENV === 'test',
   }),
   new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    ),
+    format: winston.format.prettyPrint({ colorize: true }),
     silent: ENV === 'test',
   }),
 ]
 
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports,
 })
 

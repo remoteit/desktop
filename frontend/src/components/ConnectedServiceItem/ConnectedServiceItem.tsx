@@ -15,7 +15,7 @@ export interface ConnectedServiceItemProps {
 }
 
 export function ConnectedServiceItem({ connection, service }: ConnectedServiceItemProps) {
-  let state: ConnectionState = 'disconnected'
+  let state: ConnectionState = 'inactive'
   let connected: boolean = false
   let connecting: boolean = false
   let name: string = ''
@@ -33,6 +33,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
   if (service) {
     connecting = connecting || !!service.connecting
     name = service.name
+    state = service.state
   }
 
   if (connected) state = 'connected'
@@ -57,7 +58,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
               {!connected && !connecting && <RestartButton id={connection.id} />}
             </>
           ) : (
-            service && <ConnectButtonController service={service} />
+            state === 'active' && service && <ConnectButtonController service={service} />
           )}
         </ListItemSecondaryAction>
       </ListItem>

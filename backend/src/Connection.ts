@@ -65,26 +65,27 @@ export default class Connection extends EventEmitter {
     EventBus.emit(Connection.EVENTS.started, this.toJSON())
     Tracker.pageView(`/connections/${this.id}/start`)
     Tracker.event('connection', 'start', `connecting to service: ${this.id}`)
-    Logger.info('Starting connection:', this.toJSON())
+    Logger.info('Starting connection: ' + JSON.stringify(this.toJSON()))
 
     const usernameBase64 = Buffer.from(this.username).toString('base64')
+    const params = [
+      // TODO: Support password login too?
+      '-s',
+      '-p',
+      usernameBase64,
+      this.authHash,
+      this.id, // Service ID
+      `T${this.port}`, // Bind port
+      '2', // Encryption
+      this.host, // Bind address
+      '0.0.0.0', // Restricted connection IP
+      '12', // Max out
+      '0', // Lifetime
+      '0', // Grace period
+    ]
     this.process = execFile(
       ConnectdInstaller.binaryPath,
-      [
-        // TODO: Support password login too?
-        '-s',
-        '-p',
-        usernameBase64,
-        this.authHash,
-        this.id, // Service ID
-        `T${this.port}`, // Bind port
-        '2', // Encryption
-        this.host, // Bind address
-        '0.0.0.0', // Restricted connection IP
-        '12', // Max out
-        '0', // Lifetime
-        '0', // Grace period
-      ],
+      params,
       {
         maxBuffer: Infinity,
       },
@@ -99,6 +100,8 @@ export default class Connection extends EventEmitter {
         // })
       }
     )
+
+    Logger.info('connectd ' + params.join(' '))
 
     if (!this.process || !this.process.stdout || !this.process.stderr) {
       Logger.error('Could not start connectd process!')
@@ -231,28 +234,28 @@ export default class Connection extends EventEmitter {
     // Parse incoming messages and format messages for
     // emitting.
     for (const line of lines) {
-      let name
+      let event
       let extra: any
-      if (line.includes('seconds since startup')) {
-        name = events.uptime
-        return
-      } else if (line.startsWith('!!connected') || line.includes('Connected to server')) {
-        EventBus.emit(events.connected, this.toJSON())
-        name = events.status
+      if (line.startsWith('!!connected')) {
+        Logger.info('connected!', line)
+        // EventBus.emit(events.connected, this.toJSON())
+        event = events.connected
+      } else if (line.includes('seconds since startup')) {
+        event = events.uptime
       } else if (line.startsWith('!!status')) {
-        name = events.status
+        event = events.status
       } else if (line.startsWith('!!throughput')) {
-        name = events.throughput
+        event = events.throughput
       } else if (line.startsWith('!!request')) {
-        name = events.request
+        event = events.request
       } else if (line.includes('exit - process closed')) {
-        name = events.disconnected
+        event = events.disconnected
       } else if (line.includes('connecttunnel')) {
-        name = events.tunnelOpened
+        event = events.tunnelOpened
       } else if (line.includes('closetunnel')) {
-        name = events.tunnelClosed
+        event = events.tunnelClosed
       } else if (line.includes('Version')) {
-        name = events.version
+        event = events.version
         const match = line.match(/Version ([\d\.]*)/)
         if (match && match.length > 1) extra = { version: match[1] }
         // TODO: return local IP
@@ -260,11 +263,11 @@ export default class Connection extends EventEmitter {
         //   localIP = localIP
         //   connectd.emit(EVENTS.updated, {}) //this.toJSON())
       } else {
-        name = events.unknown
+        event = events.unknown
       }
 
       d('connectd std out:', line)
-      EventBus.emit(name, {
+      EventBus.emit(event, {
         connection: this.toJSON(),
         extra,
         raw: line,

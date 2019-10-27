@@ -33,16 +33,23 @@ const theme = createMuiTheme({
     },
     MuiButton: {
       root: {
-        '& .MuiSvgIcon-root': {
-          marginLeft: spacing.sm,
-        },
         backgroundColor: colors.grayLightest,
         color: colors.grayDark,
         marginRight: spacing.md,
         padding: `${spacing.sm}px ${spacing.md}px`,
+        '& .MuiSvgIcon-root': {
+          marginLeft: spacing.sm,
+        },
       },
       text: {
         padding: `${spacing.sm}px ${spacing.md}px`,
+      },
+    },
+    MuiIconButton: {
+      root: {
+        '&:hover': {
+          backgroundColor: colors.grayLightest,
+        },
       },
     },
     MuiListItem: {
@@ -73,14 +80,14 @@ const theme = createMuiTheme({
       },
     },
     MuiLink: {
-      // root: {
-      //   display: 'block',
-      //   padding: `${spacing.xs}px ${spacing.xs}px`,
-      // },
+      root: {
+        padding: `${spacing.xs}px ${spacing.sm}px`,
+      },
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.grayLightest,
           textDecoration: 'none',
+          cursor: 'pointer',
         },
       },
     },

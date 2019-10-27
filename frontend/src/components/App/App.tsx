@@ -50,17 +50,16 @@ export const App = connect(
     else history.push(stored)
   }
 
-  console.log('location', location)
-  console.log('navigationState', navigation)
-
   useEffect(() => {
     checkSignIn()
     BackendAdaptor.emit('jump/init')
   }, [checkSignIn])
 
   useEffect(() => {
-    setNavigation({ ...navigation, [menu]: location.pathname })
-  }, [location, menu])
+    if (navigation[menu] !== location.pathname) {
+      setNavigation({ ...navigation, [menu]: location.pathname })
+    }
+  }, [navigation, location, menu])
 
   if (checkSignInStarted)
     return (
