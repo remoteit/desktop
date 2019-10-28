@@ -1,12 +1,14 @@
 import React from 'react'
 import { List } from '@material-ui/core'
+import { IService } from 'remote.it'
 import { ConnectedServiceItem } from '../../components/ConnectedServiceItem'
 
 export interface Props {
   connections: ConnectionInfo[]
+  services: IService[]
 }
 
-export function ConnectionsList({ connections }: Props) {
+export function ConnectionsList({ connections, services }: Props) {
   if (!connections || !connections.length) {
     return (
       <div className="px-md py-lg gray-dark mx-auto center" style={{ maxWidth: '400px' }}>
@@ -17,11 +19,11 @@ export function ConnectionsList({ connections }: Props) {
       </div>
     )
   }
-  console.log(connections.map(c => c.id))
+
   return (
     <List>
       {connections.map(c => (
-        <ConnectedServiceItem key={c.id || 0} connection={c} />
+        <ConnectedServiceItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
     </List>
   )

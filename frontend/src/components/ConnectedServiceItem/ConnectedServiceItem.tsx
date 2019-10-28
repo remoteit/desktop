@@ -36,6 +36,10 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
     state = service.state
   }
 
+  // console.log('NAME', name)
+  // console.log('SERVICE', service)
+  // console.log('CONNECTION', connection)
+
   if (connected) state = 'connected'
   if (connecting) state = 'connecting'
 

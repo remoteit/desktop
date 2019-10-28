@@ -1,19 +1,24 @@
 import React from 'react'
 import { ConnectionsList } from '../../components/ConnectionsList'
-import { connect } from 'react-redux'
+import { IDevice, IService } from 'remote.it'
 import { ApplicationState } from '../../store'
+import { connect } from 'react-redux'
 
-const mapState = (state: ApplicationState, props: any) => ({
+const mapState = (state: ApplicationState) => ({
   connections: state.devices.connections,
+  services: findServices(state.devices.all, state.devices.connections.map(c => c.id)),
 })
 
-const mapDispatch = (dispatch: any) => ({})
+export type ConnectionsPageProps = ReturnType<typeof mapState>
 
-export type ConnectionsPageProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
-
-export const ConnectionsPage = connect(
-  mapState,
-  mapDispatch
-)(({ connections }: ConnectionsPageProps) => {
-  return <ConnectionsList connections={connections} />
+export const ConnectionsPage = connect(mapState)(({ connections, services }: ConnectionsPageProps) => {
+  return <ConnectionsList connections={connections} services={services} />
 })
+
+function findServices(devices: IDevice[], ids: string[]) {
+  return devices.reduce((all: IService[], d: IDevice) => {
+    const service = d.services.find(s => ids.includes(s.id))
+    if (service) all.push(service)
+    return all
+  }, [])
+}
