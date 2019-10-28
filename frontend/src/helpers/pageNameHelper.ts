@@ -12,5 +12,5 @@ export const pageName = (path: string) => {
   const name: string | undefined = pageNameMap[path]
   if (name) return name
   const match = path.match(LAST_PATH)
-  return match ? match[0] : ''
+  if (match) return match[0]
 }

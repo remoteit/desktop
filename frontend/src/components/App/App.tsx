@@ -16,6 +16,7 @@ import { SetupPage } from '../../pages/SetupPage'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
 import { ServicesPage } from '../../pages/ServicesPage'
+import { ServicePage } from '../../pages/ServicePage'
 import { InstallationNotice } from '../InstallationNotice'
 import { ApplicationState } from '../../store'
 import { FIRST_PATH } from '../../helpers/regEx'
@@ -86,43 +87,34 @@ export const App = connect(
   return (
     <Page>
       <Header />
-      <Switch>
-        <Route path="/connections">
-          <Body>
+      <Body>
+        <Switch>
+          <Route path="/connections">
             <ConnectionsPage />
-          </Body>
-        </Route>
-        <Route path="/devices">
-          <Body>
-            <Switch>
-              <Route path="/devices/:id">
-                <ServicesPage />
-              </Route>
-              <Route>
-                <DevicesPage />
-              </Route>
-            </Switch>
-          </Body>
-        </Route>
-        <Route path="/setup">
-          <Body>
+          </Route>
+          <Route path="/devices/:deviceID/:serviceID">
+            <ServicePage />
+          </Route>
+          <Route path="/devices/:deviceID">
+            <ServicesPage />
+          </Route>
+          <Route path="/devices">
+            <DevicesPage />
+          </Route>
+          <Route path="/setup">
             <SetupPage />
-          </Body>
-        </Route>
-        <Route path="/network">
-          <Body>
+          </Route>
+          <Route path="/network">
             <NetworkPage />
-          </Body>
-        </Route>
-        <Route path="/settings">
-          <Body>
+          </Route>
+          <Route path="/settings">
             <SettingsPage />
-          </Body>
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/devices" />
-        </Route>
-      </Switch>
+          </Route>
+          <Route exact path="/">
+            <Redirect to="/devices" />
+          </Route>
+        </Switch>
+      </Body>
       <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
         <BottomNavigationAction label="Connections" value="/connections" icon={<Icon name="scrubber" size="lg" />} />
         <BottomNavigationAction label="Remote" value="/devices" icon={<Icon name="chart-network" size="lg" />} />

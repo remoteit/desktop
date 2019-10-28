@@ -4,10 +4,11 @@ import { Tooltip, IconButton, Link } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { pageName } from '../../helpers/pageNameHelper'
 import { Icon } from '../Icon'
+import { IDevice } from 'remote.it'
 import { LAST_PATH } from '../../helpers/regEx'
 import styles from '../../styling'
 
-export const Breadcrumbs: React.FC = () => {
+export const Breadcrumbs: React.FC<{ device?: IDevice }> = ({ device }) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -25,10 +26,14 @@ export const Breadcrumbs: React.FC = () => {
       </Tooltip>
       {crumbs.map((crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
+        const name = device && crumb === device.id ? device.name : pageName(crumbPath)
         return (
-          <Link key={index} onClick={() => history.push(crumbPath)}>
-            {pageName(crumbPath)} /
-          </Link>
+          <>
+            {index > 0 && <Icon name="chevron-left" size="xxs" fixedWidth />}
+            <Link key={index} onClick={() => history.push(crumbPath)}>
+              {name}
+            </Link>
+          </>
         )
       })}
     </div>

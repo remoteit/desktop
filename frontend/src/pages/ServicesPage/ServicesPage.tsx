@@ -26,8 +26,8 @@ export const ServicesPage = connect(
   mapState,
   mapDispatch
 )(({ connections, devices }: ServicesPageProps) => {
-  const { id } = useParams()
-  const device = devices.find(d => d.id === id)
+  const { deviceID } = useParams()
+  const device = devices.find(d => d.id === deviceID)
 
   if (!device) return <div>No device found.</div>
 

@@ -1,13 +1,15 @@
 import React from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
+import { IService } from 'remote.it'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { DisconnectButtonController } from '../../controllers/DisconnectButtonController'
 import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
-import { RestartButton } from '../RestartButton'
 import { ConnectButtonController } from '../../controllers/ConnectButtonController'
-import { ForgetButton } from '../ForgetButton'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
+import { RestartButton } from '../RestartButton'
+import { ForgetButton } from '../ForgetButton'
 import { CopyButton } from '../CopyButton'
-import { IService } from 'remote.it'
+import { Icon } from '../Icon'
 
 export interface ConnectedServiceItemProps {
   connection?: ConnectionInfo
@@ -15,12 +17,16 @@ export interface ConnectedServiceItemProps {
 }
 
 export function ConnectedServiceItem({ connection, service }: ConnectedServiceItemProps) {
+  const history = useHistory()
+  const location = useLocation()
+
   let state: ConnectionState = 'inactive'
   let connected: boolean = false
   let connecting: boolean = false
   let name: string = ''
   let port: number | undefined
   let error: boolean = false
+  let path: string = location.pathname
 
   if (connection) {
     connected = !!connection.pid
@@ -34,6 +40,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
     connecting = connecting || !!service.connecting
     name = service.name
     state = service.state
+    path += `/${service.id}`
   }
 
   // console.log('NAME', name)
@@ -45,7 +52,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
 
   return (
     <>
-      <ListItem>
+      <ListItem onClick={() => history.push(path)}>
         <ListItemIcon>
           <ConnectionStateIcon state={state} size="lg" />
         </ListItemIcon>
@@ -64,6 +71,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
           ) : (
             state === 'active' && service && <ConnectButtonController service={service} />
           )}
+          <Icon name="chevron-right" fixedWidth />
         </ListItemSecondaryAction>
       </ListItem>
       {connection && error && <ConnectionErrorMessage connection={connection} />}

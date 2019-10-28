@@ -19,7 +19,7 @@ export const DeviceListItem = ({ device }: DeviceListItemProps) => {
       </ListItemIcon>
       <ListItemText primary={device.name} />
       <ListItemSecondaryAction>
-        <Icon name="chevron-right" />
+        <Icon name="chevron-right" fixedWidth />
       </ListItemSecondaryAction>
     </ListItem>
   )
