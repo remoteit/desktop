@@ -1,12 +1,18 @@
 import React from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
+import { Dispatch } from '../../store'
+import { useDispatch } from 'react-redux'
 import { Icon } from '../Icon'
-import { DisconnectButtonControllerProps } from '../../controllers/DisconnectButtonController/DisconnectButtonController'
 
-export function DisconnectButton({ disconnect, disabled = false, id }: DisconnectButtonControllerProps) {
+export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: ConnectionInfo }> = ({
+  disabled = false,
+  connection,
+}) => {
+  const dispatch = useDispatch<Dispatch>()
+  if (!connection || !connection.connecting || !connection.pid) return null
   return (
     <Tooltip title="Disconnect">
-      <IconButton disabled={disabled} onClick={() => disconnect(id)}>
+      <IconButton disabled={disabled} onClick={() => dispatch.devices.disconnect(connection.id)}>
         <Icon name="times" color="gray-darker" size="md" weight="regular" fixedWidth />
       </IconButton>
     </Tooltip>

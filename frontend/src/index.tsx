@@ -18,6 +18,9 @@ const theme = createMuiTheme({
     secondary: { main: colors.secondary },
     error: { main: colors.danger },
   },
+  typography: {
+    fontFamily: 'Roboto, san-serif',
+  },
   overrides: {
     MuiListItemText: {
       root: {
@@ -55,9 +58,12 @@ const theme = createMuiTheme({
     MuiListItem: {
       button: {
         paddingLeft: spacing.sm,
-        paddingRight: spacing.xl,
+        paddingRight: spacing.sm,
         '&:hover, &:focus': {
           backgroundColor: colors.grayLightest,
+          '& .MuiListItemSecondaryAction-root': {
+            display: 'block',
+          },
         },
       },
     },
@@ -65,6 +71,11 @@ const theme = createMuiTheme({
       root: {
         // minWidth: 74,
         justifyContent: 'center',
+      },
+    },
+    MuiListItemSecondaryAction: {
+      root: {
+        display: 'none',
       },
     },
     MuiCollapse: {
@@ -86,9 +97,17 @@ const theme = createMuiTheme({
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.grayLightest,
+          borderRadius: 10,
           textDecoration: 'none',
           cursor: 'pointer',
         },
+      },
+    },
+    MuiTypography: {
+      subtitle1: {
+        padding: spacing.xl,
+        paddingBottom: spacing.xs,
+        borderBottom: `1px solid ${colors.grayLighter}`,
       },
     },
   },

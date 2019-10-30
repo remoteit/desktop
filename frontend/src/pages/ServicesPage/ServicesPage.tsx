@@ -2,6 +2,7 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { Typography } from '@material-ui/core'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 
@@ -34,7 +35,7 @@ export const ServicesPage = connect(
   return (
     <>
       <Breadcrumbs />
-      <h2>Services</h2>
+      <Typography variant="subtitle1">{device.name}</Typography>
       <ServiceList services={device.services} connections={connections} />
     </>
   )

@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, Divider } from '@material-ui/core'
+import { List, Divider, Typography } from '@material-ui/core'
 import { SettingsListItem } from '../../components/SettingsListItem'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
@@ -44,7 +44,7 @@ export const SettingsPage = connect(
     installed = false
     return (
       <div>
-        <h2>Settings</h2>
+        <Typography variant="subtitle1">Settings</Typography>
         <List>
           <SettingsListItem
             label="Send feedback"

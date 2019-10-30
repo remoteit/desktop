@@ -4,6 +4,6 @@ import { RestartButton } from './RestartButton'
 
 describe('components/RestartButton', () => {
   test('should not explode', () => {
-    mount(<RestartButton connected={false} id="foo" />)
+    mount(<RestartButton />)
   })
 })

@@ -5,6 +5,6 @@ import { service } from '../../helpers/mockData'
 
 describe('components/ConnectButton', () => {
   test('should not explode', () => {
-    mount(<ConnectButton service={service()} connect={jest.fn()} />)
+    mount(<ConnectButton service={service()} />)
   })
 })

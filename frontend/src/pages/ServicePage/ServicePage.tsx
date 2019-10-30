@@ -1,18 +1,10 @@
 import React from 'react'
-import { withRouter, useParams } from 'react-router-dom'
-import { connect, useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { Typography } from '@material-ui/core'
 import { IService } from 'remote.it'
-
-// const mapState = (state: ApplicationState, params: any) => {}
-// const mapDispatch = (dispatch: any) => ({})
-
-// export type ServicePageProps = ReturnType<typeof mapState> &
-//   ReturnType<typeof mapDispatch> & {
-//     connection?: ConnectionInfo
-//     service?: IService
-//   }
 
 export const ServicePage = () => {
   const { deviceID, serviceID } = useParams()
@@ -20,11 +12,14 @@ export const ServicePage = () => {
   const connection = useSelector((state: ApplicationState) => state.devices.connections.find(c => c.id === serviceID))
   const service = device && device.services.find(s => s.id === serviceID)
 
-  console.log('------------------->', device, service, connection)
+  console.log('------------------->', device)
+  console.log('------------------->', service)
+  console.log('------------------->', connection)
+
   return (
     <>
       <Breadcrumbs device={device} />
-      <h2>{service && service.name}</h2>
+      <Typography variant="subtitle1">{service && service.name}</Typography>
       <section>
         device: {JSON.stringify(device)}
         <br />

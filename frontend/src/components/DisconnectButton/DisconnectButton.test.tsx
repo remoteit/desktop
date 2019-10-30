@@ -4,6 +4,6 @@ import { DisconnectButton } from './DisconnectButton'
 
 describe('components/DisconnectButton', () => {
   test('should not explode', () => {
-    mount(<DisconnectButton disconnect={jest.fn()} id="some-id" />)
+    mount(<DisconnectButton />)
   })
 })

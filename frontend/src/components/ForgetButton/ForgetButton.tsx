@@ -1,26 +1,22 @@
 import React from 'react'
+import { Dispatch } from '../../store'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
-import { connect } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-const mapDispatch = (dispatch: any) => ({
-  forget: dispatch.devices.forget,
-})
-
-export type ForgetButtonProps = {
-  id: string
+type ForgetButtonProps = {
+  connection?: ConnectionInfo
   disabled?: boolean
-} & ReturnType<typeof mapDispatch>
+}
 
-export const ForgetButton = connect(
-  null,
-  mapDispatch
-)(({ disabled = false, forget, id }: ForgetButtonProps) => {
+export const ForgetButton: React.FC<ForgetButtonProps> = ({ disabled = false, connection }) => {
+  const dispatch = useDispatch<Dispatch>()
+  if (!connection || connection.connecting || connection.pid) return null
   return (
     <Tooltip title="Forget this connection">
-      <IconButton disabled={disabled} onClick={() => forget(id)}>
+      <IconButton disabled={disabled} onClick={() => dispatch.devices.forget(connection.id)}>
         <Icon name="times" color="gray" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )
-})
+}

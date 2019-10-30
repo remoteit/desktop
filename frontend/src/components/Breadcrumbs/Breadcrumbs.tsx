@@ -27,14 +27,15 @@ export const Breadcrumbs: React.FC<{ device?: IDevice }> = ({ device }) => {
       {crumbs.map((crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         const name = device && crumb === device.id ? device.name : pageName(crumbPath)
-        return (
-          <>
-            {index > 0 && <Icon name="chevron-left" size="xxs" fixedWidth />}
-            <Link key={index} onClick={() => history.push(crumbPath)}>
-              {name}
-            </Link>
-          </>
+        let result = []
+
+        if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="chevron-left" size="xxs" fixedWidth />)
+        result.push(
+          <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
+            {name}
+          </Link>
         )
+        return result
       })}
     </div>
   )

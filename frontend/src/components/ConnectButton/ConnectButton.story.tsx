@@ -7,6 +7,4 @@ import { action } from '@storybook/addon-actions'
 
 storiesOf('components/devices', module)
   .addDecorator(withKnobs)
-  .add('ConnectButton', () => (
-    <ConnectButton connect={action('connect')} service={service()} />
-  ))
+  .add('ConnectButton', () => <ConnectButton service={service()} />)

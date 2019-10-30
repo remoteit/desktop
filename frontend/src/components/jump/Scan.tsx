@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, CircularProgress, FormControl, Select, MenuItem } from '@material-ui/core'
+import { Button, CircularProgress, FormControl, Select, MenuItem, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import ScanNetwork from './ScanNetwork'
 import styles from '../../styling'
@@ -40,7 +40,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
 
   return (
     <>
-      <h2>Network Scan</h2>
+      <Typography variant="subtitle1">Network Scan</Typography>
       <section className={css.controls}>
         <FormControl>
           <Select value={interfaceName} onChange={event => setInterfaceName(event.target.value as string)}>

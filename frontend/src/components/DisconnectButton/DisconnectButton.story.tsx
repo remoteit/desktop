@@ -7,6 +7,4 @@ import { action } from '@storybook/addon-actions'
 
 storiesOf('components/devices', module)
   .addDecorator(withKnobs)
-  .add('DisconnectButton', () => (
-    <DisconnectButton disconnect={action('disconnect')} id={service().id} />
-  ))
+  .add('DisconnectButton', () => <DisconnectButton connection={service()} />)

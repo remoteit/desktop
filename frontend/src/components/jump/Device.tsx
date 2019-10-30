@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Targets from './Targets'
-import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar } from '@material-ui/core'
+import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
 import { NAME_SAFE } from '../../helpers/regEx'
@@ -31,7 +31,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
 
   return (
     <div>
-      <h2>Device</h2>
+      <Typography variant="subtitle1">Device</Typography>
       <section>
         <div className={css.name}>
           <TextField
@@ -89,7 +89,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
         </Button>
       </section>
 
-      <h2>Services</h2>
+      <Typography variant="subtitle1">Services</Typography>
       <section>
         {registered ? (
           <Targets device={device} {...props} />

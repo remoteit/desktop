@@ -6,19 +6,14 @@ import { ApplicationState } from '../../store'
 import { Icon } from '../Icon'
 import { isElectron } from '../../services/Platform'
 import * as screenfull from 'screenfull'
-import OutOfBand from './OutOfBand'
 import styles from '../../styling'
 
-const mapState = (state: ApplicationState) => ({
-  user: state.auth.user,
-  interfaces: state.jump.interfaces,
-})
-
+const mapState = (state: ApplicationState) => ({ user: state.auth.user })
 const mapDispatch = (dispatch: any) => ({})
 
 type Props = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
-const Component: React.FC<Props> = ({ user, interfaces }) => {
+const Component: React.FC<Props> = ({ user }) => {
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
   const css = useStyles()
@@ -31,9 +26,6 @@ const Component: React.FC<Props> = ({ user, interfaces }) => {
   return (
     <div className={css.header}>
       <Typography>remote.it</Typography>
-      <span>
-        <OutOfBand active={interfaces.length > 1} />
-      </span>
       {!isElectron() && fullscreenEnabled && (
         <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
           <IconButton onClick={toggleFullscreen}>
@@ -62,11 +54,6 @@ const useStyles = makeStyles({
     '-webkit-app-region': 'drag',
     '& img': {
       width: 120,
-    },
-    '& > span': {
-      top: 8,
-      position: 'absolute',
-      right: styles.spacing.sm,
     },
     '& .MuiButtonBase-root': {
       position: 'absolute',

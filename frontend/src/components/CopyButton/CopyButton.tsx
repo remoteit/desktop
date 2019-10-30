@@ -9,11 +9,20 @@ export interface CopyButtonProps {
   size?: FontSize
   text: string
   title?: string
+  show?: boolean
   [key: string]: any
 }
 
-export function CopyButton({ color = 'gray', size = 'md', text, title = 'Copy', ...props }: CopyButtonProps) {
+export function CopyButton({
+  color = 'gray',
+  size = 'md',
+  text,
+  title = 'Copy',
+  show = true,
+  ...props
+}: CopyButtonProps) {
   const clipboard = useClipboard({ copiedTimeout: 1000 })
+  if (!show) return null
   return (
     <span {...props}>
       <Tooltip title={title}>

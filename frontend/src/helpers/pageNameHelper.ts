@@ -2,7 +2,7 @@ import { LAST_PATH } from './regEx'
 
 const pageNameMap: { [path: string]: string } = {
   '/connections': 'Connections',
-  '/devices': 'Remote List',
+  '/devices': 'Remote Devices',
   '/setup': 'Local Setup',
   '/network': 'Network',
   '/settings': 'Settings',

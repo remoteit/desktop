@@ -1,15 +1,19 @@
 import React from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
 import { IService } from 'remote.it'
+import { useSelector } from 'react-redux'
+import { useHistory, useLocation } from 'react-router-dom'
+import { ApplicationState } from '../../store'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { DisconnectButtonController } from '../../controllers/DisconnectButtonController'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
-import { ConnectButtonController } from '../../controllers/ConnectButtonController'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
+import { DisconnectButton } from '../DisconnectButton'
 import { RestartButton } from '../RestartButton'
+import { ConnectButton } from '../ConnectButton'
 import { ForgetButton } from '../ForgetButton'
+import { NextButton } from '../NextButton'
 import { CopyButton } from '../CopyButton'
-import { Icon } from '../Icon'
+import { makeStyles } from '@material-ui/styles'
+import { FIRST_PATH } from '../../helpers/regEx'
 
 export interface ConnectedServiceItemProps {
   connection?: ConnectionInfo
@@ -19,6 +23,8 @@ export interface ConnectedServiceItemProps {
 export function ConnectedServiceItem({ connection, service }: ConnectedServiceItemProps) {
   const history = useHistory()
   const location = useLocation()
+  const devices = useSelector((state: ApplicationState) => state.devices.all)
+  const css = useStyles()
 
   let state: ConnectionState = 'inactive'
   let connected: boolean = false
@@ -26,7 +32,9 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
   let name: string = ''
   let port: number | undefined
   let error: boolean = false
-  let path: string = location.pathname
+  let match = location.pathname.match(FIRST_PATH)
+  let path: string = match ? match[0] : '/'
+  let id = ''
 
   if (connection) {
     connected = !!connection.pid
@@ -34,47 +42,43 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
     error = !!connection.error
     port = connection.port
     name = connection.name
+    id = connection.id
   }
 
   if (service) {
     connecting = connecting || !!service.connecting
     name = service.name
     state = service.state
-    path += `/${service.id}`
+    id = service.id
   }
-
-  // console.log('NAME', name)
-  // console.log('SERVICE', service)
-  // console.log('CONNECTION', connection)
 
   if (connected) state = 'connected'
   if (connecting) state = 'connecting'
 
+  function click() {
+    const device = devices.find(d => d.services.find(s => s.id === id))
+    if (device) history.push(`${path}/${device.id}/${id}`)
+  }
+
   return (
     <>
-      <ListItem onClick={() => history.push(path)}>
+      <ListItem onClick={click} button>
         <ListItemIcon>
           <ConnectionStateIcon state={state} size="lg" />
         </ListItemIcon>
         <ListItemText primary={name} secondary={port && `localhost:${port}`} />
-        <ListItemSecondaryAction>
-          {port && <CopyButton title="Copy connection URL" text={`localhost:${port}`} />}
-          {connection ? (
-            <>
-              {connecting || connected ? (
-                <DisconnectButtonController id={connection.id} />
-              ) : (
-                <ForgetButton id={connection.id} />
-              )}
-              {!connected && !connecting && <RestartButton id={connection.id} />}
-            </>
-          ) : (
-            state === 'active' && service && <ConnectButtonController service={service} />
-          )}
-          <Icon name="chevron-right" fixedWidth />
+        <ListItemSecondaryAction className={css.actions}>
+          <CopyButton show={!!port} title="Copy connection URL" text={`localhost:${port}`} />
+          <DisconnectButton connection={connection} />
+          <ForgetButton connection={connection} />
+          <RestartButton connection={connection} />
+          <ConnectButton service={service} connection={connection} />
         </ListItemSecondaryAction>
+        <NextButton />
       </ListItem>
       {connection && error && <ConnectionErrorMessage connection={connection} />}
     </>
   )
 }
+
+const useStyles = makeStyles({ actions: { right: 60 } })

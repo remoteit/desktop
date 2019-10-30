@@ -1,39 +1,48 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { connect } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import { makeStyles } from '@material-ui/styles'
+import OutOfBand from '../../components/jump/OutOfBand'
 import Network from '../../components/jump/Network'
 import BackendAdaptor from '../../services/BackendAdapter'
+import styles from '../../styling'
 
-const mapState = (state: ApplicationState) => ({
-  scanData: state.jump.scanData,
-  targets: state.jump.targets,
-  interfaces: state.jump.interfaces,
-})
-
-const mapDispatch = (dispatch: any) => ({
-  setAdded: dispatch.jump.setAdded,
-})
-
-export type NetworkPageProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
-
-export const NetworkPage = connect(
-  mapState,
-  mapDispatch
-)(({ scanData, targets, interfaces, setAdded }: NetworkPageProps) => {
+export const NetworkPage: React.FC = () => {
+  const css = useStyles()
   const history = useHistory()
+  const { jump } = useDispatch<Dispatch>()
+  const { interfaces, targets, scanData } = useSelector((state: ApplicationState) => ({
+    interfaces: state.jump.interfaces,
+    targets: state.jump.targets,
+    scanData: state.jump.scanData,
+  }))
+
   const scan = (interfaceName: string) => BackendAdaptor.emit('jump/scan', interfaceName)
 
   return (
-    <Network
-      data={scanData}
-      targets={targets}
-      interfaces={interfaces}
-      onScan={scan}
-      onAdd={target => {
-        history.push('/setup')
-        setAdded(target)
-      }}
-    />
+    <>
+      <span className={css.oob}>
+        <OutOfBand active={interfaces.length > 1} />
+      </span>
+      <Network
+        data={scanData}
+        targets={targets}
+        interfaces={interfaces}
+        onScan={scan}
+        onAdd={target => {
+          history.push('/setup')
+          jump.setAdded(target)
+        }}
+      />
+    </>
   )
+}
+
+const useStyles = makeStyles({
+  oob: {
+    top: styles.spacing.lg,
+    right: styles.spacing.lg,
+    position: 'absolute',
+  },
 })

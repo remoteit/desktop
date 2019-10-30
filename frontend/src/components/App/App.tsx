@@ -89,6 +89,9 @@ export const App = connect(
       <Header />
       <Body>
         <Switch>
+          <Route path="/connections/:deviceID/:serviceID">
+            <ServicePage />
+          </Route>
           <Route path="/connections">
             <ConnectionsPage />
           </Route>

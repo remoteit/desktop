@@ -1,35 +1,24 @@
 import React from 'react'
+import { Dispatch } from '../../store'
 import { Tooltip, IconButton } from '@material-ui/core'
+import { useDispatch } from 'react-redux'
 import { Icon } from '../Icon'
-import { connect } from 'react-redux'
-
-const mapDispatch = (dispatch: any) => ({
-  restart: dispatch.devices.restart,
-})
 
 export type RestartButtonProps = {
-  id: string
-  connected?: boolean
+  connection?: ConnectionInfo
   disabled?: boolean
-} & ReturnType<typeof mapDispatch>
+}
 
-export const RestartButton = connect(
-  null,
-  mapDispatch
-)(({ connected, disabled = false, restart, id }: RestartButtonProps) => {
+export const RestartButton: React.FC<RestartButtonProps> = ({ disabled = false, connection }) => {
+  const dispatch = useDispatch<Dispatch>()
+  if (!connection || connection.connecting || connection.pid) return null
   return (
     <Tooltip title="Re-connect">
       <span>
-        <IconButton disabled={disabled} onClick={() => restart(id)}>
-          <Icon
-            name={connected ? 'redo' : 'arrow-right'}
-            color={disabled ? 'gray' : 'primary'}
-            size="md"
-            weight="regular"
-            fixedWidth
-          />
+        <IconButton disabled={disabled} color="primary" onClick={() => dispatch.devices.restart(connection.id)}>
+          <Icon name="redo" size="md" weight="regular" fixedWidth />
         </IconButton>
       </span>
     </Tooltip>
   )
-})
+}
