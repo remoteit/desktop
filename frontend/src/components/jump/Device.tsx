@@ -23,6 +23,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
   const [deleting, setDeleting] = useState<boolean>(false)
   const [notice, setNotice] = useState<boolean>(false)
   const registered = !!device.uid
+  const confirmMessage = "Are you sure?\nYou are about to permanently remove this device and all of it's services."
 
   useEffect(() => {
     if (registering && device.uid) setRegistering(false)
@@ -32,7 +33,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
   return (
     <div>
       <Typography variant="subtitle1">Device</Typography>
-      <section>
+      <section className={css.device}>
         <div className={css.name}>
           <TextField
             label="Device Name"
@@ -55,10 +56,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
               <Tooltip title="Delete">
                 <IconButton
                   onClick={() => {
-                    if (
-                      window.confirm(`Are you sure?
-                      You are about to permanently remove this device and all of it's services.`)
-                    ) {
+                    if (window.confirm(confirmMessage)) {
                       onDelete()
                       setDeleting(true)
                     }
@@ -115,6 +113,10 @@ const useStyles = makeStyles({
       marginTop: styles.spacing.md,
       marginLeft: styles.spacing.md,
     },
+  },
+  device: {
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   register: {
     marginTop: styles.spacing.md,

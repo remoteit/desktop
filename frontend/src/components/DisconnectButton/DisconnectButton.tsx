@@ -9,7 +9,7 @@ export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: Conne
   connection,
 }) => {
   const dispatch = useDispatch<Dispatch>()
-  if (!connection || !connection.connecting || !connection.pid) return null
+  if (!connection || connection.connecting || !connection.pid) return null
   return (
     <Tooltip title="Disconnect">
       <IconButton disabled={disabled} onClick={() => dispatch.devices.disconnect(connection.id)}>

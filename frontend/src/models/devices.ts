@@ -212,21 +212,24 @@ export default createModel({
         ? (state.connections[state.connections.indexOf(existingConnection)] = connection)
         : state.connections.push(connection)
 
-      const [serv, device] = findService(state.all, connection.id)
+      const [service, device] = findService(state.all, connection.id)
 
-      if (serv) {
-        serv.state = connection.pid ? 'connected' : 'active'
-        serv.port = connection.port
-        serv.pid = connection.pid
-        serv.connecting = false
+      // FIXME - remove connection state info from service model and stop overloading state
+      if (service) {
+        service.state = connection.pid ? 'connected' : 'active'
+        service.port = connection.port
+        service.pid = connection.pid
+        service.connecting = false
 
-        if (device && serv.pid) device.state = 'connected'
+        if (device && service.pid) device.state = 'connected'
       }
     },
     setConnections(state: DeviceState, connections: ConnectionInfo[]) {
       state.connections = connections
     },
     disconnected(state: DeviceState, msg: ConnectdMessage) {
+      console.log('DISCONNECTED', msg)
+
       const id = msg.connection.id
       const conn = state.connections.find(c => c.id === id)
       if (conn) {
@@ -244,25 +247,27 @@ export default createModel({
         }
       }
 
+      // FIXME - remove connection state info from service model and stop overloading state
       if (service) {
-        // serv.state = 'disconnected'
+        service.state = 'active'
         service.pid = undefined
         service.connecting = false
       }
     },
     remove(state: DeviceState, id: string) {
       const conn = state.connections.find(c => c.id === id)
-      const [serv] = findService(state.all, id)
+      const [service] = findService(state.all, id)
 
       if (conn) {
         state.connections.splice(state.connections.indexOf(conn), 1)
       }
 
-      if (serv) {
-        serv.state = 'active'
-        serv.port = undefined
-        serv.pid = undefined
-        serv.connecting = false
+      // FIXME - remove connection state info from service model and stop overloading state
+      if (service) {
+        service.state = 'active'
+        service.port = undefined
+        service.pid = undefined
+        service.connecting = false
       }
 
       // TODO: decide if device should be connected

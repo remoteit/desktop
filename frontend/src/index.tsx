@@ -59,6 +59,9 @@ const theme = createMuiTheme({
       button: {
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
+        '& .MuiListItemSecondaryAction-root': {
+          display: 'none',
+        },
         '&:hover, &:focus': {
           backgroundColor: colors.grayLightest,
           '& .MuiListItemSecondaryAction-root': {
@@ -69,13 +72,7 @@ const theme = createMuiTheme({
     },
     MuiListItemIcon: {
       root: {
-        // minWidth: 74,
         justifyContent: 'center',
-      },
-    },
-    MuiListItemSecondaryAction: {
-      root: {
-        display: 'none',
       },
     },
     MuiCollapse: {
@@ -84,9 +81,15 @@ const theme = createMuiTheme({
       },
     },
     MuiInput: {
+      root: {
+        '&.Mui-disabled': {
+          color: colors.grayDarker,
+          '& svg': { display: 'none' },
+        },
+      },
       underline: {
         '&.Mui-disabled:before': {
-          borderCo: colors.grayLight,
+          borderColor: colors.grayLight,
         },
       },
     },
@@ -105,7 +108,9 @@ const theme = createMuiTheme({
     },
     MuiTypography: {
       subtitle1: {
-        padding: spacing.xl,
+        display: 'flex',
+        alignItems: 'center',
+        padding: 32,
         paddingBottom: spacing.xs,
         borderBottom: `1px solid ${colors.grayLighter}`,
       },

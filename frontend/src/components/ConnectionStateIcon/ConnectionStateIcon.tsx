@@ -2,16 +2,27 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
+import { IService, IDevice } from 'remote.it'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
-  state: ConnectionState
+  connection?: ConnectionInfo
+  service?: IService
+  state?: ConnectionState
 }
 
-export function ConnectionStateIcon({ state, ...props }: ConnectionStateIconProps) {
+export function ConnectionStateIcon({ connection, service, state, ...props }: ConnectionStateIconProps) {
   let icon = 'question-circle'
   let color: BrandColors = 'warning'
 
-  if (state === 'active' || state === 'disconnected') {
+  state = state || (service ? service.state : 'inactive')
+  if (service && service.connecting) state = 'connecting'
+
+  if (connection) {
+    if (connection.pid) state = 'connected'
+    if (connection.connecting) state = 'connecting'
+  }
+
+  if (state === 'active') {
     icon = 'check-circle'
     color = 'success'
   } else if (state === 'inactive') {

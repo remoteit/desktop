@@ -5,24 +5,28 @@ import { useClipboard } from 'use-clipboard-copy'
 import { FontSize } from '../../styling'
 
 export interface CopyButtonProps {
+  connection?: ConnectionInfo
   color?: BrandColors
   size?: FontSize
-  text: string
+  text?: string
   title?: string
-  show?: boolean
   [key: string]: any
 }
 
 export function CopyButton({
+  connection,
   color = 'gray',
   size = 'md',
   text,
   title = 'Copy',
-  show = true,
   ...props
 }: CopyButtonProps) {
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  if (!show) return null
+  if (connection) {
+    title = 'Copy connection URL'
+    text = connection.port ? `localhost:${connection.port}` : text
+  }
+  if (!text) return null
   return (
     <span {...props}>
       <Tooltip title={title}>

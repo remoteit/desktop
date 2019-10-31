@@ -88,6 +88,8 @@ const useStyles = makeStyles({
   },
   controls: {
     paddingBottom: styles.spacing.md,
+    display: 'flex',
+    justifyContent: 'space-between',
     '& .MuiCircularProgress-root': {
       marginLeft: styles.spacing.md,
     },
