@@ -11,20 +11,22 @@ import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
-import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
+import { BottomNavigation, BottomNavigationAction, Snackbar } from '@material-ui/core'
 import { SetupPage } from '../../pages/SetupPage'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
+import { LanSharePage } from '../../pages/LanSharePage'
 import { InstallationNotice } from '../InstallationNotice'
 import { ApplicationState } from '../../store'
-import { FIRST_PATH } from '../../helpers/regEx'
+import { REGEX_FIRST_PATH } from '../../constants'
 import BackendAdaptor from '../../services/BackendAdapter'
 
 const mapState = (state: ApplicationState) => ({
-  checkSignInStarted: state.auth.checkSignInStarted,
   user: state.auth.user,
+  connected: state.ui.connected,
+  checkSignInStarted: state.auth.checkSignInStarted,
   installed: state.binaries.connectdInstalled && state.binaries.muxerInstalled && state.binaries.demuxerInstalled,
 })
 const mapDispatch = (dispatch: any) => ({
@@ -36,13 +38,13 @@ export type AppProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispat
 export const App = connect(
   mapState,
   mapDispatch
-)(({ checkSignIn, installed, checkSignInStarted, user }: AppProps) => {
+)(({ checkSignIn, installed, checkSignInStarted, user, connected }: AppProps) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
   const [navigation, setNavigation] = useState<{ [menu: string]: string }>({})
 
-  const match = location.pathname.match(FIRST_PATH)
+  const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/'
 
   const changeNavigation = (_: any, selected: string) => {
@@ -89,11 +91,17 @@ export const App = connect(
       <Header />
       <Body>
         <Switch>
+          <Route path="/connections/:serviceID/lan">
+            <LanSharePage />
+          </Route>
           <Route path="/connections/:serviceID">
             <ServicePage />
           </Route>
           <Route path="/connections">
             <ConnectionsPage />
+          </Route>
+          <Route path="/devices/:deviceID/:serviceID/lan">
+            <LanSharePage />
           </Route>
           <Route path="/devices/:deviceID/:serviceID">
             <ServicePage />
@@ -125,6 +133,7 @@ export const App = connect(
         <BottomNavigationAction label="Network" value="/network" icon={<Icon name="network-wired" size="lg" />} />
         <BottomNavigationAction label="Settings" value="/settings" icon={<Icon name="cog" size="lg" />} />
       </BottomNavigation>
+      <Snackbar open={!connected} message="Webserver connection lost. Retrying..." />
     </Page>
   )
 })

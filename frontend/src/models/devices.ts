@@ -2,6 +2,7 @@ import fuzzy from 'fuzzy'
 import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
 import Device from '../services/Device'
+import { renameServices } from '../helpers/serviceNameHelper'
 import BackendAdapter from '../services/BackendAdapter'
 import { r3 } from '../services/remote.it'
 
@@ -64,6 +65,7 @@ export default createModel({
       return (
         r3.devices
           .all()
+          .then(renameServices)
           .then(setDevices)
           // Get connections again so we can update the incoming found
           // device state against our list of locally connected services.
@@ -227,6 +229,15 @@ export default createModel({
     setConnections(state: DeviceState, connections: ConnectionInfo[]) {
       state.connections = connections
     },
+    setConnection(state: DeviceState, connection: ConnectionInfo) {
+      for (let i = state.connections.length; --i; ) {
+        if (state.connections[i].id === connection.id) {
+          state.connections[i] = connection
+          break
+        }
+      }
+      // state.connections = [ ...state.connections, connection ]
+    },
     disconnected(state: DeviceState, msg: ConnectdMessage) {
       console.log('DISCONNECTED', msg)
 
@@ -304,7 +315,7 @@ function filterDevices(devices: IDevice[], query: string) {
   return fuzzy.filter(query, devices, options).map(d => d.original)
 }
 
-function findService(devices: IDevice[], id: string) {
+export function findService(devices: IDevice[], id: string) {
   return devices.reduce(
     (all, d) => {
       const service = d.services.find(s => s.id === id)

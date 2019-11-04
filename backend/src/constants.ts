@@ -16,3 +16,10 @@ export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00N
 
 export const REMOTEIT_EXEC = 'remoteit'
 export const SCRIPT_PATH = __dirname + '/bin/'
+
+export const IP_OPEN: ipAddress = '0.0.0.0'
+export const IP_LATCH: ipAddress = '255.255.255.255'
+export const IP_CLASS_A: ipAddress = '192.0.0.0'
+export const IP_CLASS_B: ipAddress = '192.168.0.0'
+export const IP_CLASS_C: ipAddress = '192.168.2.0'
+export const IP_PRIVATE: ipAddress = '127.0.0.1'

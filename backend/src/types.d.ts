@@ -15,6 +15,7 @@ declare global {
     name?: string
     pid?: number
     error?: Error
+    lanShare?: ipAddress
   }
 
   interface ConnectionArgs {
@@ -23,6 +24,7 @@ declare global {
     id: string
     name?: string
     port?: number
+    lanShare?: ipAddress
     username: string
   }
 

@@ -3,7 +3,7 @@ import Targets from './Targets'
 import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
-import { NAME_SAFE } from '../../helpers/regEx'
+import { REGEX_NAME_SAFE } from '../../constants'
 import styles from '../../styling'
 
 type Props = {
@@ -41,7 +41,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
             disabled={registered}
             value={name || device.name}
             onChange={event => {
-              const value = event.target.value.replace(NAME_SAFE, '')
+              const value = event.target.value.replace(REGEX_NAME_SAFE, '')
               if (value !== event.target.value) setNotice(true)
               setName(value)
             }}

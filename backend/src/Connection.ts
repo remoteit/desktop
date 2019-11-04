@@ -5,17 +5,19 @@ import Logger from './Logger'
 import Tracker from './Tracker'
 import { execFile, ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
+import { IP_OPEN, IP_PRIVATE } from './constants'
 
 const d = debug('r3:backend:Connection')
 
 export default class Connection extends EventEmitter {
   autoStart: boolean
   id: string
-  host: string
+  host: ipAddress
   name?: string
   pid?: number
   error?: Error
   port: number
+  lanShare?: ipAddress
   private authHash: string
   private username: string
   private process?: ChildProcess
@@ -45,13 +47,15 @@ export default class Connection extends EventEmitter {
     host?: string
     name?: string
     error?: Error
+    lanShare?: ipAddress
   }) {
     super()
     this.autoStart = typeof args.autoStart === 'undefined' ? true : args.autoStart
     this.authHash = args.authHash
     this.id = args.id
-    this.host = args.host || '127.0.0.1'
+    this.host = args.host || IP_PRIVATE
     this.port = args.port
+    this.lanShare = args.lanShare
     this.name = args.name || `${this.host}:${this.port}`
     this.username = args.username
   }
@@ -77,12 +81,13 @@ export default class Connection extends EventEmitter {
       this.id, // Service ID
       `T${this.port}`, // Bind port
       '2', // Encryption
-      this.host, // Bind address
-      '0.0.0.0', // Restricted connection IP
+      this.lanShare ? IP_OPEN : this.host, // Bind address
+      this.lanShare || IP_OPEN, // Restricted connection IP
       '12', // Max out
       '0', // Lifetime
       '0', // Grace period
     ]
+
     this.process = execFile(
       ConnectdInstaller.binaryPath,
       params,
@@ -162,6 +167,7 @@ export default class Connection extends EventEmitter {
       port: this.port,
       name: this.name,
       error: this.error,
+      lanShare: this.lanShare,
     }
   }
 

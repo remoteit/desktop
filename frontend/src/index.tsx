@@ -110,7 +110,7 @@ const theme = createMuiTheme({
       subtitle1: {
         display: 'flex',
         alignItems: 'center',
-        padding: 32,
+        padding: 28,
         paddingBottom: spacing.xs,
         borderBottom: `1px solid ${colors.grayLighter}`,
       },

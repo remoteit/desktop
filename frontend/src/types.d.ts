@@ -6,6 +6,7 @@ declare global {
    */
   export type SortType = 'alpha' | 'state'
 
+  // @FIXME this should only be connection state info, not overloading device / service state
   export type ConnectionState = DeviceState | ServiceState | 'connecting' | 'disconnected'
   // | 'active''
   // | 'inactive

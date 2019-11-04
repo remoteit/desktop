@@ -1,7 +1,8 @@
 const separator = ' - '
 
 export function removeNameExt(deviceName: string, name: string) {
-  return name.toString().replace(deviceName + separator, '')
+  const nameExt = new RegExp(`^${deviceName}[\- _]+`, 'gi')
+  return name.toString().replace(nameExt, '')
 }
 
 export function addNameExt(deviceName: string, ext: string) {

@@ -30,6 +30,7 @@ declare global {
     // built-in events
     | 'connect'
     | 'disconnect'
+    | 'connect_error'
 
     // user/auth
     | 'user/signed-out'
@@ -60,8 +61,6 @@ declare global {
     | 'binary/not-installed'
 
     // jump
-    | 'jump/connect'
-    | 'jump/connect_error'
     | 'jump/targets'
     | 'jump/device'
     | 'jump/scan'
@@ -83,6 +82,7 @@ declare global {
     port?: number
     pid?: number
     connecting?: boolean
+    lanShare?: ipAddress
     error?: {
       code?: number
       message: string
@@ -130,6 +130,8 @@ declare global {
   export type IInterface = { [key: string]: any }
 
   export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
+
+  export type ipAddress = string // namespace to indicate if expecting an ip address
 
   // export enum ConnectdEvent {
   //   error = 'service/error',

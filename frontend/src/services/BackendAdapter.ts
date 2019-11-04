@@ -42,6 +42,7 @@ const { devices, binaries, auth, jump } = store.dispatch
 const handlers: EventHandlers = {
   connect: () => store.dispatch.ui.connected(),
   disconnect: () => store.dispatch.ui.disconnected(),
+  connect_error: () => jump.setError(true),
 
   // Connections
   'service/connect/started': (conn: ConnectionInfo) => devices.connectStart(conn.id),
@@ -75,8 +76,6 @@ const handlers: EventHandlers = {
   'user/signed-in': (user: IUser) => auth.signedIn(user),
 
   // jump
-  'jump/connect': () => jump.setError(false),
-  'jump/connect_error': () => jump.setError(true),
   'jump/targets': (result: ITarget[]) => {
     console.log('socket targets', result)
     if (result) {
