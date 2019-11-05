@@ -1,6 +1,6 @@
 import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C } from '../constants'
 
-export function lanShareRestriction(address: string) {
+export function lanShareRestriction(address?: string) {
   switch (address) {
     case undefined:
       return 'Off'

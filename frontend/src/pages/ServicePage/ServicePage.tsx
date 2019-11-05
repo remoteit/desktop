@@ -41,7 +41,7 @@ export const ServicePage: React.FC = () => {
         <ConnectButton connection={connection} service={service} />
       </Typography>
       <section>
-        <LanShareSelect onClick={() => history.push(location.pathname + '/lan')} />
+        <LanShareSelect onClick={() => history.push(location.pathname + '/lan')} serviceID={service && service.id} />
       </section>
     </>
   )
