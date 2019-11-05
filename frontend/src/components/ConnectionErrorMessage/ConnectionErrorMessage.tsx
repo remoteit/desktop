@@ -11,7 +11,7 @@ const mapDispatch = (dispatch: any) => ({
 })
 
 export type ConnectionErrorMessageProps = {
-  connection: ConnectionInfo
+  connection: IConnection
 } & ReturnType<typeof mapDispatch>
 
 export const ConnectionErrorMessage = connect(

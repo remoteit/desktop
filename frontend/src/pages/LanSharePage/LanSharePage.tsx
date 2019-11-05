@@ -20,7 +20,7 @@ export const LanSharePage: React.FC = () => {
     let c = state.devices.connections.find(c => c.id === serviceID)
     if (!c && serviceID) {
       const [service] = findService(state.devices.all, serviceID)
-      if (service) c = { id: service.id, name: service.name, type: service.type }
+      if (service) c = { id: service.id, name: service.name }
     }
     return c
   })

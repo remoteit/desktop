@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { Icon } from '../Icon'
 
 export type ConnectButtonProps = {
-  connection?: ConnectionInfo
+  connection?: IConnection
   service?: IService
 }
 

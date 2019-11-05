@@ -4,7 +4,7 @@ import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
 import { Icon } from '../Icon'
 
-export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: ConnectionInfo }> = ({
+export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: IConnection }> = ({
   disabled = false,
   connection,
 }) => {

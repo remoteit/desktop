@@ -5,7 +5,7 @@ import { useClipboard } from 'use-clipboard-copy'
 import { FontSize } from '../../styling'
 
 export interface CopyButtonProps {
-  connection?: ConnectionInfo
+  connection?: IConnection
   color?: BrandColors
   size?: FontSize
   text?: string

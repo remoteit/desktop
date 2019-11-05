@@ -5,7 +5,7 @@ import { Tooltip } from '@material-ui/core'
 import { IService, IDevice } from 'remote.it'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
-  connection?: ConnectionInfo
+  connection?: IConnection
   service?: IService
   state?: ConnectionState
 }

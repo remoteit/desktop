@@ -14,7 +14,7 @@ const SEARCH_ONLY_SETTING_KEY = 'search-only'
 
 interface DeviceState {
   all: IDevice[]
-  connections: ConnectionInfo[]
+  connections: IConnection[]
   searchPerformed: boolean
   fetched: boolean
   fetching: boolean
@@ -105,7 +105,7 @@ export default createModel({
       )
     },
     async getConnections() {
-      BackendAdapter.emit('connections/list', (connections: ConnectionInfo[]) => {
+      BackendAdapter.emit('connections/list', (connections: IConnection[]) => {
         connections.map(conn => dispatch.devices.connected(conn))
       })
 
@@ -202,7 +202,7 @@ export default createModel({
           message: msg.error,
         }
     },
-    connected(state: DeviceState, connection: ConnectionInfo) {
+    connected(state: DeviceState, connection: IConnection) {
       console.log('CONNECTED', connection)
       let existingConnection = state.connections.find(c => c.id === connection.id)
 
@@ -226,10 +226,10 @@ export default createModel({
         if (device && service.pid) device.state = 'connected'
       }
     },
-    setConnections(state: DeviceState, connections: ConnectionInfo[]) {
+    setConnections(state: DeviceState, connections: IConnection[]) {
       state.connections = connections
     },
-    setConnection(state: DeviceState, connection: ConnectionInfo) {
+    setConnection(state: DeviceState, connection: IConnection) {
       for (let i = state.connections.length; --i; ) {
         if (state.connections[i].id === connection.id) {
           state.connections[i] = connection

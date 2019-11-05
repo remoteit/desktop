@@ -8,21 +8,11 @@ declare global {
     authHash: string
   }
 
-  interface ConnectionData {
-    autoStart?: boolean
-    id: string
-    port: number
-    name?: string
-    pid?: number
-    error?: Error
-    lanShare?: ipAddress
-  }
-
   interface ConnectionArgs {
     authHash: string
     host?: string
     id: string
-    name?: string
+    name: string
     port?: number
     lanShare?: ipAddress
     username: string
@@ -30,7 +20,9 @@ declare global {
 
   interface SavedConnection {
     id: string
-    port: number
-    name?: string
+    port?: number
+    name: string
+    lanShare?: ipAddress
+    autoStart?: boolean
   }
 }

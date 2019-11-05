@@ -37,7 +37,7 @@ export default class TrayMenu {
     this.render()
   }
 
-  private updateConnectionMenu = (pool: ConnectionData[]) => {
+  private updateConnectionMenu = (pool: IConnection[]) => {
     this.connections = pool.map(connection => ({
       label: connection.name,
       icon: connection.pid ? iconConnected : iconOnline,
@@ -105,11 +105,11 @@ export default class TrayMenu {
     application.pool.stop(id)
   }
 
-  private copy(port: number) {
+  private copy(port?: number) {
     electron.clipboard.writeText(`localhost:${port}`)
   }
 
-  private launch(port: number) {
+  private launch(port?: number) {
     electron.shell.openExternal(`http://localhost:${port}`)
   }
 }

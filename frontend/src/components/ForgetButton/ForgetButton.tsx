@@ -5,7 +5,7 @@ import { Icon } from '../Icon'
 import { useDispatch } from 'react-redux'
 
 type ForgetButtonProps = {
-  connection?: ConnectionInfo
+  connection?: IConnection
   disabled?: boolean
 }
 

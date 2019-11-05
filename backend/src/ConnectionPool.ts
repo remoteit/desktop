@@ -19,7 +19,7 @@ export default class ConnectionPool {
     updated: 'pool/updated',
   }
 
-  constructor(connections: ConnectionData[], user?: UserCredentials) {
+  constructor(connections: IConnection[], user?: UserCredentials) {
     Logger.info('Initializing connections pool', { connections })
 
     this.user = user
@@ -36,7 +36,7 @@ export default class ConnectionPool {
     EventBus.on(ElectronApp.EVENTS.ready, this.updated)
   }
 
-  connect = async (args: { id: string; port?: number; name?: string; autoStart?: boolean }) => {
+  connect = async (args: { id: string; name: string; port?: number; autoStart?: boolean }) => {
     d('Connecting:', args)
 
     if (!args.id) throw new Error('No service id to create a connection!')
@@ -116,9 +116,9 @@ export default class ConnectionPool {
     EventBus.emit(ConnectionPool.EVENTS.updated, this.toJSON())
   }
 
-  toJSON = (): ConnectionData[] => {
+  toJSON = (): IConnection[] => {
     const ids = Object.keys(this.pool)
-    return ids.map(id => this.pool[id].toJSON()).sort((c: ConnectionData) => (c.pid ? -1 : 1))
+    return ids.map(id => this.pool[id].toJSON()).sort((c: IConnection) => (c.pid ? -1 : 1))
   }
 
   private freePort = async () => {

@@ -2,6 +2,7 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../constants'
 
 interface IJumpState {
+  connection: IConnection[]
   device: IDevice
   targets: ITarget[]
   scanData: IScanData
@@ -11,6 +12,7 @@ interface IJumpState {
 }
 
 const state: IJumpState = {
+  connection: [],
   device: DEFAULT_TARGET,
   targets: [],
   scanData: { wlan0: { data: [], timestamp: 0 } },
@@ -22,6 +24,9 @@ const state: IJumpState = {
 export default createModel({
   state,
   reducers: {
+    setConnection(state: IJumpState, connection: IConnection[]) {
+      state.connection = connection
+    },
     setDevice(state: IJumpState, device: IDevice) {
       state.device = device
     },

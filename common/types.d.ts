@@ -74,15 +74,16 @@ declare global {
     version: string
   }
 
-  export interface ConnectionInfo {
-    deviceID?: string
+  export interface IConnection {
     id: string
     name: string
-    type: string
+    // type?: string
     port?: number
     pid?: number
-    connecting?: boolean
+    deviceID?: string
     lanShare?: ipAddress
+    autoStart?: boolean
+    connecting?: boolean
     error?: {
       code?: number
       message: string
@@ -90,10 +91,10 @@ declare global {
   }
 
   export interface ConnectionLookup {
-    [id: string]: ConnectionInfo
+    [id: string]: IConnection
   }
   export interface ConnectdMessage {
-    connection: ConnectionInfo
+    connection: IConnection
     raw?: string
     extra?: any
   }
@@ -101,7 +102,7 @@ declare global {
   export interface ConnectionErrorMessage {
     code?: number
     error: string
-    connection: ConnectionInfo
+    connection: IConnection
   }
 
   export type SocketEmit = (name: string, ...args: any[]) => any

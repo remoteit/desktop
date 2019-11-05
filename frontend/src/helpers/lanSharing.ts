@@ -19,6 +19,6 @@ export function lanShareRestriction(address?: string) {
   }
 }
 
-export function lanShared(preference: boolean, connection: ConnectionInfo) {
+export function lanShared(preference: boolean, connection: IConnection) {
   return !!(preference || connection.lanShare)
 }

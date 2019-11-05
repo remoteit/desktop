@@ -119,7 +119,7 @@ export default class Application {
    * When the pool is updated, persist it to the saved connections
    * file on disk.
    */
-  private handlePoolUpdated = (pool: ConnectionData[]) => {
+  private handlePoolUpdated = (pool: IConnection[]) => {
     d('Pool updated:', pool)
     Logger.info('Pool updated', { pool })
     this.connectionsFile.write(pool)

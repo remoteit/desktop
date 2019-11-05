@@ -4,7 +4,7 @@ import { IService } from 'remote.it'
 import { ConnectedServiceItem } from '../../components/ConnectedServiceItem'
 
 export interface Props {
-  connections: ConnectionInfo[]
+  connections: IConnection[]
   services: IService[]
 }
 

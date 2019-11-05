@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import { Icon } from '../Icon'
 
 export type RestartButtonProps = {
-  connection?: ConnectionInfo
+  connection?: IConnection
   disabled?: boolean
 }
 

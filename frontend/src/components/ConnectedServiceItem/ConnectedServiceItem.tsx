@@ -13,7 +13,7 @@ import { NextButton } from '../NextButton'
 import { makeStyles } from '@material-ui/styles'
 
 export interface ConnectedServiceItemProps {
-  connection?: ConnectionInfo
+  connection?: IConnection
   service?: IService
 }
 
@@ -52,6 +52,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
           <ConnectionStateIcon connection={connection} service={service} size="lg" />
         </ListItemIcon>
         <ListItemText primary={name} secondary={port && `localhost:${port}`} />
+        <NextButton />
         <ListItemSecondaryAction className={css.actions}>
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
@@ -59,11 +60,10 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
           <RestartButton connection={connection} />
           <ConnectButton service={service} connection={connection} />
         </ListItemSecondaryAction>
-        <NextButton />
       </ListItem>
       {connection && error && <ConnectionErrorMessage connection={connection} />}
     </>
   )
 }
 
-const useStyles = makeStyles({ actions: { right: 60 } })
+const useStyles = makeStyles({ actions: { right: 70 } })

@@ -45,7 +45,7 @@ const handlers: EventHandlers = {
   connect_error: () => jump.setError(true),
 
   // Connections
-  'service/connect/started': (conn: ConnectionInfo) => devices.connectStart(conn.id),
+  'service/connect/started': (conn: IConnection) => devices.connectStart(conn.id),
   'service/connected': (msg: ConnectdMessage) => devices.connected(msg.connection),
   'service/disconnected': (msg: ConnectdMessage) => devices.disconnected(msg),
   'service/tunnel/opened': (msg: ConnectdMessage) => console.log('service/tunnel/opened', msg),

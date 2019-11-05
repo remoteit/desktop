@@ -13,7 +13,7 @@ export default class Connection extends EventEmitter {
   autoStart: boolean
   id: string
   host: ipAddress
-  name?: string
+  name: string
   pid?: number
   error?: Error
   port: number
@@ -45,7 +45,7 @@ export default class Connection extends EventEmitter {
     username: string
     authHash: string
     host?: string
-    name?: string
+    name: string
     error?: Error
     lanShare?: ipAddress
   }) {
@@ -159,7 +159,7 @@ export default class Connection extends EventEmitter {
     await this.start()
   }
 
-  toJSON = (): ConnectionData => {
+  toJSON = (): IConnection => {
     return {
       autoStart: this.autoStart,
       id: this.id,

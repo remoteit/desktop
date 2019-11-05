@@ -90,7 +90,7 @@ class Controller {
     this.user = undefined
   }
 
-  list = (cb: (pool: ConnectionData[]) => void) => {
+  list = (cb: (pool: IConnection[]) => void) => {
     d('List connections')
     cb(this.pool.toJSON())
   }
