@@ -55,7 +55,7 @@ export const App = connect(
 
   useEffect(() => {
     checkSignIn()
-    BackendAdaptor.emit('jump/init')
+    BackendAdaptor.emit('init')
   }, [checkSignIn])
 
   useEffect(() => {

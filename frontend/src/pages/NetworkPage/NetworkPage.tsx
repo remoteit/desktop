@@ -18,7 +18,7 @@ export const NetworkPage: React.FC = () => {
     scanData: state.jump.scanData,
   }))
 
-  const scan = (interfaceName: string) => BackendAdaptor.emit('jump/scan', interfaceName)
+  const scan = (interfaceName: string) => BackendAdaptor.emit('scan', interfaceName)
 
   return (
     <>

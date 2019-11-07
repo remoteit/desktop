@@ -20,11 +20,11 @@ export const SetupPage = connect(
   mapState,
   mapDispatch
 )(({ device, targets, added, setAdded }: SetupPageProps) => {
-  const updateTargets = (t: ITarget[]) => BackendAdaptor.emit('jump/targets', t)
-  const updateDevice = (d: IDevice) => BackendAdaptor.emit('jump/device', d)
+  const updateTargets = (t: ITarget[]) => BackendAdaptor.emit('targets', t)
+  const updateDevice = (d: IDevice) => BackendAdaptor.emit('device', d)
   const deleteDevice = () => {
-    BackendAdaptor.emit('jump/device', 'DELETE')
-    BackendAdaptor.emit('jump/init')
+    BackendAdaptor.emit('device', 'DELETE')
+    BackendAdaptor.emit('init')
   }
 
   return (

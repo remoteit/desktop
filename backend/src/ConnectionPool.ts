@@ -17,7 +17,7 @@ export default class ConnectionPool {
   private pool: Connection[] = []
 
   static EVENTS = {
-    updated: 'pool/updated',
+    updated: 'pool',
   }
 
   constructor(connections: IConnection[], user?: UserCredentials) {
@@ -39,11 +39,12 @@ export default class ConnectionPool {
   }
 
   set = async (connections: IConnection[]) => {
+    if (!connections) throw new Error('No connections to set!')
     connections.map(connection => {
       const exists = this.find(connection.id)
       // update
       if (exists) {
-        if (exists.active) throw new Error('Can not update an active connection!')
+        if (exists.params.active) throw new Error('Can not update an active connection!')
         else exists.set(connection)
       }
       // add
@@ -55,6 +56,7 @@ export default class ConnectionPool {
     if (!this.user) throw new Error('No user to authenticate connection!')
     const instance = new Connection(this.user, connection)
     this.pool.push(instance)
+    this.updated()
     return instance
   }
 
@@ -84,10 +86,10 @@ export default class ConnectionPool {
     this.updated()
   }
 
-  stop = async (id: string) => {
+  stop = async (id: string, autoStart: boolean = true) => {
     d('Stopping service:', id)
     const instance = this.find(id)
-    instance && instance.stop()
+    instance && instance.stop(autoStart)
   }
 
   stopAll = async () => {
@@ -131,7 +133,7 @@ export default class ConnectionPool {
   }
 
   sort = (a: number = 0, b: number = 0) => {
-    return a && b ? a - b : 0
+    return a && b ? b - a : 0
   }
 
   private freePort = async () => {

@@ -18,8 +18,8 @@ export function ConnectionStateIcon({ connection, service, state, ...props }: Co
   if (service && service.connecting) state = 'connecting'
 
   if (connection) {
-    if (connection.pid) state = 'connected'
-    if (connection.connecting) state = 'connecting'
+    if (connection.pid && !connection.active) state = 'connecting'
+    if (connection.active) state = 'connected'
   }
 
   if (state === 'active') {

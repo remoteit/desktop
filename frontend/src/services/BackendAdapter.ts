@@ -37,33 +37,57 @@ class BackendAdapter extends EventEmitter {
 
 type EventHandlers = { [event in SocketEvent]: (data?: any) => any }
 
-const { devices, binaries, auth, jump } = store.dispatch
+const { binaries, auth, jump } = store.dispatch
 
 const handlers: EventHandlers = {
   connect: () => store.dispatch.ui.connected(),
   disconnect: () => store.dispatch.ui.disconnected(),
   connect_error: () => jump.setError(true),
 
-  // Connections
-  'pool/updated': (connections: IConnection[]) => {
-    console.log('socket connections', connections)
-    if (connections) jump.setConnections(connections)
+  pool: (result: IConnection[]) => {
+    console.log('socket pool', result)
+    jump.setConnections(result)
   },
-  'service/started': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/started', ...msg }), /// devices.connectStart(conn.id)
-  'service/connected': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/connected', ...msg }), ///  devices.connected(msg.connection)
-  'service/disconnected': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/disconnected', ...msg }), ///  devices.disconnected(msg)
-  'service/forgotten': (id: string) => jump.setConnection({ event: 'service/forgotten', id }), // / devices.forgotten(id)
-  'service/error': (msg: ConnectionErrorMessage) => jump.setConnection({ event: 'service/error', ...msg }), /// devices.connectionError(msg)
-  'service/status': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/status', ...msg }),
-  'service/uptime': (msg: ConnectdMessage) => {}, // jump.setConnection({event: 'service/uptime', ...msg}),
-  'service/request': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/request', ...msg }),
-  'service/tunnel/opened': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/tunnel/opened', ...msg }),
-  'service/tunnel/closed': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/tunnel/closed', ...msg }),
-  'service/throughput': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/throughput', ...msg }),
-  'service/version': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/version', ...msg }),
-  'service/unknown-event': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/unknown-event', ...msg }),
-  'service/connecting': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/connecting', ...msg }),
-  // 'service/updated': (msg: ConnectdMessage) => jump.setConnection({event: 'service/updated', ...msg}),
+
+  connection: (result: IConnection) => {
+    console.log('socket connection', result)
+    jump.setConnection(result)
+  },
+
+  targets: (result: ITarget[]) => {
+    console.log('socket targets', result)
+    if (result) {
+      jump.setAdded(undefined)
+      jump.setTargets(result)
+    }
+  },
+  device: (result: IDevice) => {
+    console.log('socket device', result)
+    if (result) jump.setDevice(result)
+  },
+  scan: (result: IScanData) => {
+    console.log('socket scan', result)
+    if (result) jump.setScanData(result)
+  },
+  interfaces: (result: IInterface[]) => {
+    console.log('socket interfaces', result)
+    if (result) jump.setInterfaces(result)
+  },
+
+  // Connections
+  'service/started': (msg: ConnectionMessage) => jump.setConnection(msg.connection), /// devices.connectStart(conn.id)
+  'service/connected': (msg: ConnectionMessage) => jump.setConnection(msg.connection), ///  devices.connected(msg.connection)
+  'service/disconnected': (msg: ConnectionMessage) => jump.setConnection(msg.connection), ///  devices.disconnected(msg)
+  'service/forgotten': (id: string) => console.log(id), // / devices.forgotten(id)
+  'service/error': (msg: ConnectionErrorMessage) => jump.setConnection(msg.connection), /// devices.connectionError(msg)
+  'service/status': (msg: ConnectionMessage) => console.log('service/status', msg),
+  'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),
+  'service/request': (msg: ConnectionMessage) => console.log('service/request', msg),
+  'service/tunnel/opened': (msg: ConnectionMessage) => console.log('service/tunnel/opened', msg),
+  'service/tunnel/closed': (msg: ConnectionMessage) => console.log('service/tunnel/closed', msg),
+  'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
+  'service/version': (msg: ConnectionMessage) => console.log('service/version', msg),
+  'service/unknown-event': (msg: ConnectionMessage) => console.log('service/unknown-event', msg),
 
   // muxer binary
   'binary/install/start': () => console.log('binary/install/start'),
@@ -76,27 +100,6 @@ const handlers: EventHandlers = {
   'user/sign-in/error': (error: string) => auth.signInError(error),
   'user/signed-out': () => auth.signedOut(),
   'user/signed-in': (user: IUser) => auth.signedIn(user),
-
-  // jump
-  'jump/targets': (result: ITarget[]) => {
-    console.log('socket targets', result)
-    if (result) {
-      jump.setAdded(undefined)
-      jump.setTargets(result)
-    }
-  },
-  'jump/device': (result: IDevice) => {
-    console.log('socket device', result)
-    if (result) jump.setDevice(result)
-  },
-  'jump/scan': (result: IScanData) => {
-    console.log('socket scan', result)
-    if (result) jump.setScanData(result)
-  },
-  'jump/interfaces': (result: IInterface[]) => {
-    console.log('socket interfaces', result)
-    if (result) jump.setInterfaces(result)
-  },
 }
 
 export default new BackendAdapter(handlers)

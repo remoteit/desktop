@@ -19,7 +19,6 @@ export default class Connection extends EventEmitter {
   static EVENTS: { [name: string]: SocketEvent } = {
     started: 'service/started', // save log for 1yr
     connected: 'service/connected', // save log for 1yr
-    connecting: 'service/connecting', // save log for 1yr
     disconnected: 'service/disconnected', // save log for 1yr
     forgotten: 'service/forgotten', // save log for 1yr
     error: 'service/error', // save log for 1yr
@@ -43,6 +42,7 @@ export default class Connection extends EventEmitter {
 
   set({ autoStart = true, host = IP_PRIVATE, restriction = IP_OPEN, ...connection }: IConnection) {
     this.params = { autoStart, host, restriction, ...connection }
+    Logger.info('SET CONNECTION', { params: this.params })
   }
 
   async start() {
@@ -51,7 +51,7 @@ export default class Connection extends EventEmitter {
     this.params.autoStart = true
 
     // Listen to events to synchronize state
-    EventBus.emit(Connection.EVENTS.started, this.toJSON())
+    EventBus.emit(Connection.EVENTS.started, { connection: this.toJSON(), raw: 'Connection started' })
     Tracker.pageView(`/connections/${this.params.id}/start`)
     Tracker.event('connection', 'start', `connecting to service: ${this.params.id}`)
     Logger.info('Starting connection: ' + JSON.stringify(this.toJSON()))
@@ -114,10 +114,11 @@ export default class Connection extends EventEmitter {
     this.process = undefined
   }
 
-  async stop() {
+  async stop(autoStart: boolean = true) {
     // If the user manually stops a connection, we assume they
     // don't want it to automatically start on future connections.
-    this.params.autoStart = false
+    this.params.autoStart = autoStart
+    this.params.active = false
 
     d('Stopping service:', this.params.id)
     Logger.info('Stopping connection:', this.toJSON())
@@ -129,7 +130,7 @@ export default class Connection extends EventEmitter {
 
     EventBus.emit(Connection.EVENTS.disconnected, {
       connection: this.toJSON(),
-    } as ConnectdMessage)
+    } as ConnectionMessage)
   }
 
   async restart() {
@@ -149,10 +150,6 @@ export default class Connection extends EventEmitter {
       ...this.params,
       pid: this.process ? this.process.pid : undefined,
     } as IConnection
-  }
-
-  get active() {
-    return this.process && this.process.pid
   }
 
   private handleError = (error: Error) => {
@@ -177,8 +174,8 @@ export default class Connection extends EventEmitter {
 
     EventBus.emit(Connection.EVENTS.disconnected, {
       connection: this.toJSON(),
-      raw: `Connection closed`,
-    } as ConnectdMessage)
+      raw: 'Connection closed',
+    } as ConnectionMessage)
 
     if (code && code !== 0) {
       const messages: { [code: string]: string } = {
@@ -229,15 +226,16 @@ export default class Connection extends EventEmitter {
       let event
       let extra: any
       if (line.startsWith('!!connected')) {
-        Logger.info('connected!', line)
         this.params.startTime = Date.now()
+        this.params.active = true
         event = events.connected
+        Logger.info('connected!', line)
       } else if (line.includes('seconds since startup')) {
-        event = events.uptime
+        // event = events.uptime
       } else if (line.startsWith('!!status')) {
         event = events.status
       } else if (line.startsWith('!!throughput')) {
-        event = events.throughput
+        // event = events.throughput
       } else if (line.startsWith('!!request')) {
         event = events.request
       } else if (line.includes('exit - process closed')) {
@@ -259,11 +257,13 @@ export default class Connection extends EventEmitter {
       }
 
       d('connectd std out:', line)
-      EventBus.emit(event, {
-        connection: this.toJSON(),
-        extra,
-        raw: line,
-      } as ConnectdMessage)
+      if (event) {
+        EventBus.emit(event, {
+          connection: this.toJSON(),
+          extra,
+          raw: line,
+        } as ConnectionMessage)
+      }
     }
   }
 

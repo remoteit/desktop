@@ -9,10 +9,13 @@ declare global {
     // binaries
     | 'binaries/install'
 
-    // update/add a connection
-    | 'pool/update'
+    // all connections update
+    | 'pool'
 
-    // individual service/connection
+    // single connection update
+    | 'connection'
+
+    // individual actions
     | 'service/connect'
     | 'service/disconnect'
     | 'service/forget'
@@ -22,11 +25,11 @@ declare global {
     | 'app/open-on-login'
 
     // Jump
-    | 'jump/init'
-    | 'jump/targets'
-    | 'jump/device'
-    | 'jump/scan'
-    | 'jump/interfaces'
+    | 'init'
+    | 'targets'
+    | 'device'
+    | 'scan'
+    | 'interfaces'
 
   export type SocketEvent =
     // built-in events
@@ -39,9 +42,13 @@ declare global {
     | 'user/sign-in/error'
     | 'user/signed-in'
 
-    // connections
-    | 'pool/updated'
-    | 'service/connecting'
+    // connection pool
+    | 'pool'
+
+    // connection update
+    | 'connection'
+
+    // connection events
     | 'service/started'
     | 'service/connected'
     | 'service/disconnected'
@@ -64,10 +71,10 @@ declare global {
     | 'binary/not-installed'
 
     // jump
-    | 'jump/targets'
-    | 'jump/device'
-    | 'jump/scan'
-    | 'jump/interfaces'
+    | 'targets'
+    | 'device'
+    | 'scan'
+    | 'interfaces'
 
   type BinaryName = 'connectd' | 'muxer' | 'demuxer'
 
@@ -82,6 +89,7 @@ declare global {
     name?: string
     port?: number
     pid?: number
+    active?: boolean
     deviceID?: string
     host?: ipAddress // Bind address
     restriction?: ipAddress // Restriction IP address
@@ -100,11 +108,10 @@ declare global {
   export interface ConnectionLookup {
     [id: string]: IConnection
   }
-  export interface ConnectdMessage {
+  export interface ConnectionMessage {
     connection: IConnection
     raw?: string
     extra?: any
-    event?: string
   }
 
   export interface ConnectionErrorMessage {

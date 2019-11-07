@@ -6,7 +6,8 @@ export function removeNameExt(deviceName: string, name: string) {
   return name.toString().replace(nameExt, '')
 }
 
-export function addNameExt(deviceName: string, ext: string) {
+export function addNameExt(deviceName: string, name: string) {
+  const ext = removeNameExt(deviceName, name)
   return deviceName + separator + ext
 }
 

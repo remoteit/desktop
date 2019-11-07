@@ -33,44 +33,46 @@ class Controller {
     socket.on('user/sign-in', this.signIn)
     socket.on('user/sign-out', this.signOut)
     socket.on('user/quit', electron.app.quit)
-    socket.on('service/list', this.list)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('app/open-on-login', this.openOnLogin)
-    socket.on('jump/init', this.syncJump)
-    socket.on('jump/targets', this.targets)
-    socket.on('jump/device', this.device)
-    socket.on('jump/scan', this.scan)
-    socket.on('jump/interfaces', this.interfaces)
+    socket.on('init', this.syncJump)
+    socket.on('pool', this.connections)
+    socket.on('connection', this.connection)
+    socket.on('targets', this.targets)
+    socket.on('device', this.device)
+    socket.on('scan', this.scan)
+    socket.on('interfaces', this.interfaces)
   }
 
   targets = (result: ITarget[]) => {
     cli.set('targets', result)
-    this.server.emit('jump/targets', cli.data.targets)
+    this.server.emit('targets', cli.data.targets)
   }
 
   device = (result: IDevice) => {
     cli.set('device', result)
-    this.server.emit('jump/device', cli.data.device)
+    this.server.emit('device', cli.data.device)
   }
 
   interfaces = async () => {
     await lan.getInterfaces()
-    this.server.emit('jump/interfaces', lan.interfaces)
+    this.server.emit('interfaces', lan.interfaces)
   }
 
   scan = async (interfaceName: string) => {
     await lan.scan(interfaceName)
-    this.server.emit('jump/scan', lan.data)
+    this.server.emit('scan', lan.data)
   }
 
   syncJump = () => {
-    this.server.emit('jump/targets', cli.data.targets)
-    this.server.emit('jump/device', cli.data.device)
-    this.server.emit('jump/scan', lan.data)
-    this.server.emit('jump/interfaces', lan.interfaces)
+    this.server.emit('targets', cli.data.targets)
+    this.server.emit('device', cli.data.device)
+    this.server.emit('scan', lan.data)
+    this.server.emit('interfaces', lan.interfaces)
+    this.server.emit('pool', this.pool.toJSON())
   }
 
   checkSignIn = async () => {
@@ -89,15 +91,15 @@ class Controller {
     this.user = undefined
   }
 
-  list = async (result: IConnection[]) => {
+  connections = (connections: IConnection[]) => {
+    if (connections.length) this.pool.set(connections)
     d('List connections')
-    await this.pool.set(result)
-    this.server.emit('service/list', this.pool.toJSON())
+    this.server.emit('pool', this.pool.toJSON())
   }
 
-  set = async (connection: IConnection[]) => {
+  connection = async (connection: IConnection) => {
     d('add connection:', connection)
-    await this.pool.set(connection)
+    await this.pool.set([connection])
   }
 
   connect = async (id: string) => {
@@ -107,7 +109,7 @@ class Controller {
 
   disconnect = async (id: string) => {
     d('Disconnect:', id)
-    await this.pool.stop(id)
+    await this.pool.stop(id, false)
   }
 
   forget = async (id: string) => {

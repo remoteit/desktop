@@ -23,16 +23,15 @@ const state: IJumpState = {
 
 export default createModel({
   state,
-  effects: (dispatch: any) => ({
-    handleSocket(msg: ConnectdMessage) {
-      console.log('socket', msg.event)
-      if (msg.connection) dispatch.jump.setConnection(msg.connection)
-      // TODO handle delete
-    },
-  }),
   reducers: {
     setConnection(state: IJumpState, connection: IConnection) {
-      state.connections.forEach(c => c.id === connection.id && (c = connection))
+      console.log('setConnection', connection)
+      const found = state.connections.some(c => {
+        if (c.id === connection.id) {
+          c = connection
+          return true
+        }
+      })
     },
     setConnections(state: IJumpState, connections: IConnection[]) {
       state.connections = connections

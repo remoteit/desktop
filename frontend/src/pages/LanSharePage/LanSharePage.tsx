@@ -64,7 +64,7 @@ export const LanSharePage: React.FC = () => {
   const save = () => {
     console.log('set connection lanShare', connection, getSelectionValue())
     const selection = getSelectionValue()
-    BackendAdaptor.emit('pool/update', {
+    BackendAdaptor.emit('connection', {
       ...connection,
       host: selection ? IP_OPEN : connection.host,
       restriction: selection || IP_OPEN,

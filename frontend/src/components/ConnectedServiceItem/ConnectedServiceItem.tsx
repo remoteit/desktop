@@ -57,7 +57,6 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
           <ForgetButton connection={connection} />
-          <RestartButton connection={connection} />
           <ConnectButton service={service} connection={connection} />
         </ListItemSecondaryAction>
       </ListItem>

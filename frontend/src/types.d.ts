@@ -25,7 +25,6 @@ declare global {
     | 'service/status'
     | 'service/updated'
     | 'service/request'
-    | 'service/connecting'
     | 'service/connected'
     | 'service/tunnel/opened'
     | 'service/tunnel/closed'

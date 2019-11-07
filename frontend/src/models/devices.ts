@@ -223,7 +223,7 @@ export default createModel({
     //   }
     //   // state.connections = [ ...state.connections, connection ]
     // },
-    // disconnected(state: DeviceState, msg: ConnectdMessage) {
+    // disconnected(state: DeviceState, msg: ConnectionMessage) {
     //   console.log('DISCONNECTED', msg)
 
     //   const id = msg.connection.id
