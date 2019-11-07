@@ -20,5 +20,5 @@ export function lanShareRestriction(address?: string) {
 }
 
 export function lanShared(preference: boolean, connection: IConnection) {
-  return !!(preference || connection.lanShare)
+  return !!(preference || connection.host === IP_OPEN)
 }

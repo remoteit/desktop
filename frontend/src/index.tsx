@@ -59,11 +59,15 @@ const theme = createMuiTheme({
       button: {
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
+        '&:hover, &:focus': {
+          backgroundColor: colors.grayLightest,
+        },
+      },
+      container: {
         '& .MuiListItemSecondaryAction-root': {
           display: 'none',
         },
         '&:hover, &:focus': {
-          backgroundColor: colors.grayLightest,
           '& .MuiListItemSecondaryAction-root': {
             display: 'block',
           },

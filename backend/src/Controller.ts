@@ -33,11 +33,10 @@ class Controller {
     socket.on('user/sign-in', this.signIn)
     socket.on('user/sign-out', this.signOut)
     socket.on('user/quit', electron.app.quit)
-    socket.on('connections/list', this.list)
+    socket.on('service/list', this.list)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
     socket.on('service/forget', this.forget)
-    socket.on('service/restart', this.restart)
     socket.on('binaries/install', this.installBinaries)
     socket.on('app/open-on-login', this.openOnLogin)
     socket.on('jump/init', this.syncJump)
@@ -90,28 +89,29 @@ class Controller {
     this.user = undefined
   }
 
-  list = (cb: (pool: IConnection[]) => void) => {
+  list = async (result: IConnection[]) => {
     d('List connections')
-    cb(this.pool.toJSON())
+    await this.pool.set(result)
+    this.server.emit('service/list', this.pool.toJSON())
   }
 
-  connect = async (args: ConnectionArgs) => {
-    d('Connect:', args)
-    return this.pool.connect(args)
+  set = async (connection: IConnection[]) => {
+    d('add connection:', connection)
+    await this.pool.set(connection)
+  }
+
+  connect = async (id: string) => {
+    d('Connect:', id)
+    await this.pool.start(id)
   }
 
   disconnect = async (id: string) => {
-    d('Disconnect service:', id)
+    d('Disconnect:', id)
     await this.pool.stop(id)
   }
 
   forget = async (id: string) => {
     await this.pool.forget(id)
-  }
-
-  restart = async (id: string) => {
-    d('Restarting service:', id)
-    await this.pool.restart(id)
   }
 
   installBinaries = async () => {

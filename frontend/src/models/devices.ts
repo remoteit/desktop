@@ -14,7 +14,6 @@ const SEARCH_ONLY_SETTING_KEY = 'search-only'
 
 interface DeviceState {
   all: IDevice[]
-  connections: IConnection[]
   searchPerformed: boolean
   fetched: boolean
   fetching: boolean
@@ -27,7 +26,6 @@ interface DeviceState {
 const state: DeviceState = {
   // TODO: Store this as objects with keys based on ID?
   all: [],
-  connections: [],
   searchPerformed: false,
   fetched: false,
   fetching: false,
@@ -62,24 +60,18 @@ export default createModel({
       // TODO: Deal with device search only UI
       const { getConnections, fetchStarted, fetchFinished, setDevices } = dispatch.devices
       fetchStarted()
-      return (
-        r3.devices
-          .all()
-          .then(renameServices)
-          .then(setDevices)
-          // Get connections again so we can update the incoming found
-          // device state against our list of locally connected services.
-          // TODO: Probably a cleaner way of doing this...
-          .then(() => getConnections())
-          .catch(error => {
-            console.error('Fetch error:', error, error.response)
-            if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
-              setDevices([])
-              dispatch.auth.signedOut()
-            }
-          })
-          .finally(fetchFinished)
-      )
+      return r3.devices
+        .all()
+        .then(renameServices)
+        .then(setDevices)
+        .catch(error => {
+          console.error('Fetch error:', error, error.response)
+          if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
+            setDevices([])
+            dispatch.auth.signedOut()
+          }
+        })
+        .finally(fetchFinished)
     },
     async localSearch(_, globalState: any) {
       const query = globalState.devices.query
@@ -90,45 +82,38 @@ export default createModel({
       dispatch.devices.setDevices([])
       dispatch.devices.setSearching(true)
       dispatch.devices.setSearchPerformed(true)
-      return (
-        r3.devices
-          .search(query)
-          .then(devices => {
-            dispatch.devices.setDevices(devices)
-            dispatch.devices.setSearchPerformed(true)
-          })
-          // Get connections again so we can update the incoming found
-          // device state against our list of locally connected services.
-          // TODO: Probably a cleaner way of doing this...
-          .then(dispatch.devices.getConnections)
-          .finally(() => dispatch.devices.setSearching(false))
-      )
+      return r3.devices
+        .search(query)
+        .then(devices => {
+          dispatch.devices.setDevices(devices)
+          dispatch.devices.setSearchPerformed(true)
+        })
+        .finally(() => dispatch.devices.setSearching(false))
     },
-    async getConnections() {
-      BackendAdapter.emit('connections/list', (connections: IConnection[]) => {
-        connections.map(conn => dispatch.devices.connected(conn))
-      })
-
-      const devices = localStorage.getItem('devices')
-      if (devices && devices.length) dispatch.devices.setDevices(JSON.parse(devices))
-    },
-    async connect(service: IService) {
-      dispatch.devices.connectStart(service.id)
-      BackendAdapter.emit('service/connect', service)
-    },
-    async disconnect(id: string) {
-      BackendAdapter.emit('service/disconnect', id)
-    },
-    async restart(id: string) {
-      dispatch.devices.connectStart(id)
-      BackendAdapter.emit('service/restart', id)
-    },
-    async forget(id: string) {
-      BackendAdapter.emit('service/forget', id)
-    },
-    async forgotten(id: string) {
-      dispatch.devices.remove(id)
-    },
+    // async getConnections() {
+    //   BackendAdapter.emit('connections/list', (connections: IConnection[]) => {
+    //     connections.map(conn => dispatch.devices.connected(conn))
+    //   })
+    //   const devices = localStorage.getItem('devices')
+    //   if (devices && devices.length) dispatch.devices.setDevices(JSON.parse(devices))
+    // },
+    // async connect(service: IService) {
+    //   dispatch.devices.connectStart(service.id)
+    //   BackendAdapter.emit('service/connect', service)
+    // },
+    // async disconnect(id: string) {
+    //   BackendAdapter.emit('service/disconnect', id)
+    // },
+    // async restart(id: string) {
+    //   dispatch.devices.connectStart(id)
+    //   BackendAdapter.emit('service/restart', id)
+    // },
+    // async forget(id: string) {
+    //   BackendAdapter.emit('service/forget', id)
+    // },
+    // async forgotten(id: string) {
+    //   dispatch.devices.remove(id)
+    // },
     async toggleSearchOnly(_, state) {
       const searchOnly = !state.devices.searchOnly
 
@@ -143,7 +128,7 @@ export default createModel({
     },
     async reset() {
       dispatch.devices.setDevices([])
-      dispatch.devices.setConnections([])
+      dispatch.jump.setConnections([])
       dispatch.devices.setSearchOnly(false)
       dispatch.devices.setQuery('')
       dispatch.devices.changeSort('state')
@@ -178,112 +163,112 @@ export default createModel({
       state.fetched = true
       state.fetching = false
     },
-    connectStart(state: DeviceState, id: string) {
-      const [service] = findService(state.all, id)
-      if (!service) return
+    // connectStart(state: DeviceState, id: string) {
+    //   const [service] = findService(state.all, id)
+    //   if (!service) return
 
-      let conn = state.connections.find(c => c.id === id)
-      if (conn) {
-        conn.error = undefined
-        conn.connecting = true
-      }
+    //   let conn = state.connections.find(c => c.id === id)
+    //   if (conn) {
+    //     conn.error = undefined
+    //     conn.connecting = true
+    //   }
 
-      service.connecting = true
-    },
-    clearConnectionError(state: DeviceState, id: string) {
-      const conn = state.connections.find(c => c.id === id)
-      if (conn) conn.error = undefined
-    },
-    connectionError(state: DeviceState, msg: ConnectionErrorMessage) {
-      const conn = state.connections.find(c => c.id === msg.connection.id)
-      if (conn)
-        conn.error = {
-          code: msg.code,
-          message: msg.error,
-        }
-    },
-    connected(state: DeviceState, connection: IConnection) {
-      console.log('CONNECTED', connection)
-      let existingConnection = state.connections.find(c => c.id === connection.id)
+    //   service.connecting = true
+    // },
+    // clearConnectionError(state: DeviceState, id: string) {
+    //   const conn = state.connections.find(c => c.id === id)
+    //   if (conn) conn.error = undefined
+    // },
+    // connectionError(state: DeviceState, msg: ConnectionErrorMessage) {
+    //   const conn = state.connections.find(c => c.id === msg.connection.id)
+    //   if (conn)
+    //     conn.error = {
+    //       code: msg.code,
+    //       message: msg.error,
+    //     }
+    // },
+    // connected(state: DeviceState, connection: IConnection) {
+    //   console.log('CONNECTED', connection)
+    //   let existingConnection = state.connections.find(c => c.id === connection.id)
 
-      // FIXME - seems like this should be set server side
-      connection.connecting = false
-      connection.error = undefined
+    //   // FIXME - seems like this should be set server side
+    //   connection.connecting = false
+    //   connection.error = undefined
 
-      existingConnection
-        ? (state.connections[state.connections.indexOf(existingConnection)] = connection)
-        : state.connections.push(connection)
+    //   existingConnection
+    //     ? (state.connections[state.connections.indexOf(existingConnection)] = connection)
+    //     : state.connections.push(connection)
 
-      const [service, device] = findService(state.all, connection.id)
+    //   const [service, device] = findService(state.all, connection.id)
 
-      // FIXME - remove connection state info from service model and stop overloading state
-      if (service) {
-        service.state = connection.pid ? 'connected' : 'active'
-        service.port = connection.port
-        service.pid = connection.pid
-        service.connecting = false
+    //   // FIXME - remove connection state info from service model and stop overloading state
+    //   if (service) {
+    //     service.state = connection.pid ? 'connected' : 'active'
+    //     service.port = connection.port
+    //     service.pid = connection.pid
+    //     service.connecting = false
 
-        if (device && service.pid) device.state = 'connected'
-      }
-    },
-    setConnections(state: DeviceState, connections: IConnection[]) {
-      state.connections = connections
-    },
-    setConnection(state: DeviceState, connection: IConnection) {
-      for (let i = state.connections.length; --i; ) {
-        if (state.connections[i].id === connection.id) {
-          state.connections[i] = connection
-          break
-        }
-      }
-      // state.connections = [ ...state.connections, connection ]
-    },
-    disconnected(state: DeviceState, msg: ConnectdMessage) {
-      console.log('DISCONNECTED', msg)
+    //     if (device && service.pid) device.state = 'connected'
+    //   }
+    // },
+    // setConnections(state: DeviceState, connections: IConnection[]) {
+    //   state.connections = connections
+    // },
+    // setConnection(state: DeviceState, connection: IConnection) {
+    //   for (let i = state.connections.length; --i; ) {
+    //     if (state.connections[i].id === connection.id) {
+    //       state.connections[i] = connection
+    //       break
+    //     }
+    //   }
+    //   // state.connections = [ ...state.connections, connection ]
+    // },
+    // disconnected(state: DeviceState, msg: ConnectdMessage) {
+    //   console.log('DISCONNECTED', msg)
 
-      const id = msg.connection.id
-      const conn = state.connections.find(c => c.id === id)
-      if (conn) {
-        conn.connecting = false
-        conn.pid = undefined
-      }
+    //   const id = msg.connection.id
+    //   const conn = state.connections.find(c => c.id === id)
+    //   if (conn) {
+    //     conn.connecting = false
+    //     conn.pid = undefined
+    //   }
 
-      const [service, device] = findService(state.all, id)
-      if (device) {
-        // If device has only 1 active connection (e.g. the one we are in the
-        // process of disconnecting from), clear its connected state as it has
-        // no more active services.
-        if (device.services.filter(s => s.state === 'connected').length < 1) {
-          device.state = 'active'
-        }
-      }
+    //   const [service, device] = findService(state.all, id)
+    //   if (device) {
+    //     // If device has only 1 active connection (e.g. the one we are in the
+    //     // process of disconnecting from), clear its connected state as it has
+    //     // no more active services.
+    //     if (device.services.filter(s => s.state === 'connected').length < 1) {
+    //       device.state = 'active'
+    //     }
+    //   }
 
-      // FIXME - remove connection state info from service model and stop overloading state
-      if (service) {
-        service.state = 'active'
-        service.pid = undefined
-        service.connecting = false
-      }
-    },
-    remove(state: DeviceState, id: string) {
-      const conn = state.connections.find(c => c.id === id)
-      const [service] = findService(state.all, id)
+    //   // FIXME - remove connection state info from service model and stop overloading state
+    //   if (service) {
+    //     service.state = 'active'
+    //     service.pid = undefined
+    //     service.connecting = false
+    //   }
+    // },
+    // remove(state: DeviceState, id: string) {
+    //   const conn = state.connections.find(c => c.id === id)
+    //   const [service] = findService(state.all, id)
 
-      if (conn) {
-        state.connections.splice(state.connections.indexOf(conn), 1)
-      }
+    //   if (conn) {
+    //     state.connections.splice(state.connections.indexOf(conn), 1)
+    //   }
 
-      // FIXME - remove connection state info from service model and stop overloading state
-      if (service) {
-        service.state = 'active'
-        service.port = undefined
-        service.pid = undefined
-        service.connecting = false
-      }
+    //   // FIXME - remove connection state info from service model and stop overloading state
+    //   if (service) {
+    //     service.state = 'active'
+    //     service.port = undefined
+    //     service.pid = undefined
+    //     service.connecting = false
+    //   }
 
-      // TODO: decide if device should be connected
-      // if (device) device.state = 'connected'
-    },
+    //   // TODO: decide if device should be connected
+    //   // if (device) device.state = 'connected'
+    // },
     setSearching(state: DeviceState, searching: boolean) {
       state.searching = searching
     },

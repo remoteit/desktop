@@ -16,7 +16,7 @@ import styles from '../../styling'
 
 export const ServicePage: React.FC = () => {
   const { serviceID } = useParams()
-  const connection = useSelector((state: ApplicationState) => state.devices.connections.find(c => c.id === serviceID))
+  const connection = useSelector((state: ApplicationState) => state.jump.connections.find(c => c.id === serviceID))
   const device = useSelector((state: ApplicationState) =>
     state.devices.all.find(d => d.services.find(s => s.id === serviceID))
   )

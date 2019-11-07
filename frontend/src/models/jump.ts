@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../constants'
 
 interface IJumpState {
-  connection: IConnection[]
+  connections: IConnection[]
   device: IDevice
   targets: ITarget[]
   scanData: IScanData
@@ -12,7 +12,7 @@ interface IJumpState {
 }
 
 const state: IJumpState = {
-  connection: [],
+  connections: [],
   device: DEFAULT_TARGET,
   targets: [],
   scanData: { wlan0: { data: [], timestamp: 0 } },
@@ -23,9 +23,19 @@ const state: IJumpState = {
 
 export default createModel({
   state,
+  effects: (dispatch: any) => ({
+    handleSocket(msg: ConnectdMessage) {
+      console.log('socket', msg.event)
+      if (msg.connection) dispatch.jump.setConnection(msg.connection)
+      // TODO handle delete
+    },
+  }),
   reducers: {
-    setConnection(state: IJumpState, connection: IConnection[]) {
-      state.connection = connection
+    setConnection(state: IJumpState, connection: IConnection) {
+      state.connections.forEach(c => c.id === connection.id && (c = connection))
+    },
+    setConnections(state: IJumpState, connections: IConnection[]) {
+      state.connections = connections
     },
     setDevice(state: IJumpState, device: IDevice) {
       state.device = device

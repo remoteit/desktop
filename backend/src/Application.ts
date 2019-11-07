@@ -20,7 +20,7 @@ const d = debug('r3:backend:Application')
 
 export default class Application {
   public pool: ConnectionPool
-  private connectionsFile: JSONFile<SavedConnection[]>
+  private connectionsFile: JSONFile<IConnection[]>
   private userFile: JSONFile<UserCredentials>
   private window: ElectronApp
 
@@ -31,7 +31,7 @@ export default class Application {
 
     this.window = new ElectronApp()
 
-    this.connectionsFile = new JSONFile<SavedConnection[]>(path.join(Environment.remoteitDirectory, 'connections.json'))
+    this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.remoteitDirectory, 'connections.json'))
     this.userFile = new JSONFile<UserCredentials>(path.join(Environment.remoteitDirectory, 'user.json'))
 
     const userCredentials = this.userFile.read()

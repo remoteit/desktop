@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import BackendAdaptor from '../../services/BackendAdapter'
 import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, REGEX_IP_SAFE } from '../../constants'
 import { Select, Button, ButtonBase, Typography, Switch, TextField, MenuItem } from '@material-ui/core'
 import { findService } from '../../models/devices'
@@ -6,26 +7,24 @@ import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { colors, spacing } from '../../styling'
-
-import { ApplicationState, Dispatch } from '../../store'
+import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 type State = { enabled: boolean; selection: number; address: string; myAddress: string }
 type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
-  const { serviceID } = useParams()
+  const { serviceID = '' } = useParams()
   const connection = useSelector((state: ApplicationState) => {
-    let c = state.devices.connections.find(c => c.id === serviceID)
-    if (!c && serviceID) {
-      const [service] = findService(state.devices.all, serviceID)
-      if (service) c = { id: service.id, name: service.name }
-    }
-    return c
+    let c = state.jump.connections.find(c => c.id === serviceID)
+    if (c) return c
+    const [service] = findService(state.devices.all, serviceID)
+    return { id: serviceID, name: service ? service.name : undefined }
   })
-  const lanShare = connection && connection.lanShare
-  const dispatch = useDispatch<Dispatch>()
+
+  const lanShare: boolean = connection.host === IP_OPEN
+  const restriction: ipAddress = (lanShare && connection.restriction) || IP_OPEN
   const history = useHistory()
   const css = useStyles()
 
@@ -40,13 +39,13 @@ export const LanSharePage: React.FC = () => {
   ]
 
   const [enabled, setEnabled] = useState<boolean>(!!lanShare)
-  const [selection, setSelection] = useState<number>(selections.findIndex(s => s.value === lanShare))
-  const [address, setAddress] = useState<string>(lanShare || '192.168.')
+  const [selection, setSelection] = useState<number>(selections.findIndex(s => s.value === restriction))
+  const [address, setAddress] = useState<string>(restriction || '192.168.')
   const [myAddress, setMyAddress] = useState<string>('unknown')
 
   if (lanShare && selection === -1) {
     setSelection(selections.findIndex(s => typeof s.value === 'function'))
-    setAddress(lanShare)
+    setAddress(restriction)
   } else if (selection === -1) {
     setSelection(0)
   }
@@ -64,9 +63,11 @@ export const LanSharePage: React.FC = () => {
   }
   const save = () => {
     console.log('set connection lanShare', connection, getSelectionValue())
-    dispatch.devices.setConnection({
+    const selection = getSelectionValue()
+    BackendAdaptor.emit('pool/update', {
       ...connection,
-      lanShare: getSelectionValue(),
+      host: selection ? IP_OPEN : connection.host,
+      restriction: selection || IP_OPEN,
     })
     history.goBack()
   }

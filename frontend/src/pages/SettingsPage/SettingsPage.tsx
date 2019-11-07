@@ -36,11 +36,13 @@ export const SettingsPage = connect(
     toggleOpenOnLogin,
     toggleSearchOnly,
   }: SettingsPageProps) => {
-    function warning() {
-      if (window.confirm('Are you sure? Quitting will close all active connections.')) {
-        quit()
-      }
-    }
+    const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
+
+    const signOutWarning = () =>
+      window.confirm(
+        'Are you sure? Signing out will close all active connections and remove your connection history.'
+      ) && signOut()
+
     installed = false
     return (
       <div>
@@ -73,8 +75,8 @@ export const SettingsPage = connect(
         </List>
         <Divider />
         <List>
-          <SettingsListItem label="Sign out" icon="sign-out" onClick={signOut} />
-          <SettingsListItem label="Quit" icon="skull-crossbones" onClick={warning} />
+          <SettingsListItem label="Sign out" icon="sign-out" onClick={signOutWarning} />
+          <SettingsListItem label="Quit" icon="skull-crossbones" onClick={quitWarning} />
         </List>
       </div>
     )

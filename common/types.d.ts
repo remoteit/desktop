@@ -9,14 +9,16 @@ declare global {
     // binaries
     | 'binaries/install'
 
+    // update/add a connection
+    | 'pool/update'
+
     // individual service/connection
-    | 'connections/list'
     | 'service/connect'
     | 'service/disconnect'
     | 'service/forget'
     | 'service/restart'
 
-    // App / settings
+    // App/settings
     | 'app/open-on-login'
 
     // Jump
@@ -38,8 +40,9 @@ declare global {
     | 'user/signed-in'
 
     // connections
+    | 'pool/updated'
     | 'service/connecting'
-    | 'service/connect/started'
+    | 'service/started'
     | 'service/connected'
     | 'service/disconnected'
     | 'service/forgotten'
@@ -76,14 +79,18 @@ declare global {
 
   export interface IConnection {
     id: string
-    name: string
-    // type?: string
+    name?: string
     port?: number
     pid?: number
     deviceID?: string
-    lanShare?: ipAddress
+    host?: ipAddress // Bind address
+    restriction?: ipAddress // Restriction IP address
     autoStart?: boolean
     connecting?: boolean
+    createdTime?: number // unix timestamp track for garbage cleanup
+    startTime?: number // unix timestamp connection start time
+    endTime?: number // unix timestamp connection close time
+    // deepLink?: string
     error?: {
       code?: number
       message: string
@@ -97,6 +104,7 @@ declare global {
     connection: IConnection
     raw?: string
     extra?: any
+    event?: string
   }
 
   export interface ConnectionErrorMessage {
@@ -133,29 +141,6 @@ declare global {
   export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
 
   export type ipAddress = string // namespace to indicate if expecting an ip address
-
-  // export enum ConnectdEvent {
-  //   error = 'service/error',
-  //   uptime = 'service/uptime',
-  //   status = 'service/status',
-  //   throughput = 'service/throughput',
-  //   updated = 'service/updated',
-  //   request = 'service/request',
-  //   connecting = 'service/connecting',
-  //   connected = 'service/connected',
-  //   tunnelOpened = 'service/tunnel/opened',
-  //   tunnelClosed = 'service/tunnel/closed',
-  //   disconnected = 'service/disconnected',
-  //   unknown = 'service/unknown-event',
-  // }
 }
-
-// declare module 'remote.it' {
-//   export interface IService {
-//     connecting?: boolean
-//     port?: number
-//     pid?: number
-//   }
-// }
 
 export {}

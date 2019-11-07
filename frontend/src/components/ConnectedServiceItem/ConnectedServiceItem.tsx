@@ -41,7 +41,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
     connecting = !!connection.connecting
     error = !!connection.error
     port = connection.port
-    name = connection.name
+    name = connection.name || name
     id = connection.id
   }
 

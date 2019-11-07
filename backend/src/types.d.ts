@@ -17,12 +17,4 @@ declare global {
     lanShare?: ipAddress
     username: string
   }
-
-  interface SavedConnection {
-    id: string
-    port?: number
-    name: string
-    lanShare?: ipAddress
-    autoStart?: boolean
-  }
 }

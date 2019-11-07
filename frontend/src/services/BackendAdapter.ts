@@ -45,23 +45,25 @@ const handlers: EventHandlers = {
   connect_error: () => jump.setError(true),
 
   // Connections
-  'service/connect/started': (conn: IConnection) => devices.connectStart(conn.id),
-  'service/connected': (msg: ConnectdMessage) => devices.connected(msg.connection),
-  'service/disconnected': (msg: ConnectdMessage) => devices.disconnected(msg),
-  'service/tunnel/opened': (msg: ConnectdMessage) => console.log('service/tunnel/opened', msg),
-  'service/tunnel/closed': (msg: ConnectdMessage) => console.log('service/tunnel/closed', msg),
-  'service/error': (msg: ConnectionErrorMessage) => devices.connectionError(msg),
-  'service/status': (msg: ConnectdMessage) => console.log('service/status', msg),
-  'service/forgotten': (id: string) => devices.forgotten(id),
-  // 'service/updated': (msg: ConnectdMessage) =>
-  //   console.log('service/updated', msg),
-  'service/request': (msg: ConnectdMessage) => console.log('service/request', msg),
-  'service/connecting': (msg: ConnectdMessage) => console.log('service/connecting', msg),
-  'service/unknown-event': (msg: ConnectdMessage) => console.log('service/unknown-event', msg),
-  'service/throughput': (msg: ConnectdMessage) => console.log('service/throughput', msg),
-  'service/version': (msg: ConnectdMessage) => console.log('service/version', msg),
-  'service/uptime': (msg: ConnectdMessage) => {},
-  // console.log('service/uptime', msg),
+  'pool/updated': (connections: IConnection[]) => {
+    console.log('socket connections', connections)
+    if (connections) jump.setConnections(connections)
+  },
+  'service/started': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/started', ...msg }), /// devices.connectStart(conn.id)
+  'service/connected': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/connected', ...msg }), ///  devices.connected(msg.connection)
+  'service/disconnected': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/disconnected', ...msg }), ///  devices.disconnected(msg)
+  'service/forgotten': (id: string) => jump.setConnection({ event: 'service/forgotten', id }), // / devices.forgotten(id)
+  'service/error': (msg: ConnectionErrorMessage) => jump.setConnection({ event: 'service/error', ...msg }), /// devices.connectionError(msg)
+  'service/status': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/status', ...msg }),
+  'service/uptime': (msg: ConnectdMessage) => {}, // jump.setConnection({event: 'service/uptime', ...msg}),
+  'service/request': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/request', ...msg }),
+  'service/tunnel/opened': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/tunnel/opened', ...msg }),
+  'service/tunnel/closed': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/tunnel/closed', ...msg }),
+  'service/throughput': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/throughput', ...msg }),
+  'service/version': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/version', ...msg }),
+  'service/unknown-event': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/unknown-event', ...msg }),
+  'service/connecting': (msg: ConnectdMessage) => jump.setConnection({ event: 'service/connecting', ...msg }),
+  // 'service/updated': (msg: ConnectdMessage) => jump.setConnection({event: 'service/updated', ...msg}),
 
   // muxer binary
   'binary/install/start': () => console.log('binary/install/start'),

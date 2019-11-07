@@ -5,9 +5,9 @@ import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 
 export const ConnectionsPage: React.FC = () => {
-  const connections = useSelector((state: ApplicationState) => state.devices.connections)
+  const connections = useSelector((state: ApplicationState) => state.jump.connections)
   const services = useSelector((state: ApplicationState) =>
-    findServices(state.devices.all, state.devices.connections.map(c => c.id))
+    findServices(state.devices.all, state.jump.connections.map(c => c.id))
   )
   return <ConnectionsList connections={connections} services={services} />
 }

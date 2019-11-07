@@ -13,7 +13,8 @@ const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
   user?: UserCredentials
-  private pool: { [id: string]: Connection } = {}
+
+  private pool: Connection[] = []
 
   static EVENTS = {
     updated: 'pool/updated',
@@ -23,9 +24,10 @@ export default class ConnectionPool {
     Logger.info('Initializing connections pool', { connections })
 
     this.user = user
+    this.set(connections)
 
     // Only turn on connections the user had open last time.
-    connections.map(conn => this.connect(conn))
+    connections.map(conn => conn.autoStart && this.start(conn.id))
 
     // Listen to events to synchronize state
     EventBus.on(User.EVENTS.signedIn, (user: IUser) => (this.user = user))
@@ -36,80 +38,85 @@ export default class ConnectionPool {
     EventBus.on(ElectronApp.EVENTS.ready, this.updated)
   }
 
-  connect = async (args: { id: string; name: string; port?: number; autoStart?: boolean }) => {
-    d('Connecting:', args)
-
-    if (!args.id) throw new Error('No service id to create a connection!')
-
-    if (!this.user) throw new Error('No user to authenticate connection!')
-
-    const port = args.port || (await this.freePort())
-
-    if (!port) throw new Error('No port could be assigned to connection!')
-
-    Logger.info('Connecting to service:', args)
-
-    // TODO: De-dupe connections!
-
-    const connection = new Connection({
-      port,
-      username: this.user.username,
-      authHash: this.user.authHash,
-      ...args,
+  set = async (connections: IConnection[]) => {
+    connections.map(connection => {
+      const exists = this.find(connection.id)
+      // update
+      if (exists) {
+        if (exists.active) throw new Error('Can not update an active connection!')
+        else exists.set(connection)
+      }
+      // add
+      else this.add(connection)
     })
+  }
 
-    this.pool[args.id] = connection
-
-    d(`Starting connection - port:${port}, id: ${args.id}`)
-
-    if (!connection.autoStart) return
-
-    await this.start(args.id)
-
-    // Trigger a save of the connections file
-    this.updated()
-
-    return connection
+  add = (connection: IConnection) => {
+    if (!this.user) throw new Error('No user to authenticate connection!')
+    const instance = new Connection(this.user, connection)
+    this.pool.push(instance)
+    return instance
   }
 
   find = (id: string) => {
     d('Find connection with ID:', { id, pool: this.pool })
-
-    const conn = this.pool[id]
-    if (!conn) throw new Error(`Connection with ID ${id} could not be found!`)
-    d('Connection found:', { id, port: conn.port, pid: conn.pid })
-    return conn
+    return this.pool.find(c => c.params.id === id)
+    // if (!connection) throw new Error(`Connection with ID ${id} could not be found!`)
+    // d('Connection found:', { id, port: connection.params.port, pid: connection.params.pid })
+    // return connection
   }
 
   start = async (id: string) => {
-    d('Starting service:', id)
-    return this.find(id).start()
+    d('Connecting:', id)
+    if (!id) throw new Error('No service id to create a connection!')
+
+    const connection = this.find(id) || this.add({ id })
+    if (!connection) throw new Error('No connection definition exists!')
+
+    connection.params.port = connection.params.port || (await this.freePort())
+    if (!connection.params.port) throw new Error('No port could be assigned to connection!')
+
+    Logger.info('Connecting to service:', connection.params)
+    d(`Starting connection - port:${connection.params.port}, id: ${connection.params.id}`)
+    await connection.start()
+
+    // Trigger a save of the connections file
+    this.updated()
   }
 
   stop = async (id: string) => {
     d('Stopping service:', id)
-    return this.find(id).stop()
+    const instance = this.find(id)
+    instance && instance.stop()
   }
 
   stopAll = async () => {
-    return Object.keys(this.pool).map(id => this.stop(id))
+    d('Stopping all services')
+    return await this.pool.map(async c => await c.stop())
   }
 
   forget = async (id: string) => {
-    await this.stop(id)
-    delete this.pool[id]
-    this.updated()
+    d('Forgetting service:', id)
+    const connection = this.find(id)
+    if (connection) {
+      const index = this.pool.indexOf(connection)
+      await connection.stop()
+      this.pool.splice(index, 1)
+      this.updated()
+    }
     EventBus.emit(Connection.EVENTS.forgotten, id)
   }
 
   reset = async () => {
     await this.stopAll()
-    this.pool = {}
+    this.pool = []
+    this.updated()
   }
 
   restart = async (id: string) => {
     d('Restart service:', id)
-    return this.find(id).restart()
+    const instance = this.find(id)
+    instance && (await instance.restart())
   }
 
   updated = async () => {
@@ -117,8 +124,14 @@ export default class ConnectionPool {
   }
 
   toJSON = (): IConnection[] => {
-    const ids = Object.keys(this.pool)
-    return ids.map(id => this.pool[id].toJSON()).sort((c: IConnection) => (c.pid ? -1 : 1))
+    return this.pool
+      .map(c => c.toJSON())
+      .sort((a, b) => this.sort(a.createdTime, b.createdTime))
+      .sort((a, b) => this.sort(a.startTime, b.startTime))
+  }
+
+  sort = (a: number = 0, b: number = 0) => {
+    return a && b ? a - b : 0
   }
 
   private freePort = async () => {
@@ -126,6 +139,9 @@ export default class ConnectionPool {
   }
 
   private get usedPorts() {
-    return Object.keys(this.pool).map(id => this.pool[id].port)
+    return this.pool.reduce((result: any[], c) => {
+      if (c.params.port) result.push(c.params.port)
+      return result
+    }, [])
   }
 }

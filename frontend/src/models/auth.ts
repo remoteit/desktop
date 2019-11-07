@@ -28,7 +28,6 @@ export default createModel({
     async checkSignIn() {
       const user = localStorage.getItem(USER_KEY)
       dispatch.auth.checkSignInStarted()
-      dispatch.devices.getConnections()
 
       // Get "open on login" setting
       dispatch.auth.getOpenOnLoginState()

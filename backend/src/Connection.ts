@@ -10,21 +10,16 @@ import { IP_OPEN, IP_PRIVATE } from './constants'
 const d = debug('r3:backend:Connection')
 
 export default class Connection extends EventEmitter {
-  autoStart: boolean
-  id: string
-  host: ipAddress
-  name: string
-  pid?: number
-  error?: Error
-  port: number
-  lanShare?: ipAddress
+  params!: IConnection
+
   private authHash: string
   private username: string
   private process?: ChildProcess
 
   static EVENTS: { [name: string]: SocketEvent } = {
-    started: 'service/connect/started', // save log for 1yr
+    started: 'service/started', // save log for 1yr
     connected: 'service/connected', // save log for 1yr
+    connecting: 'service/connecting', // save log for 1yr
     disconnected: 'service/disconnected', // save log for 1yr
     forgotten: 'service/forgotten', // save log for 1yr
     error: 'service/error', // save log for 1yr
@@ -38,37 +33,27 @@ export default class Connection extends EventEmitter {
     unknown: 'service/unknown-event',
   }
 
-  constructor(args: {
-    autoStart?: boolean
-    id: string
-    port: number
-    username: string
-    authHash: string
-    host?: string
-    name: string
-    error?: Error
-    lanShare?: ipAddress
-  }) {
+  constructor(user: UserCredentials, connection: IConnection) {
     super()
-    this.autoStart = typeof args.autoStart === 'undefined' ? true : args.autoStart
-    this.authHash = args.authHash
-    this.id = args.id
-    this.host = args.host || IP_PRIVATE
-    this.port = args.port
-    this.lanShare = args.lanShare
-    this.name = args.name || `${this.host}:${this.port}`
-    this.username = args.username
+    this.authHash = user.authHash
+    this.username = user.username
+    connection.createdTime = Date.now()
+    this.set(connection)
+  }
+
+  set({ autoStart = true, host = IP_PRIVATE, restriction = IP_OPEN, ...connection }: IConnection) {
+    this.params = { autoStart, host, restriction, ...connection }
   }
 
   async start() {
     // If the user indicates they want to start this connection,
     // we assume they want to start it on future sessions
-    this.autoStart = true
+    this.params.autoStart = true
 
     // Listen to events to synchronize state
     EventBus.emit(Connection.EVENTS.started, this.toJSON())
-    Tracker.pageView(`/connections/${this.id}/start`)
-    Tracker.event('connection', 'start', `connecting to service: ${this.id}`)
+    Tracker.pageView(`/connections/${this.params.id}/start`)
+    Tracker.event('connection', 'start', `connecting to service: ${this.params.id}`)
     Logger.info('Starting connection: ' + JSON.stringify(this.toJSON()))
 
     const usernameBase64 = Buffer.from(this.username).toString('base64')
@@ -78,11 +63,11 @@ export default class Connection extends EventEmitter {
       '-p',
       usernameBase64,
       this.authHash,
-      this.id, // Service ID
-      `T${this.port}`, // Bind port
+      this.params.id, // Service ID
+      `T${this.params.port}`, // Bind port
       '2', // Encryption
-      this.lanShare ? IP_OPEN : this.host, // Bind address
-      this.lanShare || IP_OPEN, // Restricted connection IP
+      `${this.params.host}`, // Bind address
+      `${this.params.restriction}`, // Restricted connection IP
       '12', // Max out
       '0', // Lifetime
       '0', // Grace period
@@ -120,9 +105,9 @@ export default class Connection extends EventEmitter {
   }
 
   async kill() {
-    d('Killing service:', this.id)
+    d('Killing service:', this.params.id)
     Logger.info('Killing connection:', this.toJSON())
-    Tracker.pageView(`/connections/${this.id}/kill`)
+    Tracker.pageView(`/connections/${this.params.id}/kill`)
     Tracker.event('connection', 'kill', 'kill service')
 
     if (this.process) this.process.kill()
@@ -132,11 +117,11 @@ export default class Connection extends EventEmitter {
   async stop() {
     // If the user manually stops a connection, we assume they
     // don't want it to automatically start on future connections.
-    this.autoStart = false
+    this.params.autoStart = false
 
-    d('Stopping service:', this.id)
+    d('Stopping service:', this.params.id)
     Logger.info('Stopping connection:', this.toJSON())
-    Tracker.pageView(`/connections/${this.id}/stop`)
+    Tracker.pageView(`/connections/${this.params.id}/stop`)
     Tracker.event('connection', 'stop', 'stopping service')
 
     // Make sure the process is completely dead.
@@ -149,37 +134,38 @@ export default class Connection extends EventEmitter {
 
   async restart() {
     Logger.info('Restarting connection:', this.toJSON())
-    Tracker.pageView(`/connections/${this.id}/restart`)
-    Tracker.event('connection', 'restart', `restarting service: ${this.id}`)
+    Tracker.pageView(`/connections/${this.params.id}/restart`)
+    Tracker.event('connection', 'restart', `restarting service: ${this.params.id}`)
 
-    d('Restart - stopping service:', this.id)
+    d('Restart - stopping service:', this.params.id)
     if (this.process && this.process.pid) await this.stop()
 
-    d('Restart - starting service:', this.id)
+    d('Restart - starting service:', this.params.id)
     await this.start()
   }
 
-  toJSON = (): IConnection => {
+  toJSON = () => {
     return {
-      autoStart: this.autoStart,
-      id: this.id,
+      ...this.params,
       pid: this.process ? this.process.pid : undefined,
-      port: this.port,
-      name: this.name,
-      error: this.error,
-      lanShare: this.lanShare,
-    }
+    } as IConnection
+  }
+
+  get active() {
+    return this.process && this.process.pid
   }
 
   private handleError = (error: Error) => {
     Logger.error('connectd error: ' + error.message)
-    Tracker.event('connection', 'error', `connection error: ${this.id}`)
+    Tracker.event('connection', 'error', `connection error: ${this.params.id}`)
     EventBus.emit('error', { error: error.message })
-    this.error = error
+    this.params.error = error
   }
 
   private handleClose = async (code: number) => {
-    // If we intentially kill a process, we don't
+    this.params.endTime = Date.now()
+
+    // If we intentionally kill a process, we don't
     // want to go further
     if (code === 15) return
 
@@ -244,7 +230,7 @@ export default class Connection extends EventEmitter {
       let extra: any
       if (line.startsWith('!!connected')) {
         Logger.info('connected!', line)
-        // EventBus.emit(events.connected, this.toJSON())
+        this.params.startTime = Date.now()
         event = events.connected
       } else if (line.includes('seconds since startup')) {
         event = events.uptime
