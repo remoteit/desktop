@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom'
 import { NextButton } from '../NextButton'
 import { IDevice } from 'remote.it'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 
 export type DeviceListItemProps = {
   device: IDevice

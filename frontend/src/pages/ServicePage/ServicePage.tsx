@@ -3,7 +3,7 @@ import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { Typography } from '@material-ui/core'
+import { Typography, List } from '@material-ui/core'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../components/DisconnectButton'
@@ -29,8 +29,7 @@ export const ServicePage: React.FC = () => {
   console.log('service:', service)
 
   return (
-    <>
-      <Breadcrumbs />
+    <Breadcrumbs>
       <Typography variant="subtitle1">
         <ConnectionStateIcon connection={connection} service={service} size="lg" />
         <span className={css.title}>{service && service.name}</span>
@@ -39,10 +38,10 @@ export const ServicePage: React.FC = () => {
         <ForgetButton connection={connection} />
         <ConnectButton connection={connection} service={service} />
       </Typography>
-      <section>
+      <List>
         <LanShareSelect onClick={() => history.push(location.pathname + '/lan')} serviceID={service && service.id} />
-      </section>
-    </>
+      </List>
+    </Breadcrumbs>
   )
 }
 

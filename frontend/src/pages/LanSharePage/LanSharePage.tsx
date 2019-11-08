@@ -73,8 +73,7 @@ export const LanSharePage: React.FC = () => {
   }
   console.log('LAN SHARE ENABLED', enabled)
   return (
-    <div>
-      <Breadcrumbs />
+    <Breadcrumbs>
       <Typography variant="subtitle1">Local Network Sharing</Typography>
 
       <ButtonBase onClick={switchHandler}>
@@ -128,7 +127,7 @@ export const LanSharePage: React.FC = () => {
           <Icon name="check" color="white" weight="regular" />
         </Button>
       </section>
-    </div>
+    </Breadcrumbs>
   )
 }
 

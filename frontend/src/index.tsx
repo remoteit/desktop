@@ -119,6 +119,17 @@ const theme = createMuiTheme({
         paddingBottom: spacing.xs,
         borderBottom: `1px solid ${colors.grayLighter}`,
       },
+      subtitle2: {
+        fontSize: '1rem',
+        fontWeight: 400,
+      },
+      caption: {
+        fontSize: '11px',
+        color: colors.grayDark,
+      },
+      colorTextSecondary: {
+        color: colors.grayDark,
+      },
     },
   },
 })

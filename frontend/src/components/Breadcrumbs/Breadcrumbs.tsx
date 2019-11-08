@@ -6,6 +6,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton, Link } from '@material-ui/core'
 import { removeDeviceName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
+import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { IDevice, IService } from 'remote.it'
 import { REGEX_LAST_PATH } from '../../constants'
@@ -19,7 +20,7 @@ const pageNameMap: { [path: string]: string } = {
   settings: 'Settings',
 }
 
-export const Breadcrumbs: React.FC = () => {
+export const Breadcrumbs: React.FC = ({ children }) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -45,28 +46,37 @@ export const Breadcrumbs: React.FC = () => {
   let breadcrumb: string = ''
 
   return (
-    <div className={css.header}>
-      <Tooltip title="back">
-        <IconButton onClick={() => history.push(parentPath)}>
-          <Icon name="chevron-left" size="md" fixedWidth />
-        </IconButton>
-      </Tooltip>
-      {crumbs.map((crumb, index) => {
-        const crumbPath = (breadcrumb += `/${crumb}`)
-        let result = []
-        if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="chevron-left" size="xxs" fixedWidth />)
-        result.push(
-          <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
-            {pageName(crumb)}
-          </Link>
-        )
-        return result
-      })}
+    <div className={css.container}>
+      <div className={css.header}>
+        <Tooltip title="back">
+          <IconButton onClick={() => history.push(parentPath)}>
+            <Icon name="chevron-left" size="md" fixedWidth />
+          </IconButton>
+        </Tooltip>
+        {crumbs.map((crumb, index) => {
+          const crumbPath = (breadcrumb += `/${crumb}`)
+          let result = []
+          if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="chevron-left" size="xxs" fixedWidth />)
+          result.push(
+            <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
+              {pageName(crumb)}
+            </Link>
+          )
+          return result
+        })}
+      </div>
+      <Body>{children}</Body>
     </div>
   )
 }
 
 const useStyles = makeStyles({
+  container: {
+    display: 'flex',
+    alignItems: 'stretch',
+    flexFlow: 'column',
+    height: '100%',
+  },
   header: {
     backgroundColor: styles.colors.grayLighter,
     borderBottom: `1px solid ${styles.colors.grayLight}`,

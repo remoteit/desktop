@@ -27,14 +27,13 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
   if (!device) return <div>No device found.</div>
 
   return (
-    <>
-      <Breadcrumbs />
+    <Breadcrumbs>
       <Typography variant="subtitle1">
         <ConnectionStateIcon state={device.state} size="lg" />
         <span className={css.title}>{device.name}</span>
       </Typography>
       <ServiceList services={device.services} connections={connections} />
-    </>
+    </Breadcrumbs>
   )
 })
 

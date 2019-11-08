@@ -2,8 +2,9 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Icon } from '../Icon'
+import { NextButton } from '../NextButton'
 import { makeStyles } from '@material-ui/styles'
-import { ButtonBase } from '@material-ui/core'
+import { ListItem, ListItemIcon, Typography } from '@material-ui/core'
 import { lanShareRestriction } from '../../helpers/lanSharing'
 import { spacing, colors } from '../../styling'
 import { IP_OPEN } from '../../constants'
@@ -20,14 +21,16 @@ export const LanShareSelect: React.FC<Props> = ({ onClick, serviceID }) => {
   const restriction: ipAddress = (lanShare && connection && connection.restriction) || IP_OPEN
 
   return (
-    <ButtonBase onClick={onClick} className={css.handlerItem}>
-      <Icon name="network-wired" color={lanShare ? 'primary' : 'gray-dark'} size="lg" />
-      <div className={css.handlerText}>
-        <span>Local Network Sharing</span>
-        <span>{lanShareRestriction(restriction)}</span>
-      </div>
-      <Icon name="chevron-right" size="md" fixedWidth />
-    </ButtonBase>
+    <ListItem button onClick={onClick}>
+      <ListItemIcon>
+        <Icon name="network-wired" color={lanShare ? 'primary' : 'gray-dark'} size="lg" />
+      </ListItemIcon>
+      <span className={css.text}>
+        <Typography variant="caption">Local Network Sharing</Typography>
+        <Typography variant="subtitle2">{lanShareRestriction(restriction)}</Typography>
+      </span>
+      <NextButton />
+    </ListItem>
   )
 }
 
@@ -47,7 +50,7 @@ const useStyles = makeStyles({
     height: 30,
     marginRight: spacing.lg,
   },
-  handlerText: {
-    width: '80%',
+  text: {
+    flexGrow: 1,
   },
 })
