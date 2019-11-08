@@ -1,13 +1,14 @@
 import React from 'react'
 import { IService } from 'remote.it'
+import { hostName } from '../../helpers/nameHelper'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { DisconnectButton } from '../DisconnectButton'
-import { RestartButton } from '../RestartButton'
+// import { RestartButton } from '../RestartButton'
 import { ConnectButton } from '../ConnectButton'
-import { ForgetButton } from '../ForgetButton'
+// import { ForgetButton } from '../ForgetButton'
 import { CopyButton } from '../CopyButton'
 import { NextButton } from '../NextButton'
 import { makeStyles } from '@material-ui/styles'
@@ -25,7 +26,6 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
   let connected: boolean = false
   let connecting: boolean = false
   let name: string = ''
-  let port: number | undefined
   let error: boolean = false
   let path = location.pathname
   let id = ''
@@ -40,7 +40,6 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
     connected = !!connection.pid
     connecting = !!connection.connecting
     error = !!connection.error
-    port = connection.port
     name = connection.name || name
     id = connection.id
   }
@@ -51,12 +50,11 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
         <ListItemIcon>
           <ConnectionStateIcon connection={connection} service={service} size="lg" />
         </ListItemIcon>
-        <ListItemText primary={name} secondary={port && `localhost:${port}`} />
+        <ListItemText primary={name} secondary={connection && hostName(connection)} />
         <NextButton />
         <ListItemSecondaryAction className={css.actions}>
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
-          <ForgetButton connection={connection} />
           <ConnectButton service={service} connection={connection} />
         </ListItemSecondaryAction>
       </ListItem>

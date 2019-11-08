@@ -37,7 +37,6 @@ export const ServicePage: React.FC = () => {
         <CopyButton connection={connection} />
         <DisconnectButton connection={connection} />
         <ForgetButton connection={connection} />
-        <RestartButton connection={connection} />
         <ConnectButton connection={connection} service={service} />
       </Typography>
       <section>

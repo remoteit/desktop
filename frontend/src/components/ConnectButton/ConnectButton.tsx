@@ -1,7 +1,6 @@
 import React from 'react'
 import BackendAdaptor from '../../services/BackendAdapter'
-import { addNameExt } from '../../helpers/serviceNameHelper'
-import { findService } from '../../models/devices'
+import { setConnection } from '../../helpers/connectionHelper'
 import { IService } from 'remote.it'
 import { ApplicationState } from '../../store'
 import { IconButton, Tooltip } from '@material-ui/core'
@@ -23,14 +22,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({ connection, servic
         disabled={disabled}
         color="primary"
         onClick={() => {
-          const [s, d] = findService(devices, service.id)
-          if (d && !connection) {
-            BackendAdaptor.emit('connection', {
-              id: service.id,
-              name: service.name,
-              deviceID: d.id,
-            })
-          }
+          if (!connection) setConnection(service.id)
           BackendAdaptor.emit('service/connect', service.id)
         }}
       >

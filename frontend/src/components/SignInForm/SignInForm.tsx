@@ -42,6 +42,7 @@ export function SignInForm({ signInError, signInStarted, signIn }: SignInFormCon
           {...{ ...usernameProps, error: Boolean(usernameProps.error) }}
           autoFocus
           fullWidth
+          variant="filled"
           id="user-username"
           label="Email or Username"
           margin="normal"
@@ -54,6 +55,7 @@ export function SignInForm({ signInError, signInStarted, signIn }: SignInFormCon
         <TextField
           {...{ ...passwordProps, error: Boolean(passwordProps.error) }}
           fullWidth
+          variant="filled"
           id="user-password"
           label="Password"
           margin="normal"

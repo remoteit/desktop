@@ -9,9 +9,20 @@ const { Netmask } = nm
 class LAN {
   data: IScanData = {}
   interfaces?: IInterface[]
+  privateIP?: ipAddress = 'unknown'
 
   constructor() {
     this.getInterfaces()
+  }
+
+  setPrivateIP() {
+    if (this.interfaces && this.interfaces.length) {
+      this.privateIP = this.interfaces[0].ip
+      this.interfaces.map(i => {
+        if (i.active) this.privateIP = i.ip
+      })
+    }
+    Logger.info('PRIVATE IP', { ip: this.privateIP })
   }
 
   async getInterfaces() {
@@ -19,8 +30,8 @@ class LAN {
       nw.get_interfaces_list((listErr: Error, list: any) => {
         if (listErr) failure(listErr)
         nw.get_active_interface((activeErr: Error, active: any) => {
-          if (activeErr) Logger.warn('INTERFACE active', activeErr)
-          else Logger.info('INTERFACE active', active)
+          if (activeErr) Logger.warn('INTERFACE active error', { error: activeErr })
+          else Logger.info('INTERFACE active', { active })
           active = active || {}
           this.interfaces = list.reduce((result: IInterface[], item: any) => {
             if (item.ip_address) {
@@ -36,7 +47,8 @@ class LAN {
             }
             return result
           }, [])
-          Logger.info('GET INTERFACES:', this.interfaces)
+          Logger.info('GET INTERFACES:', { interfaces: this.interfaces })
+          this.setPrivateIP()
           success()
         })
       })
@@ -44,17 +56,17 @@ class LAN {
   }
 
   async scan(interfaceName: string) {
-    Logger.info('SCAN start', interfaceName)
+    Logger.info('SCAN start', { interfaceName })
     if (!interfaceName) return
 
     try {
       const ipMask = this.findNetmask(interfaceName)
-      Logger.info('IPMASK:', ipMask)
+      Logger.info('IPMASK:', { ipMask })
       const result = await this.exec(ipMask)
       this.parse(interfaceName, result)
-      Logger.info('SCAN complete', this.data[interfaceName])
+      Logger.info('SCAN complete', { data: this.data[interfaceName] })
     } catch (error) {
-      Logger.error('SCAN error', error)
+      Logger.error('SCAN error', { error })
       this.data[interfaceName] = { timestamp: Date.now(), data: [] }
     }
   }
@@ -70,7 +82,7 @@ class LAN {
     return new Promise<string>((success, failure) => {
       execFile(SCRIPT_PATH + 'scan.sh', [ipMask], (error, result) => {
         if (error) {
-          Logger.error('*** ERROR *** EXEC scan', error.toString())
+          Logger.error('*** ERROR *** EXEC scan', { error })
           failure()
         }
         success(result.toString())

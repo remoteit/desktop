@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import BackendAdaptor from '../../services/BackendAdapter'
-import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, REGEX_IP_SAFE } from '../../constants'
+import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, IP_PRIVATE, REGEX_IP_SAFE } from '../../constants'
 import { Select, Button, ButtonBase, Typography, Switch, TextField, MenuItem } from '@material-ui/core'
+import { setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
@@ -23,7 +24,7 @@ export const LanSharePage: React.FC = () => {
     return { id: serviceID, name: service ? service.name : undefined }
   })
 
-  const lanShare: boolean = connection.host === IP_OPEN
+  const lanShare: boolean = connection.host !== IP_PRIVATE
   const restriction: ipAddress = (lanShare && connection.restriction) || IP_OPEN
   const history = useHistory()
   const css = useStyles()
@@ -38,7 +39,7 @@ export const LanSharePage: React.FC = () => {
     { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
 
-  const [enabled, setEnabled] = useState<boolean>(!!lanShare)
+  const [enabled, setEnabled] = useState<boolean>(lanShare)
   const [selection, setSelection] = useState<number>(selections.findIndex(s => s.value === restriction))
   const [address, setAddress] = useState<string>(restriction || '192.168.')
   const [myAddress, setMyAddress] = useState<string>('unknown')
@@ -62,16 +63,15 @@ export const LanSharePage: React.FC = () => {
     return typeof value === 'function' ? value() : value
   }
   const save = () => {
-    console.log('set connection lanShare', connection, getSelectionValue())
-    const selection = getSelectionValue()
-    BackendAdaptor.emit('connection', {
+    const value = getSelectionValue()
+    setConnection(serviceID, {
       ...connection,
-      host: selection ? IP_OPEN : connection.host,
-      restriction: selection || IP_OPEN,
+      host: enabled ? IP_OPEN : IP_PRIVATE,
+      restriction: value || IP_OPEN,
     })
     history.goBack()
   }
-
+  console.log('LAN SHARE ENABLED', enabled)
   return (
     <div>
       <Breadcrumbs />
@@ -81,7 +81,7 @@ export const LanSharePage: React.FC = () => {
         <div className={css.switch}>
           <Icon className={css.icon} name="network-wired" size="lg" color={enabled ? 'primary' : 'gray'} />
           <div style={{ flexGrow: 1, color: enabled ? colors.primary : colors.grayDarker }}>Enable local sharing</div>
-          <Switch value={enabled} onChange={switchHandler} />
+          <Switch checked={enabled} onChange={switchHandler} />
         </div>
       </ButtonBase>
 
@@ -115,8 +115,9 @@ export const LanSharePage: React.FC = () => {
                 <div className={css.quote} />
                 <TextField
                   value={address}
-                  onChange={event => setAddress(ipAddressOnly(event.target.value))}
+                  variant="filled"
                   label="IP address"
+                  onChange={event => setAddress(ipAddressOnly(event.target.value))}
                 />
               </div>
             )}

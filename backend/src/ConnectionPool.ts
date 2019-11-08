@@ -50,6 +50,7 @@ export default class ConnectionPool {
       // add
       else this.add(connection)
     })
+    this.updated()
   }
 
   add = (connection: IConnection) => {
@@ -86,7 +87,7 @@ export default class ConnectionPool {
     this.updated()
   }
 
-  stop = async (id: string, autoStart: boolean = true) => {
+  stop = async (id: string, autoStart?: boolean) => {
     d('Stopping service:', id)
     const instance = this.find(id)
     instance && instance.stop(autoStart)

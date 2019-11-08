@@ -3,7 +3,7 @@ import { TextField, FormControl, Select, MenuItem, IconButton, Tooltip, Circular
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes, emptyServiceType } from '../../types/serviceTypes'
-import { addNameExt } from '../../helpers/serviceNameHelper'
+import { addDeviceName } from '../../helpers/nameHelper'
 import styles from '../../styling'
 
 type Props = {
@@ -66,7 +66,7 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
           value={state.name}
           disabled={disabled}
           onChange={event => update('name', event.target.value)}
-          helperText={addNameExt(device.name, state.name)}
+          helperText={addDeviceName(device.name, state.name)}
         />
       </td>
       <td>

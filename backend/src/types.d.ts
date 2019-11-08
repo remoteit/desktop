@@ -7,14 +7,4 @@ declare global {
     username: string
     authHash: string
   }
-
-  interface ConnectionArgs {
-    authHash: string
-    host?: string
-    id: string
-    name: string
-    port?: number
-    lanShare?: ipAddress
-    username: string
-  }
 }

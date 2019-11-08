@@ -9,6 +9,7 @@ interface IJumpState {
   interfaces: IInterface[]
   added: ITarget | undefined
   error: boolean
+  privateIP: ipAddress
 }
 
 const state: IJumpState = {
@@ -19,6 +20,7 @@ const state: IJumpState = {
   interfaces: [],
   added: undefined,
   error: false,
+  privateIP: '',
 }
 
 export default createModel({
@@ -53,6 +55,9 @@ export default createModel({
     },
     setError(state: IJumpState, error: boolean) {
       state.error = error
+    },
+    setPrivateIP(state: IJumpState, privateIP: ipAddress) {
+      state.privateIP = privateIP
     },
   },
 })

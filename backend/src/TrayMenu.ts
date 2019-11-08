@@ -1,5 +1,6 @@
 import { application } from '.'
 import { IUser } from 'remote.it'
+import { hostName } from './helpers/nameHelper'
 import electron from 'electron'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
@@ -38,19 +39,22 @@ export default class TrayMenu {
   }
 
   private updateConnectionMenu = (pool: IConnection[]) => {
-    this.connections = pool.map(connection => ({
-      label: connection.name,
-      icon: connection.pid ? iconConnected : iconOnline,
-      submenu: [
-        !connection.pid
-          ? { label: 'Connect', click: () => this.connect(connection.id) }
-          : { label: 'Disconnect', click: () => this.disconnect(connection.id) },
-        { type: 'separator' },
-        { label: 'localhost:' + connection.port, enabled: false },
-        { label: 'Copy to clipboard', click: () => this.copy(connection.port) },
-        { label: 'Launch', click: () => this.launch(connection.port) },
-      ],
-    }))
+    this.connections = pool.map(connection => {
+      const location = hostName(connection)
+      return {
+        label: connection.name,
+        icon: connection.pid ? iconConnected : iconOnline,
+        submenu: [
+          !connection.pid
+            ? { label: 'Connect', click: () => this.connect(connection.id) }
+            : { label: 'Disconnect', click: () => this.disconnect(connection.id) },
+          { type: 'separator' },
+          { label: location, enabled: false },
+          { label: 'Copy to clipboard', click: () => this.copy(location) },
+          { label: 'Launch', click: () => this.launch(location) },
+        ],
+      }
+    })
     this.render()
   }
 
@@ -105,11 +109,11 @@ export default class TrayMenu {
     application.pool.stop(id)
   }
 
-  private copy(port?: number) {
-    electron.clipboard.writeText(`localhost:${port}`)
+  private copy(location: string) {
+    electron.clipboard.writeText(location)
   }
 
-  private launch(port?: number) {
-    electron.shell.openExternal(`http://localhost:${port}`)
+  private launch(location: string) {
+    electron.shell.openExternal(`http://${location}`)
   }
 }

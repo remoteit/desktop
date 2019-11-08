@@ -2,7 +2,7 @@ import fuzzy from 'fuzzy'
 import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
 import Device from '../services/Device'
-import { renameServices } from '../helpers/serviceNameHelper'
+import { renameServices } from '../helpers/nameHelper'
 import BackendAdapter from '../services/BackendAdapter'
 import { r3 } from '../services/remote.it'
 

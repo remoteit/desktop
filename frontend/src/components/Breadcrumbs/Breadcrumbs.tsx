@@ -4,7 +4,7 @@ import { findService } from '../../models/devices'
 import { ApplicationState } from '../../store'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton, Link } from '@material-ui/core'
-import { removeNameExt } from '../../helpers/serviceNameHelper'
+import { removeDeviceName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
 import { IDevice, IService } from 'remote.it'
@@ -36,7 +36,7 @@ export const Breadcrumbs: React.FC = () => {
     if (device) return device.name
 
     const [service, d] = findService(devices, path)
-    if (service && d) return removeNameExt(d.name, service.name)
+    if (service && d) return removeDeviceName(d.name, service.name)
 
     const match = path.match(REGEX_LAST_PATH)
     if (match) return match[0]

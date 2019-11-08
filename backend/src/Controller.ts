@@ -67,12 +67,15 @@ class Controller {
     this.server.emit('scan', lan.data)
   }
 
+  // privateIP = () => this.server.emit('privateIP', lan.privateIP)
+
   syncJump = () => {
     this.server.emit('targets', cli.data.targets)
     this.server.emit('device', cli.data.device)
     this.server.emit('scan', lan.data)
     this.server.emit('interfaces', lan.interfaces)
     this.server.emit('pool', this.pool.toJSON())
+    this.server.emit('privateIP', lan.privateIP)
   }
 
   checkSignIn = async () => {
@@ -98,7 +101,7 @@ class Controller {
   }
 
   connection = async (connection: IConnection) => {
-    d('add connection:', connection)
+    d('Connection set:', connection)
     await this.pool.set([connection])
   }
 

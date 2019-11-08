@@ -75,6 +75,7 @@ declare global {
     | 'device'
     | 'scan'
     | 'interfaces'
+    | 'privateIP'
 
   type BinaryName = 'connectd' | 'muxer' | 'demuxer'
 

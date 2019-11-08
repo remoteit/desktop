@@ -1,6 +1,6 @@
 import { ConfigFile } from '@remote.it/core'
 import { execSync } from 'child_process'
-import { removeNameExt } from './helpers/serviceNameHelper'
+import { removeDeviceName } from './helpers/nameHelper'
 import { REMOTEIT_EXEC } from './constants'
 import defaults from './helpers/defaults'
 
@@ -36,7 +36,7 @@ export default class File {
     this.data.targets = this.file.services.map(service => ({
       ...service,
       hostname: service.hostname || '',
-      name: removeNameExt(deviceName, service.name) || '',
+      name: removeDeviceName(deviceName, service.name) || '',
     }))
   }
 

@@ -114,10 +114,10 @@ export default class Connection extends EventEmitter {
     this.process = undefined
   }
 
-  async stop(autoStart: boolean = true) {
+  async stop(autoStart?: boolean) {
     // If the user manually stops a connection, we assume they
     // don't want it to automatically start on future connections.
-    this.params.autoStart = autoStart
+    if (autoStart !== undefined) this.params.autoStart = autoStart
     this.params.active = false
 
     d('Stopping service:', this.params.id)
