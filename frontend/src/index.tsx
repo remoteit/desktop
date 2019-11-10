@@ -52,7 +52,7 @@ const theme = createMuiTheme({
     MuiIconButton: {
       root: {
         '&:hover': {
-          backgroundColor: colors.grayLightest,
+          // backgroundColor: colors.grayLightest,
         },
       },
     },
@@ -66,7 +66,7 @@ const theme = createMuiTheme({
       },
       container: {
         '& .MuiListItemSecondaryAction-root': {
-          display: 'none',
+          // display: 'none',
         },
         '&:hover, &:focus': {
           '& .MuiListItemSecondaryAction-root': {

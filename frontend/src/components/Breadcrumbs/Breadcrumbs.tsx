@@ -41,6 +41,8 @@ export const Breadcrumbs: React.FC = ({ children }) => {
 
     const match = path.match(REGEX_LAST_PATH)
     if (match) return match[0]
+
+    return path
   }
 
   let breadcrumb: string = ''
@@ -53,17 +55,16 @@ export const Breadcrumbs: React.FC = ({ children }) => {
             <Icon name="chevron-left" size="md" fixedWidth />
           </IconButton>
         </Tooltip>
-        {crumbs.map((crumb, index) => {
+        {crumbs.reduce((result: any[], crumb, index) => {
           const crumbPath = (breadcrumb += `/${crumb}`)
-          let result = []
-          if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="chevron-left" size="xxs" fixedWidth />)
-          result.push(
+          if (index > 0) result.unshift(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
+          result.unshift(
             <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
               {pageName(crumb)}
             </Link>
           )
           return result
-        })}
+        }, [])}
       </div>
       <Body>{children}</Body>
     </div>
@@ -81,7 +82,7 @@ const useStyles = makeStyles({
     // backgroundColor: styles.colors.grayLighter,
     // borderBottom: `1px solid ${styles.colors.grayLight}`,
     marginTop: styles.spacing.lg,
-    marginLeft: styles.spacing.md,
+    marginLeft: styles.spacing.sm,
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
       color: styles.colors.grayDarker,

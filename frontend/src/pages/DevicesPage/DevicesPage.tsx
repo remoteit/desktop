@@ -89,7 +89,7 @@ export const DevicesPage = connect(
           />
           <Tooltip title={sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'}>
             <IconButton onClick={() => changeSort(sort === 'alpha' ? 'state' : 'alpha')}>
-              <Icon name={sort === 'alpha' ? 'font-case' : 'scrubber'} size="sm" />
+              <Icon name={sort === 'alpha' ? 'font-case' : 'check-circle'} size="sm" />
             </IconButton>
           </Tooltip>
           {!searchOnly && (

@@ -66,4 +66,4 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
   )
 }
 
-const useStyles = makeStyles({ actions: { right: 70 } })
+const useStyles = makeStyles({ actions: { right: 70, display: 'none' } })

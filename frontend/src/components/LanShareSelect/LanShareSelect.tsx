@@ -22,7 +22,7 @@ export const LanShareSelect: React.FC<Props> = ({ onClick, serviceID }) => {
   return (
     <ListItem button onClick={onClick}>
       <ListItemIcon>
-        <Icon name="network-wired" color={lanShare ? 'primary' : 'gray-dark'} size="lg" />
+        <Icon name="network-wired" color={lanShare ? 'primary' : 'gray'} size="lg" />
       </ListItemIcon>
       <span className={css.text}>
         <Typography variant="caption">Local Network Sharing</Typography>

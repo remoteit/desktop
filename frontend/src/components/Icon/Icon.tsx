@@ -34,8 +34,8 @@ export const Icon = React.forwardRef<Ref, IconProps>(
         className={classes}
         {...props}
         style={{
-          marginLeft: inline ? styles.spacing.md : 'inherit',
-          fontSize: size ? styles.fontSizes[size] : 'inherit',
+          marginLeft: inline ? styles.spacing.md : 'initial',
+          fontSize: size ? styles.fontSizes[size] : 'initial',
         }}
         ref={ref}
       />

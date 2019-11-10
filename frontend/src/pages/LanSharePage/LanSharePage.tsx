@@ -1,12 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, IP_PRIVATE, REGEX_IP_SAFE } from '../../constants'
-import { Select, Button, ButtonBase, Typography, Switch, TextField, MenuItem } from '@material-ui/core'
+import {
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Typography,
+  Switch,
+  TextField,
+  MenuItem,
+} from '@material-ui/core'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { colors, spacing } from '../../styling'
+import { colors, spacing, fontSizes } from '../../styling'
 import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -23,10 +34,7 @@ export const LanSharePage: React.FC = () => {
     return service && newConnection(service)
   })
 
-  const lanShare: boolean = !!connection && connection.host !== IP_PRIVATE
-  const restriction: ipAddress = (connection && connection.restriction) || IP_OPEN
-  const history = useHistory()
-  const css = useStyles()
+  const restriction: ipAddress = (connection && connection.restriction) || IP_LATCH
 
   // prettier-ignore
   const selections: Selections[] = [
@@ -38,30 +46,28 @@ export const LanSharePage: React.FC = () => {
     { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
 
-  const [enabled, setEnabled] = useState<boolean>(lanShare)
-  const [selection, setSelection] = useState<number>(selections.findIndex(s => s.value === restriction))
+  const [enabled, setEnabled] = useState<boolean>(!!connection && connection.host !== IP_PRIVATE)
+  const [selection, setSelection] = useState<number>(() => {
+    let s = selections.findIndex(s => s.value === restriction)
+    if (s === -1) s = selections.findIndex(s => typeof s.value === 'function')
+    return s
+  })
   const [address, setAddress] = useState<string>(restriction || '192.168.')
+  const selected = selections[selection] || {}
+  const history = useHistory()
+  const css = useStyles()
 
   if (!connection) return null
 
-  if (lanShare && selection === -1) {
-    setSelection(selections.findIndex(s => typeof s.value === 'function'))
-    setAddress(restriction)
-  } else if (selection === -1) {
-    setSelection(0)
-  }
-
-  const ipAddressOnly = (address: string) => address.replace(REGEX_IP_SAFE, '')
-  const switchHandler = () => setEnabled(!enabled)
   const getSelectionValue = () => {
     if (!enabled) return undefined
-    const value = selections[selection].value
+    const value = selected.value
     return typeof value === 'function' ? value() : value
   }
 
   const save = () => {
     const value = getSelectionValue()
-    setConnection({ ...connection, host: enabled ? IP_OPEN : IP_PRIVATE, restriction: value })
+    setConnection({ ...connection, host: enabled ? IP_OPEN : IP_PRIVATE, restriction: enabled ? value : IP_OPEN })
     history.goBack()
   }
 
@@ -69,26 +75,34 @@ export const LanSharePage: React.FC = () => {
     <Breadcrumbs>
       <Typography variant="subtitle1">Local Network Sharing</Typography>
 
-      <ButtonBase onClick={switchHandler}>
-        <div className={css.switch}>
-          <Icon className={css.icon} name="network-wired" size="lg" color={enabled ? 'primary' : 'gray'} />
-          <div style={{ flexGrow: 1, color: enabled ? colors.primary : colors.grayDarker }}>Enable local sharing</div>
-          <Switch checked={enabled} onChange={switchHandler} />
-        </div>
-      </ButtonBase>
+      <List>
+        <ListItem button onClick={() => setEnabled(!enabled)}>
+          <ListItemIcon>
+            <Icon name="network-wired" color={enabled ? 'primary' : 'gray'} size="lg" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Enable local sharing"
+            primaryTypographyProps={{ style: { color: enabled ? colors.primary : colors.grayDarker } }}
+          />
+          <ListItemSecondaryAction>
+            <Switch checked={enabled} onChange={() => setEnabled(!enabled)} />
+          </ListItemSecondaryAction>
+        </ListItem>
+      </List>
 
-      <section className={css.page}>
-        <div className={css.indent}>
-          <div>Your local IP address</div>
-          <div>{privateIP}</div>
-          <div className={css.note}>
-            Allow users to connect to your remote device through your IP address using a custom port.
-          </div>
+      <div className={css.indent}>
+        <Typography variant="caption">Your local IP address</Typography>
+        <Typography variant="subtitle2">{privateIP}</Typography>
+        <div className={css.note}>
+          Allow users to connect to your remote device through your IP address using a custom port.
         </div>
         {enabled && (
-          <div className={css.indent}>
-            <Select
-              inputProps={{ name: 'Local Network Security' }}
+          <>
+            <TextField
+              select
+              className={css.textField}
+              variant="filled"
+              label="Local Network Security"
               value={selection.toString()}
               onChange={event => setSelection(parseInt(event.target.value as string))}
             >
@@ -97,67 +111,56 @@ export const LanSharePage: React.FC = () => {
                   {option.name}
                 </MenuItem>
               ))}
-            </Select>
+            </TextField>
             <div className={css.note}>
-              {selections[selection].note}
-              <div className={css.mask}> {getSelectionValue()}</div>
+              {selected.note}
+              <span className={css.mask}>Mask {getSelectionValue()}</span>
             </div>
-            {typeof selections[selection].value === 'function' && (
-              <div className={css.input}>
-                <div className={css.quote} />
+            {typeof selected.value === 'function' && (
+              <div className={css.quote}>
                 <TextField
+                  className={css.textField}
                   value={address}
                   variant="filled"
                   label="IP address"
-                  onChange={event => setAddress(ipAddressOnly(event.target.value))}
+                  onChange={event => setAddress(event.target.value.replace(REGEX_IP_SAFE, ''))}
                 />
               </div>
             )}
-          </div>
+          </>
         )}
+      </div>
+      <div className={css.indent}>
         <Button onClick={save} variant="contained" color="primary">
           Save
-          <Icon name="check" color="white" weight="regular" />
+          <Icon name="check" color="white" weight="regular" inline />
         </Button>
-      </section>
+      </div>
     </Breadcrumbs>
   )
 }
 
 const useStyles = makeStyles({
-  page: {
-    margin: spacing.lg,
-  },
-  icon: {
-    marginRight: spacing.lg,
-    marginLeft: spacing.sm,
-  },
-  switch: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
   indent: {
-    marginLeft: spacing.xl,
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.sm,
-    color: colors.gray,
+    padding: `${spacing.sm}px ${spacing.xxl}px`,
+    marginLeft: spacing.lg,
   },
   note: {
     marginTop: spacing.lg,
-  },
-  mask: {
+    marginBottom: spacing.lg,
     color: colors.grayDark,
   },
-  input: {
-    paddingTop: spacing.sm,
-    flexDirection: 'row',
+  textField: {
+    minWidth: 300,
+  },
+  mask: {
+    fontStyle: 'italic',
+    fontSize: fontSizes.sm,
+    marginLeft: spacing.sm,
   },
   quote: {
+    margin: `${spacing.xl}px 0`,
     paddingLeft: spacing.lg,
-    marginTop: 18,
-    borderLeftWidth: 1,
-    borderLeftColor: colors.grayLightest,
-    height: 45,
+    borderLeft: `1px solid ${colors.grayLighter}`,
   },
 })
