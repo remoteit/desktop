@@ -37,6 +37,7 @@ export default class Connection extends EventEmitter {
     this.authHash = user.authHash
     this.username = user.username
     connection.createdTime = Date.now()
+    connection.startTime = connection.endTime = undefined
     this.set(connection)
   }
 
@@ -202,6 +203,7 @@ export default class Connection extends EventEmitter {
 
       if (code === 3) return
 
+      this.params.error = { code, message }
       EventBus.emit(Connection.EVENTS.error, {
         code,
         connection: this.toJSON(),

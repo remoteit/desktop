@@ -38,51 +38,51 @@ class BackendAdapter extends EventEmitter {
 type EventHandlers = { [event in SocketEvent]: (data?: any) => any }
 
 function getEventHandlers() {
-  const { binaries, auth, jump, ui } = store.dispatch
+  const { binaries, auth, backend, ui } = store.dispatch
 
   return {
     connect: () => ui.connected(),
     disconnect: () => ui.disconnected(),
-    connect_error: () => jump.setError(true),
+    connect_error: () => backend.set({ key: 'error', value: true }),
 
     pool: (result: IConnection[]) => {
       console.log('socket pool', result)
-      jump.setConnections(result)
+      backend.set({ key: 'connections', value: result })
     },
 
     connection: (result: IConnection) => {
       console.log('socket connection', result)
-      jump.setConnection(result)
+      backend.setConnection(result)
     },
 
     targets: (result: ITarget[]) => {
       console.log('socket targets', result)
       if (result) {
-        jump.setAdded(undefined)
-        jump.setTargets(result)
+        backend.set({ key: 'added', value: undefined })
+        backend.set({ key: 'targets', value: result })
       }
     },
     device: (result: IDevice) => {
       console.log('socket device', result)
-      if (result) jump.setDevice(result)
+      if (result) backend.set({ key: 'device', value: result })
     },
     scan: (result: IScanData) => {
       console.log('socket scan', result)
-      if (result) jump.setScanData(result)
+      if (result) backend.set({ key: 'scanData', value: result })
     },
     interfaces: (result: IInterface[]) => {
       console.log('socket interfaces', result)
-      if (result) jump.setInterfaces(result)
+      if (result) backend.set({ key: 'interfaces', value: result })
     },
 
-    privateIP: jump.setPrivateIP,
+    privateIP: (result: ipAddress) => backend.set({ key: 'privateIP', value: result }),
 
     // Connections
-    'service/started': (msg: ConnectionMessage) => jump.setConnection(msg.connection), /// devices.connectStart(conn.id)
-    'service/connected': (msg: ConnectionMessage) => jump.setConnection(msg.connection), ///  devices.connected(msg.connection)
-    'service/disconnected': (msg: ConnectionMessage) => jump.setConnection(msg.connection), ///  devices.disconnected(msg)
+    'service/started': (msg: ConnectionMessage) => backend.setConnection(msg.connection), /// devices.connectStart(conn.id)
+    'service/connected': (msg: ConnectionMessage) => backend.setConnection(msg.connection), ///  devices.connected(msg.connection)
+    'service/disconnected': (msg: ConnectionMessage) => backend.setConnection(msg.connection), ///  devices.disconnected(msg)
     'service/forgotten': (id: string) => console.log(id), // / devices.forgotten(id)
-    'service/error': (msg: ConnectionErrorMessage) => jump.setConnection(msg.connection), /// devices.connectionError(msg)
+    'service/error': (msg: ConnectionErrorMessage) => backend.setConnection(msg.connection), /// devices.connectionError(msg)
     'service/status': (msg: ConnectionMessage) => console.log('service/status', msg),
     'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),
     'service/request': (msg: ConnectionMessage) => console.log('service/request', msg),

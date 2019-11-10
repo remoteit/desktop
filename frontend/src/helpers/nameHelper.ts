@@ -10,7 +10,7 @@ export function hostName(connection: IConnection) {
     case '127.0.0.1':
       return `localhost:${port}`
     case '0.0.0.0':
-      const { privateIP } = store.getState().jump
+      const { privateIP } = store.getState().backend
       return `${privateIP}:${port}`
     default:
       return `${host}:${port}`

@@ -1,23 +1,16 @@
 import React from 'react'
-import { connect } from 'react-redux'
+import { clearConnectionError } from '../../helpers/connectionHelper'
 import { makeStyles } from '@material-ui/styles'
 import { ListItem, ListItemIcon, ListItemText, Tooltip } from '@material-ui/core'
 import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 
-const mapDispatch = (dispatch: any) => ({
-  clearConnectionError: dispatch.devices.clearConnectionError,
-})
-
-export type ConnectionErrorMessageProps = {
+type ConnectionErrorMessageProps = {
   connection: IConnection
-} & ReturnType<typeof mapDispatch>
+}
 
-export const ConnectionErrorMessage = connect(
-  null,
-  mapDispatch
-)(({ clearConnectionError, connection }: ConnectionErrorMessageProps) => {
+export const ConnectionErrorMessage = ({ connection }: ConnectionErrorMessageProps) => {
   const css = useStyles()
   if (!connection.error) return null
 
@@ -28,7 +21,7 @@ export const ConnectionErrorMessage = connect(
     <ListItem className={css.container}>
       <ListItemIcon>
         <Tooltip title="clear">
-          <IconButton onClick={() => clearConnectionError(connection.id)}>
+          <IconButton onClick={() => clearConnectionError(connection)}>
             <Icon name="times" color="white" size="md" fixedWidth />
           </IconButton>
         </Tooltip>
@@ -37,9 +30,7 @@ export const ConnectionErrorMessage = connect(
         secondary={
           connection.error.message +
           ' (' +
-          (connection.error.code
-            ? `CODE: ${connection.error.code}`
-            : 'Failed to connect for an unknown reason. Perhaps the process was killed outside of remote.it desktop?') +
+          (connection.error.code ? `CODE: ${connection.error.code}` : 'Failed to connect.') +
           ')'
         }
       >
@@ -47,7 +38,7 @@ export const ConnectionErrorMessage = connect(
       </ListItemText>
     </ListItem>
   )
-})
+}
 
 const useStyles = makeStyles({
   container: {

@@ -16,9 +16,8 @@ export type Props = {
 
 export const LanShareSelect: React.FC<Props> = ({ onClick, serviceID }) => {
   const css = useStyles()
-  const connection = useSelector((state: ApplicationState) => state.jump.connections.find(c => c.id === serviceID))
+  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const lanShare: boolean = !!(connection && connection.host === IP_OPEN)
-  const restriction: ipAddress = (lanShare && connection && connection.restriction) || IP_OPEN
 
   return (
     <ListItem button onClick={onClick}>
@@ -27,7 +26,7 @@ export const LanShareSelect: React.FC<Props> = ({ onClick, serviceID }) => {
       </ListItemIcon>
       <span className={css.text}>
         <Typography variant="caption">Local Network Sharing</Typography>
-        <Typography variant="subtitle2">{lanShareRestriction(restriction)}</Typography>
+        <Typography variant="subtitle2">{lanShareRestriction(connection)}</Typography>
       </span>
       <NextButton />
     </ListItem>

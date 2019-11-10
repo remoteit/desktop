@@ -3,6 +3,7 @@ import { IService } from 'remote.it'
 import { hostName } from '../../helpers/nameHelper'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { newConnection } from '../../helpers/connectionHelper'
 import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { DisconnectButton } from '../DisconnectButton'
@@ -42,6 +43,8 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
     error = !!connection.error
     name = connection.name || name
     id = connection.id
+  } else if (service) {
+    connection = newConnection(service)
   }
 
   return (
@@ -55,7 +58,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
         <ListItemSecondaryAction className={css.actions}>
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
-          <ConnectButton service={service} connection={connection} />
+          <ConnectButton connection={connection} />
         </ListItemSecondaryAction>
       </ListItem>
       {connection && error && <ConnectionErrorMessage connection={connection} />}

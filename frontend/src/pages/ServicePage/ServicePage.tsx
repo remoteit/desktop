@@ -1,13 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { REGEX_PORT_SAFE } from '../../constants'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
+import { setConnection, newConnection } from '../../helpers/connectionHelper'
 import { useSelector } from 'react-redux'
+import { findService } from '../../models/devices'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { Typography, List } from '@material-ui/core'
+import { Typography, List, TextField } from '@material-ui/core'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../components/DisconnectButton'
-import { RestartButton } from '../../components/RestartButton'
 import { ConnectButton } from '../../components/ConnectButton'
 import { ForgetButton } from '../../components/ForgetButton'
 import { CopyButton } from '../../components/CopyButton'
@@ -15,32 +17,42 @@ import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
 
 export const ServicePage: React.FC = () => {
-  const { serviceID } = useParams()
-  const connection = useSelector((state: ApplicationState) => state.jump.connections.find(c => c.id === serviceID))
-  const device = useSelector((state: ApplicationState) =>
-    state.devices.all.find(d => d.services.find(s => s.id === serviceID))
-  )
-  const service = device && device.services.find(s => s.id === serviceID)
+  const { serviceID = '' } = useParams()
+  let connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
+  const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
+  const [port, setPort] = useState(freePort)
   const history = useHistory()
   const location = useLocation()
   const css = useStyles()
 
-  console.log('device:', device)
-  console.log('service:', service)
+  if (!service) return null
+  if (!connection) connection = newConnection(service, { port })
 
   return (
     <Breadcrumbs>
       <Typography variant="subtitle1">
         <ConnectionStateIcon connection={connection} service={service} size="lg" />
-        <span className={css.title}>{service && service.name}</span>
+        <span className={css.title}>{service.name}</span>
         <CopyButton connection={connection} />
         <DisconnectButton connection={connection} />
         <ForgetButton connection={connection} />
-        <ConnectButton connection={connection} service={service} />
+        <ConnectButton connection={connection} />
       </Typography>
       <List>
-        <LanShareSelect onClick={() => history.push(location.pathname + '/lan')} serviceID={service && service.id} />
+        {/* Link to connection details */}
+        <LanShareSelect onClick={() => history.push(location.pathname + '/lan')} serviceID={service.id} />
       </List>
+      <section>
+        <TextField
+          label="Port"
+          value={port}
+          variant="filled"
+          onChange={event => setPort(+event.target.value.replace(REGEX_PORT_SAFE, ''))}
+          // onFocus={event => event.target.select()}
+          helperText="Must be a unique number"
+        />
+      </section>
     </Breadcrumbs>
   )
 }

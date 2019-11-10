@@ -7,15 +7,15 @@ import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 
 export type DeviceListItemProps = {
   device: IDevice
+  connection?: IConnection
 }
 
-export const DeviceListItem = ({ device }: DeviceListItemProps) => {
+export const DeviceListItem = ({ device, connection }: DeviceListItemProps) => {
   const history = useHistory()
-
   return (
     <ListItem onClick={() => history.push(`/devices/${device.id}`)} button>
       <ListItemIcon>
-        <ConnectionStateIcon state={device.state} size="lg" />
+        <ConnectionStateIcon connection={connection} service={device} size="lg" />
       </ListItemIcon>
       <ListItemText primary={device.name} />
       <NextButton />

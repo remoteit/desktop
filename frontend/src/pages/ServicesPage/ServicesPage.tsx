@@ -10,7 +10,7 @@ import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
 
 const mapState = (state: ApplicationState, params: any) => ({
-  connections: state.jump.connections.reduce((result: ConnectionLookup, c: IConnection) => {
+  connections: state.backend.connections.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
   }, {}),

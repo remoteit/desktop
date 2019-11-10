@@ -24,10 +24,10 @@ export default class ConnectionPool {
     Logger.info('Initializing connections pool', { connections })
 
     this.user = user
-    this.set(connections)
+    connections.map(c => this.set(c))
 
     // Only turn on connections the user had open last time.
-    connections.map(conn => conn.autoStart && this.start(conn.id))
+    connections.map(c => c.autoStart && this.start(c))
 
     // Listen to events to synchronize state
     EventBus.on(User.EVENTS.signedIn, (user: IUser) => (this.user = user))
@@ -38,68 +38,45 @@ export default class ConnectionPool {
     EventBus.on(ElectronApp.EVENTS.ready, this.updated)
   }
 
-  set = async (connections: IConnection[]) => {
-    if (!connections) throw new Error('No connections to set!')
-    connections.map(connection => {
-      const exists = this.find(connection.id)
-      // update
-      if (exists) {
-        if (exists.params.active) throw new Error('Can not update an active connection!')
-        else exists.set(connection)
-      }
-      // add
-      else this.add(connection)
-    })
+  set = (connection: IConnection) => {
+    if (!connection) Logger.warn('No connections to set!', { connection })
+    let instance = this.find(connection.id)
+    if (instance) instance.set(connection)
+    else instance = this.add(connection)
     this.updated()
+    return instance
   }
 
   add = (connection: IConnection) => {
     if (!this.user) throw new Error('No user to authenticate connection!')
     const instance = new Connection(this.user, connection)
     this.pool.push(instance)
-    this.updated()
     return instance
   }
 
   find = (id: string) => {
     d('Find connection with ID:', { id, pool: this.pool })
     return this.pool.find(c => c.params.id === id)
-    // if (!connection) throw new Error(`Connection with ID ${id} could not be found!`)
-    // d('Connection found:', { id, port: connection.params.port, pid: connection.params.pid })
-    // return connection
   }
 
-  start = async (id: string) => {
-    d('Connecting:', id)
-    if (!id) throw new Error('No service id to create a connection!')
+  start = async (connection: IConnection) => {
+    d('Connecting:', connection)
+    if (!connection) return new Error('No connection data!')
 
-    const connection = this.find(id) || this.add({ id })
-    if (!connection) throw new Error('No connection definition exists!')
-
-    connection.params.port = connection.params.port || (await this.freePort())
-    if (!connection.params.port) throw new Error('No port could be assigned to connection!')
-
-    Logger.info('Connecting to service:', connection.params)
-    d(`Starting connection - port:${connection.params.port}, id: ${connection.params.id}`)
-    await connection.start()
-
-    // Trigger a save of the connections file
+    const instance = this.set(connection)
+    await this.assignPort(instance)
+    await instance.start()
     this.updated()
   }
 
-  stop = async (id: string, autoStart?: boolean) => {
-    d('Stopping service:', id)
+  stop = async ({ id }: IConnection, autoStart?: boolean) => {
+    d('Stopping connection:', id)
     const instance = this.find(id)
     instance && instance.stop(autoStart)
   }
 
-  stopAll = async () => {
-    d('Stopping all services')
-    return await this.pool.map(async c => await c.stop())
-  }
-
-  forget = async (id: string) => {
-    d('Forgetting service:', id)
+  forget = async ({ id }: IConnection) => {
+    d('Forgetting connection:', id)
     const connection = this.find(id)
     if (connection) {
       const index = this.pool.indexOf(connection)
@@ -110,16 +87,21 @@ export default class ConnectionPool {
     EventBus.emit(Connection.EVENTS.forgotten, id)
   }
 
+  // restart = async ({ id, port }: IConnection) => {
+  //   d('Restart connection:', id)
+  //   const instance = this.find(id)
+  //   instance && (await instance.restart())
+  // }
+
+  stopAll = async () => {
+    d('Stopping all services')
+    return await this.pool.map(async c => await c.stop())
+  }
+
   reset = async () => {
     await this.stopAll()
     this.pool = []
     this.updated()
-  }
-
-  restart = async (id: string) => {
-    d('Restart service:', id)
-    const instance = this.find(id)
-    instance && (await instance.restart())
   }
 
   updated = async () => {
@@ -137,8 +119,22 @@ export default class ConnectionPool {
     return a && b ? b - a : 0
   }
 
-  private freePort = async () => {
+  getFreePort = async () => {
     return await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
+  }
+
+  private assignPort = async (connection: Connection) => {
+    const { port } = connection.params
+    if (port) {
+      if (!(await PortScanner.isPortFree(port))) {
+        connection.params.error = { message: `Port ${port} is in use. Port auto-assigned` }
+        connection.params.port = await this.getFreePort()
+      }
+    } else {
+      connection.params.port = await this.getFreePort()
+    }
+
+    if (!connection.params.port) throw new Error('No port could be assigned to connection!')
   }
 
   private get usedPorts() {

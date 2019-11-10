@@ -5,13 +5,13 @@ import BackendAdaptor from '../../services/BackendAdapter'
 import Device from '../../components/jump/Device'
 
 const mapState = (state: ApplicationState) => ({
-  device: state.jump.device,
-  targets: state.jump.targets,
-  added: state.jump.added,
+  device: state.backend.device,
+  targets: state.backend.targets,
+  added: state.backend.added,
 })
 
 const mapDispatch = (dispatch: any) => ({
-  setAdded: dispatch.jump.setAdded,
+  setAdded: (value: any) => dispatch.backend.set({ key: 'added', value }),
 })
 
 export type SetupPageProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>

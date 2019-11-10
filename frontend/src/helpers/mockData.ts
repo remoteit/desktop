@@ -75,10 +75,9 @@ export function log(message = 'Some log messate'): Log {
 
 export function connection(name = 'Some service name', port = 33001): IConnection {
   return {
-    // deviceID: string
+    deviceID: 'some-device-id',
     id: 'some-service-id',
     name,
-    // type: 'SSH',
     port,
     // pid?: number
   }

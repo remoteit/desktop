@@ -11,11 +11,11 @@ import styles from '../../styling'
 export const NetworkPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
-  const { jump } = useDispatch<Dispatch>()
+  const { backend } = useDispatch<Dispatch>()
   const { interfaces, targets, scanData } = useSelector((state: ApplicationState) => ({
-    interfaces: state.jump.interfaces,
-    targets: state.jump.targets,
-    scanData: state.jump.scanData,
+    interfaces: state.backend.interfaces,
+    targets: state.backend.targets,
+    scanData: state.backend.scanData,
   }))
 
   const scan = (interfaceName: string) => BackendAdaptor.emit('scan', interfaceName)
@@ -32,7 +32,7 @@ export const NetworkPage: React.FC = () => {
         onScan={scan}
         onAdd={target => {
           history.push('/setup')
-          jump.setAdded(target)
+          backend.set({ key: 'added', value: target })
         }}
       />
     </>

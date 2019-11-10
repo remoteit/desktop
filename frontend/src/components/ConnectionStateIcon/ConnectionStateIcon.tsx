@@ -6,7 +6,7 @@ import { IService, IDevice } from 'remote.it'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
-  service?: IService
+  service?: IService | IDevice
   state?: ConnectionState
 }
 
@@ -15,7 +15,6 @@ export function ConnectionStateIcon({ connection, service, state, ...props }: Co
   let color: BrandColors = 'warning'
 
   state = state || (service ? service.state : 'inactive')
-  if (service && service.connecting) state = 'connecting'
 
   if (connection) {
     if (connection.pid && !connection.active) state = 'connecting'

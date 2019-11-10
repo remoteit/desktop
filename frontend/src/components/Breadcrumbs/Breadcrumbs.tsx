@@ -78,8 +78,10 @@ const useStyles = makeStyles({
     height: '100%',
   },
   header: {
-    backgroundColor: styles.colors.grayLighter,
-    borderBottom: `1px solid ${styles.colors.grayLight}`,
+    // backgroundColor: styles.colors.grayLighter,
+    // borderBottom: `1px solid ${styles.colors.grayLight}`,
+    marginTop: styles.spacing.lg,
+    marginLeft: styles.spacing.md,
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
       color: styles.colors.grayDarker,

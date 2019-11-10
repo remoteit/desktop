@@ -25,6 +25,10 @@ const visibleDevices: (state: any, props: any) => SelectResponse = select(
 const mapState = (state: ApplicationState) => ({
   ...visibleDevices(state, {}),
   allDevices: state.devices.all,
+  connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection }, c: IConnection) => {
+    lookup[c.deviceID] = c
+    return lookup
+  }, {}),
   searchPerformed: state.devices.searchPerformed,
   fetching: state.devices.fetching,
   query: state.devices.query,
@@ -50,6 +54,7 @@ export const DevicesPage = connect(
 )(
   ({
     allDevices,
+    connections,
     changeSort,
     searchPerformed,
     fetch,
@@ -100,6 +105,7 @@ export const DevicesPage = connect(
         <DeviceList
           devices={visibleDevices}
           searchPerformed={searchOnly ? searchPerformed : Boolean(visibleDevices.length)}
+          connections={connections}
           query={query}
           searching={searching}
           searchOnly={searchOnly}

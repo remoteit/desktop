@@ -32,7 +32,7 @@ const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
     return (
       <tr>
         <td colSpan={6}>
-          <Button onClick={() => setShowNew(false)} className={css.button}>
+          <Button color="primary" variant="contained" onClick={() => setShowNew(false)} className={css.button}>
             New
             <Icon name="plus" inline />
           </Button>

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import BackendAdaptor from '../../services/BackendAdapter'
 import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, IP_PRIVATE, REGEX_IP_SAFE } from '../../constants'
 import { Select, Button, ButtonBase, Typography, Switch, TextField, MenuItem } from '@material-ui/core'
-import { setConnection } from '../../helpers/connectionHelper'
+import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
@@ -12,20 +11,20 @@ import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
-type State = { enabled: boolean; selection: number; address: string; myAddress: string }
 type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams()
+  const privateIP = useSelector((state: ApplicationState) => state.backend.privateIP)
   const connection = useSelector((state: ApplicationState) => {
-    let c = state.jump.connections.find(c => c.id === serviceID)
+    let c = state.backend.connections.find(c => c.id === serviceID)
     if (c) return c
     const [service] = findService(state.devices.all, serviceID)
-    return { id: serviceID, name: service ? service.name : undefined }
+    return service && newConnection(service)
   })
 
-  const lanShare: boolean = connection.host !== IP_PRIVATE
-  const restriction: ipAddress = (lanShare && connection.restriction) || IP_OPEN
+  const lanShare: boolean = !!connection && connection.host !== IP_PRIVATE
+  const restriction: ipAddress = (connection && connection.restriction) || IP_OPEN
   const history = useHistory()
   const css = useStyles()
 
@@ -42,7 +41,8 @@ export const LanSharePage: React.FC = () => {
   const [enabled, setEnabled] = useState<boolean>(lanShare)
   const [selection, setSelection] = useState<number>(selections.findIndex(s => s.value === restriction))
   const [address, setAddress] = useState<string>(restriction || '192.168.')
-  const [myAddress, setMyAddress] = useState<string>('unknown')
+
+  if (!connection) return null
 
   if (lanShare && selection === -1) {
     setSelection(selections.findIndex(s => typeof s.value === 'function'))
@@ -51,10 +51,6 @@ export const LanSharePage: React.FC = () => {
     setSelection(0)
   }
 
-  useEffect(() => {
-    // setMyAddress(await DeviceInfo.getIPAddress())
-  }, [])
-
   const ipAddressOnly = (address: string) => address.replace(REGEX_IP_SAFE, '')
   const switchHandler = () => setEnabled(!enabled)
   const getSelectionValue = () => {
@@ -62,16 +58,13 @@ export const LanSharePage: React.FC = () => {
     const value = selections[selection].value
     return typeof value === 'function' ? value() : value
   }
+
   const save = () => {
     const value = getSelectionValue()
-    setConnection(serviceID, {
-      ...connection,
-      host: enabled ? IP_OPEN : IP_PRIVATE,
-      restriction: value || IP_OPEN,
-    })
+    setConnection({ ...connection, host: enabled ? IP_OPEN : IP_PRIVATE, restriction: value })
     history.goBack()
   }
-  console.log('LAN SHARE ENABLED', enabled)
+
   return (
     <Breadcrumbs>
       <Typography variant="subtitle1">Local Network Sharing</Typography>
@@ -87,7 +80,7 @@ export const LanSharePage: React.FC = () => {
       <section className={css.page}>
         <div className={css.indent}>
           <div>Your local IP address</div>
-          <div>{myAddress}</div>
+          <div>{privateIP}</div>
           <div className={css.note}>
             Allow users to connect to your remote device through your IP address using a custom port.
           </div>

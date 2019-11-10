@@ -1,6 +1,7 @@
 import SocketIO from 'socket.io'
 import cli from './CLIInterface'
 import lan from './LAN'
+import Logger from './Logger'
 import BinaryInstaller from './BinaryInstaller'
 import ConnectdInstaller from './ConnectdInstaller'
 import electron from 'electron'
@@ -38,7 +39,7 @@ class Controller {
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('app/open-on-login', this.openOnLogin)
-    socket.on('init', this.syncJump)
+    socket.on('init', this.syncBackend)
     socket.on('pool', this.connections)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
@@ -69,13 +70,14 @@ class Controller {
 
   // privateIP = () => this.server.emit('privateIP', lan.privateIP)
 
-  syncJump = () => {
+  syncBackend = async () => {
     this.server.emit('targets', cli.data.targets)
     this.server.emit('device', cli.data.device)
     this.server.emit('scan', lan.data)
     this.server.emit('interfaces', lan.interfaces)
     this.server.emit('pool', this.pool.toJSON())
     this.server.emit('privateIP', lan.privateIP)
+    this.server.emit('freePort', await this.pool.getFreePort())
   }
 
   checkSignIn = async () => {
@@ -95,28 +97,29 @@ class Controller {
   }
 
   connections = (connections: IConnection[]) => {
-    if (connections.length) this.pool.set(connections)
     d('List connections')
     this.server.emit('pool', this.pool.toJSON())
   }
 
   connection = async (connection: IConnection) => {
     d('Connection set:', connection)
-    await this.pool.set([connection])
+    await this.pool.set(connection)
   }
 
-  connect = async (id: string) => {
-    d('Connect:', id)
-    await this.pool.start(id)
+  connect = async (connection: IConnection) => {
+    Logger.info('Connect:', { connection })
+    d('Connect:', connection)
+    await this.pool.start(connection)
   }
 
-  disconnect = async (id: string) => {
-    d('Disconnect:', id)
-    await this.pool.stop(id, false)
+  disconnect = async (connection: IConnection) => {
+    d('Disconnect:', connection)
+    await this.pool.stop(connection, false)
   }
 
-  forget = async (id: string) => {
-    await this.pool.forget(id)
+  forget = async (connection: IConnection) => {
+    d('Forget:', connection)
+    await this.pool.forget(connection)
   }
 
   installBinaries = async () => {

@@ -131,6 +131,11 @@ const theme = createMuiTheme({
         color: colors.grayDark,
       },
     },
+    MuiFilledInput: {
+      root: {
+        backgroundColor: colors.grayLightest,
+      },
+    },
   },
 })
 

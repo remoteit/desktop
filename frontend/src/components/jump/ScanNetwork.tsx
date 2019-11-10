@@ -75,8 +75,8 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
       </div>
       <List className={css.list}>
         {data.map((ip, row) => (
-          <>
-            <ListItem button key={row} onClick={() => toggle(row)}>
+          <span key={row}>
+            <ListItem button onClick={() => toggle(row)}>
               <ListItemIcon>{InterfaceIcon[interfaceType]}</ListItemIcon>
               <ListItemText primary={ip[0]} />
               <ListItemSecondaryAction>
@@ -118,7 +118,7 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
                 </ListItem>
               ))}
             </Collapse>
-          </>
+          </span>
         ))}
       </List>
     </>

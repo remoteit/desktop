@@ -46,8 +46,8 @@ export default class TrayMenu {
         icon: connection.pid ? iconConnected : iconOnline,
         submenu: [
           !connection.pid
-            ? { label: 'Connect', click: () => this.connect(connection.id) }
-            : { label: 'Disconnect', click: () => this.disconnect(connection.id) },
+            ? { label: 'Connect', click: () => this.connect(connection) }
+            : { label: 'Disconnect', click: () => this.disconnect(connection) },
           { type: 'separator' },
           { label: location, enabled: false },
           { label: 'Copy to clipboard', click: () => this.copy(location) },
@@ -101,12 +101,12 @@ export default class TrayMenu {
       process.defaultApp && event.metaKey
     )
 
-  private connect(id: string) {
-    application.pool.restart(id)
+  private connect(connection: IConnection) {
+    application.pool.start(connection)
   }
 
-  private disconnect(id: string) {
-    application.pool.stop(id)
+  private disconnect(connection: IConnection) {
+    application.pool.stop(connection)
   }
 
   private copy(location: string) {

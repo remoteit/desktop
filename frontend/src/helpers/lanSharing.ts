@@ -1,7 +1,9 @@
 import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, IP_PRIVATE } from '../constants'
 
-export function lanShareRestriction(address?: ipAddress) {
-  switch (address) {
+export function lanShareRestriction(connection?: IConnection) {
+  if (!connection || connection.host !== IP_OPEN) return 'Off'
+
+  switch (connection.restriction) {
     case undefined:
       return 'Off'
     case IP_OPEN:

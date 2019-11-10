@@ -19,7 +19,7 @@ export const RestartButton: React.FC<RestartButtonProps> = ({ disabled = false, 
         <IconButton
           disabled={disabled}
           color="primary"
-          onClick={() => BackendAdaptor.emit('service/restart', connection.id)}
+          onClick={() => console.warn("unimplemented BackendAdaptor.emit('service/restart', connection)")}
         >
           <Icon name="redo" size="md" weight="regular" fixedWidth />
         </IconButton>
