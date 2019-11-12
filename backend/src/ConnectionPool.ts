@@ -13,6 +13,7 @@ const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
   user?: UserCredentials
+  freePort?: number
 
   private pool: Connection[] = []
 
@@ -28,6 +29,9 @@ export default class ConnectionPool {
 
     // Only turn on connections the user had open last time.
     connections.map(c => c.autoStart && this.start(c))
+
+    // init freeport
+    this.getFreePort()
 
     // Listen to events to synchronize state
     EventBus.on(User.EVENTS.signedIn, (user: IUser) => (this.user = user))
@@ -120,7 +124,9 @@ export default class ConnectionPool {
   }
 
   getFreePort = async () => {
-    return await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
+    this.freePort = await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
+    Logger.info('getFreePort', { port: this.freePort })
+    return this.freePort
   }
 
   private assignPort = async (connection: Connection) => {

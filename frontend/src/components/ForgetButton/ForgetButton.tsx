@@ -9,7 +9,7 @@ type ForgetButtonProps = {
 }
 
 export const ForgetButton: React.FC<ForgetButtonProps> = ({ disabled = false, connection }) => {
-  if (!connection || connection.active || connection.pid) return null
+  if (!connection || connection.pid) return null
   return (
     <Tooltip title="Forget this connection">
       <IconButton disabled={disabled} onClick={() => BackendAdaptor.emit('service/forget', connection)}>

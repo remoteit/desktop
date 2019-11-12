@@ -62,18 +62,23 @@ function getEventHandlers() {
         backend.set({ key: 'targets', value: result })
       }
     },
+
     device: (result: IDevice) => {
       console.log('socket device', result)
       if (result) backend.set({ key: 'device', value: result })
     },
+
     scan: (result: IScanData) => {
       console.log('socket scan', result)
       if (result) backend.set({ key: 'scanData', value: result })
     },
+
     interfaces: (result: IInterface[]) => {
       console.log('socket interfaces', result)
       if (result) backend.set({ key: 'interfaces', value: result })
     },
+
+    freePort: (result: number) => backend.set({ key: 'freePort', value: result }),
 
     privateIP: (result: ipAddress) => backend.set({ key: 'privateIP', value: result }),
 

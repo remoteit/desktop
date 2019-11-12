@@ -24,12 +24,13 @@ declare global {
     // App/settings
     | 'app/open-on-login'
 
-    // Jump
+    // Backend
     | 'init'
     | 'targets'
     | 'device'
     | 'scan'
     | 'interfaces'
+    | 'freePort'
 
   export type SocketEvent =
     // built-in events

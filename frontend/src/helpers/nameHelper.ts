@@ -5,6 +5,7 @@ const separator = ' - '
 
 export function hostName(connection: IConnection) {
   const { host = '', port } = connection
+  if (!port) return null
 
   switch (host) {
     case '127.0.0.1':

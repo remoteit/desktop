@@ -46,6 +46,7 @@ class Controller {
     socket.on('device', this.device)
     socket.on('scan', this.scan)
     socket.on('interfaces', this.interfaces)
+    socket.on('freePort', this.freePort)
   }
 
   targets = (result: ITarget[]) => {
@@ -68,6 +69,11 @@ class Controller {
     this.server.emit('scan', lan.data)
   }
 
+  freePort = async () => {
+    await this.pool.getFreePort()
+    this.server.emit('freePort', this.pool.freePort)
+  }
+
   // privateIP = () => this.server.emit('privateIP', lan.privateIP)
 
   syncBackend = async () => {
@@ -77,7 +83,7 @@ class Controller {
     this.server.emit('interfaces', lan.interfaces)
     this.server.emit('pool', this.pool.toJSON())
     this.server.emit('privateIP', lan.privateIP)
-    this.server.emit('freePort', await this.pool.getFreePort())
+    this.server.emit('freePort', this.pool.freePort)
   }
 
   checkSignIn = async () => {
