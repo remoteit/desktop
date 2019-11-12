@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, CircularProgress, FormControl, Select, MenuItem, Typography } from '@material-ui/core'
+import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import ScanNetwork from './ScanNetwork'
 import styles from '../../styling'
@@ -42,15 +42,18 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
     <>
       <Typography variant="subtitle1">Network Scan</Typography>
       <section className={css.controls}>
-        <FormControl>
-          <Select value={interfaceName} onChange={event => setInterfaceName(event.target.value as string)}>
-            {interfaces.map((i: IInterface) => (
-              <MenuItem key={i.name} value={i.name}>
-                {i.type} &nbsp; <samp>{i.name}</samp>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <TextField
+          select
+          value={interfaceName}
+          variant="filled"
+          onChange={event => setInterfaceName(event.target.value as string)}
+        >
+          {interfaces.map((i: IInterface) => (
+            <MenuItem key={i.name} value={i.name}>
+              {i.type} &nbsp; <samp>{i.name}</samp>
+            </MenuItem>
+          ))}
+        </TextField>
         <Button
           color="primary"
           variant="contained"

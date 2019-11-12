@@ -60,49 +60,55 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
 
   return (
     <tr className={css.service + (changed ? ' ' + css.serviceEdited : '')}>
-      <td>
+      <td className={css.cell}>
         <TextField
           autoFocus={init}
           value={state.name}
           disabled={disabled}
+          variant="filled"
           onChange={event => update('name', event.target.value)}
           helperText={addDeviceName(device.name, state.name)}
         />
       </td>
-      <td>
-        <FormControl>
-          <Select
-            value={state.type}
-            disabled={disabled}
-            onChange={event => {
-              const type: number = Number(event.target.value)
-              setState({ ...state, type, port: findType(type).defaultPort || state.port })
-            }}
-          >
-            {serviceTypes.map(type => (
-              <MenuItem value={type.id} key={type.id}>
-                {type.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <td className={css.cell}>
+        <TextField
+          select
+          value={state.type}
+          disabled={disabled}
+          variant="filled"
+          onChange={event => {
+            const type: number = Number(event.target.value)
+            setState({ ...state, type, port: findType(type).defaultPort || state.port })
+          }}
+        >
+          {serviceTypes.map(type => (
+            <MenuItem value={type.id} key={type.id}>
+              {type.name}
+            </MenuItem>
+          ))}
+        </TextField>
       </td>
-      <td>
-        <TextField value={state.port} disabled={disabled} onChange={event => update('port', +event.target.value)} />
+      <td className={css.cell}>
+        <TextField
+          value={state.port}
+          disabled={disabled}
+          variant="filled"
+          onChange={event => update('port', +event.target.value)}
+        />
       </td>
-      <td>
+      <td className={css.cell}>
         <TextField
           value={state.hostname || ''}
           disabled={disabled}
+          variant="filled"
           onChange={event => update('hostname', event.target.value)}
         />
       </td>
-
       <td>
         {changed && !loading && (
           <Tooltip title="Save">
             <IconButton color="primary" onClick={save}>
-              <Icon name="check" size="md" />
+              <Icon name="check" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
         )}
@@ -113,7 +119,7 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
         ) : changed ? (
           <Tooltip title="Cancel">
             <IconButton onClick={cancel}>
-              <Icon name="times" size="md" />
+              <Icon name="times" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
         ) : (
@@ -124,7 +130,7 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
                 setLoading(true)
               }}
             >
-              <Icon name="trash-alt" size="md" />
+              <Icon name="trash-alt" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
         )}
@@ -138,9 +144,9 @@ export default Target
 const useStyles = makeStyles({
   button: { marginTop: styles.spacing.lg },
   loading: { color: styles.colors.gray, margin: styles.spacing.md },
+  cell: { verticalAlign: 'top', height: 80 },
   service: {
     '& .MuiFormControl-root': { width: '100%', paddingRight: 10, paddingTop: 10 },
-    '& td': { verticalAlign: 'top', height: 80 },
   },
   serviceEdited: {
     '& .MuiInputBase-input': { color: styles.colors.primary },

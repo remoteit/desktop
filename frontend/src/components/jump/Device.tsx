@@ -40,6 +40,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
             className={css.input}
             disabled={registered}
             value={name || device.name}
+            variant="filled"
             onChange={event => {
               const value = event.target.value.replace(REGEX_NAME_SAFE, '')
               if (value !== event.target.value) setNotice(true)

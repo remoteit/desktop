@@ -33,7 +33,7 @@ const theme = createMuiTheme({
       },
     },
     MuiFormHelperText: {
-      root: { fontSize: 10, color: colors.grayLight },
+      root: { fontSize: 10 },
     },
     MuiButton: {
       root: {
@@ -134,6 +134,9 @@ const theme = createMuiTheme({
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,
+        '&.Mui-disabled': {
+          backgroundColor: colors.grayLighter,
+        },
       },
     },
   },
