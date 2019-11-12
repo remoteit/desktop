@@ -4,27 +4,24 @@ import { hostName } from '../../helpers/nameHelper'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { newConnection } from '../../helpers/connectionHelper'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { DisconnectButton } from '../DisconnectButton'
-// import { RestartButton } from '../RestartButton'
 import { ConnectButton } from '../ConnectButton'
-// import { ForgetButton } from '../ForgetButton'
 import { CopyButton } from '../CopyButton'
 import { NextButton } from '../NextButton'
 import { makeStyles } from '@material-ui/styles'
 
-export interface ConnectedServiceItemProps {
+export interface ServiceListItemProps {
   connection?: IConnection
   service?: IService
 }
 
-export function ConnectedServiceItem({ connection, service }: ConnectedServiceItemProps) {
+export function ServiceListItem({ connection, service }: ServiceListItemProps) {
   const history = useHistory()
   const location = useLocation()
   const css = useStyles()
 
-  let connected: boolean = false
   let connecting: boolean = false
   let name: string = ''
   let error: boolean = false
@@ -38,7 +35,6 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
   }
 
   if (connection) {
-    connected = !!connection.pid
     connecting = !!connection.connecting
     error = !!connection.error
     name = connection.name || name
@@ -58,7 +54,7 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
         <ListItemSecondaryAction className={css.actions}>
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
-          <ConnectButton connection={connection} />
+          <ConnectButton connection={connection} service={service} />
         </ListItemSecondaryAction>
       </ListItem>
       {connection && error && <ConnectionErrorMessage connection={connection} />}
@@ -66,4 +62,6 @@ export function ConnectedServiceItem({ connection, service }: ConnectedServiceIt
   )
 }
 
-const useStyles = makeStyles({ actions: { right: 70, display: 'none' } })
+const useStyles = makeStyles({
+  actions: { right: 70, display: 'none' },
+})

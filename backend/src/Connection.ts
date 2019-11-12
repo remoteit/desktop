@@ -162,6 +162,7 @@ export default class Connection extends EventEmitter {
 
   private handleClose = async (code: number) => {
     this.params.endTime = Date.now()
+    this.params.active = false
 
     // If we intentionally kill a process, we don't
     // want to go further
@@ -171,7 +172,7 @@ export default class Connection extends EventEmitter {
     Tracker.event('connection', 'connection-closed', `connection closed`, code)
 
     // Make sure kill the process.
-    // await this.kill()
+    this.kill()
 
     EventBus.emit(Connection.EVENTS.disconnected, {
       connection: this.toJSON(),
@@ -237,7 +238,7 @@ export default class Connection extends EventEmitter {
       } else if (line.startsWith('!!status')) {
         event = events.status
       } else if (line.startsWith('!!throughput')) {
-        // event = events.throughput
+        event = events.throughput
       } else if (line.startsWith('!!request')) {
         event = events.request
       } else if (line.includes('exit - process closed')) {
@@ -271,6 +272,7 @@ export default class Connection extends EventEmitter {
 
   private handleStdErr = (buff: Buffer) => {
     const error = buff.toString()
+    this.params.error = { message: error }
     EventBus.emit(Connection.EVENTS.error, {
       connection: this.toJSON(),
       error,

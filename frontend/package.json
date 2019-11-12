@@ -34,6 +34,7 @@
     "react-redux": "7.1.0",
     "react-router-dom": "^5.1.2",
     "react-use": "10.1.0",
+    "react-vis": "^1.11.7",
     "rebound": "0.1.0",
     "redux": "4.0.4",
     "redux-logger": "3.0.6",

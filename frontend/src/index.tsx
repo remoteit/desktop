@@ -24,10 +24,6 @@ const theme = createMuiTheme({
   },
   overrides: {
     MuiListItemText: {
-      root: {
-        // fontSize: fontSizes.base,
-        // fontFamily: 'Roboto Mono',
-      },
       secondary: {
         fontSize: fontSizes.xs,
       },
@@ -47,13 +43,6 @@ const theme = createMuiTheme({
       },
       text: {
         padding: `${spacing.sm}px ${spacing.md}px`,
-      },
-    },
-    MuiIconButton: {
-      root: {
-        '&:hover': {
-          // backgroundColor: colors.grayLightest,
-        },
       },
     },
     MuiListItem: {

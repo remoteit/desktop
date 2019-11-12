@@ -32,9 +32,9 @@ export default createModel({
       state[key] = value
     },
     setConnection(state: IBackendState, connection: IConnection) {
-      state.connections.some(c => {
+      state.connections.some((c, index) => {
         if (c.id === connection.id) {
-          c = connection
+          state.connections[index] = connection
           return true
         }
       })

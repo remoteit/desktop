@@ -1,7 +1,7 @@
 import React from 'react'
 import { List } from '@material-ui/core'
 import { IService } from 'remote.it'
-import { ConnectedServiceItem } from '../../components/ConnectedServiceItem'
+import { ServiceListItem } from '../ServiceListItem'
 
 export interface Props {
   connections: IConnection[]
@@ -23,7 +23,7 @@ export function ConnectionsList({ connections, services }: Props) {
   return (
     <List>
       {connections.map(c => (
-        <ConnectedServiceItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
+        <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
     </List>
   )

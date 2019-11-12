@@ -39,22 +39,25 @@ export default class TrayMenu {
   }
 
   private updateConnectionMenu = (pool: IConnection[]) => {
-    this.connections = pool.map(connection => {
-      const location = hostName(connection)
-      return {
-        label: connection.name,
-        icon: connection.pid ? iconConnected : iconOnline,
-        submenu: [
-          !connection.pid
-            ? { label: 'Connect', click: () => this.connect(connection) }
-            : { label: 'Disconnect', click: () => this.disconnect(connection) },
-          { type: 'separator' },
-          { label: location, enabled: false },
-          { label: 'Copy to clipboard', click: () => this.copy(location) },
-          { label: 'Launch', click: () => this.launch(location) },
-        ],
+    this.connections = pool.reduce((result: any[], connection) => {
+      if (connection.startTime) {
+        const location = hostName(connection)
+        result.push({
+          label: connection.name,
+          icon: connection.pid ? iconConnected : iconOnline,
+          submenu: [
+            !connection.pid
+              ? { label: 'Connect', click: () => this.connect(connection) }
+              : { label: 'Disconnect', click: () => this.disconnect(connection) },
+            { type: 'separator' },
+            { label: location, enabled: false },
+            { label: 'Copy to clipboard', click: () => this.copy(location) },
+            { label: 'Launch', click: () => this.launch(location) },
+          ],
+        })
       }
-    })
+      return result
+    }, [])
     this.render()
   }
 

@@ -6,11 +6,7 @@ import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 
-type ConnectionErrorMessageProps = {
-  connection: IConnection
-}
-
-export const ConnectionErrorMessage = ({ connection }: ConnectionErrorMessageProps) => {
+export const ConnectionErrorMessage: React.FC<{ connection: IConnection }> = ({ connection }) => {
   const css = useStyles()
   if (!connection.error) return null
 
@@ -19,6 +15,7 @@ export const ConnectionErrorMessage = ({ connection }: ConnectionErrorMessagePro
 
   return (
     <ListItem className={css.container}>
+      <span className={css.pointer} />
       <ListItemIcon>
         <Tooltip title="clear">
           <IconButton onClick={() => clearConnectionError(connection)}>
@@ -40,10 +37,22 @@ export const ConnectionErrorMessage = ({ connection }: ConnectionErrorMessagePro
   )
 }
 
+const size = 8
+
 const useStyles = makeStyles({
   container: {
     backgroundColor: styles.colors.danger,
     color: styles.colors.white,
     '& .MuiListItemText-secondary': { color: styles.colors.white },
+  },
+  pointer: {
+    position: 'absolute',
+    top: -size,
+    left: 32,
+    width: 0,
+    height: 0,
+    borderLeft: `${size}px solid transparent`,
+    borderRight: `${size}px solid transparent`,
+    borderBottom: `${size}px solid ${styles.colors.danger}`,
   },
 })

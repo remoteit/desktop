@@ -12,15 +12,16 @@ import { IP_OPEN } from '../../constants'
 export type Props = {
   onClick?: () => any
   serviceID?: string
+  disabled?: boolean
 }
 
-export const LanShareSelect: React.FC<Props> = ({ onClick, serviceID }) => {
+export const LanShareSelect: React.FC<Props> = ({ onClick, disabled, serviceID }) => {
   const css = useStyles()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const lanShare: boolean = !!(connection && connection.host === IP_OPEN)
 
   return (
-    <ListItem button onClick={onClick}>
+    <ListItem button onClick={onClick} disabled={disabled}>
       <ListItemIcon>
         <Icon name="network-wired" color={lanShare ? 'primary' : 'gray'} size="lg" />
       </ListItemIcon>
