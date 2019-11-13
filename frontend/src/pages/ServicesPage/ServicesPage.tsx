@@ -5,6 +5,7 @@ import { ApplicationState } from '../../store'
 import { Typography } from '@material-ui/core'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
+import { DataDisplay } from '../../components/DataDisplay'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
@@ -33,6 +34,13 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
         <span className={css.title}>{device.name}</span>
       </Typography>
       <ServiceList services={device.services} connections={connections} />
+      <DataDisplay
+        data={[
+          { label: 'Internal IP', value: device.lastInternalIP },
+          { label: 'External IP', value: device.lastExternalIP },
+          { label: 'Hardware ID', value: device.hardwareID },
+        ]}
+      />
     </Breadcrumbs>
   )
 })

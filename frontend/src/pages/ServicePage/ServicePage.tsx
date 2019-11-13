@@ -10,6 +10,7 @@ import { Typography } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../components/DisconnectButton'
 import { ConnectButton } from '../../components/ConnectButton'
+import { DataDisplay } from '../../components/DataDisplay'
 import { makeStyles } from '@material-ui/styles'
 import { spacing } from '../../styling'
 
@@ -19,7 +20,7 @@ export const ServicePage: React.FC = () => {
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const css = useStyles()
 
-  if (!service) return null
+  if (!service || !device) return null
 
   return (
     <Breadcrumbs>
@@ -33,6 +34,14 @@ export const ServicePage: React.FC = () => {
         <ServiceConnected connection={connection} device={device} service={service} />
       )}
       <ServiceSettings connection={connection} service={service} />
+      <DataDisplay
+        data={[
+          { label: 'Owner', value: device.owner },
+          { label: 'Device Name', value: device.name },
+          { label: 'Service ID', value: service.id },
+          { label: 'Application', value: service.type },
+        ]}
+      />
     </Breadcrumbs>
   )
 }
