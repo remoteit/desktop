@@ -22,20 +22,17 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
   const location = useLocation()
   const css = useStyles()
 
-  let connecting: boolean = false
   let name: string = ''
   let error: boolean = false
   let path = location.pathname
   let id = ''
 
   if (service) {
-    connecting = connecting || !!service.connecting
     name = service.name
     id = service.id
   }
 
   if (connection) {
-    connecting = !!connection.connecting
     error = !!connection.error
     name = connection.name || name
     id = connection.id

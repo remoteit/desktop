@@ -17,5 +17,5 @@ export const useInterval = (callback: () => void, delay?: number, ...args: any[]
       let id = setInterval(tick, delay)
       return () => clearInterval(id)
     }
-  }, [delay])
+  }, [delay, args])
 }

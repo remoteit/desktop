@@ -8,7 +8,7 @@ import { removeDeviceName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
-import { IDevice, IService } from 'remote.it'
+import { IDevice } from 'remote.it'
 import { REGEX_LAST_PATH } from '../../constants'
 import styles from '../../styling'
 

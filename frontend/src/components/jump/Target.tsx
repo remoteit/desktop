@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { TextField, FormControl, Select, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
+import React, { useEffect, useState, useCallback } from 'react'
+import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes, emptyServiceType } from '../../types/serviceTypes'
@@ -22,6 +22,14 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
   const css = useStyles()
   const type = findType(data.type)
   const disabled = disable || loading
+  const same = useCallback(
+    () =>
+      data.name === state.name &&
+      data.type === state.type &&
+      data.port === state.port &&
+      data.hostname === state.hostname,
+    [data, state]
+  )
   const changed = (!loading && !same()) || init
 
   function findType(type: number) {
@@ -40,15 +48,6 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
   function cancel() {
     setState(data)
     if (onCancel) onCancel()
-  }
-
-  function same() {
-    return (
-      data.name === state.name &&
-      data.type === state.type &&
-      data.port === state.port &&
-      data.hostname === state.hostname
-    )
   }
 
   useEffect(() => {

@@ -37,6 +37,7 @@ export default createModel({
           state.connections[index] = connection
           return true
         }
+        return false
       })
     },
   },

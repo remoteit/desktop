@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useParams, useHistory, useLocation } from 'react-router-dom'
+import React from 'react'
+import { useParams } from 'react-router-dom'
 import { ServiceSettings } from '../../components/ServiceSettings'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { useSelector } from 'react-redux'

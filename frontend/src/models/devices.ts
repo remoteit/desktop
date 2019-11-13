@@ -3,7 +3,6 @@ import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
 import Device from '../services/Device'
 import { renameServices } from '../helpers/nameHelper'
-import BackendAdapter from '../services/BackendAdapter'
 import { r3 } from '../services/remote.it'
 
 // Slightly below the API limit for search of 300 services.
@@ -58,7 +57,7 @@ export default createModel({
     },
     async fetch() {
       // TODO: Deal with device search only UI
-      const { getConnections, fetchStarted, fetchFinished, setDevices } = dispatch.devices
+      const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
       fetchStarted()
       return r3.devices
         .all()
