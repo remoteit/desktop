@@ -58,6 +58,12 @@ export default createModel({
     async fetch() {
       // TODO: Deal with device search only UI
       const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
+
+      if (!r3.token || !r3.authHash) {
+        console.warn('Fetch missing api token or authHash. Fetch aborted. Token:', r3.token, 'AuthHash:', r3.authHash)
+        return
+      }
+
       fetchStarted()
       return r3.devices
         .all()

@@ -14,28 +14,37 @@ export function ConnectionStateIcon({ connection, service, state, ...props }: Co
   let icon = 'question-circle'
   let color: BrandColors = 'warning'
 
-  state = state || (service ? service.state : 'inactive')
+  state = state || (service ? service.state : 'unknown')
 
   if (connection) {
     if (connection.pid && !connection.active) state = 'connecting'
     if (connection.active) state = 'connected'
   }
 
-  if (state === 'active') {
-    icon = 'check-circle'
-    color = 'success'
-  } else if (state === 'inactive') {
-    icon = 'minus-circle'
-    color = 'gray-light'
-  } else if (state === 'connected') {
-    icon = 'scrubber'
-    color = 'primary'
-  } else if (state === 'connecting') {
-    icon = 'spinner-third'
-    color = 'gray-light'
-  } else if (state === 'restricted') {
-    icon = 'times-circle'
-    color = 'danger'
+  switch (state) {
+    case 'active':
+      icon = 'check-circle'
+      color = 'success'
+      break
+    case 'inactive':
+      icon = 'minus-circle'
+      color = 'gray-light'
+      break
+    case 'connected':
+      icon = 'scrubber'
+      color = 'primary'
+      break
+    case 'connecting':
+      icon = 'spinner-third'
+      color = 'gray-light'
+      break
+    case 'restricted':
+      icon = 'times-circle'
+      color = 'danger'
+      break
+    case 'unknown':
+      icon = 'question-circle'
+      color = 'gray-light'
   }
 
   return (

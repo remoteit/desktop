@@ -9,7 +9,7 @@ import { Icon } from '../Icon'
 export interface DeviceListProps {
   className?: string
   devices?: IDevice[]
-  connections: { [deviceID: string]: IConnection }
+  connections: { [deviceID: string]: IConnection[] }
   searchPerformed: boolean
   searchOnly: boolean
   searching: boolean
@@ -63,7 +63,7 @@ export function DeviceList({
   return (
     <List component="nav" className={classnames(className, 'py-none of-auto fg-1')}>
       {devices.map(device => (
-        <DeviceListItem key={device.id} device={device} connection={connections[device.id]} />
+        <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
       ))}
     </List>
   )

@@ -27,7 +27,7 @@ export const ServiceSettings: React.FC<{ service: IService; connection?: IConnec
   if (!connection) connection = newConnection(service, { port })
   connection.port = port
 
-  const disabled = connection.active
+  const disabled = connection.active || service.state !== 'active'
 
   return (
     <>

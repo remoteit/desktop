@@ -37,7 +37,6 @@ export default class Connection extends EventEmitter {
     this.authHash = user.authHash
     this.username = user.username
     connection.createdTime = Date.now()
-    connection.startTime = connection.endTime = undefined
     this.set(connection)
   }
 
@@ -181,22 +180,22 @@ export default class Connection extends EventEmitter {
 
     if (code && code !== 0) {
       const messages: { [code: string]: string } = {
-        1: 'process lifetime expired',
-        2: 'shutdown packet received',
-        3: 'termination from signal',
+        1: 'Process lifetime expired',
+        2: 'Shutdown packet received',
+        3: 'Termination from signal',
         4: 'Disabled By User Configuration',
-        10: 'bad user specified  (probably not possible at this time)',
-        11: 'authentication error (may be multiple because of retry)',
-        12: 'auto connect failed (Initiator p2p connect failed)',
+        10: 'Bad user specified  (probably not possible at this time)',
+        11: 'Authentication error (may be multiple because of retry)',
+        12: 'Auto connect failed (Initiator p2p connect failed)',
         13: 'Initiate session create failed (initiator p2p connect failed !autoconnect)',
         14: 'Connection To remot3.it Service has Timed Out',
-        15: 'cannot get UID from service (not a initiator side error)',
+        15: 'Cannot get UID from service (not a initiator side error)',
         16: 'Cannot Bind UDP Port (UDP P2P port)',
         17: 'Cannot Bind Proxy Port (initiator port)',
-        20: 'connection to peer closed or timed out',
-        21: 'connection to peer failed (failed p2p connect)',
-        25: 'unknown reason (this should not happen)',
-        30: 'user console exit',
+        20: 'Connection to peer closed or timed out',
+        21: 'Connection to peer failed (failed p2p connect)',
+        25: 'Unknown reason (this should not happen)',
+        30: 'User console exit',
       }
       const message = messages[String(code)]
 

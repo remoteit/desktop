@@ -25,8 +25,9 @@ const visibleDevices: (state: any, props: any) => SelectResponse = select(
 const mapState = (state: ApplicationState) => ({
   ...visibleDevices(state, {}),
   allDevices: state.devices.all,
-  connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection }, c: IConnection) => {
-    lookup[c.deviceID] = c
+  connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
+    if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
+    else lookup[c.deviceID] = [c]
     return lookup
   }, {}),
   searchPerformed: state.devices.searchPerformed,
@@ -73,6 +74,7 @@ export const DevicesPage = connect(
     if (fetching && !allDevices.length) return <DeviceLoadingMessage />
     // if (fetching && searchOnly) return <DeviceLoadingMessage />
     // if (!fetching && !allDevices.length) <NoDevicesMessage />
+    console.log('connections', connections)
 
     return (
       <div className={css.container}>

@@ -11,10 +11,7 @@ import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
 
 const mapState = (state: ApplicationState, params: any) => ({
-  connections: state.backend.connections.reduce((result: ConnectionLookup, c: IConnection) => {
-    result[c.id] = c
-    return result
-  }, {}),
+  connections: state.backend.connections,
   devices: state.devices.all,
 })
 
@@ -24,21 +21,27 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
   const { deviceID } = useParams()
   const device = devices.find(d => d.id === deviceID)
   const css = useStyles()
+  const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
+  const serviceConnections = connections.reduce((result: ConnectionLookup, c: IConnection) => {
+    result[c.id] = c
+    return result
+  }, {})
 
-  if (!device) return <div>No device found.</div>
+  if (!device) return <Typography variant="subtitle1">No device found.</Typography>
 
   return (
     <Breadcrumbs>
       <Typography variant="subtitle1">
-        <ConnectionStateIcon state={device.state} size="lg" />
+        <ConnectionStateIcon state={device.state} connection={activeConnection} size="lg" />
         <span className={css.title}>{device.name}</span>
       </Typography>
-      <ServiceList services={device.services} connections={connections} />
+      <ServiceList services={device.services} connections={serviceConnections} />
       <DataDisplay
         data={[
+          { label: 'Device ID', value: device.id },
+          { label: 'Hardware ID', value: device.hardwareID },
           { label: 'Internal IP', value: device.lastInternalIP },
           { label: 'External IP', value: device.lastExternalIP },
-          { label: 'Hardware ID', value: device.hardwareID },
         ]}
       />
     </Breadcrumbs>
