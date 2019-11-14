@@ -112,13 +112,13 @@ export default class Connection extends EventEmitter {
 
     if (this.process) this.process.kill()
     this.process = undefined
+    this.params.active = false
   }
 
   async stop(autoStart?: boolean) {
     // If the user manually stops a connection, we assume they
     // don't want it to automatically start on future connections.
     if (autoStart !== undefined) this.params.autoStart = autoStart
-    this.params.active = false
 
     d('Stopping service:', this.params.id)
     Logger.info('Stopping connection:', this.toJSON())
@@ -177,6 +177,9 @@ export default class Connection extends EventEmitter {
       connection: this.toJSON(),
       raw: 'Connection closed',
     } as ConnectionMessage)
+
+    // Restart of closed because of timeout (system sleep)
+    if (code === 20) return this.start()
 
     if (code && code !== 0) {
       const messages: { [code: string]: string } = {
