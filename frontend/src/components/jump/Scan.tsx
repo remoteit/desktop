@@ -10,9 +10,10 @@ type Props = {
   onScan: (network: string) => void
   interfaces: IInterface[]
   targets: ITarget[]
+  privateIP: string
 }
 
-const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => {
+const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, privateIP }) => {
   const css = useStyles()
   const [timestamp, setTimestamp] = useState<{ [interfaceName: string]: number }>({})
   const [loading, setLoading] = useState<{ [interfaceName: string]: boolean }>({})
@@ -74,7 +75,13 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets }) => 
           )}
         </Button>
       </section>
-      <ScanNetwork onAdd={onAdd} data={selected.data || []} targets={targets} interfaceType={interfaceType()} />
+      <ScanNetwork
+        onAdd={onAdd}
+        data={selected.data || []}
+        targets={targets}
+        interfaceType={interfaceType()}
+        privateIP={privateIP}
+      />
       <section className={css.loading}>{noResults && 'No results'}</section>
     </>
   )

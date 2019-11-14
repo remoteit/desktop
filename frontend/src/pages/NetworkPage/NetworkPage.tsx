@@ -12,10 +12,11 @@ export const NetworkPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const { backend } = useDispatch<Dispatch>()
-  const { interfaces, targets, scanData } = useSelector((state: ApplicationState) => ({
+  const { interfaces, targets, scanData, privateIP } = useSelector((state: ApplicationState) => ({
     interfaces: state.backend.interfaces,
     targets: state.backend.targets,
     scanData: state.backend.scanData,
+    privateIP: state.backend.privateIP,
   }))
 
   const scan = (interfaceName: string) => BackendAdaptor.emit('scan', interfaceName)
@@ -30,6 +31,7 @@ export const NetworkPage: React.FC = () => {
         targets={targets}
         interfaces={interfaces}
         onScan={scan}
+        privateIP={privateIP}
         onAdd={target => {
           history.push('/setup')
           backend.set({ key: 'added', value: target })

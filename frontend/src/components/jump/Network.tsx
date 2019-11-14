@@ -7,6 +7,7 @@ type Props = {
   onScan: (network: string) => void
   interfaces: IInterface[]
   targets: ITarget[]
+  privateIP: string
 }
 
 const Network: React.FC<Props> = ({ ...props }) => {

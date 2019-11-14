@@ -21,20 +21,21 @@ type Props = {
   targets: ITarget[]
   interfaceType: IInterfaceType
   onAdd: (target: ITarget) => void
+  privateIP: string
 }
 
 type IInterfaceIcon = { [interfaceType in IInterfaceType]: any }
 
 const InterfaceIcon: IInterfaceIcon = {
-  Wireless: <Icon name="wifi" weight="solid" />,
-  Wired: <Icon name="ethernet" weight="solid" />,
-  FireWire: <Icon name="fire" weight="solid" />,
-  Thunderbolt: <Icon name="bolt" weight="solid" />,
-  Bluetooth: <Icon name="bluetooth-b" weight="solid" />,
-  Other: <Icon name="usb" weight="solid" />,
+  Wireless: <Icon name="wifi" weight="regular" />,
+  Wired: <Icon name="ethernet" weight="regular" />,
+  FireWire: <Icon name="fire" weight="regular" />,
+  Thunderbolt: <Icon name="bolt" weight="regular" />,
+  Bluetooth: <Icon name="bluetooth-b" weight="regular" />,
+  Other: <Icon name="usb" weight="regular" />,
 }
 
-const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) => {
+const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd, privateIP }) => {
   const css = useStyles()
   const [open, setOpen] = useState<number[]>([])
   const allClosed = open.length === 0
@@ -77,8 +78,10 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd }) =
         {data.map((ip, row) => (
           <span key={row}>
             <ListItem button onClick={() => toggle(row)}>
-              <ListItemIcon>{InterfaceIcon[interfaceType]}</ListItemIcon>
-              <ListItemText primary={ip[0]} />
+              <ListItemIcon>
+                {ip[0] === privateIP ? <Icon name="hdd" weight="regular" /> : InterfaceIcon[interfaceType]}
+              </ListItemIcon>
+              <ListItemText primary={ip[0]} secondary={ip[0] === privateIP ? 'This system' : null} />
               <ListItemSecondaryAction>
                 {open.includes(row) ? <Icon name="chevron-up" /> : <Icon name="chevron-down" />}
               </ListItemSecondaryAction>
