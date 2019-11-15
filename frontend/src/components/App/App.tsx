@@ -141,7 +141,7 @@ export const App = connect(
 
 const useStyles = makeStyles({
   footer: {
-    borderTop: `1px solid ${styles.colors.grayLighter}`,
+    borderTop: `1px solid ${styles.colors.grayLight}`,
     minHeight: 62,
     '& .MuiButtonBase-root': { maxWidth: '18%' },
   },

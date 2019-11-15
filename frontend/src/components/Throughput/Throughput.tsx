@@ -27,7 +27,7 @@ export const Throughput: React.FC<Props> = ({ connection, ...props }) => {
     return function cleanup() {
       BackendAdapter.off('service/throughput')
     }
-  }, [BackendAdapter, connection])
+  }, [connection])
 
   return (
     <div className={css.data + ' hoverHide'} {...props}>

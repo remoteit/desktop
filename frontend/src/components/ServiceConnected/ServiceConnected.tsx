@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { IService, IDevice } from 'remote.it'
 import { hostName } from '../../helpers/nameHelper'
 import { Typography } from '@material-ui/core'
@@ -17,7 +17,6 @@ type Props = {
 }
 
 export const ServiceConnected: React.FC<Props> = ({ connection, service, device }) => {
-  const [now, setNow] = useState(Date.now())
   const css = useStyles()
 
   // console.log('CONNECTION ->>', connection)
@@ -49,7 +48,5 @@ const useStyles = makeStyles({
     color: colors.primary,
     display: 'flex',
     flexDirection: 'row',
-
-    // borderTop: `5px solid ${colors.primary}`,
   },
 })

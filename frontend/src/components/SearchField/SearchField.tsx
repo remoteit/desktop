@@ -1,6 +1,8 @@
 import React from 'react'
-import { Paper, FormControl, InputBase, IconButton, Tooltip } from '@material-ui/core'
+import { InputBase, IconButton, Tooltip } from '@material-ui/core'
 import { Icon } from '../Icon'
+import { makeStyles } from '@material-ui/styles'
+import { spacing, colors } from '../../styling'
 
 export interface SearchFieldProps {
   onSubmit?: () => void
@@ -19,46 +21,74 @@ export function SearchField({
   ...props
 }: SearchFieldProps) {
   const disabled = Boolean(searching || !value)
+  const css = useStyles()
 
   return (
-    <Paper className="px-xs py-xxs df ai-center w-100 mr-sm" elevation={1} {...props}>
-      <form
-        onSubmit={e => {
-          e.preventDefault()
-          if (searchOnly && onSubmit) {
-            onSubmit()
-          }
-        }}
-        className="w-100"
-      >
-        <FormControl className="w-100 df ai-center fd-row">
-          <InputBase
-            autoFocus
-            autoCapitalize="off"
-            autoCorrect="off"
-            autoComplete="off"
-            className="px-sm py-xs w-100"
-            onChange={e => onChange(e.target.value)}
-            id="input-with-icon-adornment"
-            placeholder="Search devices and services..."
-            value={value}
-          />
-          {value && (
-            <Tooltip title="Clear search">
-              <IconButton className="p-sm" type="button" onClick={() => onChange('')}>
-                <Icon name="times" size="sm" />
-              </IconButton>
-            </Tooltip>
-          )}
-          <Tooltip title="Search">
-            <div>
-              <IconButton className="p-sm" type="submit" disabled={disabled}>
-                <Icon name={searching ? 'spinner-third' : 'search'} spin={searching} size="sm" />
-              </IconButton>
-            </div>
+    <form
+      {...props}
+      className={css.field}
+      onSubmit={e => {
+        e.preventDefault()
+        if (searchOnly && onSubmit) {
+          onSubmit()
+        }
+      }}
+    >
+      <InputBase
+        autoFocus
+        className={css.input}
+        onChange={e => onChange(e.target.value)}
+        id="input-with-icon-adornment"
+        placeholder="Search devices and services..."
+        value={value}
+      />
+      <div className={css.icons}>
+        {value && (
+          <Tooltip title="Clear search">
+            <IconButton type="button" onClick={() => onChange('')}>
+              <Icon name="times" size="sm" weight="regular" color="gray-darker" />
+            </IconButton>
           </Tooltip>
-        </FormControl>
-      </form>
-    </Paper>
+        )}
+        <Tooltip title="Search">
+          <span>
+            <IconButton type="submit" disabled={disabled}>
+              <Icon
+                name={searching ? 'spinner-third' : 'search'}
+                spin={searching}
+                size="sm"
+                weight="regular"
+                color="gray-darker"
+              />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </div>
+    </form>
   )
 }
+
+const useStyles = makeStyles({
+  field: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  input: {
+    width: '100%',
+    backgroundColor: colors.grayLighter,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    marginRight: spacing.sm,
+    padding: `${spacing.sm}px ${spacing.md}px`,
+    transition: 'background-color 300ms',
+    '&:focus,&:hover': {
+      backgroundColor: colors.grayLight,
+    },
+  },
+  icons: {
+    position: 'absolute',
+    right: spacing.lg,
+  },
+})

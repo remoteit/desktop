@@ -10,7 +10,7 @@ import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { IDevice } from 'remote.it'
 import { REGEX_LAST_PATH } from '../../constants'
-import styles from '../../styling'
+import { spacing, colors, fontSizes } from '../../styling'
 
 const pageNameMap: { [path: string]: string } = {
   connections: 'Connections',
@@ -79,14 +79,13 @@ const useStyles = makeStyles({
     height: '100%',
   },
   header: {
-    // backgroundColor: styles.colors.grayLighter,
-    // borderBottom: `1px solid ${styles.colors.grayLight}`,
-    marginTop: styles.spacing.lg,
-    marginLeft: styles.spacing.sm,
+    marginLeft: spacing.md,
+    marginBottom: -spacing.sm,
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
-      color: styles.colors.grayDarker,
-      fontSize: styles.fontSizes.xs,
+      color: colors.grayDarker,
+      fontSize: fontSizes.xs,
+      padding: `${spacing.xxs}px ${spacing.xs}px`,
       letterSpacing: 2,
     },
   },

@@ -91,14 +91,14 @@ export const DevicesPage = connect(
           />
           <Tooltip title={sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'}>
             <IconButton onClick={() => changeSort(sort === 'alpha' ? 'state' : 'alpha')}>
-              <Icon name={sort === 'alpha' ? 'font-case' : 'check-circle'} size="sm" />
+              <Icon name={sort === 'alpha' ? 'font-case' : 'check-circle'} size="sm" weight="regular" />
             </IconButton>
           </Tooltip>
           {!searchOnly && (
             <Tooltip title="Refresh devices">
               <div>
                 <IconButton onClick={() => fetch()} disabled={fetching}>
-                  <Icon name="sync" spin={fetching} size="sm" />
+                  <Icon name="sync" spin={fetching} size="sm" weight="regular" />
                 </IconButton>
               </div>
             </Tooltip>
@@ -128,8 +128,8 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: styles.colors.grayLighter,
+    backgroundColor: styles.colors.white,
     borderBottom: `1px solid ${styles.colors.grayLight}`,
-    padding: styles.spacing.xs,
+    padding: `0 ${styles.spacing.md}px`,
   },
 })

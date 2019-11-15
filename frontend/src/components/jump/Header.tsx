@@ -44,7 +44,7 @@ export const Header = connect(
 
 const useStyles = makeStyles({
   header: {
-    backgroundColor: styles.colors.grayLighter,
+    backgroundColor: styles.colors.white,
     padding: `${styles.spacing.xxs}px ${styles.spacing.sm}px`,
     display: 'flex',
     justifyContent: 'flex-end',

@@ -54,9 +54,7 @@ const theme = createMuiTheme({
         },
       },
       container: {
-        '& .MuiListItemSecondaryAction-root': {
-          // display: 'none',
-        },
+        '& .MuiListItemSecondaryAction-root': {},
         '&:hover, &:focus': {
           '& .MuiListItemSecondaryAction-root': {
             display: 'block',
@@ -107,9 +105,9 @@ const theme = createMuiTheme({
       subtitle1: {
         display: 'flex',
         alignItems: 'center',
-        padding: 28,
-        paddingBottom: spacing.xs,
+        padding: `${spacing.xxs}px 28px`,
         borderBottom: `1px solid ${colors.grayLighter}`,
+        minHeight: 50,
       },
       subtitle2: {
         fontSize: '1rem',
