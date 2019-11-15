@@ -117,11 +117,10 @@ export default class ConnectionPool {
       .map(c => c.toJSON())
       .sort((a, b) => this.sort(a.createdTime, b.createdTime))
       .sort((a, b) => this.sort(a.startTime, b.startTime))
+    // .sort(a => (a.active ? -1 : 1))
   }
 
-  sort = (a: number = 0, b: number = 0) => {
-    return a && b ? b - a : 0
-  }
+  sort = (a: number = 0, b: number = 0) => (a && b ? b - a : 0)
 
   getFreePort = async () => {
     this.freePort = await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)

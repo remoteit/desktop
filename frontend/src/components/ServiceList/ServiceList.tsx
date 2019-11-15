@@ -1,6 +1,6 @@
 import React from 'react'
 import { IService } from 'remote.it'
-import { List } from '@material-ui/core'
+import { List, Typography } from '@material-ui/core'
 import { ServiceListItem } from '../ServiceListItem'
 
 export interface ServiceListProps {
@@ -9,7 +9,7 @@ export interface ServiceListProps {
 }
 
 export const ServiceList = ({ services = [], connections }: ServiceListProps) => {
-  if (!services.length) return <div>No services to show...</div>
+  if (!services.length) return <Typography variant="subtitle1">No services.</Typography>
 
   return (
     <List>

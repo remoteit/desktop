@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import humanize from 'humanize-duration'
 import { IService, IDevice } from 'remote.it'
 import { hostName } from '../../helpers/nameHelper'
-import { useInterval } from '../../helpers/useInterval'
 import { Typography } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'
+import { Throughput } from '../Throughput'
+import { Duration } from '../Duration'
 // import { ForgetButton } from '../../components/ForgetButton'
 // import { CopyButton } from '../../components/CopyButton'
 import { makeStyles } from '@material-ui/styles'
@@ -20,19 +20,13 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service, device 
   const [now, setNow] = useState(Date.now())
   const css = useStyles()
 
-  useInterval(() => {
-    setNow(Date.now)
-  }, 1000)
-
-  if (!connection.startTime) return null
-
-  console.log('CONNECTION ->>', connection)
-  console.log('SERVICE ->>', service)
-  console.log('DEVICE ->>', device)
+  // console.log('CONNECTION ->>', connection)
+  // console.log('SERVICE ->>', service)
+  // console.log('DEVICE ->>', device)
 
   return (
-    <>
-      <div className={css.container}>
+    <div className={css.container}>
+      <div>
         <Typography variant="subtitle2">Connected </Typography>
       </div>
       <DataDisplay
@@ -41,11 +35,11 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service, device 
           { label: 'Host', value: connection.host },
           { label: 'Port', value: connection.port },
           { label: 'Restriction', value: connection.restriction },
-          { label: 'Duration', value: humanize(Math.round((now - connection.startTime) / 1000) * 1000) },
-          { label: 'Throughput', value: '...' },
+          { label: 'Duration', value: <Duration startTime={connection.startTime} /> },
+          { label: 'Throughput', value: <Throughput connection={connection} /> },
         ]}
       />
-    </>
+    </div>
   )
 }
 
@@ -53,6 +47,9 @@ const useStyles = makeStyles({
   container: {
     margin: `${spacing.md}px 65px`,
     color: colors.primary,
+    display: 'flex',
+    flexDirection: 'row',
+
     // borderTop: `5px solid ${colors.primary}`,
   },
 })

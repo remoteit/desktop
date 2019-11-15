@@ -35,7 +35,7 @@ class BackendAdapter extends EventEmitter {
   }
 }
 
-type EventHandlers = { [event in SocketEvent]: (data?: any) => any }
+type EventHandlers = { [event: string]: (data?: any) => any }
 
 function getEventHandlers() {
   const { binaries, auth, backend, ui } = store.dispatch
@@ -93,7 +93,7 @@ function getEventHandlers() {
     'service/request': (msg: ConnectionMessage) => console.log('service/request', msg),
     'service/tunnel/opened': (msg: ConnectionMessage) => console.log('service/tunnel/opened', msg),
     'service/tunnel/closed': (msg: ConnectionMessage) => console.log('service/tunnel/closed', msg),
-    'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
+    // 'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
     'service/version': (msg: ConnectionMessage) => console.log('service/version', msg),
     'service/unknown-event': (msg: ConnectionMessage) => console.log('service/unknown-event', msg),
 

@@ -61,6 +61,9 @@ const theme = createMuiTheme({
           '& .MuiListItemSecondaryAction-root': {
             display: 'block',
           },
+          '& .hoverHide': {
+            display: 'none',
+          },
         },
       },
     },

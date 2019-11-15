@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
-import styles from '../../styling'
+import BackendAdaptor from '../../services/BackendAdapter'
 import { connect } from 'react-redux'
+import { ApplicationState } from '../../store'
+import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
+import { BottomNavigation, BottomNavigationAction, Snackbar } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { Page } from '../../pages/Page'
 import { Header } from '../jump/Header'
+import { Page } from '../../pages/Page'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
-import { BottomNavigation, BottomNavigationAction, Snackbar } from '@material-ui/core'
 import { SetupPage } from '../../pages/SetupPage'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
@@ -19,9 +20,9 @@ import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
 import { InstallationNotice } from '../InstallationNotice'
-import { ApplicationState } from '../../store'
 import { REGEX_FIRST_PATH } from '../../constants'
-import BackendAdaptor from '../../services/BackendAdapter'
+import { isWindows } from '../../services/Platform'
+import styles from '../../styling'
 
 const mapState = (state: ApplicationState) => ({
   user: state.auth.user,
@@ -88,7 +89,7 @@ export const App = connect(
 
   return (
     <Page>
-      <Header />
+      {!isWindows() && <Header />}
       <Body>
         <Switch>
           <Route path="/connections/:serviceID/lan">

@@ -25,17 +25,6 @@ import { useSelector } from 'react-redux'
 type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
-  const { serviceID = '' } = useParams()
-  const privateIP = useSelector((state: ApplicationState) => state.backend.privateIP)
-  const connection = useSelector((state: ApplicationState) => {
-    let c = state.backend.connections.find(c => c.id === serviceID)
-    if (c) return c
-    const [service] = findService(state.devices.all, serviceID)
-    return service && newConnection(service)
-  })
-
-  const restriction: ipAddress = (connection && connection.restriction) || IP_LATCH
-
   // prettier-ignore
   const selections: Selections[] = [
     { value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
@@ -46,7 +35,17 @@ export const LanSharePage: React.FC = () => {
     { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
 
-  const [enabled, setEnabled] = useState<boolean>(!!connection && connection.host !== IP_PRIVATE)
+  const { serviceID = '' } = useParams()
+  const privateIP = useSelector((state: ApplicationState) => state.backend.privateIP)
+  const connection = useSelector((state: ApplicationState) => {
+    let c = state.backend.connections.find(c => c.id === serviceID)
+    if (c) return c
+    const [service] = findService(state.devices.all, serviceID)
+    return newConnection(service)
+  })
+
+  const [enabled, setEnabled] = useState<boolean>(connection.host !== IP_PRIVATE)
+  const restriction: ipAddress = enabled && connection.restriction ? connection.restriction : IP_LATCH
   const [selection, setSelection] = useState<number>(() => {
     let s = selections.findIndex(s => s.value === restriction)
     if (s === -1) s = selections.findIndex(s => typeof s.value === 'function')

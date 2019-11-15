@@ -18,9 +18,9 @@ const mapState = (state: ApplicationState, params: any) => ({
 export type ServicesPageProps = ReturnType<typeof mapState>
 
 export const ServicesPage = connect(mapState)(({ connections, devices }: ServicesPageProps) => {
+  const css = useStyles()
   const { deviceID } = useParams()
   const device = devices.find(d => d.id === deviceID)
-  const css = useStyles()
   const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
   const serviceConnections = connections.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c

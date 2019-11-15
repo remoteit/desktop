@@ -40,8 +40,8 @@ export default class Connection extends EventEmitter {
     this.set(connection)
   }
 
-  set({ autoStart = true, host = IP_PRIVATE, restriction = IP_OPEN, ...connection }: IConnection) {
-    this.params = { autoStart, host, restriction, ...connection }
+  set({ host = IP_PRIVATE, restriction = IP_OPEN, ...connection }: IConnection) {
+    this.params = { host, restriction, ...connection }
     Logger.info('SET CONNECTION', { params: this.params })
   }
 

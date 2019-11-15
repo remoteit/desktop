@@ -3,7 +3,7 @@ import { List, ListItem } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { colors, spacing, fontSizes } from '../../styling'
 
-type Data = { label: string; value?: string | number | null }
+type Data = { label: string; value?: any }
 
 export const DataDisplay: React.FC<{ data: Data[] }> = ({ data }) => {
   const css = useStyles()

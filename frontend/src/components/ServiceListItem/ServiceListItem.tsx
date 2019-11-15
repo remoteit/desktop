@@ -10,6 +10,7 @@ import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
 import { CopyButton } from '../CopyButton'
 import { NextButton } from '../NextButton'
+import { Throughput } from '../Throughput'
 import { makeStyles } from '@material-ui/styles'
 
 export interface ServiceListItemProps {
@@ -48,6 +49,7 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
         </ListItemIcon>
         <ListItemText primary={name} secondary={connection && hostName(connection)} />
         <NextButton />
+        {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
