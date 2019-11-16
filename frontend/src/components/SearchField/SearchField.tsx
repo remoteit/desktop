@@ -46,7 +46,7 @@ export function SearchField({
         {value && (
           <Tooltip title="Clear search">
             <IconButton type="button" onClick={() => onChange('')}>
-              <Icon name="times" size="sm" weight="regular" color="gray-darker" />
+              <Icon name="times" size="sm" weight="regular" color="grayDarker" />
             </IconButton>
           </Tooltip>
         )}
@@ -58,7 +58,7 @@ export function SearchField({
                 spin={searching}
                 size="sm"
                 weight="regular"
-                color="gray-darker"
+                color="grayDarker"
               />
             </IconButton>
           </span>

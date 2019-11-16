@@ -6,6 +6,8 @@ import { Typography } from '@material-ui/core'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { DataDisplay } from '../../components/DataDisplay'
+import { Container } from '../../components/Container'
+import { Columns } from '../../components/Columns'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
@@ -30,21 +32,29 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
   if (!device) return <Typography variant="subtitle1">No device found.</Typography>
 
   return (
-    <Breadcrumbs>
-      <Typography variant="subtitle1">
-        <ConnectionStateIcon state={device.state} connection={activeConnection} size="lg" />
-        <span className={css.title}>{device.name}</span>
-      </Typography>
+    <Container
+      header={
+        <>
+          <Breadcrumbs />
+          <Typography variant="subtitle1">
+            <ConnectionStateIcon state={device.state} connection={activeConnection} size="lg" />
+            <span className={css.title}>{device.name}</span>
+          </Typography>
+        </>
+      }
+    >
       <ServiceList services={device.services} connections={serviceConnections} />
-      <DataDisplay
-        data={[
-          { label: 'Device ID', value: device.id },
-          { label: 'Hardware ID', value: device.hardwareID },
-          { label: 'Internal IP', value: device.lastInternalIP },
-          { label: 'External IP', value: device.lastExternalIP },
-        ]}
-      />
-    </Breadcrumbs>
+      <Columns>
+        <DataDisplay
+          data={[
+            { label: 'Device ID', value: device.id },
+            { label: 'Hardware ID', value: device.hardwareID },
+            { label: 'Internal IP', value: device.lastInternalIP },
+            { label: 'External IP', value: device.lastExternalIP },
+          ]}
+        />
+      </Columns>
+    </Container>
   )
 })
 

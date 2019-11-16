@@ -15,6 +15,8 @@ import {
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/styles'
+import { Container } from '../../components/Container'
+import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { colors, spacing, fontSizes } from '../../styling'
@@ -71,9 +73,14 @@ export const LanSharePage: React.FC = () => {
   }
 
   return (
-    <Breadcrumbs>
-      <Typography variant="subtitle1">Local Network Sharing</Typography>
-
+    <Container
+      header={
+        <>
+          <Breadcrumbs />
+          <Typography variant="subtitle1">Local Network Sharing</Typography>
+        </>
+      }
+    >
       <List>
         <ListItem button onClick={() => setEnabled(!enabled)}>
           <ListItemIcon>
@@ -129,20 +136,21 @@ export const LanSharePage: React.FC = () => {
           </>
         )}
       </div>
+
       <div className={css.indent}>
         <Button onClick={save} variant="contained" color="primary">
-          Save
+          Done
           <Icon name="check" color="white" weight="regular" inline />
         </Button>
       </div>
-    </Breadcrumbs>
+    </Container>
   )
 }
 
 const useStyles = makeStyles({
   indent: {
-    padding: `${spacing.sm}px ${spacing.xxl}px`,
-    marginLeft: spacing.lg,
+    paddingLeft: spacing.lg,
+    margin: `${spacing.md}px ${spacing.xxl}px ${spacing.xl}px`,
   },
   note: {
     marginTop: spacing.lg,

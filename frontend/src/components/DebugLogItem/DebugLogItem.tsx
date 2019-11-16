@@ -3,6 +3,7 @@ import moment from 'moment'
 import { CopyButton } from '../CopyButton'
 import { Icon } from '../Icon'
 import { Tooltip } from '@material-ui/core'
+import { Color } from '../../styling'
 
 export interface Props {
   log: Log
@@ -17,7 +18,7 @@ export function DebugLogItem({ log }: Props) {
 
   let title = 'General message'
   let iconName = 'bell'
-  let iconColor = 'secondary' as BrandColors
+  let iconColor = 'secondary' as Color
   if (isConnectd) {
     title = 'connectd process message'
     iconName = 'terminal'

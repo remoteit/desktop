@@ -9,7 +9,7 @@ export const DataDisplay: React.FC<{ data: Data[] }> = ({ data }) => {
   const css = useStyles()
 
   return (
-    <List className={css.list}>
+    <List>
       {data.map(item => (
         <ListItem className={css.item} key={item.label}>
           <span>{item.label}:</span>
@@ -21,13 +21,11 @@ export const DataDisplay: React.FC<{ data: Data[] }> = ({ data }) => {
 }
 
 const useStyles = makeStyles({
-  list: {
-    margin: `${spacing.md}px ${spacing.xxl}px`,
-  },
   item: {
-    paddingBottom: 0,
+    padding: 0,
     fontSize: fontSizes.sm,
     letterSpacing: 0.2,
+    lineHeight: '2em',
     color: colors.grayDarker,
     '&>span': {
       color: colors.gray,

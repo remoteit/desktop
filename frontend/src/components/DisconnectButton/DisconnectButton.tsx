@@ -10,9 +10,11 @@ export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: IConn
   if (!connection || connection.connecting || !connection.active) return null
   return (
     <Tooltip title="Disconnect">
-      <IconButton disabled={disabled} onClick={() => BackendAdaptor.emit('service/disconnect', connection)}>
-        <Icon name="times" color="gray-darker" size="md" weight="regular" fixedWidth />
-      </IconButton>
+      <span>
+        <IconButton disabled={disabled} onClick={() => BackendAdaptor.emit('service/disconnect', connection)}>
+          <Icon name="ban" color="danger" size="md" weight="regular" fixedWidth />
+        </IconButton>
+      </span>
     </Tooltip>
   )
 }

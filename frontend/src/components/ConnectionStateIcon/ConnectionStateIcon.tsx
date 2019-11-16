@@ -3,6 +3,7 @@ import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
 import { IService, IDevice } from 'remote.it'
+import { Color } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
@@ -12,7 +13,7 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
 
 export function ConnectionStateIcon({ connection, service, state, ...props }: ConnectionStateIconProps) {
   let icon = 'question-circle'
-  let color: BrandColors = 'warning'
+  let color: Color = 'warning'
 
   state = state || (service ? service.state : 'unknown')
 
@@ -28,7 +29,7 @@ export function ConnectionStateIcon({ connection, service, state, ...props }: Co
       break
     case 'inactive':
       icon = 'minus-circle'
-      color = 'gray-light'
+      color = 'grayLight'
       break
     case 'connected':
       icon = 'scrubber'
@@ -36,7 +37,7 @@ export function ConnectionStateIcon({ connection, service, state, ...props }: Co
       break
     case 'connecting':
       icon = 'spinner-third'
-      color = 'gray-light'
+      color = 'grayLight'
       break
     case 'restricted':
       icon = 'times-circle'
@@ -44,7 +45,7 @@ export function ConnectionStateIcon({ connection, service, state, ...props }: Co
       break
     case 'unknown':
       icon = 'question-circle'
-      color = 'gray-light'
+      color = 'grayLight'
   }
 
   return (

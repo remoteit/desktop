@@ -5,8 +5,7 @@ import { Typography } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'
 import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
-// import { ForgetButton } from '../../components/ForgetButton'
-// import { CopyButton } from '../../components/CopyButton'
+import { Columns } from '../Columns'
 import { makeStyles } from '@material-ui/styles'
 import { spacing, colors } from '../../styling'
 
@@ -24,10 +23,10 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service, device 
   // console.log('DEVICE ->>', device)
 
   return (
-    <div className={css.container}>
-      <div>
-        <Typography variant="subtitle2">Connected </Typography>
-      </div>
+    <Columns>
+      <Typography color="primary" variant="subtitle2">
+        Connected
+      </Typography>
       <DataDisplay
         data={[
           { label: 'Launch', value: hostName(connection) },
@@ -38,15 +37,14 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service, device 
           { label: 'Throughput', value: <Throughput connection={connection} /> },
         ]}
       />
-    </div>
+    </Columns>
   )
 }
 
 const useStyles = makeStyles({
   container: {
-    margin: `${spacing.md}px 65px`,
     color: colors.primary,
-    display: 'flex',
-    flexDirection: 'row',
+    // display: 'flex',
+    // flexDirection: 'row',
   },
 })

@@ -6,7 +6,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton, Link } from '@material-ui/core'
 import { removeDeviceName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
-import { Body } from '../Body'
+import { Container } from '../Container'
 import { Icon } from '../Icon'
 import { IDevice } from 'remote.it'
 import { REGEX_LAST_PATH } from '../../constants'
@@ -48,39 +48,30 @@ export const Breadcrumbs: React.FC = ({ children }) => {
   let breadcrumb: string = ''
 
   return (
-    <div className={css.container}>
-      <div className={css.header}>
-        <Tooltip title="back">
-          <IconButton onClick={() => history.push(parentPath)}>
-            <Icon name="chevron-left" size="md" fixedWidth />
-          </IconButton>
-        </Tooltip>
-        {crumbs.reduce((result: any[], crumb, index) => {
-          const crumbPath = (breadcrumb += `/${crumb}`)
-          if (index > 0) result.unshift(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
-          result.unshift(
-            <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
-              {pageName(crumb)}
-            </Link>
-          )
-          return result
-        }, [])}
-      </div>
-      <Body>{children}</Body>
+    <div className={css.header}>
+      <Tooltip title="back">
+        <IconButton onClick={() => history.push(parentPath)}>
+          <Icon name="chevron-left" size="md" fixedWidth />
+        </IconButton>
+      </Tooltip>
+      {crumbs.reduce((result: any[], crumb, index) => {
+        const crumbPath = (breadcrumb += `/${crumb}`)
+        if (index > 0) result.unshift(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
+        result.unshift(
+          <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
+            {pageName(crumb)}
+          </Link>
+        )
+        return result
+      }, [])}
     </div>
   )
 }
 
 const useStyles = makeStyles({
-  container: {
-    display: 'flex',
-    alignItems: 'stretch',
-    flexFlow: 'column',
-    height: '100%',
-  },
   header: {
     marginLeft: spacing.md,
-    marginBottom: -spacing.sm,
+    marginBottom: -spacing.xs,
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
       color: colors.grayDarker,

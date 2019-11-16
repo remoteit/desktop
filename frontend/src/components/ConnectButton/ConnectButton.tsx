@@ -14,13 +14,15 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({ connection, servic
   const disabled: boolean = !!(connection && connection.connecting)
   return (
     <Tooltip title="Connect">
-      <IconButton
-        disabled={disabled}
-        color="primary"
-        onClick={() => BackendAdaptor.emit('service/connect', connection)}
-      >
-        <Icon name="arrow-right" weight="regular" size="md" fixedWidth />
-      </IconButton>
+      <span>
+        <IconButton
+          disabled={disabled}
+          color="primary"
+          onClick={() => BackendAdaptor.emit('service/connect', connection)}
+        >
+          <Icon name="arrow-right" weight="regular" size="md" fixedWidth />
+        </IconButton>
+      </span>
     </Tooltip>
   )
 }

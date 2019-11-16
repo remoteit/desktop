@@ -8,6 +8,7 @@ import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
+import { LaunchButton } from '../LaunchButton'
 import { CopyButton } from '../CopyButton'
 import { NextButton } from '../NextButton'
 import { Throughput } from '../Throughput'
@@ -24,7 +25,6 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
   const css = useStyles()
 
   let name: string = ''
-  let error: boolean = false
   let path = location.pathname
   let id = ''
 
@@ -34,7 +34,6 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
   }
 
   if (connection) {
-    error = !!connection.error
     name = connection.name || name
     id = connection.id
   } else if (service) {
@@ -51,12 +50,13 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
         <NextButton />
         {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
+          <LaunchButton connection={connection} />
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
           <ConnectButton connection={connection} service={service} />
         </ListItemSecondaryAction>
       </ListItem>
-      {connection && error && <ConnectionErrorMessage connection={connection} />}
+      {connection && <ConnectionErrorMessage connection={connection} />}
     </>
   )
 }
