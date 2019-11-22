@@ -1,6 +1,7 @@
 import React from 'react'
 import { DeviceList } from '../../components/DeviceList'
 import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
+import { Container } from '../../components/Container'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { SearchField } from '../../components/SearchField'
@@ -77,33 +78,36 @@ export const DevicesPage = connect(
     console.log('connections', connections)
 
     return (
-      <div className={css.container}>
-        <div className={css.fixed}>
-          <SearchField
-            onSubmit={remoteSearch}
-            onChange={(query: string) => {
-              setQuery(query)
-              if (!searchOnly) localSearch(query)
-            }}
-            searching={searching}
-            searchOnly={searchOnly}
-            value={query}
-          />
-          <Tooltip title={sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'}>
-            <IconButton onClick={() => changeSort(sort === 'alpha' ? 'state' : 'alpha')}>
-              <Icon name={sort === 'alpha' ? 'font-case' : 'check-circle'} size="sm" weight="regular" />
-            </IconButton>
-          </Tooltip>
-          {!searchOnly && (
-            <Tooltip title="Refresh devices">
-              <div>
-                <IconButton onClick={() => fetch()} disabled={fetching}>
-                  <Icon name="sync" spin={fetching} size="sm" weight="regular" />
-                </IconButton>
-              </div>
+      <Container
+        header={
+          <div className={css.header}>
+            <SearchField
+              onSubmit={remoteSearch}
+              onChange={(query: string) => {
+                setQuery(query)
+                if (!searchOnly) localSearch(query)
+              }}
+              searching={searching}
+              searchOnly={searchOnly}
+              value={query}
+            />
+            <Tooltip title={sort === 'alpha' ? 'Sort by device state' : 'Sort by device name'}>
+              <IconButton onClick={() => changeSort(sort === 'alpha' ? 'state' : 'alpha')}>
+                <Icon name={sort === 'alpha' ? 'font-case' : 'check-circle'} size="sm" weight="regular" />
+              </IconButton>
             </Tooltip>
-          )}
-        </div>
+            {!searchOnly && (
+              <Tooltip title="Refresh devices">
+                <div>
+                  <IconButton onClick={() => fetch()} disabled={fetching}>
+                    <Icon name="sync" spin={fetching} size="sm" weight="regular" />
+                  </IconButton>
+                </div>
+              </Tooltip>
+            )}
+          </div>
+        }
+      >
         <DeviceList
           devices={visibleDevices}
           searchPerformed={searchOnly ? searchPerformed : Boolean(visibleDevices.length)}
@@ -112,19 +116,13 @@ export const DevicesPage = connect(
           searching={searching}
           searchOnly={searchOnly}
         />
-      </div>
+      </Container>
     )
   }
 )
 
 const useStyles = makeStyles({
-  container: {
-    display: 'flex',
-    alignItems: 'stretch',
-    flexFlow: 'column',
-    height: '100%',
-  },
-  fixed: {
+  header: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',

@@ -227,11 +227,6 @@ export default class CLI {
     return new Promise<string>((success, failure) => {
       Logger.info('EXEC', { exec: `${BIN_PATH}remoteit.darwin.amd64 ${command}` })
       exec(`${BIN_PATH}remoteit.darwin.amd64 ${command}`, (error, stdout, stderr) => {
-        console.log('================================')
-        console.log('error', error)
-        console.log('stdout', stdout)
-        console.log('stderr', stderr)
-        console.log('================================')
         if (error) {
           Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
           failure()

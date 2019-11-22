@@ -1,5 +1,6 @@
 import React from 'react'
 import { List, Divider, Typography } from '@material-ui/core'
+import { Container } from '../../components/Container'
 import { SettingsListItem } from '../../components/SettingsListItem'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
@@ -45,8 +46,7 @@ export const SettingsPage = connect(
 
     installed = false
     return (
-      <div>
-        <Typography variant="subtitle1">Settings</Typography>
+      <Container header={<Typography variant="subtitle1">Settings</Typography>}>
         <List>
           <SettingsListItem
             label="Send feedback"
@@ -63,9 +63,6 @@ export const SettingsPage = connect(
             value={searchOnly}
             onClick={toggleSearchOnly}
           />
-        </List>
-        <Divider />
-        <List>
           <SettingsListItem
             label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}
             disabled={installing}
@@ -78,7 +75,7 @@ export const SettingsPage = connect(
           <SettingsListItem label="Sign out" icon="sign-out" onClick={signOutWarning} />
           <SettingsListItem label="Quit" icon="skull-crossbones" onClick={quitWarning} />
         </List>
-      </div>
+      </Container>
     )
   }
 )

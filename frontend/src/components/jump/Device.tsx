@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import Targets from './Targets'
 import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar, Typography } from '@material-ui/core'
+import { Container } from '../../components/Container'
 import { makeStyles } from '@material-ui/styles'
-import { Icon } from '../Icon'
 import { REGEX_NAME_SAFE } from '../../constants'
+import { Icon } from '../Icon'
 import styles from '../../styling'
 
 type Props = {
@@ -31,8 +32,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
   }, [device, deleting, registering])
 
   return (
-    <div>
-      <Typography variant="subtitle1">Device</Typography>
+    <Container header={<Typography variant="subtitle1">Device</Typography>}>
       <section className={css.device}>
         <div className={css.name}>
           <TextField
@@ -102,7 +102,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
         onClose={() => setNotice(false)}
         message="Device names can only contain alpha numeric characters."
       />
-    </div>
+    </Container>
   )
 }
 

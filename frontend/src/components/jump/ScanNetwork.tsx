@@ -5,6 +5,7 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
+  IconButton,
   Collapse,
   Button,
   Link,
@@ -83,7 +84,9 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd, pri
               </ListItemIcon>
               <ListItemText primary={ip[0]} secondary={ip[0] === privateIP ? 'This system' : null} />
               <ListItemSecondaryAction>
-                {open.includes(row) ? <Icon name="chevron-up" /> : <Icon name="chevron-down" />}
+                <IconButton onClick={() => toggle(row)}>
+                  {open.includes(row) ? <Icon name="chevron-up" size="md" /> : <Icon name="chevron-down" size="md" />}
+                </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
             <Collapse in={open.includes(row)} timeout="auto">
