@@ -7,4 +7,10 @@ declare global {
     username: string
     authHash: string
   }
+
+  export type ConfigFile = {
+    device?: IDevice | undefined
+    services?: ITarget[]
+    auth?: UserCredentials | undefined
+  } & { [key: string]: any }
 }

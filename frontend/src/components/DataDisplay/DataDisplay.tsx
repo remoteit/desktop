@@ -1,7 +1,7 @@
 import React from 'react'
 import { List, ListItem } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { colors, spacing, fontSizes } from '../../styling'
+import { colors, fontSizes } from '../../styling'
 
 type Data = { label: string; value?: any }
 

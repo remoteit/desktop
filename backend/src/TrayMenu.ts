@@ -69,9 +69,8 @@ export default class TrayMenu {
 
   private remoteitMenu() {
     return [
-      { label: 'remote.it', enabled: false },
       {
-        label: 'Open...',
+        label: 'Open remote.it...',
         type: 'normal',
         click: this.handleOpen,
       },

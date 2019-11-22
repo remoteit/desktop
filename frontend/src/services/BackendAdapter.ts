@@ -30,6 +30,7 @@ class BackendAdapter extends EventEmitter {
   }
 
   emit(event: SocketAction, ...args: any[]): boolean {
+    console.log('BackendAdaptor EMIT', args)
     this.socket.emit(event, ...args)
     return true
   }

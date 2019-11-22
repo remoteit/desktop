@@ -1,14 +1,23 @@
 import React from 'react'
-import styles from '../../styling'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { makeStyles } from '@material-ui/styles'
+import { Snackbar } from '@material-ui/core'
+import styles from '../../styling'
 
 export interface Props {
   children: React.ReactNode
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
+  const connected = useSelector((state: ApplicationState) => state.ui.connected)
   const css = useStyles()
-  return <div className={css.page}>{children}</div>
+  return (
+    <div className={css.page}>
+      {children}
+      <Snackbar open={!connected} message="Webserver connection lost. Retrying..." />
+    </div>
+  )
 }
 
 const useStyles = makeStyles({

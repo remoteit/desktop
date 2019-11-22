@@ -1,29 +1,33 @@
 import SocketIO from 'socket.io'
-import cli from './CLIInterface'
-import lan from './LAN'
+import LAN from './LAN'
 import Logger from './Logger'
+import electron from 'electron'
+import CLIInterface from './CLIInterface'
+import MuxerInstaller from './MuxerInstaller'
 import BinaryInstaller from './BinaryInstaller'
 import ConnectdInstaller from './ConnectdInstaller'
-import electron from 'electron'
-import MuxerInstaller from './MuxerInstaller'
 import DemuxerInstaller from './DemuxerInstaller'
+import ConnectionPool from './ConnectionPool'
 import ElectronApp from './ElectronApp'
 import Installer from './Installer'
-import ConnectionPool from './ConnectionPool'
-import Server from './Server'
 import EventBus from './EventBus'
+import Server from './Server'
 import User from './User'
 import debug from 'debug'
 
 const d = debug('r3:backend:Server')
 
 class Controller {
+  private cli: CLIInterface
+  private lan: LAN
   private server: SocketIO.Server
   private pool: ConnectionPool
   private user?: UserCredentials
 
-  constructor(server: SocketIO.Server, pool: ConnectionPool, user?: UserCredentials) {
+  constructor(server: SocketIO.Server, cli: CLIInterface, lan: LAN, pool: ConnectionPool, user?: UserCredentials) {
     this.server = server
+    this.lan = lan
+    this.cli = cli
     this.pool = pool
     this.user = user
     EventBus.on(Server.EVENTS.connection, this.bindSockets)
@@ -49,24 +53,24 @@ class Controller {
     socket.on('freePort', this.freePort)
   }
 
-  targets = (result: ITarget[]) => {
-    cli.set('targets', result)
-    this.server.emit('targets', cli.data.targets)
+  targets = async (result: ITarget[]) => {
+    await this.cli.set('targets', result)
+    this.server.emit('targets', this.cli.data.targets)
   }
 
-  device = (result: IDevice) => {
-    cli.set('device', result)
-    this.server.emit('device', cli.data.device)
+  device = async (result: IDevice) => {
+    await this.cli.set('device', result)
+    this.server.emit('device', this.cli.data.device)
   }
 
   interfaces = async () => {
-    await lan.getInterfaces()
-    this.server.emit('interfaces', lan.interfaces)
+    await this.lan.getInterfaces()
+    this.server.emit('interfaces', this.lan.interfaces)
   }
 
   scan = async (interfaceName: string) => {
-    await lan.scan(interfaceName)
-    this.server.emit('scan', lan.data)
+    await this.lan.scan(interfaceName)
+    this.server.emit('scan', this.lan.data)
   }
 
   freePort = async () => {
@@ -74,18 +78,21 @@ class Controller {
     this.server.emit('freePort', this.pool.freePort)
   }
 
-  // privateIP = () => this.server.emit('privateIP', lan.privateIP)
+  // privateIP = () => this.server.emit('privateIP', this.lan.privateIP)
 
   syncBackend = async () => {
-    this.server.emit('targets', cli.data.targets)
-    this.server.emit('device', cli.data.device)
-    this.server.emit('scan', lan.data)
-    this.server.emit('interfaces', lan.interfaces)
+    this.server.emit('targets', this.cli.data.targets)
+    this.server.emit('device', this.cli.data.device)
+    this.server.emit('scan', this.lan.data)
+    this.server.emit('interfaces', this.lan.interfaces)
     this.server.emit('pool', this.pool.toJSON())
-    this.server.emit('privateIP', lan.privateIP)
+    this.server.emit('privateIP', this.lan.privateIP)
     this.server.emit('freePort', this.pool.freePort)
   }
 
+  // TODO
+  // REPLACE THESE FUNCTIONS WITH SERVER SIDE FIRST AUTH
+  //   VVVVVVVVVVVVVVVV
   checkSignIn = async () => {
     const user = await User.checkSignIn(this.user)
     if (user) this.user = user

@@ -3,7 +3,7 @@ import BackendAdaptor from '../../services/BackendAdapter'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
-import { BottomNavigation, BottomNavigationAction, Snackbar } from '@material-ui/core'
+import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { Header } from '../jump/Header'
 import { Page } from '../../pages/Page'
@@ -21,7 +21,6 @@ import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
 import { InstallationNotice } from '../InstallationNotice'
 import { REGEX_FIRST_PATH } from '../../constants'
-import { isWindows } from '../../services/Platform'
 import styles from '../../styling'
 
 const mapState = (state: ApplicationState) => ({
@@ -89,7 +88,7 @@ export const App = connect(
 
   return (
     <Page>
-      {!isWindows() && <Header />}
+      <Header />
       <Body>
         <Switch>
           <Route path="/connections/:serviceID/lan">
@@ -134,7 +133,6 @@ export const App = connect(
         <BottomNavigationAction label="Network" value="/network" icon={<Icon name="network-wired" size="lg" />} />
         <BottomNavigationAction label="Settings" value="/settings" icon={<Icon name="cog" size="lg" />} />
       </BottomNavigation>
-      <Snackbar open={!connected} message="Webserver connection lost. Retrying..." />
     </Page>
   )
 })

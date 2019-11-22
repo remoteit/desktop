@@ -1,5 +1,6 @@
 import debug from 'debug'
 import Environment from './Environment'
+import EventBus from './EventBus'
 import fs from 'fs'
 import https from 'https'
 import os from 'os'
@@ -33,6 +34,16 @@ export default class Installer {
     this.name = args.name
     this.repoName = args.repoName
     this.version = args.version
+  }
+
+  check() {
+    this.isInstalled
+      ? EventBus.emit(Installer.EVENTS.installed, {
+          path: this.binaryPath,
+          version: this.version,
+          name: this.name,
+        } as InstallationInfo)
+      : EventBus.emit(Installer.EVENTS.notInstalled)
   }
 
   /**
@@ -99,9 +110,7 @@ export default class Installer {
 
   private download(tag: string, progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url = `https://github.com/${this.repoName}/releases/download/${
-        this.version
-      }/${this.downloadFileName}`
+      const url = `https://github.com/${this.repoName}/releases/download/${this.version}/${this.downloadFileName}`
 
       d(`Downloading ${this.name}:`, url)
 

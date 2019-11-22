@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
+import { Container } from '../../components/Container'
 import { makeStyles } from '@material-ui/styles'
 import ScanNetwork from './ScanNetwork'
 import styles from '../../styling'
@@ -40,8 +41,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, priva
   }
 
   return (
-    <>
-      <Typography variant="subtitle1">Network Scan</Typography>
+    <Container header={<Typography variant="subtitle1">Network Scan</Typography>}>
       <section className={css.controls}>
         <TextField
           select
@@ -83,7 +83,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, priva
         privateIP={privateIP}
       />
       <section className={css.loading}>{noResults && 'No results'}</section>
-    </>
+    </Container>
   )
 }
 

@@ -1,5 +1,5 @@
 import { IDevice } from 'remote.it'
-import lan from '../LAN'
+import { application } from '../index'
 
 const separator = ' - '
 
@@ -10,7 +10,7 @@ export function hostName(connection: IConnection) {
     case '127.0.0.1':
       return `localhost:${port}`
     case '0.0.0.0':
-      return `${lan.privateIP}:${port}`
+      return `${application.lan.privateIP}:${port}`
     default:
       return `${host}:${port}`
   }

@@ -1,7 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { Body } from '../Body'
-import { spacing, colors, fontSizes } from '../../styling'
 
 export const Container: React.FC<{ header: any }> = ({ header, children }) => {
   const css = useStyles()

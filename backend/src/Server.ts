@@ -26,10 +26,7 @@ export default class Server {
     const app = express().use(express.static(dir))
     const server = createServer(app).listen(PORT, () => {
       d(`Listening on port ${PORT}`)
-      Logger.info('---------------------------------------------\n\n')
-      Logger.info('serving: ' + dir)
-      Logger.info(`Listening on localhost:${PORT}`)
-      Logger.info('\n\n---------------------------------------------')
+      Logger.info('SERVER STARTED', { port: PORT, directory: dir })
       EventBus.emit(Server.EVENTS.ready)
     })
 

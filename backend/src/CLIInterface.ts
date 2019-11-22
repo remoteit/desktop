@@ -1,20 +1,20 @@
-import File from './File'
+import CLI from './CLI'
 import Logger from './Logger'
 
-class CLIInterface extends File {
-  set(key: string, value: any) {
+export default class CLIInterface extends CLI {
+  async set(key: string, value: any) {
     switch (key) {
       case 'targets':
-        this.handle(value)
+        await this.handle(value)
         break
 
       case 'device':
         if (!this.data.device.uid && value.name) {
-          this.register(value)
+          await this.register(value)
           Logger.info('REGISTER ' + value.name)
           this.readDevice()
         } else if (value === 'DELETE') {
-          this.delete()
+          await this.delete(this.data.device)
           Logger.info('DELETE ' + this.data.device.name)
           this.readDevice()
         }
@@ -22,7 +22,7 @@ class CLIInterface extends File {
     }
   }
 
-  handle(targets: ITarget[]) {
+  async handle(targets: ITarget[]) {
     const { length } = this.data.targets
 
     if (targets.length === length) {
@@ -31,11 +31,11 @@ class CLIInterface extends File {
       Logger.info('UPDATE', targets)
     } else if (targets.length < length) {
       const target = this.diff(targets, this.data.targets)
-      if (target) this.removeTarget(target)
+      if (target) await this.removeTarget(target)
       Logger.info('DELETE', target)
     } else if (targets.length > length) {
       const target = this.diff(this.data.targets, targets)
-      if (target) this.addTarget(target)
+      if (target) await this.addTarget(target)
       Logger.info('ADD', target)
     }
 
@@ -50,5 +50,3 @@ class CLIInterface extends File {
     return result
   }
 }
-
-export default new CLIInterface()

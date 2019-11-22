@@ -18,6 +18,7 @@ Logger.info('Desktop starting up!')
 
 process.on('uncaughtException', err => {
   AirBrake.notify(err)
+  d('Caught exception', err)
   Logger.warn('Caught exception: ', err)
 })
 

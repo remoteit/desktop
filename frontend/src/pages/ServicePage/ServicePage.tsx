@@ -12,6 +12,7 @@ import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../components/DisconnectButton'
 import { ConnectButton } from '../../components/ConnectButton'
 import { LaunchButton } from '../../components/LaunchButton'
+import { ForgetButton } from '../../components/ForgetButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../components/CopyButton'
 import { Container } from '../../components/Container'
@@ -25,7 +26,21 @@ export const ServicePage: React.FC = () => {
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const css = useStyles()
 
-  if (!service || !device) return null
+  if (!service || !device)
+    return (
+      <>
+        <Typography variant="subtitle1">
+          <ConnectionStateIcon connection={connection} size="lg" />
+          <span className={css.title}>No device found.</span>
+          <ForgetButton connection={connection} />
+        </Typography>
+        <section>
+          {connection && (
+            <Typography variant="caption">Device may have been removed ({connection.deviceID})</Typography>
+          )}
+        </section>
+      </>
+    )
 
   return (
     <Container
@@ -35,6 +50,7 @@ export const ServicePage: React.FC = () => {
           <Typography variant="subtitle1">
             <ConnectionStateIcon connection={connection} service={service} size="lg" />
             <span className={css.title}>{service.name}</span>
+            <ForgetButton connection={connection} />
             <LaunchButton connection={connection} />
             <CopyButton connection={connection} />
             <DisconnectButton connection={connection} />

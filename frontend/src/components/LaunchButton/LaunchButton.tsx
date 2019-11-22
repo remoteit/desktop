@@ -1,5 +1,4 @@
 import React from 'react'
-import BackendAdaptor from '../../services/BackendAdapter'
 import { hostName } from '../../helpers/nameHelper'
 import { IService } from 'remote.it'
 import { IconButton, Tooltip } from '@material-ui/core'

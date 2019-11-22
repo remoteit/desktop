@@ -1,25 +1,27 @@
-import ConnectdInstaller from './ConnectdInstaller'
 import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import debug from 'debug'
+import ConnectdInstaller from './ConnectdInstaller'
 import DemuxerInstaller from './DemuxerInstaller'
+import MuxerInstaller from './MuxerInstaller'
+import CLIInterface from './CLIInterface'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
 import JSONFile from './JSONFile'
 import Logger from './Logger'
-import MuxerInstaller from './MuxerInstaller'
 import path from 'path'
+import LAN from './LAN'
+import User from './User'
 import Server from './Server'
 import Tracker from './Tracker'
-import cli from './CLIInterface'
 import EventBus from './EventBus'
-import Installer from './Installer'
-import User from './User'
 
 const d = debug('r3:backend:Application')
 
 export default class Application {
   public pool: ConnectionPool
+  public cli: CLIInterface
+  public lan: LAN
   private connectionsFile: JSONFile<IConnection[]>
   private userFile: JSONFile<UserCredentials>
   private window: ElectronApp
@@ -30,6 +32,8 @@ export default class Application {
     this.handleExit()
 
     this.window = new ElectronApp()
+    this.cli = new CLIInterface()
+    this.lan = new LAN()
 
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.remoteitDirectory, 'connections.json'))
     this.userFile = new JSONFile<UserCredentials>(path.join(Environment.remoteitDirectory, 'user.json'))
@@ -37,18 +41,16 @@ export default class Application {
     const userCredentials = this.userFile.read()
 
     d('Reading user credentials:', { user: userCredentials })
-    Logger.info('Setting user:', userCredentials)
+    Logger.info('Setting user:', { userCredentials })
 
-    // Start pool and load connections from filestystem
+    // Start pool and load connections from filesystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [], userCredentials)
 
     // Start server and listen to events.
     const server = new Server()
 
     // create the event controller
-    new Controller(server.io, this.pool, userCredentials)
-
-    // if (user) this.signIn(user) -- NEED?
+    new Controller(server.io, this.cli, this.lan, this.pool, userCredentials)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.ready, this.handleServerReady)
@@ -63,7 +65,6 @@ export default class Application {
 
   private handleConnection = () => {
     d('Server connected')
-    cli.read()
 
     Logger.info('Checking install status:', {
       connectdInstalled: ConnectdInstaller.isInstalled,
@@ -71,27 +72,9 @@ export default class Application {
       demuxerInstalled: DemuxerInstaller.isInstalled,
     })
 
-    ConnectdInstaller.isInstalled
-      ? EventBus.emit(Installer.EVENTS.installed, {
-          path: ConnectdInstaller.binaryPath,
-          version: ConnectdInstaller.version,
-          name: ConnectdInstaller.name,
-        } as InstallationInfo)
-      : EventBus.emit(Installer.EVENTS.notInstalled)
-    MuxerInstaller.isInstalled
-      ? EventBus.emit(Installer.EVENTS.installed, {
-          path: MuxerInstaller.binaryPath,
-          version: MuxerInstaller.version,
-          name: MuxerInstaller.name,
-        } as InstallationInfo)
-      : EventBus.emit(Installer.EVENTS.notInstalled)
-    DemuxerInstaller.isInstalled
-      ? EventBus.emit(Installer.EVENTS.installed, {
-          path: DemuxerInstaller.binaryPath,
-          version: DemuxerInstaller.version,
-          name: DemuxerInstaller.name,
-        } as InstallationInfo)
-      : EventBus.emit(Installer.EVENTS.notInstalled)
+    ConnectdInstaller.check()
+    MuxerInstaller.check()
+    DemuxerInstaller.check()
   }
 
   private handleExit = () => {
@@ -110,8 +93,9 @@ export default class Application {
     process.on('uncaughtException', this.handleException)
   }
 
-  private handleException = async () => {
-    await this.pool.stopAll()
+  private handleException = async (error: any) => {
+    Logger.warn('PROCESS EXCEPTION', error)
+    if (this.pool) await this.pool.stopAll()
     process.exit()
   }
 
@@ -121,7 +105,7 @@ export default class Application {
    */
   private handlePoolUpdated = (pool: IConnection[]) => {
     d('Pool updated:', pool)
-    Logger.info('Pool updated', { pool })
+    // Logger.info('Pool updated', { pool })
     this.connectionsFile.write(pool)
   }
 
@@ -142,13 +126,6 @@ export default class Application {
     d('User signed in:', user.username)
     Logger.info('User signed in', { username: user.username })
 
-    // cli add user data - @DANA can this be shared?
-    cli.write('user', {
-      username: user.username,
-      authHash: user.authHash,
-    })
-
-    // Save the user to the user JSON file.
     this.userFile.write({
       username: user.username,
       authHash: user.authHash,
@@ -166,14 +143,12 @@ export default class Application {
     // Stop all connections cleanly
     await this.pool.reset()
 
-    // cli clear user data
-    cli.write('user', {})
-
     // Clear out the authenticated user in the connection
     // pool so future connections don't start.
     this.pool.user = undefined
 
     // Remove files from system.
+    this.cli.signOut()
     this.userFile.remove()
     this.connectionsFile.remove()
   }

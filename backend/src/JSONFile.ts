@@ -58,13 +58,13 @@ export default class JSONFile<T> {
   /**
    * Create a new file.
    */
-  write = (content: T) => {
+  write = (content?: T) => {
     d('Writing file', { location: this.location, content })
 
     // Make sure containing folder exists.
     fs.mkdirSync(path.parse(this.location).dir, { recursive: true })
 
     // Write the contents as a indented/formatted JSON value.
-    fs.writeFileSync(this.location, JSON.stringify(content, null, 2))
+    fs.writeFileSync(this.location, JSON.stringify(content || {}, null, 2))
   }
 }

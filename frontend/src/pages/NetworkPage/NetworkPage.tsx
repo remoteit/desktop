@@ -43,7 +43,7 @@ export const NetworkPage: React.FC = () => {
 
 const useStyles = makeStyles({
   oob: {
-    top: styles.spacing.lg,
+    top: styles.spacing.sm,
     right: styles.spacing.lg,
     position: 'absolute',
   },

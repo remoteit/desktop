@@ -6,8 +6,8 @@ import { DataDisplay } from '../DataDisplay'
 import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
-import { makeStyles } from '@material-ui/styles'
-import { spacing, colors } from '../../styling'
+// import { makeStyles } from '@material-ui/styles'
+// import { spacing, colors } from '../../styling'
 
 type Props = {
   connection: IConnection
@@ -16,11 +16,7 @@ type Props = {
 }
 
 export const ServiceConnected: React.FC<Props> = ({ connection, service, device }) => {
-  const css = useStyles()
-
-  // console.log('CONNECTION ->>', connection)
-  // console.log('SERVICE ->>', service)
-  // console.log('DEVICE ->>', device)
+  // const css = useStyles()
 
   return (
     <Columns>
@@ -41,10 +37,10 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service, device 
   )
 }
 
-const useStyles = makeStyles({
-  container: {
-    color: colors.primary,
-    // display: 'flex',
-    // flexDirection: 'row',
-  },
-})
+// const useStyles = makeStyles({
+//   container: {
+//     color: colors.primary,
+//     // display: 'flex',
+//     // flexDirection: 'row',
+//   },
+// })

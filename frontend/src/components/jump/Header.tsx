@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/styles'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Icon } from '../Icon'
-import { isElectron } from '../../services/Platform'
+import { isElectron, isWindows } from '../../services/Platform'
 import * as screenfull from 'screenfull'
 import styles from '../../styling'
 
@@ -22,6 +22,8 @@ const Component: React.FC<Props> = ({ user }) => {
     setFullscreen(!fullscreen)
     if (screenfull.isEnabled) screenfull.toggle()
   }
+
+  if (isWindows() && isElectron()) return null
 
   return (
     <div className={css.header}>

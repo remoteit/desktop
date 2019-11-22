@@ -1,12 +1,11 @@
 import Logger from './Logger'
-import { execFile } from 'child_process'
-import { SCRIPT_PATH } from './constants'
+import { application } from './index'
 import nm from 'netmask'
 import nw from 'network'
 
 const { Netmask } = nm
 
-class LAN {
+export default class LAN {
   data: IScanData = {}
   interfaces?: IInterface[]
   privateIP?: ipAddress = 'unknown'
@@ -62,7 +61,7 @@ class LAN {
     try {
       const ipMask = this.findNetmask(interfaceName)
       Logger.info('IPMASK:', { ipMask })
-      const result = await this.exec(ipMask)
+      const result = await application.cli.scan(ipMask)
       this.parse(interfaceName, result)
       Logger.info('SCAN complete', { data: this.data[interfaceName] })
     } catch (error) {
@@ -78,40 +77,24 @@ class LAN {
     return netmask.toString()
   }
 
-  exec(ipMask: string) {
-    return new Promise<string>((success, failure) => {
-      execFile(SCRIPT_PATH + 'scan.sh', [ipMask], (error, result) => {
-        if (error) {
-          Logger.error('*** ERROR *** EXEC scan', { error })
-          failure()
-        }
-        success(result.toString())
-      })
-    })
-  }
+  parse(interfaceName: string, json: IScanDataRaw[]) {
+    let data: IScan[] = []
+    let ports: [number, string][] = []
+    let item: IScanDataRaw
+    let next: IScanDataRaw
 
-  parse(interfaceName: string, stdout: string) {
-    const blocks = stdout.split('Nmap scan report for ')
-    const data: IScan[] = blocks.reduce((result: IScan[], block) => {
-      const lines = block.split('\n')
-      if (!lines[0]) return result
+    for (let i = 0; i < json.length; i++) {
+      item = json[i]
+      next = json[i + 1] || {}
 
-      const ip = lines[0].trim()
-      let ports: [number, string][] = []
+      ports.push([item.port, item.name])
 
-      for (let i = 2; i < lines.length; i++) {
-        const line = lines[i].split(/\s+/)
-        if (line[1] === 'open') {
-          // ip, port, type
-          ports.push([+line[0].split('/')[0], line[2]])
-        }
+      if (item.host !== next.host) {
+        data.push([item.host, ports])
+        ports = []
       }
+    }
 
-      if (ports.length) result.push([ip, ports])
-      return result
-    }, [])
     this.data[interfaceName] = { timestamp: Date.now(), data }
   }
 }
-
-export default new LAN()

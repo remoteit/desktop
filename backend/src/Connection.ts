@@ -54,7 +54,7 @@ export default class Connection extends EventEmitter {
     EventBus.emit(Connection.EVENTS.started, { connection: this.toJSON(), raw: 'Connection started' })
     Tracker.pageView(`/connections/${this.params.id}/start`)
     Tracker.event('connection', 'start', `connecting to service: ${this.params.id}`)
-    Logger.info('Starting connection: ' + JSON.stringify(this.toJSON()))
+    Logger.info('Starting connection: ', this.toJSON())
 
     const usernameBase64 = Buffer.from(this.username).toString('base64')
     const params = [
@@ -73,29 +73,35 @@ export default class Connection extends EventEmitter {
       '0', // Grace period
     ]
 
-    this.process = execFile(
-      ConnectdInstaller.binaryPath,
-      params,
-      {
-        maxBuffer: Infinity,
-      },
-      (error: Error | null, stdout: string | Buffer, stderr: string | Buffer) => {
-        let message = 'Unknown error'
-        if (error) message = error.message
-        if (stderr) message = stderr.toString()
-        Logger.error(message)
-        // EventBus.emit(EVENTS.error, {
-        //   error: message,
-        //   connection: this.toJSON(),
-        // })
-      }
-    )
+    try {
+      this.process = execFile(
+        ConnectdInstaller.binaryPath,
+        params,
+        {
+          maxBuffer: Infinity,
+        },
+        (error: Error | null, stdout: string | Buffer, stderr: string | Buffer) => {
+          let message = 'Unknown error'
+          if (error) message = error.message
+          if (stderr) message = stderr.toString()
+          Logger.error(message)
+          // EventBus.emit(EVENTS.error, {
+          //   error: message,
+          //   connection: this.toJSON(),
+          // })
+        }
+      )
+    } catch (e) {
+      d('connectd error', e)
+      Logger.error('connectd error', e)
+    }
 
     Logger.info('connectd ' + params.join(' '))
 
     if (!this.process || !this.process.stdout || !this.process.stderr) {
+      // throw new Error('Could not start connectd process!')
       Logger.error('Could not start connectd process!')
-      throw new Error('Could not start connectd process!')
+      return
     }
 
     this.process.stdout.on('data', this.handleStdOut)
@@ -153,7 +159,7 @@ export default class Connection extends EventEmitter {
   }
 
   private handleError = (error: Error) => {
-    Logger.error('connectd error: ' + error.message)
+    Logger.error('connectd error: ', error)
     Tracker.event('connection', 'error', `connection error: ${this.params.id}`)
     EventBus.emit('error', { error: error.message })
     this.params.error = error

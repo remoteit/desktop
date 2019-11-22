@@ -145,6 +145,13 @@ declare global {
     }
   }
 
+  export type IScanDataRaw = {
+    host: string
+    name: string
+    port: number
+    protocol: string
+  }
+
   export type IInterface = { [key: string]: any }
 
   export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
