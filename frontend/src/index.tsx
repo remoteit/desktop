@@ -13,68 +13,46 @@ import './styling/index.css'
 import './styling/global.css'
 import './services/BackendAdapter'
 
+const gutters = 28
 const theme = createMuiTheme({
   palette: {
     primary: { main: colors.primary },
     secondary: { main: colors.secondary },
     error: { main: colors.danger },
   },
-  typography: {
-    fontFamily: 'Roboto, san-serif',
-  },
+  typography: { fontFamily: 'Roboto, san-serif' },
   overrides: {
-    MuiListItemText: {
-      secondary: {
-        fontSize: fontSizes.xs,
-      },
-    },
-    MuiFormHelperText: {
-      root: { fontSize: 10 },
-    },
+    MuiListItemText: { secondary: { fontSize: fontSizes.xs } },
+    MuiDivider: { root: { backgroundColor: colors.grayLighter } },
+    MuiFormHelperText: { root: { fontSize: 10 } },
     MuiButton: {
       root: {
         backgroundColor: colors.grayLightest,
         color: colors.grayDark,
         marginRight: spacing.md,
         padding: `${spacing.sm}px ${spacing.md}px`,
-        '& .MuiSvgIcon-root': {
-          marginLeft: spacing.sm,
-        },
+        '& .MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
-      text: {
-        padding: `${spacing.sm}px ${spacing.md}px`,
-      },
+      text: { padding: `${spacing.sm}px ${spacing.md}px` },
     },
     MuiListItem: {
+      // gutters: { paddingLeft: gutters, paddingRight: gutters },
       button: {
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
-        '&:hover, &:focus': {
-          backgroundColor: colors.grayLightest,
-        },
+        '&:hover, &:focus': { backgroundColor: colors.grayLightest },
       },
       container: {
         '& .MuiListItemSecondaryAction-root': {},
         '&:hover, &:focus': {
-          '& .MuiListItemSecondaryAction-root': {
-            display: 'block',
-          },
-          '& .hoverHide': {
-            display: 'none',
-          },
+          '& .MuiListItemSecondaryAction-root': { display: 'block' },
+          '& .hoverHide': { display: 'none' },
         },
       },
     },
-    MuiListItemIcon: {
-      root: {
-        justifyContent: 'center',
-      },
-    },
-    MuiCollapse: {
-      wrapper: {
-        padding: spacing.md,
-      },
-    },
+    MuiListItemSecondaryAction: { root: { right: gutters } },
+    MuiListItemIcon: { root: { justifyContent: 'center' } },
+    MuiCollapse: { wrapper: { padding: spacing.md } },
     MuiInput: {
       root: {
         '&.Mui-disabled': {
@@ -82,16 +60,10 @@ const theme = createMuiTheme({
           '& svg': { display: 'none' },
         },
       },
-      underline: {
-        '&.Mui-disabled:before': {
-          borderColor: colors.grayLight,
-        },
-      },
+      underline: { '&.Mui-disabled:before': { borderColor: colors.grayLight } },
     },
     MuiLink: {
-      root: {
-        padding: `${spacing.xs}px ${spacing.sm}px`,
-      },
+      root: { padding: `${spacing.xs}px ${spacing.sm}px` },
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.grayLightest,
@@ -102,16 +74,27 @@ const theme = createMuiTheme({
       },
     },
     MuiTypography: {
-      subtitle1: {
+      h1: {
+        fontSize: '1rem',
+        fontWeight: 400,
         display: 'flex',
         alignItems: 'center',
-        padding: `${spacing.xxs}px 28px`,
+        padding: `${spacing.xxs}px ${gutters}px`,
         borderBottom: `1px solid ${colors.grayLighter}`,
         minHeight: 50,
       },
-      subtitle2: {
+      h2: {
         fontSize: '1rem',
         fontWeight: 400,
+      },
+      subtitle1: {
+        fontSize: fontSizes.sm,
+        fontFamily: 'Roboto Mono',
+        color: colors.grayDarker,
+        padding: `${spacing.xl}px ${gutters}px ${spacing.xs}px`,
+        textTransform: 'uppercase',
+        letterSpacing: 3,
+        fontWeight: 500,
       },
       caption: {
         fontSize: '11px',

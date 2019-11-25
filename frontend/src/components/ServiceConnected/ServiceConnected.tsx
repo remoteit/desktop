@@ -20,7 +20,7 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service, device 
 
   return (
     <Columns>
-      <Typography color="primary" variant="subtitle2">
+      <Typography color="primary" variant="h2">
         Connected
       </Typography>
       <DataDisplay

@@ -46,7 +46,7 @@ export const SettingsPage = connect(
 
     installed = false
     return (
-      <Container header={<Typography variant="subtitle1">Settings</Typography>}>
+      <Container header={<Typography variant="h1">Settings</Typography>}>
         <List>
           <SettingsListItem
             label="Send feedback"

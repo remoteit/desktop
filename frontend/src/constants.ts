@@ -16,7 +16,7 @@ export const REGEX_PORT_SAFE = /[^0-9]+/g
 export const REGEX_NUMERIC_VALUE = /=(\d+)/
 export const DEFAULT_TARGET: ITarget | IDevice = {
   hardwareID: '',
-  hostname: '',
+  hostname: '127.0.0.1',
   name: '',
   port: 0,
   secret: '',

@@ -6,7 +6,7 @@ import { Page } from '../Page'
 export function DebugPage() {
   return (
     <Page>
-      <Typography variant="subtitle1">Debug Log</Typography>
+      <Typography variant="h1">Debug Log</Typography>
       <DebugLogController />
     </Page>
   )

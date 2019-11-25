@@ -41,7 +41,7 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, priva
   }
 
   return (
-    <Container header={<Typography variant="subtitle1">Network Scan</Typography>}>
+    <Container header={<Typography variant="h1">Network Scan</Typography>}>
       <section className={css.controls}>
         <TextField
           select

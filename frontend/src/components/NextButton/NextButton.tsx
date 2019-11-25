@@ -14,8 +14,8 @@ export const NextButton: React.FC = () => {
 
 const useStyles = makeStyles({
   styles: {
-    paddingLeft: spacing.sm,
-    paddingRight: spacing.sm,
+    paddingLeft: spacing.md,
+    paddingRight: spacing.md,
     position: 'absolute',
     right: spacing.md,
   },

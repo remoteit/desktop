@@ -1,7 +1,7 @@
 import React from 'react'
 import { List, ListItem } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { colors, fontSizes } from '../../styling'
+import { colors, fontSizes, spacing } from '../../styling'
 
 type Data = { label: string; value?: any }
 
@@ -22,12 +22,13 @@ export const DataDisplay: React.FC<{ data: Data[] }> = ({ data }) => {
 
 const useStyles = makeStyles({
   item: {
-    padding: 0,
+    padding: `${spacing.xxs}px 0`,
     fontSize: fontSizes.sm,
-    letterSpacing: 0.2,
-    lineHeight: '2em',
+    fontFamily: 'Roboto Mono',
+    letterSpacing: 0,
     color: colors.grayDarker,
     '&>span': {
+      fontFamily: 'Roboto',
       color: colors.gray,
       width: 100,
     },

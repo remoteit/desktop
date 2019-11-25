@@ -2,7 +2,7 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { Typography } from '@material-ui/core'
+import { Typography, Divider } from '@material-ui/core'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { DataDisplay } from '../../components/DataDisplay'
@@ -29,22 +29,25 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
     return result
   }, {})
 
-  if (!device) return <Typography variant="subtitle1">No device found.</Typography>
+  if (!device) return <Typography variant="h1">No device found.</Typography>
 
   return (
     <Container
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="subtitle1">
+          <Typography variant="h1">
             <ConnectionStateIcon state={device.state} connection={activeConnection} size="lg" />
             <span className={css.title}>{device.name}</span>
           </Typography>
         </>
       }
     >
+      <Typography variant="subtitle1">Services</Typography>
       <ServiceList services={device.services} connections={serviceConnections} />
-      <Columns>
+      <Divider />
+      <Typography variant="subtitle1">Device details</Typography>
+      <Columns count={1}>
         <DataDisplay
           data={[
             { label: 'Device ID', value: device.id },

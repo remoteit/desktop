@@ -32,7 +32,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
   }, [device, deleting, registering])
 
   return (
-    <Container header={<Typography variant="subtitle1">Device</Typography>}>
+    <Container header={<Typography variant="h1">Local Target Device</Typography>}>
       <section className={css.device}>
         <div className={css.name}>
           <TextField
@@ -88,7 +88,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
         </Button>
       </section>
 
-      <Typography variant="subtitle1">Services</Typography>
+      <Typography variant="h1">Target Services</Typography>
       <section>
         {registered ? (
           <Targets device={device} {...props} />

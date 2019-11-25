@@ -76,7 +76,7 @@ export const LanSharePage: React.FC = () => {
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="subtitle1">Local Network Sharing</Typography>
+          <Typography variant="h1">Local Network Sharing</Typography>
         </>
       }
     >
@@ -97,7 +97,7 @@ export const LanSharePage: React.FC = () => {
 
       <div className={css.indent}>
         <Typography variant="caption">Your local IP address</Typography>
-        <Typography variant="subtitle2">{privateIP}</Typography>
+        <Typography variant="h2">{privateIP}</Typography>
         <div className={css.note}>
           Allow users to connect to your remote device through your IP address using a custom port.
         </div>
@@ -138,8 +138,7 @@ export const LanSharePage: React.FC = () => {
 
       <div className={css.indent}>
         <Button onClick={save} variant="contained" color="primary">
-          Done
-          <Icon name="check" color="white" weight="regular" inline />
+          Save
         </Button>
       </div>
     </Container>

@@ -1,15 +1,16 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { ServiceSettings } from '../../components/ServiceSettings'
-import { ServiceConnected } from '../../components/ServiceConnected'
 import { useSelector } from 'react-redux'
+import { PortSetting } from '../../components/PortSetting'
 import { findService } from '../../models/devices'
-import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { Typography } from '@material-ui/core'
+import { ServiceConnected } from '../../components/ServiceConnected'
+import { ApplicationState } from '../../store'
+import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../components/DisconnectButton'
+import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectButton } from '../../components/ConnectButton'
 import { LaunchButton } from '../../components/LaunchButton'
 import { ForgetButton } from '../../components/ForgetButton'
@@ -29,7 +30,7 @@ export const ServicePage: React.FC = () => {
   if (!service || !device)
     return (
       <>
-        <Typography variant="subtitle1">
+        <Typography variant="h1">
           <ConnectionStateIcon connection={connection} size="lg" />
           <span className={css.title}>No device found.</span>
           <ForgetButton connection={connection} />
@@ -47,7 +48,7 @@ export const ServicePage: React.FC = () => {
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="subtitle1">
+          <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} size="lg" />
             <span className={css.title}>{service.name}</span>
             <ForgetButton connection={connection} />
@@ -61,9 +62,17 @@ export const ServicePage: React.FC = () => {
     >
       {connection && <ConnectionErrorMessage connection={connection} />}
       {connection && connection.active && device && (
-        <ServiceConnected connection={connection} device={device} service={service} />
+        <>
+          <ServiceConnected connection={connection} device={device} service={service} />
+          <Divider />
+        </>
       )}
-      <ServiceSettings connection={connection} service={service} />
+      <LanShareSelect connection={connection} service={service} />
+      <Divider />
+      <List>
+        <PortSetting connection={connection} service={service} />
+      </List>
+      <Divider />
       <Columns>
         <DataDisplay
           data={[

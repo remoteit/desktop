@@ -1,36 +1,40 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { Icon } from '../Icon'
-import { NextButton } from '../NextButton'
+import { IService } from 'remote.it'
 import { makeStyles } from '@material-ui/styles'
-import { ListItem, ListItemIcon, Typography } from '@material-ui/core'
+import { useHistory, useLocation } from 'react-router-dom'
+import { ListItem, ListItemIcon, Typography, List } from '@material-ui/core'
 import { lanShareRestriction } from '../../helpers/lanSharing'
 import { spacing, colors } from '../../styling'
+import { NextButton } from '../NextButton'
 import { IP_OPEN } from '../../constants'
+import { Icon } from '../Icon'
 
 export type Props = {
-  onClick?: () => any
-  serviceID?: string
-  disabled?: boolean
+  service: IService
+  connection?: IConnection
 }
 
-export const LanShareSelect: React.FC<Props> = ({ onClick, disabled, serviceID }) => {
+export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   const css = useStyles()
-  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
+  const history = useHistory()
+  const location = useLocation()
   const lanShare: boolean = !!(connection && connection.host === IP_OPEN)
+  const disabled: boolean = (connection && connection.active) || service.state !== 'active'
+  const onClick = () => history.push(location.pathname + '/lan')
 
   return (
-    <ListItem button onClick={onClick} disabled={disabled}>
-      <ListItemIcon>
-        <Icon name="network-wired" color={lanShare ? 'primary' : 'gray'} size="lg" />
-      </ListItemIcon>
-      <span className={css.text}>
-        <Typography variant="caption">Local Network Sharing</Typography>
-        <Typography variant="subtitle2">{lanShareRestriction(connection)}</Typography>
-      </span>
-      <NextButton />
-    </ListItem>
+    <List>
+      <ListItem button onClick={onClick} disabled={disabled}>
+        <ListItemIcon>
+          <Icon name="network-wired" color={lanShare ? 'primary' : 'gray'} size="lg" />
+        </ListItemIcon>
+        <span className={css.text}>
+          <Typography variant="caption">Local Network Sharing</Typography>
+          <Typography variant="h2">{lanShareRestriction(connection)}</Typography>
+        </span>
+        <NextButton />
+      </ListItem>
+    </List>
   )
 }
 
