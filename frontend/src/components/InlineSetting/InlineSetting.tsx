@@ -61,6 +61,6 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
 }
 
 const useStyles = makeStyles({
-  form: { display: 'flex' },
+  form: { display: 'flex', width: '100%', marginRight: 120 },
   text: { flexGrow: 1 },
 })

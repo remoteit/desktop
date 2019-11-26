@@ -24,6 +24,7 @@ export const NameSetting: React.FC<{ service: IService; connection?: IConnection
     >
       <TextField
         autoFocus
+        fullWidth
         label="Connection Name"
         value={name}
         margin="dense"
