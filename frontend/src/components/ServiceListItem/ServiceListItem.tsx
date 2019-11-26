@@ -1,18 +1,19 @@
 import React from 'react'
 import { IService } from 'remote.it'
 import { hostName } from '../../helpers/nameHelper'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { newConnection } from '../../helpers/connectionHelper'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
+import { ListItemLocation } from '../ListItemLocation'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
-import { LaunchButton } from '../LaunchButton'
+import { BrowserButton } from '../BrowserButton'
 import { CopyButton } from '../CopyButton'
-import { NextButton } from '../NextButton'
 import { Throughput } from '../Throughput'
 import { makeStyles } from '@material-ui/styles'
+import { SSHButton } from '../SSHButton'
 
 export interface ServiceListItemProps {
   connection?: IConnection
@@ -20,7 +21,6 @@ export interface ServiceListItemProps {
 }
 
 export function ServiceListItem({ connection, service }: ServiceListItemProps) {
-  const history = useHistory()
   const location = useLocation()
   const css = useStyles()
 
@@ -42,20 +42,20 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
 
   return (
     <>
-      <ListItem onClick={() => history.push(`${path}/${id}`)} button>
+      <ListItemLocation pathname={`${path}/${id}`}>
         <ListItemIcon>
           <ConnectionStateIcon connection={connection} service={service} size="lg" />
         </ListItemIcon>
         <ListItemText primary={name} secondary={connection && hostName(connection)} />
-        <NextButton />
         {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
-          <LaunchButton connection={connection} />
+          <BrowserButton connection={connection} />
+          <SSHButton connection={connection} service={service} />
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
           <ConnectButton connection={connection} service={service} />
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemLocation>
       {connection && <ConnectionErrorMessage connection={connection} />}
     </>
   )

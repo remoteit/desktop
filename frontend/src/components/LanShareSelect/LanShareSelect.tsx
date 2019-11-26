@@ -1,11 +1,11 @@
 import React from 'react'
 import { IService } from 'remote.it'
 import { makeStyles } from '@material-ui/styles'
-import { useHistory, useLocation } from 'react-router-dom'
-import { ListItem, ListItemIcon, Typography, List } from '@material-ui/core'
+import { useLocation } from 'react-router-dom'
+import { ListItemIcon, Typography } from '@material-ui/core'
 import { lanShareRestriction } from '../../helpers/lanSharing'
+import { ListItemLocation } from '../ListItemLocation'
 import { spacing, colors } from '../../styling'
-import { NextButton } from '../NextButton'
 import { IP_OPEN } from '../../constants'
 import { Icon } from '../Icon'
 
@@ -16,25 +16,20 @@ export type Props = {
 
 export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   const css = useStyles()
-  const history = useHistory()
   const location = useLocation()
   const lanShare: boolean = !!(connection && connection.host === IP_OPEN)
   const disabled: boolean = (connection && connection.active) || service.state !== 'active'
-  const onClick = () => history.push(location.pathname + '/lan')
 
   return (
-    <List>
-      <ListItem button onClick={onClick} disabled={disabled}>
-        <ListItemIcon>
-          <Icon name="network-wired" color={lanShare ? 'primary' : 'gray'} size="lg" />
-        </ListItemIcon>
-        <span className={css.text}>
-          <Typography variant="caption">Local Network Sharing</Typography>
-          <Typography variant="h2">{lanShareRestriction(connection)}</Typography>
-        </span>
-        <NextButton />
-      </ListItem>
-    </List>
+    <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'}>
+      <ListItemIcon>
+        <Icon name="network-wired" color={lanShare ? 'primary' : 'gray'} size="lg" />
+      </ListItemIcon>
+      <span className={css.text}>
+        <Typography variant="caption">Local Network Sharing</Typography>
+        <Typography variant="h2">{lanShareRestriction(connection)}</Typography>
+      </span>
+    </ListItemLocation>
   )
 }
 

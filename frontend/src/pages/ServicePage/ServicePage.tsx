@@ -2,8 +2,12 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { PortSetting } from '../../components/PortSetting'
+import { HostSetting } from '../../components/HostSetting'
+import { NameSetting } from '../../components/NameSetting'
 import { findService } from '../../models/devices'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { UsernameSetting } from '../../components/UsernameSetting'
+import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { ApplicationState } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
@@ -12,10 +16,11 @@ import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../components/DisconnectButton'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectButton } from '../../components/ConnectButton'
-import { LaunchButton } from '../../components/LaunchButton'
+import { BrowserButton } from '../../components/BrowserButton'
 import { ForgetButton } from '../../components/ForgetButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../components/CopyButton'
+import { SSHButton } from '../../components/SSHButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { makeStyles } from '@material-ui/styles'
@@ -52,7 +57,8 @@ export const ServicePage: React.FC = () => {
             <ConnectionStateIcon connection={connection} service={service} size="lg" />
             <span className={css.title}>{service.name}</span>
             <ForgetButton connection={connection} />
-            <LaunchButton connection={connection} />
+            <BrowserButton connection={connection} />
+            <SSHButton connection={connection} service={service} />
             <CopyButton connection={connection} />
             <DisconnectButton connection={connection} />
             <ConnectButton connection={connection} service={service} />
@@ -67,10 +73,19 @@ export const ServicePage: React.FC = () => {
           <Divider />
         </>
       )}
-      <LanShareSelect connection={connection} service={service} />
+      <List>
+        <NameSetting connection={connection} service={service} />
+        <PortSetting connection={connection} service={service} />
+        <HostSetting connection={connection} service={service} />
+        <UsernameSetting connection={connection} service={service} />
+      </List>
       <Divider />
       <List>
-        <PortSetting connection={connection} service={service} />
+        <AutoStartSetting connection={connection} service={service} />
+      </List>
+      <Divider />
+      <List>
+        <LanShareSelect connection={connection} service={service} />
       </List>
       <Divider />
       <Columns>

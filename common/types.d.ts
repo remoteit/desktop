@@ -97,6 +97,7 @@ declare global {
     restriction?: ipAddress // Restriction IP address
     autoStart?: boolean
     connecting?: boolean
+    username?: string // support for launching where username could be saved
     createdTime?: number // unix timestamp track for garbage cleanup
     startTime?: number // unix timestamp connection start time
     endTime?: number // unix timestamp connection close time

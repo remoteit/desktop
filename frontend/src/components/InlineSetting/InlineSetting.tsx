@@ -18,11 +18,9 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
 
   return (
     <ListItem>
-      {icon && (
-        <ListItemIcon>
-          <Icon name={icon} color="gray" size="lg" />
-        </ListItemIcon>
-      )}
+      <ListItemIcon>
+        <Icon name={icon} color="gray" size="lg" />
+      </ListItemIcon>
       {edit ? (
         <form
           className={css.form}
@@ -49,7 +47,7 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
         <>
           <span className={css.text}>
             <Typography variant="caption">{label}</Typography>
-            <Typography variant="h2">{value}</Typography>
+            <Typography variant="h2">{value || '–'}</Typography>
           </span>
           {!disabled && (
             <ListItemSecondaryAction>

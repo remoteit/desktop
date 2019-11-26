@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import moment from 'moment'
-import { CopyButton } from '../CopyButton'
 import { Icon } from '../Icon'
 import { Tooltip } from '@material-ui/core'
 import { Color } from '../../styling'
@@ -51,9 +50,7 @@ export function DebugLogItem({ log }: Props) {
       </div>
       {data && opened && (
         <div className="mt-md">
-          <div className="fr mt-sm mr-sm">
-            <CopyButton text={data} />
-          </div>
+          <div className="fr mt-sm mr-sm"></div>
           <pre className="ff-mono txt-sm p-md bg-gray-lightest secondary">{data}</pre>
         </div>
       )}

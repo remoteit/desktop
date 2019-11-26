@@ -1,33 +1,29 @@
 import React from 'react'
 import { IconButton, Tooltip } from '@material-ui/core'
-import { Icon } from '../Icon'
 import { useClipboard } from 'use-clipboard-copy'
-import { FontSize, Color } from '../../styling'
+import { hostName } from '../../helpers/nameHelper'
+import { Icon } from '../Icon'
 
 export interface CopyButtonProps {
   connection?: IConnection
-  color?: Color
-  size?: FontSize
-  text?: string
-  title?: string
-  [key: string]: any
 }
 
-export function CopyButton({ connection, color, size = 'md', text, title = 'Copy', ...props }: CopyButtonProps) {
+export const CopyButton: React.FC<CopyButtonProps> = ({ connection, ...props }) => {
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  if (connection) {
-    title = 'Copy launch URL'
-    text = connection.port ? `localhost:${connection.port}` : text
-  }
-  if (!text) return null
+
+  if (!connection || !connection.active) return null
+
+  let title = 'Copy launch URL'
+  let value = `${hostName(connection)}:${connection.port}`
+
   return (
     <span {...props}>
       <Tooltip title={title}>
         <IconButton onClick={clipboard.copy}>
-          <Icon name="clipboard" color={clipboard.copied ? 'success' : color} size={size} fixedWidth />
+          <Icon name="clipboard" color={clipboard.copied ? 'success' : undefined} size="md" fixedWidth />
         </IconButton>
       </Tooltip>
-      <input type="hidden" className="dn" ref={clipboard.target} value={text} />
+      <input type="hidden" style={{ display: 'none' }} ref={clipboard.target} value={value} />
     </span>
   )
 }

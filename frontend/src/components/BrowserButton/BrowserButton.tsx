@@ -10,7 +10,7 @@ type Props = {
   service?: IService
 }
 
-export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
+export const BrowserButton: React.FC<Props> = ({ connection, service }) => {
   const css = useStyles()
 
   if (!connection || !connection.active) return null

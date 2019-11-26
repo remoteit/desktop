@@ -55,7 +55,7 @@ export const SettingsPage = connect(
               (window.location.href = encodeURI('mailto:support@remote.it?subject=Desktop Application Feedback'))
             }
           />
-          <SettingsListItem label="Open at login" icon="rocket" value={openOnLogin} onClick={toggleOpenOnLogin} />
+          <SettingsListItem label="Open at login" icon="power-off" value={openOnLogin} onClick={toggleOpenOnLogin} />
           <SettingsListItem
             label="Search only device list"
             icon="search"

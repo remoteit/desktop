@@ -60,16 +60,17 @@ export const LanSharePage: React.FC = () => {
   if (!connection) return null
 
   const getSelectionValue = () => {
-    if (!enabled) return undefined
+    if (!enabled) return IP_OPEN
     const value = selected.value
     return typeof value === 'function' ? value() : value
   }
 
   const save = () => {
-    const value = getSelectionValue()
-    setConnection({ ...connection, host: enabled ? IP_OPEN : IP_PRIVATE, restriction: enabled ? value : IP_OPEN })
+    setConnection({ ...connection, host: enabled ? IP_OPEN : IP_PRIVATE, restriction: getSelectionValue() })
     history.goBack()
   }
+
+  console.log(connection.host !== IP_PRIVATE, '===', enabled, connection.restriction, '===', getSelectionValue())
 
   return (
     <Container
@@ -137,7 +138,12 @@ export const LanSharePage: React.FC = () => {
       </div>
 
       <div className={css.indent}>
-        <Button onClick={save} variant="contained" color="primary">
+        <Button
+          onClick={save}
+          variant="contained"
+          color="primary"
+          disabled={(connection.host !== IP_PRIVATE) === enabled && connection.restriction === getSelectionValue()}
+        >
           Save
         </Button>
       </div>
