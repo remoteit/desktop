@@ -1,6 +1,8 @@
 import { application } from '.'
 import { IUser } from 'remote.it'
 import { hostName } from './helpers/nameHelper'
+import { IP_PRIVATE } from './constants'
+import LAN from './LAN'
 import electron from 'electron'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
@@ -16,11 +18,13 @@ export default class TrayMenu {
   private tray: any
   private connections: any[]
   private user: any
+  private privateIP: ipAddress
 
   constructor(tray: electron.Tray) {
     this.tray = tray
     this.user = {}
     this.connections = []
+    this.privateIP = IP_PRIVATE
 
     if (Environment.isWindows) {
       this.tray.on('click', () => {
@@ -31,6 +35,7 @@ export default class TrayMenu {
     EventBus.on(User.EVENTS.signedIn, this.updateUser)
     EventBus.on(User.EVENTS.signedOut, this.updateUser)
     EventBus.on(ConnectionPool.EVENTS.updated, this.updateConnectionMenu)
+    EventBus.on(LAN.EVENTS.privateIP, privateIP => (this.privateIP = privateIP))
   }
 
   private updateUser = (user: IUser) => {
@@ -41,7 +46,7 @@ export default class TrayMenu {
   private updateConnectionMenu = (pool: IConnection[]) => {
     this.connections = pool.reduce((result: any[], connection) => {
       if (connection.startTime) {
-        const location = hostName(connection)
+        const location = hostName(connection, this.privateIP)
         result.push({
           label: connection.name,
           icon: connection.pid ? iconConnected : iconOnline,

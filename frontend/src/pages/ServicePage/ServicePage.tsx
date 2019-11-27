@@ -24,13 +24,12 @@ import { CopyButton } from '../../components/CopyButton'
 import { SSHButton } from '../../components/SSHButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
-import { makeStyles } from '@material-ui/styles'
 
 export const ServicePage: React.FC = () => {
   const { serviceID = '' } = useParams()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
-  const css = useStyles()
+
   let data: IDataDisplay[] = []
 
   if (!service || !device)
@@ -111,5 +110,3 @@ export const ServicePage: React.FC = () => {
     </Container>
   )
 }
-
-const useStyles = makeStyles({})

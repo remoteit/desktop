@@ -25,26 +25,10 @@ export interface ServiceListItemProps {
 export function ServiceListItem({ connection, service, nameType = 'service' }: ServiceListItemProps) {
   const location = useLocation()
   const css = useStyles()
-
-  let name: string = ''
-  let path = location.pathname
-  let id = ''
-
-  if (service) {
-    name = service.name
-    id = service.id
-  }
-
-  if (connection) {
-    if (nameType !== 'service') name = connection.name || name
-    id = connection.id
-  } else if (service) {
-    connection = newConnection(service)
-  }
-
+  const id = connection ? connection.id : service ? service.id : ''
   return (
     <>
-      <ListItemLocation pathname={`${path}/${id}`}>
+      <ListItemLocation pathname={`${location.pathname}/${id}`}>
         <ListItemIcon>
           <ConnectionStateIcon connection={connection} service={service} size="lg" />
         </ListItemIcon>

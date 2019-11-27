@@ -19,12 +19,12 @@ export const ServiceName: React.FC<Props> = ({ connection, service, inline }) =>
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const name = menu && menu[0] === '/connections' ? connection && connection.name : service && service.name
 
-  let color = undefined
+  let color: string | undefined = colors.grayDark
   let marginLeft = inline ? spacing.md : 0
 
   if (!service && !connection) return <span className={css.title}>No device found.</span>
-  if (service && service.state === 'active') color = colors.success
-  if (connection && connection.active) color = colors.primary
+  if (service && service.state === 'active') color = undefined
+  if (connection && connection.active) color = undefined
 
   return (
     <span className={css.title} style={{ color, marginLeft }}>

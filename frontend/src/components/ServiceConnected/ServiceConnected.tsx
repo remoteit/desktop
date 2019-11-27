@@ -14,17 +14,19 @@ export const ServiceConnected: React.FC<Props> = ({ connection }) => {
   // const css = useStyles()
 
   return (
-    <Columns count={1}>
-      <Typography color="primary" variant="h2">
+    <>
+      <Typography color="primary" variant="subtitle1">
         Connected
       </Typography>
-      <DataDisplay
-        data={[
-          { label: 'URL', value: hostName(connection) },
-          { label: 'Duration', value: <Duration startTime={connection.startTime} /> },
-          { label: 'Throughput', value: <Throughput connection={connection} /> },
-        ]}
-      />
-    </Columns>
+      <Columns count={1}>
+        <DataDisplay
+          data={[
+            { label: 'URL', value: hostName(connection) },
+            { label: 'Duration', value: <Duration startTime={connection.startTime} /> },
+            { label: 'Throughput', value: <Throughput connection={connection} /> },
+          ]}
+        />
+      </Columns>
+    </>
   )
 }

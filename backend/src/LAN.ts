@@ -1,5 +1,6 @@
 import Logger from './Logger'
-import { application } from './index'
+import CLIInterface from './CLIInterface'
+import EventBus from './EventBus'
 import nm from 'netmask'
 import nw from 'network'
 
@@ -9,9 +10,15 @@ export default class LAN {
   data: IScanData = {}
   interfaces?: IInterface[]
   privateIP?: ipAddress = 'unknown'
+  private cli: CLIInterface
 
-  constructor() {
+  static EVENTS = {
+    privateIP: 'privateIP',
+  }
+
+  constructor(cli: CLIInterface) {
     this.getInterfaces()
+    this.cli = cli
   }
 
   setPrivateIP() {
@@ -22,6 +29,7 @@ export default class LAN {
       })
     }
     Logger.info('PRIVATE IP', { ip: this.privateIP })
+    EventBus.emit(LAN.EVENTS.privateIP, this.privateIP)
   }
 
   async getInterfaces() {
@@ -61,7 +69,7 @@ export default class LAN {
     try {
       const ipMask = this.findNetmask(interfaceName)
       Logger.info('IPMASK:', { ipMask })
-      const result = await application.cli.scan(ipMask)
+      const result = await this.cli.scan(ipMask)
       this.parse(interfaceName, result)
       Logger.info('SCAN complete', { data: this.data[interfaceName] })
     } catch (error) {

@@ -4,7 +4,9 @@ import defaults from './helpers/defaults'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
-import { exec } from 'child_process'
+import User from './User'
+import EventBus from './EventBus'
+import { exec, execFile } from 'child_process'
 import { removeDeviceName } from './helpers/nameHelper'
 
 const d = debug('r3:backend:CLI')
@@ -18,10 +20,13 @@ export default class CLI {
 
   file: JSONFile<ConfigFile>
 
-  constructor() {
-    console.log('INIT CONFIG FILE', path.join(Environment.remoteitDirectory, 'config.json'))
+  constructor(user?: UserCredentials) {
+    Logger.info('CONFIG FILE', { path: path.join(Environment.remoteitDirectory, 'config.json') })
     this.file = new JSONFile<ConfigFile>(path.join(Environment.remoteitDirectory, 'config.json'))
     this.read()
+    if (!this.data.user) this.signIn(user)
+    EventBus.on(User.EVENTS.signedIn, this.signIn)
+    EventBus.on(User.EVENTS.signedOut, this.signOut)
   }
 
   read() {
@@ -41,7 +46,7 @@ export default class CLI {
 
   readUser() {
     const config = this.readFile()
-    this.data.user = config.auth
+    if (config.username && config.authHash) this.data.user = config.auth
   }
 
   readDevice() {
@@ -89,6 +94,11 @@ export default class CLI {
     await CLI.exec('tools install')
   }
 
+  async signIn(user?: UserCredentials) {
+    if (!user) return
+    await CLI.exec(`signin ${user.username} -a ${user.authHash}`)
+  }
+
   async signOut() {
     await CLI.exec('signout')
   }
@@ -102,15 +112,28 @@ export default class CLI {
     return new Promise<string>((success, failure) => {
       d('EXEC', `${Environment.execPath} ${command}`)
       Logger.info('EXEC', { exec: `${Environment.execPath} ${command}` })
-      exec(`${Environment.execPath} ${command}`, (error, stdout, stderr) => {
-        if (error) {
-          Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
-          d(`*** ERROR *** EXEC ${command}: `, error)
-          failure(error)
-        }
-        d('EXEC SUCCESS', stdout)
-        success(stdout)
-      })
+
+      if (Environment.isWindows) {
+        execFile(Environment.execPath, command.split(' '), (error, stdout) => {
+          if (error) {
+            Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
+            d(`*** ERROR *** EXEC ${command}: `, error)
+            failure(error)
+          }
+          d('EXEC SUCCESS', stdout)
+          success(stdout)
+        })
+      } else {
+        exec(`${Environment.execPath} ${command}`, (error, stdout) => {
+          if (error) {
+            Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
+            d(`*** ERROR *** EXEC ${command}: `, error)
+            failure(error)
+          }
+          d('EXEC SUCCESS', stdout)
+          success(stdout)
+        })
+      }
     })
   }
 }

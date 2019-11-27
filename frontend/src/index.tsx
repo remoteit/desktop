@@ -90,8 +90,9 @@ const theme = createMuiTheme({
       subtitle1: {
         fontSize: fontSizes.sm,
         fontFamily: 'Roboto Mono',
-        color: colors.grayDarker,
-        padding: `${spacing.xl}px ${gutters}px ${spacing.xs}px`,
+        color: colors.grayDark,
+        padding: `${spacing.lg}px ${gutters}px 0`,
+        marginLeft: spacing.xxs,
         textTransform: 'uppercase',
         letterSpacing: 3,
         fontWeight: 500,

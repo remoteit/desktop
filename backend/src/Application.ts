@@ -20,8 +20,6 @@ const d = debug('r3:backend:Application')
 
 export default class Application {
   public pool: ConnectionPool
-  public cli: CLIInterface
-  public lan: LAN
   private connectionsFile: JSONFile<IConnection[]>
   private userFile: JSONFile<UserCredentials>
   private window: ElectronApp
@@ -32,9 +30,6 @@ export default class Application {
     this.handleExit()
 
     this.window = new ElectronApp()
-    this.cli = new CLIInterface()
-    this.lan = new LAN()
-
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.remoteitDirectory, 'connections.json'))
     this.userFile = new JSONFile<UserCredentials>(path.join(Environment.remoteitDirectory, 'user.json'))
 
@@ -46,11 +41,17 @@ export default class Application {
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [], userCredentials)
 
+    // remoteit CLI init.
+    const cli = new CLIInterface(userCredentials)
+
     // Start server and listen to events.
     const server = new Server()
 
+    // Network utils
+    const lan = new LAN(cli)
+
     // create the event controller
-    new Controller(server.io, this.cli, this.lan, this.pool, userCredentials)
+    new Controller(server.io, cli, lan, this.pool, userCredentials)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.ready, this.handleServerReady)
@@ -148,7 +149,6 @@ export default class Application {
     this.pool.user = undefined
 
     // Remove files from system.
-    this.cli.signOut()
     this.userFile.remove()
     this.connectionsFile.remove()
   }
