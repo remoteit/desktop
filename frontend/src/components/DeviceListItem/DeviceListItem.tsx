@@ -1,5 +1,6 @@
 import React from 'react'
 import { IDevice } from 'remote.it'
+import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ListItemIcon, ListItemText } from '@material-ui/core'
@@ -14,9 +15,9 @@ export const DeviceListItem = ({ device, connections }: DeviceListItemProps) => 
   return (
     <ListItemLocation pathname={`/devices/${device.id}`}>
       <ListItemIcon>
-        <ConnectionStateIcon connection={activeConnection} service={device} size="lg" />
+        <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
       </ListItemIcon>
-      <ListItemText primary={device.name} />
+      <ListItemText primary={<ServiceName service={device} connection={activeConnection} />} />
     </ListItemLocation>
   )
 }

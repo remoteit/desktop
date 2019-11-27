@@ -1,6 +1,7 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
+import { ServiceName } from '../../components/ServiceName'
 import { ApplicationState } from '../../store'
 import { Typography, Divider } from '@material-ui/core'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
@@ -37,8 +38,8 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <ConnectionStateIcon state={device.state} connection={activeConnection} size="lg" />
-            <span className={css.title}>{device.name}</span>
+            <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
+            <ServiceName service={device} connection={activeConnection} inline />
           </Typography>
         </>
       }

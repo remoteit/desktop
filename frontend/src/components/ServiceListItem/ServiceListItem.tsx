@@ -10,6 +10,7 @@ import { ListItemLocation } from '../ListItemLocation'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
 import { BrowserButton } from '../BrowserButton'
+import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../CopyButton'
 import { Throughput } from '../Throughput'
 import { makeStyles } from '@material-ui/styles'
@@ -18,9 +19,10 @@ import { SSHButton } from '../SSHButton'
 export interface ServiceListItemProps {
   connection?: IConnection
   service?: IService
+  nameType?: 'connection' | 'service'
 }
 
-export function ServiceListItem({ connection, service }: ServiceListItemProps) {
+export function ServiceListItem({ connection, service, nameType = 'service' }: ServiceListItemProps) {
   const location = useLocation()
   const css = useStyles()
 
@@ -34,7 +36,7 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
   }
 
   if (connection) {
-    name = connection.name || name
+    if (nameType !== 'service') name = connection.name || name
     id = connection.id
   } else if (service) {
     connection = newConnection(service)
@@ -46,7 +48,10 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
         <ListItemIcon>
           <ConnectionStateIcon connection={connection} service={service} size="lg" />
         </ListItemIcon>
-        <ListItemText primary={name} secondary={connection && hostName(connection)} />
+        <ListItemText
+          primary={<ServiceName service={service} connection={connection} />}
+          secondary={connection && hostName(connection)}
+        />
         {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
           <BrowserButton connection={connection} />

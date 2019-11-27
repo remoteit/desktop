@@ -23,7 +23,12 @@ export function ConnectionsList({ connections, services }: Props) {
   return (
     <List>
       {connections.map(c => (
-        <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
+        <ServiceListItem
+          key={c.id || 0}
+          connection={c}
+          service={services.find(s => s.id === c.id)}
+          nameType="connection"
+        />
       ))}
     </List>
   )

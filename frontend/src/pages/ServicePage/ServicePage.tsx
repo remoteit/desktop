@@ -5,6 +5,7 @@ import { PortSetting } from '../../components/PortSetting'
 import { HostSetting } from '../../components/HostSetting'
 import { NameSetting } from '../../components/NameSetting'
 import { findService } from '../../models/devices'
+import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { UsernameSetting } from '../../components/UsernameSetting'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
@@ -24,20 +25,20 @@ import { SSHButton } from '../../components/SSHButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { makeStyles } from '@material-ui/styles'
-import { spacing } from '../../styling'
 
 export const ServicePage: React.FC = () => {
   const { serviceID = '' } = useParams()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const css = useStyles()
+  let data: IDataDisplay[] = []
 
   if (!service || !device)
     return (
       <>
         <Typography variant="h1">
           <ConnectionStateIcon connection={connection} size="lg" />
-          <span className={css.title}>No device found.</span>
+          <ServiceName connection={connection} />
           <ForgetButton connection={connection} />
         </Typography>
         <section>
@@ -48,6 +49,22 @@ export const ServicePage: React.FC = () => {
       </>
     )
 
+  if (connection && connection.active) {
+    data = data.concat([
+      { label: 'Host', value: connection.host },
+      { label: 'Port', value: connection.port },
+      { label: 'Restriction', value: connection.restriction },
+    ])
+  }
+
+  data = data.concat([
+    { label: 'Service Name', value: service.name },
+    { label: 'Device Name', value: device.name },
+    { label: 'Owner', value: device.owner },
+    { label: 'Service Type', value: service.type },
+    { label: 'Service ID', value: service.id },
+  ])
+
   return (
     <Container
       header={
@@ -55,7 +72,7 @@ export const ServicePage: React.FC = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} size="lg" />
-            <span className={css.title}>{service.name}</span>
+            <ServiceName connection={connection} service={service} inline />
             <ForgetButton connection={connection} />
             <BrowserButton connection={connection} />
             <SSHButton connection={connection} service={service} />
@@ -67,16 +84,16 @@ export const ServicePage: React.FC = () => {
       }
     >
       {connection && <ConnectionErrorMessage connection={connection} />}
-      {connection && connection.active && device && (
+      {connection && connection.active && (
         <>
-          <ServiceConnected connection={connection} device={device} service={service} />
+          <ServiceConnected connection={connection} />
           <Divider />
         </>
       )}
       <List>
-        <NameSetting connection={connection} service={service} />
         <PortSetting connection={connection} service={service} />
         <HostSetting connection={connection} service={service} />
+        <NameSetting connection={connection} service={service} />
         <UsernameSetting connection={connection} service={service} />
       </List>
       <Divider />
@@ -89,19 +106,10 @@ export const ServicePage: React.FC = () => {
       </List>
       <Divider />
       <Columns>
-        <DataDisplay
-          data={[
-            { label: 'Owner', value: device.owner },
-            { label: 'Device Name', value: device.name },
-            { label: 'Service ID', value: service.id },
-            { label: 'Application', value: service.type },
-          ]}
-        />
+        <DataDisplay data={data} />
       </Columns>
     </Container>
   )
 }
 
-const useStyles = makeStyles({
-  title: { flexGrow: 1, marginLeft: spacing.md },
-})
+const useStyles = makeStyles({})

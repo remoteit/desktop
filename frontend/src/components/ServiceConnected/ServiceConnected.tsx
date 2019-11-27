@@ -1,34 +1,26 @@
 import React from 'react'
-import { IService, IDevice } from 'remote.it'
 import { hostName } from '../../helpers/nameHelper'
 import { Typography } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'
 import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
-// import { makeStyles } from '@material-ui/styles'
-// import { spacing, colors } from '../../styling'
 
 type Props = {
   connection: IConnection
-  service: IService
-  device: IDevice
 }
 
-export const ServiceConnected: React.FC<Props> = ({ connection, service, device }) => {
+export const ServiceConnected: React.FC<Props> = ({ connection }) => {
   // const css = useStyles()
 
   return (
-    <Columns>
+    <Columns count={1}>
       <Typography color="primary" variant="h2">
         Connected
       </Typography>
       <DataDisplay
         data={[
-          { label: 'Launch', value: hostName(connection) },
-          { label: 'Host', value: connection.host },
-          { label: 'Port', value: connection.port },
-          { label: 'Restriction', value: connection.restriction },
+          { label: 'URL', value: hostName(connection) },
           { label: 'Duration', value: <Duration startTime={connection.startTime} /> },
           { label: 'Throughput', value: <Throughput connection={connection} /> },
         ]}
@@ -36,11 +28,3 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service, device 
     </Columns>
   )
 }
-
-// const useStyles = makeStyles({
-//   container: {
-//     color: colors.primary,
-//     // display: 'flex',
-//     // flexDirection: 'row',
-//   },
-// })

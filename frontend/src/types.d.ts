@@ -59,6 +59,11 @@ declare global {
       type?: string
     }
   }
+
+  export interface IDataDisplay {
+    label: string
+    value?: any
+  }
 }
 
 declare module 'remote.it' {
