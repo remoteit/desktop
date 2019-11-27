@@ -6,7 +6,6 @@ import debug from 'debug'
 import path from 'path'
 import { exec } from 'child_process'
 import { removeDeviceName } from './helpers/nameHelper'
-import { BIN_PATH } from './constants'
 
 const d = debug('r3:backend:CLI')
 
@@ -101,9 +100,9 @@ export default class CLI {
 
   static exec(command: string) {
     return new Promise<string>((success, failure) => {
-      Logger.info('EXEC', { exec: `${BIN_PATH}remoteit.darwin.amd64 ${command}` })
-      d('EXEC', `${BIN_PATH}remoteit.darwin.amd64 ${command}`)
-      exec(`${BIN_PATH}remoteit.darwin.amd64 ${command}`, (error, stdout, stderr) => {
+      d('EXEC', `${Environment.execPath} ${command}`)
+      Logger.info('EXEC', { exec: `${Environment.execPath} ${command}` })
+      exec(`${Environment.execPath} ${command}`, (error, stdout, stderr) => {
         if (error) {
           Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
           d(`*** ERROR *** EXEC ${command}: `, error)
