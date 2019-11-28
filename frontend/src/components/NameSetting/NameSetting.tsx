@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { IService } from 'remote.it'
+import { TextField } from '@material-ui/core'
+import { ResetButton } from '../ResetButton'
 import { InlineSetting } from '../InlineSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { TextField } from '@material-ui/core'
 
 export const NameSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   const [name, setName] = useState((connection && connection.name) || (service && service.name))
@@ -31,6 +32,7 @@ export const NameSetting: React.FC<{ service: IService; connection?: IConnection
         variant="filled"
         onChange={event => setName(event.target.value)}
       />
+      <ResetButton onClick={() => setName(service.name)} />
     </InlineSetting>
   )
 }

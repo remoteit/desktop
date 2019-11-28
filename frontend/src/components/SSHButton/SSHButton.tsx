@@ -25,8 +25,6 @@ export const SSHButton: React.FC<Props> = ({ connection, service }) => {
   const [open, setOpen] = useState(false)
   const [username, setUsername] = useState('')
 
-  console.log('SERVICE', service)
-
   if (!connection || !connection.active) return null
   if (service && service.typeID !== SSH_TYPE) return null
 

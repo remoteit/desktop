@@ -16,12 +16,12 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
   const [edit, setEdit] = useState<boolean>(false)
   const css = useStyles()
 
-  return (
-    <ListItem>
-      <ListItemIcon>
-        <Icon name={icon} color="gray" size="lg" />
-      </ListItemIcon>
-      {edit ? (
+  if (edit)
+    return (
+      <ListItem button onClick={() => edit || setEdit(true)}>
+        <ListItemIcon>
+          <Icon name={icon} color="gray" size="lg" />
+        </ListItemIcon>
         <form
           className={css.form}
           onSubmit={() => {
@@ -43,18 +43,22 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
             </Tooltip>
           </ListItemSecondaryAction>
         </form>
-      ) : (
-        <>
-          <span className={css.text}>
-            <Typography variant="caption">{label}</Typography>
-            <Typography variant="h2">{value || '–'}</Typography>
-          </span>
-          {!disabled && (
-            <ListItemSecondaryAction>
-              <EditButton onClick={() => setEdit(true)} />
-            </ListItemSecondaryAction>
-          )}
-        </>
+      </ListItem>
+    )
+
+  return (
+    <ListItem button onClick={() => edit || setEdit(true)}>
+      <ListItemIcon>
+        <Icon name={icon} color="gray" size="lg" />
+      </ListItemIcon>
+      <span className={css.text}>
+        <Typography variant="caption">{label}</Typography>
+        <Typography variant="h2">{value || '–'}</Typography>
+      </span>
+      {!disabled && (
+        <ListItemSecondaryAction className={css.hidden}>
+          <EditButton />
+        </ListItemSecondaryAction>
       )}
     </ListItem>
   )
@@ -63,4 +67,5 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
 const useStyles = makeStyles({
   form: { display: 'flex', width: '100%', marginRight: 120 },
   text: { flexGrow: 1 },
+  hidden: { display: 'none' },
 })
