@@ -1,5 +1,5 @@
 import React from 'react'
-import { Icon } from '../Icon'
+import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/styles'
 import { spacing } from '../../styling'
 

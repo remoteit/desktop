@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { ListItem } from '@material-ui/core'
-import { NextButton } from '../NextButton'
+import { NextButton } from '../../buttons/NextButton'
 
 export type Props = {
   pathname: string

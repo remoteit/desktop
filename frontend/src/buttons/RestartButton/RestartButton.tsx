@@ -3,7 +3,7 @@ import BackendAdaptor from '../../services/BackendAdapter'
 import { Dispatch } from '../../store'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import { Icon } from '../Icon'
+import { Icon } from '../../components/Icon'
 
 export type RestartButtonProps = {
   connection?: IConnection

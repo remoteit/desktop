@@ -3,7 +3,7 @@ import BackendAdaptor from '../../services/BackendAdapter'
 import { newConnection } from '../../helpers/connectionHelper'
 import { IService } from 'remote.it'
 import { IconButton, Tooltip } from '@material-ui/core'
-import { Icon } from '../Icon'
+import { Icon } from '../../components/Icon'
 
 export type ConnectButtonProps = {
   connection?: IConnection

@@ -1,7 +1,7 @@
 import React from 'react'
 import BackendAdaptor from '../../services/BackendAdapter'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { Icon } from '../Icon'
+import { Icon } from '../../components/Icon'
 
 export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: IConnection }> = ({
   disabled = false,

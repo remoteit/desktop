@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { EditButton } from '../EditButton'
+import { EditButton } from '../../buttons/EditButton'
 import { Icon } from '../Icon'
 import { ListItem, ListItemIcon, ListItemSecondaryAction, Typography, Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'

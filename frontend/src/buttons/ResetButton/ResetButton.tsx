@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { Icon } from '../Icon'
+import { Icon } from '../../components/Icon'
 import { spacing } from '../../styling'
 
 export const ResetButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {

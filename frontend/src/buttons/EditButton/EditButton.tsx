@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { Icon } from '../Icon'
+import { Icon } from '../../components/Icon'
 
 export const EditButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   return (

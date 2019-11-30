@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../constants'
 import { IService } from 'remote.it'
-import { ResetButton } from '../ResetButton'
+import { ResetButton } from '../../buttons/ResetButton'
 import { InlineSetting } from '../InlineSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { TextField } from '@material-ui/core'

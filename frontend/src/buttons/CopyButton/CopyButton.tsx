@@ -2,7 +2,7 @@ import React from 'react'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { useClipboard } from 'use-clipboard-copy'
 import { hostName } from '../../helpers/nameHelper'
-import { Icon } from '../Icon'
+import { Icon } from '../../components/Icon'
 
 export interface CopyButtonProps {
   connection?: IConnection

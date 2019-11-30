@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { IService } from 'remote.it'
 import { TextField } from '@material-ui/core'
-import { ResetButton } from '../ResetButton'
+import { ResetButton } from '../../buttons/ResetButton'
 import { InlineSetting } from '../InlineSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 

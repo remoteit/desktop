@@ -1,6 +1,6 @@
 import React from 'react'
 import { DebugLogItem } from '../DebugLogItem'
-import { CopyButton } from '../CopyButton'
+import { CopyButton } from '../../buttons/CopyButton'
 import { Button } from '@material-ui/core'
 
 export interface Props {
