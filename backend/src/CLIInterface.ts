@@ -27,8 +27,7 @@ export default class CLIInterface extends CLI {
 
     if (targets.length === length) {
       // @FIXME not currently supported by cli
-      this.write('targets', targets)
-      Logger.info('UPDATE', targets)
+      Logger.warn('UPDATE', targets)
     } else if (targets.length < length) {
       const target = this.diff(targets, this.data.targets)
       if (target) await this.removeTarget(target)

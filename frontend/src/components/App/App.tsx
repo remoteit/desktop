@@ -25,9 +25,12 @@ import styles from '../../styling'
 
 const mapState = (state: ApplicationState) => ({
   user: state.auth.user,
-  connected: state.ui.connected,
   checkSignInStarted: state.auth.checkSignInStarted,
-  installed: state.binaries.connectdInstalled && state.binaries.muxerInstalled && state.binaries.demuxerInstalled,
+  installed:
+    state.binaries.connectdInstalled &&
+    state.binaries.muxerInstalled &&
+    state.binaries.demuxerInstalled &&
+    state.binaries.remoteitInstalled,
 })
 const mapDispatch = (dispatch: any) => ({
   checkSignIn: dispatch.auth.checkSignIn,
@@ -38,7 +41,7 @@ export type AppProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispat
 export const App = connect(
   mapState,
   mapDispatch
-)(({ checkSignIn, installed, checkSignInStarted, user, connected }: AppProps) => {
+)(({ checkSignIn, installed, checkSignInStarted, user }: AppProps) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()

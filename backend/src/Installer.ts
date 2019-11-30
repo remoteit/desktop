@@ -1,5 +1,6 @@
 import debug from 'debug'
 import Environment from './Environment'
+import Logger from './Logger'
 import EventBus from './EventBus'
 import fs from 'fs'
 import https from 'https'
@@ -53,6 +54,11 @@ export default class Installer {
   install(cb?: ProgressCallback) {
     const permission = 0o755
 
+    Logger.info('Installing Binary', {
+      name: this.name,
+      repoName: this.repoName,
+      version: this.version,
+    })
     d('Attempting to install binary: %O', {
       name: this.name,
       permission,
@@ -118,8 +124,10 @@ export default class Installer {
 
       https
         .get(url, res1 => {
-          if (!res1 || !res1.headers || !res1.headers.location)
+          if (!res1 || !res1.headers || !res1.headers.location) {
+            d('No response from download URL', res1, this)
             return reject(new Error('No response from download URL!'))
+          }
           https
             .get(res1.headers.location, res2 => {
               if (!res2 || !res2.headers || !res2.headers['content-length'])
@@ -146,7 +154,7 @@ export default class Installer {
     return path.join(this.downloadDirectory, this.binaryName)
   }
 
-  private get downloadFileName() {
+  get downloadFileName() {
     return Environment.isWindows
       ? `${this.name}.x86_64-64.exe`
       : os.arch() === 'x64'

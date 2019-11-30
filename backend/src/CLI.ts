@@ -1,4 +1,5 @@
 import Environment from './Environment'
+import RemoteitInstaller from './RemoteitInstaller'
 import JSONFile from './JSONFile'
 import defaults from './helpers/defaults'
 import Logger from './Logger'
@@ -19,14 +20,18 @@ export default class CLI {
   }
 
   file: JSONFile<ConfigFile>
+  credentials: UserCredentials
 
-  constructor(user?: UserCredentials) {
+  constructor(user: UserCredentials) {
     Logger.info('CONFIG FILE', { path: path.join(Environment.remoteitDirectory, 'config.json') })
     this.file = new JSONFile<ConfigFile>(path.join(Environment.remoteitDirectory, 'config.json'))
+    this.credentials = user
     this.read()
-    if (!this.data.user) this.signIn(user)
-    EventBus.on(User.EVENTS.signedIn, this.signIn)
-    EventBus.on(User.EVENTS.signedOut, this.signOut)
+    EventBus.on(User.EVENTS.signedIn, (user: UserCredentials) => {
+      this.credentials = user
+      this.signIn(user)
+    })
+    EventBus.on(User.EVENTS.signedOut, () => this.signOut())
   }
 
   read() {
@@ -34,14 +39,6 @@ export default class CLI {
     this.readDevice()
     this.readTargets()
     d('read config', { config: this.data })
-  }
-
-  write(key: string, value: any) {
-    let config = this.readFile()
-    key = key === 'targets' ? 'services' : key
-    key = key === 'user' ? 'auth' : key
-    config[key] = value
-    this.file.write()
   }
 
   readUser() {
@@ -75,65 +72,58 @@ export default class CLI {
   }
 
   async addTarget(t: ITarget) {
-    await CLI.exec(`add "${t.name}" ${t.port} --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`)
+    await this.exec(`add "${t.name}" ${t.port} --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`)
   }
 
   async removeTarget(t: ITarget) {
-    await CLI.exec(`remove ${t.uid}`)
+    await this.exec(`remove ${t.uid}`)
   }
 
   async register(device: IDevice) {
-    await CLI.exec(`setup "${device.name}"`)
+    await this.exec(`setup "${device.name}"`)
   }
 
   async delete(d: IDevice) {
-    await CLI.exec(`teardown ${d.uid} --yes`)
+    await this.exec(`teardown ${d.uid} --yes`)
   }
 
   async install() {
-    await CLI.exec('tools install')
+    await this.exec('tools install')
   }
 
   async signIn(user?: UserCredentials) {
-    if (!user) return
-    await CLI.exec(`signin ${user.username} -a ${user.authHash}`)
+    if (!user || !user.username || !user.authHash) return
+    await this.exec(`signin ${user.username} -a ${user.authHash}`, true)
   }
 
   async signOut() {
-    await CLI.exec('signout')
+    await this.exec('signout')
   }
 
   async scan(ipMask: string) {
-    const result = await CLI.exec(`scan -j -m ${ipMask}`)
+    const result = await this.exec(`scan -j -m ${ipMask}`)
     return JSON.parse(result)
   }
 
-  static exec(command: string) {
-    return new Promise<string>((success, failure) => {
-      d('EXEC', `${Environment.execPath} ${command}`)
-      Logger.info('EXEC', { exec: `${Environment.execPath} ${command}` })
+  async checkSignIn() {
+    if (!this.data.user) await this.signIn(this.credentials)
+  }
 
-      if (Environment.isWindows) {
-        execFile(Environment.execPath, command.split(' '), (error, stdout) => {
-          if (error) {
-            Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
-            d(`*** ERROR *** EXEC ${command}: `, error)
-            failure(error)
-          }
-          d('EXEC SUCCESS', stdout)
-          success(stdout)
-        })
-      } else {
-        exec(`${Environment.execPath} ${command}`, (error, stdout) => {
-          if (error) {
-            Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
-            d(`*** ERROR *** EXEC ${command}: `, error)
-            failure(error)
-          }
-          d('EXEC SUCCESS', stdout)
-          success(stdout)
-        })
-      }
+  async exec(command: string, signIn?: boolean) {
+    if (!signIn) await this.checkSignIn()
+    return new Promise<string>((success, failure) => {
+      d('EXEC', `${RemoteitInstaller.binaryPath} ${command}`)
+      Logger.info('EXEC', { exec: `${RemoteitInstaller.binaryPath} ${command}` })
+
+      execFile(RemoteitInstaller.binaryPath, command.split(' '), (error, stdout) => {
+        if (error) {
+          Logger.error(`*** ERROR *** EXEC ${command}: `, { error })
+          d(`*** ERROR *** EXEC ${command}: `, error)
+          failure(error)
+        }
+        d('EXEC SUCCESS', stdout)
+        success(stdout)
+      })
     })
   }
 }

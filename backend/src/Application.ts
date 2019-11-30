@@ -1,6 +1,7 @@
 import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import debug from 'debug'
+import RemoteitInstaller from './RemoteitInstaller'
 import ConnectdInstaller from './ConnectdInstaller'
 import DemuxerInstaller from './DemuxerInstaller'
 import MuxerInstaller from './MuxerInstaller'
@@ -71,11 +72,13 @@ export default class Application {
       connectdInstalled: ConnectdInstaller.isInstalled,
       muxerInstalled: MuxerInstaller.isInstalled,
       demuxerInstalled: DemuxerInstaller.isInstalled,
+      remoteitInstalled: RemoteitInstaller.isInstalled,
     })
 
     ConnectdInstaller.check()
     MuxerInstaller.check()
     DemuxerInstaller.check()
+    RemoteitInstaller.check()
   }
 
   private handleExit = () => {

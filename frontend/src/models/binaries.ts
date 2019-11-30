@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import BackendAdapter from '../services/BackendAdapter'
 
 export interface BinariesState {
-  error?: string
+  error?: any
   installing: boolean
   connectdInstalled: boolean
   connectdPath?: string
@@ -14,6 +14,10 @@ export interface BinariesState {
   demuxerPath?: string
   demuxerVersion?: string
   demuxerErrork?: string
+  remoteitInstalled: boolean
+  remoteitPath?: string
+  remoteitVersion?: string
+  remoteitErrork?: string
 }
 
 const state: BinariesState = {
@@ -28,6 +32,9 @@ const state: BinariesState = {
   demuxerInstalled: false,
   demuxerPath: undefined,
   demuxerVersion: undefined,
+  remoteitInstalled: false,
+  remoteitPath: undefined,
+  remoteitVersion: undefined,
 }
 
 export default createModel({

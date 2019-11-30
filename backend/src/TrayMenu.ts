@@ -49,9 +49,9 @@ export default class TrayMenu {
         const location = hostName(connection, this.privateIP)
         result.push({
           label: connection.name,
-          icon: connection.pid ? iconConnected : iconOnline,
+          icon: connection.active ? iconConnected : iconOnline,
           submenu: [
-            !connection.pid
+            !connection.active
               ? { label: 'Connect', click: () => this.connect(connection) }
               : { label: 'Disconnect', click: () => this.disconnect(connection) },
             { type: 'separator' },

@@ -6,6 +6,7 @@ import CLIInterface from './CLIInterface'
 import MuxerInstaller from './MuxerInstaller'
 import BinaryInstaller from './BinaryInstaller'
 import ConnectdInstaller from './ConnectdInstaller'
+import RemoteitInstaller from './RemoteitInstaller'
 import DemuxerInstaller from './DemuxerInstaller'
 import ConnectionPool from './ConnectionPool'
 import ElectronApp from './ElectronApp'
@@ -136,7 +137,7 @@ class Controller {
   }
 
   installBinaries = async () => {
-    const installer = new BinaryInstaller([ConnectdInstaller, MuxerInstaller, DemuxerInstaller])
+    const installer = new BinaryInstaller([ConnectdInstaller, MuxerInstaller, DemuxerInstaller, RemoteitInstaller])
     return installer.install().catch(error => EventBus.emit(Installer.EVENTS.error, error))
   }
 

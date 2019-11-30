@@ -10,7 +10,6 @@ const mapState = (state: ApplicationState, props: any) => ({
   error: state.binaries.error,
   installing: state.binaries.installing,
   connected: state.ui.connected,
-  installed: state.binaries.connectdInstalled && state.binaries.muxerInstalled && state.binaries.demuxerInstalled,
 })
 
 const mapDispatch = (dispatch: any) => ({
@@ -23,9 +22,9 @@ export type InstallationNoticeProps = ReturnType<typeof mapState> & ReturnType<t
 export const InstallationNotice = connect(
   mapState,
   mapDispatch
-)(({ connected, clearError, error, installing, installed, install }: InstallationNoticeProps) => {
+)(({ connected, clearError, error, installing, install }: InstallationNoticeProps) => {
   if (!connected) return null
-  if (installed) return null
+  if (error) console.error(error)
   return (
     <div className="h-100 bg-gray-lightest gray-dark df ai-center jc-center">
       <div className="df ai-center jc-center fd-col p-sm mx-auto center" style={{ maxWidth: '400px' }}>
@@ -36,7 +35,7 @@ export const InstallationNotice = connect(
           <Alert onClose={() => clearError()}>
             {error === 'User did not grant permission.'
               ? 'Please grant permissions to install CLI tools to continue'
-              : error}
+              : JSON.stringify(error)}
           </Alert>
         )}
 

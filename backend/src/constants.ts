@@ -14,9 +14,6 @@ export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e137655
 export const API_URL = process.env.API_URL || 'https://api.remot3.it/apv/v27'
 export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
-// export const REMOTEIT_EXEC = 'remoteit'
-export const BIN_PATH = __dirname + '/bin/'
-
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'
 export const IP_CLASS_A: ipAddress = '192.0.0.0'

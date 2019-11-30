@@ -1,7 +1,6 @@
 import Logger from './Logger'
 import os from 'os'
 import path from 'path'
-import { BIN_PATH } from './constants'
 
 export default class Environment {
   static get isWindows() {
@@ -17,12 +16,9 @@ export default class Environment {
   }
 
   static get execPath() {
-    let exec = 'Linux_arm64/remoteit'
-
-    if (this.isWindows) exec = 'Windows_x86_64/remoteit.exe'
-    if (this.isMac) exec = 'Darwin_x86_64/remoteit'
-
-    return path.join(BIN_PATH, exec)
+    let exec = '/bin/remoteit'
+    if (this.isWindows) exec = '/bin/remoteit.exe'
+    return path.join(this.remoteitDirectory, exec)
   }
 
   static toJSON() {
