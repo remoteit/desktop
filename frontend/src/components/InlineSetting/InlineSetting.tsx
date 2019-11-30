@@ -10,15 +10,16 @@ type Props = {
   icon?: string
   disabled?: boolean
   onSave: () => void
+  onCancel: () => void
 }
 
-export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, onSave, children }) => {
+export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, onSave, onCancel, children }) => {
   const [edit, setEdit] = useState<boolean>(false)
   const css = useStyles()
 
   if (edit)
     return (
-      <ListItem button onClick={() => edit || setEdit(true)}>
+      <ListItem>
         <ListItemIcon>
           <Icon name={icon} color="gray" size="lg" />
         </ListItemIcon>
@@ -32,7 +33,12 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
           {children}
           <ListItemSecondaryAction>
             <Tooltip title="Cancel">
-              <IconButton onClick={() => setEdit(false)}>
+              <IconButton
+                onClick={() => {
+                  setEdit(false)
+                  onCancel()
+                }}
+              >
                 <Icon name="times" size="md" fixedWidth />
               </IconButton>
             </Tooltip>
@@ -47,7 +53,7 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
     )
 
   return (
-    <ListItem button onClick={() => edit || setEdit(true)}>
+    <ListItem button onClick={() => setEdit(true)} disabled={disabled} style={{ opacity: 1 }}>
       <ListItemIcon>
         <Icon name={icon} color="gray" size="lg" />
       </ListItemIcon>
@@ -57,7 +63,7 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
       </span>
       {!disabled && (
         <ListItemSecondaryAction className={css.hidden}>
-          <EditButton />
+          <EditButton onClick={() => setEdit(true)} />
         </ListItemSecondaryAction>
       )}
     </ListItem>

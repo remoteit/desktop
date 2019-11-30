@@ -6,7 +6,8 @@ import { InlineSetting } from '../InlineSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 export const NameSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  const [name, setName] = useState((connection && connection.name) || (service && service.name))
+  const currentName = (connection && connection.name) || (service && service.name)
+  const [name, setName] = useState(currentName)
 
   if (!service) return null
   if (!connection) connection = newConnection(service, { name })
@@ -15,6 +16,7 @@ export const NameSetting: React.FC<{ service: IService; connection?: IConnection
     <InlineSetting
       value={name}
       label="Connection Name"
+      onCancel={() => setName(currentName)}
       onSave={() =>
         connection &&
         setConnection({

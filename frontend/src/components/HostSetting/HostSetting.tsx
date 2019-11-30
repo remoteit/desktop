@@ -7,7 +7,8 @@ import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { TextField } from '@material-ui/core'
 
 export const HostSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  const [host, setHost] = useState(connection && connection.host)
+  const currentHost = connection && connection.host
+  const [host, setHost] = useState(currentHost)
 
   if (!service) return null
   if (!connection) connection = newConnection(service, { host })
@@ -19,6 +20,7 @@ export const HostSetting: React.FC<{ service: IService; connection?: IConnection
       value={host}
       label="Local IP Address"
       disabled={disabled}
+      onCancel={() => setHost(currentHost)}
       onSave={() =>
         connection &&
         setConnection({

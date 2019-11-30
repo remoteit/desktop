@@ -7,7 +7,8 @@ import { TextField } from '@material-ui/core'
 const SSH_TYPE = 28
 
 export const UsernameSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  const [username, setName] = useState(connection && connection.username)
+  const currentUsername = connection && connection.username
+  const [username, setUsername] = useState(currentUsername)
 
   if (!service || service.typeID !== SSH_TYPE) return null
   if (!connection) connection = newConnection(service, { username })
@@ -19,6 +20,7 @@ export const UsernameSetting: React.FC<{ service: IService; connection?: IConnec
       value={username}
       label="SSH Username"
       disabled={disabled}
+      onCancel={() => setUsername(currentUsername)}
       onSave={() =>
         connection &&
         setConnection({
@@ -33,7 +35,7 @@ export const UsernameSetting: React.FC<{ service: IService; connection?: IConnec
         value={username}
         margin="dense"
         variant="filled"
-        onChange={event => setName(event.target.value)}
+        onChange={event => setUsername(event.target.value)}
       />
     </InlineSetting>
   )

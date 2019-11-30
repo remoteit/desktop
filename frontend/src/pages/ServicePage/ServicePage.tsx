@@ -1,5 +1,6 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
+import { makeStyles } from '@material-ui/styles'
 import { useSelector } from 'react-redux'
 import { PortSetting } from '../../components/PortSetting'
 import { HostSetting } from '../../components/HostSetting'
@@ -8,6 +9,7 @@ import { findService } from '../../models/devices'
 import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { UsernameSetting } from '../../components/UsernameSetting'
+import { colors, spacing } from '../../styling'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { ApplicationState } from '../../store'
@@ -26,6 +28,7 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 
 export const ServicePage: React.FC = () => {
+  const css = useStyles()
   const { serviceID = '' } = useParams()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
@@ -77,7 +80,6 @@ export const ServicePage: React.FC = () => {
             <SSHButton connection={connection} service={service} />
             <CopyButton connection={connection} />
             <DisconnectButton connection={connection} />
-            <ConnectButton connection={connection} service={service} />
           </Typography>
         </>
       }
@@ -89,12 +91,17 @@ export const ServicePage: React.FC = () => {
           <Divider />
         </>
       )}
-      <List>
-        <PortSetting connection={connection} service={service} />
-        <HostSetting connection={connection} service={service} />
-        <NameSetting connection={connection} service={service} />
-        <UsernameSetting connection={connection} service={service} />
-      </List>
+      <Columns>
+        <List>
+          <PortSetting connection={connection} service={service} />
+          <HostSetting connection={connection} service={service} />
+          <NameSetting connection={connection} service={service} />
+          <UsernameSetting connection={connection} service={service} />
+        </List>
+        <div className={css.actions}>
+          <ConnectButton connection={connection} service={service} fullSize />
+        </div>
+      </Columns>
       <Divider />
       <List>
         <AutoStartSetting connection={connection} service={service} />
@@ -104,9 +111,16 @@ export const ServicePage: React.FC = () => {
         <LanShareSelect connection={connection} service={service} />
       </List>
       <Divider />
-      <Columns>
+      <Columns margin>
         <DataDisplay data={data} />
       </Columns>
     </Container>
   )
 }
+
+const useStyles = makeStyles({
+  actions: {
+    // borderLeft: `1px solid ${colors.grayLighter}`,
+    padding: `${spacing.md}px ${spacing.md}px`,
+  },
+})

@@ -10,8 +10,9 @@ import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { TextField } from '@material-ui/core'
 
 export const PortSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
+  const currentPort = connection && connection.port
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
-  const [port, setPort] = useState(connection && connection.port)
+  const [port, setPort] = useState(currentPort)
 
   useEffect(() => {
     if (port === undefined) setPort(freePort)
@@ -27,6 +28,7 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
       value={port}
       label="Port"
       disabled={disabled}
+      onCancel={() => setPort(currentPort)}
       onSave={() =>
         connection &&
         setConnection({

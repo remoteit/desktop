@@ -1,5 +1,4 @@
 import React from 'react'
-import { IconProps } from '../Icon/Icon'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/styles'
 import { IService, IDevice } from 'remote.it'
@@ -57,8 +56,8 @@ const useStyles = makeStyles({
   button: {
     padding: `9px 0`,
     '& > span > span': {
-      height: 3,
-      borderRadius: 4,
+      height: 2,
+      borderRadius: 2,
       width: spacing.md,
       display: 'inline-block',
       marginLeft: 2,

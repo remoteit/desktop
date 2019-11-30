@@ -29,7 +29,6 @@ const theme = createMuiTheme({
       root: {
         backgroundColor: colors.grayLightest,
         color: colors.grayDark,
-        marginRight: spacing.md,
         padding: `${spacing.sm}px ${spacing.md}px`,
         '& .MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
