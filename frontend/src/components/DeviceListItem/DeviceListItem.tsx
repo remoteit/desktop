@@ -2,8 +2,27 @@ import React from 'react'
 import { IDevice } from 'remote.it'
 import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
+import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+
+const ServiceIndicators: React.FC<{ device: IDevice; connections?: IConnection[] }> = ({
+  device,
+  connections = [],
+}) => {
+  return (
+    <>
+      {device.services.map(service => (
+        <ServiceMiniState
+          key={service.id}
+          service={service}
+          connection={connections.find(c => c.id === service.id)}
+          pathname={`/devices/${device.id}/${service.id}`}
+        />
+      ))}
+    </>
+  )
+}
 
 export type DeviceListItemProps = {
   device: IDevice
@@ -18,6 +37,9 @@ export const DeviceListItem = ({ device, connections }: DeviceListItemProps) => 
         <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
       </ListItemIcon>
       <ListItemText primary={<ServiceName service={device} connection={activeConnection} />} />
+      <ListItemSecondaryAction style={{ right: 90 }}>
+        <ServiceIndicators device={device} connections={connections} />
+      </ListItemSecondaryAction>
     </ListItemLocation>
   )
 }

@@ -10,8 +10,6 @@ import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
-import { makeStyles } from '@material-ui/styles'
-import styles from '../../styling'
 
 const mapState = (state: ApplicationState, params: any) => ({
   connections: state.backend.connections,
@@ -21,7 +19,6 @@ const mapState = (state: ApplicationState, params: any) => ({
 export type ServicesPageProps = ReturnType<typeof mapState>
 
 export const ServicesPage = connect(mapState)(({ connections, devices }: ServicesPageProps) => {
-  const css = useStyles()
   const { deviceID } = useParams()
   const device = devices.find(d => d.id === deviceID)
   const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
@@ -60,8 +57,4 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
       </Columns>
     </Container>
   )
-})
-
-const useStyles = makeStyles({
-  title: { flexGrow: 1, marginLeft: styles.spacing.md },
 })

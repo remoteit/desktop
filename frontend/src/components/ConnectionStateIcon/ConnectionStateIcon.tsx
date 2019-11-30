@@ -3,17 +3,21 @@ import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
 import { IService, IDevice } from 'remote.it'
-import { Color } from '../../styling'
+import { makeStyles } from '@material-ui/styles'
+import { colors, spacing, Color } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
   service?: IService | IDevice
   state?: ConnectionState
+  mini?: boolean
 }
 
-export function ConnectionStateIcon({ connection, service, state, ...props }: ConnectionStateIconProps) {
+export function ConnectionStateIcon({ connection, service, state, mini, ...props }: ConnectionStateIconProps) {
+  const css = useStyles()
+
   let icon = 'question-circle'
-  let color: Color = 'warning'
+  let colorName: Color = 'warning'
 
   state = state || (service ? service.state : 'unknown')
 
@@ -25,32 +29,52 @@ export function ConnectionStateIcon({ connection, service, state, ...props }: Co
   switch (state) {
     case 'active':
       icon = 'check-circle'
-      color = 'success'
+      colorName = 'success'
       break
     case 'inactive':
       icon = 'minus-circle'
-      color = 'grayLight'
+      colorName = 'grayLight'
       break
     case 'connected':
       icon = 'scrubber'
-      color = 'primary'
+      colorName = 'primary'
       break
     case 'connecting':
       icon = 'spinner-third'
-      color = 'grayLight'
+      colorName = 'grayLight'
       break
     case 'restricted':
       icon = 'times-circle'
-      color = 'danger'
+      colorName = 'danger'
       break
     case 'unknown':
       icon = 'question-circle'
-      color = 'grayLight'
+      colorName = 'grayLight'
   }
 
   return (
-    <Tooltip title={state}>
-      <Icon {...props} name={icon} color={color} spin={state === 'connecting'} fixedWidth />
+    <Tooltip title={mini && service ? `${service.name} - ${state}` : state}>
+      {mini ? (
+        <span className={css.mini}>
+          <span style={{ backgroundColor: colors[colorName] }} />
+        </span>
+      ) : (
+        <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+      )}
     </Tooltip>
   )
 }
+
+const useStyles = makeStyles({
+  mini: {
+    // display: 'inline-block',
+
+    '& > span': {
+      height: 4,
+      borderRadius: 4,
+      width: spacing.md,
+      display: 'inline-block',
+      marginLeft: spacing.xxs,
+    },
+  },
+})

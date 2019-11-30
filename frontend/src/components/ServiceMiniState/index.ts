@@ -1,0 +1,1 @@
+export { ServiceMiniState } from './ServiceMiniState'
