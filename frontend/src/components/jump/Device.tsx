@@ -28,65 +28,67 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
 
   useEffect(() => {
     if (registering && device.uid) setRegistering(false)
-    if (deleting && !device.uid) setDeleting(false)
+    if (deleting && !device.uid) {
+      setDeleting(false)
+      setName('')
+    }
   }, [device, deleting, registering])
 
   return (
     <Container header={<Typography variant="h1">Local Device Host</Typography>}>
-      <section className={css.device}>
-        <div className={css.name}>
-          <TextField
-            label="Device Name"
-            className={css.input}
-            disabled={registered}
-            value={name || device.name}
-            variant="filled"
-            onChange={event => {
-              const value = event.target.value.replace(REGEX_NAME_SAFE, '')
-              if (value !== event.target.value) setNotice(true)
-              setName(value)
-            }}
-            onFocus={event => event.target.select()}
-            helperText={!registered && '*Must be unique'}
-            inputProps={{ 'data-lpignore': 'true' }}
-          />
-          {deleting ? (
-            <CircularProgress className={css.loading} size={styles.fontSizes.lg} />
-          ) : (
-            device.uid && (
-              <Tooltip title="Delete">
-                <IconButton
-                  onClick={() => {
-                    if (window.confirm(confirmMessage)) {
-                      onDelete()
-                      setDeleting(true)
-                    }
-                  }}
-                >
-                  <Icon name="trash-alt" size="md" />
-                </IconButton>
-              </Tooltip>
-            )
-          )}
-        </div>
-        <Button
-          color="primary"
-          variant="contained"
-          className={css.register}
-          onClick={() => {
-            onDevice({ ...device, name })
-            setRegistering(true)
-          }}
-          disabled={!name || registered}
-        >
-          {registered ? 'Registered' : 'Register'}
-          {registering ? (
-            <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
-          ) : (
-            <Icon name="check" weight="regular" inline />
-          )}
-        </Button>
-      </section>
+      <form
+        onSubmit={() => {
+          if (!name || registered) return
+          onDevice({ ...device, name })
+          setRegistering(true)
+        }}
+      >
+        <section className={css.device}>
+          <div className={css.name}>
+            <TextField
+              label="Device Name"
+              className={css.input}
+              disabled={registering || registered}
+              value={name || device.name}
+              variant="filled"
+              onChange={event => {
+                const value = event.target.value.replace(REGEX_NAME_SAFE, '')
+                if (value !== event.target.value) setNotice(true)
+                setName(value)
+              }}
+              onFocus={event => event.target.select()}
+              helperText={!registered && '*Must be unique'}
+              inputProps={{ 'data-lpignore': 'true' }}
+            />
+            {deleting ? (
+              <CircularProgress className={css.loading} size={styles.fontSizes.lg} />
+            ) : (
+              device.uid && (
+                <Tooltip title="Delete">
+                  <IconButton
+                    onClick={() => {
+                      if (window.confirm(confirmMessage)) {
+                        onDelete()
+                        setDeleting(true)
+                      }
+                    }}
+                  >
+                    <Icon name="trash-alt" size="md" />
+                  </IconButton>
+                </Tooltip>
+              )
+            )}
+          </div>
+          <Button color="primary" variant="contained" size="medium" disabled={!name || registered} type="submit">
+            {registered ? 'Registered' : 'Register'}
+            {registering ? (
+              <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
+            ) : (
+              <Icon name="check" weight="regular" inline />
+            )}
+          </Button>
+        </section>
+      </form>
 
       <Typography variant="h1">Hosted Services</Typography>
       <section>
@@ -118,10 +120,7 @@ const useStyles = makeStyles({
   device: {
     display: 'flex',
     justifyContent: 'space-between',
-  },
-  register: {
-    marginTop: styles.spacing.md,
-    marginRight: 0,
+    alignItems: 'start',
   },
   loading: { color: styles.colors.gray, margin: styles.spacing.md },
   input: {

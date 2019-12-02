@@ -54,11 +54,11 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
 
 const useStyles = makeStyles({
   button: {
-    padding: `9px 0`,
+    padding: `8px 0`,
     '& > span > span': {
       height: 2,
       borderRadius: 2,
-      width: spacing.md,
+      width: spacing.sm,
       display: 'inline-block',
       marginLeft: 2,
       marginRight: 2,

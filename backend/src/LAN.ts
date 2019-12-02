@@ -73,7 +73,7 @@ export default class LAN {
       this.parse(interfaceName, result)
       Logger.info('SCAN complete', { data: this.data[interfaceName] })
     } catch (error) {
-      Logger.error('SCAN error', { error })
+      Logger.warn('SCAN error', { error })
       this.data[interfaceName] = { timestamp: Date.now(), data: [] }
     }
   }
