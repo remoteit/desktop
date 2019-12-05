@@ -55,6 +55,7 @@ export default class Connection extends EventEmitter {
     Tracker.pageView(`/connections/${this.params.id}/start`)
     Tracker.event('connection', 'start', `connecting to service: ${this.params.id}`)
     Logger.info('Starting connection: ', this.toJSON())
+    Logger.info('Connectd location: ', ConnectdInstaller.binaryPath)
 
     const usernameBase64 = Buffer.from(this.username).toString('base64')
     const params = [

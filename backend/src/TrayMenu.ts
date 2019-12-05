@@ -20,6 +20,10 @@ export default class TrayMenu {
   private user: any
   private privateIP: ipAddress
 
+  static EVENTS = {
+    signOut: 'tray/sign-out',
+  }
+
   constructor(tray: electron.Tray) {
     this.tray = tray
     this.user = {}
@@ -79,6 +83,11 @@ export default class TrayMenu {
         type: 'normal',
         click: this.handleOpen,
       },
+      {
+        label: 'Sign out',
+        type: 'normal',
+        click: this.handleSignOut,
+      },
       { type: 'separator' },
       ...this.connectionsMenu(),
     ]
@@ -98,6 +107,11 @@ export default class TrayMenu {
         type: 'normal',
         click: this.handleOpen,
       },
+      {
+        label: 'Quit',
+        type: 'normal',
+        click: electron.app.quit,
+      },
     ]
   }
 
@@ -107,6 +121,10 @@ export default class TrayMenu {
       // Open dev tools when command+option clicked
       process.defaultApp && event.metaKey
     )
+
+  private handleSignOut = () => {
+    EventBus.emit(TrayMenu.EVENTS.signOut)
+  }
 
   private connect(connection: IConnection) {
     application.pool.start(connection)

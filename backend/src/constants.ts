@@ -1,3 +1,6 @@
+import os from 'os'
+import path from 'path'
+
 export const ENVIRONMENT = process.env.NODE_ENV || 'development'
 
 // Port for the Socket.io websocket server
@@ -20,3 +23,13 @@ export const IP_CLASS_A: ipAddress = '192.0.0.0'
 export const IP_CLASS_B: ipAddress = '192.168.0.0'
 export const IP_CLASS_C: ipAddress = '192.168.2.0'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
+
+// Install paths
+export const MAC_BINARIES = '/usr/local/bin/'
+export const MAC_USER_SETTINGS = path.join(os.homedir(), '.remoteit')
+export const MAC_ADMIN_SETTINGS = '/etc/remoteit'
+
+// export const WIN_BINARIES = path.join(os.homedir(), 'AppData/Local/remoteit/bin')
+export const WIN_BINARIES = '/Program Files/remoteit/'
+export const WIN_USER_SETTINGS = path.join(os.homedir(), 'AppData/Local/remoteit')
+export const WIN_ADMIN_SETTINGS = '/ProgramData/remoteit'

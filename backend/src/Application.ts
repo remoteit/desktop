@@ -31,8 +31,8 @@ export default class Application {
     this.handleExit()
 
     this.window = new ElectronApp()
-    this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.remoteitDirectory, 'connections.json'))
-    this.userFile = new JSONFile<UserCredentials>(path.join(Environment.remoteitDirectory, 'user.json'))
+    this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.userPath, 'connections.json'))
+    this.userFile = new JSONFile<UserCredentials>(path.join(Environment.userPath, 'user.json'))
 
     const userCredentials = this.userFile.read()
 

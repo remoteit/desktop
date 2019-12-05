@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { EditButton } from '../../buttons/EditButton'
-import { Icon } from '../Icon'
 import { ListItem, ListItemIcon, ListItemSecondaryAction, Typography, Tooltip, IconButton } from '@material-ui/core'
+import { EditButton } from '../../buttons/EditButton'
 import { makeStyles } from '@material-ui/styles'
+import { colors } from '../../styling'
+import { Icon } from '../Icon'
 
 type Props = {
   value?: string | number
@@ -19,7 +20,7 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
 
   if (edit)
     return (
-      <ListItem>
+      <ListItem className={css.active}>
         <ListItemIcon>
           <Icon name={icon} color="gray" size="lg" />
         </ListItemIcon>
@@ -74,4 +75,5 @@ const useStyles = makeStyles({
   form: { display: 'flex', width: '100%', marginRight: 120 },
   text: { flexGrow: 1 },
   hidden: { display: 'none' },
+  active: { backgroundColor: colors.primaryHighlight, padding: 0 },
 })

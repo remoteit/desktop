@@ -7,10 +7,12 @@ import debug from 'debug'
 import path from 'path'
 import User from './User'
 import EventBus from './EventBus'
+import * as sudo from 'sudo-prompt'
 import { promisify } from 'util'
 import { exec, execFile } from 'child_process'
 import { removeDeviceName } from './helpers/nameHelper'
 
+const adminPromise = promisify(sudo.exec)
 const execPromise = promisify(exec)
 const d = debug('r3:backend:CLI')
 
@@ -21,17 +23,17 @@ export default class CLI {
     targets: [defaults],
   }
 
-  file: JSONFile<ConfigFile>
+  userFile: JSONFile<ConfigFile>
+  adminFile: JSONFile<ConfigFile>
   credentials: UserCredentials | undefined
 
   constructor(user?: UserCredentials) {
-    Logger.info('CONFIG FILE', { path: path.join(Environment.remoteitDirectory, 'config.json') })
-    this.file = new JSONFile<ConfigFile>(path.join(Environment.remoteitDirectory, 'config.json'))
+    Logger.info('USER FILE', { path: path.join(Environment.userPath, 'config.json') })
+    Logger.info('ADMIN FILE', { path: path.join(Environment.adminPath, 'config.json') })
+    this.userFile = new JSONFile<ConfigFile>(path.join(Environment.userPath, 'config.json'))
+    this.adminFile = new JSONFile<ConfigFile>(path.join(Environment.adminPath, 'config.json'))
     this.credentials = user
-    EventBus.on(User.EVENTS.signedIn, (user: UserCredentials) => {
-      this.credentials = user
-      this.signIn(user)
-    })
+    EventBus.on(User.EVENTS.signedIn, (user: UserCredentials) => (this.credentials = user))
     EventBus.on(User.EVENTS.signedOut, () => this.signOut())
     this.read()
   }
@@ -42,14 +44,14 @@ export default class CLI {
     this.readTargets()
   }
 
-  readUser() {
-    const config = this.readFile()
+  readUser(admin?: boolean) {
+    const config = this.readFile(admin)
     d('READ USER', config.auth)
     this.data.user = config.auth
   }
 
   readDevice() {
-    const config = this.readFile()
+    const config = this.readFile(true)
     d('READ DEVICE', config.device)
     const device = config.device || defaults
     this.data.device = {
@@ -61,7 +63,7 @@ export default class CLI {
 
   readTargets() {
     const deviceName = this.data.device && this.data.device.name
-    const config = this.readFile()
+    const config = this.readFile(true)
     const targets = config.services || []
     d('READ TARGETS', targets)
     this.data.targets = targets.map(service => ({
@@ -71,69 +73,85 @@ export default class CLI {
     }))
   }
 
-  private readFile() {
-    return this.file.read() || {}
+  private readFile(admin?: boolean) {
+    return (admin ? this.adminFile.read() : this.userFile.read()) || {}
   }
 
   async addTarget(t: ITarget) {
-    await this.exec(['add', `"${t.name}"`, t.port, '--type', t.type, '--hostname', t.hostname || '127.0.0.1'])
+    await this.exec({
+      commands: ['add', `"${t.name}"`, t.port, '--type', t.type, '--hostname', t.hostname || '127.0.0.1'],
+      admin: true,
+    })
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec(['remove', t.uid])
+    await this.exec({ commands: ['remove', t.uid], admin: true })
   }
 
   async register(device: IDevice) {
-    await this.exec(['setup', `"${device.name}"`])
+    await this.exec({ commands: ['setup', `"${device.name}"`], admin: true })
   }
 
   async delete(d: IDevice) {
-    await this.exec(['teardown', '--yes'])
+    await this.exec({ commands: ['teardown', '--yes'], admin: true })
   }
 
   async install() {
-    await this.exec(['tools', 'install'])
+    await this.exec({ commands: ['tools', 'install'], admin: true })
   }
 
-  async signIn(user?: UserCredentials) {
+  async signIn(user?: UserCredentials, admin?: boolean) {
     if (!user || !user.username || !user.authHash) return
-    await this.exec(['signin', user.username, '-a', user.authHash], true)
+    await this.exec({ commands: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: true })
   }
 
   async signOut() {
-    await this.exec(['signout'])
+    await this.exec({ commands: ['signout'] })
   }
 
   async scan(ipMask: string) {
-    const result = await this.exec(['scan', '-j', '-m', ipMask])
+    const result = await this.exec({ commands: ['scan', '-j', '-m', ipMask] })
     return JSON.parse(result)
   }
 
-  async checkSignIn() {
-    this.readUser()
+  async checkSignIn(admin?: boolean) {
+    this.readUser(admin)
     d('Check sign in', this.data.user)
-    if (this.signedOut) await this.signIn(this.credentials)
+    Logger.info('CHECK SIGN IN', { user: this.data.user, admin })
+    if (this.signedOut) await this.signIn(this.credentials, admin)
   }
 
-  async exec(commands: any[], signIn?: boolean) {
-    if (!signIn) await this.checkSignIn()
+  async exec({ commands, admin, checkSignIn }: { commands: any[]; admin?: boolean; checkSignIn?: boolean }) {
+    if (!checkSignIn) await this.checkSignIn(admin)
 
     const command = commands.join(' ')
+    let result = ''
 
     d('EXEC', `${RemoteitInstaller.binaryPath} ${command}`)
-    Logger.info('EXEC', { exec: `${RemoteitInstaller.binaryPath} ${command}` })
+    Logger.info('EXEC', { exec: `${RemoteitInstaller.binaryPath} ${command}`, admin, checkSignIn })
 
-    const { stdout, stderr } = await execPromise(`${RemoteitInstaller.binaryPath} ${command}`)
+    try {
+      const { stdout, stderr } = admin
+        ? await adminPromise(`"${RemoteitInstaller.binaryPath}" ${command}`, { name: 'remoteit' })
+        : await execPromise(`"${RemoteitInstaller.binaryPath}" ${command}`)
 
-    if (stderr) {
-      d(`EXEC *** ERROR *** ${command}: `, stderr.toString())
-      Logger.warn(`EXEC *** ERROR *** ${command}: `, { stderr: stderr.toString() })
-      return stderr.toString()
+      if (stderr) {
+        d(`EXEC *** ERROR *** ${command}: `, stderr.toString())
+        Logger.warn(`EXEC *** ERROR *** ${command}: `, { stderr: stderr.toString() })
+        result = stderr.toString()
+      }
+
+      if (stdout) {
+        d(`EXEC SUCCESS ${command}: `, stdout.toString())
+        Logger.info(`EXEC SUCCESS ${command}: `, { stdout: stdout.toString() })
+        result = stdout.toString()
+      }
+    } catch (error) {
+      Logger.warn(`EXEC ERROR CAUGHT ${command}: `, { error, errorMessage: error.message })
     }
 
-    d(`EXEC SUCCESS ${command}: `, stdout.toString())
-    Logger.warn(`EXEC SUCCESS ${command}: `, { stdout: stdout.toString() })
-    return stdout.toString()
+    Logger.info(`EXEC COMPLETE ${command}: `, { result })
+    return result
   }
 
   get signedOut() {
@@ -141,11 +159,3 @@ export default class CLI {
     return !user || !user.username || !user.authHash
   }
 }
-
-//   execPlatform(
-//     path: string,
-//     commands: string[],
-//     callback: (error: Error | null, stdout: string | Buffer, stderr: string | Buffer) => void
-//   ) {
-//     return Environment.isWindows ? exec(path + ' ' + commands.join(' '), callback) : execFile(path, commands, callback)
-//   }

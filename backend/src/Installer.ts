@@ -52,8 +52,6 @@ export default class Installer {
    * system and then make it writable.
    */
   install(cb?: ProgressCallback) {
-    const permission = 0o755
-
     Logger.info('Installing Binary', {
       name: this.name,
       repoName: this.repoName,
@@ -61,18 +59,10 @@ export default class Installer {
     })
     d('Attempting to install binary: %O', {
       name: this.name,
-      permission,
       path: this.binaryPath,
       version: this.version,
       repoName: this.repoName,
     })
-
-    try {
-      d('Creating binary path: ', this.targetDirectory)
-      fs.mkdirSync(this.targetDirectory, { recursive: true })
-    } catch (error) {
-      d('Error creating binary path:', error)
-    }
 
     // Download the binary from Github
     return this.download(this.version, cb)
@@ -88,20 +78,8 @@ export default class Installer {
    */
   async installIfMissing(cb?: ProgressCallback) {
     if (this.isInstalled) return
-    d('connectd is not installed, attempting to install now')
+    d(this.name + ' is not installed, attempting to install now')
     return this.install(cb)
-  }
-
-  get binaryPath() {
-    return path.join(this.binaryDirectory, this.binaryName)
-  }
-
-  get binaryName() {
-    return Environment.isWindows ? this.name + '.exe' : this.name
-  }
-
-  get binaryDirectory() {
-    return Environment.isWindows ? '/remoteit/bin/' : '/usr/local/bin/'
   }
 
   /**
@@ -111,6 +89,7 @@ export default class Installer {
   get isInstalled() {
     // TODO: we should probably make sure the output of the binary is what
     // we expect it to be and it is the right version
+    Logger.info('IS INSTALLED?', { path: this.binaryPath, installed: existsSync(this.binaryPath) })
     return existsSync(this.binaryPath)
   }
 
@@ -150,8 +129,16 @@ export default class Installer {
     })
   }
 
+  get binaryPath() {
+    return path.join(Environment.binPath, this.binaryName)
+  }
+
+  get binaryName() {
+    return Environment.isWindows ? this.name + '.exe' : this.name
+  }
+
   get downloadPath() {
-    return path.join(this.downloadDirectory, this.binaryName)
+    return path.join(os.tmpdir(), this.binaryName)
   }
 
   get downloadFileName() {
@@ -160,9 +147,5 @@ export default class Installer {
       : os.arch() === 'x64'
       ? `${this.name}.x86_64-osx`
       : `${this.name}.x86-osx`
-  }
-
-  private get downloadDirectory() {
-    return Environment.isWindows ? '/remoteit/bin/' : '/tmp/'
   }
 }

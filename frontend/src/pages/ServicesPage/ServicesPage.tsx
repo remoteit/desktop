@@ -45,7 +45,7 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
       <ServiceList services={device.services} connections={serviceConnections} />
       <Divider />
       <Typography variant="subtitle1">Device details</Typography>
-      <Columns count={1}>
+      <Columns count={1} margin>
         <DataDisplay
           data={[
             { label: 'Device ID', value: device.id },

@@ -2,6 +2,7 @@ import SocketIO from 'socket.io'
 import LAN from './LAN'
 import Logger from './Logger'
 import electron from 'electron'
+import TrayMenu from './TrayMenu'
 import CLIInterface from './CLIInterface'
 import MuxerInstaller from './MuxerInstaller'
 import BinaryInstaller from './BinaryInstaller'
@@ -32,6 +33,7 @@ class Controller {
     this.pool = pool
     this.user = user
     EventBus.on(Server.EVENTS.connection, this.bindSockets)
+    EventBus.on(TrayMenu.EVENTS.signOut, this.signOut)
   }
 
   bindSockets = (socket: SocketIO.Socket) => {
