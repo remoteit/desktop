@@ -33,7 +33,6 @@ class Controller {
     this.pool = pool
     this.user = user
     EventBus.on(Server.EVENTS.connection, this.bindSockets)
-    EventBus.on(TrayMenu.EVENTS.signOut, this.signOut)
   }
 
   bindSockets = (socket: SocketIO.Socket) => {

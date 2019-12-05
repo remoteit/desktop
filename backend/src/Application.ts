@@ -68,6 +68,8 @@ export default class Application {
   private handleConnection = () => {
     d('Server connected')
 
+    if (!this.pool.user) User.signOut()
+
     Logger.info('Checking install status:', {
       connectdInstalled: ConnectdInstaller.isInstalled,
       muxerInstalled: MuxerInstaller.isInstalled,
@@ -92,13 +94,10 @@ export default class Application {
     // Catches "kill pid" (for example: nodemon restart)
     process.on('SIGUSR1', this.handleException)
     process.on('SIGUSR2', this.handleException)
-
-    // Catches uncaught exceptions
-    process.on('uncaughtException', this.handleException)
   }
 
-  private handleException = async (error: any) => {
-    Logger.warn('PROCESS EXCEPTION', error)
+  private handleException = async (code: any) => {
+    Logger.warn('PROCESS EXIT', { errorCode: code })
     if (this.pool) await this.pool.stopAll()
     process.exit()
   }
@@ -129,6 +128,8 @@ export default class Application {
   private handleSignedIn = (user: UserCredentials) => {
     d('User signed in:', user.username)
     Logger.info('User signed in', { username: user.username })
+
+    this.pool.user = user
 
     this.userFile.write({
       username: user.username,

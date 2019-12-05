@@ -22,7 +22,7 @@ export default class ConnectionPool {
   }
 
   constructor(connections: IConnection[], user?: UserCredentials) {
-    Logger.info('Initializing connections pool', { connections })
+    Logger.info('Initializing connections pool', { connections, user })
 
     this.user = user
     connections.map(c => this.set(c))
@@ -34,8 +34,6 @@ export default class ConnectionPool {
     this.getFreePort()
 
     // Listen to events to synchronize state
-    EventBus.on(User.EVENTS.signedIn, (user: IUser) => (this.user = user))
-    EventBus.on(User.EVENTS.signedOut, () => (this.user = undefined))
     EventBus.on(Connection.EVENTS.disconnected, this.updated)
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(Connection.EVENTS.started, this.updated)
@@ -52,7 +50,10 @@ export default class ConnectionPool {
   }
 
   add = (connection: IConnection) => {
-    if (!this.user) throw new Error('No user to authenticate connection!')
+    if (!this.user) {
+      User.signOut()
+      return
+    }
     const instance = new Connection(this.user, connection)
     this.pool.push(instance)
     return instance
@@ -66,8 +67,8 @@ export default class ConnectionPool {
   start = async (connection: IConnection) => {
     d('Connecting:', connection)
     if (!connection) return new Error('No connection data!')
-
     const instance = this.set(connection)
+    if (!instance) return
     await this.assignPort(instance)
     await instance.start()
     this.updated()

@@ -7,8 +7,8 @@ import electron from 'electron'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
 import ConnectionPool from './ConnectionPool'
-import User from './User'
 import EventBus from './EventBus'
+import User from './User'
 import path from 'path'
 
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
@@ -19,10 +19,6 @@ export default class TrayMenu {
   private connections: any[]
   private user: any
   private privateIP: ipAddress
-
-  static EVENTS = {
-    signOut: 'tray/sign-out',
-  }
 
   constructor(tray: electron.Tray) {
     this.tray = tray
@@ -86,7 +82,7 @@ export default class TrayMenu {
       {
         label: 'Sign out',
         type: 'normal',
-        click: this.handleSignOut,
+        click: User.signOut,
       },
       { type: 'separator' },
       ...this.connectionsMenu(),
@@ -121,10 +117,6 @@ export default class TrayMenu {
       // Open dev tools when command+option clicked
       process.defaultApp && event.metaKey
     )
-
-  private handleSignOut = () => {
-    EventBus.emit(TrayMenu.EVENTS.signOut)
-  }
 
   private connect(connection: IConnection) {
     application.pool.start(connection)

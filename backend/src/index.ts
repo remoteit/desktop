@@ -16,10 +16,10 @@ Tracker.pageView('/')
 Tracker.event('app', 'startup', 'remote.it Desktop application has started')
 Logger.info('Desktop starting up!')
 
-process.on('uncaughtException', err => {
-  AirBrake.notify(err)
-  Logger.warn('Caught exception: ', { level: 'error', errorObj: err })
-  d('Caught exception', err)
+process.on('uncaughtException', (error: Error) => {
+  d('Caught exception', error)
+  AirBrake.notify(error)
+  Logger.warn('CAUGHT EXCEPTION', { error })
 })
 
 export const application = new Application()
