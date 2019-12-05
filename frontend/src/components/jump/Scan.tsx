@@ -109,5 +109,10 @@ const useStyles = makeStyles({
     '& .MuiFormControl-root': {
       width: 250,
     },
+    '& samp': {
+      fontSize: styles.fontSizes.sm,
+      fontFamily: 'Roboto Mono',
+      color: styles.colors.grayDark,
+    },
   },
 })

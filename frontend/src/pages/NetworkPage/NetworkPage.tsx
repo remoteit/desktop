@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -20,6 +20,10 @@ export const NetworkPage: React.FC = () => {
   }))
 
   const scan = (interfaceName: string) => BackendAdaptor.emit('scan', interfaceName)
+
+  useEffect(() => {
+    BackendAdaptor.emit('interfaces')
+  }, [])
 
   return (
     <>

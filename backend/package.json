@@ -1,6 +1,6 @@
 {
   "name": "remote.it-desktop-backend",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": true,
   "main": "build/index.js",
   "scripts": {

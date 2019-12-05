@@ -23,7 +23,6 @@ const useStyles = makeStyles({
     padding: `${spacing.xxs}px 0`,
     fontSize: fontSizes.sm,
     fontFamily: 'Roboto Mono',
-    letterSpacing: 0,
     color: colors.grayDarker,
     '&>span': {
       fontFamily: 'Roboto',
