@@ -1,21 +1,29 @@
 import React from 'react'
-import { List } from '@material-ui/core'
+import { Icon } from '../../components/Icon'
+import { useHistory } from 'react-router-dom'
+import { makeStyles } from '@material-ui/styles'
 import { IService } from 'remote.it'
 import { ServiceListItem } from '../ServiceListItem'
+import { Typography, Button, List } from '@material-ui/core'
+import { spacing } from '../../styling'
 
 export interface Props {
   connections: IConnection[]
   services: IService[]
 }
 
-export function ConnectionsList({ connections, services }: Props) {
+export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
+  const css = useStyles()
+  const history = useHistory()
+
   if (!connections || !connections.length) {
     return (
-      <div className="px-md py-lg gray-dark mx-auto center" style={{ maxWidth: '400px' }}>
-        <em className="mb">You have no running connections yet.</em>
-        <p className="txt-sm grey">
-          Please find a service to connect to and press the connect button and you will see them in this list.
-        </p>
+      <div className={css.page}>
+        <Typography variant="caption">You have no connections</Typography>
+        <Button onClick={() => history.push('/devices')} variant="contained" color="primary" size="medium">
+          Add a Connection
+          <Icon name="arrow-right" weight="regular" size="md" fixedWidth inline />
+        </Button>
       </div>
     )
   }
@@ -33,3 +41,15 @@ export function ConnectionsList({ connections, services }: Props) {
     </List>
   )
 }
+
+const useStyles = makeStyles({
+  page: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    height: '100%',
+    padding: `${spacing.md}px ${spacing.md}px`,
+    '& > span': { marginBottom: spacing.md },
+  },
+})

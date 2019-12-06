@@ -9,7 +9,6 @@ import { findService } from '../../models/devices'
 import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { UsernameSetting } from '../../components/UsernameSetting'
-import { colors, spacing } from '../../styling'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { ApplicationState } from '../../store'
@@ -26,6 +25,7 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { SSHButton } from '../../buttons/SSHButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
+import { spacing } from '../../styling'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()

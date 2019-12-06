@@ -9,7 +9,7 @@ export interface LogoProps {
   width?: number
 }
 
-export function Logo({ white = false, mark = false, width = 125 }: LogoProps & React.HTMLProps<HTMLAnchorElement>) {
+export function Logo({ white = false, mark = false, width = 140 }: LogoProps & React.HTMLProps<HTMLAnchorElement>) {
   let logo = logoColor
 
   if (white && mark) logo = logomarkWhite
