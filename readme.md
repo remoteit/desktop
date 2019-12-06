@@ -41,4 +41,14 @@ npm run test-e2e
 
 ### Packaging
 
-- [Notarizing on Mac OS](https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/)
+In order to be able to build on your local machine:
+
+- Sign into apple id site: `https://appleid.apple.com` with `appledeveloper@remote.it`
+- In the Security section, click the 'Generate password...' button to generate an in app password.
+- Add the in app password to your `backend/.env` file:
+  `APPLE_ID_PASSWORD=<inapp-password>`
+  You may or may not have to also add it to your keychain.
+
+If it's not working check that the developer account is signed into XCode and the certificates for the dev account are downloaded.
+
+More info can be found in this setup guide: [Notarizing on Mac OS](https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/)

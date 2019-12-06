@@ -13,7 +13,7 @@ export const UsernameSetting: React.FC<{ service: IService; connection?: IConnec
   if (!service || service.typeID !== SSH_TYPE) return null
   if (!connection) connection = newConnection(service, { username })
 
-  const disabled = connection.active || service.state !== 'active'
+  const disabled = service.state !== 'active'
 
   return (
     <InlineSetting
