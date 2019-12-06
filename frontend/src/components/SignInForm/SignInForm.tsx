@@ -35,7 +35,7 @@ export function SignInForm({ signInError, signInStarted, signIn }: SignInFormCon
   const usernameProps = formal.getFieldProps('username')
   const passwordProps = formal.getFieldProps('password')
   return (
-    <form {...formal.getFormProps()}>
+    <form className={css.form} {...formal.getFormProps()}>
       {signInError && <div className={css.error}>{signInError}</div>}
       <div className={css.section}>
         <TextField
@@ -82,6 +82,9 @@ export function SignInForm({ signInError, signInStarted, signIn }: SignInFormCon
 }
 
 const useStyles = makeStyles({
+  form: {
+    width: 400,
+  },
   error: {
     backgroundColor: styles.colors.danger,
     padding: `${styles.spacing.sm}px ${styles.spacing.md}px`,
