@@ -14,7 +14,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, ...props }) 
   if (!connection || !connection.active) return null
 
   let title = 'Copy launch URL'
-  let value = hostName(connection)
+  let value = hostName(connection) || ''
 
   return (
     <span {...props}>
