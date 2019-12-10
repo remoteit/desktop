@@ -111,7 +111,7 @@ export const ServicePage: React.FC = () => {
         <LanShareSelect connection={connection} service={service} />
       </List>
       <Divider />
-      <Columns margin>
+      <Columns inset>
         <DataDisplay data={data} />
       </Columns>
     </Container>

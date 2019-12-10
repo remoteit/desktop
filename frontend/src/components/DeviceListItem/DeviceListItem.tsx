@@ -36,7 +36,11 @@ export const DeviceListItem = ({ device, connections }: DeviceListItemProps) => 
       <ListItemIcon>
         <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
       </ListItemIcon>
-      <ListItemText primary={<ServiceName service={device} connection={activeConnection} />} />
+      <ListItemText
+        primary={
+          <ServiceName service={device} shared={device.shared === 'shared-from'} connection={activeConnection} />
+        }
+      />
       <ListItemSecondaryAction style={{ right: 90 }}>
         <ServiceIndicators device={device} connections={connections} />
       </ListItemSecondaryAction>

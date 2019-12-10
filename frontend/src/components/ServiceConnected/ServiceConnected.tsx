@@ -18,7 +18,7 @@ export const ServiceConnected: React.FC<Props> = ({ connection }) => {
       <Typography color="primary" variant="subtitle1">
         Connected
       </Typography>
-      <Columns count={1} margin>
+      <Columns count={1} inset>
         <DataDisplay
           data={[
             { label: 'URL', value: hostName(connection) },

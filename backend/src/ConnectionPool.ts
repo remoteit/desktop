@@ -4,15 +4,13 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import PortScanner from './PortScanner'
 import ElectronApp from './ElectronApp'
-import User from './User'
-import { IUser } from 'remote.it'
+import user from './User'
 
 const d = debug('r3:backend:ConnectionPool')
 
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
-  user?: UserCredentials
   freePort?: number
 
   private pool: Connection[] = []
@@ -21,10 +19,9 @@ export default class ConnectionPool {
     updated: 'pool',
   }
 
-  constructor(connections: IConnection[], user?: UserCredentials) {
-    Logger.info('Initializing connections pool', { connections, user })
+  constructor(connections: IConnection[]) {
+    Logger.info('Initializing connections pool', { connections })
 
-    this.user = user
     connections.map(c => this.set(c))
 
     // Only turn on connections the user had open last time.
@@ -50,11 +47,11 @@ export default class ConnectionPool {
   }
 
   add = (connection: IConnection) => {
-    if (!this.user) {
-      User.signOut()
+    if (!user.signedIn) {
+      user.signOut()
       return
     }
-    const instance = new Connection(this.user, connection)
+    const instance = new Connection(user, connection)
     this.pool.push(instance)
     return instance
   }

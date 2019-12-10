@@ -1,5 +1,5 @@
 import React from 'react'
-import BackendAdaptor from '../../services/BackendAdapter'
+import Controller from '../../services/Controller'
 import { newConnection } from '../../helpers/connectionHelper'
 import { IService } from 'remote.it'
 import { IconButton, Tooltip, Button } from '@material-ui/core'
@@ -15,7 +15,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({ connection, servic
   if ((connection && connection.active) || !service || service.state !== 'active') return null
   const disabled: boolean = !!(connection && connection.connecting)
   const ConnectIcon = <Icon name="arrow-right" weight="regular" size="md" fixedWidth inline={fullSize} />
-  const connect = () => BackendAdaptor.emit('service/connect', connection || newConnection(service))
+  const connect = () => Controller.emit('service/connect', connection || newConnection(service))
 
   if (fullSize)
     return (

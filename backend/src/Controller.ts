@@ -2,7 +2,8 @@ import SocketIO from 'socket.io'
 import LAN from './LAN'
 import Logger from './Logger'
 import electron from 'electron'
-import TrayMenu from './TrayMenu'
+import EventRelay from './EventRelay'
+import Connection from './Connection'
 import CLIInterface from './CLIInterface'
 import MuxerInstaller from './MuxerInstaller'
 import BinaryInstaller from './BinaryInstaller'
@@ -14,7 +15,7 @@ import ElectronApp from './ElectronApp'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import Server from './Server'
-import User from './User'
+import user from './User'
 import debug from 'debug'
 
 const d = debug('r3:backend:Server')
@@ -24,21 +25,28 @@ class Controller {
   private lan: LAN
   private server: SocketIO.Server
   private pool: ConnectionPool
-  private user?: UserCredentials
+  private socket?: SocketIO.Socket
 
-  constructor(server: SocketIO.Server, cli: CLIInterface, lan: LAN, pool: ConnectionPool, user?: UserCredentials) {
+  constructor(server: SocketIO.Server, cli: CLIInterface, lan: LAN, pool: ConnectionPool) {
     this.server = server
     this.lan = lan
     this.cli = cli
     this.pool = pool
-    this.user = user
-    EventBus.on(Server.EVENTS.connection, this.bindSockets)
+    EventBus.on(Server.EVENTS.authenticated, this.openSockets)
+
+    new EventRelay(
+      [
+        ...Object.values(Installer.EVENTS),
+        ...Object.values(Connection.EVENTS),
+        ...Object.values(ConnectionPool.EVENTS),
+      ],
+      EventBus,
+      this.server.sockets
+    )
   }
 
-  bindSockets = (socket: SocketIO.Socket) => {
-    socket.on('user/check-sign-in', this.checkSignIn)
-    socket.on('user/sign-in', this.signIn)
-    socket.on('user/sign-out', this.signOut)
+  openSockets = (socket: SocketIO.Socket) => {
+    socket.on('user/sign-out', user.signOut)
     socket.on('user/quit', electron.app.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
@@ -53,6 +61,9 @@ class Controller {
     socket.on('scan', this.scan)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
+
+    // things are ready - send the secure data
+    this.syncBackend()
   }
 
   targets = async (result: ITarget[]) => {
@@ -80,8 +91,6 @@ class Controller {
     this.server.emit('freePort', this.pool.freePort)
   }
 
-  // privateIP = () => this.server.emit('privateIP', this.lan.privateIP)
-
   syncBackend = async () => {
     this.server.emit('targets', this.cli.data.targets)
     this.server.emit('device', this.cli.data.device)
@@ -92,26 +101,7 @@ class Controller {
     this.server.emit('freePort', this.pool.freePort)
   }
 
-  // TODO
-  // REPLACE THESE FUNCTIONS WITH SERVER SIDE FIRST AUTH
-  //   VVVVVVVVVVVVVVVV
-  checkSignIn = async () => {
-    const user = await User.checkSignIn(this.user)
-    if (user) this.user = user
-  }
-
-  signIn = async ({ username, password }: { username: string; password: string }) => {
-    d('Sign in:', username)
-    this.user = await User.signIn(username, password)
-  }
-
-  signOut = () => {
-    d('Sign out')
-    User.signOut()
-    this.user = undefined
-  }
-
-  connections = (connections: IConnection[]) => {
+  connections = () => {
     d('List connections')
     this.server.emit('pool', this.pool.toJSON())
   }
@@ -128,7 +118,7 @@ class Controller {
   }
 
   disconnect = async (connection: IConnection) => {
-    d('Disconnect:', connection)
+    d('Disconnect Socket:', connection)
     await this.pool.stop(connection, false)
   }
 

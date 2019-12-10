@@ -26,6 +26,6 @@ const useStyles = makeStyles({
   },
   logo: {
     marginTop: -styles.spacing.xl,
-    marginBottom: styles.spacing.md,
+    marginBottom: styles.spacing.lg,
   },
 })

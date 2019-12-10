@@ -44,7 +44,7 @@ export default class Installer {
           version: this.version,
           name: this.name,
         } as InstallationInfo)
-      : EventBus.emit(Installer.EVENTS.notInstalled)
+      : EventBus.emit(Installer.EVENTS.notInstalled, this.name)
   }
 
   /**

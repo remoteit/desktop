@@ -6,8 +6,13 @@ import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 
 const mapState = (state: ApplicationState, props: any) => ({
+  user: state.auth.user,
   installing: state.binaries.installing,
-  installed: state.binaries.connectdInstalled && state.binaries.muxerInstalled && state.binaries.demuxerInstalled,
+  installed:
+    state.binaries.connectdInstalled &&
+    state.binaries.muxerInstalled &&
+    state.binaries.demuxerInstalled &&
+    state.binaries.remoteitInstalled,
   openOnLogin: state.auth.openOnLogin,
   searchOnly: state.devices.searchOnly,
 })
@@ -28,6 +33,7 @@ export const SettingsPage = connect(
 )(
   ({
     quit,
+    user,
     signOut,
     installing,
     installed,
@@ -44,7 +50,6 @@ export const SettingsPage = connect(
         'Are you sure? Signing out will close all active connections and remove your connection history.'
       ) && signOut()
 
-    installed = false
     return (
       <Container header={<Typography variant="h1">Settings</Typography>}>
         <List>
@@ -72,7 +77,12 @@ export const SettingsPage = connect(
         </List>
         <Divider />
         <List>
-          <SettingsListItem label="Sign out" icon="sign-out" onClick={signOutWarning} />
+          <SettingsListItem
+            label="Sign out"
+            subLabel={`Signed is as ${user && user.username}.`}
+            icon="sign-out"
+            onClick={signOutWarning}
+          />
           <SettingsListItem label="Quit" icon="skull-crossbones" onClick={quitWarning} />
         </List>
       </Container>

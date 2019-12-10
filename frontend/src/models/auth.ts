@@ -1,7 +1,8 @@
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
-import BackendAdapter from '../services/BackendAdapter'
-import { clearUserCredentials, updateUserCredentials } from '../services/remote.it'
+import { ApplicationState } from '../store'
+import Controller from '../services/Controller'
+import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
 
 const USER_KEY = 'user'
 const OPEN_ON_LOGIN_KEY = 'open-on-login'
@@ -10,12 +11,14 @@ export interface AuthState {
   checkSignInStarted: boolean
   openOnLogin: boolean
   signInStarted: boolean
+  authenticated: boolean
   signInError?: string
   user?: IUser
 }
 
 const state: AuthState = {
   checkSignInStarted: false,
+  authenticated: false,
   openOnLogin: false,
   signInStarted: false,
   signInError: undefined,
@@ -25,41 +28,66 @@ const state: AuthState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async checkSignIn() {
-      const user = localStorage.getItem(USER_KEY)
-      dispatch.auth.checkSignInStarted()
+    async authenticate() {},
+    async init(_: void, rootState: any) {
+      let { user } = rootState.auth
 
       // Get "open on login" setting
       dispatch.auth.getOpenOnLoginState()
 
+      if (!user) {
+        const storedUser = localStorage.getItem(USER_KEY)
+        if (storedUser) {
+          user = JSON.parse(storedUser)
+          dispatch.auth.setUser(user)
+        }
+      }
+
       if (user) {
-        dispatch.auth.setUser(JSON.parse(user))
-        dispatch.auth.signInFinished()
-        dispatch.auth.checkSignInFinished()
-        dispatch.devices.shouldSearchDevices()
+        Controller.emit('authentication', { username: user.username, authHash: user.authHash })
+      } else {
+        dispatch.auth.signedOut()
+      }
+    },
+    async signIn({ password, username }) {
+      dispatch.auth.signInStarted()
+      console.log('Logging in user', username)
+
+      let user
+      try {
+        user = await r3.user.login(username, password)
+      } catch (error) {
+        dispatch.auth.signInError(error.message)
         return
       }
-      BackendAdapter.emit('user/check-sign-in')
+
+      if (!user) {
+        console.warn('Could not log in user:', { username })
+        dispatch.auth.signInError('User not found')
+        return
+      }
+
+      dispatch.auth.setUser(user)
+      Controller.open()
     },
-    async signIn(credentials: { password: string; username: string }) {
-      dispatch.auth.signInStarted()
-      BackendAdapter.emit('user/sign-in', credentials)
-    },
-    async signedIn(user: IUser) {
+    async signedIn() {
       dispatch.auth.signInFinished()
       dispatch.auth.checkSignInFinished()
-      dispatch.auth.setUser(user)
       dispatch.devices.shouldSearchDevices()
+    },
+    async authenticated() {
+      dispatch.auth.signedIn()
+      dispatch.auth.setAuthenticated(true)
     },
     /**
      * Triggers a signout via the backend process
      */
     async signOut() {
       // const { signOutFinished } = dispatch.auth
-      BackendAdapter.emit('user/sign-out')
+      Controller.emit('user/sign-out')
     },
     async quit() {
-      BackendAdapter.emit('user/quit')
+      Controller.emit('user/quit')
     },
     async signInError(error: string) {
       dispatch.auth.signInFinished()
@@ -73,6 +101,8 @@ export default createModel({
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
+      dispatch.auth.setAuthenticated(false)
+      Controller.close()
     },
     async getOpenOnLoginState() {
       // Get "open on login" setting
@@ -103,6 +133,9 @@ export default createModel({
       localStorage.removeItem('devices')
       localStorage.removeItem(USER_KEY)
     },
+    setAuthenticated(state: AuthState, authenticated: boolean) {
+      state.authenticated = authenticated
+    },
     setError(state: AuthState, error: string) {
       state.signInError = error
     },
@@ -113,7 +146,7 @@ export default createModel({
       updateUserCredentials(user)
     },
     setOpenOnLogin(state: AuthState, open: boolean) {
-      BackendAdapter.emit('app/open-on-login', open)
+      Controller.emit('app/open-on-login', open)
       localStorage.setItem(OPEN_ON_LOGIN_KEY, open.toString())
       state.openOnLogin = open
     },

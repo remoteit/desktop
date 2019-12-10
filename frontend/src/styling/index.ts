@@ -1,6 +1,7 @@
-export type FontSize = 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
+export type FontSize = 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
 
 export const fontSizes: { [key in FontSize]: number } = {
+  xxxs: 8,
   xxs: 10,
   xs: 11,
   sm: 12,

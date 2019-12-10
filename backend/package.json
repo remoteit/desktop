@@ -61,6 +61,7 @@
     "portfinder": "1.0.21",
     "remote.it": "0.37.0",
     "socket.io": "2.2.0",
+    "socketio-auth": "^0.1.1",
     "sudo-prompt": "9.0.0",
     "universal-analytics": "0.4.20",
     "winston": "3.2.1"
@@ -82,7 +83,8 @@
     "productName": "remote.it",
     "artifactName": "${productName}-${version}.${ext}",
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "perMachine": true
     },
     "linux": {
       "target": [

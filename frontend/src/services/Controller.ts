@@ -2,9 +2,8 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT } from '../constants'
 import { EventEmitter } from 'events'
-import { IUser } from 'remote.it'
 
-class BackendAdapter extends EventEmitter {
+class Controller extends EventEmitter {
   private socket = io(`http://localhost:${PORT}`)
 
   init() {
@@ -19,6 +18,18 @@ class BackendAdapter extends EventEmitter {
     }
   }
 
+  open() {
+    if (!this.socket.connected) {
+      this.socket.open()
+    }
+  }
+
+  close() {
+    if (this.socket.connected) {
+      this.socket.close()
+    }
+  }
+
   on(eventName: SocketEvent, handler: (...args: any[]) => void) {
     this.socket.on(eventName, handler)
     return this
@@ -30,7 +41,7 @@ class BackendAdapter extends EventEmitter {
   }
 
   emit(event: SocketAction, ...args: any[]): boolean {
-    console.log('BackendAdaptor EMIT', event, args)
+    console.log('Controller EMIT', event, args)
     this.socket.emit(event, ...args)
     return true
   }
@@ -42,8 +53,19 @@ function getEventHandlers() {
   const { binaries, auth, backend, ui } = store.dispatch
 
   return {
-    connect: () => ui.connected(),
+    connect: () => {
+      console.log('SOCKET CONNECT')
+      ui.connected()
+      auth.init()
+    },
+
+    // User
+    signedOut: () => auth.signedOut(),
+
+    authenticated: () => auth.authenticated(),
+
     disconnect: () => ui.disconnected(),
+
     connect_error: () => backend.set({ key: 'error', value: true }),
 
     pool: (result: IConnection[]) => {
@@ -94,22 +116,16 @@ function getEventHandlers() {
     'service/request': (msg: ConnectionMessage) => console.log('service/request', msg),
     'service/tunnel/opened': (msg: ConnectionMessage) => console.log('service/tunnel/opened', msg),
     'service/tunnel/closed': (msg: ConnectionMessage) => console.log('service/tunnel/closed', msg),
-    // 'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
     'service/version': (msg: ConnectionMessage) => console.log('service/version', msg),
     'service/unknown-event': (msg: ConnectionMessage) => console.log('service/unknown-event', msg),
+    // 'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
 
     // muxer binary
-    'binary/install/start': () => console.log('binary/install/start'),
     'binary/install/error': (error: string) => binaries.installError(error),
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: string) => binaries.notInstalled(binary),
-
-    // User/auth
-    'user/sign-in/error': (error: string) => auth.signInError(error),
-    'user/signed-out': () => auth.signedOut(),
-    'user/signed-in': (user: IUser) => auth.signedIn(user),
   } as EventHandlers
 }
 
-export default new BackendAdapter()
+export default new Controller()

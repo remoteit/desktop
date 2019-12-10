@@ -1,5 +1,5 @@
 import React from 'react'
-import BackendAdaptor from '../../services/BackendAdapter'
+import Controller from '../../services/Controller'
 import { Dispatch } from '../../store'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
@@ -19,7 +19,7 @@ export const RestartButton: React.FC<RestartButtonProps> = ({ disabled = false, 
         <IconButton
           disabled={disabled}
           color="primary"
-          onClick={() => console.warn("unimplemented BackendAdaptor.emit('service/restart', connection)")}
+          onClick={() => console.warn("unimplemented Controller.emit('service/restart', connection)")}
         >
           <Icon name="redo" size="md" weight="regular" fixedWidth />
         </IconButton>

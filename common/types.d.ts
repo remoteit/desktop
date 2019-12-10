@@ -1,5 +1,8 @@
 declare global {
   export type SocketAction =
+    //socket auth
+    | 'authentication'
+
     // user/auth
     | 'user/check-sign-in'
     | 'user/sign-in'
@@ -84,6 +87,11 @@ declare global {
     name: string
     path: string
     version: string
+  }
+
+  interface UserCredentials {
+    username: string
+    authHash: string
   }
 
   export interface IConnection {

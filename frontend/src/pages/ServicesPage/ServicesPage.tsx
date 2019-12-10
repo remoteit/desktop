@@ -36,7 +36,12 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
           <Breadcrumbs />
           <Typography variant="h1">
             <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
-            <ServiceName service={device} connection={activeConnection} inline />
+            <ServiceName
+              service={device}
+              connection={activeConnection}
+              shared={device.shared === 'shared-from'}
+              inline
+            />
           </Typography>
         </>
       }
@@ -45,7 +50,7 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
       <ServiceList services={device.services} connections={serviceConnections} />
       <Divider />
       <Typography variant="subtitle1">Device details</Typography>
-      <Columns count={1} margin>
+      <Columns count={1} inset>
         <DataDisplay
           data={[
             { label: 'Device ID', value: device.id },

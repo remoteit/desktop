@@ -1,4 +1,4 @@
-import BackendAdaptor from '../services/BackendAdapter'
+import Controller from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../constants'
 import { IService } from 'remote.it'
 
@@ -18,10 +18,10 @@ export function setConnection(connection: IConnection) {
     console.warn('Connection missing data. Set failed', connection)
     return false
   }
-  BackendAdaptor.emit('connection', connection)
+  Controller.emit('connection', connection)
 }
 
 export function clearConnectionError(connection: IConnection) {
   delete connection.error
-  BackendAdaptor.emit('connection', connection)
+  Controller.emit('connection', connection)
 }

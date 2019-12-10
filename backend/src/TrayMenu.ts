@@ -1,5 +1,4 @@
 import { application } from '.'
-import { IUser } from 'remote.it'
 import { hostName } from './helpers/nameHelper'
 import { IP_PRIVATE } from './constants'
 import LAN from './LAN'
@@ -8,7 +7,7 @@ import Environment from './Environment'
 import ElectronApp from './ElectronApp'
 import ConnectionPool from './ConnectionPool'
 import EventBus from './EventBus'
-import User from './User'
+import user from './User'
 import path from 'path'
 
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
@@ -17,12 +16,10 @@ const iconOnline = path.join(__dirname, 'images', 'iconOnlineTemplate.png')
 export default class TrayMenu {
   private tray: any
   private connections: any[]
-  private user: any
   private privateIP: ipAddress
 
   constructor(tray: electron.Tray) {
     this.tray = tray
-    this.user = {}
     this.connections = []
     this.privateIP = IP_PRIVATE
 
@@ -32,15 +29,16 @@ export default class TrayMenu {
       })
     }
 
-    EventBus.on(User.EVENTS.signedIn, this.updateUser)
-    EventBus.on(User.EVENTS.signedOut, this.updateUser)
+    EventBus.on(user.EVENTS.signedIn, this.render)
+    EventBus.on(user.EVENTS.signedOut, this.render)
     EventBus.on(ConnectionPool.EVENTS.updated, this.updateConnectionMenu)
     EventBus.on(LAN.EVENTS.privateIP, privateIP => (this.privateIP = privateIP))
   }
 
-  private updateUser = (user: IUser) => {
-    this.user = user
-    this.render()
+  private render = () => {
+    const menuItems = user.signedIn ? this.remoteitMenu() : this.signInMenu()
+    const contextMenu = electron.Menu.buildFromTemplate(menuItems)
+    this.tray.setContextMenu(contextMenu)
   }
 
   private updateConnectionMenu = (pool: IConnection[]) => {
@@ -66,12 +64,6 @@ export default class TrayMenu {
     this.render()
   }
 
-  private render() {
-    const menuItems = this.user ? this.remoteitMenu() : this.signInMenu()
-    const contextMenu = electron.Menu.buildFromTemplate(menuItems)
-    this.tray.setContextMenu(contextMenu)
-  }
-
   private remoteitMenu() {
     return [
       {
@@ -80,9 +72,9 @@ export default class TrayMenu {
         click: this.handleOpen,
       },
       {
-        label: 'Sign out',
+        label: `Sign out ${user.username}`,
         type: 'normal',
-        click: User.signOut,
+        click: user.signOut,
       },
       { type: 'separator' },
       ...this.connectionsMenu(),

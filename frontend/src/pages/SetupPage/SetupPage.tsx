@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
-import BackendAdaptor from '../../services/BackendAdapter'
+import Controller from '../../services/Controller'
 import Device from '../../components/jump/Device'
 
 const mapState = (state: ApplicationState) => ({
@@ -20,11 +20,11 @@ export const SetupPage = connect(
   mapState,
   mapDispatch
 )(({ device, targets, added, setAdded }: SetupPageProps) => {
-  const updateTargets = (t: ITarget[]) => BackendAdaptor.emit('targets', t)
-  const updateDevice = (d: IDevice) => BackendAdaptor.emit('device', d)
+  const updateTargets = (t: ITarget[]) => Controller.emit('targets', t)
+  const updateDevice = (d: IDevice) => Controller.emit('device', d)
   const deleteDevice = () => {
-    BackendAdaptor.emit('device', 'DELETE')
-    BackendAdaptor.emit('init')
+    Controller.emit('device', 'DELETE')
+    Controller.emit('init')
   }
 
   return (

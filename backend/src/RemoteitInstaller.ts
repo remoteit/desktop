@@ -1,6 +1,5 @@
 import Installer from './Installer'
 import Environment from './Environment'
-import os from 'os'
 
 class RemoteitInstaller extends Installer {
   get downloadFileName() {

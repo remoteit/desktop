@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import BackendAdapter from '../../services/BackendAdapter'
+import Controller from '../../services/Controller'
 import { Icon } from '../Icon'
 import { REGEX_NUMERIC_VALUE } from '../../constants'
 import fileSize from 'filesize'
@@ -16,7 +16,7 @@ export const Throughput: React.FC<Props> = ({ connection, ...props }) => {
   const css = useStyles()
 
   useEffect(() => {
-    BackendAdapter.on('service/throughput', (message: ConnectionMessage) => {
+    Controller.on('service/throughput', (message: ConnectionMessage) => {
       if (message.connection.id === connection.id && message.raw) {
         const [s, r] = parse(message.raw)
         setSent(s)
@@ -25,7 +25,7 @@ export const Throughput: React.FC<Props> = ({ connection, ...props }) => {
     })
 
     return function cleanup() {
-      BackendAdapter.off('service/throughput')
+      Controller.off('service/throughput')
     }
   }, [connection])
 

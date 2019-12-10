@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import BackendAdaptor from '../../services/BackendAdapter'
+import Controller from '../../services/Controller'
 import { IService } from 'remote.it'
 import { useSelector } from 'react-redux'
 import { ResetButton } from '../../buttons/ResetButton'
@@ -48,7 +48,7 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
       <ResetButton
         onClick={() => {
           setPort(undefined)
-          BackendAdaptor.emit('freePort', connection)
+          Controller.emit('freePort', connection)
         }}
       />
     </InlineSetting>

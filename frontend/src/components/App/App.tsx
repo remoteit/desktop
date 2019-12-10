@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import BackendAdaptor from '../../services/BackendAdapter'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
@@ -25,6 +24,7 @@ import styles from '../../styling'
 
 const mapState = (state: ApplicationState) => ({
   user: state.auth.user,
+  authenticated: state.auth.authenticated,
   checkSignInStarted: state.auth.checkSignInStarted,
   installed:
     state.binaries.connectdInstalled &&
@@ -32,16 +32,10 @@ const mapState = (state: ApplicationState) => ({
     state.binaries.demuxerInstalled &&
     state.binaries.remoteitInstalled,
 })
-const mapDispatch = (dispatch: any) => ({
-  checkSignIn: dispatch.auth.checkSignIn,
-})
 
-export type AppProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
+export type AppProps = ReturnType<typeof mapState>
 
-export const App = connect(
-  mapState,
-  mapDispatch
-)(({ checkSignIn, installed, checkSignInStarted, user }: AppProps) => {
+export const App = connect(mapState)(({ installed, checkSignInStarted, user, authenticated }: AppProps) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -57,35 +51,26 @@ export const App = connect(
   }
 
   useEffect(() => {
-    checkSignIn()
-    BackendAdaptor.emit('init')
-  }, [checkSignIn])
-
-  useEffect(() => {
     if (navigation[menu] !== location.pathname) {
       setNavigation({ ...navigation, [menu]: location.pathname })
     }
   }, [navigation, location, menu])
 
-  if (checkSignInStarted)
+  if (checkSignInStarted) return <LoadingPage />
+
+  if (!user || !authenticated)
     return (
-      <Page>
-        <LoadingPage />
+      <Page authenticated={authenticated}>
+        <Header />
+        <SignInPage />
       </Page>
     )
 
   if (!installed)
     return (
       <Page>
-        <InstallationNotice />
-      </Page>
-    )
-
-  if (!user)
-    return (
-      <Page>
         <Header />
-        <SignInPage />
+        <InstallationNotice />
       </Page>
     )
 

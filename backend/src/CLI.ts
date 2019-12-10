@@ -5,7 +5,7 @@ import defaults from './helpers/defaults'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
-import User from './User'
+import user from './User'
 import EventBus from './EventBus'
 import * as sudo from 'sudo-prompt'
 import { promisify } from 'util'
@@ -23,18 +23,15 @@ export default class CLI {
     targets: [defaults],
   }
 
-  userFile: JSONFile<ConfigFile>
-  adminFile: JSONFile<ConfigFile>
-  credentials: UserCredentials | undefined
+  userConfigFile: JSONFile<ConfigFile>
+  adminConfigFile: JSONFile<ConfigFile>
 
-  constructor(user?: UserCredentials) {
+  constructor() {
     Logger.info('USER FILE', { path: path.join(Environment.userPath, 'config.json') })
     Logger.info('ADMIN FILE', { path: path.join(Environment.adminPath, 'config.json') })
-    this.userFile = new JSONFile<ConfigFile>(path.join(Environment.userPath, 'config.json'))
-    this.adminFile = new JSONFile<ConfigFile>(path.join(Environment.adminPath, 'config.json'))
-    this.credentials = user
-    EventBus.on(User.EVENTS.signedIn, (user: UserCredentials) => (this.credentials = user))
-    EventBus.on(User.EVENTS.signedOut, () => this.signOut())
+    this.userConfigFile = new JSONFile<ConfigFile>(path.join(Environment.userPath, 'config.json'))
+    this.adminConfigFile = new JSONFile<ConfigFile>(path.join(Environment.adminPath, 'config.json'))
+    EventBus.on(user.EVENTS.signedOut, () => this.signOut())
     this.read()
   }
 
@@ -74,7 +71,7 @@ export default class CLI {
   }
 
   private readFile(admin?: boolean) {
-    return (admin ? this.adminFile.read() : this.userFile.read()) || {}
+    return (admin ? this.adminConfigFile.read() : this.userConfigFile.read()) || {}
   }
 
   async addTarget(t: ITarget) {
@@ -100,13 +97,13 @@ export default class CLI {
     await this.exec({ commands: ['tools', 'install'], admin: true })
   }
 
-  async signIn(user?: UserCredentials, admin?: boolean) {
-    if (!user || !user.username || !user.authHash) return
-    await this.exec({ commands: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: true })
+  async signIn(admin?: boolean) {
+    if (!user.signedIn) return
+    await this.exec({ commands: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: false })
   }
 
   async signOut() {
-    await this.exec({ commands: ['signout'] })
+    await this.exec({ commands: ['signout'], checkSignIn: false })
   }
 
   async scan(ipMask: string) {
@@ -118,11 +115,11 @@ export default class CLI {
     this.readUser(admin)
     d('Check sign in', this.data.user)
     Logger.info('CHECK SIGN IN', { user: this.data.user, admin })
-    if (this.signedOut) await this.signIn(this.credentials, admin)
+    if (this.signedOut) await this.signIn(admin)
   }
 
-  async exec({ commands, admin, checkSignIn }: { commands: any[]; admin?: boolean; checkSignIn?: boolean }) {
-    if (!checkSignIn) await this.checkSignIn(admin)
+  async exec({ commands, admin, checkSignIn = true }: { commands: any[]; admin?: boolean; checkSignIn?: boolean }) {
+    if (checkSignIn) await this.checkSignIn(admin)
 
     const command = commands.join(' ')
     let result = ''
@@ -155,7 +152,6 @@ export default class CLI {
   }
 
   get signedOut() {
-    const { user } = this.data
-    return !user || !user.username || !user.authHash
+    return !this.data.user || !this.data.user.username || !this.data.user.authHash
   }
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import BackendAdaptor from '../../services/BackendAdapter'
+import Controller from '../../services/Controller'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 
@@ -12,7 +12,7 @@ export const ForgetButton: React.FC<ForgetButtonProps> = ({ disabled = false, co
   if (!connection || connection.active) return null
   return (
     <Tooltip title="Clear this connection">
-      <IconButton disabled={disabled} onClick={() => BackendAdaptor.emit('service/forget', connection)}>
+      <IconButton disabled={disabled} onClick={() => Controller.emit('service/forget', connection)}>
         <Icon name="times" size="md" fixedWidth />
       </IconButton>
     </Tooltip>

@@ -7,15 +7,16 @@ import styles from '../../styling'
 
 export interface Props {
   children: React.ReactNode
+  authenticated?: boolean
 }
 
-export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
+export function Page({ authenticated = true, children }: Props & React.HTMLProps<HTMLDivElement>) {
   const connected = useSelector((state: ApplicationState) => state.ui.connected)
   const css = useStyles()
   return (
     <div className={css.page}>
       {children}
-      <Snackbar open={!connected} message="Webserver connection lost. Retrying..." />
+      <Snackbar open={authenticated && !connected} message="Webserver connection lost. Retrying..." />
     </div>
   )
 }

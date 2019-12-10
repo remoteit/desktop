@@ -20,6 +20,7 @@ code {
 }
 
 #root {
+  background-color: white;
   position: fixed;
   height: 100%;
   width: 100%;
