@@ -146,11 +146,11 @@ export default class Installer {
 
     if (Environment.isWindows) {
       extension = os.arch() === 'x64' ? '.x86_64-64.exe' : '.exe'
-    }
-    if (Environment.isMac) {
+    } else if (Environment.isMac) {
       extension = os.arch() === 'x64' ? '.x86_64-osx' : '.x86-osx'
-    }
-    if (Environment.isLinux) {
+    } else if (Environment.isPi) {
+      extension = 'arm-linaro-pi'
+    } else if (Environment.isLinux) {
       extension = os.arch() === 'x64' ? '.x86_64-ubuntu16.04' : 'x86-ubuntu16.04'
     }
 

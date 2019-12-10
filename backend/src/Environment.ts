@@ -6,6 +6,7 @@ import {
   WIN_USER_SETTINGS,
   WIN_BINARIES,
 } from './constants'
+import detectRPi from 'detect-rpi'
 import os from 'os'
 
 export default class Environment {
@@ -19,6 +20,10 @@ export default class Environment {
 
   static get isLinux() {
     return os.platform() === 'linux'
+  }
+
+  static get isPi() {
+    return detectRPi()
   }
 
   static get userPath() {
