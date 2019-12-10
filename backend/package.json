@@ -6,11 +6,10 @@
   "scripts": {
     "build": "NODE_ENV=production run-s clean compile copy-* build-*",
     "copy-images": "cp -R ./src/images ./build/",
-    "copy-scripts": "cp -R ./src/bin ./build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "build-backend": "electron-builder -m",
+    "build-backend": "electron-builder -mw",
     "compile": "tsc",
     "electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
     "test": "NODE_ENV=test jest",
@@ -19,7 +18,6 @@
     "watch-build": "tsc --watch",
     "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron",
     "watch-images": "onchange -i -k 'src/images/**/*' -- npm run copy-images",
-    "watch-scripts": "onchange -i -k 'src/bin/**/*' -- npm run copy-scripts",
     "test-watch": "npm run test -- --watch"
   },
   "devDependencies": {
@@ -83,7 +81,10 @@
     "productName": "remote.it",
     "artifactName": "${productName}-${version}.${ext}",
     "win": {
-      "target": "nsis",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
       "perMachine": true
     },
     "linux": {
