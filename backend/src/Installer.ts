@@ -142,10 +142,18 @@ export default class Installer {
   }
 
   get downloadFileName() {
-    return Environment.isWindows
-      ? `${this.name}.x86_64-64.exe`
-      : os.arch() === 'x64'
-      ? `${this.name}.x86_64-osx`
-      : `${this.name}.x86-osx`
+    let extension = ''
+
+    if (Environment.isWindows) {
+      extension = os.arch() === 'x64' ? '.x86_64-64.exe' : '.exe'
+    }
+    if (Environment.isMac) {
+      extension = os.arch() === 'x64' ? '.x86_64-osx' : '.x86-osx'
+    }
+    if (Environment.isLinux) {
+      extension = os.arch() === 'x64' ? '.x86_64-ubuntu16.04' : 'x86-ubuntu16.04'
+    }
+
+    return this.name + extension
   }
 }

@@ -1,10 +1,10 @@
 import {
-  MAC_USER_SETTINGS,
-  WIN_USER_SETTINGS,
+  UNIX_ADMIN_SETTINGS,
+  UNIX_USER_SETTINGS,
+  UNIX_BINARIES,
   WIN_ADMIN_SETTINGS,
-  MAC_ADMIN_SETTINGS,
+  WIN_USER_SETTINGS,
   WIN_BINARIES,
-  MAC_BINARIES,
 } from './constants'
 import os from 'os'
 
@@ -17,16 +17,20 @@ export default class Environment {
     return os.platform() === 'darwin'
   }
 
+  static get isLinux() {
+    return os.platform() === 'linux'
+  }
+
   static get userPath() {
-    return this.isWindows ? WIN_USER_SETTINGS : MAC_USER_SETTINGS
+    return this.isWindows ? WIN_USER_SETTINGS : UNIX_USER_SETTINGS
   }
 
   static get adminPath() {
-    return this.isWindows ? WIN_ADMIN_SETTINGS : MAC_ADMIN_SETTINGS
+    return this.isWindows ? WIN_ADMIN_SETTINGS : UNIX_ADMIN_SETTINGS
   }
 
   static get binPath() {
-    return this.isWindows ? WIN_BINARIES : MAC_BINARIES
+    return this.isWindows ? WIN_BINARIES : UNIX_BINARIES
   }
 
   static toJSON() {
