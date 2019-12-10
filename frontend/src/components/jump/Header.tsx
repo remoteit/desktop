@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/styles'
 import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Icon } from '../Icon'
-import { isElectron, isWindows } from '../../services/Platform'
+import { isElectron, isMac } from '../../services/Platform'
 import * as screenfull from 'screenfull'
 import styles from '../../styling'
 
@@ -23,7 +23,7 @@ const Component: React.FC<Props> = ({ user }) => {
     if (screenfull.isEnabled) screenfull.toggle()
   }
 
-  if (isWindows() && isElectron()) return null
+  if (!isMac() && isElectron()) return null
 
   return (
     <div className={css.header}>
@@ -39,10 +39,7 @@ const Component: React.FC<Props> = ({ user }) => {
   )
 }
 
-export const Header = connect(
-  mapState,
-  mapDispatch
-)(Component)
+export const Header = connect(mapState, mapDispatch)(Component)
 
 const useStyles = makeStyles({
   header: {
