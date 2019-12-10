@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-backend",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -65,7 +65,7 @@
     "universal-analytics": "0.4.20",
     "winston": "3.2.1"
   },
-  "homepage": "https://github.com/remoteit/desktop",
+  "homepage": "https://remote.it",
   "repository": {
     "url": "git+ssh://git@github.com/remoteit/desktop.git",
     "type": "git"
@@ -79,14 +79,16 @@
     "appId": "it.remote.desktop",
     "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
-    "productName": "remoteit",
+    "productName": "remoteit-app",
     "artifactName": "${productName}-${version}.${ext}",
     "win": {
       "target": "nsis"
     },
     "nsis": {
       "oneClick": true,
-      "perMachine": true
+      "perMachine": true,
+      "deleteAppDataOnUninstall": true,
+      "shortcutName": "remote.it"
     },
     "linux": {
       "target": [
