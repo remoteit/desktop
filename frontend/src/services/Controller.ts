@@ -59,9 +59,6 @@ function getEventHandlers() {
       auth.init()
     },
 
-    // User
-    signedOut: () => auth.signedOut(),
-
     authenticated: () => auth.authenticated(),
 
     disconnect: () => ui.disconnected(),
@@ -104,6 +101,9 @@ function getEventHandlers() {
     freePort: (result: number) => backend.set({ key: 'freePort', value: result }),
 
     privateIP: (result: ipAddress) => backend.set({ key: 'privateIP', value: result }),
+
+    // User
+    'signed-out': () => auth.signedOut(),
 
     // Connections
     'service/started': (msg: ConnectionMessage) => backend.setConnection(msg.connection), /// devices.connectStart(conn.id)

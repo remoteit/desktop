@@ -42,9 +42,9 @@ declare global {
     | 'connect_error'
 
     // user/auth
-    | 'user/signed-out'
-    | 'user/sign-in/error'
-    | 'user/signed-in'
+    | 'signed-out'
+    | 'signed-in'
+    | 'sign-in/error'
 
     // connection pool
     | 'pool'

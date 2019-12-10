@@ -83,7 +83,6 @@ export default createModel({
      * Triggers a signout via the backend process
      */
     async signOut() {
-      // const { signOutFinished } = dispatch.auth
       Controller.emit('user/sign-out')
     },
     async quit() {

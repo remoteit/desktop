@@ -12,8 +12,8 @@ const d = debug('r3:backend:User')
 export class User {
   EVENTS = {
     signInError: 'user/sign-in/error',
-    signedOut: 'user/signed-out',
-    signedIn: 'user/signed-in',
+    signedOut: 'signed-out',
+    signedIn: 'signed-in',
   }
 
   username: string

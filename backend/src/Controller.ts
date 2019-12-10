@@ -36,6 +36,7 @@ class Controller {
 
     new EventRelay(
       [
+        ...Object.values(user.EVENTS),
         ...Object.values(Installer.EVENTS),
         ...Object.values(Connection.EVENTS),
         ...Object.values(ConnectionPool.EVENTS),
