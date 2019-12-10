@@ -1,6 +1,6 @@
 {
-  "name": "remote.it-desktop-backend",
-  "version": "2.3.3",
+  "name": "remoteit-desktop-backend",
+  "version": "2.3.4",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -79,7 +79,7 @@
     "appId": "it.remote.desktop",
     "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
-    "productName": "remote.it",
+    "productName": "remoteit",
     "artifactName": "${productName}-${version}.${ext}",
     "win": {
       "target": "nsis"

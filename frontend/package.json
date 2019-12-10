@@ -1,5 +1,5 @@
 {
-  "name": "remote.it-desktop-frontend",
+  "name": "remoteit-desktop-frontend",
   "version": "0.1.0",
   "private": true,
   "main": "src/server/initialize.js",
