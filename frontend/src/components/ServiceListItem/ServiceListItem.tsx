@@ -14,6 +14,8 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Throughput } from '../Throughput'
 import { makeStyles } from '@material-ui/styles'
 import { SSHButton } from '../../buttons/SSHButton'
+import { colors } from '../../styling'
+import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 
 export interface ServiceListItemProps {
   connection?: IConnection
@@ -25,16 +27,20 @@ export function ServiceListItem({ connection, service, nameType = 'service' }: S
   const location = useLocation()
   const css = useStyles()
   const id = connection ? connection.id : service ? service.id : ''
+  const details = (
+    <>
+      {connection && hostName(connection)}
+      {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
+    </>
+  )
+
   return (
     <>
       <ListItemLocation pathname={`${location.pathname}/${id}`}>
         <ListItemIcon>
           <ConnectionStateIcon connection={connection} service={service} size="lg" />
         </ListItemIcon>
-        <ListItemText
-          primary={<ServiceName service={service} connection={connection} />}
-          secondary={connection && hostName(connection)}
-        />
+        <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
           <BrowserButton connection={connection} />
@@ -51,4 +57,5 @@ export function ServiceListItem({ connection, service, nameType = 'service' }: S
 
 const useStyles = makeStyles({
   actions: { right: 70, display: 'none' },
+  restriction: { color: colors.primary },
 })

@@ -1,6 +1,15 @@
 import React, { useState } from 'react'
-import { ListItem, ListItemIcon, ListItemSecondaryAction, Typography, Tooltip, IconButton } from '@material-ui/core'
+import {
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  TextField,
+  Typography,
+  Tooltip,
+  IconButton,
+} from '@material-ui/core'
 import { EditButton } from '../../buttons/EditButton'
+import { ResetButton } from '../../buttons/ResetButton'
 import { makeStyles } from '@material-ui/styles'
 import { colors } from '../../styling'
 import { Icon } from '../Icon'
@@ -9,14 +18,30 @@ type Props = {
   value?: string | number
   label: string
   icon?: string
+  filter?: RegExp
   disabled?: boolean
-  onSave: () => void
-  onCancel: () => void
+  resetValue?: string | number
+  onSave: (value: string | number) => void
 }
 
-export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, onSave, onCancel, children }) => {
+export const InlineSetting: React.FC<Props> = ({
+  value,
+  label,
+  icon,
+  disabled,
+  resetValue,
+  onSave,
+  filter,
+  children,
+}) => {
   const [edit, setEdit] = useState<boolean>(false)
+  const [editValue, setEditValue] = useState()
+
   const css = useStyles()
+  const showEdit = () => {
+    setEditValue(value)
+    setEdit(true)
+  }
 
   if (edit)
     return (
@@ -28,16 +53,25 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
           className={css.form}
           onSubmit={() => {
             setEdit(false)
-            onSave()
+            onSave(editValue)
           }}
         >
           {children}
+          <TextField
+            autoFocus
+            label={label}
+            value={editValue}
+            margin="dense"
+            variant="filled"
+            onChange={event => setEditValue(filter ? event.target.value.replace(filter, '') : event.target.value)}
+          />
+          {resetValue && <ResetButton onClick={() => setEditValue(resetValue)} />}
           <ListItemSecondaryAction>
             <Tooltip title="Cancel">
               <IconButton
                 onClick={() => {
                   setEdit(false)
-                  onCancel()
+                  setEditValue(value)
                 }}
               >
                 <Icon name="times" size="md" fixedWidth />
@@ -54,7 +88,7 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
     )
 
   return (
-    <ListItem button onClick={() => setEdit(true)} disabled={disabled} style={{ opacity: 1 }}>
+    <ListItem button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
       <ListItemIcon>
         <Icon name={icon} color="gray" size="lg" />
       </ListItemIcon>
@@ -64,7 +98,7 @@ export const InlineSetting: React.FC<Props> = ({ value, label, icon, disabled, o
       </span>
       {!disabled && (
         <ListItemSecondaryAction className={css.hidden}>
-          <EditButton onClick={() => setEdit(true)} />
+          <EditButton onClick={showEdit} />
         </ListItemSecondaryAction>
       )}
     </ListItem>

@@ -12,45 +12,31 @@ import { TextField } from '@material-ui/core'
 export const PortSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   const currentPort = connection && connection.port
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
-  const [port, setPort] = useState(currentPort)
 
   useEffect(() => {
-    if (port === undefined) setPort(freePort)
-  }, [port, freePort])
+    if (!connection || freePort !== connection.port) Controller.emit('freePort', connection)
+  }, [freePort])
 
   if (!service) return null
-  if (!connection) connection = newConnection(service, { port })
+  if (!connection) connection = newConnection(service, { port: freePort })
 
   const disabled = connection.active || service.state !== 'active'
+  const save = (port?: number) =>
+    connection &&
+    setConnection({
+      ...connection,
+      port: port || connection.port,
+    })
 
   return (
     <InlineSetting
-      value={port}
+      value={currentPort}
       label="Port"
       disabled={disabled}
-      onCancel={() => setPort(currentPort)}
-      onSave={() =>
-        connection &&
-        setConnection({
-          ...connection,
-          port: port || connection.port,
-        })
-      }
-    >
-      <TextField
-        autoFocus
-        label="Port"
-        value={port}
-        margin="dense"
-        variant="filled"
-        onChange={event => setPort(+event.target.value.replace(REGEX_PORT_SAFE, ''))}
-      />
-      <ResetButton
-        onClick={() => {
-          setPort(undefined)
-          Controller.emit('freePort', connection)
-        }}
-      />
-    </InlineSetting>
+      filter={REGEX_PORT_SAFE}
+      resetValue={freePort}
+      // onReset={() => Controller.emit('freePort', connection)}
+      onSave={port => save(+port)}
+    />
   )
 }

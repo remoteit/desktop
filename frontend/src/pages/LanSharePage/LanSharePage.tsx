@@ -45,7 +45,7 @@ export const LanSharePage: React.FC = () => {
     return newConnection(service)
   })
 
-  const [enabled, setEnabled] = useState<boolean>(connection.host !== IP_PRIVATE)
+  const [enabled, setEnabled] = useState<boolean>(connection.host === IP_OPEN)
   const restriction: ipAddress = enabled && connection.restriction ? connection.restriction : IP_LATCH
   const [selection, setSelection] = useState<number>(() => {
     let s = selections.findIndex(s => s.value === restriction)
@@ -69,8 +69,6 @@ export const LanSharePage: React.FC = () => {
     setConnection({ ...connection, host: enabled ? IP_OPEN : IP_PRIVATE, restriction: getSelectionValue() })
     history.goBack()
   }
-
-  console.log(connection.host !== IP_PRIVATE, '===', enabled, connection.restriction, '===', getSelectionValue())
 
   return (
     <Container

@@ -7,20 +7,20 @@ export function lanShareRestriction(connection?: IConnection) {
     case undefined:
       return 'Off'
     case IP_OPEN:
-      return 'On'
+      return 'No restriction'
     case IP_LATCH:
-      return 'On - IP Latching'
+      return 'IP Latching'
     case IP_CLASS_A:
-      return 'On - Class-A Local Restriction'
+      return 'Class-A Local Restriction'
     case IP_CLASS_B:
-      return 'On - Class-B Local Restriction'
+      return 'Class-B Local Restriction'
     case IP_CLASS_C:
-      return 'On - Class-C Local Restriction'
+      return 'Class-C Local Restriction'
     default:
-      return 'On - Single IP Restriction'
+      return 'Single IP Restriction'
   }
 }
 
-export function lanShared(preference: boolean, connection: IConnection) {
-  return !!(preference || connection.host !== IP_PRIVATE)
+export function lanShared(connection?: IConnection) {
+  return !!(connection && connection.host === IP_OPEN)
 }

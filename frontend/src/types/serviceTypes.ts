@@ -37,16 +37,19 @@ export const serviceTypes = [
   },
   {
     name: 'HTTP',
+    defaultPort: 80,
     id: 30,
     hex: '1E',
   },
   {
     name: 'HTTPS',
+    defaultPort: 443,
     id: 33,
     hex: '21',
   },
   {
     name: 'Samba',
+    defaultPort: 445,
     id: 34,
     hex: '22',
   },

@@ -92,7 +92,12 @@
     },
     "linux": {
       "target": [
-        "deb"
+        {
+          "target": "deb",
+          "arch": [
+            "armv7l"
+          ]
+        }
       ]
     },
     "mac": {
