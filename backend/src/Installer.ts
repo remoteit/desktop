@@ -141,6 +141,8 @@ export default class Installer {
     return path.join(os.tmpdir(), this.binaryName)
   }
 
+  // @TODO support for installing all platforms:
+  // https://github.com/remoteit/installer/blob/master/scripts/auto-install.sh
   get downloadFileName() {
     let extension = ''
 

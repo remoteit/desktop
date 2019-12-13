@@ -34,7 +34,7 @@ export function ServiceListItem({ connection, service, nameType = 'service' }: S
       {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
     </>
   )
-
+  console.log('SERVICE LIST ITEM', connection && connection.name, service)
   return (
     <>
       <ListItemLocation pathname={`${location.pathname}/${id}`}>
