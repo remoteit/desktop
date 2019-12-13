@@ -149,9 +149,9 @@ export default class Installer {
     } else if (Environment.isMac) {
       extension = os.arch() === 'x64' ? '.x86_64-osx' : '.x86-osx'
     } else if (Environment.isPi) {
-      extension = 'arm-linaro-pi'
+      extension = '.arm-linaro-pi'
     } else if (Environment.isLinux) {
-      extension = os.arch() === 'x64' ? '.x86_64-ubuntu16.04' : 'x86-ubuntu16.04'
+      extension = os.arch() === 'x64' ? '.x86_64-ubuntu16.04' : '.x86-ubuntu16.04'
     }
 
     return this.name + extension

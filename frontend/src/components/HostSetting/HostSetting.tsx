@@ -8,7 +8,7 @@ export const HostSetting: React.FC<{ service: IService; connection?: IConnection
   if (!service) return null
   if (!connection) connection = newConnection(service)
 
-  const currentHost = connection && connection.host
+  const currentHost = (connection && connection.host) || IP_PRIVATE
   const disabled = connection.active || service.state !== 'active'
 
   return (

@@ -78,6 +78,12 @@ export const serviceTypes = [
     hex: '27',
   },
   {
+    defaultPort: 25565,
+    name: 'Minecraft',
+    id: 1,
+    hex: '01',
+  },
+  {
     defaultPort: 65535,
     name: 'MultiPort',
     id: 40,

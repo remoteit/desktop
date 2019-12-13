@@ -14,6 +14,7 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Throughput } from '../Throughput'
 import { makeStyles } from '@material-ui/styles'
 import { SSHButton } from '../../buttons/SSHButton'
+import { VNCButton } from '../../buttons/VNCButton'
 import { colors } from '../../styling'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 
@@ -43,8 +44,9 @@ export function ServiceListItem({ connection, service, nameType = 'service' }: S
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
-          <BrowserButton connection={connection} />
+          <BrowserButton connection={connection} service={service} />
           <SSHButton connection={connection} service={service} />
+          <VNCButton connection={connection} service={service} />
           <CopyButton connection={connection} />
           <DisconnectButton connection={connection} />
           <ConnectButton connection={connection} service={service} />
