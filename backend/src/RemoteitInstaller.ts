@@ -7,7 +7,7 @@ class RemoteitInstaller extends Installer {
     const name = `${this.name}_${version}_`
     if (Environment.isWindows) return `${name}windows_x86_64.exe`
     else if (Environment.isMac) return `${name}mac-osx_x86_64`
-    else if (Environment.isPi) return `${name}linux_arm64`
+    else if (Environment.isPi) return `${name}linux_armv7`
     else if (Environment.isLinux) return `${name}linux_x86_64`
     else return `${name}linux_arm64`
   }

@@ -15,6 +15,8 @@ export const SSHButton: React.FC<Props> = ({ connection, service }) => {
   if (!connection || !connection.active) return null
   if (service && service.typeID !== SSH_TYPE) return null
   const url = `ssh://${connection.username || 'admin'}@${hostName(connection)}`
+  // ;o="StrictHostKeyChecking=no",o="UserKnownHostsFile /dev/null"
+  // 'ssh -l root proxy21.rt3.io -p 35136 -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"
   return (
     <>
       <Tooltip title="Launch SSH">
