@@ -38,7 +38,10 @@ export default class BinaryInstaller {
       if (Environment.isWindows) {
         await this.createWindowsTargetDir()
         mv = mv.concat(
-          this.installers.map(installer => `move /y "${installer.downloadPath}" "${installer.binaryPath}"`)
+          this.installers.map(
+            installer =>
+              `move /y "${installer.downloadPath}" "${installer.binaryPath}" && icacls "${installer.binaryPath}" /T /Q /grant Users:RX`
+          )
         )
       } else {
         mv = mv.concat(
