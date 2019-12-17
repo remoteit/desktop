@@ -1,10 +1,10 @@
 # Todo
 
 - [x] VNC launcher
-- [ ] Set port assignment to be serial
+- [x] Set port assignment to be serial
 - [ ] Fix signed out in client but signed in on server
 - [ ] Uplevel connect button to all buttons
-- [ ] Uplevel launch button to servicetypes
+- [x] Uplevel launch button to servicetypes
 - [ ] Track P2P failures
 - [x] Remove web launcher for other service types
 - [x] protect server connections with authHash?

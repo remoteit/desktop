@@ -4,6 +4,7 @@ import { hostName } from '../../helpers/nameHelper'
 import { useLocation } from 'react-router-dom'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { ListItemLocation } from '../ListItemLocation'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
@@ -13,8 +14,7 @@ import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Throughput } from '../Throughput'
 import { makeStyles } from '@material-ui/styles'
-import { colors } from '../../styling'
-import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
+import { colors, spacing } from '../../styling'
 
 export interface ServiceListItemProps {
   connection?: IConnection
@@ -54,5 +54,5 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
 
 const useStyles = makeStyles({
   actions: { right: 70, display: 'none' },
-  restriction: { color: colors.primary },
+  restriction: { color: colors.grayDarker, marginLeft: spacing.xs },
 })

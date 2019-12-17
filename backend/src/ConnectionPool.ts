@@ -28,7 +28,7 @@ export default class ConnectionPool {
     connections.map(c => c.autoStart && this.start(c))
 
     // init freeport
-    this.getFreePort()
+    this.nextFreePort()
 
     // Listen to events to synchronize state
     EventBus.on(Connection.EVENTS.disconnected, this.updated)
@@ -89,12 +89,6 @@ export default class ConnectionPool {
     EventBus.emit(Connection.EVENTS.forgotten, id)
   }
 
-  // restart = async ({ id, port }: IConnection) => {
-  //   d('Restart connection:', id)
-  //   const instance = this.find(id)
-  //   instance && (await instance.restart())
-  // }
-
   stopAll = async () => {
     d('Stopping all services')
     return await this.pool.map(async c => await c.stop())
@@ -120,9 +114,11 @@ export default class ConnectionPool {
 
   sort = (a: number = 0, b: number = 0) => (a && b ? b - a : 0)
 
-  getFreePort = async () => {
-    this.freePort = await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
-    Logger.info('getFreePort', { port: this.freePort })
+  nextFreePort = async () => {
+    const usedPorts = this.usedPorts
+    const lastPort = usedPorts.sort((a, b) => b - a)[0]
+    this.freePort = await PortScanner.findFreePortInRange(lastPort, PEER_PORT_RANGE[1], usedPorts)
+    Logger.info('nextFreePort', { freePort: this.freePort })
     return this.freePort
   }
 
@@ -131,10 +127,10 @@ export default class ConnectionPool {
     if (port) {
       if (!(await PortScanner.isPortFree(port))) {
         connection.params.error = { message: `Port ${port} is in use. Port auto-assigned` }
-        connection.params.port = await this.getFreePort()
+        connection.params.port = await this.nextFreePort()
       }
     } else {
-      connection.params.port = await this.getFreePort()
+      connection.params.port = await this.nextFreePort()
     }
 
     if (!connection.params.port) throw new Error('No port could be assigned to connection!')

@@ -88,8 +88,8 @@ class Controller {
   }
 
   freePort = async () => {
-    await this.pool.getFreePort()
-    this.server.emit('freePort', this.pool.freePort)
+    await this.pool.nextFreePort()
+    this.server.emit('nextFreePort', this.pool.freePort)
   }
 
   syncBackend = async () => {

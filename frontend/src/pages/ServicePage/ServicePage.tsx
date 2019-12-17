@@ -105,11 +105,8 @@ export const ServicePage: React.FC = () => {
       </Columns>
       <Divider />
       <List>
-        <AutoStartSetting connection={connection} service={service} />
-      </List>
-      <Divider />
-      <List>
         <LanShareSelect connection={connection} service={service} />
+        <AutoStartSetting connection={connection} service={service} />
       </List>
       <Divider />
       <Columns inset>
@@ -121,7 +118,6 @@ export const ServicePage: React.FC = () => {
 
 const useStyles = makeStyles({
   actions: {
-    // borderLeft: `1px solid ${colors.grayLighter}`,
     padding: `${spacing.md}px ${spacing.md}px`,
   },
 })
