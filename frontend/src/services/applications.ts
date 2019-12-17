@@ -30,7 +30,15 @@ export const applications: IApplication[] = [
       } -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"`,
   },
   {
-    types: [1, 7, 8, 30, 33, 38],
+    types: [8, 10, 33],
+    title: 'Secure Browser',
+    icon: 'arrow-right',
+    iconRotate: true,
+    launch: (c: IConnection) => `https://${hostName(c)}`,
+    copy: (c: IConnection) => `https://${hostName(c)}`,
+  },
+  {
+    types: [1, 7, 30, 38],
     title: 'Browser',
     icon: 'arrow-right',
     iconRotate: true,
