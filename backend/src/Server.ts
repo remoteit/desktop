@@ -49,7 +49,7 @@ export default class Server {
     // Signed in
     if (user.is(credentials)) {
       d(`User authenticated.`)
-      EventBus.emit(user.EVENTS.signedIn, credentials)
+      user.authenticated()
       return callback(null, true)
 
       // Sign in

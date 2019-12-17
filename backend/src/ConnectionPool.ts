@@ -47,8 +47,8 @@ export default class ConnectionPool {
   }
 
   add = (connection: IConnection) => {
-    if (!user.signedIn) {
-      user.signOut()
+    if (!user.hasCredentials) {
+      Logger.warn('User not signed in - can not add connection', { user })
       return
     }
     const instance = new Connection(user, connection)

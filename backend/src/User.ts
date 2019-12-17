@@ -18,6 +18,7 @@ export class User {
 
   username: string
   authHash: string
+  signedIn: boolean = false
   private userFile: JSONFile<UserCredentials>
 
   constructor() {
@@ -31,7 +32,7 @@ export class User {
     this.authHash = (user && user.authHash) || ''
   }
 
-  get signedIn() {
+  get hasCredentials() {
     return this.authHash && this.username
   }
 
@@ -43,13 +44,17 @@ export class User {
     return user.username === this.username && user.authHash === this.authHash
   }
 
+  authenticated() {
+    this.signedIn = true
+    EventBus.emit(this.EVENTS.signedIn, this.credentials)
+  }
+
   checkSignIn = async (credentials?: UserCredentials) => {
     Logger.info('Check sign in:', { credentials })
     Tracker.event('auth', 'check-sign-in', 'check user sign in')
 
     if (!credentials) {
-      Logger.warn('No user, signing out...')
-      this.signOut()
+      Logger.warn('No user, sign in failed')
       return false
     }
 
@@ -57,20 +62,17 @@ export class User {
 
     const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
+    Logger.info('User', { user })
     d('User signed in: %O', user)
 
-    Logger.info('User', { user })
-
-    if (!user) {
-      this.signOut()
-      return false
-    }
+    if (!user) return false
 
     this.userFile.write({
       username: user.username,
       authHash: user.authHash,
     })
 
+    this.signedIn = true
     this.username = user.username
     this.authHash = user.authHash
 
@@ -90,6 +92,7 @@ export class User {
 
     this.username = ''
     this.authHash = ''
+    this.signedIn = false
 
     EventBus.emit(this.EVENTS.signedOut)
   }

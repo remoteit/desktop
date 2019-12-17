@@ -72,9 +72,19 @@ export default class TrayMenu {
         click: this.handleOpen,
       },
       {
-        label: `Sign out ${user.username}`,
-        type: 'normal',
-        click: user.signOut,
+        label: user.username,
+        submenu: [
+          {
+            label: 'Sign out',
+            type: 'normal',
+            click: user.signOut,
+          },
+          {
+            label: 'Quit',
+            type: 'normal',
+            click: electron.app.quit,
+          },
+        ],
       },
       { type: 'separator' },
       ...this.connectionsMenu(),
