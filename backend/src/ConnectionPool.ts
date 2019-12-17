@@ -116,9 +116,10 @@ export default class ConnectionPool {
 
   nextFreePort = async () => {
     const usedPorts = this.usedPorts
-    const lastPort = usedPorts.sort((a, b) => b - a)[0]
+    let lastPort = usedPorts.sort((a, b) => b - a)[0] || PEER_PORT_RANGE[0]
+    if (lastPort >= PEER_PORT_RANGE[1]) lastPort = PEER_PORT_RANGE[0]
     this.freePort = await PortScanner.findFreePortInRange(lastPort, PEER_PORT_RANGE[1], usedPorts)
-    Logger.info('nextFreePort', { freePort: this.freePort })
+    Logger.info('nextFreePort', { freePort: this.freePort, lastPort, usedPorts })
     return this.freePort
   }
 
@@ -137,7 +138,7 @@ export default class ConnectionPool {
   }
 
   private get usedPorts() {
-    return this.pool.reduce((result: any[], c) => {
+    return this.pool.reduce((result: number[], c) => {
       if (c.params.port) result.push(c.params.port)
       return result
     }, [])

@@ -25,7 +25,7 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
       ...connection,
       port: port || connection.port,
     })
-
+  console.log('FREEPORT', freePort)
   return (
     <InlineSetting
       value={currentPort}
