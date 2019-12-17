@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import Controller from '../../services/Controller'
 import { IService } from 'remote.it'
 import { useSelector } from 'react-redux'
-import { ResetButton } from '../../buttons/ResetButton'
 import { InlineSetting } from '../InlineSetting'
 import { REGEX_PORT_SAFE } from '../../constants'
 import { ApplicationState } from '../../store'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { TextField } from '@material-ui/core'
 
 export const PortSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   const currentPort = connection && connection.port
@@ -15,12 +13,12 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
 
   useEffect(() => {
     if (!connection || freePort !== connection.port) Controller.emit('freePort', connection)
-  }, [freePort])
+  }, [freePort, connection])
 
   if (!service) return null
   if (!connection) connection = newConnection(service, { port: freePort })
 
-  const disabled = connection.active || service.state !== 'active'
+  const disabled = connection.active
   const save = (port?: number) =>
     connection &&
     setConnection({

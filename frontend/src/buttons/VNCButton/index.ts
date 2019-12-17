@@ -1,1 +1,0 @@
-export { VNCButton } from './VNCButton'

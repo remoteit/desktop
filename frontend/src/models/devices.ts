@@ -188,11 +188,3 @@ export function findService(devices: IDevice[], id: string) {
     [null, null] as [IService | null, IDevice | null]
   )
 }
-
-export function findServices(devices: IDevice[], ids: string[]) {
-  return devices.reduce((all: IService[], d: IDevice) => {
-    const service = d.services.find(s => ids.includes(s.id))
-    if (service) all.push(service)
-    return all
-  }, [])
-}

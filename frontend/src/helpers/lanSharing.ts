@@ -1,4 +1,4 @@
-import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, IP_PRIVATE } from '../constants'
+import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C } from '../constants'
 
 export function lanShareRestriction(connection?: IConnection) {
   if (!connection || connection.host !== IP_OPEN) return 'Off'

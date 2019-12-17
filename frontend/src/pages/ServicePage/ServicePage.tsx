@@ -18,12 +18,13 @@ import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectButton } from '../../buttons/ConnectButton'
-import { BrowserButton } from '../../buttons/BrowserButton'
+import { LaunchButton } from '../../buttons/LaunchButton'
+// import { BrowserButton } from '../../buttons/BrowserButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../buttons/CopyButton'
-import { SSHButton } from '../../buttons/SSHButton'
-import { VNCButton } from '../../buttons/VNCButton'
+// import { SSHButton } from '../../buttons/SSHButton'
+// import { VNCButton } from '../../buttons/VNCButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
@@ -77,10 +78,8 @@ export const ServicePage: React.FC = () => {
             <ConnectionStateIcon connection={connection} service={service} size="lg" />
             <ServiceName connection={connection} service={service} inline />
             <ForgetButton connection={connection} />
-            <BrowserButton connection={connection} service={service} />
-            <SSHButton connection={connection} service={service} />
-            <VNCButton connection={connection} service={service} />
-            <CopyButton connection={connection} />
+            <LaunchButton connection={connection} service={service} />
+            <CopyButton connection={connection} service={service} />
             <DisconnectButton connection={connection} />
           </Typography>
         </>

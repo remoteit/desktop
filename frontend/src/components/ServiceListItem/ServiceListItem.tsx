@@ -8,23 +8,20 @@ import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { ListItemLocation } from '../ListItemLocation'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
-import { BrowserButton } from '../../buttons/BrowserButton'
+import { LaunchButton } from '../../buttons/LaunchButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Throughput } from '../Throughput'
 import { makeStyles } from '@material-ui/styles'
-import { SSHButton } from '../../buttons/SSHButton'
-import { VNCButton } from '../../buttons/VNCButton'
 import { colors } from '../../styling'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 
 export interface ServiceListItemProps {
   connection?: IConnection
   service?: IService
-  nameType?: 'connection' | 'service'
 }
 
-export function ServiceListItem({ connection, service, nameType = 'service' }: ServiceListItemProps) {
+export function ServiceListItem({ connection, service }: ServiceListItemProps) {
   const location = useLocation()
   const css = useStyles()
   const id = connection ? connection.id : service ? service.id : ''
@@ -34,7 +31,7 @@ export function ServiceListItem({ connection, service, nameType = 'service' }: S
       {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
     </>
   )
-  console.log('SERVICE LIST ITEM', connection && connection.name, service)
+
   return (
     <>
       <ListItemLocation pathname={`${location.pathname}/${id}`}>
@@ -44,10 +41,8 @@ export function ServiceListItem({ connection, service, nameType = 'service' }: S
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
-          <BrowserButton connection={connection} service={service} />
-          <SSHButton connection={connection} service={service} />
-          <VNCButton connection={connection} service={service} />
-          <CopyButton connection={connection} />
+          <LaunchButton connection={connection} service={service} />
+          <CopyButton connection={connection} service={service} />
           <DisconnectButton connection={connection} />
           <ConnectButton connection={connection} service={service} />
         </ListItemSecondaryAction>

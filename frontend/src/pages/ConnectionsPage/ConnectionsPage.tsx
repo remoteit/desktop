@@ -1,6 +1,6 @@
 import React from 'react'
+import { IDevice, IService } from 'remote.it'
 import { ConnectionsList } from '../../components/ConnectionsList'
-import { findServices } from '../../models/devices'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 
@@ -13,4 +13,11 @@ export const ConnectionsPage: React.FC = () => {
     )
   )
   return <ConnectionsList connections={connections} services={services} />
+}
+
+function findServices(devices: IDevice[], ids: string[]) {
+  return devices.reduce((all: IService[], d: IDevice) => {
+    const service = d.services.filter(s => ids.includes(s.id))
+    return service ? all.concat(service) : all
+  }, [])
 }

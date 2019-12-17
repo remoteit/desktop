@@ -86,6 +86,13 @@ const theme = createMuiTheme({
         fontSize: '1rem',
         fontWeight: 400,
       },
+      h4: {
+        fontSize: fontSizes.sm,
+        fontFamily: 'Roboto Mono',
+        color: colors.grayDarker,
+        marginTop: spacing.xs,
+        marginBottom: spacing.sm,
+      },
       subtitle1: {
         fontSize: fontSizes.sm,
         fontFamily: 'Roboto Mono',
@@ -104,6 +111,8 @@ const theme = createMuiTheme({
         color: colors.grayDark,
       },
     },
+    MuiDialogContent: { root: { margin: `${spacing.md}px ${gutters}px`, padding: 0 } },
+    MuiDialogActions: { root: { margin: `${spacing.md}px ${gutters}px`, padding: 0 } },
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,

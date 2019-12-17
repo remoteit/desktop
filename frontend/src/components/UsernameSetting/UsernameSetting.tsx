@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { IService } from 'remote.it'
 import { InlineSetting } from '../InlineSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { TextField } from '@material-ui/core'
 
 const SSH_TYPE = 28
 
@@ -22,7 +21,7 @@ export const UsernameSetting: React.FC<{ service: IService; connection?: IConnec
         connection &&
         setConnection({
           ...connection,
-          username: username.toString() || connection.username,
+          username: username.toString(),
         })
       }
     />

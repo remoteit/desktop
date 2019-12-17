@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
-import { serviceTypes } from '../../types/serviceTypes'
+import { serviceTypes } from '../../services/serviceTypes'
 import { DEFAULT_TARGET } from '../../constants'
 import styles, { spacing } from '../../styling'
 

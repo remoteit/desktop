@@ -1,6 +1,8 @@
 # Todo
 
-- [ ] VNC launcher
+- [x] VNC launcher
+- [ ] Set port assignment to be serial
+- [ ] Fix signed out in client but signed in on server
 - [ ] Uplevel connect button to all buttons
 - [ ] Uplevel launch button to servicetypes
 - [ ] Track P2P failures

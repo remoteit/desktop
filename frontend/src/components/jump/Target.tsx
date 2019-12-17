@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
-import { serviceTypes, emptyServiceType } from '../../types/serviceTypes'
+import { serviceTypes, emptyServiceType } from '../../services/serviceTypes'
 import { addDeviceName } from '../../helpers/nameHelper'
 import styles from '../../styling'
 

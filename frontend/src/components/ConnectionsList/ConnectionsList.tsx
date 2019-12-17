@@ -31,12 +31,7 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   return (
     <List>
       {connections.map(c => (
-        <ServiceListItem
-          key={c.id || 0}
-          connection={c}
-          service={services.find(s => s.id === c.id)}
-          nameType="connection"
-        />
+        <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
     </List>
   )

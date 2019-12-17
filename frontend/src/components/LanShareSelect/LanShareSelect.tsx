@@ -6,7 +6,6 @@ import { ListItemIcon, Typography } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
 import { spacing, colors } from '../../styling'
-import { IP_OPEN } from '../../constants'
 import { Icon } from '../Icon'
 
 export type Props = {

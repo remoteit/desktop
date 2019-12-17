@@ -1,7 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { IService } from 'remote.it'
-import { TextField } from '@material-ui/core'
-import { ResetButton } from '../../buttons/ResetButton'
 import { InlineSetting } from '../InlineSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
@@ -15,7 +13,6 @@ export const NameSetting: React.FC<{ service: IService; connection?: IConnection
     <InlineSetting
       value={currentName}
       label="Connection Name"
-      // onCancel={() => setName(currentName)}
       resetValue={service.name}
       onSave={name =>
         connection &&

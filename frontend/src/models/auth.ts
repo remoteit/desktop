@@ -1,6 +1,5 @@
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
 import Controller from '../services/Controller'
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
 
