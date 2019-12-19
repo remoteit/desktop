@@ -1,10 +1,9 @@
 import React from 'react'
-import { Body } from '../../components/Body'
 import { Container } from '../../components/Container'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Typography, Divider, InputLabel, List, ListItem } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
+import { Typography, Tooltip } from '@material-ui/core'
+import { spacing } from '../../styling'
 import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/styles'
 import { Columns } from '../../components/Columns'
@@ -46,7 +45,9 @@ export const SetupPage: React.FC = () => {
       header={
         <Typography variant="h1">
           Hosted Device
-          <Icon name="lock-alt" weight="regular" inline />
+          <Tooltip title={`Only ${admin} can edit this device`}>
+            <Icon name="lock-alt" weight="regular" inline />
+          </Tooltip>
         </Typography>
       }
     >
