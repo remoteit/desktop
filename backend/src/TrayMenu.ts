@@ -15,12 +15,12 @@ const iconOnline = path.join(__dirname, 'images', 'iconOnlineTemplate.png')
 
 export default class TrayMenu {
   private tray: any
-  private connections: any[]
   private privateIP: ipAddress
+  private pool: IConnection[]
 
   constructor(tray: electron.Tray) {
     this.tray = tray
-    this.connections = []
+    this.pool = []
     this.privateIP = IP_PRIVATE
 
     if (Environment.isWindows) {
@@ -29,9 +29,9 @@ export default class TrayMenu {
       })
     }
 
-    EventBus.on(user.EVENTS.signedIn, this.updateConnectionMenu)
-    EventBus.on(user.EVENTS.signedOut, this.updateConnectionMenu)
-    EventBus.on(ConnectionPool.EVENTS.updated, this.updateConnectionMenu)
+    EventBus.on(user.EVENTS.signedIn, this.render)
+    EventBus.on(user.EVENTS.signedOut, this.render)
+    EventBus.on(ConnectionPool.EVENTS.updated, this.updatePool)
     EventBus.on(LAN.EVENTS.privateIP, privateIP => (this.privateIP = privateIP))
   }
 
@@ -41,26 +41,8 @@ export default class TrayMenu {
     this.tray.setContextMenu(contextMenu)
   }
 
-  private updateConnectionMenu = (pool: IConnection[]) => {
-    this.connections = pool.reduce((result: any[], connection) => {
-      if (connection.startTime && connection.owner === user.username) {
-        const location = hostName(connection, this.privateIP)
-        result.push({
-          label: connection.name,
-          icon: connection.active ? iconConnected : iconOnline,
-          submenu: [
-            !connection.active
-              ? { label: 'Connect', click: () => this.connect(connection) }
-              : { label: 'Disconnect', click: () => this.disconnect(connection) },
-            { type: 'separator' },
-            { label: location, enabled: false },
-            { label: 'Copy to clipboard', click: () => this.copy(location) },
-            { label: 'Launch', click: () => this.launch(location) },
-          ],
-        })
-      }
-      return result
-    }, [])
+  private updatePool = (pool: IConnection[]) => {
+    this.pool = pool || []
     this.render()
   }
 
@@ -92,9 +74,31 @@ export default class TrayMenu {
   }
 
   private connectionsMenu() {
-    return this.connections.length
-      ? [{ label: 'Connections', enabled: false }, ...this.connections]
+    return this.pool.length
+      ? [{ label: 'Connections', enabled: false }, ...this.connectionsList()]
       : [{ label: 'No recent connections', enabled: false }]
+  }
+
+  private connectionsList() {
+    return this.pool.reduce((result: any[], connection) => {
+      if (connection.startTime && connection.owner === user.username) {
+        const location = hostName(connection, this.privateIP)
+        result.push({
+          label: connection.name,
+          icon: connection.active ? iconConnected : iconOnline,
+          submenu: [
+            !connection.active
+              ? { label: 'Connect', click: () => this.connect(connection) }
+              : { label: 'Disconnect', click: () => this.disconnect(connection) },
+            { type: 'separator' },
+            { label: location, enabled: false },
+            { label: 'Copy to clipboard', click: () => this.copy(location) },
+            { label: 'Launch', click: () => this.launch(location) },
+          ],
+        })
+      }
+      return result
+    }, [])
   }
 
   private signInMenu() {
