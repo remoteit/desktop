@@ -27,7 +27,7 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
     return result
   }, {})
 
-  if (!device) return <Typography variant="h1">No device found.</Typography>
+  if (!device) return <Typography variant="h1">No device found</Typography>
 
   return (
     <Container

@@ -42,7 +42,7 @@ export const ServicePage: React.FC = () => {
       <>
         <Typography variant="h1">
           <ConnectionStateIcon connection={connection} size="lg" />
-          <ServiceName connection={connection} />
+          <ServiceName connection={connection} inline />
           <ForgetButton connection={connection} />
         </Typography>
         <section>
@@ -118,6 +118,8 @@ export const ServicePage: React.FC = () => {
 
 const useStyles = makeStyles({
   actions: {
-    padding: `${spacing.md}px ${spacing.md}px`,
+    paddingTop: spacing.md,
+    paddingRight: spacing.xl,
+    paddingLeft: spacing.sm,
   },
 })

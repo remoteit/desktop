@@ -35,7 +35,7 @@ const theme = createMuiTheme({
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
     },
     MuiListItem: {
-      // gutters: { paddingLeft: gutters, paddingRight: gutters },
+      root: { opacity: 1 },
       button: {
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,

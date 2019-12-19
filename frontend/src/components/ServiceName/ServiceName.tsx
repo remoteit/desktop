@@ -23,13 +23,12 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared, inli
   let color: string | undefined = colors.grayDark
   let marginLeft = inline ? spacing.md : 0
 
-  if (!service && !connection) return <span className={css.title}>No device found.</span>
   if (service && service.state === 'active') color = undefined
   if (connection && connection.active) color = undefined
 
   return (
     <span className={css.title} style={{ color, marginLeft }}>
-      {name}
+      {!service && !connection ? 'No device found' : name}
       {shared && (
         <sup>
           <Icon name="user-friends" size="xxxs" weight="solid" fixedWidth />
