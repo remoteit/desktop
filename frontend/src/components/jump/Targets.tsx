@@ -1,8 +1,9 @@
 import React from 'react'
 import Target from './Target'
 import NewTarget from './NewTarget'
-import { InputLabel } from '@material-ui/core'
+import { InputLabel, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
+import { Icon } from '../Icon'
 import styles from '../../styling'
 
 type Props = {
@@ -41,7 +42,12 @@ const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onCancel }
               <InputLabel>Port</InputLabel>
             </th>
             <th colSpan={3}>
-              <InputLabel>Jump IP Address</InputLabel>
+              <InputLabel>
+                Host IP Address
+                <Tooltip title="IP address to host this service. Leave blank for this system to host, or enter an address on the local network to jump host.">
+                  <Icon name="question-circle" weight="regular" size="xs" inline />
+                </Tooltip>
+              </InputLabel>
             </th>
           </tr>
           {targets.map((target, index) => (
