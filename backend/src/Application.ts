@@ -104,6 +104,6 @@ export default class Application {
     await this.pool.reset()
 
     // Remove files from system.
-    this.connectionsFile.remove()
+    // this.connectionsFile.remove() // Lets keep the connections, unless manually removed.
   }
 }

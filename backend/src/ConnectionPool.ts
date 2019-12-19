@@ -47,11 +47,7 @@ export default class ConnectionPool {
   }
 
   add = (connection: IConnection) => {
-    if (!user.hasCredentials) {
-      Logger.warn('User not signed in - can not add connection', { user })
-      return
-    }
-    const instance = new Connection(user, connection)
+    const instance = new Connection(connection)
     this.pool.push(instance)
     return instance
   }
@@ -96,7 +92,6 @@ export default class ConnectionPool {
 
   reset = async () => {
     await this.stopAll()
-    this.pool = []
     this.updated()
   }
 

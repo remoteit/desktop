@@ -1,5 +1,6 @@
 import ConnectdInstaller from './ConnectdInstaller'
 import debug from 'debug'
+import user from './User'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import Tracker from './Tracker'
@@ -12,8 +13,6 @@ const d = debug('r3:backend:Connection')
 export default class Connection extends EventEmitter {
   params!: IConnection
 
-  private authHash: string
-  private username: string
   private process?: ChildProcess
 
   static EVENTS: { [name: string]: SocketEvent } = {
@@ -32,10 +31,8 @@ export default class Connection extends EventEmitter {
     unknown: 'service/unknown-event',
   }
 
-  constructor(user: UserCredentials, connection: IConnection) {
+  constructor(connection: IConnection) {
     super()
-    this.authHash = user.authHash
-    this.username = user.username
     connection.createdTime = Date.now()
     this.set(connection)
   }
@@ -50,6 +47,17 @@ export default class Connection extends EventEmitter {
     // we assume they want to start it on future sessions
     this.params.autoStart = true
 
+    if (!user.signedIn || user.username !== this.params.owner) {
+      let message = `Cannot start connection. Connection owner (${this.params.owner}) does not match user (${user.username}).`
+      Logger.warn(message, { params: this.params })
+      EventBus.emit(Connection.EVENTS.error, {
+        connection: this.toJSON(),
+        error: message,
+      } as ConnectionErrorMessage)
+      return
+    }
+    // comment
+
     // Listen to events to synchronize state
     EventBus.emit(Connection.EVENTS.started, { connection: this.toJSON(), raw: 'Connection started' })
     Tracker.pageView(`/connections/${this.params.id}/start`)
@@ -57,13 +65,13 @@ export default class Connection extends EventEmitter {
     Logger.info('Starting connection: ', this.toJSON())
     Logger.info('Connectd location: ', ConnectdInstaller.binaryPath)
 
-    const usernameBase64 = Buffer.from(this.username).toString('base64')
+    const usernameBase64 = Buffer.from(user.username).toString('base64')
     const params = [
       // TODO: Support password login too?
       '-s',
       '-p',
       usernameBase64,
-      this.authHash,
+      user.authHash,
       this.params.id, // Service ID
       `T${this.params.port}`, // Bind port
       '2', // Encryption

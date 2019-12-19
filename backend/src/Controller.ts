@@ -100,6 +100,7 @@ class Controller {
     this.server.emit('pool', this.pool.toJSON())
     this.server.emit('privateIP', this.lan.privateIP)
     this.server.emit('freePort', this.pool.freePort)
+    this.server.emit('admin', (this.cli.data.admin && this.cli.data.admin.username) || '')
   }
 
   connections = () => {

@@ -29,8 +29,8 @@ export default class TrayMenu {
       })
     }
 
-    EventBus.on(user.EVENTS.signedIn, this.render)
-    EventBus.on(user.EVENTS.signedOut, this.render)
+    EventBus.on(user.EVENTS.signedIn, this.updateConnectionMenu)
+    EventBus.on(user.EVENTS.signedOut, this.updateConnectionMenu)
     EventBus.on(ConnectionPool.EVENTS.updated, this.updateConnectionMenu)
     EventBus.on(LAN.EVENTS.privateIP, privateIP => (this.privateIP = privateIP))
   }
@@ -43,7 +43,7 @@ export default class TrayMenu {
 
   private updateConnectionMenu = (pool: IConnection[]) => {
     this.connections = pool.reduce((result: any[], connection) => {
-      if (connection.startTime) {
+      if (connection.startTime && connection.owner === user.username) {
         const location = hostName(connection, this.privateIP)
         result.push({
           label: connection.name,

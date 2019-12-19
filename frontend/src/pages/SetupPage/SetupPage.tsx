@@ -1,25 +1,29 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { Body } from '../../components/Body'
+import { Container } from '../../components/Container'
+import { useDispatch, useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import { Typography, Divider, InputLabel, List, ListItem } from '@material-ui/core'
+import { colors, spacing } from '../../styling'
+import { findType } from '../../services/serviceTypes'
+import { makeStyles } from '@material-ui/styles'
+import { Columns } from '../../components/Columns'
+import { Icon } from '../../components/Icon'
 import Controller from '../../services/Controller'
 import Device from '../../components/jump/Device'
 
-const mapState = (state: ApplicationState) => ({
-  device: state.backend.device,
-  targets: state.backend.targets,
-  added: state.backend.added,
-})
+export const SetupPage: React.FC = () => {
+  const css = useStyles()
+  const { backend } = useDispatch<Dispatch>()
+  const setAdded = (value: any) => backend.set({ key: 'added', value })
+  const { device, targets, added, admin, user } = useSelector((state: ApplicationState) => ({
+    device: state.backend.device,
+    targets: state.backend.targets,
+    added: state.backend.added,
+    admin: state.backend.admin,
+    user: state.auth.user,
+  }))
 
-const mapDispatch = (dispatch: any) => ({
-  setAdded: (value: any) => dispatch.backend.set({ key: 'added', value }),
-})
-
-export type SetupPageProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
-
-export const SetupPage = connect(
-  mapState,
-  mapDispatch
-)(({ device, targets, added, setAdded }: SetupPageProps) => {
   const updateTargets = (t: ITarget[]) => Controller.emit('targets', t)
   const updateDevice = (d: IDevice) => Controller.emit('device', d)
   const deleteDevice = () => {
@@ -27,7 +31,7 @@ export const SetupPage = connect(
     Controller.emit('init')
   }
 
-  return (
+  return user && user.username === admin ? (
     <Device
       device={device}
       targets={targets}
@@ -37,5 +41,71 @@ export const SetupPage = connect(
       onDelete={deleteDevice}
       onCancel={() => setAdded(undefined)}
     />
+  ) : (
+    <Container
+      header={
+        <Typography variant="h1">
+          Hosted Device
+          <Icon name="lock-alt" weight="regular" inline />
+        </Typography>
+      }
+    >
+      <Columns count={1} inset>
+        <p>
+          <Typography variant="caption">Device Name</Typography>
+          <Typography variant="h2">{device.name}</Typography>
+        </p>
+        <p>
+          <Typography variant="caption">Registered by</Typography>
+          <Typography variant="h2">{admin}</Typography>
+        </p>
+      </Columns>
+
+      <Typography variant="h1">Hosted Services</Typography>
+      <Columns count={1} inset>
+        <table className={css.table}>
+          <tbody>
+            <tr>
+              <th>
+                <Typography variant="caption">Name</Typography>
+              </th>
+              <th>
+                <Typography variant="caption">Type</Typography>
+              </th>
+              <th>
+                <Typography variant="caption">Port</Typography>
+              </th>
+              <th>
+                <Typography variant="caption">Jump IP Address</Typography>
+              </th>
+            </tr>
+            {targets.map(target => (
+              <tr>
+                <td>
+                  <Typography variant="h2">{target.name}</Typography>
+                </td>
+                <td>
+                  <Typography variant="h2">{findType(target.type).name}</Typography>
+                </td>
+                <td>
+                  <Typography variant="h2">{target.port}</Typography>
+                </td>
+                <td>
+                  <Typography variant="h2">{target.hostname}</Typography>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Columns>
+    </Container>
   )
+}
+
+const useStyles = makeStyles({
+  table: {
+    '& th, td': { textAlign: 'left', padding: 0 },
+    '& td': { minWidth: 50, paddingRight: spacing.lg },
+    '& tr + tr': { height: 22, verticalAlign: 'bottom' },
+  },
 })

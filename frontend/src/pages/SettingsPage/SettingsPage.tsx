@@ -46,9 +46,7 @@ export const SettingsPage = connect(
     const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
 
     const signOutWarning = () =>
-      window.confirm(
-        'Are you sure? Signing out will close all active connections and remove your connection history.'
-      ) && signOut()
+      window.confirm('Are you sure? Signing out will close all active connections.') && signOut()
 
     return (
       <Container header={<Typography variant="h1">Settings</Typography>}>
@@ -79,7 +77,7 @@ export const SettingsPage = connect(
         <List>
           <SettingsListItem
             label="Sign out"
-            subLabel={`Signed is as ${user && user.username}.`}
+            subLabel={`Signed is as ${user && user.username}`}
             icon="sign-out"
             onClick={signOutWarning}
           />

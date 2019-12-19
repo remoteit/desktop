@@ -9,7 +9,7 @@ export interface ServiceListProps {
 }
 
 export const ServiceList = ({ services = [], connections }: ServiceListProps) => {
-  if (!services.length) return <Typography variant="h1">No services.</Typography>
+  if (!services.length) return <Typography variant="h1">No services</Typography>
 
   return (
     <List>

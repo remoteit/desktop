@@ -97,3 +97,7 @@ export const emptyServiceType = {
   id: 0,
   hex: '',
 }
+
+export function findType(type: number) {
+  return serviceTypes.find(st => st.id === type) || emptyServiceType
+}

@@ -35,7 +35,7 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
   }, [device, deleting, registering])
 
   return (
-    <Container header={<Typography variant="h1">Local Device Host</Typography>}>
+    <Container header={<Typography variant="h1">Hosted Device</Typography>}>
       <form
         onSubmit={event => {
           if (!name || registered) return

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
-import { serviceTypes, emptyServiceType } from '../../services/serviceTypes'
+import { serviceTypes, findType } from '../../services/serviceTypes'
 import { addDeviceName } from '../../helpers/nameHelper'
 import styles from '../../styling'
 
@@ -31,10 +31,6 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
     [data, state]
   )
   const changed = (!loading && !same()) || init
-
-  function findType(type: number) {
-    return serviceTypes.find(st => st.id === type) || emptyServiceType
-  }
 
   function update(key: string, value: any) {
     setState({ ...state, [key]: value })
@@ -143,7 +139,7 @@ export default Target
 const useStyles = makeStyles({
   button: { marginTop: styles.spacing.lg },
   loading: { color: styles.colors.gray, margin: styles.spacing.md },
-  cell: { verticalAlign: 'top', height: 80 },
+  cell: { verticalAlign: 'top', height: 40 },
   service: {
     '& .MuiFormControl-root': { width: '100%', paddingRight: 10, paddingTop: 10 },
   },

@@ -97,10 +97,11 @@ declare global {
   export interface IConnection {
     id: string
     name: string
-    port?: number
-    pid?: number
-    active?: boolean
+    owner: string
     deviceID: string
+    pid?: number
+    port?: number
+    active?: boolean
     host?: ipAddress // Bind address
     restriction?: ipAddress // Restriction IP address
     autoStart?: boolean

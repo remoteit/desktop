@@ -1,15 +1,15 @@
+import * as sudo from 'sudo-prompt'
 import Environment from './Environment'
 import RemoteitInstaller from './RemoteitInstaller'
-import JSONFile from './JSONFile'
 import defaults from './helpers/defaults'
+import JSONFile from './JSONFile'
+import EventBus from './EventBus'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
 import user from './User'
-import EventBus from './EventBus'
-import * as sudo from 'sudo-prompt'
 import { promisify } from 'util'
-import { exec, execFile } from 'child_process'
+import { exec } from 'child_process'
 import { removeDeviceName } from './helpers/nameHelper'
 
 const adminPromise = promisify(sudo.exec)
@@ -17,14 +17,18 @@ const execPromise = promisify(exec)
 const d = debug('r3:backend:CLI')
 
 export default class CLI {
-  data: { user?: UserCredentials; device: IDevice; targets: ITarget[] } = {
+  data: { user?: UserCredentials; admin?: UserCredentials; device: IDevice; targets: ITarget[] } = {
     user: undefined,
+    admin: undefined,
     device: defaults,
     targets: [defaults],
   }
 
   userConfigFile: JSONFile<ConfigFile>
   adminConfigFile: JSONFile<ConfigFile>
+
+  // @TODO determine if we still will need to keep track of the non admin user
+  //       Might need it when cli manages initiator connections
 
   constructor() {
     Logger.info('USER FILE', { path: path.join(Environment.userPath, 'config.json') })
@@ -33,6 +37,7 @@ export default class CLI {
     this.adminConfigFile = new JSONFile<ConfigFile>(path.join(Environment.adminPath, 'config.json'))
     EventBus.on(user.EVENTS.signedOut, () => this.signOut())
     this.read()
+    this.readUser(true)
   }
 
   read() {
@@ -44,7 +49,8 @@ export default class CLI {
   readUser(admin?: boolean) {
     const config = this.readFile(admin)
     d('READ USER', config.auth)
-    this.data.user = config.auth
+    if (admin) this.data.admin = config.auth
+    else this.data.user = config.auth
   }
 
   readDevice() {
@@ -115,7 +121,7 @@ export default class CLI {
     this.readUser(admin)
     d('Check sign in', this.data.user)
     Logger.info('CHECK SIGN IN', { user: this.data.user, admin })
-    if (this.signedOut) await this.signIn(admin)
+    if (this.isSignedOut(admin)) await this.signIn(admin)
   }
 
   async exec({ commands, admin, checkSignIn = true }: { commands: any[]; admin?: boolean; checkSignIn?: boolean }) {
@@ -151,7 +157,9 @@ export default class CLI {
     return result
   }
 
-  get signedOut() {
-    return !this.data.user || !this.data.user.username || !this.data.user.authHash
+  isSignedOut(admin?: boolean) {
+    return admin
+      ? !this.data.admin || !this.data.admin.username || !this.data.admin.authHash
+      : !this.data.user || !this.data.user.username || !this.data.user.authHash
   }
 }

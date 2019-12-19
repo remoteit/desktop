@@ -2,16 +2,21 @@
 
 - [x] VNC launcher
 - [x] Set port assignment to be serial
-- [ ] Fix signed out in client but signed in on server
-- [ ] Uplevel connect button to all buttons
-- [x] Uplevel launch button to servicetypes
+- [x] Fix signed out in client but signed in on server
+- [ ] Up level connect button to all buttons
+- [x] Up level launch button to service types
 - [ ] Track P2P failures
 - [x] Remove web launcher for other service types
 - [x] protect server connections with authHash?
-- [-] Minecraft service type
-- [ ] Prompt for ssh password if empty
+- [-] MineCraft service type
+- [x] Prompt for ssh password if empty
+- [ ] Add uninstall to remote all files and connections
+- [ ] Move service settings to settings screen and display clearer service connect page
+- [ ] Show target config page as not disabled
+- [ ] Display connection log stream in front end if time allows
 - [ ] refactor to use Cognito in backend?
 - [ ] run install tools in cli
 - [ ] Add ChaCha20 Poly1305 encryption/decryption
 - [ ] Kill processes on exit/crash
 - [ ] remove connectd installation
+- [ ] Associate cli settings to user

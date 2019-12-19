@@ -2,13 +2,13 @@ import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { Body } from '../Body'
 
-export const Container: React.FC<{ header: any }> = ({ header, children }) => {
+export const Container: React.FC<{ header: any; inset?: boolean }> = ({ header, inset, children }) => {
   const css = useStyles()
 
   return (
     <div className={css.container}>
       <div>{header}</div>
-      <Body>{children}</Body>
+      <Body inset={inset}>{children}</Body>
     </div>
   )
 }

@@ -88,6 +88,11 @@ function getEventHandlers() {
       if (result) backend.set({ key: 'device', value: result })
     },
 
+    admin: (result: string) => {
+      console.log('admin user', result)
+      backend.set({ key: 'admin', value: result })
+    },
+
     scan: (result: IScanData) => {
       console.log('socket scan', result)
       if (result) backend.set({ key: 'scanData', value: result })

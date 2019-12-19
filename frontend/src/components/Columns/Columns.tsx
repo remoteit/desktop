@@ -2,11 +2,11 @@ import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { spacing } from '../../styling'
 
-export const Columns: React.FC<{ count?: 1 | 2; inset?: boolean }> = props => {
+export const Columns: React.FC<{ count?: 1 | 2; inset?: boolean }> = ({ count, inset, ...props }) => {
   const css = useStyles()
   let classes = css.columns
-  if (props.count !== 1) classes += ' ' + css.two
-  if (props.inset) classes += ' ' + css.inset
+  if (count !== 1) classes += ' ' + css.two
+  if (inset) classes += ' ' + css.inset
   return <div className={classes} {...props}></div>
 }
 

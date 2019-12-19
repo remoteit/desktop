@@ -1,11 +1,10 @@
 import React from 'react'
 import { Icon } from '../../components/Icon'
+import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@material-ui/styles'
 import { IService } from 'remote.it'
 import { ServiceListItem } from '../ServiceListItem'
 import { Typography, Button, List } from '@material-ui/core'
-import { spacing } from '../../styling'
 
 export interface Props {
   connections: IConnection[]
@@ -13,18 +12,19 @@ export interface Props {
 }
 
 export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
-  const css = useStyles()
   const history = useHistory()
 
   if (!connections || !connections.length) {
     return (
-      <div className={css.page}>
-        <Typography variant="caption">You have no connections</Typography>
+      <Body center>
+        <Typography variant="caption" gutterBottom>
+          You have no connections
+        </Typography>
         <Button onClick={() => history.push('/devices')} variant="contained" color="primary" size="medium">
           Add a Connection
           <Icon name="arrow-right" weight="regular" size="md" fixedWidth inline />
         </Button>
-      </div>
+      </Body>
     )
   }
 
@@ -36,15 +36,3 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
     </List>
   )
 }
-
-const useStyles = makeStyles({
-  page: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
-    height: '100%',
-    padding: `${spacing.md}px ${spacing.md}px`,
-    '& > span': { marginBottom: spacing.md },
-  },
-})

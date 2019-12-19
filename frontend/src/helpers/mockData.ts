@@ -79,6 +79,7 @@ export function connection(name = 'Some service name', port = 33001): IConnectio
     id: 'some-service-id',
     name,
     port,
+    owner: 'username',
     // pid?: number
   }
 }
