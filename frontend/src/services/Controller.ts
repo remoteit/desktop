@@ -4,7 +4,14 @@ import { PORT } from '../constants'
 import { EventEmitter } from 'events'
 
 class Controller extends EventEmitter {
-  private socket = io(`http://localhost:${PORT}`)
+  private socket: SocketIOClient.Socket
+
+  constructor() {
+    super()
+
+    const { protocol } = window.location
+    this.socket = protocol === 'file:' ? io(`http://localhost:${PORT}`) : io('/')
+  }
 
   init() {
     const handlers = getEventHandlers()

@@ -88,6 +88,7 @@ export default class ElectronApp {
         slashes: true,
       })
     this.window.loadURL(startUrl)
+    Logger.info('START URL', { startUrl })
 
     this.window.on('close', e => {
       d('Window closed')
