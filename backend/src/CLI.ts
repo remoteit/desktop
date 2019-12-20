@@ -159,8 +159,6 @@ export default class CLI {
   }
 
   isSignedOut(admin?: boolean) {
-    return admin
-      ? !this.data.admin || !this.data.admin.username || !this.data.admin.authHash
-      : !this.data.user || !this.data.user.username || !this.data.user.authHash
+    return admin ? !this.data.admin || !this.data.admin.username : !this.data.user || !this.data.user.username
   }
 }
