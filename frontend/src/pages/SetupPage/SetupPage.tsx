@@ -30,17 +30,7 @@ export const SetupPage: React.FC = () => {
     Controller.emit('init')
   }
 
-  return user && user.username === admin ? (
-    <Device
-      device={device}
-      targets={targets}
-      added={added}
-      onDevice={updateDevice}
-      onUpdate={updateTargets}
-      onDelete={deleteDevice}
-      onCancel={() => setAdded(undefined)}
-    />
-  ) : (
+  return admin && user && user.username !== admin ? (
     <Container
       header={
         <Typography variant="h1">
@@ -100,6 +90,16 @@ export const SetupPage: React.FC = () => {
         </table>
       </Columns>
     </Container>
+  ) : (
+    <Device
+      device={device}
+      targets={targets}
+      added={added}
+      onDevice={updateDevice}
+      onUpdate={updateTargets}
+      onDelete={deleteDevice}
+      onCancel={() => setAdded(undefined)}
+    />
   )
 }
 

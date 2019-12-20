@@ -36,6 +36,7 @@ export default class CLI {
     this.userConfigFile = new JSONFile<ConfigFile>(path.join(Environment.userPath, 'config.json'))
     this.adminConfigFile = new JSONFile<ConfigFile>(path.join(Environment.adminPath, 'config.json'))
     EventBus.on(user.EVENTS.signedOut, () => this.signOut())
+    EventBus.on(user.EVENTS.signedIn, () => this.read())
     this.read()
     this.readUser(true)
   }

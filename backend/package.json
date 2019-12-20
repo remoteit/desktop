@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-backend",
-  "version": "2.3.11",
+  "version": "2.3.12",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "build-backend": "electron-builder -w",
+    "build-backend": "electron-builder -wlm",
     "compile": "tsc",
     "electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
     "test": "NODE_ENV=test jest",
@@ -80,7 +80,7 @@
     "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
     "productName": "remoteit-app",
-    "artifactName": "${productName}-${version}.${ext}",
+    "artifactName": "${productName}-${arch}-${version}.${ext}",
     "win": {
       "target": "nsis"
     },
@@ -95,7 +95,8 @@
         {
           "target": "deb",
           "arch": [
-            "armv7l"
+            "armv7l",
+            "x64"
           ]
         }
       ]
