@@ -19,12 +19,9 @@ import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-// import { BrowserButton } from '../../buttons/BrowserButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../buttons/CopyButton'
-// import { SSHButton } from '../../buttons/SSHButton'
-// import { VNCButton } from '../../buttons/VNCButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
@@ -106,6 +103,9 @@ export const ServicePage: React.FC = () => {
       <Divider />
       <List>
         <LanShareSelect connection={connection} service={service} />
+      </List>
+      <Divider />
+      <List>
         <AutoStartSetting connection={connection} service={service} />
       </List>
       <Divider />

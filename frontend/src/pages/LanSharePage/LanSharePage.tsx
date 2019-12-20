@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { IP_OPEN, IP_LATCH, IP_CLASS_A, IP_CLASS_B, IP_CLASS_C, IP_PRIVATE, REGEX_IP_SAFE } from '../../constants'
 import {
   Button,
   List,
@@ -12,6 +11,7 @@ import {
   TextField,
   MenuItem,
 } from '@material-ui/core'
+import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../constants'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/styles'
@@ -22,20 +22,11 @@ import { colors, spacing, fontSizes } from '../../styling'
 import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { maskIPClass } from '../../helpers/lanSharing'
 
 type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
-  // prettier-ignore
-  const selections: Selections[] = [
-    { value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
-    { value: IP_CLASS_A, name: 'Class-A Local Restriction', note: 'IP restricted to the local network' },
-    { value: IP_CLASS_B, name: 'Class-B Local Restriction', note: 'Narrowly IP restrict on the local network' },
-    { value: IP_CLASS_C, name: 'Class-C Local Restriction', note: 'Focused IP restriction on the local network' },
-    { value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
-    { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
-  ]
-
   const { serviceID = '' } = useParams()
   const privateIP = useSelector((state: ApplicationState) => state.backend.privateIP)
   const connection = useSelector((state: ApplicationState) => {
@@ -44,6 +35,16 @@ export const LanSharePage: React.FC = () => {
     const [service] = findService(state.devices.all, serviceID)
     return newConnection(service)
   })
+
+  // prettier-ignore
+  const selections: Selections[] = [
+    { value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
+    { value: maskIPClass(privateIP, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
+    { value: maskIPClass(privateIP, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
+    { value: maskIPClass(privateIP, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
+    { value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
+    { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
+  ]
 
   const [enabled, setEnabled] = useState<boolean>(connection.host === IP_OPEN)
   const restriction: ipAddress = enabled && connection.restriction ? connection.restriction : IP_LATCH

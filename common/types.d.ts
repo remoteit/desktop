@@ -167,6 +167,8 @@ declare global {
   export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
 
   export type ipAddress = string // namespace to indicate if expecting an ip address
+
+  export type ipClass = 'A' | 'B' | 'C'
 }
 
 export {}
