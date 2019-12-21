@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.0.1",
+  "version": "2.3.17",
   "private": true,
   "scripts": {
     "build": "cd backend && npm run build",
@@ -10,7 +10,7 @@
     "postinstall": "run-p install-*",
     "install-backend": "cd backend && npm i",
     "install-frontend": "cd frontend && npm i",
-    "version": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version"
+    "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version"
   },
   "dependencies": {
     "keyboardjs": "2.5.1"
