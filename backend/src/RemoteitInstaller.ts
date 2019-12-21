@@ -16,5 +16,5 @@ class RemoteitInstaller extends Installer {
 export default new RemoteitInstaller({
   name: 'remoteit',
   repoName: 'remoteit/cli',
-  version: 'v0.35.0',
+  version: 'v0.35.1',
 })
