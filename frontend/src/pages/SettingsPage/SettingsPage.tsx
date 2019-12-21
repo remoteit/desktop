@@ -1,11 +1,14 @@
 import React from 'react'
-import { List, Divider, Typography } from '@material-ui/core'
+import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
+import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { connect } from 'react-redux'
 import { version } from '../../../package.json'
+import { Logo } from '../../components/Logo'
+import { spacing } from '../../styling'
 
 const mapState = (state: ApplicationState, props: any) => ({
   user: state.auth.user,
@@ -45,13 +48,24 @@ export const SettingsPage = connect(
     toggleOpenOnLogin,
     toggleSearchOnly,
   }: SettingsPageProps) => {
+    const css = useStyles()
     const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
 
     const signOutWarning = () =>
       window.confirm('Are you sure? Signing out will close all active connections.') && signOut()
 
     return (
-      <Container header={<Typography variant="h1">Settings</Typography>}>
+      <Container
+        header={
+          <Typography className={css.header} variant="h1">
+            <Tooltip title="Visit remote.it on the web">
+              <ButtonBase onClick={() => window.open('https://remote.it')}>
+                <Logo width={95} />
+              </ButtonBase>
+            </Tooltip>
+          </Typography>
+        }
+      >
         <List>
           <SettingsListItem
             label="Send feedback"
@@ -87,9 +101,13 @@ export const SettingsPage = connect(
         </List>
         <Divider />
         <Columns inset>
-          <Typography variant="caption">Version: v{version}</Typography>
+          <Typography variant="caption">Version: v{version} &nbsp; — &nbsp; © remot3.it inc.</Typography>
         </Columns>
       </Container>
     )
   }
 )
+
+const useStyles = makeStyles({
+  header: { '& img': { marginBottom: spacing.sm } },
+})
