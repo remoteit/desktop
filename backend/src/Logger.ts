@@ -5,7 +5,7 @@ import * as winston from 'winston'
 const ENV = process.env.NODE_ENV
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
 const MAX_LOG_FILES = 5
-export const LOG_DIR = path.join(Environment.remoteitDirectory, 'logs')
+export const LOG_DIR = path.join(Environment.userPath, 'logs')
 
 const transports = [
   new winston.transports.File({
@@ -24,20 +24,14 @@ const transports = [
     silent: ENV === 'test',
   }),
   new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    ),
+    format: winston.format.prettyPrint({ colorize: true }),
     silent: ENV === 'test',
   }),
 ]
 
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports,
 })
 

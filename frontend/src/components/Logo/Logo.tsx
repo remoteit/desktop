@@ -1,5 +1,5 @@
 import React from 'react'
-import logoColor from './logo-color.png'
+import logoColor from '../../assets/logo.svg'
 import logoWhite from './logo-white.svg'
 import logomarkWhite from './logomark-white.svg'
 
@@ -9,13 +9,9 @@ export interface LogoProps {
   width?: number
 }
 
-export function Logo({
-  white = false,
-  mark = false,
-  width = 150,
-}: LogoProps & React.HTMLProps<HTMLAnchorElement>) {
+export function Logo({ white = false, mark = false, width = 140 }: LogoProps & React.HTMLProps<HTMLAnchorElement>) {
   let logo = logoColor
-  // TODO: add color mark
+
   if (white && mark) logo = logomarkWhite
   if (white && !mark) logo = logoWhite
 

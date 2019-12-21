@@ -1,31 +1,38 @@
 import React from 'react'
-import { ConnectedServiceItem } from '../../components/ConnectedServiceItem'
+import { Icon } from '../../components/Icon'
+import { Body } from '../../components/Body'
+import { useHistory } from 'react-router-dom'
+import { IService } from 'remote.it'
+import { ServiceListItem } from '../ServiceListItem'
+import { Typography, Button, List } from '@material-ui/core'
 
 export interface Props {
-  connections: ConnectionInfo[]
+  connections: IConnection[]
+  services: IService[]
 }
 
-export function ConnectionsList({ connections }: Props) {
+export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
+  const history = useHistory()
+
   if (!connections || !connections.length) {
     return (
-      <div
-        className="px-md py-lg gray-dark mx-auto center"
-        style={{ maxWidth: '400px' }}
-      >
-        <em className="mb">You have no running connections yet.</em>
-        <p className="txt-sm grey">
-          Please find a service to connect to and press the connect button and
-          you will see them in this list.
-        </p>
-      </div>
+      <Body center>
+        <Typography variant="caption" gutterBottom>
+          You have no connections
+        </Typography>
+        <Button onClick={() => history.push('/devices')} variant="contained" color="primary" size="medium">
+          Add a Connection
+          <Icon name="arrow-right" weight="regular" size="md" fixedWidth inline />
+        </Button>
+      </Body>
     )
   }
 
   return (
-    <>
+    <List>
       {connections.map(c => (
-        <ConnectedServiceItem key={c.id} connection={c} />
+        <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
-    </>
+    </List>
   )
 }

@@ -3,133 +3,139 @@ import Connection from './Connection'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import PortScanner from './PortScanner'
-import User from './User'
-import { IUser } from 'remote.it'
+import ElectronApp from './ElectronApp'
+import user from './User'
 
 const d = debug('r3:backend:ConnectionPool')
 
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
-  user?: UserCredentials
-  private pool: { [id: string]: Connection } = {}
+  freePort?: number
+
+  private pool: Connection[] = []
 
   static EVENTS = {
-    updated: 'pool/updated',
+    updated: 'pool',
   }
 
-  constructor(connections: ConnectionData[], user?: UserCredentials) {
+  constructor(connections: IConnection[]) {
     Logger.info('Initializing connections pool', { connections })
 
-    this.user = user
+    connections.map(c => this.set(c))
 
     // Only turn on connections the user had open last time.
-    connections.map(conn => this.connect(conn))
+    connections.map(c => c.autoStart && this.start(c))
+
+    // init freeport
+    this.nextFreePort()
 
     // Listen to events to synchronize state
-    EventBus.on(User.EVENTS.signedIn, (user: IUser) => (this.user = user))
-    EventBus.on(User.EVENTS.signedOut, () => (this.user = undefined))
-    EventBus.on(Connection.EVENTS.disconnected, () => this.updated())
-    EventBus.on(Connection.EVENTS.started, () => this.updated())
+    EventBus.on(Connection.EVENTS.disconnected, this.updated)
+    EventBus.on(Connection.EVENTS.connected, this.updated)
+    EventBus.on(Connection.EVENTS.started, this.updated)
+    EventBus.on(ElectronApp.EVENTS.ready, this.updated)
   }
 
-  connect = async (args: {
-    id: string
-    port?: number
-    name?: string
-    autoStart?: boolean
-  }) => {
-    d('Connecting:', args)
-
-    if (!this.user) throw new Error('No user to authenticate connection!')
-
-    const port = args.port || (await this.freePort())
-
-    if (!port) throw new Error('No port could be assigned to connection!')
-
-    Logger.info('Connecting to service:', args)
-
-    // TODO: De-dupe connections!
-
-    const connection = new Connection({
-      port,
-      username: this.user.username,
-      authHash: this.user.authHash,
-      ...args,
-    })
-
-    this.pool[args.id] = connection
-
-    d('Starting connection:', { port, id: args.id })
-
-    if (!connection.autoStart) return
-
-    await this.start(args.id)
-
-    // Trigger a save of the connections file
+  set = (connection: IConnection) => {
+    if (!connection) Logger.warn('No connections to set!', { connection })
+    let instance = this.find(connection.id)
+    if (instance) instance.set(connection)
+    else instance = this.add(connection)
     this.updated()
+    return instance
+  }
 
-    return connection
+  add = (connection: IConnection) => {
+    const instance = new Connection(connection)
+    this.pool.push(instance)
+    return instance
   }
 
   find = (id: string) => {
     d('Find connection with ID:', { id, pool: this.pool })
-
-    const conn = this.pool[id]
-    if (!conn) throw new Error(`Connection with ID ${id} could not be found!`)
-    d('Connection found:', { id, port: conn.port, pid: conn.pid })
-    return conn
+    return this.pool.find(c => c.params.id === id)
   }
 
-  start = async (id: string) => {
-    d('Starting service:', id)
-    return this.find(id).start()
+  start = async (connection: IConnection) => {
+    d('Connecting:', connection)
+    if (!connection) return new Error('No connection data!')
+    const instance = this.set(connection)
+    if (!instance) return
+    await this.assignPort(instance)
+    await instance.start()
+    this.updated()
   }
 
-  stop = async (id: string) => {
-    d('Stopping service:', id)
-    return this.find(id).stop()
+  stop = async ({ id }: IConnection, autoStart?: boolean) => {
+    d('Stopping connection:', id)
+    const instance = this.find(id)
+    instance && instance.stop(autoStart)
+  }
+
+  forget = async ({ id }: IConnection) => {
+    d('Forgetting connection:', id)
+    const connection = this.find(id)
+    if (connection) {
+      const index = this.pool.indexOf(connection)
+      await connection.stop()
+      this.pool.splice(index, 1)
+      this.updated()
+    }
+    EventBus.emit(Connection.EVENTS.forgotten, id)
   }
 
   stopAll = async () => {
-    return Object.keys(this.pool).map(id => this.stop(id))
-  }
-
-  forget = async (id: string) => {
-    await this.stop(id)
-    delete this.pool[id]
-    this.updated()
-    EventBus.emit(Connection.EVENTS.forgotten, id)
+    d('Stopping all services')
+    return await this.pool.map(async c => await c.stop())
   }
 
   reset = async () => {
     await this.stopAll()
-    this.pool = {}
-  }
-
-  restart = async (id: string) => {
-    d('Restart service:', id)
-    return this.find(id).restart()
+    this.updated()
   }
 
   updated = async () => {
     EventBus.emit(ConnectionPool.EVENTS.updated, this.toJSON())
   }
 
-  toJSON = (): ConnectionData[] => {
-    const ids = Object.keys(this.pool)
-    return ids.map(id => this.pool[id].toJSON())
+  toJSON = (): IConnection[] => {
+    return this.pool
+      .map(c => c.toJSON())
+      .sort((a, b) => this.sort(a.createdTime, b.createdTime))
+      .sort((a, b) => this.sort(a.startTime, b.startTime))
+    // .sort(a => (a.active ? -1 : 1))
   }
 
-  private freePort = async () => {
-    return await PortScanner.findFreePortInRange(
-      PEER_PORT_RANGE[0],
-      PEER_PORT_RANGE[1],
-      this.usedPorts
-    )
+  sort = (a: number = 0, b: number = 0) => (a && b ? b - a : 0)
+
+  nextFreePort = async () => {
+    const usedPorts = this.usedPorts
+    let lastPort = usedPorts.sort((a, b) => b - a)[0] || PEER_PORT_RANGE[0]
+    if (lastPort >= PEER_PORT_RANGE[1]) lastPort = PEER_PORT_RANGE[0]
+    this.freePort = await PortScanner.findFreePortInRange(lastPort, PEER_PORT_RANGE[1], usedPorts)
+    Logger.info('nextFreePort', { freePort: this.freePort, lastPort, usedPorts })
+    return this.freePort
+  }
+
+  private assignPort = async (connection: Connection) => {
+    const { port } = connection.params
+    if (port) {
+      if (!(await PortScanner.isPortFree(port))) {
+        connection.params.error = { message: `Port ${port} is in use. Port auto-assigned` }
+        connection.params.port = await this.nextFreePort()
+      }
+    } else {
+      connection.params.port = await this.nextFreePort()
+    }
+
+    if (!connection.params.port) throw new Error('No port could be assigned to connection!')
   }
 
   private get usedPorts() {
-    return Object.keys(this.pool).map(id => this.pool[id].port)
+    return this.pool.reduce((result: number[], c) => {
+      if (c.params.port) result.push(c.params.port)
+      return result
+    }, [])
   }
 }

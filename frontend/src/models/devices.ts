@@ -2,7 +2,7 @@ import fuzzy from 'fuzzy'
 import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
 import Device from '../services/Device'
-import BackendAdapter from '../services/BackendAdapter'
+import { renameServices } from '../helpers/nameHelper'
 import { r3 } from '../services/remote.it'
 
 // Slightly below the API limit for search of 300 services.
@@ -13,7 +13,6 @@ const SEARCH_ONLY_SETTING_KEY = 'search-only'
 
 interface DeviceState {
   all: IDevice[]
-  connections: ConnectionInfo[]
   searchPerformed: boolean
   fetched: boolean
   fetching: boolean
@@ -26,7 +25,6 @@ interface DeviceState {
 const state: DeviceState = {
   // TODO: Store this as objects with keys based on ID?
   all: [],
-  connections: [],
   searchPerformed: false,
   fetched: false,
   fetching: false,
@@ -55,42 +53,30 @@ export default createModel({
       // If they have too many services, show search only.
       return r3.devices
         .count()
-        .then(count =>
-          dispatch.devices.setSearchOnly(
-            count.services > SEARCH_ONLY_SERVICE_LIMIT
-          )
-        )
+        .then(count => dispatch.devices.setSearchOnly(count.services > SEARCH_ONLY_SERVICE_LIMIT))
     },
     async fetch() {
       // TODO: Deal with device search only UI
-      const {
-        getConnections,
-        fetchStarted,
-        fetchFinished,
-        setDevices,
-      } = dispatch.devices
+      const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
+
+      if (!r3.token || !r3.authHash) {
+        console.warn('Fetch missing api token or authHash. Fetch aborted. Token:', r3.token, 'AuthHash:', r3.authHash)
+        return
+      }
+
       fetchStarted()
-      return (
-        r3.devices
-          .all()
-          .then(setDevices)
-          // Get connections again so we can update the incoming found
-          // device state against our list of locally connected services.
-          // TODO: Probably a cleaner way of doing this...
-          .then(() => getConnections())
-          .catch(error => {
-            console.error('Fetch error:', error, error.response)
-            if (
-              error &&
-              error.response &&
-              (error.response.status === 401 || error.response.status === 403)
-            ) {
-              setDevices([])
-              dispatch.auth.signedOut()
-            }
-          })
-          .finally(fetchFinished)
-      )
+      return r3.devices
+        .all()
+        .then(renameServices)
+        .then(setDevices)
+        .catch(error => {
+          console.error('Fetch error:', error, error.response)
+          if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
+            setDevices([])
+            dispatch.auth.signedOut()
+          }
+        })
+        .finally(fetchFinished)
     },
     async localSearch(_, globalState: any) {
       const query = globalState.devices.query
@@ -101,51 +87,17 @@ export default createModel({
       dispatch.devices.setDevices([])
       dispatch.devices.setSearching(true)
       dispatch.devices.setSearchPerformed(true)
-      return (
-        r3.devices
-          .search(query)
-          .then(devices => {
-            dispatch.devices.setDevices(devices)
-            dispatch.devices.setSearchPerformed(true)
-          })
-          // Get connections again so we can update the incoming found
-          // device state against our list of locally connected services.
-          // TODO: Probably a cleaner way of doing this...
-          .then(dispatch.devices.getConnections)
-          .finally(() => dispatch.devices.setSearching(false))
-      )
+      return r3.devices
+        .search(query)
+        .then(devices => {
+          dispatch.devices.setDevices(devices)
+          dispatch.devices.setSearchPerformed(true)
+        })
+        .finally(() => dispatch.devices.setSearching(false))
     },
-    async getConnections() {
-      BackendAdapter.emit(
-        'connections/list',
-        (connections: ConnectionInfo[]) => {
-          console.log('CONNECTIONS:', connections)
-          connections.map(conn => dispatch.devices.connected(conn))
-        }
-      )
+    async toggleSearchOnly(_, state) {
+      const searchOnly = !state.devices.searchOnly
 
-      const devices = localStorage.getItem('devices')
-      if (devices && devices.length)
-        dispatch.devices.setDevices(JSON.parse(devices))
-    },
-    async connect(service: IService) {
-      dispatch.devices.connectStart(service.id)
-      BackendAdapter.emit('service/connect', service)
-    },
-    async disconnect(id: string) {
-      BackendAdapter.emit('service/disconnect', id)
-    },
-    async restart(id: string) {
-      dispatch.devices.connectStart(id)
-      BackendAdapter.emit('service/restart', id)
-    },
-    async forget(id: string) {
-      BackendAdapter.emit('service/forget', id)
-    },
-    async forgotten(id: string) {
-      dispatch.devices.remove(id)
-    },
-    async changeSearchOnly(searchOnly: boolean) {
       dispatch.devices.setSearchOnly(searchOnly)
       dispatch.devices.setQuery('')
       if (searchOnly) {
@@ -157,7 +109,7 @@ export default createModel({
     },
     async reset() {
       dispatch.devices.setDevices([])
-      dispatch.devices.setConnections([])
+      dispatch.backend.set({ key: 'connections', value: [] })
       dispatch.devices.setSearchOnly(false)
       dispatch.devices.setQuery('')
       dispatch.devices.changeSort('state')
@@ -192,100 +144,6 @@ export default createModel({
       state.fetched = true
       state.fetching = false
     },
-    connectStart(state: DeviceState, id: string) {
-      const [service] = findService(state.all, id)
-      if (!service) return
-
-      let conn = state.connections.find(c => c.id === id)
-      if (conn) {
-        conn.error = undefined
-        conn.connecting = true
-      }
-
-      service.connecting = true
-    },
-    clearConnectionError(state: DeviceState, id: string) {
-      const conn = state.connections.find(c => c.id === id)
-      if (conn) conn.error = undefined
-    },
-    connectionError(state: DeviceState, msg: ConnectionErrorMessage) {
-      const conn = state.connections.find(c => c.id === msg.connection.id)
-      if (conn)
-        conn.error = {
-          code: msg.code,
-          message: msg.error,
-        }
-    },
-    connected(state: DeviceState, connection: ConnectionInfo) {
-      let existingConnection = state.connections.find(
-        c => c.id === connection.id
-      )
-
-      connection.connecting = false
-      connection.error = undefined
-
-      existingConnection
-        ? (state.connections[
-            state.connections.indexOf(existingConnection)
-          ] = connection)
-        : state.connections.push(connection)
-
-      const [serv, device] = findService(state.all, connection.id)
-
-      if (device) device.state = 'connected'
-
-      if (serv) {
-        serv.state = 'connected'
-        serv.port = connection.port
-        serv.pid = connection.pid
-        serv.connecting = false
-      }
-    },
-    setConnections(state: DeviceState, connections: ConnectionInfo[]) {
-      state.connections = connections
-    },
-    disconnected(state: DeviceState, msg: ConnectdMessage) {
-      const id = msg.connection.id
-      const conn = state.connections.find(c => c.id === id)
-      if (conn) {
-        conn.connecting = false
-        conn.pid = undefined
-      }
-
-      const [service, device] = findService(state.all, id)
-      if (device) {
-        // If device has only 1 active connection (e.g. the one we are in the
-        // process of disconnecting from), clear its connected state as it has
-        // no more active services.
-        if (device.services.filter(s => s.state === 'connected').length < 2) {
-          device.state = 'active'
-        }
-      }
-
-      if (service) {
-        // serv.state = 'disconnected'
-        service.pid = undefined
-        service.connecting = false
-      }
-    },
-    remove(state: DeviceState, id: string) {
-      const conn = state.connections.find(c => c.id === id)
-      const [serv] = findService(state.all, id)
-
-      if (conn) {
-        state.connections.splice(state.connections.indexOf(conn), 1)
-      }
-
-      if (serv) {
-        serv.state = 'active'
-        serv.port = undefined
-        serv.pid = undefined
-        serv.connecting = false
-      }
-
-      // TODO: decide if device should be connected
-      // if (device) device.state = 'connected'
-    },
     setSearching(state: DeviceState, searching: boolean) {
       state.searching = searching
     },
@@ -295,15 +153,13 @@ export default createModel({
   },
   selectors: slice => ({
     visible() {
-      return slice(
-        (state: DeviceState): IDevice[] => {
-          const filtered = filterDevices(state.all, state.query)
-          const sorted = Device.sort(filtered, state.sort)
-          // console.log('FILTERED:', filtered)
-          // console.log('SORTED:', state.sort, sorted)
-          return sorted
-        }
-      )
+      return slice((state: DeviceState): IDevice[] => {
+        const filtered = filterDevices(state.all, state.query)
+        const sorted = Device.sort(filtered, state.sort)
+        // console.log('FILTERED:', filtered)
+        // console.log('SORTED:', state.sort, sorted)
+        return sorted
+      })
     },
   }),
 })
@@ -312,15 +168,14 @@ function filterDevices(devices: IDevice[], query: string) {
   const options = {
     extract: (dev: IDevice) => {
       let matchString = dev.name
-      if (dev.services && dev.services.length)
-        matchString += dev.services.map(s => s.name).join('')
+      if (dev.services && dev.services.length) matchString += dev.services.map(s => s.name).join('')
       return matchString
     },
   }
   return fuzzy.filter(query, devices, options).map(d => d.original)
 }
 
-function findService(devices: IDevice[], id: string) {
+export function findService(devices: IDevice[], id: string) {
   return devices.reduce(
     (all, d) => {
       const service = d.services.find(s => s.id === id)

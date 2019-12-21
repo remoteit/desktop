@@ -5,4 +5,4 @@ import { ConnectionsList } from './ConnectionsList'
 
 storiesOf('components', module)
   .addDecorator(withKnobs)
-  .add('ConnectionsList', () => <ConnectionsList connections={[]} />)
+  .add('ConnectionsList', () => <ConnectionsList connections={[]} services={[]} />)

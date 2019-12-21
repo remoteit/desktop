@@ -1,22 +1,25 @@
 import React from 'react'
-import { Link } from '@material-ui/core'
 import { Logo } from '../../components/Logo'
+import { Body } from '../../components/Body'
 import { SignInFormController } from '../../controllers/SignInFormController/SignInFormController'
+import { makeStyles } from '@material-ui/styles'
+import styles from '../../styling'
 
 export function SignInPage() {
+  const css = useStyles()
+
   return (
-    <div className="h-100 df ai-center jc-center fd-col bg-white">
-      <div className="mx-auto my-auto" style={{ width: '400px' }}>
-        <div className="center mb-md">
-          <Logo />
-        </div>
-        <SignInFormController />
-        {/*<div className="mt-lg center">
-            <Link href="https://app.remote.it/auth/#/sign-up" target="blank">
-              Create an account
-            </Link>
-          </div>*/}
+    <Body center>
+      <div className={css.logo}>
+        <Logo />
       </div>
-    </div>
+      <SignInFormController />
+    </Body>
   )
 }
+const useStyles = makeStyles({
+  logo: {
+    marginTop: -styles.spacing.xl,
+    marginBottom: styles.spacing.lg,
+  },
+})

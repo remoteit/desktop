@@ -18,6 +18,7 @@ storiesOf('components/devices', module)
     <Provider store={store}>
       <DeviceList
         devices={devices}
+        connections={{}}
         query={text('query', '')}
         searchPerformed={boolean('searchPerformed', true)}
         searchOnly={boolean('searchOnly', false)}

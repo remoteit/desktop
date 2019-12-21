@@ -1,23 +1,21 @@
 import React from 'react'
 import { IService } from 'remote.it'
+import { List, Typography } from '@material-ui/core'
 import { ServiceListItem } from '../ServiceListItem'
 
 export interface ServiceListProps {
   services: IService[]
+  connections: ConnectionLookup
 }
 
-export function ServiceList({ services = [] }: ServiceListProps) {
+export const ServiceList = ({ services = [], connections }: ServiceListProps) => {
+  if (!services.length) return <Typography variant="h1">No services</Typography>
+
   return (
-    <>
-      {services.length ? (
-        services.map((service, key) => (
-          <ServiceListItem service={service} key={key} />
-        ))
-      ) : (
-        <div className="px-md py-sm italic gray-dark">
-          No services to show...
-        </div>
-      )}
-    </>
+    <List>
+      {services.map((service, key) => (
+        <ServiceListItem connection={connections[service.id]} service={service} key={key} />
+      ))}
+    </List>
   )
 }

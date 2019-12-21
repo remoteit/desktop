@@ -1,117 +1,134 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { connect } from 'react-redux'
+import { ApplicationState } from '../../store'
+import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
+import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
+import { makeStyles } from '@material-ui/styles'
+import { Header } from '../Header/Header'
+import { Page } from '../../pages/Page'
+import { Body } from '../Body'
+import { Icon } from '../Icon'
 import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
-import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
-import { Icon } from '../Icon'
-import { ConnectionsPage } from '../ConnectionsPage'
-import { Page } from '../../pages/Page'
-import { DevicesPage } from '../DevicesPage'
+import { ConnectionsPage } from '../../pages/ConnectionsPage'
+import { SetupPage } from '../../pages/SetupPage'
+import { NetworkPage } from '../../pages/NetworkPage'
+import { DevicesPage } from '../../pages/DevicesPage'
+import { ServicesPage } from '../../pages/ServicesPage'
+import { ServicePage } from '../../pages/ServicePage'
+import { LanSharePage } from '../../pages/LanSharePage'
 import { InstallationNotice } from '../InstallationNotice'
-import { ApplicationState } from '../../store'
-import { connect } from 'react-redux'
-
-const routes: Route = {
-  connections: <ConnectionsPage />,
-  devices: <DevicesPage />,
-  settings: <SettingsPage />,
-}
-
-export type AppProps = ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
+import { REGEX_FIRST_PATH } from '../../constants'
+import styles from '../../styling'
 
 const mapState = (state: ApplicationState) => ({
-  checkSignInStarted: state.auth.checkSignInStarted,
   user: state.auth.user,
-  page: state.navigation.page,
+  authenticated: state.auth.authenticated,
+  checkSignInStarted: state.auth.checkSignInStarted,
   installed:
     state.binaries.connectdInstalled &&
     state.binaries.muxerInstalled &&
-    state.binaries.demuxerInstalled,
-})
-const mapDispatch = (dispatch: any) => ({
-  checkSignIn: dispatch.auth.checkSignIn,
-  setPage: dispatch.navigation.setPage,
+    state.binaries.demuxerInstalled &&
+    state.binaries.remoteitInstalled,
 })
 
-export const App = connect(
-  mapState,
-  mapDispatch
-)(
-  ({
-    checkSignIn,
-    installed,
-    page,
-    setPage,
-    checkSignInStarted = false,
-    user,
-  }: AppProps) => {
-    useEffect(() => {
-      checkSignIn()
-    }, [])
+export type AppProps = ReturnType<typeof mapState>
 
-    if (checkSignInStarted)
-      return (
-        <Page>
-          <LoadingPage />
-        </Page>
-      )
+export const App = connect(mapState)(({ installed, checkSignInStarted, user, authenticated }: AppProps) => {
+  const css = useStyles()
+  const history = useHistory()
+  const location = useLocation()
+  const [navigation, setNavigation] = useState<{ [menu: string]: string }>({})
 
-    if (!installed)
-      return (
-        <Page>
-          <InstallationNotice />
-        </Page>
-      )
+  const match = location.pathname.match(REGEX_FIRST_PATH)
+  const menu = match ? match[0] : '/'
 
-    if (!user)
-      return (
-        <Page>
-          <SignInPage />
-        </Page>
-      )
-
-    return (
-      <Page>
-        <div
-          className="w-100 h-100 df ai-stretch"
-          style={{ flexFlow: 'column' }}
-        >
-          {/* <div className="df ai-center jc-center py-xs center dragable primary txt-md bg-gray-lighter">
-            remote.it
-          </div> */}
-          <div className="of-auto fg-1 relative">{routes[page]}</div>
-          <BottomNavigation
-            value={page}
-            onChange={(_, newValue) => setPage(newValue)}
-            showLabels
-            className="bt bc-secondary-lighter"
-          >
-            <BottomNavigationAction
-              label="Connections"
-              value="connections"
-              icon={<Icon name="scrubber" size="lg" />}
-            />
-            <BottomNavigationAction
-              label="Devices"
-              value="devices"
-              icon={<Icon name="chart-network" size="lg" />}
-            />
-            <BottomNavigationAction
-              label="Settings"
-              value="settings"
-              classes={{ selected: '' }}
-              icon={<Icon name="cog" size="lg" />}
-            />
-          </BottomNavigation>
-        </div>
-      </Page>
-    )
+  const changeNavigation = (_: any, selected: string) => {
+    const stored = navigation[selected]
+    if (!stored || stored === location.pathname) history.push(selected)
+    else history.push(stored)
   }
 
-  /* signInStarted ? (
-        <LoadingMessage message="Loading awesome!" />
-      ) : (
-        routeResult || <NotFoundPage />
-      )*/
-)
+  useEffect(() => {
+    if (navigation[menu] !== location.pathname) {
+      setNavigation({ ...navigation, [menu]: location.pathname })
+    }
+  }, [navigation, location, menu])
+
+  if (checkSignInStarted) return <LoadingPage />
+
+  if (!user || !authenticated)
+    return (
+      <Page authenticated={authenticated}>
+        <Header />
+        <SignInPage />
+      </Page>
+    )
+
+  if (!installed)
+    return (
+      <Page>
+        <Header />
+        <InstallationNotice />
+      </Page>
+    )
+
+  return (
+    <Page>
+      <Header />
+      <Body>
+        <Switch>
+          <Route path="/connections/:serviceID/lan">
+            <LanSharePage />
+          </Route>
+          <Route path="/connections/:serviceID">
+            <ServicePage />
+          </Route>
+          <Route path="/connections">
+            <ConnectionsPage />
+          </Route>
+          <Route path="/devices/:deviceID/:serviceID/lan">
+            <LanSharePage />
+          </Route>
+          <Route path="/devices/:deviceID/:serviceID">
+            <ServicePage />
+          </Route>
+          <Route path="/devices/:deviceID">
+            <ServicesPage />
+          </Route>
+          <Route path="/devices">
+            <DevicesPage />
+          </Route>
+          <Route path="/setup">
+            <SetupPage />
+          </Route>
+          <Route path="/network">
+            <NetworkPage />
+          </Route>
+          <Route path="/settings">
+            <SettingsPage />
+          </Route>
+          <Route exact path="/">
+            <Redirect to="/devices" />
+          </Route>
+        </Switch>
+      </Body>
+      <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
+        <BottomNavigationAction label="Connections" value="/connections" icon={<Icon name="scrubber" size="lg" />} />
+        <BottomNavigationAction label="Remote" value="/devices" icon={<Icon name="chart-network" size="lg" />} />
+        <BottomNavigationAction label="Local" value="/setup" icon={<Icon name="hdd" size="lg" />} />
+        <BottomNavigationAction label="Network" value="/network" icon={<Icon name="network-wired" size="lg" />} />
+        <BottomNavigationAction label="Settings" value="/settings" icon={<Icon name="cog" size="lg" />} />
+      </BottomNavigation>
+    </Page>
+  )
+})
+
+const useStyles = makeStyles({
+  footer: {
+    borderTop: `1px solid ${styles.colors.grayLight}`,
+    minHeight: 62,
+    '& .MuiButtonBase-root': { maxWidth: '18%' },
+  },
+})

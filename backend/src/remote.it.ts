@@ -1,4 +1,3 @@
-import axios from 'axios'
 import setup from 'remote.it'
 import { API_URL, DEVELOPER_KEY } from './constants'
 

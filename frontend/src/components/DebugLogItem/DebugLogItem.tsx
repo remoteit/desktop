@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import moment from 'moment'
-import { CopyButton } from '../CopyButton'
 import { Icon } from '../Icon'
 import { Tooltip } from '@material-ui/core'
+import { Color } from '../../styling'
 
 export interface Props {
   log: Log
@@ -17,7 +17,7 @@ export function DebugLogItem({ log }: Props) {
 
   let title = 'General message'
   let iconName = 'bell'
-  let iconColor = 'secondary' as BrandColors
+  let iconColor = 'secondary' as Color
   if (isConnectd) {
     title = 'connectd process message'
     iconName = 'terminal'
@@ -37,9 +37,7 @@ export function DebugLogItem({ log }: Props) {
           </Tooltip>
         </div>
         {log.message}
-        <span className="ml-auto txt-xs gray-light">
-          {moment(log.createdAt).fromNow()}
-        </span>
+        <span className="ml-auto txt-xs gray-light">{moment(log.createdAt).fromNow()}</span>
         {data && (
           <Icon
             name={opened ? 'chevron-up' : 'chevron-down'}
@@ -52,12 +50,8 @@ export function DebugLogItem({ log }: Props) {
       </div>
       {data && opened && (
         <div className="mt-md">
-          <div className="fr mt-sm mr-sm">
-            <CopyButton text={data} />
-          </div>
-          <pre className="ff-mono txt-sm p-md bg-gray-lightest secondary">
-            {data}
-          </pre>
+          <div className="fr mt-sm mr-sm"></div>
+          <pre className="ff-mono txt-sm p-md bg-gray-lightest secondary">{data}</pre>
         </div>
       )}
     </div>

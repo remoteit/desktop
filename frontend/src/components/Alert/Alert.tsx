@@ -12,28 +12,18 @@ export interface AlertProps {
   type?: 'danger' | 'warning' | 'info' | 'muted'
 }
 
-export function Alert({
-  closable = true,
-  onClose,
-  className = '',
-  children,
-  type = 'danger',
-  ...props
-}: AlertProps) {
+export function Alert({ closable = true, onClose, className = '', children, type = 'danger', ...props }: AlertProps) {
   const [closed, setClosed] = React.useState<boolean>(false)
 
   if (closed) return null
 
   const color = type === 'muted' ? 'gray' : type
-  const classes = classnames(
-    `df ai-center bg-${color} white rad-sm w-100 my-md px-md py-sm left`,
-    className
-  )
+  const classes = classnames(`df ai-center bg-${color} white rad-sm my-md px-md py-sm left`, className)
 
   let icon = 'exclamation-triangle'
   if (type === 'warning') icon = 'exclamation-circle'
-  if (type === 'info') icon = 'info-cirlce'
-  if (type === 'muted') icon = 'info-cirlce'
+  if (type === 'info') icon = 'info-circle'
+  if (type === 'muted') icon = 'info-circle'
 
   return (
     <div className={classes} {...props}>

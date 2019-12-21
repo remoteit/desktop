@@ -1,59 +1,50 @@
 import React from 'react'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { Icon } from '../Icon'
 import { IDevice } from 'remote.it'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Collapse,
-  Divider,
-} from '@material-ui/core'
-import { ServiceList } from '../ServiceList'
+import { useSelector } from 'react-redux'
+import { ServiceName } from '../ServiceName'
+import { ApplicationState } from '../../store'
+import { ListItemLocation } from '../ListItemLocation'
+import { ServiceMiniState } from '../ServiceMiniState'
+import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 
-export interface DeviceListItemProps {
+type Props = {
   device: IDevice
-  startOpen?: boolean
+  connections?: IConnection[]
 }
 
-export function DeviceListItem({
-  device,
-  startOpen = false,
-  ...props
-}: DeviceListItemProps) {
-  const [open, setOpen] = React.useState(startOpen)
-
-  function handleClick() {
-    setOpen(!open)
-  }
-
+const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
   return (
-    <div className="bg-white">
-      <ListItem {...props} onClick={handleClick} button>
-        <ListItemIcon>
-          <ConnectionStateIcon
-            state={device.state}
-            size="lg"
-            className="pl-sm"
-          />
-        </ListItemIcon>
-        <ListItemText primary={device.name} />
-        <div className="ml-auto">
-          {open ? (
-            <Icon name="chevron-up" color="gray" className="pr-sm" />
-          ) : (
-            <Icon name="chevron-down" color="gray" className="pr-sm" />
-          )}
-        </div>
-      </ListItem>
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <div className="bg-gray-lightest pb-sm pt-none px-sm">
-          <div className="bg-white ba bc-gray-light rad-sm">
-            <ServiceList services={device.services} />
-          </div>
-        </div>
-      </Collapse>
-      <Divider />
-    </div>
+    <>
+      {device.services.map(service => (
+        <ServiceMiniState
+          key={service.id}
+          service={service}
+          connection={connections.find(c => c.id === service.id)}
+          pathname={`/devices/${device.id}/${service.id}`}
+        />
+      ))}
+    </>
+  )
+}
+
+export const DeviceListItem = ({ device, connections }: Props) => {
+  const myDevice = useSelector((state: ApplicationState) => state.backend.device)
+  const activeConnection = connections && connections.find(c => c.active)
+  return (
+    <ListItemLocation pathname={`/devices/${device.id}`}>
+      <ListItemIcon>
+        <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <ServiceName service={device} shared={device.shared === 'shared-from'} connection={activeConnection} />
+        }
+        secondary={myDevice.uid === device.id && 'This system'}
+      />
+      <ListItemSecondaryAction style={{ right: 90 }}>
+        <ServiceIndicators device={device} connections={connections} />
+      </ListItemSecondaryAction>
+    </ListItemLocation>
   )
 }

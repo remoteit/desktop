@@ -6,11 +6,8 @@ declare global {
    */
   export type SortType = 'alpha' | 'state'
 
-  export type ConnectionState =
-    | DeviceState
-    | ServiceState
-    | 'connecting'
-    | 'disconnected'
+  // @FIXME this should only be connection state info, not overloading device / service state
+  export type ConnectionState = DeviceState | ServiceState | 'connecting' | 'disconnected' | 'unknown'
   // | 'active''
   // | 'inactive
   // | 'connecting'
@@ -19,7 +16,7 @@ declare global {
 
   export type Tab = 'connections' | 'devices'
 
-  export type Page = 'connections' | 'devices' | 'settings'
+  export type Page = 'connections' | 'devices' | 'setup' | 'settings' | 'network'
 
   export type Route = { [key in Page]: React.ReactNode }
 
@@ -28,7 +25,6 @@ declare global {
     | 'service/status'
     | 'service/updated'
     | 'service/request'
-    | 'service/connecting'
     | 'service/connected'
     | 'service/tunnel/opened'
     | 'service/tunnel/closed'
@@ -47,25 +43,7 @@ declare global {
     createdAt?: Date
   }
 
-  export type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
-
   export type IconWeight = 'light' | 'regular' | 'solid'
-
-  export type BrandColors =
-    | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'warning'
-    | 'danger'
-    | 'info'
-    | 'white'
-    | 'gray'
-    | 'gray-light'
-    | 'gray-lighter'
-    | 'gray-lightest'
-    | 'gray-dark'
-    | 'gray-darker'
-    | 'gray-darkest'
 
   /**
    * Action which are called by components that are wrapped
@@ -80,6 +58,11 @@ declare global {
     process?: {
       type?: string
     }
+  }
+
+  export interface IDataDisplay {
+    label: string
+    value?: any
   }
 }
 

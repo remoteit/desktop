@@ -1,5 +1,8 @@
 declare global {
   export type SocketAction =
+    //socket auth
+    | 'authentication'
+
     // user/auth
     | 'user/check-sign-in'
     | 'user/sign-in'
@@ -9,29 +12,48 @@ declare global {
     // binaries
     | 'binaries/install'
 
-    // individual service/connection
-    | 'connections/list'
+    // all connections update
+    | 'pool'
+
+    // single connection update
+    | 'connection'
+
+    // individual actions
     | 'service/connect'
     | 'service/disconnect'
     | 'service/forget'
     | 'service/restart'
 
-    // App / settings
+    // App/settings
     | 'app/open-on-login'
+
+    // Backend
+    | 'init'
+    | 'targets'
+    | 'device'
+    | 'scan'
+    | 'interfaces'
+    | 'freePort'
 
   export type SocketEvent =
     // built-in events
     | 'connect'
     | 'disconnect'
+    | 'connect_error'
 
     // user/auth
-    | 'user/signed-out'
-    | 'user/sign-in/error'
-    | 'user/signed-in'
+    | 'signed-out'
+    | 'signed-in'
+    | 'sign-in/error'
 
-    // connections
-    | 'service/connecting'
-    | 'service/connect/started'
+    // connection pool
+    | 'pool'
+
+    // connection update
+    | 'connection'
+
+    // connection events
+    | 'service/started'
     | 'service/connected'
     | 'service/disconnected'
     | 'service/forgotten'
@@ -52,6 +74,13 @@ declare global {
     | 'binary/installed'
     | 'binary/not-installed'
 
+    // jump
+    | 'targets'
+    | 'device'
+    | 'scan'
+    | 'interfaces'
+    | 'privateIP'
+
   type BinaryName = 'connectd' | 'muxer' | 'demuxer'
 
   interface InstallationInfo {
@@ -60,22 +89,39 @@ declare global {
     version: string
   }
 
-  export interface ConnectionInfo {
-    deviceID?: string
+  interface UserCredentials {
+    username: string
+    authHash: string
+  }
+
+  export interface IConnection {
     id: string
     name: string
-    type: string
-    port?: number
+    owner: string
+    deviceID: string
     pid?: number
+    port?: number
+    active?: boolean
+    host?: ipAddress // Bind address
+    restriction?: ipAddress // Restriction IP address
+    autoStart?: boolean
     connecting?: boolean
+    username?: string // support for launching where username could be saved
+    createdTime?: number // unix timestamp track for garbage cleanup
+    startTime?: number // unix timestamp connection start time
+    endTime?: number // unix timestamp connection close time
+    // deepLink?: string
     error?: {
       code?: number
       message: string
     }
   }
 
-  export interface ConnectdMessage {
-    connection: ConnectionInfo
+  export interface ConnectionLookup {
+    [id: string]: IConnection
+  }
+  export interface ConnectionMessage {
+    connection: IConnection
     raw?: string
     extra?: any
   }
@@ -83,33 +129,46 @@ declare global {
   export interface ConnectionErrorMessage {
     code?: number
     error: string
-    connection: ConnectionInfo
+    connection: IConnection
   }
 
   export type SocketEmit = (name: string, ...args: any[]) => any
 
-  // export enum ConnectdEvent {
-  //   error = 'service/error',
-  //   uptime = 'service/uptime',
-  //   status = 'service/status',
-  //   throughput = 'service/throughput',
-  //   updated = 'service/updated',
-  //   request = 'service/request',
-  //   connecting = 'service/connecting',
-  //   connected = 'service/connected',
-  //   tunnelOpened = 'service/tunnel/opened',
-  //   tunnelClosed = 'service/tunnel/closed',
-  //   disconnected = 'service/disconnected',
-  //   unknown = 'service/unknown-event',
-  // }
-}
+  export interface ITarget {
+    hostname: string //     proxy_dest_ip      service ip to forward
+    hardwareID?: string
+    uid: string //          UID
+    name: string
+    secret?: string //      password
+    port: number //         proxy_dest_port    service port
+    type: number //         application_type   service type
+  }
 
-// declare module 'remote.it' {
-//   export interface IService {
-//     connecting?: boolean
-//     port?: number
-//     pid?: number
-//   }
-// }
+  export interface IDevice extends ITarget {}
+
+  export type IScan = [string, [number, string][]] // address, port, type string
+
+  export type IScanData = {
+    [networkName: string]: {
+      timestamp: number
+      data: IScan[]
+    }
+  }
+
+  export type IScanDataRaw = {
+    host: string
+    name: string
+    port: number
+    protocol: string
+  }
+
+  export type IInterface = { [key: string]: any }
+
+  export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
+
+  export type ipAddress = string // namespace to indicate if expecting an ip address
+
+  export type ipClass = 'A' | 'B' | 'C'
+}
 
 export {}

@@ -1,35 +1,39 @@
 import classnames from 'classnames'
 import React from 'react'
 import './Icon.css'
+import { fontSizes, colors, spacing, Color, FontSize } from '../../styling'
 
 export interface IconProps {
   className?: string
-  color?: BrandColors
+  color?: Color
   fixedWidth?: boolean
-  name: string
+  name?: string
   onClick?: () => void
   title?: string
   size?: FontSize
   spin?: boolean
   weight?: IconWeight
+  inline?: boolean
 }
 
-export function Icon({
-  className,
-  color,
-  fixedWidth = false,
-  name,
-  size,
-  spin,
-  weight = 'light',
-  ...props
-}: IconProps) {
-  const classes = classnames(
-    `fa${weight[0]}`,
-    `fa-${name}`,
-    color && color,
-    { [`txt-${size}`]: size, 'fa-spin': spin, 'fa-fw': fixedWidth },
-    className
-  )
-  return <span className={classes} {...props} />
-}
+export type Ref = HTMLSpanElement
+
+export const Icon = React.forwardRef<Ref, IconProps>(
+  ({ className, color, fixedWidth = false, name, size, spin, weight = 'light', inline, ...props }, ref) => {
+    if (!name) return null
+
+    const classes = classnames(
+      { 'fa-spin': spin, 'fa-fw': fixedWidth, '': inline },
+      `fa${weight[0]}`,
+      `fa-${name}`,
+      className
+    )
+
+    const styles: any = {}
+    if (color) styles.color = colors[color]
+    if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
+    if (size) styles.fontSize = fontSizes[size]
+
+    return <span className={classes} {...props} style={styles} ref={ref} />
+  }
+)

@@ -1,1 +1,0 @@
-export { SignOutLinkController } from './SignOutLinkController'

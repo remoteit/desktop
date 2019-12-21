@@ -1,6 +1,6 @@
 {
-  "name": "remote.it-desktop",
-  "version": "1.0.0",
+  "name": "remoteit-desktop",
+  "version": "2.3.19",
   "private": true,
   "scripts": {
     "build": "cd backend && npm run build",
@@ -9,7 +9,8 @@
     "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "postinstall": "run-p install-*",
     "install-backend": "cd backend && npm i",
-    "install-frontend": "cd frontend && npm i"
+    "install-frontend": "cd frontend && npm i",
+    "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version"
   },
   "dependencies": {
     "keyboardjs": "2.5.1"

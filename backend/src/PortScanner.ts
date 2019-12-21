@@ -18,6 +18,8 @@ export default class PortScanner {
   ): Promise<number | undefined> {
     d('Checking port range:', { start, end })
 
+    if (start > end) end = start + 1
+
     // Create a range between start and end port numbers
     const range = [...Array(end - start).keys()]
       // Increment the ports from  the starting port number
@@ -35,10 +37,7 @@ export default class PortScanner {
     }
   }
 
-  public static async isPortFree(
-    port: number,
-    host: string = 'localhost'
-  ): Promise<boolean> {
+  public static async isPortFree(port: number, host: string = 'localhost'): Promise<boolean> {
     return new Promise(function(resolve) {
       const server = net.createServer()
 

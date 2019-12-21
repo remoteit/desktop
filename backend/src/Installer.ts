@@ -1,5 +1,7 @@
 import debug from 'debug'
 import Environment from './Environment'
+import Logger from './Logger'
+import EventBus from './EventBus'
 import fs from 'fs'
 import https from 'https'
 import os from 'os'
@@ -35,27 +37,32 @@ export default class Installer {
     this.version = args.version
   }
 
+  check() {
+    this.isInstalled
+      ? EventBus.emit(Installer.EVENTS.installed, {
+          path: this.binaryPath,
+          version: this.version,
+          name: this.name,
+        } as InstallationInfo)
+      : EventBus.emit(Installer.EVENTS.notInstalled, this.name)
+  }
+
   /**
    * Download the binary, move it to the PATH on the user's
    * system and then make it writable.
    */
   install(cb?: ProgressCallback) {
-    const permission = 0o755
-
+    Logger.info('Installing Binary', {
+      name: this.name,
+      repoName: this.repoName,
+      version: this.version,
+    })
     d('Attempting to install binary: %O', {
       name: this.name,
-      permission,
       path: this.binaryPath,
       version: this.version,
       repoName: this.repoName,
     })
-
-    try {
-      d('Creating binary path: ', this.targetDirectory)
-      fs.mkdirSync(this.targetDirectory, { recursive: true })
-    } catch (error) {
-      d('Error creating binary path:', error)
-    }
 
     // Download the binary from Github
     return this.download(this.version, cb)
@@ -71,20 +78,8 @@ export default class Installer {
    */
   async installIfMissing(cb?: ProgressCallback) {
     if (this.isInstalled) return
-    d('connectd is not installed, attempting to install now')
+    d(this.name + ' is not installed, attempting to install now')
     return this.install(cb)
-  }
-
-  get binaryPath() {
-    return path.join(this.binaryDirectory, this.binaryName)
-  }
-
-  get binaryName() {
-    return Environment.isWindows ? this.name + '.exe' : this.name
-  }
-
-  get binaryDirectory() {
-    return Environment.isWindows ? '/remoteit/bin/' : '/usr/local/bin/'
   }
 
   /**
@@ -94,14 +89,13 @@ export default class Installer {
   get isInstalled() {
     // TODO: we should probably make sure the output of the binary is what
     // we expect it to be and it is the right version
+    Logger.info('IS INSTALLED?', { path: this.binaryPath, installed: existsSync(this.binaryPath) })
     return existsSync(this.binaryPath)
   }
 
   private download(tag: string, progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url = `https://github.com/${this.repoName}/releases/download/${
-        this.version
-      }/${this.downloadFileName}`
+      const url = `https://github.com/${this.repoName}/releases/download/${this.version}/${this.downloadFileName}`
 
       d(`Downloading ${this.name}:`, url)
 
@@ -109,8 +103,10 @@ export default class Installer {
 
       https
         .get(url, res1 => {
-          if (!res1 || !res1.headers || !res1.headers.location)
+          if (!res1 || !res1.headers || !res1.headers.location) {
+            d('No response from download URL', res1, this)
             return reject(new Error('No response from download URL!'))
+          }
           https
             .get(res1.headers.location, res2 => {
               if (!res2 || !res2.headers || !res2.headers['content-length'])
@@ -133,19 +129,33 @@ export default class Installer {
     })
   }
 
+  get binaryPath() {
+    return path.join(Environment.binPath, this.binaryName)
+  }
+
+  get binaryName() {
+    return Environment.isWindows ? this.name + '.exe' : this.name
+  }
+
   get downloadPath() {
-    return path.join(this.downloadDirectory, this.binaryName)
+    return path.join(os.tmpdir(), this.binaryName)
   }
 
-  private get downloadFileName() {
-    return Environment.isWindows
-      ? `${this.name}.x86_64-64.exe`
-      : os.arch() === 'x64'
-      ? `${this.name}.x86_64-osx`
-      : `${this.name}.x86-osx`
-  }
+  // @TODO support for installing all platforms:
+  // https://github.com/remoteit/installer/blob/master/scripts/auto-install.sh
+  get downloadFileName() {
+    let extension = ''
 
-  private get downloadDirectory() {
-    return Environment.isWindows ? '/remoteit/bin/' : '/tmp/'
+    if (Environment.isWindows) {
+      extension = os.arch() === 'x64' ? '.x86_64-64.exe' : '.exe'
+    } else if (Environment.isMac) {
+      extension = os.arch() === 'x64' ? '.x86_64-osx' : '.x86-osx'
+    } else if (Environment.isPi) {
+      extension = '.arm-linaro-pi'
+    } else if (Environment.isLinux) {
+      extension = os.arch() === 'x64' ? '.x86_64-ubuntu16.04' : '.x86-ubuntu16.04'
+    }
+
+    return this.name + extension
   }
 }

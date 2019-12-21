@@ -1,50 +1,66 @@
 import React from 'react'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { ConnectedServiceItem } from '../ConnectedServiceItem'
 import { IService } from 'remote.it'
-import { connect } from 'react-redux'
-import { ListItem } from '@material-ui/core'
+import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { hostName } from '../../helpers/nameHelper'
+import { useLocation } from 'react-router-dom'
+import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
+import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
+import { ListItemLocation } from '../ListItemLocation'
+import { DisconnectButton } from '../../buttons/DisconnectButton'
+import { ConnectButton } from '../../buttons/ConnectButton'
+import { LaunchButton } from '../../buttons/LaunchButton'
+import { ServiceName } from '../ServiceName'
+import { CopyButton } from '../../buttons/CopyButton'
+import { Throughput } from '../Throughput'
+import { makeStyles } from '@material-ui/styles'
+import { colors, spacing } from '../../styling'
 
-export type ServiceListItemProps = {
-  service: IService
-} & ReturnType<typeof mapState> &
-  ReturnType<typeof mapDispatch>
+export interface ServiceListItemProps {
+  connection?: IConnection
+  service?: IService
+}
 
-const mapState = (state: ApplicationState, props: { service: IService }) => ({
-  connection: state.devices.connections.find(c => c.id === props.service.id),
-})
+export function ServiceListItem({ connection, service }: ServiceListItemProps) {
+  const location = useLocation()
+  const user = useSelector((state: ApplicationState) => state.auth.user)
+  const css = useStyles()
+  const id = connection ? connection.id : service ? service.id : ''
+  const owner = connection && connection.owner
+  const notOwner: boolean = !!(user && owner && user.username !== owner)
 
-const mapDispatch = (dispatch: any) => ({
-  connect: dispatch.devices.connect,
-})
-
-export const ServiceListItem = connect(
-  mapState,
-  mapDispatch
-)(({ connect, connection, service }: ServiceListItemProps) => {
-  if (service.state === 'connected' && connection) {
-    return <ConnectedServiceItem connection={connection} />
-  }
+  const details = (
+    <span className={css.details}>
+      {connection && hostName(connection)}
+      {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
+      {notOwner && <span>Owned by {owner}</span>}
+    </span>
+  )
 
   return (
-    <ListItem
-      button
-      className="df ai-center bb bc-gray-lighter"
-      onClick={() => connect(service)}
-    >
-      <div className="mr-sm">
-        <ConnectionStateIcon
-          state={service.connecting ? 'connecting' : service.state}
-          size="lg"
-        />
-      </div>
-      <div>
-        <div className="txt-md gray-darkest">{service.name}</div>
-        {service.name.toLowerCase() !== service.type.toLowerCase() && (
-          <div className="txt-sm gray">{service.type}</div>
-        )}
-      </div>
-    </ListItem>
+    <>
+      <ListItemLocation pathname={`${location.pathname}/${id}`} disabled={notOwner}>
+        <ListItemIcon>
+          <ConnectionStateIcon connection={connection} service={service} size="lg" />
+        </ListItemIcon>
+        <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
+        {connection && connection.active && <Throughput connection={connection} />}
+        <ListItemSecondaryAction className={css.actions}>
+          <LaunchButton connection={connection} service={service} />
+          <CopyButton connection={connection} service={service} />
+          <DisconnectButton connection={connection} />
+          <ConnectButton connection={connection} service={service} />
+        </ListItemSecondaryAction>
+      </ListItemLocation>
+      {connection && <ConnectionErrorMessage connection={connection} />}
+    </>
   )
+}
+
+const useStyles = makeStyles({
+  actions: { right: 70, display: 'none' },
+  details: { '& > span': { marginLeft: spacing.xs } },
+  restriction: { color: colors.grayDarker },
 })

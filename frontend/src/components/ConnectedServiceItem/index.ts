@@ -1,1 +1,0 @@
-export { ConnectedServiceItem } from './ConnectedServiceItem'

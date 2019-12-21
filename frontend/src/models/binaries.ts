@@ -1,8 +1,8 @@
 import { createModel } from '@rematch/core'
-import BackendAdapter from '../services/BackendAdapter'
+import Controller from '../services/Controller'
 
 export interface BinariesState {
-  error?: string
+  error?: any
   installing: boolean
   connectdInstalled: boolean
   connectdPath?: string
@@ -14,20 +14,27 @@ export interface BinariesState {
   demuxerPath?: string
   demuxerVersion?: string
   demuxerErrork?: string
+  remoteitInstalled: boolean
+  remoteitPath?: string
+  remoteitVersion?: string
+  remoteitErrork?: string
 }
 
 const state: BinariesState = {
   error: undefined,
   installing: false,
-  connectdInstalled: false,
+  connectdInstalled: true,
   connectdPath: undefined,
   connectdVersion: undefined,
-  muxerInstalled: false,
+  muxerInstalled: true,
   muxerPath: undefined,
   muxerVersion: undefined,
-  demuxerInstalled: false,
+  demuxerInstalled: true,
   demuxerPath: undefined,
   demuxerVersion: undefined,
+  remoteitInstalled: true,
+  remoteitPath: undefined,
+  remoteitVersion: undefined,
 }
 
 export default createModel({
@@ -36,7 +43,7 @@ export default createModel({
     async install() {
       dispatch.binaries.clearError()
       dispatch.binaries.installing()
-      BackendAdapter.emit('binaries/install')
+      Controller.emit('binaries/install')
     },
   }),
   reducers: {
@@ -56,15 +63,15 @@ export default createModel({
       // @ts-ignore
       state[info.name + 'Version'] = info.version
     },
-    notInstalled(state: BinariesState, binary: BinaryName) {
+    notInstalled(state: BinariesState, name: BinaryName) {
       state.installing = false
 
       // @ts-ignore
-      state[binary + 'Installed'] = false
+      state[name + 'Installed'] = false
       // @ts-ignore
-      state[binary + 'Path'] = undefined
+      state[name + 'Path'] = undefined
       // @ts-ignore
-      state[binary + 'Version'] = undefined
+      state[name + 'Version'] = undefined
     },
     installError(state: BinariesState, error: string) {
       state.error = error

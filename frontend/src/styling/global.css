@@ -1,0 +1,44 @@
+@import '~euphoria';
+
+:root {
+  /* Colors */
+  --color-primary: #0096e7;
+  --color-secondary: #0d6dba;
+  --color-warning: #ed9912;
+  --color-success: #7fc40f;
+  --color-danger: #d6290a;
+  --color-gray-lightest: #fafafa;
+  --color-gray-lighter: #efefef;
+  --color-gray-light: #dbdbdb;
+  --color-gray: #bbb;
+  --color-gray-dark: #999;
+  --color-gray-darker: #595959;
+  --color-gray-darkest: #333;
+
+  /* Font sizes */
+  --font-size-xxs: 10px;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 16px;
+  --font-size-lg: 19px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 36px;
+  --font-size-xxxl: 48px;
+
+  /* Spacing */
+  --spacing-xxs: 3px;
+  --spacing-xs: 6px;
+  --spacing-sm: 12px;
+  --spacing-md: 18px;
+  --spacing-lg: 24px;
+  --spacing-xl: 36px;
+  --spacing-xxl: 48px;
+
+  /* Font families */
+  --font-family-sans-serif: 'Roboto', sans-serif;
+  --font-family-mono: 'Roboto Mono', monospace;
+
+  /* Box shadows */
+  --box-shadow-1: 0 0 10px rgba(0, 0, 0, 0.1);
+  --box-shadow-2: 4px 4px 10px 0px rgba(0, 0, 0, 0.06);
+}

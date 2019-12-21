@@ -15,3 +15,8 @@ export function isMac() {
   const platform = navigator.platform.toLowerCase()
   return platform.includes('mac')
 }
+
+export function isWindows() {
+  const platform = navigator.platform.toLowerCase()
+  return platform.includes('win')
+}

@@ -1,12 +1,12 @@
 import React from 'react'
 import { DebugLogController } from '../../controllers/DebugLogController'
+import { Typography } from '@material-ui/core'
 import { Page } from '../Page'
-import { PageHeading } from '../../components/PageHeading'
 
 export function DebugPage() {
   return (
     <Page>
-      <PageHeading>Debug Log</PageHeading>
+      <Typography variant="h1">Debug Log</Typography>
       <DebugLogController />
     </Page>
   )

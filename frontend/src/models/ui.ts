@@ -11,6 +11,7 @@ export default createModel({
   effects: (dispatch: any) => ({
     async connected() {
       dispatch.ui.setConnected(true)
+      dispatch.backend.set({ key: 'error', value: false })
     },
     async disconnected() {
       dispatch.ui.setConnected(false)

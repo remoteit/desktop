@@ -2,15 +2,10 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { select, withKnobs } from '@storybook/addon-knobs'
 import { ConnectionStateIcon } from './ConnectionStateIcon'
+import { FontSize } from '../../styling'
 
-const sizes: FontSize[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl', 'xxxl']
-const states: ConnectionState[] = [
-  'active',
-  'inactive',
-  'connected',
-  'connecting',
-  'restricted',
-]
+const sizes: FontSize[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
+const states: ConnectionState[] = ['active', 'inactive', 'connected', 'connecting', 'restricted']
 
 storiesOf('components/devices', module)
   .addDecorator(withKnobs)
@@ -19,7 +14,7 @@ storiesOf('components/devices', module)
       <h1>Custom</h1>
       <ConnectionStateIcon
         state={select('state', states, 'active') as ConnectionState}
-        size={select('size', sizes as FontSize[], 'xxxl' as FontSize)}
+        size={select('size', sizes as FontSize[], 'xxl' as FontSize)}
       />
       <h1 className="mt-lg">States</h1>
       <table>

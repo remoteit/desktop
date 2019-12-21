@@ -1,0 +1,1 @@
+export { LanSharePage } from './LanSharePage'
