@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-backend",
-  "version": "2.3.18",
+  "version": "2.3.19",
   "private": true,
   "main": "build/index.js",
   "scripts": {
