@@ -66,7 +66,8 @@ More info can be found in this setup guide: [Notarizing on Mac OS](https://kilia
 - Jump services to other systems on the network
 - LAN scanning
 - Multi user system handling
-- Remote configuration through web hosted panel
+- Remote configuration through web hosted panel on port 29999
+- Out of band network detection
 
 ## Platforms
 

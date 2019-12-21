@@ -1,9 +1,11 @@
 import React from 'react'
 import { List, Divider, Typography } from '@material-ui/core'
-import { Container } from '../../components/Container'
-import { SettingsListItem } from '../../components/SettingsListItem'
-import { connect } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { SettingsListItem } from '../../components/SettingsListItem'
+import { Container } from '../../components/Container'
+import { Columns } from '../../components/Columns'
+import { connect } from 'react-redux'
+import { version } from '../../../package.json'
 
 const mapState = (state: ApplicationState, props: any) => ({
   user: state.auth.user,
@@ -83,6 +85,10 @@ export const SettingsPage = connect(
           />
           <SettingsListItem label="Quit" icon="skull-crossbones" onClick={quitWarning} />
         </List>
+        <Divider />
+        <Columns inset>
+          <Typography variant="caption">Version: v{version}</Typography>
+        </Columns>
       </Container>
     )
   }
