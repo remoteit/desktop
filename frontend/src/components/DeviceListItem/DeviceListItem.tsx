@@ -1,15 +1,19 @@
 import React from 'react'
 import { IDevice } from 'remote.it'
+import { useSelector } from 'react-redux'
 import { ServiceName } from '../ServiceName'
+import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 
-const ServiceIndicators: React.FC<{ device: IDevice; connections?: IConnection[] }> = ({
-  device,
-  connections = [],
-}) => {
+type Props = {
+  device: IDevice
+  connections?: IConnection[]
+}
+
+const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
   return (
     <>
       {device.services.map(service => (
@@ -24,12 +28,8 @@ const ServiceIndicators: React.FC<{ device: IDevice; connections?: IConnection[]
   )
 }
 
-export type DeviceListItemProps = {
-  device: IDevice
-  connections?: IConnection[]
-}
-
-export const DeviceListItem = ({ device, connections }: DeviceListItemProps) => {
+export const DeviceListItem = ({ device, connections }: Props) => {
+  const myDevice = useSelector((state: ApplicationState) => state.backend.device)
   const activeConnection = connections && connections.find(c => c.active)
   return (
     <ListItemLocation pathname={`/devices/${device.id}`}>
@@ -40,6 +40,7 @@ export const DeviceListItem = ({ device, connections }: DeviceListItemProps) => 
         primary={
           <ServiceName service={device} shared={device.shared === 'shared-from'} connection={activeConnection} />
         }
+        secondary={myDevice.uid === device.id && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>
         <ServiceIndicators device={device} connections={connections} />
