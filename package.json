@@ -9,7 +9,8 @@
     "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "postinstall": "run-p install-*",
     "install-backend": "cd backend && npm i",
-    "install-frontend": "cd frontend && npm i"
+    "install-frontend": "cd frontend && npm i",
+    "version": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version"
   },
   "dependencies": {
     "keyboardjs": "2.5.1"
