@@ -2,7 +2,6 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT } from '../constants'
 import { EventEmitter } from 'events'
-import { isElectron } from '../services/Platform'
 
 class Controller extends EventEmitter {
   private socket: SocketIOClient.Socket
@@ -10,7 +9,7 @@ class Controller extends EventEmitter {
   constructor() {
     super()
     const { protocol, host } = window.location
-    const isDev = isElectron() && host === 'localhost:3000'
+    const isDev = host === 'localhost:3000'
     const url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
 
     console.log('SOCKET URL', url)
