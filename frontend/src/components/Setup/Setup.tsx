@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import Targets from './Targets'
 import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar, Typography } from '@material-ui/core'
-import { Container } from '../../components/Container'
-import { makeStyles } from '@material-ui/styles'
 import { REGEX_NAME_SAFE } from '../../constants'
+import { makeStyles } from '@material-ui/styles'
+import { Container } from '../Container'
+import { Targets } from '../Targets'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 
@@ -17,7 +17,7 @@ type Props = {
   onCancel: () => void
 }
 
-const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
+export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
   const css = useStyles()
   const [name, setName] = useState<string>(device.name)
   const [registering, setRegistering] = useState<boolean>(false)
@@ -108,8 +108,6 @@ const Device: React.FC<Props> = ({ device, onDevice, onDelete, ...props }) => {
     </Container>
   )
 }
-
-export default Device
 
 const useStyles = makeStyles({
   name: {

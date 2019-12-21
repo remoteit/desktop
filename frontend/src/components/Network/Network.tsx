@@ -1,5 +1,5 @@
 import React from 'react'
-import Scan from './Scan'
+import { Scan } from '../Scan'
 
 type Props = {
   data: IScanData
@@ -10,8 +10,6 @@ type Props = {
   privateIP: string
 }
 
-const Network: React.FC<Props> = ({ ...props }) => {
+export const Network: React.FC<Props> = ({ ...props }) => {
   return <Scan {...props} />
 }
-
-export default Network

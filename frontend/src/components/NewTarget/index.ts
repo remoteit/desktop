@@ -1,0 +1,1 @@
+export { NewTarget } from './NewTarget'

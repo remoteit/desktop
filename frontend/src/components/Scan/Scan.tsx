@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
-import { Container } from '../../components/Container'
+import { Container } from '../Container'
 import { makeStyles } from '@material-ui/styles'
-import ScanNetwork from './ScanNetwork'
+import { ScanNetwork } from '../ScanNetwork'
 import styles from '../../styling'
 
 type Props = {
@@ -14,7 +14,7 @@ type Props = {
   privateIP: string
 }
 
-const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, privateIP }) => {
+export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, privateIP }) => {
   const css = useStyles()
   const [timestamp, setTimestamp] = useState<{ [interfaceName: string]: number }>({})
   const [loading, setLoading] = useState<{ [interfaceName: string]: boolean }>({})
@@ -86,8 +86,6 @@ const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, priva
     </Container>
   )
 }
-
-export default Scan
 
 const useStyles = makeStyles({
   loading: {

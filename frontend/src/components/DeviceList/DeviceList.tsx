@@ -3,7 +3,6 @@ import { IDevice } from 'remote.it'
 import { DeviceListItem } from '../DeviceListItem'
 import { Body } from '../Body'
 import { List } from '@material-ui/core'
-import { Icon } from '../Icon'
 import classnames from 'classnames'
 
 export interface DeviceListProps {

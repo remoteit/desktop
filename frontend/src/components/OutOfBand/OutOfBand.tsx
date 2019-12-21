@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles'
 import { Tooltip } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
 
-const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
+export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
   const css = useStyles()
   return (
     <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
@@ -14,8 +14,6 @@ const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
     </Tooltip>
   )
 }
-
-export default OutOfBand
 
 const useStyles = makeStyles({
   oob: {

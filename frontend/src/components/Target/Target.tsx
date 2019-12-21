@@ -16,7 +16,7 @@ type Props = {
   onCancel?: () => void
 }
 
-const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete, onCancel }) => {
+export const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete, onCancel }) => {
   const [state, setState] = useState<ITarget>(data)
   const [loading, setLoading] = useState<boolean>()
   const css = useStyles()
@@ -133,8 +133,6 @@ const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete
     </tr>
   )
 }
-
-export default Target
 
 const useStyles = makeStyles({
   button: { marginTop: styles.spacing.lg },

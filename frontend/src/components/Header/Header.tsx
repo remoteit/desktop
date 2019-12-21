@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Typography, Tooltip, IconButton } from '@material-ui/core'
+import { isElectron, isMac } from '../../services/Platform'
+import { ApplicationState } from '../../store'
 import { makeStyles } from '@material-ui/styles'
 import { connect } from 'react-redux'
-import { ApplicationState } from '../../store'
 import { Icon } from '../Icon'
-import { isElectron, isMac } from '../../services/Platform'
 import * as screenfull from 'screenfull'
 import styles from '../../styling'
 

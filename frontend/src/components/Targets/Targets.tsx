@@ -1,6 +1,6 @@
 import React from 'react'
-import Target from './Target'
-import NewTarget from './NewTarget'
+import { Target } from '../Target'
+import { NewTarget } from '../NewTarget'
 import { InputLabel, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
@@ -14,7 +14,7 @@ type Props = {
   onCancel: () => void
 }
 
-const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onCancel }) => {
+export const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onCancel }) => {
   const css = useStyles()
   const disabled = targets.length > 9
 
@@ -74,8 +74,6 @@ const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onCancel }
     </div>
   )
 }
-
-export default Targets
 
 const useStyles = makeStyles({
   targets: {

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Button } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
-import { Icon } from '../Icon'
 import { DEFAULT_TARGET } from '../../constants'
-import Target from './Target'
+import { makeStyles } from '@material-ui/styles'
+import { Button } from '@material-ui/core'
+import { Icon } from '../Icon'
+import { Target } from '../Target'
 import styles from '../../styling'
 
 type Props = {
@@ -14,7 +14,7 @@ type Props = {
   onCancel: () => void
 }
 
-const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
+export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
   const [showNew, setShowNew] = useState<boolean>(!added)
   const [lastCount, setLastCount] = useState<number>(count)
   const css = useStyles()
@@ -54,8 +54,6 @@ const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
     />
   )
 }
-
-export default NewTarget
 
 const useStyles = makeStyles({
   button: {

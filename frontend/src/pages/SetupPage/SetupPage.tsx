@@ -8,8 +8,8 @@ import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/styles'
 import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
+import { Setup } from '../../components/Setup'
 import Controller from '../../services/Controller'
-import Device from '../../components/jump/Device'
 
 export const SetupPage: React.FC = () => {
   const css = useStyles()
@@ -91,7 +91,7 @@ export const SetupPage: React.FC = () => {
       </Columns>
     </Container>
   ) : (
-    <Device
+    <Setup
       device={device}
       targets={targets}
       added={added}

@@ -36,7 +36,7 @@ const InterfaceIcon: IInterfaceIcon = {
   Other: <Icon name="usb" weight="regular" />,
 }
 
-const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd, privateIP }) => {
+export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd, privateIP }) => {
   const css = useStyles()
   const [open, setOpen] = useState<number[]>([])
   const allClosed = open.length === 0
@@ -130,8 +130,6 @@ const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd, pri
     </>
   )
 }
-
-export default ScanNetwork
 
 const useStyles = makeStyles({
   caption: {

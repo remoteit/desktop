@@ -11,7 +11,6 @@ import { IDevice } from 'remote.it'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 
-// const visible = store.select.devices.visible
 interface SelectResponse {
   visibleDevices: IDevice[]
 }
@@ -73,9 +72,6 @@ export const DevicesPage = connect(
     const css = useStyles()
 
     if (fetching && !allDevices.length) return <DeviceLoadingMessage />
-    // if (fetching && searchOnly) return <DeviceLoadingMessage />
-    // if (!fetching && !allDevices.length) <NoDevicesMessage />
-    console.log('connections', connections)
 
     return (
       <Container
