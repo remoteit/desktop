@@ -110,7 +110,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
                           onAdd({
                             ...DEFAULT_TARGET,
                             type: getType(port[0]),
-                            hostname: ip[0],
+                            hostname: ip[0] === privateIP ? '' : ip[0],
                             port: port[0],
                             name: port[1],
                           })
