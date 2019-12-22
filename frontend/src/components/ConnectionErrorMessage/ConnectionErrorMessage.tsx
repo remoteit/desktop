@@ -6,12 +6,9 @@ import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 
-export const ConnectionErrorMessage: React.FC<{ connection: IConnection }> = ({ connection }) => {
+export const ConnectionErrorMessage: React.FC<{ connection?: IConnection }> = ({ connection }) => {
   const css = useStyles()
-  if (!connection.error) return null
-
-  // Don't show an error if the process was killed by the user.
-  if (connection.error.code === 3) return null
+  if (!connection || !connection.error) return null
 
   return (
     <ListItem className={css.container}>
@@ -24,12 +21,7 @@ export const ConnectionErrorMessage: React.FC<{ connection: IConnection }> = ({ 
         </Tooltip>
       </ListItemIcon>
       <ListItemText
-        secondary={
-          connection.error.message +
-          ' (' +
-          (connection.error.code ? `CODE: ${connection.error.code}` : 'Failed to connect.') +
-          ')'
-        }
+        secondary={connection.error.message + (connection.error.code ? ` (CODE: ${connection.error.code})` : '')}
       >
         Connection Error
       </ListItemText>
@@ -41,7 +33,7 @@ const size = 8
 
 const useStyles = makeStyles({
   container: {
-    backgroundColor: styles.colors.danger,
+    backgroundColor: styles.colors.warning,
     color: styles.colors.white,
     '& .MuiListItemText-secondary': { color: styles.colors.white },
   },
@@ -53,6 +45,6 @@ const useStyles = makeStyles({
     height: 0,
     borderLeft: `${size}px solid transparent`,
     borderRight: `${size}px solid transparent`,
-    borderBottom: `${size}px solid ${styles.colors.danger}`,
+    borderBottom: `${size}px solid ${styles.colors.warning}`,
   },
 })
