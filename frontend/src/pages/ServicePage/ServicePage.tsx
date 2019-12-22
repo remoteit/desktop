@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/styles'
 import { useSelector } from 'react-redux'
@@ -20,6 +20,7 @@ import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
+import { ErrorButton } from '../../buttons/ErrorButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
@@ -29,6 +30,7 @@ import { spacing } from '../../styling'
 export const ServicePage: React.FC = () => {
   const css = useStyles()
   const { serviceID = '' } = useParams()
+  const [showError, setShowError] = useState<boolean>(false)
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
 
@@ -74,6 +76,7 @@ export const ServicePage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} size="lg" />
             <ServiceName connection={connection} service={service} inline />
+            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />
@@ -82,7 +85,7 @@ export const ServicePage: React.FC = () => {
         </>
       }
     >
-      {connection && <ConnectionErrorMessage connection={connection} />}
+      {showError && <ConnectionErrorMessage connection={connection} />}
       {connection && connection.active && (
         <>
           <ServiceConnected connection={connection} />

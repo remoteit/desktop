@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { IService } from 'remote.it'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
@@ -12,6 +12,7 @@ import { ListItemLocation } from '../ListItemLocation'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
+import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Throughput } from '../Throughput'
@@ -27,6 +28,7 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
   const location = useLocation()
   const user = useSelector((state: ApplicationState) => state.auth.user)
   const css = useStyles()
+  const [showError, setShowError] = useState<boolean>(false)
   const id = connection ? connection.id : service ? service.id : ''
   const owner = connection && connection.owner
   const notOwner: boolean = !!(user && owner && user.username !== owner)
@@ -48,13 +50,14 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         {connection && connection.active && <Throughput connection={connection} />}
         <ListItemSecondaryAction className={css.actions}>
+          <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
           <DisconnectButton connection={connection} />
           <ConnectButton connection={connection} service={service} />
         </ListItemSecondaryAction>
       </ListItemLocation>
-      {connection && <ConnectionErrorMessage connection={connection} />}
+      {showError && <ConnectionErrorMessage connection={connection} />}
     </>
   )
 }
