@@ -14,10 +14,11 @@ type Props = {
 
 export const SettingsListItem: React.FC<Props> = ({ icon, label, subLabel, value, onClick, disabled }) => {
   const showToggle = value !== undefined
+  if (!onClick) disabled = true
   return (
-    <ListItem button onClick={onClick} disabled={disabled}>
+    <ListItem button onClick={onClick} disabled={disabled} style={{ opacity: 1 }}>
       <ListItemIcon>
-        <Icon name={icon} size="md" weight="regular" />
+        <Icon name={icon} size="md" weight="light" />
       </ListItemIcon>
       <ListItemText primary={label} secondary={subLabel} />
       {showToggle && (

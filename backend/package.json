@@ -3,6 +3,7 @@
   "version": "2.3.23",
   "private": true,
   "main": "build/index.js",
+  "productName": "remote.it",
   "scripts": {
     "build": "NODE_ENV=production run-s clean compile copy-* build-*",
     "copy-images": "cp -R ./src/images ./build/",
