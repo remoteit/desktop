@@ -91,6 +91,7 @@ export const SettingsPage = connect(
         </List>
         <Divider />
         <List>
+          <SettingsListItem label="About" subLabel={`Version: v${version}  —  © remot3.it inc.`} icon="info-circle" />
           <SettingsListItem
             label="Sign out"
             subLabel={`Signed is as ${user && user.username}`}
@@ -99,10 +100,6 @@ export const SettingsPage = connect(
           />
           <SettingsListItem label="Quit" icon="skull-crossbones" onClick={quitWarning} />
         </List>
-        <Divider />
-        <Columns inset>
-          <Typography variant="caption">Version: v{version} &nbsp; — &nbsp; © remot3.it inc.</Typography>
-        </Columns>
       </Container>
     )
   }
