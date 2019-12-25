@@ -3,6 +3,7 @@
   "version": "2.3.24",
   "private": true,
   "scripts": {
+    "publish": "cd backend && npm run publish",
     "build": "cd backend && npm run build",
     "watch-frontend": "cd frontend && npm start",
     "watch-backend": "cd backend && npm start",
