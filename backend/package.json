@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-backend",
-  "version": "2.3.23",
+  "version": "2.3.24",
   "private": true,
   "main": "build/index.js",
   "productName": "remote.it",
