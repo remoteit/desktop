@@ -12,6 +12,7 @@ import RemoteitInstaller from './RemoteitInstaller'
 import DemuxerInstaller from './DemuxerInstaller'
 import ConnectionPool from './ConnectionPool'
 import ElectronApp from './ElectronApp'
+import AutoUpdater from './AutoUpdater'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import Server from './Server'
@@ -40,6 +41,8 @@ class Controller {
         ...Object.values(Installer.EVENTS),
         ...Object.values(Connection.EVENTS),
         ...Object.values(ConnectionPool.EVENTS),
+        ...Object.values(AutoUpdater.EVENTS),
+        ...Object.values(LAN.EVENTS),
       ],
       EventBus,
       this.server.sockets
@@ -62,6 +65,7 @@ class Controller {
     socket.on('scan', this.scan)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
+    socket.on('restart', this.restart)
 
     // things are ready - send the secure data
     this.syncBackend()
@@ -97,10 +101,10 @@ class Controller {
     this.server.emit('device', this.cli.data.device)
     this.server.emit('scan', this.lan.data)
     this.server.emit('interfaces', this.lan.interfaces)
-    this.server.emit('pool', this.pool.toJSON())
-    this.server.emit('privateIP', this.lan.privateIP)
-    this.server.emit('freePort', this.pool.freePort)
     this.server.emit('admin', (this.cli.data.admin && this.cli.data.admin.username) || '')
+    this.server.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
+    this.server.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
+    this.server.emit(LAN.EVENTS.privateIP, this.lan.privateIP)
   }
 
   connections = () => {
@@ -127,6 +131,11 @@ class Controller {
   forget = async (connection: IConnection) => {
     d('Forget:', connection)
     await this.pool.forget(connection)
+  }
+
+  restart = () => {
+    d('Restart')
+    AutoUpdater.restart()
   }
 
   installBinaries = async () => {

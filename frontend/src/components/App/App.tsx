@@ -117,7 +117,7 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
       <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
         <BottomNavigationAction label="Connections" value="/connections" icon={<Icon name="scrubber" size="lg" />} />
         <BottomNavigationAction label="Remote" value="/devices" icon={<Icon name="chart-network" size="lg" />} />
-        <BottomNavigationAction label="Local" value="/setup" icon={<Icon name="hdd" size="lg" />} />
+        <BottomNavigationAction label="Setup" value="/setup" icon={<Icon name="hdd" size="lg" />} />
         <BottomNavigationAction label="Network" value="/network" icon={<Icon name="network-wired" size="lg" />} />
         <BottomNavigationAction label="Settings" value="/settings" icon={<Icon name="cog" size="lg" />} />
       </BottomNavigation>

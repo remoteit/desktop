@@ -17,6 +17,7 @@ export default class ConnectionPool {
 
   static EVENTS = {
     updated: 'pool',
+    freePort: 'freePort',
   }
 
   constructor(connections: IConnection[]) {

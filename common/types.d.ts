@@ -34,6 +34,7 @@ declare global {
     | 'scan'
     | 'interfaces'
     | 'freePort'
+    | 'restart'
 
   export type SocketEvent =
     // built-in events

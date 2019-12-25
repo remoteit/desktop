@@ -8,6 +8,7 @@ import MuxerInstaller from './MuxerInstaller'
 import CLIInterface from './CLIInterface'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
+import AutoUpdater from './AutoUpdater'
 import JSONFile from './JSONFile'
 import Logger from './Logger'
 import path from 'path'
@@ -30,16 +31,16 @@ export default class Application {
     this.handleExit()
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.userPath, 'connections.json'))
 
-    // pass the user through to tray menu
+    // Create app UI
     this.window = new ElectronApp()
 
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [])
 
-    // remoteit CLI init.
+    // remoteit CLI init
     const cli = new CLIInterface()
 
-    // Start server and listen to events.
+    // Start server and listen to events
     const server = new Server()
 
     // Network utils
@@ -47,6 +48,9 @@ export default class Application {
 
     // create the event controller
     new Controller(server.io, cli, lan, this.pool)
+
+    // add auto updater
+    new AutoUpdater()
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.authenticated, this.handleAuthenticated)

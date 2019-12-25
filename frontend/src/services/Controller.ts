@@ -120,6 +120,9 @@ function getEventHandlers() {
     // User
     'signed-out': () => auth.signedOut(),
 
+    // AutoUpdate
+    'update/downloaded': version => backend.set({ key: 'update', value: version }),
+
     // Connections
     'service/started': (msg: ConnectionMessage) => backend.setConnection(msg.connection), /// devices.connectStart(conn.id)
     'service/connected': (msg: ConnectionMessage) => backend.setConnection(msg.connection), ///  devices.connected(msg.connection)

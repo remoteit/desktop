@@ -2,13 +2,12 @@ import React from 'react'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
+import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
-import { Columns } from '../../components/Columns'
 import { connect } from 'react-redux'
-import { version } from '../../../package.json'
-import { Logo } from '../../components/Logo'
 import { spacing } from '../../styling'
+import { Logo } from '../../components/Logo'
 
 const mapState = (state: ApplicationState, props: any) => ({
   user: state.auth.user,
@@ -60,7 +59,7 @@ export const SettingsPage = connect(
           <Typography className={css.header} variant="h1">
             <Tooltip title="Visit remote.it on the web">
               <ButtonBase onClick={() => window.open('https://remote.it')}>
-                <Logo width={95} />
+                <Logo width={110} />
               </ButtonBase>
             </Tooltip>
           </Typography>
@@ -91,7 +90,7 @@ export const SettingsPage = connect(
         </List>
         <Divider />
         <List>
-          <SettingsListItem label="About" subLabel={`Version: v${version}  —  © remot3.it inc.`} icon="info-circle" />
+          <UpdateSetting />
           <SettingsListItem
             label="Sign out"
             subLabel={`Signed is as ${user && user.username}`}

@@ -23,9 +23,6 @@ export default class ElectronApp {
 
   constructor() {
     this.app = electron.app
-    // const BrowserWindow = electron.BrowserWindow
-    // Keep a global reference of the window and try objects, if you don't, they window will
-    // be removed automatically when the JavaScript object is garbage collected.
     this.quitSelected = false
 
     this.app.on('ready', this.handleAppReady)
@@ -54,7 +51,6 @@ export default class ElectronApp {
   }
 
   private handleActivate = () => {
-    // Logger.info('Window activated')
     this.openWindow()
   }
 
