@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
-import { Icon } from '../Icon'
-import { makeStyles } from '@material-ui/styles'
+import { REGEX_NAME_SAFE } from '../../constants'
 import { serviceTypes, findType } from '../../services/serviceTypes'
 import { addDeviceName } from '../../helpers/nameHelper'
+import { makeStyles } from '@material-ui/styles'
+import { Icon } from '../Icon'
 import styles from '../../styling'
 
 type Props = {
@@ -58,10 +59,13 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, onSave, o
       <td className={css.cell}>
         <TextField
           autoFocus={init}
-          value={state.name}
+          value={state.name.replace(REGEX_NAME_SAFE, '')}
           disabled={disabled}
           variant="filled"
-          onChange={event => update('name', event.target.value)}
+          onChange={event => {
+            const value = event.target.value.replace(REGEX_NAME_SAFE, '')
+            update('name', value)
+          }}
           helperText={addDeviceName(device.name, state.name)}
         />
       </td>
