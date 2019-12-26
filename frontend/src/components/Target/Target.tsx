@@ -59,7 +59,7 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, onSave, o
       <td className={css.cell}>
         <TextField
           autoFocus={init}
-          value={state.name.replace(REGEX_NAME_SAFE, '')}
+          value={state.name}
           disabled={disabled}
           variant="filled"
           onChange={event => {

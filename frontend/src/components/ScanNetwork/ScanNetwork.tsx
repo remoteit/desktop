@@ -15,6 +15,7 @@ import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes } from '../../services/serviceTypes'
 import { DEFAULT_TARGET } from '../../constants'
+import { REGEX_NAME_SAFE } from '../../constants'
 import styles, { spacing } from '../../styling'
 
 type Props = {
@@ -112,7 +113,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
                             type: getType(port[0]),
                             hostname: ip[0] === privateIP ? '' : ip[0],
                             port: port[0],
-                            name: port[1],
+                            name: port[1].replace(REGEX_NAME_SAFE, ''),
                           })
                         }
                       >
