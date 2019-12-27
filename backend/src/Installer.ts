@@ -37,8 +37,8 @@ export default class Installer {
     this.version = args.version
   }
 
-  check() {
-    this.isInstalled
+  check(version?: string) {
+    this.isInstalled(version)
       ? EventBus.emit(Installer.EVENTS.installed, {
           path: this.binaryPath,
           version: this.version,
@@ -65,7 +65,12 @@ export default class Installer {
     })
 
     // Download the binary from Github
-    return this.download(this.version, cb)
+    return this.download(cb)
+  }
+
+  isCurrent(version?: string) {
+    // stub to be overridden in child class
+    return true
   }
 
   get targetDirectory() {
@@ -74,28 +79,19 @@ export default class Installer {
   }
 
   /**
-   * Install connectd if it is missing from the host system.
-   */
-  async installIfMissing(cb?: ProgressCallback) {
-    if (this.isInstalled) return
-    d(this.name + ' is not installed, attempting to install now')
-    return this.install(cb)
-  }
-
-  /**
    * Return whether or not connectd exists where we expect it. Used
    * to decide if we install connectd or not on startup.
    */
-  get isInstalled() {
-    // TODO: we should probably make sure the output of the binary is what
-    // we expect it to be and it is the right version
-    Logger.info('IS INSTALLED?', { path: this.binaryPath, installed: existsSync(this.binaryPath) })
-    return existsSync(this.binaryPath)
+  isInstalled(version?: string) {
+    const exists = existsSync(this.binaryPath)
+    const current = this.isCurrent(version)
+    Logger.info('IS INSTALLED?', { path: this.binaryPath, exists, current })
+    return exists && current
   }
 
-  private download(tag: string, progress: ProgressCallback = () => {}) {
+  private download(progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url = `https://github.com/${this.repoName}/releases/download/${this.version}/${this.downloadFileName}`
+      const url = `https://github.com/${this.repoName}/releases/download/v${this.version}/${this.downloadFileName}`
 
       d(`Downloading ${this.name}:`, url)
 

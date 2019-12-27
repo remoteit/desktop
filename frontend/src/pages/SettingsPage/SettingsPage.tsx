@@ -17,6 +17,7 @@ const mapState = (state: ApplicationState, props: any) => ({
     state.binaries.muxerInstalled &&
     state.binaries.demuxerInstalled &&
     state.binaries.remoteitInstalled,
+  remoteitVersion: state.binaries.remoteitVersion,
   openOnLogin: state.auth.openOnLogin,
   searchOnly: state.devices.searchOnly,
 })
@@ -46,6 +47,7 @@ export const SettingsPage = connect(
     openOnLogin,
     toggleOpenOnLogin,
     toggleSearchOnly,
+    remoteitVersion,
   }: SettingsPageProps) => {
     const css = useStyles()
     const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
@@ -83,6 +85,7 @@ export const SettingsPage = connect(
           />
           <SettingsListItem
             label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}
+            subLabel={`Version ${remoteitVersion}`}
             disabled={installing}
             icon="terminal"
             onClick={() => install()}

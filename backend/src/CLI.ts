@@ -16,8 +16,10 @@ const adminPromise = promisify(sudo.exec)
 const execPromise = promisify(exec)
 const d = debug('r3:backend:CLI')
 
+type IData = { user?: UserCredentials; admin?: UserCredentials; device: IDevice; targets: ITarget[] }
+
 export default class CLI {
-  data: { user?: UserCredentials; admin?: UserCredentials; device: IDevice; targets: ITarget[] } = {
+  data: IData = {
     user: undefined,
     admin: undefined,
     device: defaults,
@@ -116,6 +118,11 @@ export default class CLI {
   async scan(ipMask: string) {
     const result = await this.exec({ commands: ['scan', '-j', '-m', ipMask] })
     return JSON.parse(result)
+  }
+
+  async version() {
+    const result = await this.exec({ commands: ['version', '-j'] })
+    return result.toString().trim()
   }
 
   async checkSignIn(admin?: boolean) {

@@ -24,6 +24,7 @@ export default class Application {
   public pool: ConnectionPool
   private connectionsFile: JSONFile<IConnection[]>
   private window: ElectronApp
+  private cli: CLIInterface
 
   constructor() {
     Logger.info('Application starting up!')
@@ -38,16 +39,16 @@ export default class Application {
     this.pool = new ConnectionPool(this.connectionsFile.read() || [])
 
     // remoteit CLI init
-    const cli = new CLIInterface()
+    this.cli = new CLIInterface()
 
     // Start server and listen to events
     const server = new Server()
 
     // Network utils
-    const lan = new LAN(cli)
+    const lan = new LAN(this.cli)
 
     // create the event controller
-    new Controller(server.io, cli, lan, this.pool)
+    new Controller(server.io, this.cli, lan, this.pool)
 
     // add auto updater
     new AutoUpdater()
@@ -90,11 +91,12 @@ export default class Application {
     this.connectionsFile.write(pool)
   }
 
-  private handleAuthenticated = () => {
+  private handleAuthenticated = async () => {
+    const version = await this.cli.version()
     ConnectdInstaller.check()
     MuxerInstaller.check()
     DemuxerInstaller.check()
-    RemoteitInstaller.check()
+    RemoteitInstaller.check(version)
   }
 
   /**

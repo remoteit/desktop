@@ -14,7 +14,7 @@ export const UpdateSetting: React.FC = () => {
   return (
     <SettingsListItem
       label={updateAvailable ? 'New version available' : 'About'}
-      subLabel={`Version: v${version}  —  © remot3.it inc.`}
+      subLabel={`Version ${version}  —  © remot3.it inc.`}
       icon="info-circle"
       onClick={() => Controller.emit('restart')}
       button={updateAvailable ? 'Restart & Install' : undefined}
