@@ -15,7 +15,7 @@
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
-    "electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
+    "electron": "cross-env NODE_ENV=development electron .",
     "test": "NODE_ENV=test jest",
     "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "postinstall": "electron-builder install-app-deps",
