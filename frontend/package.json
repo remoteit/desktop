@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "2.3.25",
+  "version": "2.3.27",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
