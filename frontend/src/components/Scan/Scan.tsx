@@ -18,25 +18,32 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
   const css = useStyles()
   const [timestamp, setTimestamp] = useState<{ [interfaceName: string]: number }>({})
   const [loading, setLoading] = useState<{ [interfaceName: string]: boolean }>({})
-  const [interfaceName, setInterfaceName] = useState<string>('')
-  const selected = data[interfaceName] || {}
-  const selectedTimestamp = timestamp[interfaceName]
-  const selectedLoading = loading[interfaceName]
+  const [activeInterface, setActiveInterface] = useState<string>('searching')
+  const selected = data[activeInterface] || {}
+  const selectedTimestamp = timestamp[activeInterface]
+  const selectedLoading = loading[activeInterface]
   const noResults = selected.data && !selected.data.length
 
+  console.log(
+    'INTERFACES',
+    interfaces.length,
+    interfaces.map(i => i.name)
+  )
+  console.log('ACTIVE INTERFACE', activeInterface)
+
   useEffect(() => {
-    if (interfaces.length && !interfaceName) setInterfaceName(interfaces[0].name)
-  }, [interfaces, interfaceName])
+    if (interfaces.length && activeInterface === 'searching') setActiveInterface(interfaces[0].name)
+  }, [interfaces, activeInterface])
 
   useEffect(() => {
     if (selected.timestamp !== selectedTimestamp && selectedLoading) {
-      setLoading({ [interfaceName]: false })
-      setTimestamp({ [interfaceName]: selected.timestamp })
+      setLoading({ [activeInterface]: false })
+      setTimestamp({ [activeInterface]: selected.timestamp })
     }
-  }, [selected.timestamp, selectedTimestamp, selectedLoading, interfaceName])
+  }, [selected.timestamp, selectedTimestamp, selectedLoading, activeInterface])
 
   function interfaceType() {
-    const i = interfaces.find(i => i.name === interfaceName)
+    const i = interfaces.find(i => i.name === activeInterface)
     return (i ? i.type : '') as IInterfaceType
   }
 
@@ -45,23 +52,29 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
       <section className={css.controls}>
         <TextField
           select
-          value={interfaceName}
+          value={activeInterface}
           variant="filled"
-          onChange={event => setInterfaceName(event.target.value as string)}
+          onChange={event => setActiveInterface(event.target.value as string)}
         >
-          {interfaces.map((i: IInterface) => (
-            <MenuItem key={i.name} value={i.name}>
-              {i.type} &nbsp; <samp>{i.name}</samp>
+          {interfaces.length ? (
+            interfaces.map((i: IInterface) => (
+              <MenuItem key={i.name} value={i.name}>
+                {i.type} &nbsp; <samp>{i.name}</samp>
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem key={0} value="searching">
+              Finding Network...
             </MenuItem>
-          ))}
+          )}
         </TextField>
         <Button
           color="primary"
           variant="contained"
           onClick={() => {
-            onScan(interfaceName)
-            setTimestamp({ [interfaceName]: selected.timestamp })
-            setLoading({ [interfaceName]: true })
+            onScan(activeInterface)
+            setTimestamp({ [activeInterface]: selected.timestamp })
+            setLoading({ [activeInterface]: true })
           }}
           disabled={selectedLoading}
         >
