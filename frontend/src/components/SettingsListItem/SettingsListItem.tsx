@@ -26,7 +26,9 @@ export const SettingsListItem: React.FC<Props> = ({ icon, label, subLabel, butto
       {(showToggle || showButton) && (
         <ListItemSecondaryAction>
           {showButton ? (
-            <Button onClick={onClick}>{button}</Button>
+            <Button onClick={onClick} color="secondary">
+              {button}
+            </Button>
           ) : (
             <Switch edge="end" checked={toggle} onClick={onClick} />
           )}

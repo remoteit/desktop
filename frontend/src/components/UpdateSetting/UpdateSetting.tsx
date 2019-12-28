@@ -8,16 +8,13 @@ import { version } from '../../../package.json'
 export const UpdateSetting: React.FC = () => {
   const update = useSelector((state: ApplicationState) => state.backend.update)
   const updateAvailable = update && update !== version
-
-  console.log('UPDATE', update)
-
   return (
     <SettingsListItem
       label={updateAvailable ? 'New version available' : 'About'}
       subLabel={`Version ${version}  —  © remot3.it inc.`}
       icon="info-circle"
       onClick={() => Controller.emit('restart')}
-      button={updateAvailable ? 'Restart & Install' : undefined}
+      button={updateAvailable ? 'Restart' : undefined}
     />
   )
 }
