@@ -19,7 +19,7 @@ export const ForgetButton: React.FC<Props> = ({ disabled = false, connection }) 
   const forget = () => {
     Controller.emit('service/forget', connection)
     const menu = location.pathname.match(REGEX_FIRST_PATH)
-    const name = menu && menu[0] === '/connections' && history.push('/connections')
+    if (menu && menu[0] === '/connections') history.push('/connections')
   }
 
   return (
