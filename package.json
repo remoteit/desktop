@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.3.27",
+  "version": "2.4.0",
   "private": true,
   "scripts": {
     "publish": "cd backend && npm run publish",
