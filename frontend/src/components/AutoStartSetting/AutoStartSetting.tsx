@@ -14,7 +14,7 @@ export const AutoStartSetting: React.FC<{ service: IService; connection?: IConne
     <SettingsListItem
       label="Restart on disconnect"
       icon="power-off"
-      value={!!connection.autoStart}
+      toggle={!!connection.autoStart}
       onClick={() =>
         connection &&
         setConnection({

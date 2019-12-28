@@ -9,7 +9,7 @@ import { connect } from 'react-redux'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
 
-const mapState = (state: ApplicationState, props: any) => ({
+const mapState = (state: ApplicationState) => ({
   user: state.auth.user,
   installing: state.binaries.installing,
   installed:
@@ -50,8 +50,8 @@ export const SettingsPage = connect(
     remoteitVersion,
   }: SettingsPageProps) => {
     const css = useStyles()
-    const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
 
+    const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
     const signOutWarning = () =>
       window.confirm('Are you sure? Signing out will close all active connections.') && signOut()
 
@@ -75,12 +75,12 @@ export const SettingsPage = connect(
               (window.location.href = encodeURI('mailto:support@remote.it?subject=Desktop Application Feedback'))
             }
           />
-          <SettingsListItem label="Open at login" icon="power-off" value={openOnLogin} onClick={toggleOpenOnLogin} />
+          <SettingsListItem label="Open at login" icon="power-off" toggle={openOnLogin} onClick={toggleOpenOnLogin} />
           <SettingsListItem
             label="Search only device list"
             icon="search"
             subLabel="Speed up the application by only showing search results. Use with a very large device list."
-            value={searchOnly}
+            toggle={searchOnly}
             onClick={toggleSearchOnly}
           />
           <SettingsListItem
@@ -88,7 +88,7 @@ export const SettingsPage = connect(
             subLabel={`Version ${remoteitVersion}`}
             disabled={installing}
             icon="terminal"
-            onClick={() => install()}
+            onClick={install}
           />
         </List>
         <Divider />
