@@ -38,7 +38,7 @@ export const applications: IApplication[] = [
     copy: (c: IConnection) => `https://${hostName(c)}`,
   },
   {
-    types: [1, 7, 30, 38],
+    types: [7, 30, 38],
     title: 'Browser',
     icon: 'arrow-right',
     iconRotate: true,
@@ -47,7 +47,16 @@ export const applications: IApplication[] = [
   },
 ]
 
+const defaultApp: IApplication = {
+  types: [],
+  title: 'URL',
+  icon: 'arrow-right',
+  iconRotate: true,
+  launch: (c: IConnection) => `http://${hostName(c)}`,
+  copy: (c: IConnection) => `${hostName(c)}`,
+}
+
 export function useApplication(type?: number) {
-  if (!type) return
-  return applications.find(a => a.types.includes(type))
+  let app = applications.find(a => a.types.includes(type || 0))
+  return app || defaultApp
 }
