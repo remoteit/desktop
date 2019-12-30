@@ -136,7 +136,6 @@ export default class Connection extends EventEmitter {
     if (autoStart !== undefined) this.params.autoStart = autoStart
 
     d('Stopping service:', this.params.id)
-    Logger.info('Stopping connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.params.id}/stop`)
     Tracker.event('connection', 'stop', 'stopping service')
 

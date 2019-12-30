@@ -1,4 +1,5 @@
 import { autoUpdater } from 'electron-updater'
+import electron from 'electron'
 import EventBus from './EventBus'
 import Logger from './Logger'
 
@@ -10,7 +11,12 @@ export default class AppUpdater {
 
   constructor() {
     autoUpdater.logger = Logger
-    autoUpdater.checkForUpdatesAndNotify()
+
+    try {
+      autoUpdater.checkForUpdatesAndNotify()
+    } catch (error) {
+      Logger.warn('AUTO UPDATE ERROR', { error })
+    }
 
     autoUpdater.on('update-available', info => {
       Logger.info('Update available', info)
@@ -26,5 +32,6 @@ export default class AppUpdater {
 
   static restart() {
     autoUpdater.quitAndInstall()
+    electron.app.quit()
   }
 }
