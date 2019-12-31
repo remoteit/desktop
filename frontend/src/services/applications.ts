@@ -1,4 +1,5 @@
 import { hostName } from '../helpers/nameHelper'
+import { isWindows } from '../services/Platform'
 
 interface IApplication {
   types: number[]
@@ -6,6 +7,7 @@ interface IApplication {
   icon: string
   prompt?: boolean
   iconRotate?: boolean
+  launchDisabled?: boolean
   launch: (connection: IConnection) => string
   copy: (connection: IConnection) => string
 }
@@ -23,6 +25,7 @@ export const applications: IApplication[] = [
     title: 'SSH',
     icon: 'terminal',
     prompt: true,
+    launchDisabled: isWindows(),
     launch: (c: IConnection) => `ssh://${c.username || '[username]'}@${hostName(c)}`,
     copy: (c: IConnection) =>
       `ssh -l ${c.username || 'root'} ${c.host} -p ${
