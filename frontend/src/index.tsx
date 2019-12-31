@@ -9,9 +9,10 @@ import { Provider } from 'react-redux'
 import { store } from './store'
 import { colors, spacing, fontSizes } from './styling'
 import * as serviceWorker from './serviceWorker'
-import './styling/index.css'
-import './styling/global.css'
 import './services/Controller'
+import './styling/index.css'
+import './styling/euphoria.css'
+import './styling/fonts.css'
 
 const gutters = 28
 const theme = createMuiTheme({
