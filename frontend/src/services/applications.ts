@@ -17,8 +17,7 @@ export const applications: IApplication[] = [
     types: [4],
     title: 'VNC',
     icon: 'desktop',
-    launchDisabled: true,
-    launch: (c: IConnection) => `vnc://${hostName(c)}`, // fully disabled as it's not working
+    launch: (c: IConnection) => `vnc://${hostName(c)}`,
     copy: (c: IConnection) => `${hostName(c)}`,
   },
   {
@@ -26,7 +25,6 @@ export const applications: IApplication[] = [
     title: 'SSH',
     icon: 'terminal',
     prompt: true,
-    launchDisabled: !isMac(),
     launch: (c: IConnection) => `ssh://${c.username || '[username]'}@${hostName(c)}`,
     copy: (c: IConnection) =>
       `ssh -l ${c.username || 'root'} ${c.host} -p ${

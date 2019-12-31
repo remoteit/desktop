@@ -44,7 +44,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
 
   return (
     <>
-      <Tooltip title={`Launch ${app.title}`}>
+      <Tooltip title={`Attempt to launch ${app.title}`}>
         <IconButton onClick={check}>
           <Icon className={app.iconRotate ? css.rotate : ''} name={app.icon} size="md" fixedWidth />
         </IconButton>
