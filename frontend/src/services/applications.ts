@@ -1,5 +1,5 @@
 import { hostName } from '../helpers/nameHelper'
-import { isWindows } from '../services/Platform'
+import { isWindows, isMac } from '../services/Platform'
 
 interface IApplication {
   types: number[]
@@ -17,7 +17,8 @@ export const applications: IApplication[] = [
     types: [4],
     title: 'VNC',
     icon: 'desktop',
-    launch: (c: IConnection) => `vnc://${hostName(c)}`,
+    launchDisabled: true,
+    launch: (c: IConnection) => `vnc://${hostName(c)}`, // fully disabled as it's not working
     copy: (c: IConnection) => `${hostName(c)}`,
   },
   {
@@ -25,7 +26,7 @@ export const applications: IApplication[] = [
     title: 'SSH',
     icon: 'terminal',
     prompt: true,
-    launchDisabled: isWindows(),
+    launchDisabled: !isMac(),
     launch: (c: IConnection) => `ssh://${c.username || '[username]'}@${hostName(c)}`,
     copy: (c: IConnection) =>
       `ssh -l ${c.username || 'root'} ${c.host} -p ${
