@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "private": true,
   "main": "build/index.js",
   "productName": "remote.it",
