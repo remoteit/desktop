@@ -2,9 +2,6 @@ import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import debug from 'debug'
 import RemoteitInstaller from './RemoteitInstaller'
-import ConnectdInstaller from './ConnectdInstaller'
-import DemuxerInstaller from './DemuxerInstaller'
-import MuxerInstaller from './MuxerInstaller'
 import CLIInterface from './CLIInterface'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
@@ -22,9 +19,9 @@ const d = debug('r3:backend:Application')
 
 export default class Application {
   public pool: ConnectionPool
+  public cli: CLIInterface
   private connectionsFile: JSONFile<IConnection[]>
   private window: ElectronApp
-  private cli: CLIInterface
 
   constructor() {
     Logger.info('Application starting up!')
@@ -92,11 +89,7 @@ export default class Application {
   }
 
   private handleAuthenticated = async () => {
-    const version = await this.cli.version()
-    ConnectdInstaller.check()
-    MuxerInstaller.check()
-    DemuxerInstaller.check()
-    RemoteitInstaller.check(version)
+    RemoteitInstaller.check()
   }
 
   /**

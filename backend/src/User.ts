@@ -26,7 +26,7 @@ export class User {
     const user = this.userFile.read()
 
     d('Reading user credentials:', { user })
-    Logger.info('Setting user:', { user })
+    Logger.info('Setting user:', { username: user && user.username })
 
     this.username = (user && user.username) || ''
     this.authHash = (user && user.authHash) || ''
@@ -62,7 +62,7 @@ export class User {
 
     const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
-    Logger.info('User', { user })
+    Logger.info('User', { username: user.username })
     d('User signed in: %O', user)
 
     if (!user) return false

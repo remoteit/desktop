@@ -1,11 +1,12 @@
-import ConnectdInstaller from './ConnectdInstaller'
-import debug from 'debug'
+import path from 'path'
 import user from './User'
-import EventBus from './EventBus'
+import debug from 'debug'
 import Logger from './Logger'
 import Tracker from './Tracker'
-import { execFile, ChildProcess } from 'child_process'
+import EventBus from './EventBus'
+import Environment from './Environment'
 import { EventEmitter } from 'events'
+import { execFile, ChildProcess } from 'child_process'
 import { IP_OPEN, IP_PRIVATE } from './constants'
 
 const d = debug('r3:backend:Connection')
@@ -63,7 +64,6 @@ export default class Connection extends EventEmitter {
     Tracker.pageView(`/connections/${this.params.id}/start`)
     Tracker.event('connection', 'start', `connecting to service: ${this.params.id}`)
     Logger.info('Starting connection: ', this.toJSON())
-    Logger.info('Connectd location: ', ConnectdInstaller.binaryPath)
 
     const usernameBase64 = Buffer.from(user.username).toString('base64')
     const params = [
@@ -84,7 +84,7 @@ export default class Connection extends EventEmitter {
 
     try {
       this.process = execFile(
-        ConnectdInstaller.binaryPath,
+        path.join(Environment.binPath, 'connectd'),
         params,
         {
           maxBuffer: Infinity,
@@ -264,7 +264,7 @@ export default class Connection extends EventEmitter {
       } else if (line.includes('closetunnel')) {
         event = events.tunnelClosed
       } else if (line.includes('Version')) {
-        event = events.version
+        event = events.unknown
         const match = line.match(/Version ([\d\.]*)/)
         if (match && match.length > 1) extra = { version: match[1] }
         // TODO: return local IP

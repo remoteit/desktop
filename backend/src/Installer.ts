@@ -1,9 +1,11 @@
+import { application } from '.'
 import debug from 'debug'
+import semverCompare from 'semver-compare'
 import Environment from './Environment'
-import Logger from './Logger'
 import EventBus from './EventBus'
-import fs from 'fs'
+import Logger from './Logger'
 import https from 'https'
+import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { existsSync } from 'fs'
@@ -16,18 +18,22 @@ interface InstallerArgs {
   name: string
   repoName: string
   version: string
+  dependencies: string[]
 }
 
 export default class Installer {
   name: string
   repoName: string
   version: string
+  dependencies: string[]
+  tempFile?: string
 
   static EVENTS = {
     progress: 'binary/install/progress',
     error: 'binary/install/error',
     installed: 'binary/installed',
     notInstalled: 'binary/not-installed',
+    afterInstall: 'binary/after-install',
   }
 
   constructor(args: InstallerArgs) {
@@ -35,10 +41,12 @@ export default class Installer {
     this.name = args.name
     this.repoName = args.repoName
     this.version = args.version
+    this.dependencies = args.dependencies
   }
 
-  check(version?: string) {
-    this.isInstalled(version)
+  async check() {
+    const installed = await this.isInstalled()
+    installed
       ? EventBus.emit(Installer.EVENTS.installed, {
           path: this.binaryPath,
           version: this.version,
@@ -48,10 +56,29 @@ export default class Installer {
   }
 
   /**
+   * Return whether or not connectd exists where we expect it. Used
+   * to decide if we install connectd or not on startup.
+   */
+  async isInstalled() {
+    const check = this.dependencies.concat(this.binaryName)
+    const missing = check.find(fileName => !this.fileExists(fileName))
+    const version = missing ? '0' : await application.cli.version()
+    const current = this.isCurrent(version)
+    Logger.info('IS INSTALLED?', { installed: !missing && current, missing, current })
+    return !missing && current
+  }
+
+  fileExists(name: string) {
+    const exists = existsSync(path.join(Environment.binPath, name))
+    Logger.info('BINARY EXISTS', { name, exists })
+    return exists
+  }
+
+  /**
    * Download the binary, move it to the PATH on the user's
    * system and then make it writable.
    */
-  install(cb?: ProgressCallback) {
+  install(tempDir: string, cb?: ProgressCallback) {
     Logger.info('Installing Binary', {
       name: this.name,
       repoName: this.repoName,
@@ -64,13 +91,25 @@ export default class Installer {
       repoName: this.repoName,
     })
 
+    this.tempFile = path.join(tempDir, this.binaryName)
+
     // Download the binary from Github
     return this.download(cb)
   }
 
   isCurrent(version?: string) {
-    // stub to be overridden in child class
-    return true
+    Logger.info('INSTALLER', { name: this.name, checkVersion: version, version: this.version })
+    return semverCompare(version || '0', this.version) === 0
+  }
+
+  get downloadFileName() {
+    const version = this.version
+    const name = `${this.name}_${version}_`
+    if (Environment.isWindows) return `${name}windows_x86_64.exe`
+    else if (Environment.isMac) return `${name}mac-osx_x86_64`
+    else if (Environment.isPi) return `${name}linux_armv7`
+    else if (Environment.isLinux) return `${name}linux_x86_64`
+    else return `${name}linux_arm64`
   }
 
   get targetDirectory() {
@@ -78,15 +117,12 @@ export default class Installer {
     return dir
   }
 
-  /**
-   * Return whether or not connectd exists where we expect it. Used
-   * to decide if we install connectd or not on startup.
-   */
-  isInstalled(version?: string) {
-    const exists = existsSync(this.binaryPath)
-    const current = this.isCurrent(version)
-    Logger.info('IS INSTALLED?', { path: this.binaryPath, exists, current })
-    return exists && current
+  get binaryPath() {
+    return path.join(Environment.binPath, this.binaryName)
+  }
+
+  get binaryName() {
+    return Environment.isWindows ? this.name + '.exe' : this.name
   }
 
   private download(progress: ProgressCallback = () => {}) {
@@ -109,7 +145,8 @@ export default class Installer {
                 return reject(new Error('No response from location URL!'))
               const total = parseInt(res2.headers['content-length'], 10)
               let completed = 0
-              const w = fs.createWriteStream(this.downloadPath)
+              if (!this.tempFile) return reject(new Error('No temp file path set'))
+              const w = fs.createWriteStream(this.tempFile)
               res2.pipe(w)
               res2.on('data', data => {
                 completed += data.length
@@ -123,35 +160,5 @@ export default class Installer {
         })
         .on('error', reject)
     })
-  }
-
-  get binaryPath() {
-    return path.join(Environment.binPath, this.binaryName)
-  }
-
-  get binaryName() {
-    return Environment.isWindows ? this.name + '.exe' : this.name
-  }
-
-  get downloadPath() {
-    return path.join(os.tmpdir(), this.binaryName)
-  }
-
-  // @TODO support for installing all platforms:
-  // https://github.com/remoteit/installer/blob/master/scripts/auto-install.sh
-  get downloadFileName() {
-    let extension = ''
-
-    if (Environment.isWindows) {
-      extension = os.arch() === 'x64' ? '.x86_64-64.exe' : '.exe'
-    } else if (Environment.isMac) {
-      extension = os.arch() === 'x64' ? '.x86_64-osx' : '.x86-osx'
-    } else if (Environment.isPi) {
-      extension = '.arm-linaro-pi'
-    } else if (Environment.isLinux) {
-      extension = os.arch() === 'x64' ? '.x86_64-ubuntu16.04' : '.x86-ubuntu16.04'
-    }
-
-    return this.name + extension
   }
 }

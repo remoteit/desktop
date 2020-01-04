@@ -1,6 +1,7 @@
 import * as sudo from 'sudo-prompt'
 import Environment from './Environment'
 import RemoteitInstaller from './RemoteitInstaller'
+import Installer from './Installer'
 import defaults from './helpers/defaults'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
@@ -39,6 +40,7 @@ export default class CLI {
     this.adminConfigFile = new JSONFile<ConfigFile>(path.join(Environment.adminPath, 'config.json'))
     EventBus.on(user.EVENTS.signedOut, () => this.signOut())
     EventBus.on(user.EVENTS.signedIn, () => this.read())
+    EventBus.on(Installer.EVENTS.afterInstall, binary => binary.name === 'remoteit' && this.install())
     this.read()
     this.readUser(true)
   }
@@ -103,7 +105,7 @@ export default class CLI {
   }
 
   async install() {
-    await this.exec({ commands: ['tools', 'install'], admin: true })
+    await this.exec({ commands: ['tools', 'install'], admin: true, checkSignIn: false })
   }
 
   async signIn(admin?: boolean) {
@@ -128,7 +130,7 @@ export default class CLI {
   async checkSignIn(admin?: boolean) {
     this.readUser(admin)
     d('Check sign in', this.data.user)
-    Logger.info('CHECK SIGN IN', { user: this.data.user, admin })
+    Logger.info('CHECK SIGN IN', { username: this.data.user && this.data.user.username, admin })
     if (this.isSignedOut(admin)) await this.signIn(admin)
   }
 

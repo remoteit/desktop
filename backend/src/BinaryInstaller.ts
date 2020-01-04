@@ -1,3 +1,4 @@
+import tmp from 'tmp'
 import debug from 'debug'
 import Logger from './Logger'
 import Environment from './Environment'
@@ -7,6 +8,7 @@ import { existsSync } from 'fs'
 import { promisify } from 'util'
 import * as sudo from 'sudo-prompt'
 
+tmp.setGracefulCleanup()
 const sudoPromise = promisify(sudo.exec)
 const d = debug('r3:backend:BinaryInstaller')
 
@@ -21,10 +23,14 @@ export default class BinaryInstaller {
   async install() {
     return new Promise(async (resolve, reject) => {
       // Download and install binaries
+      var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
+
       await Promise.all(
         this.installers.map(installer =>
           installer
-            .install((progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
+            .install(tmpDir.name, (progress: number) =>
+              EventBus.emit(Installer.EVENTS.progress, { progress, installer })
+            )
             .catch(error =>
               EventBus.emit(Installer.EVENTS.error, {
                 error: error.message,
@@ -40,14 +46,14 @@ export default class BinaryInstaller {
         mv = mv.concat(
           this.installers.map(
             installer =>
-              `move /y "${installer.downloadPath}" "${installer.binaryPath}" && icacls "${installer.binaryPath}" /T /Q /grant Users:RX`
+              `move /y "${installer.tempFile}" "${installer.binaryPath}" && icacls "${installer.binaryPath}" /T /Q /grant Users:RX`
           )
         )
       } else {
         mv = mv.concat(
           this.installers.map(
             installer =>
-              `mkdir -p ${installer.targetDirectory} && mv ${installer.downloadPath} ${installer.binaryPath} && chmod 755 ${installer.binaryPath}`
+              `mkdir -p ${installer.targetDirectory} && mv ${installer.tempFile} ${installer.binaryPath} && chmod 755 ${installer.binaryPath}`
           )
         )
       }
@@ -63,7 +69,9 @@ export default class BinaryInstaller {
         if (error) return reject(error.message)
         if (stderr) return reject(stderr)
         resolve(stdout)
+        this.installers.map(installer => EventBus.emit(Installer.EVENTS.afterInstall, installer))
         this.installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
+        tmpDir.removeCallback()
       })
     })
   }
