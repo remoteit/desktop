@@ -61,6 +61,7 @@ export default class BinaryInstaller {
       const { mvStdout, mvStderr } = await sudoPromise(mv.join(' && '), this.options)
       if (mvStderr) {
         AirBrake.notify(mvStderr)
+        Logger.warn('Download move failed!', mvStderr)
         return reject(mvStderr)
       }
       if (mvStdout) Logger.info('Download move:', mvStdout)
