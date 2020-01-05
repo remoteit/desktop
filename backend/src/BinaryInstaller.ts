@@ -70,7 +70,7 @@ export default class BinaryInstaller {
         const { setStdout, setStderr } = await sudoPromise(set.join(' && '), this.options)
         if (setStderr) {
           AirBrake.notify(setStderr)
-          return reject(setStderr)
+          Logger.warn('Download set permission failed!', setStderr)
         }
         if (setStdout) Logger.info('Download set permissions:', setStdout)
       }
