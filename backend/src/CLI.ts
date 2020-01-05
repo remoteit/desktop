@@ -13,7 +13,7 @@ import { promisify } from 'util'
 import { exec } from 'child_process'
 import { removeDeviceName } from './helpers/nameHelper'
 
-const adminPromise = promisify(sudo.exec)
+const sudoPromise = promisify(sudo.exec)
 const execPromise = promisify(exec)
 const d = debug('r3:backend:CLI')
 
@@ -145,7 +145,7 @@ export default class CLI {
 
     try {
       const { stdout, stderr } = admin
-        ? await adminPromise(`"${RemoteitInstaller.binaryPath}" ${command}`, { name: 'remoteit' })
+        ? await sudoPromise(`"${RemoteitInstaller.binaryPath}" ${command}`, { name: 'remoteit' })
         : await execPromise(`"${RemoteitInstaller.binaryPath}" ${command}`)
 
       if (stderr) {

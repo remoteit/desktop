@@ -41,14 +41,12 @@ export default class BinaryInstaller {
       )
 
       let mv: string[] = []
+      let set: string[] = []
+
       if (Environment.isWindows) {
         await this.createWindowsTargetDir()
-        mv = mv.concat(
-          this.installers.map(
-            installer =>
-              `move /y "${installer.tempFile}" "${installer.binaryPath}" && icacls "${installer.binaryPath}" /T /Q /grant Users:RX`
-          )
-        )
+        mv = mv.concat(this.installers.map(installer => `move /y "${installer.tempFile}" "${installer.binaryPath}"`))
+        set = set.concat(this.installers.map(installer => `icacls "${installer.binaryPath}" /T /Q /grant "Users":RX`))
       } else {
         mv = mv.concat(
           this.installers.map(
@@ -58,21 +56,22 @@ export default class BinaryInstaller {
         )
       }
 
-      d('Running command:', mv.join(' && '))
       Logger.info('Running command', { command: mv.join(' && ') })
+      const { mvStdout, mvStderr } = await sudoPromise(mv.join(' && '), this.options)
+      if (mvStderr) return reject(mvStderr)
+      if (mvStdout) Logger.info('Download move:', mvStdout)
 
-      sudo.exec(mv.join(' && '), this.options, (error: Error, stdout: any, stderr: any) => {
-        d('Command error:', error)
-        d('Command stderr:', stderr)
-        d('Command stdout:', stdout)
+      if (set.length) {
+        Logger.info('Running command', { command: set.join(' && ') })
+        const { setStdout, setStderr } = await sudoPromise(set.join(' && '), this.options)
+        if (setStderr) return reject(setStderr)
+        if (setStdout) Logger.info('Download set permissions:', setStdout)
+      }
 
-        if (error) return reject(error.message)
-        if (stderr) return reject(stderr)
-        resolve(stdout)
-        this.installers.map(installer => EventBus.emit(Installer.EVENTS.afterInstall, installer))
-        this.installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
-        tmpDir.removeCallback()
-      })
+      this.installers.map(installer => EventBus.emit(Installer.EVENTS.afterInstall, installer))
+      this.installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
+      tmpDir.removeCallback()
+      resolve()
     })
   }
 
@@ -85,7 +84,7 @@ export default class BinaryInstaller {
       }
     } catch (error) {
       // eat directory already exists errors
-      Logger.info('Make directory error:', error)
+      Logger.warn('Make directory error:', error)
     }
   }
 }

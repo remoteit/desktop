@@ -50,7 +50,7 @@ export class User {
   }
 
   checkSignIn = async (credentials?: UserCredentials) => {
-    Logger.info('Check sign in:', { credentials })
+    Logger.info('Check sign in:', { username: credentials && credentials.username })
     Tracker.event('auth', 'check-sign-in', 'check user sign in')
 
     if (!credentials) {
