@@ -1,6 +1,7 @@
 import tmp from 'tmp'
 import debug from 'debug'
 import Logger from './Logger'
+import AirBrake from './AirBrake'
 import Environment from './Environment'
 import EventBus from './EventBus'
 import Installer from './Installer'
@@ -58,13 +59,19 @@ export default class BinaryInstaller {
 
       Logger.info('Running command', { command: mv.join(' && ') })
       const { mvStdout, mvStderr } = await sudoPromise(mv.join(' && '), this.options)
-      if (mvStderr) return reject(mvStderr)
+      if (mvStderr) {
+        AirBrake.notify(mvStderr)
+        return reject(mvStderr)
+      }
       if (mvStdout) Logger.info('Download move:', mvStdout)
 
       if (set.length) {
         Logger.info('Running command', { command: set.join(' && ') })
         const { setStdout, setStderr } = await sudoPromise(set.join(' && '), this.options)
-        if (setStderr) return reject(setStderr)
+        if (setStderr) {
+          AirBrake.notify(setStderr)
+          return reject(setStderr)
+        }
         if (setStdout) Logger.info('Download set permissions:', setStdout)
       }
 
@@ -79,11 +86,15 @@ export default class BinaryInstaller {
     try {
       if (!existsSync(Environment.binPath)) {
         const { stdout, stderr } = await sudoPromise(`md "${Environment.binPath}"`, this.options)
-        if (stderr) Logger.info('Make directory stderr:', stderr)
+        if (stderr) {
+          AirBrake.notify(stderr)
+          Logger.info('Make directory stderr:', stderr)
+        }
         if (stdout) Logger.info('Make directory stdout:', stdout)
       }
     } catch (error) {
       // eat directory already exists errors
+      AirBrake.notify(error)
       Logger.warn('Make directory error:', error)
     }
   }

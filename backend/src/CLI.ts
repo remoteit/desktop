@@ -5,6 +5,7 @@ import Installer from './Installer'
 import defaults from './helpers/defaults'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
+import AirBrake from './AirBrake'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
@@ -151,6 +152,7 @@ export default class CLI {
       if (stderr) {
         d(`EXEC *** ERROR *** ${command}: `, stderr.toString())
         Logger.warn(`EXEC *** ERROR *** ${command}: `, { stderr: stderr.toString() })
+        AirBrake.notify(stderr)
         result = stderr.toString()
       }
 
@@ -160,6 +162,7 @@ export default class CLI {
         result = stdout.toString()
       }
     } catch (error) {
+      AirBrake.notify(error)
       Logger.warn(`EXEC ERROR CAUGHT ${command}: `, { error, errorMessage: error.message })
     }
 
