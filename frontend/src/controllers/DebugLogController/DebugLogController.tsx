@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 export type Props = ReturnType<typeof mapState> // & ReturnType<typeof mapDispatch>
 
 const mapState = (state: ApplicationState) => ({
-  logs: state.logs.all as Log[],
+  logs: [], //state.logs as Log[],
 })
 // const mapDispatch = (dispatch: any) => ({ signIn: dispatch.auth.signIn })
 

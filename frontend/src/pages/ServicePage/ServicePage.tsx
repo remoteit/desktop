@@ -17,6 +17,7 @@ import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { LanShareSelect } from '../../components/LanShareSelect'
+import { ConnectionLog } from '../../components/ConnectionLog'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
@@ -112,6 +113,7 @@ export const ServicePage: React.FC = () => {
         <AutoStartSetting connection={connection} service={service} />
       </List>
       <Divider />
+      <ConnectionLog connection={connection} />
       <Columns inset>
         <DataDisplay data={data} />
       </Columns>

@@ -18,6 +18,7 @@ import { DevicesPage } from '../../pages/DevicesPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
+import { LogPage } from '../../pages/LogPage'
 import { InstallationNotice } from '../InstallationNotice'
 import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
@@ -82,6 +83,9 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
           <Route path="/connections/:serviceID/lan">
             <LanSharePage />
           </Route>
+          <Route path="/connections/:serviceID/log">
+            <LogPage />
+          </Route>
           <Route path="/connections/:serviceID">
             <ServicePage />
           </Route>
@@ -90,6 +94,9 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
           </Route>
           <Route path="/devices/:deviceID/:serviceID/lan">
             <LanSharePage />
+          </Route>
+          <Route path="/devices/:deviceID/:serviceID/log">
+            <LogPage />
           </Route>
           <Route path="/devices/:deviceID/:serviceID">
             <ServicePage />

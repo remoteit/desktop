@@ -163,6 +163,8 @@ declare global {
     protocol: string
   }
 
+  export type ILog = { [id: string]: string[] }
+
   export type IInterface = { [key: string]: any }
 
   export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'

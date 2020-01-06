@@ -60,7 +60,7 @@ class Controller extends EventEmitter {
 type EventHandlers = { [event: string]: (data?: any) => any }
 
 function getEventHandlers() {
-  const { binaries, auth, backend, ui } = store.dispatch
+  const { binaries, auth, backend, logs, ui } = store.dispatch
 
   return {
     connect: () => {
@@ -135,7 +135,7 @@ function getEventHandlers() {
     'service/tunnel/opened': (msg: ConnectionMessage) => console.log('service/tunnel/opened', msg),
     'service/tunnel/closed': (msg: ConnectionMessage) => console.log('service/tunnel/closed', msg),
     'service/version': (msg: ConnectionMessage) => console.log('service/version', msg),
-    'service/unknown-event': (msg: ConnectionMessage) => console.log('service/unknown-event', msg),
+    'service/unknown-event': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     // 'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
 
     // muxer binary
