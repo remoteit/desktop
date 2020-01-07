@@ -1,3 +1,4 @@
+import RemoteitInstaller from './RemoteitInstaller'
 import Environment from './Environment'
 import Installer from './Installer'
 import defaults from './helpers/defaults'
@@ -135,7 +136,7 @@ export default class CLI {
 
   async exec({ params, admin, checkSignIn = true }: { params: any[]; admin?: boolean; checkSignIn?: boolean }) {
     if (checkSignIn) await this.checkSignIn(admin)
-    return await new Command({ commands: [params.join(' ')], admin }).exec()
+    return await new Command({ command: `${RemoteitInstaller.binaryPath} ${params.join(' ')}`, admin }).exec()
   }
 
   isSignedOut(admin?: boolean) {

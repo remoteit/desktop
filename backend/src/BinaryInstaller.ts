@@ -47,7 +47,7 @@ export default class BinaryInstaller {
 
       if (Environment.isWindows) {
         if (!existsSync(Environment.binPath)) {
-          await new Command({ commands: [`md "${Environment.binPath}"`], admin: true, onError: reject }).exec()
+          await new Command({ command: `md "${Environment.binPath}"`, admin: true, onError: reject }).exec()
         }
         this.installers.map(installer => moveCommand.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`))
         this.installers.map(installer => setCommand.push(`icacls "${installer.binaryPath}" /T /Q /grant "Users":RX`))

@@ -1,9 +1,8 @@
-import RemoteitInstaller from './RemoteitInstaller'
 import AirBrake from './AirBrake'
 import Logger from './Logger'
-import * as sudo from 'sudo-prompt'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import * as sudo from 'sudo-prompt'
 
 const sudoPromise = promisify(sudo.exec)
 const execPromise = promisify(exec)
@@ -14,7 +13,9 @@ export default class Command {
   admin: boolean = true
   onError: (error: Error) => void = () => {}
 
-  constructor(options: { commands?: string[]; admin?: boolean; onError?: (error: Error) => void }) {
+  constructor(options: { command?: string; admin?: boolean; onError?: (error: Error) => void }) {
+    if (options.command) this.commands = [options.command]
+    options.command = undefined
     Object.assign(this, options)
   }
 
@@ -23,11 +24,11 @@ export default class Command {
   }
 
   toString() {
-    return `${RemoteitInstaller.binaryPath} ${this.commands.join(' && ')}`
+    return this.commands.join(' && ')
   }
 
   async exec() {
-    if (this.commands.length === 0) return
+    if (this.commands.length === 0) return ''
 
     let result = ''
     Logger.info('EXEC', { exec: this.toString(), admin: this.admin })
