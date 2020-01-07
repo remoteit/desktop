@@ -10,6 +10,7 @@ import { execFile, ChildProcess } from 'child_process'
 import { IP_OPEN, IP_PRIVATE } from './constants'
 
 const d = debug('r3:backend:Connection')
+const REGEX_ERROR_CODE = /\[(\d+)\]/
 
 export default class Connection extends EventEmitter {
   params!: IConnection
@@ -257,6 +258,11 @@ export default class Connection extends EventEmitter {
         event = events.throughput
       } else if (line.startsWith('!!request')) {
         event = events.request
+      } else if (line.includes('!!exit')) {
+        event = events.error
+        const match = line.match(REGEX_ERROR_CODE)
+        if (match && match.length) this.handleClose(parseInt(match[1], 10))
+        return
       } else if (line.includes('exit - process closed')) {
         event = events.disconnected
       } else if (line.includes('connecttunnel')) {
