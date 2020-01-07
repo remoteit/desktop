@@ -5,6 +5,7 @@ import AirBrake from './AirBrake'
 import Environment from './Environment'
 import EventBus from './EventBus'
 import Installer from './Installer'
+import Command from './Command'
 import { existsSync } from 'fs'
 import { promisify } from 'util'
 import * as sudo from 'sudo-prompt'
@@ -41,62 +42,31 @@ export default class BinaryInstaller {
         )
       )
 
-      let mv: string[] = []
-      let set: string[] = []
+      const moveCommand = new Command({ admin: true, onError: reject })
+      const setCommand = new Command({ admin: true, onError: reject })
 
       if (Environment.isWindows) {
-        await this.createWindowsTargetDir()
-        mv = mv.concat(this.installers.map(installer => `move /y "${installer.tempFile}" "${installer.binaryPath}"`))
-        set = set.concat(this.installers.map(installer => `icacls "${installer.binaryPath}" /T /Q /grant "Users":RX`))
+        if (!existsSync(Environment.binPath)) {
+          await new Command({ commands: [`md "${Environment.binPath}"`], admin: true, onError: reject }).exec()
+        }
+        this.installers.map(installer => moveCommand.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`))
+        this.installers.map(installer => setCommand.push(`icacls "${installer.binaryPath}" /T /Q /grant "Users":RX`))
       } else {
-        mv = mv.concat(
-          this.installers.map(
-            installer =>
-              `mkdir -p ${installer.targetDirectory} && mv ${installer.tempFile} ${installer.binaryPath} && chmod 755 ${installer.binaryPath}`
+        this.installers.map(installer =>
+          moveCommand.push(
+            `mkdir -p ${installer.targetDirectory} && mv ${installer.tempFile} ${installer.binaryPath} && chmod 755 ${installer.binaryPath}`
           )
         )
       }
 
-      Logger.info('Running command', { command: mv.join(' && ') })
-      const { mvStdout, mvStderr } = await sudoPromise(mv.join(' && '), this.options)
-      if (mvStderr) {
-        AirBrake.notify(mvStderr)
-        Logger.warn('Download move failed!', mvStderr)
-        return reject(mvStderr)
-      }
-      if (mvStdout) Logger.info('Download move:', mvStdout)
-
-      if (set.length) {
-        Logger.info('Running command', { command: set.join(' && ') })
-        const { setStdout, setStderr } = await sudoPromise(set.join(' && '), this.options)
-        if (setStderr) {
-          AirBrake.notify(setStderr)
-          Logger.warn('Download set permission failed!', setStderr)
-        }
-        if (setStdout) Logger.info('Download set permissions:', setStdout)
-      }
+      await moveCommand.exec()
+      await setCommand.exec()
 
       this.installers.map(installer => EventBus.emit(Installer.EVENTS.afterInstall, installer))
       this.installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
+
       tmpDir.removeCallback()
       resolve()
     })
-  }
-
-  async createWindowsTargetDir() {
-    try {
-      if (!existsSync(Environment.binPath)) {
-        const { stdout, stderr } = await sudoPromise(`md "${Environment.binPath}"`, this.options)
-        if (stderr) {
-          AirBrake.notify(stderr)
-          Logger.info('Make directory stderr:', stderr)
-        }
-        if (stdout) Logger.info('Make directory stdout:', stdout)
-      }
-    } catch (error) {
-      // eat directory already exists errors
-      AirBrake.notify(error)
-      Logger.warn('Make directory error:', error)
-    }
   }
 }

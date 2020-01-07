@@ -1,21 +1,15 @@
-import * as sudo from 'sudo-prompt'
 import Environment from './Environment'
-import RemoteitInstaller from './RemoteitInstaller'
 import Installer from './Installer'
 import defaults from './helpers/defaults'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
-import AirBrake from './AirBrake'
+import Command from './Command'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
 import user from './User'
-import { promisify } from 'util'
-import { exec } from 'child_process'
 import { removeDeviceName } from './helpers/nameHelper'
 
-const sudoPromise = promisify(sudo.exec)
-const execPromise = promisify(exec)
 const d = debug('r3:backend:CLI')
 
 type IData = { user?: UserCredentials; admin?: UserCredentials; device: IDevice; targets: ITarget[] }
@@ -88,43 +82,47 @@ export default class CLI {
 
   async addTarget(t: ITarget) {
     await this.exec({
-      commands: ['add', `"${t.name}"`, t.port, '--type', t.type, '--hostname', t.hostname || '127.0.0.1'],
+      params: ['add', `"${t.name}"`, t.port, '--type', t.type, '--hostname', t.hostname || '127.0.0.1'],
       admin: true,
     })
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec({ commands: ['remove', t.uid], admin: true })
+    await this.exec({ params: ['remove', t.uid], admin: true })
   }
 
   async register(device: IDevice) {
-    await this.exec({ commands: ['setup', `"${device.name}"`], admin: true })
+    await this.exec({ params: ['setup', `"${device.name}"`], admin: true })
   }
 
   async delete(d: IDevice) {
-    await this.exec({ commands: ['teardown', '--yes'], admin: true })
+    await this.exec({ params: ['teardown', '--yes'], admin: true })
   }
 
   async install() {
-    await this.exec({ commands: ['tools', 'install'], admin: true, checkSignIn: false })
+    await this.exec({ params: ['tools', 'install'], admin: true, checkSignIn: false })
+  }
+
+  async unInstall() {
+    await this.exec({ params: ['uninstall'], admin: true, checkSignIn: false })
   }
 
   async signIn(admin?: boolean) {
     if (!user.signedIn) return
-    await this.exec({ commands: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: false })
+    await this.exec({ params: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: false })
   }
 
   async signOut() {
-    await this.exec({ commands: ['signout'], checkSignIn: false })
+    await this.exec({ params: ['signout'], checkSignIn: false })
   }
 
   async scan(ipMask: string) {
-    const result = await this.exec({ commands: ['scan', '-j', '-m', ipMask] })
+    const result = await this.exec({ params: ['scan', '-j', '-m', ipMask] })
     return JSON.parse(result)
   }
 
   async version() {
-    const result = await this.exec({ commands: ['version', '-j'] })
+    const result = await this.exec({ params: ['version', '-j'] })
     return result.toString().trim()
   }
 
@@ -135,39 +133,9 @@ export default class CLI {
     if (this.isSignedOut(admin)) await this.signIn(admin)
   }
 
-  async exec({ commands, admin, checkSignIn = true }: { commands: any[]; admin?: boolean; checkSignIn?: boolean }) {
+  async exec({ params, admin, checkSignIn = true }: { params: any[]; admin?: boolean; checkSignIn?: boolean }) {
     if (checkSignIn) await this.checkSignIn(admin)
-
-    const command = commands.join(' ')
-    let result = ''
-
-    d('EXEC', `${RemoteitInstaller.binaryPath} ${command}`)
-    Logger.info('EXEC', { exec: `${RemoteitInstaller.binaryPath} ${command}`, admin, checkSignIn })
-
-    try {
-      const { stdout, stderr } = admin
-        ? await sudoPromise(`"${RemoteitInstaller.binaryPath}" ${command}`, { name: 'remoteit' })
-        : await execPromise(`"${RemoteitInstaller.binaryPath}" ${command}`)
-
-      if (stderr) {
-        d(`EXEC *** ERROR *** ${command}: `, stderr.toString())
-        Logger.warn(`EXEC *** ERROR *** ${command}: `, { stderr: stderr.toString() })
-        AirBrake.notify(stderr)
-        result = stderr.toString()
-      }
-
-      if (stdout) {
-        d(`EXEC SUCCESS ${command}: `, stdout.toString())
-        Logger.info(`EXEC SUCCESS ${command}: `, { stdout: stdout.toString() })
-        result = stdout.toString()
-      }
-    } catch (error) {
-      AirBrake.notify(error)
-      Logger.warn(`EXEC ERROR CAUGHT ${command}: `, { error, errorMessage: error.message })
-    }
-
-    Logger.info(`EXEC COMPLETE ${command}: `, { result })
-    return result
+    return await new Command({ commands: [params.join(' ')], admin }).exec()
   }
 
   isSignedOut(admin?: boolean) {
