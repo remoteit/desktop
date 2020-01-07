@@ -134,7 +134,7 @@ export default class CLI {
     if (this.isSignedOut(admin)) await this.signIn(admin)
   }
 
-  async exec({ params, admin, checkSignIn = true }: { params: any[]; admin?: boolean; checkSignIn?: boolean }) {
+  async exec({ params, admin = false, checkSignIn = true }: { params: any[]; admin?: boolean; checkSignIn?: boolean }) {
     if (checkSignIn) await this.checkSignIn(admin)
     return await new Command({ command: `${RemoteitInstaller.binaryPath} ${params.join(' ')}`, admin }).exec()
   }

@@ -45,8 +45,9 @@ export default class Installer {
   }
 
   async check() {
-    const installed = await this.isInstalled()
-    installed
+    // const installed = this.isInstalled()
+    const current = await this.isCurrent()
+    current
       ? EventBus.emit(Installer.EVENTS.installed, {
           path: this.binaryPath,
           version: this.version,
@@ -62,10 +63,18 @@ export default class Installer {
   async isInstalled() {
     const check = this.dependencies.concat(this.binaryName)
     const missing = check.find(fileName => !this.fileExists(fileName))
-    const version = missing ? '0' : await application.cli.version()
-    const current = this.isCurrent(version)
-    Logger.info('IS INSTALLED?', { installed: !missing && current, missing, current })
-    return !missing && current
+    Logger.info('IS INSTALLED?', { installed: !missing })
+    return !missing
+  }
+
+  async isCurrent() {
+    let current = false
+    if (this.isInstalled()) {
+      const version = await application.cli.version()
+      current = semverCompare(version || '0', this.version) === 0
+      Logger.info('CURRENT', { name: this.name, checkVersion: version, version: this.version })
+    }
+    return current
   }
 
   fileExists(name: string) {
@@ -95,11 +104,6 @@ export default class Installer {
 
     // Download the binary from Github
     return this.download(cb)
-  }
-
-  isCurrent(version?: string) {
-    Logger.info('INSTALLER', { name: this.name, checkVersion: version, version: this.version })
-    return semverCompare(version || '0', this.version) === 0
   }
 
   get downloadFileName() {
