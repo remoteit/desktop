@@ -34,6 +34,7 @@ export default class Installer {
     installed: 'binary/installed',
     notInstalled: 'binary/not-installed',
     afterInstall: 'binary/after-install',
+    // uninstalled: 'binary/uninstalled',
   }
 
   constructor(args: InstallerArgs) {
@@ -45,7 +46,6 @@ export default class Installer {
   }
 
   async check() {
-    // const installed = this.isInstalled()
     const current = await this.isCurrent()
     current
       ? EventBus.emit(Installer.EVENTS.installed, {

@@ -100,7 +100,7 @@ export default class Application {
     Logger.info('Signing out user')
 
     // Stop all connections cleanly
-    await this.pool.reset()
+    await this.pool.stopAll()
 
     // Remove files from system.
     // this.connectionsFile.remove() // Lets keep the connections, unless manually removed.

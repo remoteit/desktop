@@ -35,6 +35,7 @@ declare global {
     | 'interfaces'
     | 'freePort'
     | 'restart'
+    | 'uninstall'
 
   export type SocketEvent =
     // built-in events

@@ -23,7 +23,6 @@ class Controller {
   private lan: LAN
   private server: SocketIO.Server
   private pool: ConnectionPool
-  private socket?: SocketIO.Socket
 
   constructor(server: SocketIO.Server, cli: CLIInterface, lan: LAN, pool: ConnectionPool) {
     this.server = server
@@ -63,6 +62,7 @@ class Controller {
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
     socket.on('restart', this.restart)
+    socket.on('uninstall', this.uninstall)
 
     // things are ready - send the secure data
     this.syncBackend()
@@ -135,9 +135,16 @@ class Controller {
     AutoUpdater.restart()
   }
 
+  uninstall = async () => {
+    Logger.info('UNINSTALL INITIATED')
+    user.signOut()
+    await this.pool.reset()
+    await this.cli.unInstall()
+    await BinaryInstaller.uninstall().catch(error => EventBus.emit(Installer.EVENTS.error, error))
+  }
+
   installBinaries = async () => {
-    const installer = new BinaryInstaller([RemoteitInstaller])
-    return installer.install().catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    BinaryInstaller.install([RemoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
   }
 
   openOnLogin = (open: boolean) => {

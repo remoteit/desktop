@@ -5,15 +5,21 @@ import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
 import { version } from '../../../package.json'
 
-export const UpdateSetting: React.FC = () => {
+export const UninstallSetting: React.FC = () => {
   const update = useSelector((state: ApplicationState) => state.backend.update)
   const updateAvailable = update && update !== version
+
+  const warning = () =>
+    window.confirm(
+      'Are you sure? This will remove this system as a device, all the connection data and the command line utilities.'
+    ) && Controller.emit('uninstall')
+
   return (
     <SettingsListItem
-      label={updateAvailable ? 'New version available' : 'About'}
-      subLabel={`Version ${version}  —  © remot3.it inc.`}
-      icon="info-circle"
-      onClick={updateAvailable ? () => Controller.emit('restart') : undefined}
+      label="Uninstall"
+      subLabel={`Completely remove all saved data and installed command line tools.`}
+      icon="trash-alt"
+      onClick={warning}
       button={updateAvailable ? 'Restart' : undefined}
     />
   )

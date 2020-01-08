@@ -14,21 +14,16 @@ tmp.setGracefulCleanup()
 const sudoPromise = promisify(sudo.exec)
 const d = debug('r3:backend:BinaryInstaller')
 
-export default class BinaryInstaller {
-  installers: Installer[]
+class BinaryInstaller {
   options = { name: 'remoteit' }
 
-  constructor(installers: Installer[]) {
-    this.installers = installers
-  }
-
-  async install() {
+  async install(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
       // Download and install binaries
       var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
 
       await Promise.all(
-        this.installers.map(installer =>
+        installers.map(installer =>
           installer
             .install(tmpDir.name, (progress: number) =>
               EventBus.emit(Installer.EVENTS.progress, { progress, installer })
@@ -49,10 +44,10 @@ export default class BinaryInstaller {
         if (!existsSync(Environment.binPath)) {
           await new Command({ command: `md "${Environment.binPath}"`, admin: true, onError: reject }).exec()
         }
-        this.installers.map(installer => moveCommand.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`))
-        this.installers.map(installer => setCommand.push(`icacls "${installer.binaryPath}" /T /Q /grant "Users":RX`))
+        installers.map(installer => moveCommand.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`))
+        installers.map(installer => setCommand.push(`icacls "${installer.binaryPath}" /T /Q /grant "Users":RX`))
       } else {
-        this.installers.map(installer =>
+        installers.map(installer =>
           moveCommand.push(
             `mkdir -p ${installer.targetDirectory} && mv ${installer.tempFile} ${installer.binaryPath} && chmod 755 ${installer.binaryPath}`
           )
@@ -62,11 +57,33 @@ export default class BinaryInstaller {
       await moveCommand.exec()
       await setCommand.exec()
 
-      this.installers.map(installer => EventBus.emit(Installer.EVENTS.afterInstall, installer))
-      this.installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
+      installers.map(installer => EventBus.emit(Installer.EVENTS.afterInstall, installer))
+      installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
 
       tmpDir.removeCallback()
       resolve()
     })
   }
+
+  async uninstall() {
+    return new Promise(async (resolve, reject) => {
+      const removeCommand = new Command({ admin: true, onError: reject })
+
+      if (Environment.isWindows) {
+        if (existsSync(Environment.userPath)) removeCommand.push(`rmdir /Q /S "${Environment.userPath}"`)
+        if (existsSync(Environment.adminPath)) removeCommand.push(`rmdir /Q /S "${Environment.adminPath}"`)
+        if (existsSync(Environment.binPath)) removeCommand.push(`rmdir /Q /S "${Environment.binPath}"`)
+      } else {
+        if (existsSync(Environment.userPath)) removeCommand.push(`rm -rf ${Environment.userPath}`)
+        if (existsSync(Environment.adminPath)) removeCommand.push(`rm -rf ${Environment.adminPath}`)
+        if (existsSync(Environment.binPath)) removeCommand.push(`rm -rf ${Environment.binPath}`)
+      }
+
+      await removeCommand.exec()
+      // installers.map(installer => EventBus.emit(Installer.EVENTS.uninstalled, installer))
+      resolve()
+    })
+  }
 }
+
+export default new BinaryInstaller()

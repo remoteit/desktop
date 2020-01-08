@@ -10,7 +10,7 @@
 - [x] protect server connections with authHash?
 - [-] MineCraft service type
 - [x] Prompt for ssh password if empty
-- [ ] Download remoteit directly into location
+- [ ] Stop remoteit and restart it if upgrading CLI
 - [ ] Check for connectd / tools before using
 - [ ] Incorporate new CLI that supports status command instead of config file reading
 - [ ] Add uninstall to remote all files and connections

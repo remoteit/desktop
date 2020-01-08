@@ -2,6 +2,7 @@ import React from 'react'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
+import { UninstallSetting } from '../../components/UninstallSetting'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
@@ -86,6 +87,17 @@ export const SettingsPage = connect(
             toggle={searchOnly}
             onClick={toggleSearchOnly}
           />
+          <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />
+        </List>
+        <Divider />
+        <List>
+          <SettingsListItem
+            label="Sign out"
+            subLabel={`Signed is as ${user && user.username}`}
+            icon="sign-out"
+            onClick={signOutWarning}
+          />
+          <UpdateSetting />
           <SettingsListItem
             label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}
             subLabel={`Version ${remoteitVersion}`}
@@ -93,17 +105,7 @@ export const SettingsPage = connect(
             icon="terminal"
             onClick={installWarning}
           />
-        </List>
-        <Divider />
-        <List>
-          <UpdateSetting />
-          <SettingsListItem
-            label="Sign out"
-            subLabel={`Signed is as ${user && user.username}`}
-            icon="sign-out"
-            onClick={signOutWarning}
-          />
-          <SettingsListItem label="Quit" icon="skull-crossbones" onClick={quitWarning} />
+          <UninstallSetting />
         </List>
       </Container>
     )
