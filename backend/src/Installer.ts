@@ -6,7 +6,6 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import https from 'https'
 import fs from 'fs'
-import os from 'os'
 import path from 'path'
 import { existsSync } from 'fs'
 
@@ -46,6 +45,7 @@ export default class Installer {
   }
 
   async check() {
+    Logger.info('CHECK INSTALLATION', { name: this.name, version: this.version })
     const current = await this.isCurrent()
     current
       ? EventBus.emit(Installer.EVENTS.installed, {
@@ -54,13 +54,14 @@ export default class Installer {
           name: this.name,
         } as InstallationInfo)
       : EventBus.emit(Installer.EVENTS.notInstalled, this.name)
+    return current
   }
 
   /**
    * Return whether or not connectd exists where we expect it. Used
    * to decide if we install connectd or not on startup.
    */
-  async isInstalled() {
+  isInstalled() {
     const check = this.dependencies.concat(this.binaryName)
     const missing = check.find(fileName => !this.fileExists(fileName))
     Logger.info('IS INSTALLED?', { installed: !missing })
@@ -114,11 +115,6 @@ export default class Installer {
     else if (Environment.isPi) return `${name}linux_armv7`
     else if (Environment.isLinux) return `${name}linux_x86_64`
     else return `${name}linux_arm64`
-  }
-
-  get targetDirectory() {
-    const { dir } = path.parse(this.binaryPath)
-    return dir
   }
 
   get binaryPath() {

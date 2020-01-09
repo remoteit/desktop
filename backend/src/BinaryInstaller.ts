@@ -37,49 +37,50 @@ class BinaryInstaller {
         )
       )
 
-      const moveCommand = new Command({ admin: true, onError: reject })
-      const setCommand = new Command({ admin: true, onError: reject })
+      const commands = new Command({ admin: true, onError: reject })
 
       if (Environment.isWindows) {
-        if (!existsSync(Environment.binPath)) {
-          await new Command({ command: `md "${Environment.binPath}"`, admin: true, onError: reject }).exec()
-        }
-        installers.map(installer => moveCommand.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`))
-        installers.map(installer => setCommand.push(`icacls "${installer.binaryPath}" /T /Q /grant "*S-1-5-32-545:RX"`)) // Grant all group "Users" read and execute permissions
+        if (!existsSync(Environment.binPath)) commands.push(`md "${Environment.binPath}"`)
+        installers.map(installer => {
+          commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`)
+          commands.push(`icacls "${installer.binaryPath}" /T /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
+        })
       } else {
-        installers.map(installer =>
-          moveCommand.push(
-            `mkdir -p ${installer.targetDirectory} && mv ${installer.tempFile} ${installer.binaryPath} && chmod 755 ${installer.binaryPath}`
-          )
-        )
+        if (!existsSync(Environment.binPath)) commands.push(`mkdir -p ${Environment.binPath}`)
+        installers.map(installer => {
+          commands.push(`mv ${installer.tempFile} ${installer.binaryPath}`)
+          commands.push(`chmod 755 ${installer.binaryPath}`)
+        })
       }
 
-      await moveCommand.exec()
-      await setCommand.exec()
+      await commands.exec()
 
-      installers.map(installer => EventBus.emit(Installer.EVENTS.afterInstall, installer))
-      installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
+      installers.map(installer => {
+        EventBus.emit(Installer.EVENTS.afterInstall, installer)
+        EventBus.emit(Installer.EVENTS.installed, installer)
+      })
 
       tmpDir.removeCallback()
       resolve()
     })
   }
 
-  async uninstall() {
+  async uninstall(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
-      const removeCommand = new Command({ admin: true, onError: reject })
+      const commands = new Command({ admin: true, onError: reject })
 
       if (Environment.isWindows) {
-        if (existsSync(Environment.userPath)) removeCommand.push(`rmdir /Q /S "${Environment.userPath}"`)
-        if (existsSync(Environment.adminPath)) removeCommand.push(`rmdir /Q /S "${Environment.adminPath}"`)
-        if (existsSync(Environment.binPath)) removeCommand.push(`rmdir /Q /S "${Environment.binPath}"`)
+        installers.map(installer => commands.push(`del /Q /F "${installer.binaryPath}"`))
+        if (existsSync(Environment.userPath)) commands.push(`rmdir /Q /S "${Environment.userPath}"`)
+        if (existsSync(Environment.adminPath)) commands.push(`rmdir /Q /S "${Environment.adminPath}"`)
+        if (existsSync(Environment.binPath)) commands.push(`rmdir /Q /S "${Environment.binPath}"`)
       } else {
-        if (existsSync(Environment.userPath)) removeCommand.push(`rm -rf ${Environment.userPath}`)
-        if (existsSync(Environment.adminPath)) removeCommand.push(`rm -rf ${Environment.adminPath}`)
-        if (existsSync(Environment.binPath)) removeCommand.push(`rm -rf ${Environment.binPath}`)
+        if (existsSync(Environment.userPath)) commands.push(`rm -rf ${Environment.userPath}`)
+        if (existsSync(Environment.adminPath)) commands.push(`rm -rf ${Environment.adminPath}`)
+        if (existsSync(Environment.binPath)) commands.push(`rm -rf ${Environment.binPath}`)
       }
 
-      await removeCommand.exec()
+      await commands.exec()
       resolve()
     })
   }

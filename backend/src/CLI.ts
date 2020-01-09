@@ -105,7 +105,7 @@ export default class CLI {
   }
 
   async unInstall() {
-    await this.exec({ params: ['uninstall'], admin: true, checkSignIn: false })
+    await this.exec({ params: ['uninstall', '--yes'], admin: true, checkSignIn: false })
   }
 
   async signIn(admin?: boolean) {
@@ -123,7 +123,7 @@ export default class CLI {
   }
 
   async version() {
-    const result = await this.exec({ params: ['version', '-j'] })
+    const result = await this.exec({ params: ['version', '-j'], checkSignIn: false })
     return result.toString().trim()
   }
 
@@ -134,9 +134,16 @@ export default class CLI {
     if (this.isSignedOut(admin)) await this.signIn(admin)
   }
 
+  async isNotInstalled() {
+    const installed = RemoteitInstaller.fileExists(RemoteitInstaller.binaryName)
+    Logger.info('CLI INSTALLED?', { installed, name: RemoteitInstaller.binaryName })
+    return !installed
+  }
+
   async exec({ params, admin = false, checkSignIn = true }: { params: any[]; admin?: boolean; checkSignIn?: boolean }) {
+    if (await this.isNotInstalled()) return ''
     if (checkSignIn) await this.checkSignIn(admin)
-    return await new Command({ command: `${RemoteitInstaller.binaryPath} ${params.join(' ')}`, admin }).exec()
+    return await new Command({ command: `"${RemoteitInstaller.binaryPath}" ${params.join(' ')}`, admin }).exec()
   }
 
   isSignedOut(admin?: boolean) {
