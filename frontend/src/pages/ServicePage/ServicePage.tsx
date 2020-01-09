@@ -111,13 +111,10 @@ export const ServicePage: React.FC = () => {
       <Divider />
       <List>
         <LanShareSelect connection={connection} service={service} />
-      </List>
-      <Divider />
-      <List>
         <AutoStartSetting connection={connection} service={service} />
+        <ConnectionLog connection={connection} />
       </List>
       <Divider />
-      <ConnectionLog connection={connection} />
       <Columns inset>
         <DataDisplay data={data} />
       </Columns>

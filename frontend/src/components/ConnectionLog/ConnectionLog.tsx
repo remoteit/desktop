@@ -17,21 +17,16 @@ export const ConnectionLog: React.FC<Props> = ({ connection }) => {
   const disabled: boolean = !log
 
   return (
-    <>
-      <List>
-        <ListItemLocation disabled={disabled} pathname={location.pathname + '/log'}>
-          <ListItemIcon>
-            <Icon name="stream" color={disabled ? 'gray' : 'primary'} size="lg" />
-          </ListItemIcon>
-          <ListItemText primary="Raw Connection Log" />
-        </ListItemLocation>
-        {disabled && (
-          <ListItemSecondaryAction>
-            <Typography variant="caption">EMPTY</Typography>
-          </ListItemSecondaryAction>
-        )}
-      </List>
-      <Divider />
-    </>
+    <ListItemLocation disabled={disabled} pathname={location.pathname + '/log'}>
+      <ListItemIcon>
+        <Icon name="stream" size="md" weight="light" />
+      </ListItemIcon>
+      <ListItemText primary="Raw Connection Log" />
+      {disabled && (
+        <ListItemSecondaryAction>
+          <Typography variant="caption">EMPTY</Typography>
+        </ListItemSecondaryAction>
+      )}
+    </ListItemLocation>
   )
 }
