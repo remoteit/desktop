@@ -70,7 +70,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
   return (
     <>
       <div className={css.caption}>
-        <Typography variant="caption">Select a device to add a jump connection</Typography>
+        <Typography variant="caption">Select a device to add a hosted service</Typography>
         <Link onClick={toggleAll} color="inherit" component="button" className={css.toggle}>
           {allClosed ? 'Expand All' : 'Close All'}
           {allClosed ? <Icon name="chevron-down" inline /> : <Icon name="chevron-up" inline />}

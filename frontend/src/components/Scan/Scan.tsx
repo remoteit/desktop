@@ -68,6 +68,10 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
             </MenuItem>
           )}
         </TextField>
+        <Typography variant="caption">
+          Smart scan open ports on your network <br />
+          including this system, to add to hosted services.
+        </Typography>
         <Button
           color="primary"
           variant="contained"
@@ -110,7 +114,9 @@ const useStyles = makeStyles({
   controls: {
     paddingBottom: styles.spacing.md,
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    '& .MuiTypography-root': {},
     '& .MuiCircularProgress-root': {
       marginLeft: styles.spacing.md,
     },
