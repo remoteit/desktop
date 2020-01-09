@@ -124,17 +124,29 @@ function getEventHandlers() {
     'update/downloaded': version => backend.set({ key: 'update', value: version }),
 
     // Connections
-    'service/started': (msg: ConnectionMessage) => backend.setConnection(msg.connection), /// devices.connectStart(conn.id)
-    'service/connected': (msg: ConnectionMessage) => backend.setConnection(msg.connection), ///  devices.connected(msg.connection)
-    'service/disconnected': (msg: ConnectionMessage) => backend.setConnection(msg.connection), ///  devices.disconnected(msg)
-    'service/forgotten': (id: string) => console.log(id), // / devices.forgotten(id)
-    'service/error': (msg: ConnectionErrorMessage) => backend.setConnection(msg.connection), /// devices.connectionError(msg)
-    'service/status': (msg: ConnectionMessage) => console.log('service/status', msg),
+    'service/started': (msg: ConnectionMessage) => {
+      logs.add({ id: msg.connection.id, log: msg.raw })
+      backend.setConnection(msg.connection)
+    },
+    'service/connected': (msg: ConnectionMessage) => {
+      logs.add({ id: msg.connection.id, log: msg.raw })
+      backend.setConnection(msg.connection)
+    },
+    'service/disconnected': (msg: ConnectionMessage) => {
+      logs.add({ id: msg.connection.id, log: msg.raw })
+      backend.setConnection(msg.connection)
+    },
+    'service/forgotten': (id: string) => console.log(id),
+    'service/error': (msg: ConnectionErrorMessage) => {
+      logs.add({ id: msg.connection.id, log: msg.error })
+      backend.setConnection(msg.connection)
+    },
+    'service/status': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),
-    'service/request': (msg: ConnectionMessage) => console.log('service/request', msg),
-    'service/tunnel/opened': (msg: ConnectionMessage) => console.log('service/tunnel/opened', msg),
-    'service/tunnel/closed': (msg: ConnectionMessage) => console.log('service/tunnel/closed', msg),
-    'service/version': (msg: ConnectionMessage) => console.log('service/version', msg),
+    'service/request': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
+    'service/tunnel/opened': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
+    'service/tunnel/closed': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
+    'service/version': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/unknown-event': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     // 'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
 

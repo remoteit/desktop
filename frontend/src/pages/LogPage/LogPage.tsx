@@ -22,7 +22,7 @@ export const LogPage: React.FC = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="stream" size="lg" />
-            <span style={{ marginLeft: spacing.md }}>Raw Connection Logs</span>
+            <span style={{ marginLeft: spacing.md }}>Raw Connection Log</span>
           </Typography>
         </>
       }
