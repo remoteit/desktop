@@ -83,10 +83,14 @@ export const ServicePage: React.FC = () => {
             <CopyButton connection={connection} service={service} />
             <DisconnectButton connection={connection} />
           </Typography>
+          {showError && (
+            <List className={css.errorMessage}>
+              <ConnectionErrorMessage connection={connection} service={service} />
+            </List>
+          )}
         </>
       }
     >
-      {showError && <ConnectionErrorMessage connection={connection} />}
       {connection && connection.active && (
         <>
           <ServiceConnected connection={connection} />
@@ -127,4 +131,5 @@ const useStyles = makeStyles({
     paddingRight: spacing.xl,
     paddingLeft: spacing.sm,
   },
+  errorMessage: { padding: 0 },
 })

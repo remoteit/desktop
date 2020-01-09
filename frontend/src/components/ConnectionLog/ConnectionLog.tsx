@@ -4,7 +4,6 @@ import { ListItemIcon, ListItemText, ListItemSecondaryAction, List, Divider, Typ
 import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../ListItemLocation'
 import { useLocation } from 'react-router-dom'
-import { colors } from '../../styling'
 import { Icon } from '../Icon'
 
 type Props = {

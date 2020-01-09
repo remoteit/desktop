@@ -273,10 +273,6 @@ export default class Connection extends EventEmitter {
         event = events.unknown
         const match = line.match(/Version ([\d\.]*)/)
         if (match && match.length > 1) extra = { version: match[1] }
-        // TODO: return local IP
-        // } else if (line.includes('primary local ip')) {
-        //   localIP = localIP
-        //   connectd.emit(EVENTS.updated, {}) //this.toJSON())
       } else {
         event = events.unknown
       }

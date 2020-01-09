@@ -57,7 +57,7 @@ export function ServiceListItem({ connection, service }: ServiceListItemProps) {
           <ConnectButton connection={connection} service={service} />
         </ListItemSecondaryAction>
       </ListItemLocation>
-      {showError && <ConnectionErrorMessage connection={connection} />}
+      {showError && <ConnectionErrorMessage connection={connection} service={service} />}
     </>
   )
 }
