@@ -45,7 +45,7 @@ class BinaryInstaller {
           await new Command({ command: `md "${Environment.binPath}"`, admin: true, onError: reject }).exec()
         }
         installers.map(installer => moveCommand.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`))
-        installers.map(installer => setCommand.push(`icacls "${installer.binaryPath}" /T /Q /grant "Users":RX`))
+        installers.map(installer => setCommand.push(`icacls "${installer.binaryPath}" /T /Q /grant "*S-1-5-32-545:RX"`)) // Grant all group "Users" read and execute permissions
       } else {
         installers.map(installer =>
           moveCommand.push(
@@ -80,7 +80,6 @@ class BinaryInstaller {
       }
 
       await removeCommand.exec()
-      // installers.map(installer => EventBus.emit(Installer.EVENTS.uninstalled, installer))
       resolve()
     })
   }
