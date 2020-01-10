@@ -28,12 +28,13 @@ const theme = createMuiTheme({
     MuiFormHelperText: { root: { fontSize: 10 } },
     MuiButton: {
       root: {
-        backgroundColor: colors.grayLightest,
         color: colors.grayDark,
+        backgroundColor: colors.grayLightest,
         padding: `${spacing.sm}px ${spacing.md}px`,
         '& .MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
+      outlined: { borderColor: colors.grayLighter },
     },
     MuiListItem: {
       root: { opacity: 1 },
@@ -45,7 +46,7 @@ const theme = createMuiTheme({
       container: {
         '& .MuiListItemSecondaryAction-root': {},
         '&:hover, &:focus': {
-          '& .MuiListItemSecondaryAction-root': { display: 'block' },
+          '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
           '& .hoverHide': { display: 'none' },
         },
       },
@@ -96,7 +97,7 @@ const theme = createMuiTheme({
       subtitle1: {
         fontSize: fontSizes.sm,
         fontFamily: 'Roboto Mono',
-        color: colors.grayDark,
+        color: colors.gray,
         padding: `${spacing.lg}px ${gutters}px 0`,
         marginLeft: spacing.xxs,
         textTransform: 'uppercase',

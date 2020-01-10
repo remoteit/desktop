@@ -15,7 +15,7 @@ export const ServiceConnected: React.FC<Props> = ({ connection }) => {
   const visible = connection && connection.active
 
   return (
-    <Collapse in={visible}>
+    <Collapse in={visible} timeout={600}>
       <Typography color="primary" variant="subtitle1">
         Connected
       </Typography>
@@ -28,7 +28,7 @@ export const ServiceConnected: React.FC<Props> = ({ connection }) => {
           ]}
         />
         <div>
-          <DisconnectButton connection={connection} fullSize />
+          <DisconnectButton connection={connection} size="medium" />
         </div>
       </Columns>
       <Divider />

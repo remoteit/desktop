@@ -1,22 +1,35 @@
 import React from 'react'
 import Controller from '../../services/Controller'
 import { DynamicButton } from '../DynamicButton'
+import { Color } from '../../styling'
+import { Fade } from '@material-ui/core'
 
-export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: IConnection; fullSize?: boolean }> = ({
+type Props = {
+  disabled?: boolean
+  connection?: IConnection
+  color?: Color
+  size?: 'icon' | 'medium' | 'small'
+}
+
+export const DisconnectButton: React.FC<Props> = ({
   disabled = false,
-  fullSize = false,
+  size = 'icon',
+  color = 'primary',
   connection,
 }) => {
-  if (!connection || connection.connecting || !connection.active) return null
-
+  const hidden = !connection || connection.connecting || !connection.active
   return (
-    <DynamicButton
-      title="Disconnect"
-      icon="ban"
-      color="secondary"
-      disabled={disabled}
-      fullSize={fullSize}
-      onClick={() => Controller.emit('service/disconnect', connection)}
-    />
+    <Fade in={!hidden} timeout={600}>
+      <div>
+        <DynamicButton
+          title="Disconnect"
+          icon="ban"
+          color={color}
+          disabled={disabled}
+          size={size}
+          onClick={() => Controller.emit('service/disconnect', connection)}
+        />
+      </div>
+    </Fade>
   )
 }

@@ -4,12 +4,12 @@ import { connect } from 'react-redux'
 import { ServiceName } from '../../components/ServiceName'
 import { ApplicationState } from '../../store'
 import { Typography, Divider } from '@material-ui/core'
+import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
-import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 
 const mapState = (state: ApplicationState, params: any) => ({
   connections: state.backend.connections,

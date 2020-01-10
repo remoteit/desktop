@@ -98,7 +98,7 @@ export const ServicePage: React.FC = () => {
           <UsernameSetting connection={connection} service={service} />
         </List>
         <div className={css.actions}>
-          <ConnectButton connection={connection} service={service} fullSize />
+          <ConnectButton connection={connection} service={service} size="medium" />
         </div>
       </Columns>
       <Divider />
@@ -116,6 +116,13 @@ export const ServicePage: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  actions: { paddingTop: spacing.lg },
+  actions: {
+    position: 'absolute',
+    right: spacing.sm,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
   errorMessage: { padding: 0 },
 })

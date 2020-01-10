@@ -1,41 +1,61 @@
 import React from 'react'
 import { IconButton, Tooltip, Button, PropTypes } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
-import { Color, colors } from '../../styling'
+import { Color, colors, spacing } from '../../styling'
 
 type Props = {
   icon: string
   title: string
   color?: Color
-  fullSize?: boolean
-  fullSizeColor?: PropTypes.Color
+  size?: 'icon' | 'medium' | 'small'
   disabled?: boolean
   onClick: () => void
 }
 
-export const DynamicButton: React.FC<Props> = ({
-  title,
-  icon,
-  onClick,
-  color,
-  fullSize = false,
-  fullSizeColor,
-  disabled = false,
-}) => {
+export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, size = 'icon', disabled = false }) => {
   let styles = {}
+
+  const clickHandler = (event: React.MouseEvent) => {
+    event.stopPropagation()
+    event.preventDefault()
+    onClick()
+  }
+
   const IconComponent = (
-    <Icon name={icon} weight="regular" size="md" color={fullSize ? undefined : color} fixedWidth inline={fullSize} />
+    <Icon
+      name={icon}
+      weight="regular"
+      size={size === 'small' ? 'sm' : 'md'}
+      color={size === 'icon' ? color : undefined}
+      inline={size !== 'icon'}
+      fixedWidth
+    />
   )
 
-  if (fullSize) {
+  if (size === 'small') {
+    if (color)
+      styles = {
+        backgroundColor: colors[color],
+        color: colors.white,
+        fontSize: 11,
+        fontWeight: 500,
+        letterSpacing: 1,
+      }
+    return (
+      <Button style={styles} variant="contained" onClick={clickHandler} disabled={disabled} size={size} fullWidth>
+        {title}
+      </Button>
+    )
+  }
+
+  if (size === 'medium') {
     if (color)
       styles = {
         backgroundColor: colors[color],
         color: colors.white,
       }
-
     return (
-      <Button style={styles} variant="contained" onClick={onClick} disabled={disabled} size="medium">
+      <Button style={styles} variant="contained" onClick={clickHandler} disabled={disabled} size={size}>
         {title}
         {IconComponent}
       </Button>
@@ -45,7 +65,7 @@ export const DynamicButton: React.FC<Props> = ({
   return (
     <Tooltip title={title}>
       <span>
-        <IconButton disabled={disabled} onClick={onClick}>
+        <IconButton disabled={disabled} onClick={clickHandler}>
           {IconComponent}
         </IconButton>
       </span>
