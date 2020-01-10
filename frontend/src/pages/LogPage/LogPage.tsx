@@ -28,7 +28,7 @@ export const LogPage: React.FC = () => {
       }
     >
       <Columns count={1} inset>
-        <pre>{log.join('\n')}</pre>
+        {log.length ? <pre>{log.join('\n')}</pre> : <Typography variant="h4">Log is empty</Typography>}
       </Columns>
     </Container>
   )

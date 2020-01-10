@@ -52,7 +52,6 @@ const theme = createMuiTheme({
     },
     MuiListItemSecondaryAction: { root: { right: gutters } },
     MuiListItemIcon: { root: { justifyContent: 'center' } },
-    MuiCollapse: { wrapper: { padding: spacing.md } },
     MuiInput: {
       root: {
         '&.Mui-disabled': {

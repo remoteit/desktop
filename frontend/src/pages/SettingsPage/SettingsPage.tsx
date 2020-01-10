@@ -87,16 +87,16 @@ export const SettingsPage = connect(
             toggle={searchOnly}
             onClick={toggleSearchOnly}
           />
-          <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />
-        </List>
-        <Divider />
-        <List>
           <SettingsListItem
             label="Sign out"
             subLabel={`Signed is as ${user && user.username}`}
             icon="sign-out"
             onClick={signOutWarning}
           />
+          <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />
+        </List>
+        <Divider />
+        <List>
           <UpdateSetting />
           <SettingsListItem
             label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}

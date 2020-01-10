@@ -15,7 +15,6 @@ import { ApplicationState } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
-import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { ConnectionLog } from '../../components/ConnectionLog'
 import { ConnectButton } from '../../buttons/ConnectButton'
@@ -81,7 +80,6 @@ export const ServicePage: React.FC = () => {
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />
-            <DisconnectButton connection={connection} />
           </Typography>
           {showError && (
             <List className={css.errorMessage}>
@@ -91,12 +89,7 @@ export const ServicePage: React.FC = () => {
         </>
       }
     >
-      {connection && connection.active && (
-        <>
-          <ServiceConnected connection={connection} />
-          <Divider />
-        </>
-      )}
+      <ServiceConnected connection={connection} />
       <Columns>
         <List>
           <PortSetting connection={connection} service={service} />
@@ -123,10 +116,6 @@ export const ServicePage: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  actions: {
-    paddingTop: spacing.md,
-    paddingRight: spacing.xl,
-    paddingLeft: spacing.sm,
-  },
+  actions: { paddingTop: spacing.lg },
   errorMessage: { padding: 0 },
 })

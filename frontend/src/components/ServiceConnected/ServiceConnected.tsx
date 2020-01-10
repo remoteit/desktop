@@ -1,32 +1,37 @@
 import React from 'react'
 import { hostName } from '../../helpers/nameHelper'
-import { Typography } from '@material-ui/core'
+import { DisconnectButton } from '../../buttons/DisconnectButton'
+import { Typography, Divider, Collapse } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'
 import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
 
 type Props = {
-  connection: IConnection
+  connection?: IConnection
 }
 
 export const ServiceConnected: React.FC<Props> = ({ connection }) => {
-  // const css = useStyles()
+  const visible = connection && connection.active
 
   return (
-    <>
+    <Collapse in={visible}>
       <Typography color="primary" variant="subtitle1">
         Connected
       </Typography>
-      <Columns count={1} inset>
+      <Columns inset>
         <DataDisplay
           data={[
-            { label: 'URL', value: hostName(connection) },
-            { label: 'Duration', value: <Duration startTime={connection.startTime} /> },
-            { label: 'Throughput', value: <Throughput connection={connection} /> },
+            { label: 'URL', value: connection ? hostName(connection) : '-' },
+            { label: 'Duration', value: connection ? <Duration startTime={connection.startTime} /> : '-' },
+            { label: 'Throughput', value: connection ? <Throughput connection={connection} /> : '-' },
           ]}
         />
+        <div>
+          <DisconnectButton connection={connection} fullSize />
+        </div>
       </Columns>
-    </>
+      <Divider />
+    </Collapse>
   )
 }
