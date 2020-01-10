@@ -41,7 +41,7 @@ export const colors: { [key in Color]: string } = {
   primaryHighlight: '#edf8ff',
   secondary: '#0d6dba',
   successLight: '#a4db4c',
-  success: '#7fc40f',
+  success: '#75bd00',
   successDark: '#436807',
   dangerLight: '#e07562',
   danger: '#d6290a',

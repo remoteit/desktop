@@ -71,7 +71,7 @@ const useStyles = makeStyles({
   indent: { paddingLeft: spacing.xxl },
   actions: { right: 70, display: 'none' },
   buttons: {
-    width: 125,
+    width: 121,
     marginLeft: spacing.md,
     position: 'relative',
     '& > div:first-child': { position: 'absolute', width: '100%' },
