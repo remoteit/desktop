@@ -23,7 +23,6 @@ export const NetworkPage: React.FC = () => {
 
   useEffect(() => {
     Controller.emit('interfaces')
-    Controller.emit('init')
   }, [])
 
   return (

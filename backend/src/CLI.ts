@@ -38,11 +38,11 @@ export default class CLI {
     EventBus.on(user.EVENTS.signedIn, () => this.read())
     EventBus.on(Installer.EVENTS.afterInstall, binary => binary.name === 'remoteit' && this.install())
     this.read()
-    this.readUser(true)
   }
 
   read() {
     this.readUser()
+    this.readUser(true)
     this.readDevice()
     this.readTargets()
   }
@@ -86,18 +86,22 @@ export default class CLI {
       params: ['add', `"${t.name}"`, t.port, '--type', t.type, '--hostname', t.hostname || '127.0.0.1'],
       admin: true,
     })
+    this.readTargets()
   }
 
   async removeTarget(t: ITarget) {
     await this.exec({ params: ['remove', t.uid], admin: true })
+    this.readTargets()
   }
 
   async register(device: IDevice) {
     await this.exec({ params: ['setup', `"${device.name}"`], admin: true })
+    this.read()
   }
 
   async delete(d: IDevice) {
     await this.exec({ params: ['teardown', '--yes'], admin: true })
+    this.read()
   }
 
   async install() {
@@ -111,10 +115,12 @@ export default class CLI {
   async signIn(admin?: boolean) {
     if (!user.signedIn) return
     await this.exec({ params: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: false })
+    this.read()
   }
 
   async signOut() {
     await this.exec({ params: ['signout'], checkSignIn: false })
+    this.read()
   }
 
   async scan(ipMask: string) {
@@ -129,7 +135,6 @@ export default class CLI {
 
   async checkSignIn(admin?: boolean) {
     this.readUser(admin)
-    d('Check sign in', this.data.user)
     Logger.info('CHECK SIGN IN', { username: this.data.user && this.data.user.username, admin })
     if (this.isSignedOut(admin)) await this.signIn(admin)
   }

@@ -29,10 +29,6 @@ export const SetupPage: React.FC = () => {
     Controller.emit('device', 'DELETE')
   }
 
-  useEffect(() => {
-    Controller.emit('init')
-  }, [])
-
   return admin && user && user.username !== admin ? (
     <Container
       header={

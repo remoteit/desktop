@@ -12,11 +12,9 @@ export default class CLIInterface extends CLI {
         if (!this.data.device.uid && value.name) {
           await this.register(value)
           Logger.info('REGISTER ' + value.name)
-          this.read()
         } else if (value === 'DELETE') {
           await this.delete(this.data.device)
           Logger.info('DELETE ' + this.data.device.name)
-          this.read()
         }
         break
     }
@@ -37,8 +35,6 @@ export default class CLIInterface extends CLI {
       if (target) await this.addTarget(target)
       Logger.info('ADD', target)
     }
-
-    this.readTargets()
   }
 
   diff(smaller: ITarget[], larger: ITarget[]) {
