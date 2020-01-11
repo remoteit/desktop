@@ -63,7 +63,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
 
   function getType(port: number) {
     const type = serviceTypes.find(st => st.defaultPort === port)
-    return type ? type.id : 1
+    return type ? type.id : DEFAULT_TARGET.type
   }
 
   function isAdded(ip: string, port: number) {
