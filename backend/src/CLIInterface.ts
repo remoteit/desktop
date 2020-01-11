@@ -12,11 +12,11 @@ export default class CLIInterface extends CLI {
         if (!this.data.device.uid && value.name) {
           await this.register(value)
           Logger.info('REGISTER ' + value.name)
-          this.readDevice()
+          this.read()
         } else if (value === 'DELETE') {
           await this.delete(this.data.device)
           Logger.info('DELETE ' + this.data.device.name)
-          this.readDevice()
+          this.read()
         }
         break
     }

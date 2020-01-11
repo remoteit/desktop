@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Container } from '../../components/Container'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -27,8 +27,11 @@ export const SetupPage: React.FC = () => {
   const updateDevice = (d: IDevice) => Controller.emit('device', d)
   const deleteDevice = () => {
     Controller.emit('device', 'DELETE')
-    Controller.emit('init')
   }
+
+  useEffect(() => {
+    Controller.emit('init')
+  }, [])
 
   return admin && user && user.username !== admin ? (
     <Container

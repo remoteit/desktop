@@ -62,8 +62,6 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
 const useStyles = makeStyles({
   button: {
     paddingTop: styles.spacing.lg,
-    display: 'flex',
-    alignItems: 'center',
     color: styles.colors.gray,
   },
   or: { paddingLeft: styles.spacing.md },

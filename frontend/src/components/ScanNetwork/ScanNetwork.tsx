@@ -14,8 +14,7 @@ import {
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import { serviceTypes } from '../../services/serviceTypes'
-import { DEFAULT_TARGET } from '../../constants'
-import { REGEX_NAME_SAFE } from '../../constants'
+import { DEFAULT_TARGET, REGEX_NAME_SAFE, IP_PRIVATE } from '../../constants'
 import styles, { spacing } from '../../styling'
 
 type Props = {
@@ -67,6 +66,12 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
     return type ? type.id : 1
   }
 
+  function isAdded(ip: string, port: number) {
+    return targets.find(
+      target => (target.hostname === ip || (IP_PRIVATE === target.hostname && privateIP === ip)) && target.port === port
+    )
+  }
+
   return (
     <>
       <div className={css.caption}>
@@ -96,7 +101,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
                   <ListItemText primary={port[0]} />
                   <ListItemText primary={port[1]} />
                   <ListItemSecondaryAction>
-                    {targets.find(target => target.hostname === ip[0] && target.port === port[0]) ? (
+                    {isAdded(ip[0], port[0]) ? (
                       <Button disabled size="small">
                         Added
                         <Icon name="check" inline />

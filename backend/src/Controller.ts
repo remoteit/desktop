@@ -76,6 +76,7 @@ class Controller {
   device = async (result: IDevice) => {
     await this.cli.set('device', result)
     this.server.emit('device', this.cli.data.device)
+    this.server.emit('targets', this.cli.data.targets)
   }
 
   interfaces = async () => {
