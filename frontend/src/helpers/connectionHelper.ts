@@ -13,6 +13,7 @@ export function newConnection(service?: IService | null, data = {}) {
     name: 'Unknown',
     id: 'Error',
     deviceID: 'Unknown',
+    autoStart: true,
   }
 
   if (service) {

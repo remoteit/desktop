@@ -45,10 +45,6 @@ export default class Connection extends EventEmitter {
   }
 
   async start() {
-    // If the user indicates they want to start this connection,
-    // we assume they want to start it on future sessions
-    this.params.autoStart = true
-
     if (!user.signedIn || user.username !== this.params.owner) {
       let message = `Cannot start connection. Connection owner (${this.params.owner}) does not match user (${user.username}).`
       Logger.warn(message, { params: this.params })
