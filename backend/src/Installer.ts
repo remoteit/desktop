@@ -62,7 +62,7 @@ export default class Installer {
    * to decide if we install connectd or not on startup.
    */
   isInstalled() {
-    const check = this.dependencies.concat(this.binaryName)
+    const check = this.dependencyNames.concat(this.binaryName)
     const missing = check.find(fileName => !this.fileExists(fileName))
     Logger.info('IS INSTALLED?', { installed: !missing })
     return !missing
@@ -79,8 +79,9 @@ export default class Installer {
   }
 
   fileExists(name: string) {
-    const exists = existsSync(path.join(Environment.binPath, name))
-    Logger.info('BINARY EXISTS', { name, exists })
+    const filePath = path.join(Environment.binPath, name)
+    const exists = existsSync(filePath)
+    Logger.info('BINARY EXISTS', { name, exists, filePath })
     return exists
   }
 
@@ -123,6 +124,10 @@ export default class Installer {
 
   get binaryName() {
     return Environment.isWindows ? this.name + '.exe' : this.name
+  }
+
+  get dependencyNames() {
+    return this.dependencies.map(d => (Environment.isWindows ? d + '.exe' : d))
   }
 
   private download(progress: ProgressCallback = () => {}) {
