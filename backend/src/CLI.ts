@@ -106,10 +106,15 @@ export default class CLI {
 
   async install() {
     await this.exec({ params: ['tools', 'install'], admin: true, checkSignIn: false })
+    // this.restart()
   }
 
   async unInstall() {
     await this.exec({ params: ['uninstall', '--yes'], admin: true, checkSignIn: false })
+  }
+
+  async restart() {
+    await this.exec({ params: ['service', 'restart'], admin: true, checkSignIn: false })
   }
 
   async signIn(admin?: boolean) {
