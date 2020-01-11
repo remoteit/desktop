@@ -50,27 +50,29 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
   return (
     <Container header={<Typography variant="h1">Network Scan</Typography>}>
       <section className={css.controls}>
-        <TextField
-          select
-          value={activeInterface}
-          variant="filled"
-          onChange={event => setActiveInterface(event.target.value as string)}
-        >
-          {interfaces.length ? (
-            interfaces.map((i: IInterface) => (
-              <MenuItem key={i.name} value={i.name}>
-                {i.type} &nbsp; <samp>{i.name}</samp>
+        <div>
+          <TextField
+            select
+            value={activeInterface}
+            variant="filled"
+            onChange={event => setActiveInterface(event.target.value as string)}
+          >
+            {interfaces.length ? (
+              interfaces.map((i: IInterface) => (
+                <MenuItem key={i.name} value={i.name}>
+                  {i.type} &nbsp; <samp>{i.name}</samp>
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem key={0} value="searching">
+                Finding Network...
               </MenuItem>
-            ))
-          ) : (
-            <MenuItem key={0} value="searching">
-              Finding Network...
-            </MenuItem>
-          )}
-        </TextField>
+            )}
+          </TextField>
+        </div>
         <Typography variant="caption">
-          Smart scan open ports on your network <br />
-          including this system, to add to hosted services.
+          Scan your systen and network <br />
+          for open ports to host
         </Typography>
         <Button
           color="primary"
@@ -116,16 +118,11 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    '& .MuiTypography-root': {},
-    '& .MuiCircularProgress-root': {
-      marginLeft: styles.spacing.md,
-    },
-    '& .MuiButton-contained': {
-      marginRight: 0,
-    },
-    '& .MuiFormControl-root': {
-      width: 250,
-    },
+    '& > div': { flexGrow: 1 },
+    '& .MuiCircularProgress-root': { marginLeft: styles.spacing.md },
+    '& .MuiButton-contained': { marginRight: 0 },
+    '& .MuiFormControl-root': { width: 250 },
+    '& .MuiTypography-root': { textAlign: 'right', marginRight: styles.spacing.md },
     '& samp': {
       fontSize: styles.fontSizes.sm,
       fontFamily: 'Roboto Mono',
