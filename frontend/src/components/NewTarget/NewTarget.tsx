@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { DEFAULT_TARGET } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
 import { Button, Link } from '@material-ui/core'

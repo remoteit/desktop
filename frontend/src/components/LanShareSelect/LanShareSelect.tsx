@@ -5,8 +5,8 @@ import { useLocation } from 'react-router-dom'
 import { ListItemIcon, Typography } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
-import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
+
 type Props = {
   service: IService
   connection?: IConnection

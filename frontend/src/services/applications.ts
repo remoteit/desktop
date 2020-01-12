@@ -1,5 +1,5 @@
 import { hostName } from '../helpers/nameHelper'
-import { isWindows, isMac } from '../services/Platform'
+// import { isWindows, isMac } from '../services/Platform'
 
 interface IApplication {
   types: number[]

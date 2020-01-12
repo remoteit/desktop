@@ -2,7 +2,7 @@ import React from 'react'
 import { IService } from 'remote.it'
 import { List, Typography } from '@material-ui/core'
 import { ServiceListItem } from '../ServiceListItem'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 import { makeStyles } from '@material-ui/styles'
 
 export interface ServiceListProps {

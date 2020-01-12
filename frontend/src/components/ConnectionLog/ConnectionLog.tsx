@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { ListItemIcon, ListItemText, ListItemSecondaryAction, List, Divider, Typography } from '@material-ui/core'
+import { ListItemIcon, ListItemText, ListItemSecondaryAction, Typography } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../ListItemLocation'
 import { useLocation } from 'react-router-dom'
