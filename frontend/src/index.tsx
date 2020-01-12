@@ -107,6 +107,7 @@ const theme = createMuiTheme({
       caption: {
         fontSize: '11px',
         color: colors.grayDark,
+        lineHeight: '1.5em',
       },
       colorTextSecondary: {
         color: colors.grayDark,
