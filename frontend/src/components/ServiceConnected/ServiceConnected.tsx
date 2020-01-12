@@ -15,7 +15,7 @@ export const ServiceConnected: React.FC<Props> = ({ connection }) => {
   const visible = connection && connection.active
 
   return (
-    <Collapse in={visible} timeout={600}>
+    <Collapse in={visible} timeout={800}>
       <Typography color="primary" variant="subtitle1">
         Connected
       </Typography>

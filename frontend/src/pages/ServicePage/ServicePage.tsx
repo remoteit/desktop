@@ -90,7 +90,7 @@ export const ServicePage: React.FC = () => {
       }
     >
       <ServiceConnected connection={connection} />
-      <Columns>
+      <Columns center>
         <List>
           <PortSetting connection={connection} service={service} />
           <HostSetting connection={connection} service={service} />
@@ -117,12 +117,10 @@ export const ServicePage: React.FC = () => {
 
 const useStyles = makeStyles({
   actions: {
-    position: 'absolute',
-    right: spacing.sm,
+    marginRight: spacing.md,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
   },
   errorMessage: { padding: 0 },
 })
