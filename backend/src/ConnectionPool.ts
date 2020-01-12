@@ -4,10 +4,8 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import PortScanner from './PortScanner'
 import ElectronApp from './ElectronApp'
-import user from './User'
 
 const d = debug('r3:backend:ConnectionPool')
-
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
