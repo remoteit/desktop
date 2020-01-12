@@ -34,6 +34,8 @@ declare global {
     | 'scan'
     | 'interfaces'
     | 'freePort'
+    | 'restart'
+    | 'uninstall'
 
   export type SocketEvent =
     // built-in events
@@ -161,6 +163,8 @@ declare global {
     port: number
     protocol: string
   }
+
+  export type ILog = { [id: string]: string[] }
 
   export type IInterface = { [key: string]: any }
 

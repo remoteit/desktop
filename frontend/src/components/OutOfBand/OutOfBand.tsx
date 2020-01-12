@@ -1,10 +1,12 @@
 import React from 'react'
+import { isMac, isWindows } from '../../services/Platform'
 import { makeStyles } from '@material-ui/styles'
 import { Tooltip } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
 
 export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
   const css = useStyles()
+  if (isMac() || isWindows()) return null
   return (
     <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
       <div className={css.oob + (active ? ' ' + css.active : '')}>

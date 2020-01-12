@@ -15,13 +15,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
+code,
+pre {
   font-family: 'Roboto Mono', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-#root {
-  background-color: white;
-  position: fixed;
-  height: 100%;
-  width: 100%;
+  font-size: 11px;
 }

@@ -23,9 +23,6 @@ export default class ElectronApp {
 
   constructor() {
     this.app = electron.app
-    // const BrowserWindow = electron.BrowserWindow
-    // Keep a global reference of the window and try objects, if you don't, they window will
-    // be removed automatically when the JavaScript object is garbage collected.
     this.quitSelected = false
 
     this.app.on('ready', this.handleAppReady)
@@ -54,7 +51,6 @@ export default class ElectronApp {
   }
 
   private handleActivate = () => {
-    // Logger.info('Window activated')
     this.openWindow()
   }
 
@@ -81,12 +77,13 @@ export default class ElectronApp {
     this.window.setVisibleOnAllWorkspaces(true)
 
     const startUrl =
-      process.env.ELECTRON_START_URL ||
-      url.format({
-        pathname: path.join(__dirname, '../build/index.html'),
-        protocol: 'file:',
-        slashes: true,
-      })
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:3000'
+        : url.format({
+            pathname: path.join(__dirname, '../build/index.html'),
+            protocol: 'file:',
+            slashes: true,
+          })
     this.window.loadURL(startUrl)
     Logger.info('START URL', { startUrl })
 

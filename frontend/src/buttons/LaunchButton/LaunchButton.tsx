@@ -26,7 +26,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   const [open, setOpen] = useState<boolean>(false)
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
 
-  if (!connection || !connection.active || !app) return null
+  if (!connection || !connection.active || !app || app.launchDisabled) return null
 
   const close = () => setOpen(false)
   const check = () => {
@@ -44,7 +44,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
 
   return (
     <>
-      <Tooltip title={`Launch ${app.title}`}>
+      <Tooltip title={`Attempt to launch ${app.title}`}>
         <IconButton onClick={check}>
           <Icon className={app.iconRotate ? css.rotate : ''} name={app.icon} size="md" fixedWidth />
         </IconButton>

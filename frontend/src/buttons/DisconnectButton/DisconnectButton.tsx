@@ -1,20 +1,35 @@
 import React from 'react'
 import Controller from '../../services/Controller'
-import { Tooltip, IconButton } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
+import { DynamicButton } from '../DynamicButton'
+import { Color } from '../../styling'
+import { Fade } from '@material-ui/core'
 
-export const DisconnectButton: React.FC<{ disabled?: boolean; connection?: IConnection }> = ({
+type Props = {
+  disabled?: boolean
+  connection?: IConnection
+  color?: Color
+  size?: 'icon' | 'medium' | 'small'
+}
+
+export const DisconnectButton: React.FC<Props> = ({
   disabled = false,
+  size = 'icon',
+  color = 'primary',
   connection,
 }) => {
-  if (!connection || connection.connecting || !connection.active) return null
+  const hidden = !connection || connection.connecting || !connection.active
   return (
-    <Tooltip title="Disconnect">
-      <span>
-        <IconButton disabled={disabled} onClick={() => Controller.emit('service/disconnect', connection)}>
-          <Icon name="ban" color="danger" size="md" weight="regular" fixedWidth />
-        </IconButton>
-      </span>
-    </Tooltip>
+    <Fade in={!hidden} timeout={600}>
+      <div>
+        <DynamicButton
+          title="Disconnect"
+          icon="ban"
+          color={color}
+          disabled={disabled}
+          size={size}
+          onClick={() => Controller.emit('service/disconnect', connection)}
+        />
+      </div>
+    </Fade>
   )
 }

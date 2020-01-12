@@ -4,10 +4,8 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import PortScanner from './PortScanner'
 import ElectronApp from './ElectronApp'
-import user from './User'
 
 const d = debug('r3:backend:ConnectionPool')
-
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
@@ -17,6 +15,7 @@ export default class ConnectionPool {
 
   static EVENTS = {
     updated: 'pool',
+    freePort: 'freePort',
   }
 
   constructor(connections: IConnection[]) {
@@ -87,12 +86,13 @@ export default class ConnectionPool {
 
   stopAll = async () => {
     d('Stopping all services')
-    return await this.pool.map(async c => await c.stop())
+    await this.pool.map(async c => await c.stop())
+    this.updated()
   }
 
   reset = async () => {
     await this.stopAll()
-    this.updated()
+    this.pool = []
   }
 
   updated = async () => {

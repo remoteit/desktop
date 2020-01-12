@@ -15,8 +15,8 @@ import { ApplicationState } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
-import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { LanShareSelect } from '../../components/LanShareSelect'
+import { ConnectionLog } from '../../components/ConnectionLog'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
@@ -80,19 +80,17 @@ export const ServicePage: React.FC = () => {
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />
-            <DisconnectButton connection={connection} />
           </Typography>
+          {showError && (
+            <List className={css.errorMessage}>
+              <ConnectionErrorMessage connection={connection} service={service} />
+            </List>
+          )}
         </>
       }
     >
-      {showError && <ConnectionErrorMessage connection={connection} />}
-      {connection && connection.active && (
-        <>
-          <ServiceConnected connection={connection} />
-          <Divider />
-        </>
-      )}
-      <Columns>
+      <ServiceConnected connection={connection} />
+      <Columns center>
         <List>
           <PortSetting connection={connection} service={service} />
           <HostSetting connection={connection} service={service} />
@@ -100,16 +98,14 @@ export const ServicePage: React.FC = () => {
           <UsernameSetting connection={connection} service={service} />
         </List>
         <div className={css.actions}>
-          <ConnectButton connection={connection} service={service} fullSize />
+          <ConnectButton connection={connection} service={service} size="medium" />
         </div>
       </Columns>
       <Divider />
       <List>
         <LanShareSelect connection={connection} service={service} />
-      </List>
-      <Divider />
-      <List>
         <AutoStartSetting connection={connection} service={service} />
+        <ConnectionLog connection={connection} />
       </List>
       <Divider />
       <Columns inset>
@@ -121,8 +117,10 @@ export const ServicePage: React.FC = () => {
 
 const useStyles = makeStyles({
   actions: {
-    paddingTop: spacing.md,
-    paddingRight: spacing.xl,
-    paddingLeft: spacing.sm,
+    marginRight: spacing.md,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  errorMessage: { padding: 0 },
 })

@@ -44,7 +44,7 @@ export default class Server {
     callback: (error: Error | null, success?: boolean) => void
   ) => {
     d(`Authenticate`, credentials)
-    Logger.info('AUTHENTICATE CLIENT', { user: credentials })
+    Logger.info('AUTHENTICATE CLIENT', { username: credentials.username })
 
     // Signed in
     if (user.is(credentials)) {

@@ -1,30 +1,33 @@
+import tmp from 'tmp'
 import debug from 'debug'
 import Logger from './Logger'
+import AirBrake from './AirBrake'
 import Environment from './Environment'
 import EventBus from './EventBus'
 import Installer from './Installer'
+import Command from './Command'
 import { existsSync } from 'fs'
 import { promisify } from 'util'
 import * as sudo from 'sudo-prompt'
 
+tmp.setGracefulCleanup()
 const sudoPromise = promisify(sudo.exec)
 const d = debug('r3:backend:BinaryInstaller')
 
-export default class BinaryInstaller {
-  installers: Installer[]
+class BinaryInstaller {
   options = { name: 'remoteit' }
 
-  constructor(installers: Installer[]) {
-    this.installers = installers
-  }
-
-  async install() {
+  async install(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
       // Download and install binaries
+      var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
+
       await Promise.all(
-        this.installers.map(installer =>
+        installers.map(installer =>
           installer
-            .install((progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
+            .install(tmpDir.name, (progress: number) =>
+              EventBus.emit(Installer.EVENTS.progress, { progress, installer })
+            )
             .catch(error =>
               EventBus.emit(Installer.EVENTS.error, {
                 error: error.message,
@@ -34,50 +37,53 @@ export default class BinaryInstaller {
         )
       )
 
-      let mv: string[] = []
+      const commands = new Command({ admin: true, onError: reject })
+
       if (Environment.isWindows) {
-        await this.createWindowsTargetDir()
-        mv = mv.concat(
-          this.installers.map(
-            installer =>
-              `move /y "${installer.downloadPath}" "${installer.binaryPath}" && icacls "${installer.binaryPath}" /T /Q /grant Users:RX`
-          )
-        )
+        if (!existsSync(Environment.binPath)) commands.push(`md "${Environment.binPath}"`)
+        installers.map(installer => {
+          commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`)
+          commands.push(`icacls "${installer.binaryPath}" /T /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
+        })
       } else {
-        mv = mv.concat(
-          this.installers.map(
-            installer =>
-              `mkdir -p ${installer.targetDirectory} && mv ${installer.downloadPath} ${installer.binaryPath} && chmod 755 ${installer.binaryPath}`
-          )
-        )
+        if (!existsSync(Environment.binPath)) commands.push(`mkdir -p ${Environment.binPath}`)
+        installers.map(installer => {
+          commands.push(`mv ${installer.tempFile} ${installer.binaryPath}`)
+          commands.push(`chmod 755 ${installer.binaryPath}`)
+        })
       }
 
-      d('Running command:', mv.join(' && '))
-      Logger.info('Running command', { command: mv.join(' && ') })
+      await commands.exec()
 
-      sudo.exec(mv.join(' && '), this.options, (error: Error, stdout: any, stderr: any) => {
-        d('Command error:', error)
-        d('Command stderr:', stderr)
-        d('Command stdout:', stdout)
-
-        if (error) return reject(error.message)
-        if (stderr) return reject(stderr)
-        resolve(stdout)
-        this.installers.map(installer => EventBus.emit(Installer.EVENTS.installed, installer))
+      installers.map(installer => {
+        EventBus.emit(Installer.EVENTS.afterInstall, installer)
+        EventBus.emit(Installer.EVENTS.installed, installer)
       })
+
+      tmpDir.removeCallback()
+      resolve()
     })
   }
 
-  async createWindowsTargetDir() {
-    try {
-      if (!existsSync(Environment.binPath)) {
-        const { stdout, stderr } = await sudoPromise(`md "${Environment.binPath}"`, this.options)
-        if (stderr) Logger.info('Make directory stderr:', stderr)
-        if (stdout) Logger.info('Make directory stdout:', stdout)
+  async uninstall(installers: Installer[]) {
+    return new Promise(async (resolve, reject) => {
+      const commands = new Command({ admin: true, onError: reject })
+
+      if (Environment.isWindows) {
+        installers.map(installer => commands.push(`del /Q /F "${installer.binaryPath}"`))
+        if (existsSync(Environment.userPath)) commands.push(`rmdir /Q /S "${Environment.userPath}"`)
+        if (existsSync(Environment.adminPath)) commands.push(`rmdir /Q /S "${Environment.adminPath}"`)
+        if (existsSync(Environment.binPath)) commands.push(`rmdir /Q /S "${Environment.binPath}"`)
+      } else {
+        if (existsSync(Environment.userPath)) commands.push(`rm -rf ${Environment.userPath}`)
+        if (existsSync(Environment.adminPath)) commands.push(`rm -rf ${Environment.adminPath}`)
+        if (existsSync(Environment.binPath)) commands.push(`rm -rf ${Environment.binPath}`)
       }
-    } catch (error) {
-      // eat directory already exists errors
-      Logger.info('Make directory error:', error)
-    }
+
+      await commands.exec()
+      resolve()
+    })
   }
 }
+
+export default new BinaryInstaller()

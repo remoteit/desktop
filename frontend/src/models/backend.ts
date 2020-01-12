@@ -12,6 +12,7 @@ type IBackendState = { [key: string]: any } & {
   privateIP: ipAddress
   freePort?: number
   admin?: string
+  update?: string
 }
 
 const state: IBackendState = {
@@ -25,6 +26,7 @@ const state: IBackendState = {
   privateIP: '',
   freePort: undefined,
   admin: undefined,
+  update: undefined,
 }
 
 export default createModel({

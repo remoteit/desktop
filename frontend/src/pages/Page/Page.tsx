@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { makeStyles } from '@material-ui/styles'
 import { Snackbar } from '@material-ui/core'
+import { UpdateNotice } from '../../components/UpdateNotice'
 import styles from '../../styling'
 
 export interface Props {
@@ -11,12 +12,14 @@ export interface Props {
 }
 
 export function Page({ authenticated = true, children }: Props & React.HTMLProps<HTMLDivElement>) {
-  const connected = useSelector((state: ApplicationState) => state.ui.connected)
+  const { connected } = useSelector((state: ApplicationState) => state.ui)
   const css = useStyles()
+
   return (
     <div className={css.page}>
       {children}
       <Snackbar open={authenticated && !connected} message="Webserver connection lost. Retrying..." />
+      <UpdateNotice />
     </div>
   )
 }

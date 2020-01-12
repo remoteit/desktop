@@ -27,7 +27,6 @@ export const SetupPage: React.FC = () => {
   const updateDevice = (d: IDevice) => Controller.emit('device', d)
   const deleteDevice = () => {
     Controller.emit('device', 'DELETE')
-    Controller.emit('init')
   }
 
   return admin && user && user.username !== admin ? (

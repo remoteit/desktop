@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { DEFAULT_TARGET } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
-import { Button } from '@material-ui/core'
+import { Button, Link } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { Target } from '../Target'
 import styles from '../../styling'
@@ -15,6 +16,7 @@ type Props = {
 }
 
 export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
+  const history = useHistory()
   const [showNew, setShowNew] = useState<boolean>(!added)
   const [lastCount, setLastCount] = useState<number>(count)
   const css = useStyles()
@@ -31,11 +33,13 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
   if (showNew)
     return (
       <tr>
-        <td colSpan={6}>
-          <Button color="primary" variant="contained" onClick={() => setShowNew(false)} className={css.button}>
-            New
+        <td colSpan={6} className={css.button}>
+          <Button color="primary" variant="contained" onClick={() => setShowNew(false)}>
+            Add
             <Icon name="plus" inline />
           </Button>
+          <span className={css.or}>or</span>
+          <Link onClick={() => history.push('/network')}>Scan for services</Link>
         </td>
       </tr>
     )
@@ -57,6 +61,8 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
 
 const useStyles = makeStyles({
   button: {
-    marginTop: styles.spacing.lg,
+    paddingTop: styles.spacing.lg,
+    color: styles.colors.gray,
   },
+  or: { paddingLeft: styles.spacing.md },
 })

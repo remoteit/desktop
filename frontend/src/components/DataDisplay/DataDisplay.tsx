@@ -27,7 +27,7 @@ const useStyles = makeStyles({
     '&>span': {
       fontFamily: 'Roboto',
       color: colors.gray,
-      width: 100,
+      width: 172,
     },
   },
 })

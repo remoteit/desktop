@@ -18,6 +18,7 @@ import { DevicesPage } from '../../pages/DevicesPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
+import { LogPage } from '../../pages/LogPage'
 import { InstallationNotice } from '../InstallationNotice'
 import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
@@ -82,6 +83,9 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
           <Route path="/connections/:serviceID/lan">
             <LanSharePage />
           </Route>
+          <Route path="/connections/:serviceID/log">
+            <LogPage />
+          </Route>
           <Route path="/connections/:serviceID">
             <ServicePage />
           </Route>
@@ -90,6 +94,9 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
           </Route>
           <Route path="/devices/:deviceID/:serviceID/lan">
             <LanSharePage />
+          </Route>
+          <Route path="/devices/:deviceID/:serviceID/log">
+            <LogPage />
           </Route>
           <Route path="/devices/:deviceID/:serviceID">
             <ServicePage />
@@ -117,7 +124,7 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
       <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
         <BottomNavigationAction label="Connections" value="/connections" icon={<Icon name="scrubber" size="lg" />} />
         <BottomNavigationAction label="Remote" value="/devices" icon={<Icon name="chart-network" size="lg" />} />
-        <BottomNavigationAction label="Local" value="/setup" icon={<Icon name="hdd" size="lg" />} />
+        <BottomNavigationAction label="Hosted" value="/setup" icon={<Icon name="hdd" size="lg" />} />
         <BottomNavigationAction label="Network" value="/network" icon={<Icon name="network-wired" size="lg" />} />
         <BottomNavigationAction label="Settings" value="/settings" icon={<Icon name="cog" size="lg" />} />
       </BottomNavigation>

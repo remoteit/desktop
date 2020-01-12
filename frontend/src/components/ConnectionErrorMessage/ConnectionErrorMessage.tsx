@@ -1,13 +1,25 @@
 import React from 'react'
-import { clearConnectionError } from '../../helpers/connectionHelper'
+import { IService } from 'remote.it'
+import { useHistory } from 'react-router'
 import { makeStyles } from '@material-ui/styles'
-import { ListItem, ListItemIcon, ListItemText, Tooltip } from '@material-ui/core'
+import { clearConnectionError } from '../../helpers/connectionHelper'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Tooltip, Button } from '@material-ui/core'
 import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 
-export const ConnectionErrorMessage: React.FC<{ connection?: IConnection }> = ({ connection }) => {
+type Props = { connection?: IConnection; service?: IService }
+
+export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service }) => {
   const css = useStyles()
+  const history = useHistory()
+
+  const viewLog = () => {
+    const deviceID = (service && service.deviceID) || (connection && connection.deviceID)
+    const serviceID = (service && service.id) || (connection && connection.id)
+    history.push(`/devices/${deviceID}/${serviceID}/log`)
+  }
+
   if (!connection || !connection.error) return null
 
   return (
@@ -25,6 +37,11 @@ export const ConnectionErrorMessage: React.FC<{ connection?: IConnection }> = ({
       >
         Connection Error
       </ListItemText>
+      <ListItemSecondaryAction>
+        <Button onClick={viewLog} size="small">
+          View Log
+        </Button>
+      </ListItemSecondaryAction>
     </ListItem>
   )
 }

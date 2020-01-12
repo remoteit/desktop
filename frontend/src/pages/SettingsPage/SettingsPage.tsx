@@ -2,15 +2,15 @@ import React from 'react'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
+import { UninstallSetting } from '../../components/UninstallSetting'
+import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
-import { Columns } from '../../components/Columns'
 import { connect } from 'react-redux'
-import { version } from '../../../package.json'
-import { Logo } from '../../components/Logo'
 import { spacing } from '../../styling'
+import { Logo } from '../../components/Logo'
 
-const mapState = (state: ApplicationState, props: any) => ({
+const mapState = (state: ApplicationState) => ({
   user: state.auth.user,
   installing: state.binaries.installing,
   installed:
@@ -18,6 +18,7 @@ const mapState = (state: ApplicationState, props: any) => ({
     state.binaries.muxerInstalled &&
     state.binaries.demuxerInstalled &&
     state.binaries.remoteitInstalled,
+  remoteitVersion: state.binaries.remoteitVersion,
   openOnLogin: state.auth.openOnLogin,
   searchOnly: state.devices.searchOnly,
 })
@@ -47,12 +48,16 @@ export const SettingsPage = connect(
     openOnLogin,
     toggleOpenOnLogin,
     toggleSearchOnly,
+    remoteitVersion,
   }: SettingsPageProps) => {
     const css = useStyles()
-    const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
 
+    const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
     const signOutWarning = () =>
       window.confirm('Are you sure? Signing out will close all active connections.') && signOut()
+    const installWarning = () =>
+      window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
+      install()
 
     return (
       <Container
@@ -60,7 +65,7 @@ export const SettingsPage = connect(
           <Typography className={css.header} variant="h1">
             <Tooltip title="Visit remote.it on the web">
               <ButtonBase onClick={() => window.open('https://remote.it')}>
-                <Logo width={95} />
+                <Logo width={110} />
               </ButtonBase>
             </Tooltip>
           </Typography>
@@ -74,31 +79,33 @@ export const SettingsPage = connect(
               (window.location.href = encodeURI('mailto:support@remote.it?subject=Desktop Application Feedback'))
             }
           />
-          <SettingsListItem label="Open at login" icon="power-off" value={openOnLogin} onClick={toggleOpenOnLogin} />
+          <SettingsListItem label="Open at login" icon="power-off" toggle={openOnLogin} onClick={toggleOpenOnLogin} />
           <SettingsListItem
             label="Search only device list"
             icon="search"
             subLabel="Speed up the application by only showing search results. Use with a very large device list."
-            value={searchOnly}
+            toggle={searchOnly}
             onClick={toggleSearchOnly}
           />
-          <SettingsListItem
-            label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}
-            disabled={installing}
-            icon="terminal"
-            onClick={() => install()}
-          />
-        </List>
-        <Divider />
-        <List>
-          <SettingsListItem label="About" subLabel={`Version: v${version}  —  © remot3.it inc.`} icon="info-circle" />
           <SettingsListItem
             label="Sign out"
             subLabel={`Signed is as ${user && user.username}`}
             icon="sign-out"
             onClick={signOutWarning}
           />
-          <SettingsListItem label="Quit" icon="skull-crossbones" onClick={quitWarning} />
+          <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />
+        </List>
+        <Divider />
+        <List>
+          <UpdateSetting />
+          <SettingsListItem
+            label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}
+            subLabel={`Version ${remoteitVersion}`}
+            disabled={installing}
+            icon="terminal"
+            onClick={installWarning}
+          />
+          <UninstallSetting />
         </List>
       </Container>
     )

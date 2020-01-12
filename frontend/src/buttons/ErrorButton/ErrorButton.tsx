@@ -1,7 +1,6 @@
 import React from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
-import { spacing } from '../../styling'
 
 type Props = { connection?: IConnection; onClick?: () => void; visible: boolean }
 

@@ -96,7 +96,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, ...props })
         {registered ? (
           <Targets device={device} {...props} />
         ) : (
-          <p className={css.note}>You may add services after device registration.</p>
+          <p className={css.note}>You can add services after device registration.</p>
         )}
       </section>
       <Snackbar
@@ -130,9 +130,8 @@ const useStyles = makeStyles({
     marginLeft: styles.spacing.md,
   },
   note: {
-    width: '100%',
     textAlign: 'center',
-    color: styles.colors.grayLight,
-    margin: styles.spacing.xl,
+    color: styles.colors.grayDark,
+    margin: styles.spacing.xxl,
   },
 })

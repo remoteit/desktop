@@ -1,5 +1,7 @@
 import path from 'path'
 import Environment from './Environment'
+import { ENVIRONMENT } from './constants'
+
 import * as winston from 'winston'
 
 const ENV = process.env.NODE_ENV
@@ -34,5 +36,7 @@ const logger = winston.createLogger({
   format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports,
 })
+
+logger.info('NODE_ENV', { env: ENVIRONMENT })
 
 export default logger

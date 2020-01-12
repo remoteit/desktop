@@ -9,9 +9,10 @@ import { Provider } from 'react-redux'
 import { store } from './store'
 import { colors, spacing, fontSizes } from './styling'
 import * as serviceWorker from './serviceWorker'
-import './styling/index.css'
-import './styling/global.css'
 import './services/Controller'
+import './styling/index.css'
+import './styling/euphoria.css'
+import './styling/fonts.css'
 
 const gutters = 28
 const theme = createMuiTheme({
@@ -27,12 +28,13 @@ const theme = createMuiTheme({
     MuiFormHelperText: { root: { fontSize: 10 } },
     MuiButton: {
       root: {
-        backgroundColor: colors.grayLightest,
         color: colors.grayDark,
+        backgroundColor: colors.grayLightest,
         padding: `${spacing.sm}px ${spacing.md}px`,
         '& .MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
+      outlined: { borderColor: colors.grayLighter },
     },
     MuiListItem: {
       root: { opacity: 1 },
@@ -44,14 +46,13 @@ const theme = createMuiTheme({
       container: {
         '& .MuiListItemSecondaryAction-root': {},
         '&:hover, &:focus': {
-          '& .MuiListItemSecondaryAction-root': { display: 'block' },
+          '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
           '& .hoverHide': { display: 'none' },
         },
       },
     },
     MuiListItemSecondaryAction: { root: { right: gutters } },
     MuiListItemIcon: { root: { justifyContent: 'center' } },
-    MuiCollapse: { wrapper: { padding: spacing.md } },
     MuiInput: {
       root: {
         '&.Mui-disabled': {
@@ -96,7 +97,7 @@ const theme = createMuiTheme({
       subtitle1: {
         fontSize: fontSizes.sm,
         fontFamily: 'Roboto Mono',
-        color: colors.grayDark,
+        color: colors.gray,
         padding: `${spacing.lg}px ${gutters}px 0`,
         marginLeft: spacing.xxs,
         textTransform: 'uppercase',
@@ -106,6 +107,7 @@ const theme = createMuiTheme({
       caption: {
         fontSize: '11px',
         color: colors.grayDark,
+        lineHeight: '1.5em',
       },
       colorTextSecondary: {
         color: colors.grayDark,

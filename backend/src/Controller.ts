@@ -5,13 +5,11 @@ import electron from 'electron'
 import EventRelay from './EventRelay'
 import Connection from './Connection'
 import CLIInterface from './CLIInterface'
-import MuxerInstaller from './MuxerInstaller'
 import BinaryInstaller from './BinaryInstaller'
-import ConnectdInstaller from './ConnectdInstaller'
 import RemoteitInstaller from './RemoteitInstaller'
-import DemuxerInstaller from './DemuxerInstaller'
 import ConnectionPool from './ConnectionPool'
 import ElectronApp from './ElectronApp'
+import AutoUpdater from './AutoUpdater'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import Server from './Server'
@@ -25,7 +23,6 @@ class Controller {
   private lan: LAN
   private server: SocketIO.Server
   private pool: ConnectionPool
-  private socket?: SocketIO.Socket
 
   constructor(server: SocketIO.Server, cli: CLIInterface, lan: LAN, pool: ConnectionPool) {
     this.server = server
@@ -40,6 +37,8 @@ class Controller {
         ...Object.values(Installer.EVENTS),
         ...Object.values(Connection.EVENTS),
         ...Object.values(ConnectionPool.EVENTS),
+        ...Object.values(AutoUpdater.EVENTS),
+        ...Object.values(LAN.EVENTS),
       ],
       EventBus,
       this.server.sockets
@@ -62,6 +61,8 @@ class Controller {
     socket.on('scan', this.scan)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
+    socket.on('restart', this.restart)
+    socket.on('uninstall', this.uninstall)
 
     // things are ready - send the secure data
     this.syncBackend()
@@ -75,6 +76,7 @@ class Controller {
   device = async (result: IDevice) => {
     await this.cli.set('device', result)
     this.server.emit('device', this.cli.data.device)
+    this.server.emit('targets', this.cli.data.targets)
   }
 
   interfaces = async () => {
@@ -97,10 +99,10 @@ class Controller {
     this.server.emit('device', this.cli.data.device)
     this.server.emit('scan', this.lan.data)
     this.server.emit('interfaces', this.lan.interfaces)
-    this.server.emit('pool', this.pool.toJSON())
-    this.server.emit('privateIP', this.lan.privateIP)
-    this.server.emit('freePort', this.pool.freePort)
     this.server.emit('admin', (this.cli.data.admin && this.cli.data.admin.username) || '')
+    this.server.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
+    this.server.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
+    this.server.emit(LAN.EVENTS.privateIP, this.lan.privateIP)
   }
 
   connections = () => {
@@ -129,9 +131,21 @@ class Controller {
     await this.pool.forget(connection)
   }
 
+  restart = () => {
+    d('Restart')
+    AutoUpdater.restart()
+  }
+
+  uninstall = async () => {
+    Logger.info('UNINSTALL INITIATED')
+    user.signOut()
+    await this.pool.reset()
+    await this.cli.unInstall()
+    await BinaryInstaller.uninstall([RemoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+  }
+
   installBinaries = async () => {
-    const installer = new BinaryInstaller([ConnectdInstaller, MuxerInstaller, DemuxerInstaller, RemoteitInstaller])
-    return installer.install().catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    BinaryInstaller.install([RemoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
   }
 
   openOnLogin = (open: boolean) => {

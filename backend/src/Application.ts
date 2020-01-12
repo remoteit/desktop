@@ -2,12 +2,10 @@ import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import debug from 'debug'
 import RemoteitInstaller from './RemoteitInstaller'
-import ConnectdInstaller from './ConnectdInstaller'
-import DemuxerInstaller from './DemuxerInstaller'
-import MuxerInstaller from './MuxerInstaller'
 import CLIInterface from './CLIInterface'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
+import AutoUpdater from './AutoUpdater'
 import JSONFile from './JSONFile'
 import Logger from './Logger'
 import path from 'path'
@@ -21,6 +19,7 @@ const d = debug('r3:backend:Application')
 
 export default class Application {
   public pool: ConnectionPool
+  public cli: CLIInterface
   private connectionsFile: JSONFile<IConnection[]>
   private window: ElectronApp
 
@@ -30,23 +29,26 @@ export default class Application {
     this.handleExit()
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.userPath, 'connections.json'))
 
-    // pass the user through to tray menu
+    // Create app UI
     this.window = new ElectronApp()
 
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [])
 
-    // remoteit CLI init.
-    const cli = new CLIInterface()
+    // remoteit CLI init
+    this.cli = new CLIInterface()
 
-    // Start server and listen to events.
+    // Start server and listen to events
     const server = new Server()
 
     // Network utils
-    const lan = new LAN(cli)
+    const lan = new LAN(this.cli)
 
     // create the event controller
-    new Controller(server.io, cli, lan, this.pool)
+    new Controller(server.io, this.cli, lan, this.pool)
+
+    // add auto updater
+    new AutoUpdater()
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.authenticated, this.handleAuthenticated)
@@ -86,10 +88,7 @@ export default class Application {
     this.connectionsFile.write(pool)
   }
 
-  private handleAuthenticated = () => {
-    ConnectdInstaller.check()
-    MuxerInstaller.check()
-    DemuxerInstaller.check()
+  private handleAuthenticated = async () => {
     RemoteitInstaller.check()
   }
 
@@ -101,7 +100,7 @@ export default class Application {
     Logger.info('Signing out user')
 
     // Stop all connections cleanly
-    await this.pool.reset()
+    await this.pool.stopAll()
 
     // Remove files from system.
     // this.connectionsFile.remove() // Lets keep the connections, unless manually removed.

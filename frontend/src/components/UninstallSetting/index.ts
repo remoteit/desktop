@@ -1,0 +1,1 @@
+export { UninstallSetting } from './UninstallSetting'

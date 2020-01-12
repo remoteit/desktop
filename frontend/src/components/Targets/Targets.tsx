@@ -43,9 +43,17 @@ export const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onC
             </th>
             <th colSpan={3}>
               <InputLabel>
-                Host IP Address
-                <Tooltip title="IP address to host this service. Leave blank for this system to host, or enter an address on the local network to jump host.">
-                  <Icon name="question-circle" weight="regular" size="xs" inline />
+                Host Address <em>Optional</em>
+                <Tooltip
+                  title={
+                    <span>
+                      Local network IP address to host this service.
+                      <br />
+                      Leave blank for this system to host.
+                    </span>
+                  }
+                >
+                  <Icon name="question-circle" weight="light" size="sm" inline />
                 </Tooltip>
               </InputLabel>
             </th>

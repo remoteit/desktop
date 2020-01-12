@@ -71,11 +71,17 @@ export function SignInForm({ signInError, signInStarted, signIn }: SignInFormCon
           disabled={signInStarted}
           type="submit"
         >
-          {signInStarted ? 'Signing you in...' : 'Sign in'}
+          {signInStarted ? 'Signing in...' : 'Sign in'}
         </Button>
-        <Link href="https://app.remote.it/auth/#/sign-up" target="_blank">
-          Create an account
-        </Link>
+        <div className={css.links}>
+          <Link href="https://app.remote.it/auth/#/sign-up" target="_blank">
+            Create an account
+          </Link>
+          <br />
+          <Link href="https://app.remote.it/auth/#/forgot-password" target="_blank">
+            Forgot password
+          </Link>
+        </div>
       </div>
     </form>
   )
@@ -103,5 +109,10 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  links: {
+    marginLeft: styles.spacing.lg,
+    lineHeight: '1.7em',
+    textAlign: 'center',
   },
 })

@@ -5,10 +5,9 @@ import { useLocation } from 'react-router-dom'
 import { ListItemIcon, Typography } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
-import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 
-export type Props = {
+type Props = {
   service: IService
   connection?: IConnection
 }
@@ -22,7 +21,7 @@ export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   return (
     <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'}>
       <ListItemIcon>
-        <Icon name="network-wired" color={shared ? 'primary' : 'gray'} size="lg" />
+        <Icon name="network-wired" color={shared ? 'primary' : undefined} size="md" weight="light" />
       </ListItemIcon>
       <span className={css.text}>
         <Typography variant="caption">Local Network Sharing</Typography>
@@ -35,22 +34,5 @@ export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
 }
 
 const useStyles = makeStyles({
-  icon: { marginRight: spacing.lg, marginLeft: spacing.sm },
-  handlerItem: {
-    flexDirection: 'row',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grayLightest,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  handlerIcon: {
-    width: 30,
-    height: 30,
-    marginRight: spacing.lg,
-  },
-  text: {
-    flexGrow: 1,
-  },
+  text: { flexGrow: 1 },
 })

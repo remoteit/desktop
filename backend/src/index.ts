@@ -16,10 +16,16 @@ Tracker.pageView('/')
 Tracker.event('app', 'startup', 'remote.it Desktop application has started')
 Logger.info('Desktop starting up!')
 
-process.on('uncaughtException', (error: Error) => {
-  d('Caught exception', error)
-  AirBrake.notify(error)
-  Logger.warn('CAUGHT EXCEPTION', { error })
-})
+process
+  .on('uncaughtException', (error: Error) => {
+    d('Caught exception', error)
+    AirBrake.notify({ message: 'CAUGHT EXCEPTION', error })
+    Logger.warn('CAUGHT EXCEPTION', { error, details: error.toString() })
+  })
+  .on('unhandledRejection', (reason: Error | any, promise: Promise<any>) => {
+    d('Caught exception', reason, promise)
+    AirBrake.notify({ message: 'UNHANDLED PROMISE REJECTION', reason, promise })
+    Logger.warn('UNHANDLED PROMISE REJECTION', { reason, details: reason.toString(), promise })
+  })
 
 export const application = new Application()

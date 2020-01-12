@@ -1,14 +1,16 @@
-import ConnectdInstaller from './ConnectdInstaller'
-import debug from 'debug'
+import path from 'path'
 import user from './User'
-import EventBus from './EventBus'
+import debug from 'debug'
 import Logger from './Logger'
 import Tracker from './Tracker'
-import { execFile, ChildProcess } from 'child_process'
+import EventBus from './EventBus'
+import Environment from './Environment'
 import { EventEmitter } from 'events'
+import { execFile, ChildProcess } from 'child_process'
 import { IP_OPEN, IP_PRIVATE } from './constants'
 
 const d = debug('r3:backend:Connection')
+const REGEX_ERROR_CODE = /\[(\d+)\]/
 
 export default class Connection extends EventEmitter {
   params!: IConnection
@@ -43,10 +45,6 @@ export default class Connection extends EventEmitter {
   }
 
   async start() {
-    // If the user indicates they want to start this connection,
-    // we assume they want to start it on future sessions
-    this.params.autoStart = true
-
     if (!user.signedIn || user.username !== this.params.owner) {
       let message = `Cannot start connection. Connection owner (${this.params.owner}) does not match user (${user.username}).`
       Logger.warn(message, { params: this.params })
@@ -63,7 +61,6 @@ export default class Connection extends EventEmitter {
     Tracker.pageView(`/connections/${this.params.id}/start`)
     Tracker.event('connection', 'start', `connecting to service: ${this.params.id}`)
     Logger.info('Starting connection: ', this.toJSON())
-    Logger.info('Connectd location: ', ConnectdInstaller.binaryPath)
 
     const usernameBase64 = Buffer.from(user.username).toString('base64')
     const params = [
@@ -84,7 +81,7 @@ export default class Connection extends EventEmitter {
 
     try {
       this.process = execFile(
-        ConnectdInstaller.binaryPath,
+        path.join(Environment.binPath, 'connectd'),
         params,
         {
           maxBuffer: Infinity,
@@ -136,7 +133,6 @@ export default class Connection extends EventEmitter {
     if (autoStart !== undefined) this.params.autoStart = autoStart
 
     d('Stopping service:', this.params.id)
-    Logger.info('Stopping connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.params.id}/stop`)
     Tracker.event('connection', 'stop', 'stopping service')
 
@@ -258,6 +254,11 @@ export default class Connection extends EventEmitter {
         event = events.throughput
       } else if (line.startsWith('!!request')) {
         event = events.request
+      } else if (line.includes('!!exit')) {
+        event = events.error
+        const match = line.match(REGEX_ERROR_CODE)
+        if (match && match.length) this.handleClose(parseInt(match[1], 10))
+        return
       } else if (line.includes('exit - process closed')) {
         event = events.disconnected
       } else if (line.includes('connecttunnel')) {
@@ -265,13 +266,9 @@ export default class Connection extends EventEmitter {
       } else if (line.includes('closetunnel')) {
         event = events.tunnelClosed
       } else if (line.includes('Version')) {
-        event = events.version
+        event = events.unknown
         const match = line.match(/Version ([\d\.]*)/)
         if (match && match.length > 1) extra = { version: match[1] }
-        // TODO: return local IP
-        // } else if (line.includes('primary local ip')) {
-        //   localIP = localIP
-        //   connectd.emit(EVENTS.updated, {}) //this.toJSON())
       } else {
         event = events.unknown
       }

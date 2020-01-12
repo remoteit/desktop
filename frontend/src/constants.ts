@@ -17,6 +17,6 @@ export const DEFAULT_TARGET: ITarget | IDevice = {
   name: '',
   port: 0,
   secret: '',
-  type: 1,
+  type: 7,
   uid: '',
 }
