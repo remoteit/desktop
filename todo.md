@@ -14,6 +14,7 @@
 - [x] Kill processes on exit/crash
 - [x] remove connectd installation
 - [x] Associate cli settings to user
+- [ ] If frontend electronjs use backend credentials
 - [ ] MineCraft service type
 - [ ] Track P2P failures
 - [ ] Stop remoteit and restart it if upgrading CLI
