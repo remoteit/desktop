@@ -47,7 +47,10 @@ export default createModel({
       let searchOnly = pref !== 'false'
 
       // If they have too many services, show search only.
-      await r3.devices.count().then(count => (searchOnly = count.services > SEARCH_ONLY_SERVICE_LIMIT))
+      if (!searchOnly) {
+        const count = await r3.devices.count()
+        searchOnly = count.services > SEARCH_ONLY_SERVICE_LIMIT
+      }
 
       dispatch.devices.setSearchOnly(searchOnly)
       return searchOnly
