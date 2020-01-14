@@ -15,6 +15,8 @@
 - [x] remove connectd installation
 - [x] Associate cli settings to user
 - [ ] If frontend electronjs use backend credentials
+- [ ] Default to proxy_dest_port?
+- [ ] Live update connection statuses
 - [ ] MineCraft service type
 - [ ] Track P2P failures
 - [ ] Stop remoteit and restart it if upgrading CLI
