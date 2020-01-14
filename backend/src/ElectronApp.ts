@@ -4,6 +4,7 @@ import TrayMenu from './TrayMenu'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import debug from 'debug'
+import user from './User'
 import path from 'path'
 import url from 'url'
 
@@ -78,14 +79,20 @@ export default class ElectronApp {
 
     const startUrl =
       process.env.NODE_ENV === 'development'
-        ? 'http://localhost:3000'
+        ? url.format({
+            protocol: 'http',
+            hostname: 'localhost',
+            port: '3000',
+            query: user.credentials,
+          })
         : url.format({
             pathname: path.join(__dirname, '../build/index.html'),
-            protocol: 'file:',
+            protocol: 'file',
             slashes: true,
+            query: user.credentials,
           })
+
     this.window.loadURL(startUrl)
-    Logger.info('START URL', { startUrl })
 
     this.window.on('close', e => {
       d('Window closed')
