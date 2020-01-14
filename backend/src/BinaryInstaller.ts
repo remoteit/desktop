@@ -1,7 +1,6 @@
 import tmp from 'tmp'
+import path from 'path'
 import debug from 'debug'
-import Logger from './Logger'
-import AirBrake from './AirBrake'
 import Environment from './Environment'
 import EventBus from './EventBus'
 import Installer from './Installer'
@@ -77,7 +76,12 @@ class BinaryInstaller {
       } else {
         if (existsSync(Environment.userPath)) commands.push(`rm -rf ${Environment.userPath}`)
         if (existsSync(Environment.adminPath)) commands.push(`rm -rf ${Environment.adminPath}`)
-        if (existsSync(Environment.binPath)) commands.push(`rm -rf ${Environment.binPath}`)
+        installers.map(installer => {
+          const files = installer.dependencyNames.concat(installer.binaryName)
+          files.map(
+            file => installer.fileExists(file) && commands.push(`rm -f ${path.join(Environment.binPath, file)}`)
+          )
+        })
       }
 
       await commands.exec()
