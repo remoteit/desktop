@@ -44,16 +44,20 @@ export default createModel({
     async shouldSearchDevices() {
       // First see if they have already decided on their preference
       const pref = window.localStorage.getItem(SEARCH_ONLY_SETTING_KEY)
+      let searchOnly = false
+
+      // Handle unset state - localStorage turns bool into string
       if (typeof pref === 'string') {
-        dispatch.devices.setSearchOnly(pref === 'true')
-        dispatch.devices.fetch()
-        return
+        searchOnly = pref === 'true'
       }
 
-      // If they have too many services, show search only.
-      return r3.devices
-        .count()
-        .then(count => dispatch.devices.setSearchOnly(count.services > SEARCH_ONLY_SERVICE_LIMIT))
+      if (!searchOnly) {
+        const count = await r3.devices.count()
+        searchOnly = count.services > SEARCH_ONLY_SERVICE_LIMIT
+      }
+
+      dispatch.devices.setSearchOnly(searchOnly)
+      return searchOnly
     },
     async fetch() {
       // TODO: Deal with device search only UI
@@ -65,6 +69,7 @@ export default createModel({
       }
 
       fetchStarted()
+
       return r3.devices
         .all()
         .then(renameServices)
@@ -137,7 +142,7 @@ export default createModel({
       window.localStorage.setItem(SORT_SETTING_KEY, sort)
     },
     setDevices(state: DeviceState, devices: IDevice[]) {
-      localStorage.setItem('devices', JSON.stringify(devices))
+      window.localStorage.setItem('devices', JSON.stringify(devices))
       state.all = Device.sort(devices, state.sort)
     },
     fetchFinished(state: DeviceState) {

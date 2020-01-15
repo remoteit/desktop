@@ -24,13 +24,6 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
   const selectedLoading = loading[activeInterface]
   const noResults = selected.data && !selected.data.length
 
-  console.log(
-    'INTERFACES',
-    interfaces.length,
-    interfaces.map(i => i.name)
-  )
-  console.log('ACTIVE INTERFACE', activeInterface)
-
   useEffect(() => {
     if (interfaces.length && activeInterface === 'searching') setActiveInterface(interfaces[0].name)
   }, [interfaces, activeInterface])
@@ -71,7 +64,7 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
           </TextField>
         </div>
         <Typography variant="caption">
-          Scan your systen and network <br />
+          Scan your system and network <br />
           for open ports to host
         </Typography>
         <Button

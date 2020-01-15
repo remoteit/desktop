@@ -12,11 +12,7 @@ export default class AppUpdater {
   constructor() {
     autoUpdater.logger = Logger
 
-    try {
-      autoUpdater.checkForUpdatesAndNotify()
-    } catch (error) {
-      Logger.warn('AUTO UPDATE ERROR', { error })
-    }
+    this.check()
 
     autoUpdater.on('update-available', info => {
       Logger.info('Update available', info)
@@ -28,6 +24,14 @@ export default class AppUpdater {
     })
 
     autoUpdater.on('error', error => {})
+  }
+
+  check() {
+    try {
+      autoUpdater.checkForUpdatesAndNotify()
+    } catch (error) {
+      Logger.warn('AUTO UPDATE ERROR', { error })
+    }
   }
 
   static restart() {

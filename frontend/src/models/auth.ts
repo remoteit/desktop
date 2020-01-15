@@ -1,6 +1,7 @@
+import Controller from '../services/Controller'
+import { parse } from 'url'
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
-import Controller from '../services/Controller'
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
 
 const USER_KEY = 'user'
@@ -35,18 +36,41 @@ export default createModel({
       dispatch.auth.getOpenOnLoginState()
 
       if (!user) {
-        const storedUser = localStorage.getItem(USER_KEY)
-        if (storedUser) {
-          user = JSON.parse(storedUser)
-          dispatch.auth.setUser(user)
-        }
+        const storedUser = window.localStorage.getItem(USER_KEY)
+        const backendCredentials = parse(window.location.href, true).query
+
+        console.log('INIT AUTH', { backendCredentials, storedUser })
+
+        if (backendCredentials.username && backendCredentials.authHash) user = backendCredentials
+        if (storedUser) user = JSON.parse(storedUser)
       }
 
       if (user) {
         Controller.emit('authentication', { username: user.username, authHash: user.authHash })
+        dispatch.auth.setUser(user)
       } else {
         dispatch.auth.signedOut()
       }
+    },
+    async fetchAuthToken(_: void, rootState: any) {
+      let { user } = rootState.auth
+
+      console.log('FETCH AUTH TOKEN', user)
+
+      try {
+        user = await r3.user.authHashLogin(user.username, user.authHash)
+      } catch (error) {
+        dispatch.auth.signInError(error.message)
+      }
+
+      if (!user) {
+        console.warn('Could not getToken')
+        dispatch.auth.signInError('Could not authenticate with device list')
+        return
+      }
+
+      console.log('Fetch user token', user)
+      dispatch.auth.setUser(user)
     },
     async signIn({ password, username }) {
       dispatch.auth.signInStarted()
@@ -70,9 +94,11 @@ export default createModel({
       Controller.open()
     },
     async signedIn() {
+      if (!r3.token) await dispatch.auth.fetchAuthToken()
+      const searchOnly = await dispatch.devices.shouldSearchDevices()
+      if (!searchOnly) dispatch.devices.fetch()
       dispatch.auth.signInFinished()
       dispatch.auth.checkSignInFinished()
-      dispatch.devices.shouldSearchDevices()
     },
     async authenticated() {
       dispatch.auth.signedIn()
@@ -104,7 +130,7 @@ export default createModel({
     },
     async getOpenOnLoginState() {
       // Get "open on login" setting
-      const openOnLogin = localStorage.getItem(OPEN_ON_LOGIN_KEY)
+      const openOnLogin = window.localStorage.getItem(OPEN_ON_LOGIN_KEY)
       dispatch.auth.setOpenOnLogin(openOnLogin === 'true')
     },
     async toggleOpenOnLogin(_, state) {
@@ -128,8 +154,8 @@ export default createModel({
     signOutFinished(state: AuthState) {
       state.user = undefined
       clearUserCredentials()
-      localStorage.removeItem('devices')
-      localStorage.removeItem(USER_KEY)
+      window.localStorage.removeItem('devices')
+      window.localStorage.removeItem(USER_KEY)
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {
       state.authenticated = authenticated
@@ -140,12 +166,12 @@ export default createModel({
     setUser(state: AuthState, user: IUser) {
       state.user = user
       state.signInError = undefined
-      localStorage.setItem(USER_KEY, JSON.stringify(user))
+      window.localStorage.setItem(USER_KEY, JSON.stringify(user))
       updateUserCredentials(user)
     },
     setOpenOnLogin(state: AuthState, open: boolean) {
       Controller.emit('app/open-on-login', open)
-      localStorage.setItem(OPEN_ON_LOGIN_KEY, open.toString())
+      window.localStorage.setItem(OPEN_ON_LOGIN_KEY, open.toString())
       state.openOnLogin = open
     },
   },
