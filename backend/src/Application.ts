@@ -22,6 +22,7 @@ export default class Application {
   public cli: CLIInterface
   private connectionsFile: JSONFile<IConnection[]>
   private window: ElectronApp
+  private autoUpdater: AutoUpdater
 
   constructor() {
     Logger.info('Application starting up!')
@@ -48,7 +49,7 @@ export default class Application {
     new Controller(server.io, this.cli, lan, this.pool)
 
     // add auto updater
-    new AutoUpdater()
+    this.autoUpdater = new AutoUpdater()
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.authenticated, this.handleAuthenticated)
@@ -90,6 +91,7 @@ export default class Application {
 
   private handleAuthenticated = async () => {
     RemoteitInstaller.check()
+    this.autoUpdater.check()
   }
 
   /**
