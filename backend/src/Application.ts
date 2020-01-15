@@ -56,7 +56,7 @@ export default class Application {
     this.heartbeat = setInterval(this.check, 1000 * 30)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
-    // EventBus.on(Server.EVENTS.authenticated, this.handleAuthenticated)
+    EventBus.on(Server.EVENTS.authenticated, this.check)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
   }
 
