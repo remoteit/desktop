@@ -64,7 +64,7 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
           </TextField>
         </div>
         <Typography variant="caption">
-          Scan your systen and network <br />
+          Scan your system and network <br />
           for open ports to host
         </Typography>
         <Button
