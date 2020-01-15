@@ -94,12 +94,11 @@ export default createModel({
       Controller.open()
     },
     async signedIn() {
-      dispatch.auth.signInFinished()
-      dispatch.auth.checkSignInFinished()
       if (!r3.token) await dispatch.auth.fetchAuthToken()
       const searchOnly = await dispatch.devices.shouldSearchDevices()
-      console.log('SEARCH ONLY?', searchOnly)
       if (!searchOnly) dispatch.devices.fetch()
+      dispatch.auth.signInFinished()
+      dispatch.auth.checkSignInFinished()
     },
     async authenticated() {
       dispatch.auth.signedIn()

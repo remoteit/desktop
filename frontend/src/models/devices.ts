@@ -44,9 +44,13 @@ export default createModel({
     async shouldSearchDevices() {
       // First see if they have already decided on their preference
       const pref = window.localStorage.getItem(SEARCH_ONLY_SETTING_KEY)
-      let searchOnly = pref !== 'false'
+      let searchOnly = false
 
-      // If they have too many services, show search only.
+      // Handle unset state - localStorage turns bool into string
+      if (typeof pref === 'string') {
+        searchOnly = pref === 'true'
+      }
+
       if (!searchOnly) {
         const count = await r3.devices.count()
         searchOnly = count.services > SEARCH_ONLY_SERVICE_LIMIT
