@@ -39,7 +39,8 @@ export default class ConnectionPool {
   // maintain auto start connections
   check = () => {
     this.toJSON().map(c => {
-      if (c.autoStart && !c.pid) this.start(c)
+      // auto start if not running and has been started before
+      if (c.autoStart && !c.pid && c.startTime) this.start(c)
     })
   }
 
