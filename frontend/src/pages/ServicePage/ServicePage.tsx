@@ -66,6 +66,7 @@ export const ServicePage: React.FC = () => {
     { label: 'Owner', value: device.owner },
     { label: 'Service Type', value: service.type },
     { label: 'Service ID', value: service.id },
+    { label: 'Service Port', value: service.port },
   ])
 
   return (
