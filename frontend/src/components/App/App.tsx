@@ -57,7 +57,13 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
     }
   }, [navigation, location, menu])
 
-  if (checkSignInStarted) return <LoadingPage />
+  if (checkSignInStarted)
+    return (
+      <Page authenticated={authenticated}>
+        <Header />
+        <LoadingPage />
+      </Page>
+    )
 
   if (!user || !authenticated)
     return (
