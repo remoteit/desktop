@@ -60,7 +60,7 @@
     "netmask": "^1.0.6",
     "network": "^0.4.1",
     "portfinder": "^1.0.25",
-    "remote.it": "^0.43.2",
+    "remote.it": "^0.44.1",
     "semver-compare": "^1.0.0",
     "socket.io": "^2.3.0",
     "socketio-auth": "^0.1.1",
@@ -84,7 +84,7 @@
     "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
     "productName": "remoteit-desktop",
-    "artifactName": "${productName}-${arch}-${version}.${ext}",
+    "artifactName": "${productName}-${arch}.${ext}",
     "publish": [
       "github"
     ],

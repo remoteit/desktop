@@ -40,7 +40,7 @@ export default class Command {
 
       if (stderr) {
         Logger.warn(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString() })
-        AirBrake.notify({ command: this.toString(), stderr })
+        AirBrake.notify({ message: 'COMMAND STDERR', command: this.toString(), stderr: stderr.toString() })
         this.onError(stderr.toString())
         result = stderr.toString()
       }
@@ -50,7 +50,7 @@ export default class Command {
         result = stdout.toString()
       }
     } catch (error) {
-      AirBrake.notify({ command: this.toString(), error })
+      AirBrake.notify({ message: 'COMMAND ERROR', command: this.toString(), error })
       Logger.warn(`EXEC ERROR CAUGHT ${this.toString()}`, { error, errorMessage: error.message })
       this.onError(error)
       result = error.toString()

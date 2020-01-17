@@ -112,7 +112,13 @@ export default class ElectronApp {
     d('Create tray icon')
     Logger.info('Create tray icon')
 
-    const iconFile = Environment.isMac ? 'iconTemplate.png' : Environment.isWindows ? 'iconwin.ico' : 'iconLinux.png'
+    const iconFile = Environment.isMac
+      ? 'iconTemplate.png'
+      : Environment.isWindows
+      ? 'iconwin.ico'
+      : Environment.isPi
+      ? 'iconLinuxColor.png'
+      : 'iconLinux.png'
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
     new TrayMenu(this.tray)
