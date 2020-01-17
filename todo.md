@@ -14,7 +14,8 @@
 - [x] Kill processes on exit/crash
 - [x] remove connectd installation
 - [x] Associate cli settings to user
-- [ ] If frontend electronjs use backend credentials
+- [x] If frontend electronjs use backend credentials
+- [ ] Ensure auto-update notified even if not logged in
 - [ ] Default to proxy_dest_port?
 - [ ] Live update connection statuses
 - [ ] MineCraft service type

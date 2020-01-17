@@ -76,7 +76,7 @@ export function log(message = 'Some log messate'): Log {
 export function connection(name = 'Some service name', port = 33001): IConnection {
   return {
     deviceID: 'some-device-id',
-    id: 'some-service-id',
+    id: `some-service-id-${randomNumber()}`,
     name,
     port,
     owner: 'username',
