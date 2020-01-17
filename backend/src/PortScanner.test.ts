@@ -3,7 +3,7 @@ import PortScanner, { ServerError } from './PortScanner'
 import net, { Server } from 'net'
 import { EventEmitter } from 'events'
 
-jest.mock('../connectd/ConnectionPool')
+// jest.mock('../connectd/ConnectionPool')
 
 describe('backend/utils/PortScanner', () => {
   describe('.findFreePortInRange', () => {
@@ -15,9 +15,7 @@ describe('backend/utils/PortScanner', () => {
       // .mockReturnValue([33000])
 
       // Simulate the first port not being free
-      jest
-        .spyOn(PortScanner, 'isPortFree')
-        .mockImplementationOnce(() => Promise.resolve(false))
+      jest.spyOn(PortScanner, 'isPortFree').mockImplementationOnce(() => Promise.resolve(false))
 
       const port = await PortScanner.findFreePortInRange(33000, 42999, [33000])
 
@@ -37,9 +35,7 @@ describe('backend/utils/PortScanner', () => {
         close() {}
       }
 
-      jest
-        .spyOn(net, 'createServer')
-        .mockReturnValueOnce(new MockServer() as Server)
+      jest.spyOn(net, 'createServer').mockReturnValueOnce(new MockServer() as Server)
 
       expect(await PortScanner.isPortFree(33000)).toBe(true)
     })
@@ -54,9 +50,7 @@ describe('backend/utils/PortScanner', () => {
         }
       }
 
-      jest
-        .spyOn(net, 'createServer')
-        .mockReturnValueOnce(new MockServer() as Server)
+      jest.spyOn(net, 'createServer').mockReturnValueOnce(new MockServer() as Server)
 
       expect(await PortScanner.isPortFree(33000)).toBe(false)
     })
