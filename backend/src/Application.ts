@@ -23,6 +23,7 @@ export default class Application {
   private connectionsFile: JSONFile<IConnection[]>
   private window: ElectronApp
   private autoUpdater: AutoUpdater
+  private heartbeat: NodeJS.Timeout
 
   constructor() {
     Logger.info('Application starting up!')
@@ -51,13 +52,22 @@ export default class Application {
     // add auto updater
     this.autoUpdater = new AutoUpdater()
 
+    // start heartbeat
+    this.heartbeat = setInterval(this.check, 1000 * 30)
+
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
-    EventBus.on(Server.EVENTS.authenticated, this.handleAuthenticated)
+    EventBus.on(Server.EVENTS.authenticated, this.check)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
   }
 
   get url() {
     return this.window.url
+  }
+
+  private check = () => {
+    RemoteitInstaller.check()
+    this.autoUpdater.check()
+    this.pool.check()
   }
 
   private handleExit = () => {
@@ -87,11 +97,6 @@ export default class Application {
     d('Pool updated:', pool)
     // Logger.info('Pool updated', { pool })
     this.connectionsFile.write(pool)
-  }
-
-  private handleAuthenticated = async () => {
-    RemoteitInstaller.check()
-    this.autoUpdater.check()
   }
 
   /**

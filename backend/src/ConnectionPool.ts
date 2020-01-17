@@ -23,8 +23,8 @@ export default class ConnectionPool {
 
     connections.map(c => this.set(c))
 
-    // Only turn on connections the user had open last time.
-    connections.map(c => c.autoStart && this.start(c))
+    // start any auto-start connections
+    this.check()
 
     // init freeport
     this.nextFreePort()
@@ -34,6 +34,14 @@ export default class ConnectionPool {
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(Connection.EVENTS.started, this.updated)
     EventBus.on(ElectronApp.EVENTS.ready, this.updated)
+  }
+
+  // maintain auto start connections
+  check = () => {
+    this.toJSON().map(c => {
+      // auto start if not running and has been started before
+      if (c.autoStart && !c.pid && c.startTime) this.start(c)
+    })
   }
 
   set = (connection: IConnection) => {
