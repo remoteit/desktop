@@ -46,7 +46,7 @@ export default class Connection extends EventEmitter {
 
   async start() {
     if (!user.signedIn || user.username !== this.params.owner) {
-      let message = `Cannot start connection. Connection owner (${this.params.owner}) does not match user (${user.username}).`
+      let message = `Cannot start connection. Connection owner (${this.params.owner}) is not signed in or does not match user (${user.username}).`
       Logger.warn(message, { params: this.params })
       EventBus.emit(Connection.EVENTS.error, {
         connection: this.toJSON(),
