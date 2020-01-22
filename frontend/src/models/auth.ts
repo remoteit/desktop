@@ -46,31 +46,28 @@ export default createModel({
       }
 
       if (user) {
+        dispatch.auth.checkSignInStarted()
         Controller.emit('authentication', { username: user.username, authHash: user.authHash })
         dispatch.auth.setUser(user)
       } else {
         dispatch.auth.signedOut()
       }
     },
-    async fetchAuthToken(_: void, rootState: any) {
+    async checkSession(_: void, rootState: any) {
       let { user } = rootState.auth
 
-      console.log('FETCH AUTH TOKEN', user)
-
-      try {
-        user = await r3.user.authHashLogin(user.username, user.authHash)
-      } catch (error) {
-        dispatch.auth.signInError(error.message)
+      if (await r3.user.sessionExpired(user.username)) {
+        try {
+          user = await r3.user.authHashLogin(user.username, user.authHash)
+          dispatch.auth.setUser(user)
+          return
+        } catch (error) {
+          dispatch.auth.signInError(error.message)
+          return
+        }
       }
 
-      if (!user) {
-        console.warn('Could not getToken')
-        dispatch.auth.signInError('Could not authenticate with device list')
-        return
-      }
-
-      console.log('Fetch user token', user)
-      dispatch.auth.setUser(user)
+      console.log('Session still active')
     },
     async signIn({ password, username }) {
       dispatch.auth.signInStarted()
@@ -94,7 +91,7 @@ export default createModel({
       Controller.open()
     },
     async signedIn() {
-      if (!r3.token) await dispatch.auth.fetchAuthToken()
+      await dispatch.auth.checkSession()
       const searchOnly = await dispatch.devices.shouldSearchDevices()
       if (!searchOnly) dispatch.devices.fetch()
       dispatch.auth.signInFinished()
@@ -127,6 +124,7 @@ export default createModel({
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
       Controller.close()
+      window.location.search = ''
     },
     async getOpenOnLoginState() {
       // Get "open on login" setting

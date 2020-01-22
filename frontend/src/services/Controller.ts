@@ -69,7 +69,7 @@ function getEventHandlers() {
       auth.init()
     },
 
-    authenticated: () => auth.authenticated(),
+    'server/authenticated': () => auth.authenticated(),
 
     disconnect: () => ui.disconnected(),
 

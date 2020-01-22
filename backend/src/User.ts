@@ -76,8 +76,6 @@ export class User {
     this.username = user.username
     this.authHash = user.authHash
 
-    console.log('SIGNED IN USER', user)
-
     EventBus.emit(this.EVENTS.signedIn, user)
 
     return user

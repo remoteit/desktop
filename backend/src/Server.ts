@@ -67,7 +67,7 @@ export default class Server {
 
   postAuthenticate = (socket: SocketIO.Socket) => {
     EventBus.emit(Server.EVENTS.authenticated, socket)
-    socket.emit('authenticated', socket.id)
+    socket.emit('server/authenticated', socket.id)
   }
 
   disconnect = (socket: SocketIO.Socket) => {
