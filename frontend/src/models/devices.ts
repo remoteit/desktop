@@ -144,7 +144,7 @@ export default createModel({
       window.localStorage.setItem(SORT_SETTING_KEY, sort)
     },
     setDevices(state: DeviceState, devices: IDevice[]) {
-      window.localStorage.setItem('devices', JSON.stringify(devices))
+      // window.localStorage.setItem('devices', JSON.stringify(devices)) // disabled as we're not reading it
       state.all = Device.sort(devices, state.sort)
     },
     fetchFinished(state: DeviceState) {
