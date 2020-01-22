@@ -80,6 +80,7 @@ export function connection(name = 'Some service name', port = 33001): IConnectio
     name,
     port,
     owner: 'username',
+    online: true,
     // pid?: number
   }
 }

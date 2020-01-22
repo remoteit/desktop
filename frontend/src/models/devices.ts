@@ -1,8 +1,9 @@
 import fuzzy from 'fuzzy'
+import Device from '../services/Device'
 import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
-import Device from '../services/Device'
 import { renameServices } from '../helpers/nameHelper'
+import { updateConnections } from '../helpers/connectionHelper'
 import { r3 } from '../services/remote.it'
 
 // Slightly below the API limit for search of 300 services.
@@ -73,6 +74,7 @@ export default createModel({
       return r3.devices
         .all()
         .then(renameServices)
+        .then(updateConnections)
         .then(setDevices)
         .catch(error => {
           console.error('Fetch error:', error, error.response)

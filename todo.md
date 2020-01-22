@@ -21,7 +21,7 @@
 - [ ] MineCraft service type
 - [ ] Track P2P failures
 - [ ] Stop remoteit and restart it if upgrading CLI
-- [ ] Check for connectd / tools before using
+- [x] Check for connectd / tools before using
 - [ ] Incorporate new CLI that supports status command instead of config file reading
 - [ ] Show target config page as not disabled
 - [ ] refactor to use Cognito in backend?

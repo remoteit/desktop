@@ -1,6 +1,6 @@
 import Controller from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../constants'
-import { IService } from 'remote.it'
+import { IService, IDevice } from 'remote.it'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
@@ -14,6 +14,7 @@ export function newConnection(service?: IService | null, data = {}) {
     id: 'Error',
     deviceID: 'Unknown',
     autoStart: true,
+    online: false,
   }
 
   if (service) {
@@ -21,6 +22,7 @@ export function newConnection(service?: IService | null, data = {}) {
     connection.name = service.name
     connection.id = service.id
     connection.deviceID = service.deviceID
+    connection.online = service.state === 'active'
     if (device) connection.name = `${device.name} - ${service.name}`
   }
 
@@ -38,4 +40,25 @@ export function setConnection(connection: IConnection) {
 export function clearConnectionError(connection: IConnection) {
   delete connection.error
   Controller.emit('connection', connection)
+}
+
+export function updateConnections(devices: IDevice[]) {
+  const { connections } = store.getState().backend
+  const lookup = connections.reduce((result: ConnectionLookup, c: IConnection) => {
+    result[c.id] = c
+    return result
+  }, {})
+  console.log('DEVICES', devices)
+  devices.map(d => {
+    d.services.map(s => {
+      const connection = lookup[s.id]
+      const online = s.state === 'active'
+      if (connection && connection.online !== online) {
+        console.log('SET CONNECTION', connection, online)
+        setConnection({ ...connection, online })
+      }
+    })
+  })
+
+  return devices
 }
