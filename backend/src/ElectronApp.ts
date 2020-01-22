@@ -125,16 +125,16 @@ export default class ElectronApp {
   }
 
   private openWindow = (openDevTools?: boolean) => {
+    console.log('open window')
     if (!this.window || !this.tray) return
     d('Showing window')
 
     if (!this.window.isVisible()) {
       this.setWindowPosition()
-      this.window.show()
       if (this.app.dock) this.app.dock.show()
     }
 
-    this.window.focus()
+    this.window.show()
 
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
   }
