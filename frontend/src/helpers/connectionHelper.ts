@@ -48,7 +48,7 @@ export function updateConnections(devices: IDevice[]) {
     result[c.id] = c
     return result
   }, {})
-  console.log('DEVICES', devices)
+
   devices.map(d => {
     d.services.map(s => {
       const connection = lookup[s.id]
