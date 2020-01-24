@@ -61,6 +61,37 @@ to publish `npm run publish`
 
 <!-- "release": "build -p always",  -->
 
+### Windows signing
+
+Windows signing is done on a Windows machine or VM. You will need:
+
+- Windows machine or VM
+- [Windows SDK installed](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
+- [SafeNet Authentication Client](https://support.comodo.com/index.php?/Knowledgebase/Article/View/1211/106/safenet-download-for-ev-codesigning-certificates)
+- The physical USB drive EV Code Signing Certificate
+- Token password for the certificate
+- Optionally add the signtool to your path:
+  - Find the path to the signtool.exe by searching in "\Program Files (x86)"
+  - Open the Environment Variables control panel
+  - Find the 'Path' variable
+  - Add the signtool directory
+
+To sign the application follow these steps:
+
+1. Insert USB Certificate
+2. Copy the unsigned windows desktop exe to the Windows machine
+3. Open command prompt
+4. Run sign command:
+
+```cmd
+signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
+```
+
+5. A token password prompt should appear from SafeNet
+6. Enter the token password for the certificate
+
+The application should now be signed.
+
 ## Features
 
 - Peer to peer initiator connections
