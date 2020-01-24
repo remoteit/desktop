@@ -44,7 +44,6 @@ export default createModel({
         if (backendCredentials.username && backendCredentials.authHash) user = backendCredentials
         if (storedUser) user = JSON.parse(storedUser)
       }
-      console.log('USER', user)
       if (user) {
         dispatch.auth.checkSignInStarted()
         Controller.emit('authentication', { username: user.username, authHash: user.authHash })
@@ -91,7 +90,6 @@ export default createModel({
           }
           return
         })
-      console.log(user)
       return user
     },
     async signedIn() {
