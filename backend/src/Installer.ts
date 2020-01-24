@@ -45,7 +45,7 @@ export default class Installer {
   }
 
   async check() {
-    Logger.info('CHECK INSTALLATION', { name: this.name, version: this.version })
+    d('CHECK INSTALLATION', { name: this.name, version: this.version })
     const current = await this.isCurrent()
     current
       ? EventBus.emit(Installer.EVENTS.installed, {
@@ -64,7 +64,7 @@ export default class Installer {
   isInstalled() {
     const check = this.dependencyNames.concat(this.binaryName)
     const missing = check.find(fileName => !this.fileExists(fileName))
-    Logger.info('IS INSTALLED?', { installed: !missing })
+    d('IS INSTALLED?', { installed: !missing })
     return !missing
   }
 
@@ -73,7 +73,7 @@ export default class Installer {
     if (this.isInstalled()) {
       const version = await application.cli.version()
       current = semverCompare(version || '0', this.version) === 0
-      Logger.info('CURRENT', { name: this.name, checkVersion: version, version: this.version })
+      d('CURRENT', { name: this.name, checkVersion: version, version: this.version })
     }
     return current
   }
@@ -81,7 +81,7 @@ export default class Installer {
   fileExists(name: string) {
     const filePath = path.join(Environment.binPath, name)
     const exists = existsSync(filePath)
-    Logger.info('BINARY EXISTS', { name, exists, filePath })
+    d('BINARY EXISTS', { name, exists, filePath })
     return exists
   }
 
