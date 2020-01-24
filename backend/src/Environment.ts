@@ -22,6 +22,11 @@ export default class Environment {
     return os.platform() === 'linux'
   }
 
+  static get platform() {
+    if (Environment.isPi()) return 'RPi'
+    else return os.platform()
+  }
+
   static get isPi() {
     return detectRPi()
   }
