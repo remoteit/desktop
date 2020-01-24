@@ -11,9 +11,11 @@ export default class Command {
   name: string = 'remoteit'
   commands: string[] = []
   admin: boolean = true
+  quiet: boolean = false
+
   onError: (error: Error) => void = () => {}
 
-  constructor(options: { command?: string; admin?: boolean; onError?: (error: Error) => void }) {
+  constructor(options: { command?: string; admin?: boolean; onError?: (error: Error) => void; quiet?: boolean }) {
     if (options.command) this.commands = [options.command]
     options.command = undefined
     Object.assign(this, options)
@@ -27,11 +29,15 @@ export default class Command {
     return this.commands.join(' && ')
   }
 
+  log(message: string, params: object, type: 'info' | 'warn' = 'info') {
+    if (!this.quiet) Logger[type](message, params)
+  }
+
   async exec() {
     if (this.commands.length === 0) return ''
 
     let result = ''
-    Logger.info('EXEC', { exec: this.toString(), admin: this.admin })
+    this.log('EXEC', { exec: this.toString(), admin: this.admin })
 
     try {
       const { stdout, stderr } = this.admin
@@ -39,24 +45,23 @@ export default class Command {
         : await execPromise(this.toString())
 
       if (stderr) {
-        Logger.warn(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString() })
+        this.log(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString() }, 'warn')
         AirBrake.notify({ message: 'COMMAND STDERR', command: this.toString(), stderr: stderr.toString() })
         this.onError(stderr.toString())
         result = stderr.toString()
       }
 
       if (stdout) {
-        Logger.info(`EXEC SUCCESS ${this.toString()}`, { stdout: stdout.toString() })
+        this.log(`EXEC SUCCESS ${this.toString()}`, { stdout: stdout.toString() })
         result = stdout.toString()
       }
     } catch (error) {
       AirBrake.notify({ message: 'COMMAND ERROR', command: this.toString(), error })
-      Logger.warn(`EXEC ERROR CAUGHT ${this.toString()}`, { error, errorMessage: error.message })
+      this.log(`EXEC ERROR CAUGHT ${this.toString()}`, { error, errorMessage: error.message }, 'warn')
       this.onError(error)
       result = error.toString()
     }
 
-    Logger.info(`EXEC COMPLETE ${this.toString()}`, { result })
     return result
   }
 }
