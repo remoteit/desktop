@@ -26,10 +26,13 @@ export default class ElectronApp {
     this.app = electron.app
     this.quitSelected = false
 
+    // Not primary instance of app
+    if (!this.app.requestSingleInstanceLock()) this.app.quit()
+
     this.app.on('ready', this.handleAppReady)
     this.app.on('activate', this.handleActivate)
     this.app.on('before-quit', () => (this.quitSelected = true))
-    // this.on('open-at-login', this.handleOpenAtLogin)
+    this.app.on('second-instance', () => this.openWindow())
 
     EventBus.on(ElectronApp.EVENTS.openOnLogin, this.handleOpenAtLogin)
     EventBus.on(ElectronApp.EVENTS.open, this.openWindow)
