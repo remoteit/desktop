@@ -52,8 +52,8 @@ export default class Application {
     // add auto updater
     this.autoUpdater = new AutoUpdater()
 
-    // start heartbeat
-    this.heartbeat = setInterval(this.check, 1000 * 30)
+    // start heartbeat 1bpm
+    this.heartbeat = setInterval(this.check, 1000 * 60)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.authenticated, this.check)

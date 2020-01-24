@@ -101,6 +101,7 @@ declare global {
     name: string
     owner: string
     deviceID: string
+    online: boolean
     pid?: number
     port?: number
     active?: boolean

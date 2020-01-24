@@ -11,12 +11,17 @@ import user from './User'
 import path from 'path'
 
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
+const iconOffline = path.join(__dirname, 'images', 'iconOfflineTemplate.png')
 const iconOnline = path.join(__dirname, 'images', 'iconOnlineTemplate.png')
 
 export default class TrayMenu {
   private tray: any
   private privateIP: ipAddress
   private pool: IConnection[]
+
+  static EVENTS = {
+    forget: 'tray/forget',
+  }
 
   constructor(tray: electron.Tray) {
     this.tray = tray
@@ -85,15 +90,19 @@ export default class TrayMenu {
         const location = hostName(connection, this.privateIP)
         result.push({
           label: connection.name,
-          icon: connection.active ? iconConnected : iconOnline,
+          icon: connection.active ? iconConnected : connection.online ? iconOnline : iconOffline,
           submenu: [
-            !connection.active
+            connection.active
+              ? { label: 'Disconnect', click: () => this.disconnect(connection) }
+              : connection.online
               ? { label: 'Connect', click: () => this.connect(connection) }
-              : { label: 'Disconnect', click: () => this.disconnect(connection) },
+              : { label: 'Offline', enabled: false },
             { type: 'separator' },
             { label: location, enabled: false },
             { label: 'Copy to clipboard', click: () => this.copy(location) },
-            { label: 'Launch', click: () => this.launch(location) },
+            connection.online
+              ? { label: 'Launch', click: () => this.launch(location) }
+              : { label: 'Remove', click: () => EventBus.emit(TrayMenu.EVENTS.forget, connection) },
           ],
         })
       }

@@ -125,7 +125,6 @@ export default class ElectronApp {
   }
 
   private openWindow = (openDevTools?: boolean) => {
-    console.log('open window')
     if (!this.window || !this.tray) return
     d('Showing window')
 

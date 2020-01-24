@@ -4,6 +4,7 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import PortScanner from './PortScanner'
 import ElectronApp from './ElectronApp'
+import TrayMenu from './TrayMenu'
 
 const d = debug('r3:backend:ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
@@ -34,13 +35,14 @@ export default class ConnectionPool {
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(Connection.EVENTS.started, this.updated)
     EventBus.on(ElectronApp.EVENTS.ready, this.updated)
+    EventBus.on(TrayMenu.EVENTS.forget, this.forget)
   }
 
   // maintain auto start connections
   check = () => {
-    this.toJSON().map(c => {
-      // auto start if not running and has been started before
-      if (c.autoStart && !c.pid && c.startTime) this.start(c)
+    this.toJSON().map(connection => {
+      // start if auto start set, not running, has been started before and is online
+      if (connection.autoStart && !connection.pid && connection.startTime && connection.online) this.start(connection)
     })
   }
 
