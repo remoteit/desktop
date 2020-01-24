@@ -120,7 +120,7 @@ export default class Connection extends EventEmitter {
     d('Killing service:', this.params.id)
     Logger.info('Killing connection:', this.toJSON())
     Tracker.pageView(`/connections/${this.params.id}/kill`)
-    Tracker.event('connection', 'kill', 'kill service')
+    Tracker.event('connection', 'kill', `kill service: ${this.params.id}`)
 
     if (this.process) this.process.kill()
     this.process = undefined
@@ -134,7 +134,7 @@ export default class Connection extends EventEmitter {
 
     d('Stopping service:', this.params.id)
     Tracker.pageView(`/connections/${this.params.id}/stop`)
-    Tracker.event('connection', 'stop', 'stopping service')
+    Tracker.event('connection', 'stop', `stopping service: ${this.params.id}`)
 
     // Make sure the process is completely dead.
     await this.kill()
@@ -179,7 +179,7 @@ export default class Connection extends EventEmitter {
     if (code === 15) return
 
     Logger.error(`Connection closed with code: ${code}`)
-    Tracker.event('connection', 'connection-closed', `connection closed`, code)
+    Tracker.event('connection', 'connection-closed', `connection closed ${code}: ${this.params.id}`)
 
     // Make sure kill the process.
     this.kill()

@@ -13,7 +13,7 @@ d('Starting up Electron application!')
 Logger.info('Environment info:', Environment.toJSON())
 
 Tracker.pageView('/')
-Tracker.event('app', 'startup', 'remote.it Desktop application has started')
+Tracker.event('app', 'startup', `App startup ${Environment.platform}`)
 Logger.info('Desktop starting up!')
 
 process
