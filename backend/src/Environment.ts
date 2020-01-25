@@ -23,7 +23,7 @@ export default class Environment {
   }
 
   static get platform() {
-    if (Environment.isPi()) return 'RPi'
+    if (this.isPi) return 'RPi'
     else return os.platform()
   }
 
