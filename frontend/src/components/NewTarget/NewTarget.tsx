@@ -11,6 +11,7 @@ type Props = {
   count: number
   added?: ITarget
   device: IDevice
+  cliError?: string
   onSave: (target: ITarget) => void
   onCancel: () => void
 }
