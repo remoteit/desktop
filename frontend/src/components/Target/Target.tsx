@@ -12,12 +12,13 @@ type Props = {
   data: ITarget
   device: IDevice
   disable: boolean
+  cliError?: string
   onSave: (target: ITarget) => void
   onDelete: () => void
   onCancel?: () => void
 }
 
-export const Target: React.FC<Props> = ({ init, data, disable, device, onSave, onDelete, onCancel }) => {
+export const Target: React.FC<Props> = ({ init, data, disable, device, cliError, onSave, onDelete, onCancel }) => {
   const [state, setState] = useState<ITarget>(data)
   const [loading, setLoading] = useState<boolean>()
   const css = useStyles()
@@ -53,6 +54,10 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, onSave, o
       setState(data)
     }
   }, [same, data, type])
+
+  useEffect(() => {
+    if (cliError) setLoading(false)
+  }, [cliError])
 
   return (
     <tr className={css.service + (changed ? ' ' + css.serviceEdited : '')}>

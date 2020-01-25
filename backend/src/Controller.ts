@@ -1,5 +1,6 @@
 import SocketIO from 'socket.io'
 import LAN from './LAN'
+import CLI from './CLI'
 import Logger from './Logger'
 import electron from 'electron'
 import EventRelay from './EventRelay'
@@ -39,6 +40,7 @@ class Controller {
         ...Object.values(ConnectionPool.EVENTS),
         ...Object.values(AutoUpdater.EVENTS),
         ...Object.values(LAN.EVENTS),
+        ...Object.values(CLI.EVENTS),
       ],
       EventBus,
       this.server.sockets

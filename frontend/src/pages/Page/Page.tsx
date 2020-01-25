@@ -1,9 +1,10 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { makeStyles } from '@material-ui/styles'
-import { Snackbar } from '@material-ui/core'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import { Snackbar, IconButton } from '@material-ui/core'
 import { UpdateNotice } from '../../components/UpdateNotice'
+import { makeStyles } from '@material-ui/styles'
+import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 
 export interface Props {
@@ -12,13 +13,30 @@ export interface Props {
 }
 
 export function Page({ authenticated = true, children }: Props & React.HTMLProps<HTMLDivElement>) {
-  const { connected } = useSelector((state: ApplicationState) => state.ui)
+  const { backend } = useDispatch<Dispatch>()
+  const { connected, cliError } = useSelector((state: ApplicationState) => ({
+    connected: state.ui.connected,
+    cliError: state.backend.cliError,
+  }))
   const css = useStyles()
+  const clearCliError = () => backend.set({ key: 'cliError', value: undefined })
 
   return (
     <div className={css.page}>
       {children}
       <Snackbar open={authenticated && !connected} message="Webserver connection lost. Retrying..." />
+      <Snackbar
+        className={css.error}
+        key={cliError}
+        open={!!cliError}
+        message={cliError}
+        action={
+          <IconButton onClick={clearCliError}>
+            <Icon name="times" size="md" color="white" fixedWidth />
+          </IconButton>
+        }
+        onClose={clearCliError}
+      />
       <UpdateNotice />
     </div>
   )
@@ -37,5 +55,8 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     flexWrap: 'nowrap',
     backgroundColor: styles.colors.white,
+  },
+  error: {
+    '& .MuiPaper-root': { backgroundColor: styles.colors.danger },
   },
 })

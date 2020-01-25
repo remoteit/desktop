@@ -26,6 +26,10 @@ export default class CLI {
   userConfigFile: JSONFile<ConfigFile>
   adminConfigFile: JSONFile<ConfigFile>
 
+  static EVENTS = {
+    error: 'cli/error',
+  }
+
   // @TODO determine if we still will need to keep track of the non admin user
   //       Might need it when cli manages initiator connections
 
@@ -164,6 +168,7 @@ export default class CLI {
     if (await this.isNotInstalled()) return ''
     if (checkSignIn) await this.checkSignIn(admin)
     const command = new Command({ command: `"${RemoteitInstaller.binaryPath}" ${params.join(' ')}`, admin, quiet })
+    command.onError = (e: Error) => EventBus.emit(CLI.EVENTS.error, e.toString())
     return await command.exec()
   }
 

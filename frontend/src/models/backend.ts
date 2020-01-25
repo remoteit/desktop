@@ -13,6 +13,7 @@ type IBackendState = { [key: string]: any } & {
   freePort?: number
   admin?: string
   update?: string
+  cliError?: string
 }
 
 const state: IBackendState = {
@@ -27,6 +28,7 @@ const state: IBackendState = {
   freePort: undefined,
   admin: undefined,
   update: undefined,
+  cliError: undefined,
 }
 
 export default createModel({

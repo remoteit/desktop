@@ -15,12 +15,13 @@ export const SetupPage: React.FC = () => {
   const css = useStyles()
   const { backend } = useDispatch<Dispatch>()
   const setAdded = (value: any) => backend.set({ key: 'added', value })
-  const { device, targets, added, admin, user } = useSelector((state: ApplicationState) => ({
+  const { device, targets, added, admin, user, cliError } = useSelector((state: ApplicationState) => ({
     device: state.backend.device,
     targets: state.backend.targets,
     added: state.backend.added,
     admin: state.backend.admin,
     user: state.auth.user,
+    cliError: state.backend.cliError,
   }))
 
   const updateTargets = (t: ITarget[]) => Controller.emit('targets', t)
@@ -94,6 +95,7 @@ export const SetupPage: React.FC = () => {
       device={device}
       targets={targets}
       added={added}
+      cliError={cliError}
       onDevice={updateDevice}
       onUpdate={updateTargets}
       onDelete={deleteDevice}

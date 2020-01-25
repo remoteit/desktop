@@ -10,11 +10,12 @@ type Props = {
   targets: ITarget[]
   device: IDevice
   added?: ITarget
+  cliError?: string
   onUpdate: (targets: ITarget[]) => void
   onCancel: () => void
 }
 
-export const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onCancel }) => {
+export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onUpdate, onCancel }) => {
   const css = useStyles()
   const disabled = targets.length > 9
 
@@ -64,6 +65,7 @@ export const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onC
               data={target}
               device={device}
               disable={true}
+              cliError={cliError}
               onSave={(t: ITarget) => update(index, t)}
               onDelete={() => remove(index)}
             />
@@ -73,6 +75,7 @@ export const Targets: React.FC<Props> = ({ targets, device, added, onUpdate, onC
               added={added}
               count={targets.length}
               device={device}
+              cliError={cliError}
               onSave={(t: ITarget) => update(targets.length, t)}
               onCancel={onCancel}
             />

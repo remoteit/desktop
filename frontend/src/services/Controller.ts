@@ -123,6 +123,12 @@ function getEventHandlers() {
     // AutoUpdate
     'update/downloaded': version => backend.set({ key: 'update', value: version }),
 
+    // AutoUpdate
+    'cli/error': error => {
+      backend.set({ key: 'cliError', value: '' }) // So we re-trigger a new error if one exists
+      backend.set({ key: 'cliError', value: error })
+    },
+
     // Connections
     'service/started': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })

@@ -11,6 +11,7 @@ type Props = {
   targets: ITarget[]
   device: IDevice
   added?: ITarget
+  cliError?: string
   onUpdate: (target: ITarget[]) => void
   onDevice: (device: IDevice) => void
   onDelete: () => void
@@ -27,12 +28,12 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, ...props })
   const confirmMessage = "Are you sure?\nYou are about to permanently remove this device and all of it's services."
 
   useEffect(() => {
-    if (registering && device.uid) setRegistering(false)
-    if (deleting && !device.uid) {
+    if (registering && (device.uid || props.cliError)) setRegistering(false)
+    if (deleting && (!device.uid || props.cliError)) {
       setDeleting(false)
       setName('')
     }
-  }, [device, deleting, registering])
+  }, [device, deleting, registering, props.cliError])
 
   return (
     <Container header={<Typography variant="h1">Hosted Device</Typography>}>

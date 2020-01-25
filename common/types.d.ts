@@ -113,11 +113,8 @@ declare global {
     createdTime?: number // unix timestamp track for garbage cleanup
     startTime?: number // unix timestamp connection start time
     endTime?: number // unix timestamp connection close time
+    error?: ISimpleError
     // deepLink?: string
-    error?: {
-      code?: number
-      message: string
-    }
   }
 
   export interface ConnectionLookup {
@@ -164,6 +161,8 @@ declare global {
     port: number
     protocol: string
   }
+
+  export type ISimpleError = { code?: number; message: string }
 
   export type ILog = { [id: string]: string[] }
 
