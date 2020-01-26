@@ -15,7 +15,7 @@ export default class AppUpdater {
     this.check()
 
     autoUpdater.on('update-available', info => {
-      Logger.info('Update available', info)
+      Logger.info('Update available', { info })
       EventBus.emit(AppUpdater.EVENTS.available, info.version)
     })
 
@@ -23,7 +23,9 @@ export default class AppUpdater {
       EventBus.emit(AppUpdater.EVENTS.downloaded, info.version)
     })
 
-    autoUpdater.on('error', error => {})
+    autoUpdater.on('error', error => {
+      Logger.error('AUTO UPDATE ERROR', { error })
+    })
   }
 
   check() {
