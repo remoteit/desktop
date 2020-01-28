@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "2.4.7",
+  "version": "2.4.8",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
@@ -10,9 +10,7 @@
     "eject": "react-scripts eject",
     "build-storybook": "build-storybook -s public",
     "storybook": "start-storybook -p 9009 -s public",
-    "type-css": "tcm -s -c -p src/**/*.module.css",
-    "watch-react": "react-scripts start",
-    "watch-type-css": "onchange -i -k 'src/**/*.module.css' -- npm run type-css"
+    "watch-react": "react-scripts start"
   },
   "dependencies": {
     "@kevinwolf/formal-web": "^0.1.3",

@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.4.7",
+  "version": "2.4.8",
   "private": true,
   "main": "build/index.js",
   "productName": "remote.it",
@@ -98,7 +98,15 @@
       "shortcutName": "remote.it"
     },
     "linux": {
+      "category": "Network",
       "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "armv7l",
+            "x64"
+          ]
+        },
         {
           "target": "deb",
           "arch": [
