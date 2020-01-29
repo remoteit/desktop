@@ -1,3 +1,4 @@
+import { WEB_DIR } from './constants'
 import electron from 'electron'
 import Environment from './Environment'
 import TrayMenu from './TrayMenu'
@@ -89,7 +90,7 @@ export default class ElectronApp {
             query: user.credentials,
           })
         : url.format({
-            pathname: path.join(__dirname, '../build/index.html'),
+            pathname: path.join(WEB_DIR, 'index.html'),
             protocol: 'file',
             slashes: true,
             query: user.credentials,

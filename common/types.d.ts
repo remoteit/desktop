@@ -1,5 +1,5 @@
 declare global {
-  export type SocketAction =
+  type SocketAction =
     //socket auth
     | 'authentication'
 
@@ -37,7 +37,7 @@ declare global {
     | 'restart'
     | 'uninstall'
 
-  export type SocketEvent =
+  type SocketEvent =
     // built-in events
     | 'connect'
     | 'disconnect'
@@ -96,7 +96,7 @@ declare global {
     authHash: string
   }
 
-  export interface IConnection {
+  interface IConnection {
     id: string
     name: string
     owner: string
@@ -117,24 +117,24 @@ declare global {
     // deepLink?: string
   }
 
-  export interface ConnectionLookup {
+  interface ConnectionLookup {
     [id: string]: IConnection
   }
-  export interface ConnectionMessage {
+  interface ConnectionMessage {
     connection: IConnection
     raw?: string
     extra?: any
   }
 
-  export interface ConnectionErrorMessage {
+  interface ConnectionErrorMessage {
     code?: number
     error: string
     connection: IConnection
   }
 
-  export type SocketEmit = (name: string, ...args: any[]) => any
+  type SocketEmit = (name: string, ...args: any[]) => any
 
-  export interface ITarget {
+  interface ITarget {
     hostname: string //     proxy_dest_ip      service ip to forward
     hardwareID?: string
     uid: string //          UID
@@ -144,35 +144,35 @@ declare global {
     type: number //         application_type   service type
   }
 
-  export interface IDevice extends ITarget {}
+  interface IDevice extends ITarget {}
 
-  export type IScan = [string, [number, string][]] // address, port, type string
+  type IScan = [string, [number, string][]] // address, port, type string
 
-  export type IScanData = {
+  type IScanData = {
     [networkName: string]: {
       timestamp: number
       data: IScan[]
     }
   }
 
-  export type IScanDataRaw = {
+  type IScanDataRaw = {
     host: string
     name: string
     port: number
     protocol: string
   }
 
-  export type ISimpleError = { code?: number; message: string }
+  type ISimpleError = { code?: number; message: string }
 
-  export type ILog = { [id: string]: string[] }
+  type ILog = { [id: string]: string[] }
 
-  export type IInterface = { [key: string]: any }
+  type IInterface = { [key: string]: any }
 
-  export type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
+  type IInterfaceType = 'Wired' | 'Wireless' | 'FireWire' | 'Thunderbolt' | 'Bluetooth' | 'Other'
 
-  export type ipAddress = string // namespace to indicate if expecting an ip address
+  type ipAddress = string // namespace to indicate if expecting an ip address
 
-  export type ipClass = 'A' | 'B' | 'C'
+  type ipClass = 'A' | 'B' | 'C'
 }
 
 export {}

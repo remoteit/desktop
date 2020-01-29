@@ -1,5 +1,5 @@
 import SocketIO from 'socket.io'
-import LAN from './LAN'
+import lan from './LAN'
 import CLI from './CLI'
 import Logger from './Logger'
 import electron from 'electron'
@@ -21,13 +21,11 @@ const d = debug('r3:backend:Server')
 
 class Controller {
   private cli: CLIInterface
-  private lan: LAN
   private server: SocketIO.Server
   private pool: ConnectionPool
 
-  constructor(server: SocketIO.Server, cli: CLIInterface, lan: LAN, pool: ConnectionPool) {
+  constructor(server: SocketIO.Server, cli: CLIInterface, pool: ConnectionPool) {
     this.server = server
-    this.lan = lan
     this.cli = cli
     this.pool = pool
     EventBus.on(Server.EVENTS.authenticated, this.openSockets)
@@ -39,7 +37,7 @@ class Controller {
         ...Object.values(Connection.EVENTS),
         ...Object.values(ConnectionPool.EVENTS),
         ...Object.values(AutoUpdater.EVENTS),
-        ...Object.values(LAN.EVENTS),
+        ...Object.values(lan.EVENTS),
         ...Object.values(CLI.EVENTS),
       ],
       EventBus,
@@ -82,13 +80,13 @@ class Controller {
   }
 
   interfaces = async () => {
-    await this.lan.getInterfaces()
-    this.server.emit('interfaces', this.lan.interfaces)
+    await lan.getInterfaces()
+    this.server.emit('interfaces', lan.interfaces)
   }
 
   scan = async (interfaceName: string) => {
-    await this.lan.scan(interfaceName)
-    this.server.emit('scan', this.lan.data)
+    await lan.scan(interfaceName, this.cli)
+    this.server.emit('scan', lan.data)
   }
 
   freePort = async () => {
@@ -99,12 +97,12 @@ class Controller {
   syncBackend = async () => {
     this.server.emit('targets', this.cli.data.targets)
     this.server.emit('device', this.cli.data.device)
-    this.server.emit('scan', this.lan.data)
-    this.server.emit('interfaces', this.lan.interfaces)
+    this.server.emit('scan', lan.data)
+    this.server.emit('interfaces', lan.interfaces)
     this.server.emit('admin', (this.cli.data.admin && this.cli.data.admin.username) || '')
     this.server.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.server.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
-    this.server.emit(LAN.EVENTS.privateIP, this.lan.privateIP)
+    this.server.emit(lan.EVENTS.privateIP, lan.privateIP)
   }
 
   connections = () => {

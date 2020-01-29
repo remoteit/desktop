@@ -1,13 +1,14 @@
+import lan from './LAN'
 import debug from 'debug'
 import EventBus from './EventBus'
 import express from 'express'
-import path from 'path'
 import user from './User'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
+import Environment from './Environment'
 import { createServer } from 'http'
-import { PORT } from './constants'
+import { PORT, WEB_DIR } from './constants'
 
 const d = debug('r3:backend:Server')
 
@@ -15,18 +16,26 @@ export default class Server {
   public io: SocketIO.Server
 
   static EVENTS = {
-    ready: 'server/ready',
     connection: 'server/connection',
     authenticated: 'server/authenticated',
   }
 
   constructor() {
-    const dir = path.join(__dirname, '../build')
-    const app = express().use(express.static(dir))
+    const app = express()
+    const router = express.Router()
+
+    app.use(express.static(WEB_DIR))
+    app.use('/', router)
+
     const server = createServer(app).listen(PORT, () => {
       d(`Listening on port ${PORT}`)
-      Logger.info('SERVER STARTED', { port: PORT, directory: dir })
-      EventBus.emit(Server.EVENTS.ready)
+      Logger.info('SERVER STARTED', { port: PORT, directory: WEB_DIR })
+    })
+
+    router.get('/system', async (request, response) => {
+      const system = await Environment.getSystemInfo()
+      Logger.info('SEND SYSTEM INFO', { system })
+      response.send(system)
     })
 
     this.io = SocketIO(server)

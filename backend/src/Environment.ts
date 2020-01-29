@@ -7,6 +7,7 @@ import {
   WIN_BINARIES,
 } from './constants'
 import detectRPi from 'detect-rpi'
+import lan from './LAN'
 import os from 'os'
 
 export default class Environment {
@@ -25,6 +26,15 @@ export default class Environment {
   static get platform() {
     if (this.isPi) return 'RPi'
     else return os.platform()
+  }
+
+  static async getSystemInfo() {
+    await lan.getInterfaces()
+    return {
+      platform: Environment.platform,
+      interfaces: lan.interfaces,
+      privateIP: lan.privateIP,
+    }
   }
 
   static get isPi() {

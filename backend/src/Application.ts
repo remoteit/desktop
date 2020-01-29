@@ -1,15 +1,15 @@
-import ConnectionPool from './ConnectionPool'
-import Controller from './Controller'
 import debug from 'debug'
+import Controller from './Controller'
+import ConnectionPool from './ConnectionPool'
 import RemoteitInstaller from './RemoteitInstaller'
 import CLIInterface from './CLIInterface'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
 import AutoUpdater from './AutoUpdater'
+import SystemFile from './SystemFile'
 import JSONFile from './JSONFile'
 import Logger from './Logger'
 import path from 'path'
-import LAN from './LAN'
 import user from './User'
 import Server from './Server'
 import Tracker from './Tracker'
@@ -23,7 +23,6 @@ export default class Application {
   private connectionsFile: JSONFile<IConnection[]>
   private window: ElectronApp
   private autoUpdater: AutoUpdater
-  private heartbeat: NodeJS.Timeout
 
   constructor() {
     Logger.info('Application starting up!')
@@ -43,17 +42,14 @@ export default class Application {
     // Start server and listen to events
     const server = new Server()
 
-    // Network utils
-    const lan = new LAN(this.cli)
-
     // create the event controller
-    new Controller(server.io, this.cli, lan, this.pool)
+    new Controller(server.io, this.cli, this.pool)
 
     // add auto updater
     this.autoUpdater = new AutoUpdater()
 
     // start heartbeat 1bpm
-    this.heartbeat = setInterval(this.check, 1000 * 60)
+    setInterval(this.check, 1000 * 60)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(Server.EVENTS.authenticated, this.check)
