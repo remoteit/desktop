@@ -2,6 +2,7 @@ import Logger from './Logger'
 import Tracker from './Tracker'
 import CLIInterface from './CLIInterface'
 import EventBus from './EventBus'
+import CLI from './CLI'
 import nm from 'netmask'
 import nw from 'network'
 
@@ -75,6 +76,7 @@ class LAN {
     } catch (error) {
       Logger.warn('SCAN error', { error })
       this.data[interfaceName] = { timestamp: Date.now(), data: [] }
+      EventBus.emit(CLI.EVENTS.error, error.toString())
     }
   }
 
