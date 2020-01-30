@@ -1,8 +1,8 @@
-import lan from './LAN'
 import debug from 'debug'
 import EventBus from './EventBus'
 import express from 'express'
 import user from './User'
+import cors from 'cors'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
@@ -24,6 +24,7 @@ export default class Server {
     const app = express()
     const router = express.Router()
 
+    app.use(cors())
     app.use(express.static(WEB_DIR))
     app.use('/', router)
 

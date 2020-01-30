@@ -10,7 +10,7 @@
     "publish-backend": "electron-builder -wlm -p always",
     "build": "NODE_ENV=production run-s clean compile copy-* build-*",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "build-backend": "electron-builder -wlm",
+    "build-backend": "electron-builder -l",
     "copy-images": "cp -R ./src/images ./build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@types/auto-launch": "5.0.1",
+    "@types/cors": "^2.8.6",
     "@types/debug": "^4.1.5",
     "@types/electron": "1.6.10",
     "@types/express": "^4.17.2",
@@ -52,6 +53,7 @@
   },
   "dependencies": {
     "@airbrake/node": "^1.0.6",
+    "cors": "^2.8.5",
     "debug": "4.1.1",
     "detect-rpi": "^1.3.0",
     "dotenv": "^8.2.0",
@@ -111,7 +113,8 @@
           "target": "deb",
           "arch": [
             "armv7l",
-            "x64"
+            "x64",
+            "arm64"
           ]
         }
       ]
