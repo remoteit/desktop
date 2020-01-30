@@ -28,10 +28,15 @@ export default class Environment {
     else return os.platform()
   }
 
+  static get isArmLinux() {
+    return this.isLinux && os.arch() === 'arm64'
+  }
+
   static async getSystemInfo() {
     await lan.getInterfaces()
     return {
-      platform: Environment.platform,
+      arch: os.arch(),
+      platform: this.platform,
       interfaces: lan.interfaces,
       privateIP: lan.privateIP,
     }

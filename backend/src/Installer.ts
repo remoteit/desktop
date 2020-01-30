@@ -109,13 +109,14 @@ export default class Installer {
   }
 
   get downloadFileName() {
-    const version = this.version
-    const name = `${this.name}_${version}_`
-    if (Environment.isWindows) return `${name}windows_x86_64.exe`
-    else if (Environment.isMac) return `${name}mac-osx_x86_64`
-    else if (Environment.isPi) return `${name}linux_armv7`
-    else if (Environment.isLinux) return `${name}linux_x86_64`
-    else return `${name}linux_arm64`
+    const name = `${this.name}_${this.version}_`
+    let platform = 'linux_arm64'
+    if (Environment.isWindows) platform = 'windows_x86_64.exe'
+    else if (Environment.isMac) platform = 'mac-osx_x86_64'
+    else if (Environment.isPi) platform = 'linux_armv7'
+    else if (Environment.isArmLinux) platform = 'linux_arm64'
+    else if (Environment.isLinux) platform = 'linux_x86_64'
+    return name + platform
   }
 
   get binaryPath() {
