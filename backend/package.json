@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.4.11",
+  "version": "2.4.12",
   "private": true,
   "main": "build/index.js",
   "productName": "remote.it",
@@ -10,7 +10,7 @@
     "publish-backend": "electron-builder -wlm -p always",
     "build": "NODE_ENV=production run-s clean compile copy-* build-*",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "build-backend": "electron-builder -l",
+    "build-backend": "electron-builder -wlm",
     "copy-images": "cp -R ./src/images ./build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
@@ -91,7 +91,8 @@
       "github"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "requestedExecutionLevel": "highestAvailable"
     },
     "nsis": {
       "oneClick": true,
@@ -106,7 +107,8 @@
           "target": "AppImage",
           "arch": [
             "armv7l",
-            "x64"
+            "x64",
+            "arm64"
           ]
         },
         {
