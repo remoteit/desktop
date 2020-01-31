@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useInterval } from '../../helpers/useInterval'
+import { useInterval } from '../../hooks/useInterval'
 import humanize from 'humanize-duration'
 
 export const Duration: React.FC<{ startTime?: number }> = ({ startTime }) => {
