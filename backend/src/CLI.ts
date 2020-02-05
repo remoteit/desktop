@@ -133,7 +133,7 @@ export default class CLI {
   }
 
   async scan(ipMask: string) {
-    const result = await this.exec({ params: ['scan', '-j', '-m', ipMask] })
+    const result = await this.exec({ params: ['scan', '-j', '-m', ipMask], checkSignIn: false })
     return JSON.parse(result)
   }
 

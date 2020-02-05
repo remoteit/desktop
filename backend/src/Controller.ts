@@ -13,7 +13,7 @@ import ElectronApp from './ElectronApp'
 import AutoUpdater from './AutoUpdater'
 import Installer from './Installer'
 import EventBus from './EventBus'
-import Server from './Server'
+import server from './Server'
 import user from './User'
 import debug from 'debug'
 
@@ -21,14 +21,14 @@ const d = debug('r3:backend:Server')
 
 class Controller {
   private cli: CLIInterface
-  private server: SocketIO.Server
+  private io: SocketIO.Server
   private pool: ConnectionPool
 
-  constructor(server: SocketIO.Server, cli: CLIInterface, pool: ConnectionPool) {
-    this.server = server
+  constructor(io: SocketIO.Server, cli: CLIInterface, pool: ConnectionPool) {
+    this.io = io
     this.cli = cli
     this.pool = pool
-    EventBus.on(Server.EVENTS.authenticated, this.openSockets)
+    EventBus.on(server.EVENTS.authenticated, this.openSockets)
 
     new EventRelay(
       [
@@ -41,7 +41,7 @@ class Controller {
         ...Object.values(CLI.EVENTS),
       ],
       EventBus,
-      this.server.sockets
+      this.io.sockets
     )
   }
 
@@ -70,44 +70,44 @@ class Controller {
 
   targets = async (result: ITarget[]) => {
     await this.cli.set('targets', result)
-    this.server.emit('targets', this.cli.data.targets)
+    this.io.emit('targets', this.cli.data.targets)
   }
 
   device = async (result: IDevice) => {
     await this.cli.set('device', result)
-    this.server.emit('device', this.cli.data.device)
-    this.server.emit('targets', this.cli.data.targets)
+    this.io.emit('device', this.cli.data.device)
+    this.io.emit('targets', this.cli.data.targets)
   }
 
   interfaces = async () => {
     await lan.getInterfaces()
-    this.server.emit('interfaces', lan.interfaces)
+    this.io.emit('interfaces', lan.interfaces)
   }
 
   scan = async (interfaceName: string) => {
     await lan.scan(interfaceName, this.cli)
-    this.server.emit('scan', lan.data)
+    this.io.emit('scan', lan.data)
   }
 
   freePort = async () => {
     await this.pool.nextFreePort()
-    this.server.emit('nextFreePort', this.pool.freePort)
+    this.io.emit('nextFreePort', this.pool.freePort)
   }
 
   syncBackend = async () => {
-    this.server.emit('targets', this.cli.data.targets)
-    this.server.emit('device', this.cli.data.device)
-    this.server.emit('scan', lan.data)
-    this.server.emit('interfaces', lan.interfaces)
-    this.server.emit('admin', (this.cli.data.admin && this.cli.data.admin.username) || '')
-    this.server.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
-    this.server.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
-    this.server.emit(lan.EVENTS.privateIP, lan.privateIP)
+    this.io.emit('targets', this.cli.data.targets)
+    this.io.emit('device', this.cli.data.device)
+    this.io.emit('scan', lan.data)
+    this.io.emit('interfaces', lan.interfaces)
+    this.io.emit('admin', (this.cli.data.admin && this.cli.data.admin.username) || '')
+    this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
+    this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
+    this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
   }
 
   connections = () => {
     d('List connections')
-    this.server.emit('pool', this.pool.toJSON())
+    this.io.emit('pool', this.pool.toJSON())
   }
 
   connection = async (connection: IConnection) => {

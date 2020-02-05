@@ -10,7 +10,7 @@ import JSONFile from './JSONFile'
 import Logger from './Logger'
 import path from 'path'
 import user from './User'
-import Server from './Server'
+import server from './Server'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
 
@@ -39,10 +39,10 @@ export default class Application {
     this.cli = new CLIInterface()
 
     // Start server and listen to events
-    const server = new Server()
+    server.start()
 
     // create the event controller
-    new Controller(server.io, this.cli, this.pool)
+    if (server.io) new Controller(server.io, this.cli, this.pool)
 
     // add auto updater
     this.autoUpdater = new AutoUpdater()
@@ -51,7 +51,7 @@ export default class Application {
     setInterval(this.check, 1000 * 60)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
-    EventBus.on(Server.EVENTS.authenticated, this.check)
+    EventBus.on(server.EVENTS.authenticated, this.check)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
   }
 

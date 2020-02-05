@@ -92,6 +92,12 @@ signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
 
 The application should now be signed.
 
+## Run as root on Linux
+
+```cmd
+/opt/remoteit-desktop/remoteit-desktop --no-sandbox
+```
+
 ## Features
 
 - Peer to peer initiator connections

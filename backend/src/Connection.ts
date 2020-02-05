@@ -1,3 +1,4 @@
+import CLI from './CLI'
 import path from 'path'
 import user from './User'
 import debug from 'debug'
@@ -166,7 +167,7 @@ export default class Connection extends EventEmitter {
   private handleError = (error: Error) => {
     Logger.error('connectd error: ', error)
     Tracker.event('connection', 'error', `connection error: ${this.params.id}`)
-    EventBus.emit('error', { error: error.message })
+    EventBus.emit(CLI.EVENTS.error, { error: error.message })
     this.params.error = error
   }
 
