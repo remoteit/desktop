@@ -18,6 +18,7 @@
     "electron": "cross-env NODE_ENV=development electron .",
     "test": "NODE_ENV=test jest",
     "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
+    "package": "NODE_ENV=production run-s clean compile copy-* build-frontend",
     "postinstall": "electron-builder install-app-deps",
     "watch-build": "tsc --watch",
     "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron",

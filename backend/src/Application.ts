@@ -1,4 +1,5 @@
 import debug from 'debug'
+import electron from 'electron'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
 import RemoteitInstaller from './RemoteitInstaller'
@@ -20,8 +21,7 @@ export default class Application {
   public pool: ConnectionPool
   public cli: CLIInterface
   private connectionsFile: JSONFile<IConnection[]>
-  private window: ElectronApp
-  private autoUpdater: AutoUpdater
+  private autoUpdater?: AutoUpdater
 
   constructor() {
     Logger.info('Application starting up!')
@@ -29,8 +29,13 @@ export default class Application {
     this.handleExit()
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.userPath, 'connections.json'))
 
-    // Create app UI
-    this.window = new ElectronApp()
+    // exit electron start if running headless
+    if (electron.app) {
+      // Create app UI
+      new ElectronApp()
+      // add auto updater
+      this.autoUpdater = new AutoUpdater()
+    }
 
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [])
@@ -44,9 +49,6 @@ export default class Application {
     // create the event controller
     new Controller(server.io, this.cli, this.pool)
 
-    // add auto updater
-    this.autoUpdater = new AutoUpdater()
-
     // start heartbeat 1bpm
     setInterval(this.check, 1000 * 60)
 
@@ -55,13 +57,9 @@ export default class Application {
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
   }
 
-  get url() {
-    return this.window.url
-  }
-
   private check = () => {
+    this.autoUpdater && this.autoUpdater.check()
     RemoteitInstaller.check()
-    this.autoUpdater.check()
     this.pool.check()
   }
 

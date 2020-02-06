@@ -47,7 +47,7 @@ class Controller {
 
   openSockets = (socket: SocketIO.Socket) => {
     socket.on('user/sign-out', user.signOut)
-    socket.on('user/quit', electron.app.quit)
+    socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
     socket.on('service/forget', this.forget)
@@ -129,6 +129,10 @@ class Controller {
   forget = async (connection: IConnection) => {
     d('Forget:', connection)
     await this.pool.forget(connection)
+  }
+
+  quit = () => {
+    if (electron.app) electron.app.quit()
   }
 
   restart = () => {
