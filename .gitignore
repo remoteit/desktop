@@ -12,6 +12,9 @@ build
 archive
 dist
 
+# package
+*.tgz
+
 # misc
 .DS_Store
 .vscode

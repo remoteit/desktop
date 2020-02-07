@@ -92,6 +92,14 @@ signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
 
 The application should now be signed.
 
+## Packaging for running headless
+
+```cmd
+npm run package
+```
+
+Will create a tar file in `backend/remoteit-desktop-<version>.tgz`
+
 ## Features
 
 - Peer to peer initiator connections

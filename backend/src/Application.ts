@@ -1,12 +1,11 @@
 import debug from 'debug'
-import electron from 'electron'
+import headless from './headless'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
 import RemoteitInstaller from './RemoteitInstaller'
 import CLIInterface from './CLIInterface'
 import Environment from './Environment'
 import ElectronApp from './ElectronApp'
-import AutoUpdater from './AutoUpdater'
 import JSONFile from './JSONFile'
 import Logger from './Logger'
 import path from 'path'
@@ -20,8 +19,8 @@ const d = debug('r3:backend:Application')
 export default class Application {
   public pool: ConnectionPool
   public cli: CLIInterface
+  private app?: ElectronApp
   private connectionsFile: JSONFile<IConnection[]>
-  private autoUpdater?: AutoUpdater
 
   constructor() {
     Logger.info('Application starting up!')
@@ -30,12 +29,7 @@ export default class Application {
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.userPath, 'connections.json'))
 
     // exit electron start if running headless
-    if (electron.app) {
-      // Create app UI
-      new ElectronApp()
-      // add auto updater
-      this.autoUpdater = new AutoUpdater()
-    }
+    if (!headless) this.app = new ElectronApp()
 
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [])
@@ -58,7 +52,7 @@ export default class Application {
   }
 
   private check = () => {
-    this.autoUpdater && this.autoUpdater.check()
+    this.app && this.app.check()
     RemoteitInstaller.check()
     this.pool.check()
   }

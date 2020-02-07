@@ -1,5 +1,6 @@
 import { WEB_DIR } from './constants'
 import electron from 'electron'
+import AutoUpdater from './AutoUpdater'
 import Environment from './Environment'
 import TrayMenu from './TrayMenu'
 import EventBus from './EventBus'
@@ -15,6 +16,7 @@ export default class ElectronApp {
   public tray?: electron.Tray
   private window?: electron.BrowserWindow
   private app: electron.App
+  private autoUpdater: AutoUpdater
   private quitSelected: boolean
 
   static EVENTS = {
@@ -26,6 +28,7 @@ export default class ElectronApp {
   constructor() {
     this.app = electron.app
     this.quitSelected = false
+    this.autoUpdater = new AutoUpdater()
 
     // Not primary instance of app
     if (!this.app.requestSingleInstanceLock()) this.app.quit()
@@ -37,6 +40,10 @@ export default class ElectronApp {
 
     EventBus.on(ElectronApp.EVENTS.openOnLogin, this.handleOpenAtLogin)
     EventBus.on(ElectronApp.EVENTS.open, this.openWindow)
+  }
+
+  public check = () => {
+    this.autoUpdater.check()
   }
 
   get url() {
