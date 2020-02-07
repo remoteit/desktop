@@ -4,7 +4,7 @@ import path from 'path'
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
 
 // Port for the Socket.io websocket server
-export const PORT = process.env.PORT || 29999
+export const PORT = Number(process.env.PORT || 29999)
 
 // Google Analytics usage tracking
 export const GOOGLE_ANALYTICS_CODE = 'UA-76016818-10'

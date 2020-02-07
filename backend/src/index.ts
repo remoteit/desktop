@@ -6,6 +6,8 @@ import debug from 'debug'
 import Environment from './Environment'
 import Logger from './Logger'
 import Tracker from './Tracker'
+import EventBus from './EventBus'
+import CLI from './CLI'
 
 const d = debug('r3:backend:backend')
 
@@ -21,11 +23,13 @@ process
     d('Caught exception', error)
     AirBrake.notify({ message: 'CAUGHT EXCEPTION', error })
     Logger.warn('CAUGHT EXCEPTION', { error, details: error.toString() })
+    EventBus.emit(CLI.EVENTS.error, error.toString())
   })
   .on('unhandledRejection', (reason: Error | any, promise: Promise<any>) => {
     d('Caught exception', reason, promise)
     AirBrake.notify({ message: 'UNHANDLED PROMISE REJECTION', reason, promise })
     Logger.warn('UNHANDLED PROMISE REJECTION', { reason, details: reason.toString(), promise })
+    EventBus.emit(CLI.EVENTS.error, reason.toString())
   })
 
 export const application = new Application()

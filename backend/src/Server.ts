@@ -1,9 +1,11 @@
+import CLI from './CLI'
 import debug from 'debug'
 import EventBus from './EventBus'
-import express from 'express'
+import express, { Express } from 'express'
 import user from './User'
 import cors from 'cors'
 import Logger from './Logger'
+import electron from 'electron'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
 import Environment from './Environment'
@@ -12,32 +14,41 @@ import { PORT, WEB_DIR } from './constants'
 
 const d = debug('r3:backend:Server')
 
-export default class Server {
-  public io: SocketIO.Server
+class Server {
+  public io?: SocketIO.Server
+  private app: Express
 
-  static EVENTS = {
+  EVENTS = {
     connection: 'server/connection',
     authenticated: 'server/authenticated',
   }
 
   constructor() {
-    const app = express()
+    this.app = express()
     const router = express.Router()
 
-    app.use(cors())
-    app.use(express.static(WEB_DIR))
-    app.use('/', router)
-
-    const server = createServer(app).listen(PORT, () => {
-      d(`Listening on port ${PORT}`)
-      Logger.info('SERVER STARTED', { port: PORT, directory: WEB_DIR })
-    })
+    this.app.use(cors())
+    this.app.use(express.static(WEB_DIR))
+    this.app.use('/', router)
 
     router.get('/system', async (request, response) => {
       const system = await Environment.getSystemInfo()
       Logger.info('SEND SYSTEM INFO', { system })
       response.send(system)
     })
+  }
+
+  async start() {
+    let startupError
+    const server = createServer(this.app)
+      .on('error', error => {
+        Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
+        electron.app.quit()
+      })
+      .listen(PORT, () => {
+        d(`Listening on port ${PORT}`)
+        Logger.info('SERVER STARTED', { port: PORT, directory: WEB_DIR })
+      })
 
     this.io = SocketIO(server)
 
@@ -76,7 +87,7 @@ export default class Server {
   }
 
   postAuthenticate = (socket: SocketIO.Socket) => {
-    EventBus.emit(Server.EVENTS.authenticated, socket)
+    EventBus.emit(this.EVENTS.authenticated, socket)
     socket.emit('server/authenticated', socket.id)
   }
 
@@ -84,3 +95,5 @@ export default class Server {
     d('server disconnect', socket.id)
   }
 }
+
+export default new Server()
