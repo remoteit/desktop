@@ -100,6 +100,12 @@ npm run package
 
 Will create a tar file in `backend/remoteit-desktop-<version>.tgz`
 
+## Run as root on Linux
+
+```cmd
+/opt/remoteit-desktop/remoteit-desktop --no-sandbox
+```
+
 ## Features
 
 - Peer to peer initiator connections
