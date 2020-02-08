@@ -15,7 +15,7 @@ export default class CLIInterface extends CLI {
           Logger.info('REGISTER ' + value.name)
           Tracker.event('device', 'register', value.name)
         } else if (value === 'DELETE') {
-          await this.delete(this.data.device)
+          await this.delete()
           Logger.info('DELETE ' + this.data.device.name)
           Tracker.event('device', 'delete', this.data.device.name)
         }

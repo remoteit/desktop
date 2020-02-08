@@ -104,17 +104,18 @@ export default class CLI {
     this.read()
   }
 
-  async delete(d: IDevice) {
+  async delete() {
+    if (!this.data.device.uid) return
     await this.exec({ params: ['teardown', '--yes'], admin: true, checkSignIn: true })
     this.read()
   }
 
   async install() {
-    await this.exec({ params: ['tools', 'install', '-j'] })
+    await this.exec({ params: ['tools', 'install'] })
   }
 
   async unInstall() {
-    await this.exec({ params: ['uninstall', '--yes'], admin: true })
+    await this.exec({ params: ['uninstall', '--yes'] })
   }
 
   async signIn(admin?: boolean) {

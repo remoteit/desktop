@@ -144,8 +144,10 @@ class Controller {
     Logger.info('UNINSTALL INITIATED')
     user.signOut()
     await this.pool.reset()
+    await this.cli.delete()
     await this.cli.unInstall()
     await BinaryInstaller.uninstall([remoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    this.quit()
   }
 
   installBinaries = async () => {

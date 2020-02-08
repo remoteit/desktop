@@ -45,7 +45,7 @@ class BinaryInstaller {
         if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
         installers.map(installer => {
           commands.push(`mv ${installer.tempFile} ${installer.binaryPath}`)
-          commands.push(`chmod 755 ${installer.binaryPath}`)
+          commands.push(`chmod 755 ${installer.binaryPath}`) // @TODO if this is going in the user folder must have user permissions
         })
       }
 
@@ -63,25 +63,29 @@ class BinaryInstaller {
 
   async uninstall(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
-      const commands = new Command({ admin: true, onError: reject })
+      let commands
 
+      // USER FILES
+      commands = new Command({ onError: reject })
       if (environment.isWindows) {
-        installers.map(installer => commands.push(`del /Q /F "${installer.binaryPath}"`))
+        installers.map(i => i.fileExists(i.binaryPath) && commands.push(`del /Q /F "${i.binaryPath}"`))
         if (existsSync(environment.userPath)) commands.push(`rmdir /Q /S "${environment.userPath}"`)
-        if (existsSync(environment.adminPath)) commands.push(`rmdir /Q /S "${environment.adminPath}"`)
         if (existsSync(environment.binPath)) commands.push(`rmdir /Q /S "${environment.binPath}"`)
       } else {
+        installers.map(i => i.fileExists(i.binaryPath) && commands.push(`rm -f ${i.binaryPath}`))
         if (existsSync(environment.userPath)) commands.push(`rm -rf ${environment.userPath}`)
-        if (existsSync(environment.adminPath)) commands.push(`rm -rf ${environment.adminPath}`)
-        installers.map(installer => {
-          const files = installer.dependencyNames.concat(installer.binaryName)
-          files.map(
-            file => installer.fileExists(file) && commands.push(`rm -f ${path.join(environment.binPath, file)}`)
-          )
-        })
       }
-
       await commands.exec()
+
+      // ADMIN FILES - Should only be here if installed target by entering password
+      commands = new Command({ admin: true, onError: reject })
+      if (environment.isWindows) {
+        if (existsSync(environment.adminPath)) commands.push(`rmdir /Q /S "${environment.adminPath}"`)
+      } else {
+        if (existsSync(environment.adminPath)) commands.push(`rm -rf ${environment.adminPath}`)
+      }
+      await commands.exec()
+
       resolve()
     })
   }

@@ -5,9 +5,7 @@ import remoteitInstaller from './remoteitInstaller'
 import CLIInterface from './CLIInterface'
 import environment from './environment'
 import ElectronApp from './ElectronApp'
-import JSONFile from './JSONFile'
 import Logger from './Logger'
-import path from 'path'
 import user from './User'
 import server from './Server'
 import Tracker from './Tracker'
@@ -20,7 +18,6 @@ export default class Application {
   public cli: CLIInterface
   private controller?: Controller
   private app?: ElectronApp
-  private connectionsFile: JSONFile<IConnection[]>
 
   constructor() {
     Logger.info('Application starting up!')
@@ -29,13 +26,11 @@ export default class Application {
     this.bindExitHandlers()
     environment.setElevatedState()
 
-    this.connectionsFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
-
     // exit electron start if running headless
     if (!environment.isHeadless) this.app = new ElectronApp()
 
     // Start pool and load connections from filesystem
-    this.pool = new ConnectionPool(this.connectionsFile.read() || [])
+    this.pool = new ConnectionPool()
 
     // remoteit CLI init
     this.cli = new CLIInterface()
@@ -46,7 +41,6 @@ export default class Application {
     // create the event controller
     if (server.io) this.controller = new Controller(server.io, this.cli, this.pool)
 
-    EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
     EventBus.on(user.EVENTS.signedIn, this.startHeartbeat)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
   }
@@ -87,16 +81,6 @@ export default class Application {
   }
 
   /**
-   * When the pool is updated, persist it to the saved connections
-   * file on disk.
-   */
-  private handlePoolUpdated = (pool: IConnection[]) => {
-    d('Pool updated:', pool)
-    // Logger.info('Pool updated', { pool })
-    this.connectionsFile.write(pool)
-  }
-
-  /**
    * When a user logs out, remove their credentials from the
    * saved connections file.
    */
@@ -105,8 +89,5 @@ export default class Application {
 
     // Stop all connections cleanly
     await this.pool.stopAll()
-
-    // Remove files from system.
-    // this.connectionsFile.remove() // Lets keep the connections, unless manually removed.
   }
 }
