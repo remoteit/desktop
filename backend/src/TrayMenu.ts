@@ -3,7 +3,7 @@ import { hostName } from './helpers/nameHelper'
 import { IP_PRIVATE } from './constants'
 import LAN from './LAN'
 import electron from 'electron'
-import Environment from './Environment'
+import environment from './environment'
 import ElectronApp from './ElectronApp'
 import ConnectionPool from './ConnectionPool'
 import EventBus from './EventBus'
@@ -28,7 +28,7 @@ export default class TrayMenu {
     this.pool = []
     this.privateIP = IP_PRIVATE
 
-    if (Environment.isWindows) {
+    if (environment.isWindows) {
       this.tray.on('click', () => {
         this.tray.popUpContextMenu()
       })

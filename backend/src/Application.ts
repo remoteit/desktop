@@ -1,10 +1,9 @@
 import debug from 'debug'
-import headless from './headless'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
-import RemoteitInstaller from './RemoteitInstaller'
+import remoteitInstaller from './remoteitInstaller'
 import CLIInterface from './CLIInterface'
-import Environment from './Environment'
+import environment from './environment'
 import ElectronApp from './ElectronApp'
 import JSONFile from './JSONFile'
 import Logger from './Logger'
@@ -25,11 +24,13 @@ export default class Application {
   constructor() {
     Logger.info('Application starting up!')
 
-    this.handleExit()
-    this.connectionsFile = new JSONFile<IConnection[]>(path.join(Environment.userPath, 'connections.json'))
+    this.bindExitHandlers()
+    environment.setElevatedState()
+
+    this.connectionsFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
 
     // exit electron start if running headless
-    if (!headless) this.app = new ElectronApp()
+    if (!environment.isHeadless) this.app = new ElectronApp()
 
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool(this.connectionsFile.read() || [])
@@ -53,11 +54,11 @@ export default class Application {
 
   private check = () => {
     this.app && this.app.check()
-    RemoteitInstaller.check()
+    remoteitInstaller.check()
     this.pool.check()
   }
 
-  private handleExit = () => {
+  private bindExitHandlers = () => {
     Tracker.event('app', 'close', 'closing application')
     // Do something when app is closing
     process.on('exit', this.handleException)

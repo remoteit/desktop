@@ -1,7 +1,7 @@
 import { WEB_DIR } from './constants'
 import electron from 'electron'
 import AutoUpdater from './AutoUpdater'
-import Environment from './Environment'
+import environment from './environment'
 import TrayMenu from './TrayMenu'
 import EventBus from './EventBus'
 import Logger from './Logger'
@@ -82,7 +82,7 @@ export default class ElectronApp {
       height: 600,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
-      frame: !Environment.isMac,
+      frame: !environment.isMac,
       autoHideMenuBar: true,
     })
 
@@ -123,11 +123,11 @@ export default class ElectronApp {
     d('Create tray icon')
     Logger.info('Create tray icon')
 
-    const iconFile = Environment.isMac
+    const iconFile = environment.isMac
       ? 'iconTemplate.png'
-      : Environment.isWindows
+      : environment.isWindows
       ? 'iconwin.ico'
-      : Environment.isPi
+      : environment.isPi
       ? 'iconLinuxColor.png'
       : 'iconLinux.png'
     const iconPath = path.join(__dirname, 'images', iconFile)

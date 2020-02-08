@@ -1,16 +1,13 @@
 import tmp from 'tmp'
 import path from 'path'
 import debug from 'debug'
-import Environment from './Environment'
+import environment from './environment'
 import EventBus from './EventBus'
 import Installer from './Installer'
 import Command from './Command'
 import { existsSync } from 'fs'
-import { promisify } from 'util'
-import * as sudo from 'sudo-prompt'
 
 tmp.setGracefulCleanup()
-const sudoPromise = promisify(sudo.exec)
 const d = debug('r3:backend:BinaryInstaller')
 
 class BinaryInstaller {
@@ -36,16 +33,16 @@ class BinaryInstaller {
         )
       )
 
-      const commands = new Command({ admin: true, onError: reject })
+      const commands = new Command({ onError: reject })
 
-      if (Environment.isWindows) {
-        if (!existsSync(Environment.binPath)) commands.push(`md "${Environment.binPath}"`)
+      if (environment.isWindows) {
+        if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
         installers.map(installer => {
           commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`)
           commands.push(`icacls "${installer.binaryPath}" /T /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
         })
       } else {
-        if (!existsSync(Environment.binPath)) commands.push(`mkdir -p ${Environment.binPath}`)
+        if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
         installers.map(installer => {
           commands.push(`mv ${installer.tempFile} ${installer.binaryPath}`)
           commands.push(`chmod 755 ${installer.binaryPath}`)
@@ -68,18 +65,18 @@ class BinaryInstaller {
     return new Promise(async (resolve, reject) => {
       const commands = new Command({ admin: true, onError: reject })
 
-      if (Environment.isWindows) {
+      if (environment.isWindows) {
         installers.map(installer => commands.push(`del /Q /F "${installer.binaryPath}"`))
-        if (existsSync(Environment.userPath)) commands.push(`rmdir /Q /S "${Environment.userPath}"`)
-        if (existsSync(Environment.adminPath)) commands.push(`rmdir /Q /S "${Environment.adminPath}"`)
-        if (existsSync(Environment.binPath)) commands.push(`rmdir /Q /S "${Environment.binPath}"`)
+        if (existsSync(environment.userPath)) commands.push(`rmdir /Q /S "${environment.userPath}"`)
+        if (existsSync(environment.adminPath)) commands.push(`rmdir /Q /S "${environment.adminPath}"`)
+        if (existsSync(environment.binPath)) commands.push(`rmdir /Q /S "${environment.binPath}"`)
       } else {
-        if (existsSync(Environment.userPath)) commands.push(`rm -rf ${Environment.userPath}`)
-        if (existsSync(Environment.adminPath)) commands.push(`rm -rf ${Environment.adminPath}`)
+        if (existsSync(environment.userPath)) commands.push(`rm -rf ${environment.userPath}`)
+        if (existsSync(environment.adminPath)) commands.push(`rm -rf ${environment.adminPath}`)
         installers.map(installer => {
           const files = installer.dependencyNames.concat(installer.binaryName)
           files.map(
-            file => installer.fileExists(file) && commands.push(`rm -f ${path.join(Environment.binPath, file)}`)
+            file => installer.fileExists(file) && commands.push(`rm -f ${path.join(environment.binPath, file)}`)
           )
         })
       }

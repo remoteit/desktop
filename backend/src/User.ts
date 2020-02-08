@@ -3,7 +3,7 @@ import Logger from './Logger'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
 import JSONFile from './JSONFile'
-import Environment from './Environment'
+import environment from './environment'
 import path from 'path'
 import { r3 } from './remote.it'
 
@@ -22,7 +22,7 @@ export class User {
   private userFile: JSONFile<UserCredentials>
 
   constructor() {
-    this.userFile = new JSONFile<UserCredentials>(path.join(Environment.userPath, 'user.json'))
+    this.userFile = new JSONFile<UserCredentials>(path.join(environment.userPath, 'user.json'))
     const user = this.userFile.read()
 
     d('Reading user credentials:', { user })

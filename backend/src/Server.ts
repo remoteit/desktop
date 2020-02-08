@@ -8,7 +8,7 @@ import Logger from './Logger'
 import electron from 'electron'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
-import Environment from './Environment'
+import environment from './environment'
 import { createServer } from 'http'
 import { PORT, WEB_DIR } from './constants'
 
@@ -32,7 +32,7 @@ class Server {
     this.app.use('/', router)
 
     router.get('/system', async (request, response) => {
-      const system = await Environment.getSystemInfo()
+      const system = await environment.getSystemInfo()
       Logger.info('SEND SYSTEM INFO', { system })
       response.send(system)
     })

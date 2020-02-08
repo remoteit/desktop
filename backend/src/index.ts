@@ -3,7 +3,7 @@ require('dotenv').config()
 import AirBrake from './AirBrake'
 import Application from './Application'
 import debug from 'debug'
-import Environment from './Environment'
+import environment from './environment'
 import Logger from './Logger'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
@@ -12,10 +12,10 @@ import CLI from './CLI'
 const d = debug('r3:backend:backend')
 
 d('Starting up Electron application!')
-Logger.info('Environment info:', Environment.toJSON())
+Logger.info('environment info:', environment.toJSON())
 
 Tracker.pageView('/')
-Tracker.event('app', 'startup', `App startup ${Environment.platform}`)
+Tracker.event('app', 'startup', `App startup ${environment.platform}`)
 Logger.info('Desktop starting up!')
 
 process
