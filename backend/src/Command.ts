@@ -11,7 +11,7 @@ const execPromise = promisify(exec)
 export default class Command {
   name: string = 'remoteit'
   commands: string[] = []
-  admin: boolean = true
+  admin: boolean = false
   quiet: boolean = false
 
   onError: (error: Error) => void = () => {}

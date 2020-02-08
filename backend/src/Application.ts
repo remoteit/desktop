@@ -18,12 +18,14 @@ const d = debug('r3:backend:Application')
 export default class Application {
   public pool: ConnectionPool
   public cli: CLIInterface
+  private controller?: Controller
   private app?: ElectronApp
   private connectionsFile: JSONFile<IConnection[]>
 
   constructor() {
     Logger.info('Application starting up!')
 
+    this.install()
     this.bindExitHandlers()
     environment.setElevatedState()
 
@@ -42,14 +44,21 @@ export default class Application {
     server.start()
 
     // create the event controller
-    if (server.io) new Controller(server.io, this.cli, this.pool)
-
-    // start heartbeat 1bpm
-    setInterval(this.check, 1000 * 60)
+    if (server.io) this.controller = new Controller(server.io, this.cli, this.pool)
 
     EventBus.on(ConnectionPool.EVENTS.updated, this.handlePoolUpdated)
-    EventBus.on(server.EVENTS.authenticated, this.check)
+    EventBus.on(user.EVENTS.signedIn, this.startHeartbeat)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
+  }
+
+  private install = async () => {
+    const install = !(await remoteitInstaller.isCurrent())
+    if (install && this.controller) this.controller.installBinaries()
+  }
+
+  private startHeartbeat = () => {
+    // start heartbeat 1bpm
+    setInterval(this.check, 1000 * 60)
   }
 
   private check = () => {

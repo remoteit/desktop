@@ -49,8 +49,8 @@ export function updateConnections(devices: IDevice[]) {
     return result
   }, {})
 
-  devices.map(d => {
-    d.services.map(s => {
+  devices.forEach(d => {
+    d.services.forEach(s => {
       const connection = lookup[s.id]
       const online = s.state === 'active'
       if (connection && connection.online !== online) {
