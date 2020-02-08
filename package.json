@@ -3,15 +3,16 @@
   "version": "2.4.12",
   "private": true,
   "scripts": {
-    "publish": "cd backend && npm run publish",
     "build": "cd backend && npm run build",
-    "watch-frontend": "cd frontend && npm start",
-    "watch-backend": "cd backend && npm start",
-    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
-    "postinstall": "run-p install-*",
     "install-backend": "cd backend && npm i",
     "install-frontend": "cd frontend && npm i",
-    "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all"
+    "package": "cd backend && npm run package",
+    "postinstall": "run-p install-*",
+    "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
+    "publish": "cd backend && npm run publish",
+    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
+    "watch-backend": "cd backend && npm start",
+    "watch-frontend": "cd frontend && npm start"
   },
   "dependencies": {
     "keyboardjs": "2.5.1"
