@@ -103,8 +103,10 @@ export default class ConnectionPool {
 
   stopAll = async () => {
     d('Stopping all services')
-    await this.pool.map(async c => await c.stop())
-    this.updated()
+    if (this.pool.length) {
+      await this.pool.map(async c => await c.stop())
+      this.updated()
+    }
   }
 
   reset = async () => {

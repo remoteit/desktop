@@ -100,32 +100,33 @@ export default class CLI {
   }
 
   async register(device: IDevice) {
-    await this.exec({ params: ['setup', `"${device.name}"`], admin: true, checkSignIn: true })
+    await this.exec({ params: ['setup', `"${device.name}"`, '-j'], admin: true, checkSignIn: true })
     this.read()
   }
 
   async delete() {
     if (!this.data.device.uid) return
-    await this.exec({ params: ['teardown', '--yes'], admin: true, checkSignIn: true })
+    await this.exec({ params: ['teardown', '--yes', '-j'], admin: true, checkSignIn: true })
     this.read()
   }
 
   async install() {
-    await this.exec({ params: ['tools', 'install'] })
+    await this.exec({ params: ['tools', 'install', '-j'] })
   }
 
   async unInstall() {
-    await this.exec({ params: ['uninstall', '--yes'] })
+    await this.exec({ params: ['uninstall', '--yes', '-j'] })
   }
 
   async signIn(admin?: boolean) {
     // if (!user.signedIn) return // can't sign in to cli if the user hasn't signed in yet - can remove because not trying to sudo install cli
-    await this.exec({ params: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: false })
+    await this.exec({ params: ['signin', user.username, '-a', user.authHash, '-j'], admin, checkSignIn: false })
     this.read()
   }
 
   async signOut() {
-    await this.exec({ params: ['signout'], checkSignIn: false })
+    // *This will not sign out the admin user
+    if (!this.isSignedOut()) await this.exec({ params: ['signout'], checkSignIn: false })
     this.read()
   }
 
@@ -167,9 +168,9 @@ export default class CLI {
 
     if (checkSignIn && this.isSignedOut(admin)) {
       readUser = true
-      commands.push(`"${remoteitInstaller.binaryPath}" signin ${user.username} -a ${user.authHash}`)
+      commands.push(`"${remoteitInstaller.binaryPath()}" signin ${user.username} -a ${user.authHash} -j`)
     }
-    commands.push(`"${remoteitInstaller.binaryPath}" ${params.join(' ')}`)
+    commands.push(`"${remoteitInstaller.binaryPath()}" ${params.join(' ')}`)
     commands.onError = (e: Error) => EventBus.emit(CLI.EVENTS.error, e.toString())
 
     result = await commands.exec()

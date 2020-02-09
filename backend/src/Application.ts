@@ -22,7 +22,6 @@ export default class Application {
   constructor() {
     Logger.info('Application starting up!')
 
-    this.install()
     this.bindExitHandlers()
     environment.setElevatedState()
 
@@ -40,6 +39,8 @@ export default class Application {
 
     // create the event controller
     if (server.io) this.controller = new Controller(server.io, this.cli, this.pool)
+
+    this.install()
 
     EventBus.on(user.EVENTS.signedIn, this.startHeartbeat)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
@@ -74,10 +75,14 @@ export default class Application {
     process.on('SIGUSR2', this.handleException)
   }
 
-  private handleException = async (code: any) => {
-    Logger.warn('PROCESS EXIT', { errorCode: code })
+  private handleExit = async () => {
     if (this.pool) await this.pool.stopAll()
     process.exit()
+  }
+
+  private handleException = async (code: any) => {
+    Logger.warn('PROCESS EXCEPTION', { errorCode: code })
+    if (this.pool) await this.pool.stopAll()
   }
 
   /**

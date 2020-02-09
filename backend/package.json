@@ -10,7 +10,7 @@
     "publish-backend": "electron-builder -wlm -p always",
     "build": "NODE_ENV=production run-s clean compile copy-* build-*",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-    "build-backend": "electron-builder -wlm",
+    "build-backend": "electron-builder -w",
     "copy-images": "cp -R ./src/images ./build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "clean": "rimraf build/* dist/*",
@@ -40,6 +40,7 @@
     "@types/tmp": "^0.1.0",
     "@types/universal-analytics": "^0.4.3",
     "cross-env": "^6.0.3",
+    "electron": "^7.1.8",
     "electron-builder": "^22.2.0",
     "electron-notarize": "^0.2.1",
     "electron-osx-sign": "^0.4.15",
@@ -59,7 +60,6 @@
     "debug": "4.1.1",
     "detect-rpi": "^1.3.0",
     "dotenv": "^8.2.0",
-    "electron": "^7.1.8",
     "electron-updater": "^4.2.0",
     "express": "4.17.1",
     "is-elevated": "^3.0.0",
@@ -90,7 +90,7 @@
     "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
     "productName": "remoteit-desktop",
-    "artifactName": "${productName}-${arch}.${ext}",
+    "artifactName": "${productName}-${arch}-installer.${ext}",
     "publish": [
       "github"
     ],

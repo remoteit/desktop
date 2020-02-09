@@ -26,10 +26,10 @@ export const WEB_DIR = path.join(__dirname, '../build')
 // Install paths
 export const UNIX_USER_BINARIES = path.join(os.homedir(), '.remoteit/bin')
 export const UNIX_USER_SETTINGS = path.join(os.homedir(), '.remoteit')
-export const UNIX_ADMIN_BINARIES = '/usr/local/bin/'
+export const UNIX_ADMIN_BINARIES = '/usr/local/bin'
 export const UNIX_ADMIN_SETTINGS = '/etc/remoteit'
 
 export const WIN_USER_BINARIES = path.join(os.homedir(), 'AppData/Local/remoteit/bin')
 export const WIN_USER_SETTINGS = path.join(os.homedir(), 'AppData/Local/remoteit')
-export const WIN_ADMIN_BINARIES = path.normalize('/Program Files/remoteit/')
+export const WIN_ADMIN_BINARIES = path.normalize('/Program Files/remoteit')
 export const WIN_ADMIN_SETTINGS = path.normalize('/ProgramData/remoteit')

@@ -49,7 +49,7 @@ export default class Installer {
     const current = await this.isCurrent()
     current
       ? EventBus.emit(Installer.EVENTS.installed, {
-          path: this.binaryPath,
+          path: this.binaryPath(),
           version: this.version,
           name: this.name,
         } as InstallationInfo)
@@ -81,7 +81,7 @@ export default class Installer {
   }
 
   fileExists(name: string) {
-    const filePath = path.join(environment.binPath, name)
+    const filePath = path.join(environment.binPath(), name)
     const exists = existsSync(filePath)
     d('BINARY EXISTS', { name, exists, filePath })
     return exists
@@ -99,7 +99,7 @@ export default class Installer {
     })
     d('Attempting to install binary: %O', {
       name: this.name,
-      path: this.binaryPath,
+      path: this.binaryPath(),
       version: this.version,
       repoName: this.repoName,
     })
@@ -121,8 +121,8 @@ export default class Installer {
     return name + platform
   }
 
-  get binaryPath() {
-    return path.join(environment.binPath, this.binaryName)
+  binaryPath(admin?: boolean) {
+    return path.join(environment.binPath(admin), this.binaryName)
   }
 
   get binaryName() {

@@ -16,7 +16,7 @@ import lan from './LAN'
 import os from 'os'
 
 class environment {
-  isElevated = false
+  isElevated: boolean = false
 
   get isHeadless() {
     return !electron.app
@@ -55,9 +55,9 @@ class environment {
     return this.isWindows ? WIN_ADMIN_SETTINGS : UNIX_ADMIN_SETTINGS
   }
 
-  get binPath() {
-    if (this.isWindows) return this.isElevated ? WIN_ADMIN_BINARIES : WIN_USER_BINARIES
-    else return this.isElevated ? UNIX_ADMIN_BINARIES : UNIX_USER_BINARIES
+  binPath(elevated: boolean = this.isElevated) {
+    if (this.isWindows) return elevated ? WIN_ADMIN_BINARIES : WIN_USER_BINARIES
+    else return elevated ? UNIX_ADMIN_BINARIES : UNIX_USER_BINARIES
   }
 
   async setElevatedState() {
@@ -81,7 +81,7 @@ class environment {
       isMac: this.isMac,
       userPath: this.userPath,
       adminPath: this.adminPath,
-      binPath: this.binPath,
+      binPath: this.binPath(),
     }
   }
 }
