@@ -54,7 +54,9 @@ export const SettingsPage = connect(
 
     const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && quit()
     const signOutWarning = () =>
-      window.confirm('Are you sure? Signing out will close all active connections.') && signOut()
+      window.confirm(
+        'Are you sure? Signing out will close all active connections, but leave the hosted services running.'
+      ) && signOut()
     const installWarning = () =>
       window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
       install()
