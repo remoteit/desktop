@@ -11,7 +11,7 @@ import CLI from './CLI'
 
 const d = debug('r3:backend:backend')
 
-d('Starting up Electron application!')
+d('Starting up backend application!')
 Logger.info('environment info:', environment.toJSON())
 
 Tracker.pageView('/')
@@ -32,4 +32,4 @@ process
     EventBus.emit(CLI.EVENTS.error, reason.toString())
   })
 
-export const application = new Application()
+export default new Application()

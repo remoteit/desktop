@@ -1,16 +1,15 @@
 import SocketIO from 'socket.io'
+import app from '.'
 import lan from './LAN'
 import CLI from './CLI'
 import cli from './cliInterface'
 import Logger from './Logger'
-import electron from 'electron'
 import EventRelay from './EventRelay'
 import Connection from './Connection'
 import BinaryInstaller from './BinaryInstaller'
+import electronInterface from './electronInterface'
 import remoteitInstaller from './remoteitInstaller'
 import ConnectionPool from './ConnectionPool'
-import ElectronApp from './ElectronApp'
-import AutoUpdater from './AutoUpdater'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './Server'
@@ -28,19 +27,16 @@ class Controller {
     this.pool = pool
     EventBus.on(server.EVENTS.authenticated, this.openSockets)
 
-    new EventRelay(
-      [
-        ...Object.values(user.EVENTS),
-        ...Object.values(Installer.EVENTS),
-        ...Object.values(Connection.EVENTS),
-        ...Object.values(ConnectionPool.EVENTS),
-        ...Object.values(AutoUpdater.EVENTS),
-        ...Object.values(lan.EVENTS),
-        ...Object.values(CLI.EVENTS),
-      ],
-      EventBus,
-      this.io.sockets
-    )
+    let eventNames = [
+      ...Object.values(user.EVENTS),
+      ...Object.values(Installer.EVENTS),
+      ...Object.values(Connection.EVENTS),
+      ...Object.values(ConnectionPool.EVENTS),
+      ...Object.values(lan.EVENTS),
+      ...Object.values(CLI.EVENTS),
+      ...Object.values(electronInterface.EVENTS),
+    ]
+    new EventRelay(eventNames, EventBus, this.io.sockets)
   }
 
   openSockets = (socket: SocketIO.Socket) => {
@@ -130,12 +126,12 @@ class Controller {
   }
 
   quit = () => {
-    if (electron.app) electron.app.quit()
+    if (app.electron) app.electron.app.quit()
   }
 
   restart = () => {
     d('Restart')
-    AutoUpdater.restart()
+    if (app.electron) app.electron.autoUpdater.restart()
   }
 
   uninstall = async () => {
@@ -154,7 +150,7 @@ class Controller {
 
   openOnLogin = (open: boolean) => {
     d('Open on login:', open)
-    EventBus.emit(ElectronApp.EVENTS.openOnLogin, open)
+    EventBus.emit(electronInterface.EVENTS.openOnLogin, open)
   }
 }
 

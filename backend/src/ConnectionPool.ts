@@ -1,12 +1,11 @@
 import debug from 'debug'
+import electronInterface from './electronInterface'
 import Connection from './Connection'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
 import environment from './environment'
 import PortScanner from './PortScanner'
-import ElectronApp from './ElectronApp'
-import TrayMenu from './TrayMenu'
 import JSONFile from './JSONFile'
 
 const d = debug('r3:backend:ConnectionPool')
@@ -41,8 +40,8 @@ export default class ConnectionPool {
     EventBus.on(Connection.EVENTS.disconnected, this.updated)
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(Connection.EVENTS.started, this.updated)
-    EventBus.on(ElectronApp.EVENTS.ready, this.updated)
-    EventBus.on(TrayMenu.EVENTS.forget, this.forget)
+    EventBus.on(electronInterface.EVENTS.forget, this.forget)
+    EventBus.on(electronInterface.EVENTS.ready, this.updated)
   }
 
   // maintain auto start connections

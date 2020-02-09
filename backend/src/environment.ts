@@ -1,3 +1,4 @@
+import app from '.'
 import {
   UNIX_USER_SETTINGS,
   UNIX_USER_BINARIES,
@@ -9,7 +10,6 @@ import {
   WIN_ADMIN_BINARIES,
 } from './constants'
 import isElevated from 'is-elevated'
-import electron from 'electron'
 import detectRPi from 'detect-rpi'
 import Logger from './Logger'
 import lan from './LAN'
@@ -19,7 +19,7 @@ class environment {
   isElevated: boolean = false
 
   get isHeadless() {
-    return !electron.app
+    return !app.electron
   }
 
   get isWindows() {

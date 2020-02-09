@@ -1,11 +1,10 @@
-import CLI from './CLI'
+import app from '.'
 import debug from 'debug'
 import EventBus from './EventBus'
 import express, { Express } from 'express'
 import user from './User'
 import cors from 'cors'
 import Logger from './Logger'
-import electron from 'electron'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
 import environment from './environment'
@@ -43,7 +42,7 @@ class Server {
     const server = createServer(this.app)
       .on('error', error => {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
-        electron.app.quit()
+        if (app.electron) app.electron.app.quit()
       })
       .listen(PORT, () => {
         d(`Listening on port ${PORT}`)

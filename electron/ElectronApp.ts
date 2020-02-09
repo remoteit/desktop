@@ -4,7 +4,6 @@ import AutoUpdater from './AutoUpdater'
 import environment from './environment'
 import TrayMenu from './TrayMenu'
 import EventBus from './EventBus'
-import Logger from './Logger'
 import debug from 'debug'
 import user from './User'
 import path from 'path'
@@ -13,9 +12,9 @@ import url from 'url'
 const d = debug('r3:backend:ElectronApp')
 
 export default class ElectronApp {
+  public app: electron.App
   public tray?: electron.Tray
   private window?: electron.BrowserWindow
-  private app: electron.App
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
 
@@ -121,7 +120,6 @@ export default class ElectronApp {
 
   private createTrayIcon() {
     d('Create tray icon')
-    Logger.info('Create tray icon')
 
     const iconFile = environment.isMac
       ? 'iconTemplate.png'

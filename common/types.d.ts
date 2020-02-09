@@ -173,6 +173,8 @@ declare global {
   type ipAddress = string // namespace to indicate if expecting an ip address
 
   type ipClass = 'A' | 'B' | 'C'
+
+  type IEvents = { [event: string]: string }
 }
 
 export {}

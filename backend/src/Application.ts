@@ -3,7 +3,6 @@ import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
 import remoteitInstaller from './remoteitInstaller'
 import environment from './environment'
-import ElectronApp from './ElectronApp'
 import Logger from './Logger'
 import user from './User'
 import server from './Server'
@@ -13,9 +12,9 @@ import EventBus from './EventBus'
 const d = debug('r3:backend:Application')
 
 export default class Application {
+  public electron?: any
   public pool: ConnectionPool
   private controller?: Controller
-  private app?: ElectronApp
 
   constructor() {
     Logger.info('Application starting up!')
@@ -23,8 +22,8 @@ export default class Application {
     this.bindExitHandlers()
     environment.setElevatedState()
 
-    // exit electron start if running headless
-    if (!environment.isHeadless) this.app = new ElectronApp()
+    // This electron now should be set externally (id application.electron = ElectronApp)
+    this.electron = false
 
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool()
@@ -52,7 +51,7 @@ export default class Application {
   }
 
   private check = () => {
-    this.app && this.app.check()
+    this.electron && this.electron.check()
     remoteitInstaller.check()
     this.pool.check()
   }

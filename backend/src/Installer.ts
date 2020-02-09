@@ -1,4 +1,3 @@
-import { application } from '.'
 import debug from 'debug'
 import cli from './cliInterface'
 import semverCompare from 'semver-compare'
