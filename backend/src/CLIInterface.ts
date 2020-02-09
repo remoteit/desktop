@@ -2,7 +2,7 @@ import CLI from './CLI'
 import Logger from './Logger'
 import Tracker from './Tracker'
 
-export default class CLIInterface extends CLI {
+class CLIInterface extends CLI {
   async set(key: string, value: any) {
     switch (key) {
       case 'targets':
@@ -54,3 +54,5 @@ export default class CLIInterface extends CLI {
     return result
   }
 }
+
+export default new CLIInterface()

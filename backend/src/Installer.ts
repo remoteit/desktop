@@ -1,5 +1,6 @@
 import { application } from '.'
 import debug from 'debug'
+import cli from './cliInterface'
 import semverCompare from 'semver-compare'
 import environment from './environment'
 import EventBus from './EventBus'
@@ -72,7 +73,7 @@ export default class Installer {
     let current = false
     let version = 'Unknown'
     if (this.isInstalled()) {
-      version = await application.cli.version()
+      version = await cli.version()
       current = semverCompare(version, this.version) === 0
       d('CURRENT', { name: this.name, checkVersion: version, version: this.version })
     }

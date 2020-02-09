@@ -2,7 +2,6 @@ import debug from 'debug'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
 import remoteitInstaller from './remoteitInstaller'
-import CLIInterface from './CLIInterface'
 import environment from './environment'
 import ElectronApp from './ElectronApp'
 import Logger from './Logger'
@@ -15,7 +14,6 @@ const d = debug('r3:backend:Application')
 
 export default class Application {
   public pool: ConnectionPool
-  public cli: CLIInterface
   private controller?: Controller
   private app?: ElectronApp
 
@@ -31,14 +29,11 @@ export default class Application {
     // Start pool and load connections from filesystem
     this.pool = new ConnectionPool()
 
-    // remoteit CLI init
-    this.cli = new CLIInterface()
-
     // Start server and listen to events
     server.start()
 
     // create the event controller
-    if (server.io) this.controller = new Controller(server.io, this.cli, this.pool)
+    if (server.io) this.controller = new Controller(server.io, this.pool)
 
     this.install()
 
