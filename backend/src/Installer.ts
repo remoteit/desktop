@@ -73,10 +73,10 @@ export default class Installer {
     let version = 'Unknown'
     if (this.isInstalled()) {
       version = await cli.version()
-      current = semverCompare(version, this.version) === 0
+      current = semverCompare(version, this.version) >= 0
       d('CURRENT', { name: this.name, checkVersion: version, version: this.version })
     }
-    if (!current) d('NO CURRENT', { name: this.name, checkVersion: version, version: this.version })
+    if (!current) d('NOT CURRENT', { name: this.name, checkVersion: version, version: this.version })
     return current
   }
 
