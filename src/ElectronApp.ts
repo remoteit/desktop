@@ -1,15 +1,12 @@
-import { WEB_DIR } from './constants'
+import { WEB_DIR, environment, EventBus, Logger, user } from 'remoteit-headless'
 import electron from 'electron'
-import AutoUpdater from './AutoUpdater'
-import environment from './environment'
 import TrayMenu from './TrayMenu'
-import EventBus from './EventBus'
+import AutoUpdater from './AutoUpdater'
 import debug from 'debug'
-import user from './User'
 import path from 'path'
 import url from 'url'
 
-const d = debug('r3:backend:ElectronApp')
+const d = debug('r3:headless:ElectronApp')
 
 export default class ElectronApp {
   public app: electron.App
@@ -101,6 +98,8 @@ export default class ElectronApp {
             slashes: true,
             query: user.credentials,
           })
+
+    Logger.info('LOAD HEADLESS', { startUrl })
 
     this.window.loadURL(startUrl)
 

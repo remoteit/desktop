@@ -1,13 +1,6 @@
-import { application } from '.'
-import { hostName } from './helpers/nameHelper'
-import { IP_PRIVATE } from './constants'
-import LAN from './LAN'
+import headless, { IP_PRIVATE, LAN, environment, EventBus, user, ConnectionPool, hostName } from 'remoteit-headless'
 import electron from 'electron'
-import environment from './environment'
 import ElectronApp from './ElectronApp'
-import ConnectionPool from './ConnectionPool'
-import EventBus from './EventBus'
-import user from './User'
 import path from 'path'
 
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
@@ -134,11 +127,11 @@ export default class TrayMenu {
     )
 
   private connect(connection: IConnection) {
-    application.pool.start(connection)
+    headless.pool.start(connection)
   }
 
   private disconnect(connection: IConnection) {
-    application.pool.stop(connection)
+    headless.pool.stop(connection)
   }
 
   private copy(location: string) {

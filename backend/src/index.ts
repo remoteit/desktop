@@ -1,13 +1,19 @@
 require('dotenv').config()
 
+import debug from 'debug'
 import AirBrake from './AirBrake'
 import Application from './Application'
-import debug from 'debug'
+import ConnectionPool from './ConnectionPool'
 import environment from './environment'
-import Logger from './Logger'
-import Tracker from './Tracker'
 import EventBus from './EventBus'
+import Tracker from './Tracker'
+import Logger from './Logger'
 import CLI from './CLI'
+import LAN from './LAN'
+import user from './User'
+import { hostName } from './helpers/nameHelper'
+import { IP_PRIVATE } from './constants'
+import { WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
 
@@ -33,3 +39,6 @@ process
   })
 
 export default new Application()
+
+// To support Electron wrapper
+export { ConnectionPool, environment, EventBus, hostName, IP_PRIVATE, LAN, Logger, user, WEB_DIR }

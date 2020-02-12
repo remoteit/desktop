@@ -2,29 +2,108 @@
   "name": "remoteit-desktop",
   "version": "2.5.1",
   "private": true,
+  "main": "build/index.js",
+  "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "cd backend && npm run build",
+    "build": "NODE_ENV=production run-s clean compile copy-* build-*",
+    "build-frontend": "cd frontend && npm run build && cp -R build/* ../build",
+    "build-backend": "cd backend && npm run package",
+    "build-electron": "electron-builder -l",
+    "clean": "rimraf build/* dist/*",
+    "compile": "tsc",
+    "copy-images": "cp -R ./src/images ./build/",
+    "copy-entitlements": "cp entitlements.mac.plist build/",
+    "electron": "cross-env NODE_ENV=development electron .",
+    "headless": "cd backend && npm run server",
     "install-backend": "cd backend && npm i",
-    "install-frontend": "cd frontend && npm i",
     "install-electron": "electron-builder install-app-deps",
-    "package": "cd backend && npm run package",
+    "install-frontend": "cd frontend && npm i",
+    "package": "cd backend && npm run package //TODO rename and move to dist directory",
     "postinstall": "run-p install-*",
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
-    "publish": "cd backend && npm run publish",
-    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
-    "watch-backend": "cd backend && npm start",
-    "watch-frontend": "cd frontend && npm start"
+    "start": "run-p watch-*",
+    "watch-backend": "cd backend && npm run watch-build",
+    "watch-build": "tsc --watch",
+    "watch-images": "onchange -i -k 'src/images/**/*' -- npm run copy-images",
+    "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron"
   },
   "dependencies": {
+    "electron-updater": "^4.2.0",
     "keyboardjs": "2.5.1",
-    "electron-updater": "^4.2.0"
+    "remoteit-headless": "file:backend"
   },
   "devDependencies": {
     "@types/electron": "1.6.10",
-    "npm-run-all": "4.1.5",
+    "cross-env": "^7.0.0",
     "electron": "^7.1.8",
     "electron-builder": "^22.2.0",
     "electron-notarize": "^0.2.1",
-    "electron-osx-sign": "^0.4.15"
+    "electron-osx-sign": "^0.4.15",
+    "npm-run-all": "4.1.5",
+    "onchange": "^6.1.0",
+    "rimraf": "^3.0.0",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
+  },
+  "homepage": "https://remote.it",
+  "repository": {
+    "url": "git+ssh://git@github.com/remoteit/desktop.git",
+    "type": "git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "remote.it",
+    "email": "support@remote.it"
+  },
+  "build": {
+    "appId": "it.remote.desktop",
+    "afterSign": "scripts/notarize.js",
+    "copyright": "remot3.it, Inc",
+    "productName": "remoteit",
+    "artifactName": "${productName}-${arch}-installer.${ext}",
+    "publish": [
+      "github"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": true,
+      "deleteAppDataOnUninstall": true,
+      "shortcutName": "remote.it"
+    },
+    "linux": {
+      "category": "Network",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "armv7l",
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "armv7l",
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "frontend/build/**/*"
+    ]
   }
 }

@@ -1,7 +1,6 @@
-import { autoUpdater } from 'electron-updater'
 import electron from 'electron'
-import EventBus from './EventBus'
-import Logger from './Logger'
+import { EventBus, Logger } from 'remoteit-headless'
+import { autoUpdater } from 'electron-updater'
 
 export default class AppUpdater {
   static EVENTS = {

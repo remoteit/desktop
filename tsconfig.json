@@ -2,7 +2,6 @@
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -10,7 +9,9 @@
     "isolatedModules": true,
     "lib": ["esnext"],
     "module": "commonjs",
+    // "module": "esnext",
     "moduleResolution": "node",
+    // "noEmit": true,
     "outDir": "./build",
     "resolveJsonModule": true,
     "rootDirs": ["."],
@@ -19,6 +20,6 @@
     "strict": true,
     "target": "es5"
   },
-  "exclude": ["node_modules"],
-  "include": ["src", "../common"]
+  "exclude": ["node_modules", "frontend", "backend"],
+  "include": ["src", "common"]
 }

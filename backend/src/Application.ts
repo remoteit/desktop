@@ -41,8 +41,11 @@ export default class Application {
   }
 
   private install = async () => {
-    const install = !(await remoteitInstaller.isCurrent())
-    if (install && this.controller) this.controller.installBinaries()
+    const install = !(await remoteitInstaller.isCurrent(true))
+    if (install && this.controller) {
+      Logger.info('INSTALLING BINARIES')
+      this.controller.installBinaries()
+    }
   }
 
   private startHeartbeat = () => {
@@ -75,7 +78,7 @@ export default class Application {
   }
 
   private handleException = async (code: any) => {
-    Logger.warn('PROCESS EXCEPTION', { errorCode: code })
+    if (code !== 0) Logger.warn('PROCESS EXCEPTION', { errorCode: code })
     if (this.pool) await this.pool.stopAll()
   }
 
