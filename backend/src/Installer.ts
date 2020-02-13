@@ -48,11 +48,7 @@ export default class Installer {
     d('CHECK INSTALLATION', { name: this.name, version: this.version })
     const current = await this.isCurrent()
     current
-      ? EventBus.emit(Installer.EVENTS.installed, {
-          path: this.binaryPath(),
-          version: this.version,
-          name: this.name,
-        } as InstallationInfo)
+      ? EventBus.emit(Installer.EVENTS.installed, this.toJSON())
       : EventBus.emit(Installer.EVENTS.notInstalled, this.name)
     return current
   }
@@ -68,9 +64,17 @@ export default class Installer {
     return !missing
   }
 
+  toJSON() {
+    return {
+      path: this.binaryPath(),
+      version: this.version,
+      name: this.name,
+    } as InstallationInfo
+  }
+
   async isCurrent(log?: boolean) {
     let current = false
-    let version = 'Unknown'
+    let version = 'Installing'
     if (this.isInstalled()) {
       version = await cli.version()
       current = semverCompare(version, this.version) >= 0
