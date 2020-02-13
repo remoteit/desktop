@@ -1,6 +1,6 @@
 {
   "name": "remoteit-headless",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -11,7 +11,6 @@
     "start": "node build/index.js",
     "test": "NODE_ENV=test jest",
     "pack": "npm-pack-all --output ../dist/remoteit-headless.tgz",
-    "package": "NODE_ENV=production run-s clean compile pack",
     "watch": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "watch-build": "tsc --watch",
     "watch-web": "onchange -i -k 'build/**/*' -- npm run server",

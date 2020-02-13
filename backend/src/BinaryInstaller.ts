@@ -13,6 +13,10 @@ const d = debug('r3:backend:BinaryInstaller')
 class BinaryInstaller {
   options = { name: 'remoteit' }
 
+  // 1) execute “sudo remoteit service stop”
+  // 2) Download and replace the CLI to new version
+  // 3) execute “sudo remoteit service start”
+
   async install(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
       // Download and install binaries

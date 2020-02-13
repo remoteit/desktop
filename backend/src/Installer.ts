@@ -111,7 +111,7 @@ export default class Installer {
   }
 
   get downloadFileName() {
-    const name = `${this.name}_${this.version}_`
+    const name = `${this.name}_`
     let platform = 'linux_arm64'
     if (environment.isWindows) platform = 'windows_x86_64.exe'
     else if (environment.isMac) platform = 'mac-osx_x86_64'
