@@ -1,6 +1,6 @@
 # remote.it Desktop
 
-> Cross-platform remote.it "initiator" desktop application
+> Cross-platform remote.it desktop application
 
 ## Overview
 
@@ -16,6 +16,13 @@ The desktop application serves one primary purpose which is to create a Peer-to-
 nvm install
 nvm use
 npm install
+npm start
+```
+
+Start the frontend react dev server
+
+```shell
+cd frontend
 npm start
 ```
 

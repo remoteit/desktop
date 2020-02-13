@@ -51,6 +51,7 @@ export default class Application {
   private startHeartbeat = () => {
     // start heartbeat 1bpm
     setInterval(this.check, 1000 * 60)
+    this.check()
   }
 
   private check = () => {
