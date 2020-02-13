@@ -7,7 +7,7 @@
   "scripts": {
     "build": "NODE_ENV=production run-s clean compile copy-* build-*",
     "build-backend": "cd backend && npm run build",
-    "build-electron": "electron-builder -w",
+    "build-electron": "electron-builder -wlm",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
@@ -22,6 +22,7 @@
     "postinstall": "run-p install-*",
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
     "start": "run-p watch-*",
+    "watch-frontend": "cd frontend && npm start",
     "watch-backend": "cd backend && npm run watch-build",
     "watch-build": "tsc --watch",
     "watch-images": "onchange -i -k 'src/images/**/*' -- npm run copy-images",

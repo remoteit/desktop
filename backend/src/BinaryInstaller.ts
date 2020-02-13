@@ -69,6 +69,9 @@ class BinaryInstaller {
     return new Promise(async (resolve, reject) => {
       const admin: boolean = true
 
+      /*
+      Disabled 
+
       // USER FILES
       let commands = new Command({ onError: reject })
       installers.map(i => this.removeFile(commands, i.binaryPath()))
@@ -81,20 +84,21 @@ class BinaryInstaller {
       this.removeDir(adminCommands, environment.adminPath)
       if (environment.isWindows) this.removeDir(adminCommands, environment.binPath(admin))
       await adminCommands.exec()
+      */
 
       resolve()
     })
   }
 
-  removeFile(commands: Command, path: string) {
-    if (!existsSync(path)) return
-    commands.push(environment.isWindows ? `del /Q /F "${path}"` : `rm -f ${path}`)
-  }
+  // removeFile(commands: Command, path: string) {
+  //   if (!existsSync(path)) return
+  //   commands.push(environment.isWindows ? `del /Q /F "${path}"` : `rm -f ${path}`)
+  // }
 
-  removeDir(commands: Command, path: string) {
-    if (!existsSync(path)) return
-    commands.push(environment.isWindows ? `rmdir /Q /S "${path}"` : `rm -rf ${path}`)
-  }
+  // removeDir(commands: Command, path: string) {
+  //   if (!existsSync(path)) return
+  //   commands.push(environment.isWindows ? `rmdir /Q /S "${path}"` : `rm -rf ${path}`)
+  // }
 }
 
 export default new BinaryInstaller()
