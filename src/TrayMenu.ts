@@ -1,13 +1,14 @@
-import { application } from '.'
-import { hostName } from './helpers/nameHelper'
-import { IP_PRIVATE } from './constants'
-import LAN from './LAN'
+import headless, {
+  IP_PRIVATE,
+  EVENTS,
+  LAN,
+  environment,
+  EventBus,
+  user,
+  ConnectionPool,
+  hostName,
+} from 'remoteit-headless'
 import electron from 'electron'
-import Environment from './Environment'
-import ElectronApp from './ElectronApp'
-import ConnectionPool from './ConnectionPool'
-import EventBus from './EventBus'
-import user from './User'
 import path from 'path'
 
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
@@ -19,16 +20,12 @@ export default class TrayMenu {
   private privateIP: ipAddress
   private pool: IConnection[]
 
-  static EVENTS = {
-    forget: 'tray/forget',
-  }
-
   constructor(tray: electron.Tray) {
     this.tray = tray
     this.pool = []
     this.privateIP = IP_PRIVATE
 
-    if (Environment.isWindows) {
+    if (environment.isWindows) {
       this.tray.on('click', () => {
         this.tray.popUpContextMenu()
       })
@@ -102,7 +99,7 @@ export default class TrayMenu {
             { label: 'Copy to clipboard', click: () => this.copy(location) },
             connection.online
               ? { label: 'Launch', click: () => this.launch(location) }
-              : { label: 'Remove', click: () => EventBus.emit(TrayMenu.EVENTS.forget, connection) },
+              : { label: 'Remove', click: () => EventBus.emit(EVENTS.forget, connection) },
           ],
         })
       }
@@ -128,17 +125,17 @@ export default class TrayMenu {
 
   private handleOpen = (menuItem: any, browserWindow: any, event: any) =>
     EventBus.emit(
-      ElectronApp.EVENTS.open,
+      EVENTS.open,
       // Open dev tools when command+option clicked
       process.defaultApp && event.metaKey
     )
 
   private connect(connection: IConnection) {
-    application.pool.start(connection)
+    headless.pool.start(connection)
   }
 
   private disconnect(connection: IConnection) {
-    application.pool.stop(connection)
+    headless.pool.stop(connection)
   }
 
   private copy(location: string) {

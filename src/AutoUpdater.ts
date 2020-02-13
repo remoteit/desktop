@@ -1,14 +1,8 @@
-import { autoUpdater } from 'electron-updater'
 import electron from 'electron'
-import EventBus from './EventBus'
-import Logger from './Logger'
+import { EventBus, Logger, EVENTS } from 'remoteit-headless'
+import { autoUpdater } from 'electron-updater'
 
 export default class AppUpdater {
-  static EVENTS = {
-    downloaded: 'update/downloaded',
-    available: 'update/available',
-  }
-
   constructor() {
     autoUpdater.logger = Logger
 
@@ -16,11 +10,11 @@ export default class AppUpdater {
 
     autoUpdater.on('update-available', info => {
       Logger.info('Update available', { info })
-      EventBus.emit(AppUpdater.EVENTS.available, info.version)
+      EventBus.emit(EVENTS.available, info.version)
     })
 
     autoUpdater.on('update-downloaded', info => {
-      EventBus.emit(AppUpdater.EVENTS.downloaded, info.version)
+      EventBus.emit(EVENTS.downloaded, info.version)
     })
 
     autoUpdater.on('error', error => {

@@ -1,20 +1,21 @@
 import tmp from 'tmp'
 import path from 'path'
 import debug from 'debug'
-import Environment from './Environment'
 import EventBus from './EventBus'
+import environment from './environment'
 import Installer from './Installer'
 import Command from './Command'
 import { existsSync } from 'fs'
-import { promisify } from 'util'
-import * as sudo from 'sudo-prompt'
 
 tmp.setGracefulCleanup()
-const sudoPromise = promisify(sudo.exec)
 const d = debug('r3:backend:BinaryInstaller')
 
 class BinaryInstaller {
   options = { name: 'remoteit' }
+
+  // 1) execute “sudo remoteit service stop”
+  // 2) Download and replace the CLI to new version
+  // 3) execute “sudo remoteit service start”
 
   async install(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
@@ -36,19 +37,19 @@ class BinaryInstaller {
         )
       )
 
-      const commands = new Command({ admin: true, onError: reject })
+      const commands = new Command({ onError: reject })
 
-      if (Environment.isWindows) {
-        if (!existsSync(Environment.binPath)) commands.push(`md "${Environment.binPath}"`)
+      if (environment.isWindows) {
+        if (!existsSync(environment.binPath())) commands.push(`md "${environment.binPath()}"`)
         installers.map(installer => {
-          commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath}"`)
-          commands.push(`icacls "${installer.binaryPath}" /T /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
+          commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath()}"`)
+          commands.push(`icacls "${installer.binaryPath()}" /T /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
         })
       } else {
-        if (!existsSync(Environment.binPath)) commands.push(`mkdir -p ${Environment.binPath}`)
+        if (!existsSync(environment.binPath())) commands.push(`mkdir -p ${environment.binPath()}`)
         installers.map(installer => {
-          commands.push(`mv ${installer.tempFile} ${installer.binaryPath}`)
-          commands.push(`chmod 755 ${installer.binaryPath}`)
+          commands.push(`mv ${installer.tempFile} ${installer.binaryPath()}`)
+          commands.push(`chmod 755 ${installer.binaryPath()}`) // @TODO if this is going in the user folder must have user permissions
         })
       }
 
@@ -56,7 +57,7 @@ class BinaryInstaller {
 
       installers.map(installer => {
         EventBus.emit(Installer.EVENTS.afterInstall, installer)
-        EventBus.emit(Installer.EVENTS.installed, installer)
+        EventBus.emit(Installer.EVENTS.installed, installer.toJSON())
       })
 
       tmpDir.removeCallback()
@@ -66,28 +67,38 @@ class BinaryInstaller {
 
   async uninstall(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
-      const commands = new Command({ admin: true, onError: reject })
+      const admin: boolean = true
 
-      if (Environment.isWindows) {
-        installers.map(installer => commands.push(`del /Q /F "${installer.binaryPath}"`))
-        if (existsSync(Environment.userPath)) commands.push(`rmdir /Q /S "${Environment.userPath}"`)
-        if (existsSync(Environment.adminPath)) commands.push(`rmdir /Q /S "${Environment.adminPath}"`)
-        if (existsSync(Environment.binPath)) commands.push(`rmdir /Q /S "${Environment.binPath}"`)
-      } else {
-        if (existsSync(Environment.userPath)) commands.push(`rm -rf ${Environment.userPath}`)
-        if (existsSync(Environment.adminPath)) commands.push(`rm -rf ${Environment.adminPath}`)
-        installers.map(installer => {
-          const files = installer.dependencyNames.concat(installer.binaryName)
-          files.map(
-            file => installer.fileExists(file) && commands.push(`rm -f ${path.join(Environment.binPath, file)}`)
-          )
-        })
-      }
+      /*
+      Disabled 
 
+      // USER FILES
+      let commands = new Command({ onError: reject })
+      installers.map(i => this.removeFile(commands, i.binaryPath()))
+      this.removeDir(commands, environment.userPath)
       await commands.exec()
+
+      // ADMIN FILES - Should only be here if installed target by entering password
+      let adminCommands = new Command({ admin, onError: reject })
+      installers.map(i => this.removeFile(adminCommands, i.binaryPath(admin)))
+      this.removeDir(adminCommands, environment.adminPath)
+      if (environment.isWindows) this.removeDir(adminCommands, environment.binPath(admin))
+      await adminCommands.exec()
+      */
+
       resolve()
     })
   }
+
+  // removeFile(commands: Command, path: string) {
+  //   if (!existsSync(path)) return
+  //   commands.push(environment.isWindows ? `del /Q /F "${path}"` : `rm -f ${path}`)
+  // }
+
+  // removeDir(commands: Command, path: string) {
+  //   if (!existsSync(path)) return
+  //   commands.push(environment.isWindows ? `rmdir /Q /S "${path}"` : `rm -rf ${path}`)
+  // }
 }
 
 export default new BinaryInstaller()

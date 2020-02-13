@@ -14,12 +14,13 @@ export interface IconProps {
   spin?: boolean
   weight?: IconWeight
   inline?: boolean
+  inlineLeft?: boolean
 }
 
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef<Ref, IconProps>(
-  ({ className, color, fixedWidth = false, name, size, spin, weight = 'light', inline, ...props }, ref) => {
+  ({ className, color, fixedWidth = false, name, size, spin, weight = 'light', inline, inlineLeft, ...props }, ref) => {
     if (!name) return null
 
     const classes = classnames(
@@ -32,6 +33,7 @@ export const Icon = React.forwardRef<Ref, IconProps>(
     const styles: any = {}
     if (color) styles.color = colors[color]
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
+    if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
     if (size) styles.fontSize = fontSizes[size]
 
     return <span className={classes} {...props} style={styles} ref={ref} />

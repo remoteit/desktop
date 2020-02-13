@@ -1,21 +1,27 @@
 require('dotenv').config()
 
+import debug from 'debug'
 import AirBrake from './AirBrake'
 import Application from './Application'
-import debug from 'debug'
-import Environment from './Environment'
-import Logger from './Logger'
-import Tracker from './Tracker'
+import ConnectionPool from './ConnectionPool'
+import environment from './environment'
 import EventBus from './EventBus'
+import Tracker from './Tracker'
+import Logger from './Logger'
 import CLI from './CLI'
+import LAN from './LAN'
+import user from './User'
+import { hostName } from './helpers/nameHelper'
+import { IP_PRIVATE } from './constants'
+import { WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
 
-d('Starting up Electron application!')
-Logger.info('Environment info:', Environment.toJSON())
+d('Starting up backend application!')
+Logger.info('environment info:', environment.toJSON())
 
 Tracker.pageView('/')
-Tracker.event('app', 'startup', `App startup ${Environment.platform}`)
+Tracker.event('app', 'startup', `App startup ${environment.platform}`)
 Logger.info('Desktop starting up!')
 
 process
@@ -32,4 +38,8 @@ process
     EventBus.emit(CLI.EVENTS.error, reason.toString())
   })
 
-export const application = new Application()
+export default new Application()
+
+// To support Electron wrapper
+export { EVENTS } from './electronInterface'
+export { ConnectionPool, environment, EventBus, hostName, IP_PRIVATE, LAN, Logger, user, WEB_DIR }

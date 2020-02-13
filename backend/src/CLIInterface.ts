@@ -2,7 +2,7 @@ import CLI from './CLI'
 import Logger from './Logger'
 import Tracker from './Tracker'
 
-export default class CLIInterface extends CLI {
+class CLIInterface extends CLI {
   async set(key: string, value: any) {
     switch (key) {
       case 'targets':
@@ -15,7 +15,7 @@ export default class CLIInterface extends CLI {
           Logger.info('REGISTER ' + value.name)
           Tracker.event('device', 'register', value.name)
         } else if (value === 'DELETE') {
-          await this.delete(this.data.device)
+          await this.delete()
           Logger.info('DELETE ' + this.data.device.name)
           Tracker.event('device', 'delete', this.data.device.name)
         }
@@ -54,3 +54,5 @@ export default class CLIInterface extends CLI {
     return result
   }
 }
+
+export default new CLIInterface()

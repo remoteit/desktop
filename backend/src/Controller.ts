@@ -1,16 +1,15 @@
 import SocketIO from 'socket.io'
+import app from '.'
 import lan from './LAN'
 import CLI from './CLI'
+import cli from './cliInterface'
 import Logger from './Logger'
-import electron from 'electron'
 import EventRelay from './EventRelay'
 import Connection from './Connection'
-import CLIInterface from './CLIInterface'
 import BinaryInstaller from './BinaryInstaller'
-import RemoteitInstaller from './RemoteitInstaller'
+import electronInterface from './electronInterface'
+import remoteitInstaller from './remoteitInstaller'
 import ConnectionPool from './ConnectionPool'
-import ElectronApp from './ElectronApp'
-import AutoUpdater from './AutoUpdater'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './Server'
@@ -20,34 +19,29 @@ import debug from 'debug'
 const d = debug('r3:backend:Server')
 
 class Controller {
-  private cli: CLIInterface
   private io: SocketIO.Server
   private pool: ConnectionPool
 
-  constructor(io: SocketIO.Server, cli: CLIInterface, pool: ConnectionPool) {
+  constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.io = io
-    this.cli = cli
     this.pool = pool
     EventBus.on(server.EVENTS.authenticated, this.openSockets)
 
-    new EventRelay(
-      [
-        ...Object.values(user.EVENTS),
-        ...Object.values(Installer.EVENTS),
-        ...Object.values(Connection.EVENTS),
-        ...Object.values(ConnectionPool.EVENTS),
-        ...Object.values(AutoUpdater.EVENTS),
-        ...Object.values(lan.EVENTS),
-        ...Object.values(CLI.EVENTS),
-      ],
-      EventBus,
-      this.io.sockets
-    )
+    let eventNames = [
+      ...Object.values(user.EVENTS),
+      ...Object.values(Installer.EVENTS),
+      ...Object.values(Connection.EVENTS),
+      ...Object.values(ConnectionPool.EVENTS),
+      ...Object.values(lan.EVENTS),
+      ...Object.values(CLI.EVENTS),
+      ...Object.values(electronInterface.EVENTS),
+    ]
+    new EventRelay(eventNames, EventBus, this.io.sockets)
   }
 
   openSockets = (socket: SocketIO.Socket) => {
     socket.on('user/sign-out', user.signOut)
-    socket.on('user/quit', electron.app.quit)
+    socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
     socket.on('service/forget', this.forget)
@@ -69,14 +63,14 @@ class Controller {
   }
 
   targets = async (result: ITarget[]) => {
-    await this.cli.set('targets', result)
-    this.io.emit('targets', this.cli.data.targets)
+    await cli.set('targets', result)
+    this.io.emit('targets', cli.data.targets)
   }
 
   device = async (result: IDevice) => {
-    await this.cli.set('device', result)
-    this.io.emit('device', this.cli.data.device)
-    this.io.emit('targets', this.cli.data.targets)
+    await cli.set('device', result)
+    this.io.emit('device', cli.data.device)
+    this.io.emit('targets', cli.data.targets)
   }
 
   interfaces = async () => {
@@ -85,7 +79,7 @@ class Controller {
   }
 
   scan = async (interfaceName: string) => {
-    await lan.scan(interfaceName, this.cli)
+    await lan.scan(interfaceName)
     this.io.emit('scan', lan.data)
   }
 
@@ -95,11 +89,11 @@ class Controller {
   }
 
   syncBackend = async () => {
-    this.io.emit('targets', this.cli.data.targets)
-    this.io.emit('device', this.cli.data.device)
+    this.io.emit('targets', cli.data.targets)
+    this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
     this.io.emit('interfaces', lan.interfaces)
-    this.io.emit('admin', (this.cli.data.admin && this.cli.data.admin.username) || '')
+    this.io.emit('admin', (cli.data.admin && cli.data.admin.username) || '')
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
     this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
@@ -131,26 +125,32 @@ class Controller {
     await this.pool.forget(connection)
   }
 
+  quit = () => {
+    if (app.electron) app.electron.app.quit()
+  }
+
   restart = () => {
     d('Restart')
-    AutoUpdater.restart()
+    if (app.electron) app.electron.autoUpdater.restart()
   }
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
     user.signOut()
     await this.pool.reset()
-    await this.cli.unInstall()
-    await BinaryInstaller.uninstall([RemoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    await cli.delete()
+    await cli.unInstall()
+    await BinaryInstaller.uninstall([remoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    this.quit()
   }
 
   installBinaries = async () => {
-    BinaryInstaller.install([RemoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    BinaryInstaller.install([remoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
   }
 
   openOnLogin = (open: boolean) => {
     d('Open on login:', open)
-    EventBus.emit(ElectronApp.EVENTS.openOnLogin, open)
+    EventBus.emit(electronInterface.EVENTS.openOnLogin, open)
   }
 }
 

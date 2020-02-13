@@ -1,7 +1,7 @@
 import Logger from './Logger'
 import Tracker from './Tracker'
-import CLIInterface from './CLIInterface'
 import EventBus from './EventBus'
+import cli from './cliInterface'
 import CLI from './CLI'
 import nm from 'netmask'
 import nw from 'network'
@@ -62,7 +62,7 @@ class LAN {
     })
   }
 
-  async scan(interfaceName: string, cli: CLIInterface) {
+  async scan(interfaceName: string) {
     Logger.info('SCAN start', { interfaceName })
     Tracker.event('scan', 'start', `${interfaceName} scan`)
     if (!interfaceName) return

@@ -1,7 +1,8 @@
 import AirBrake from './AirBrake'
 import Logger from './Logger'
-import { exec } from 'child_process'
+import environment from './environment'
 import { promisify } from 'util'
+import { exec } from 'child_process'
 import * as sudo from 'sudo-prompt'
 
 const sudoPromise = promisify(sudo.exec)
@@ -10,7 +11,7 @@ const execPromise = promisify(exec)
 export default class Command {
   name: string = 'remoteit'
   commands: string[] = []
-  admin: boolean = true
+  admin: boolean = false
   quiet: boolean = false
 
   onError: (error: Error) => void = () => {}
@@ -40,14 +41,16 @@ export default class Command {
     this.log('EXEC', { exec: this.toString(), admin: this.admin })
 
     try {
-      const { stdout, stderr } = this.admin
-        ? await sudoPromise(this.toString(), { name: this.name })
-        : await execPromise(this.toString())
+      const { stdout, stderr } =
+        this.admin && !environment.isHeadless && !environment.isElevated
+          ? await sudoPromise(this.toString(), { name: this.name })
+          : await execPromise(this.toString())
 
       if (stderr) {
         this.log(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString() }, 'error')
         AirBrake.notify({ message: 'COMMAND STDERR', command: this.toString(), stderr: stderr.toString() })
-        this.onError(stderr.toString())
+        // Hiding these errors for now because successful CLI commands are in stderr
+        // this.onError(stderr.toString())
         result = stderr.toString()
       }
 

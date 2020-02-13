@@ -1,0 +1,19 @@
+# dependencies
+node_modules
+
+# testing
+/coverage
+.env
+
+# production
+archive
+dist
+src
+
+# package
+*.tgz
+
+# misc
+.DS_Store
+.vscode
+npm-debug.log*

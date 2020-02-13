@@ -5,7 +5,7 @@ import debug from 'debug'
 import Logger from './Logger'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
-import Environment from './Environment'
+import environment from './environment'
 import { EventEmitter } from 'events'
 import { execFile, ChildProcess } from 'child_process'
 import { IP_OPEN, IP_PRIVATE } from './constants'
@@ -82,7 +82,7 @@ export default class Connection extends EventEmitter {
 
     try {
       this.process = execFile(
-        path.join(Environment.binPath, 'connectd'),
+        path.join(environment.binPath(), 'connectd'),
         params,
         {
           maxBuffer: Infinity,
@@ -167,7 +167,7 @@ export default class Connection extends EventEmitter {
   private handleError = (error: Error) => {
     Logger.error('connectd error: ', error)
     Tracker.event('connection', 'error', `connection error: ${this.params.id}`)
-    EventBus.emit(CLI.EVENTS.error, { error: error.message })
+    EventBus.emit(CLI.EVENTS.error, error.message)
     this.params.error = error
   }
 

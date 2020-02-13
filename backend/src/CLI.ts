@@ -1,5 +1,5 @@
-import RemoteitInstaller from './RemoteitInstaller'
-import Environment from './Environment'
+import remoteitInstaller from './remoteitInstaller'
+import environment from './environment'
 import Installer from './Installer'
 import defaults from './helpers/defaults'
 import JSONFile from './JSONFile'
@@ -34,10 +34,10 @@ export default class CLI {
   //       Might need it when cli manages initiator connections
 
   constructor() {
-    Logger.info('USER FILE', { path: path.join(Environment.userPath, 'config.json') })
-    Logger.info('ADMIN FILE', { path: path.join(Environment.adminPath, 'config.json') })
-    this.userConfigFile = new JSONFile<ConfigFile>(path.join(Environment.userPath, 'config.json'))
-    this.adminConfigFile = new JSONFile<ConfigFile>(path.join(Environment.adminPath, 'config.json'))
+    Logger.info('USER FILE', { path: path.join(environment.userPath, 'config.json') })
+    Logger.info('ADMIN FILE', { path: path.join(environment.adminPath, 'config.json') })
+    this.userConfigFile = new JSONFile<ConfigFile>(path.join(environment.userPath, 'config.json'))
+    this.adminConfigFile = new JSONFile<ConfigFile>(path.join(environment.adminPath, 'config.json'))
     EventBus.on(user.EVENTS.signedOut, () => this.signOut())
     EventBus.on(user.EVENTS.signedIn, () => this.read())
     EventBus.on(Installer.EVENTS.afterInstall, binary => binary.name === 'remoteit' && this.install())
@@ -89,90 +89,98 @@ export default class CLI {
     await this.exec({
       params: ['add', `"${t.name}"`, t.port, '--type', t.type, '--hostname', t.hostname || '127.0.0.1'],
       admin: true,
+      checkSignIn: true,
     })
     this.readTargets()
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec({ params: ['remove', t.uid], admin: true })
+    await this.exec({ params: ['remove', t.uid], admin: true, checkSignIn: true })
     this.readTargets()
   }
 
   async register(device: IDevice) {
-    await this.exec({ params: ['setup', `"${device.name}"`], admin: true })
+    await this.exec({ params: ['setup', `"${device.name}"`, '-j'], admin: true, checkSignIn: true })
     this.read()
   }
 
-  async delete(d: IDevice) {
-    await this.exec({ params: ['teardown', '--yes'], admin: true })
+  async delete() {
+    if (!this.data.device.uid) return
+    await this.exec({ params: ['teardown', '--yes', '-j'], admin: true, checkSignIn: true })
     this.read()
   }
 
   async install() {
-    await this.exec({ params: ['tools', 'install'], admin: true, checkSignIn: false })
-    // this.restart()
+    await this.exec({ params: ['tools', 'install', '-j'] })
   }
 
   async unInstall() {
-    await this.exec({ params: ['uninstall', '--yes'], admin: true, checkSignIn: false })
-  }
-
-  async restart() {
-    await this.exec({ params: ['service', 'restart'], admin: true, checkSignIn: false })
+    await this.exec({ params: ['uninstall', '--yes', '-j'] })
   }
 
   async signIn(admin?: boolean) {
-    if (!user.signedIn) return
-    await this.exec({ params: ['signin', user.username, '-a', user.authHash], admin, checkSignIn: false })
+    // if (!user.signedIn) return // can't sign in to cli if the user hasn't signed in yet - can remove because not trying to sudo install cli
+    await this.exec({ params: ['signin', user.username, '-a', user.authHash, '-j'], admin, checkSignIn: false })
     this.read()
   }
 
   async signOut() {
-    await this.exec({ params: ['signout'], checkSignIn: false })
+    // *This will not sign out the admin user
+    if (!this.isSignedOut()) await this.exec({ params: ['signout'], checkSignIn: false })
     this.read()
   }
 
   async scan(ipMask: string) {
-    const result = await this.exec({ params: ['scan', '-j', '-m', ipMask], checkSignIn: false })
+    const result = await this.exec({ params: ['scan', '-j', '-m', ipMask] })
     return JSON.parse(result)
   }
 
   async version() {
-    const result = await this.exec({ params: ['version', '-j'], checkSignIn: false, quiet: true })
+    const result = await this.exec({ params: ['version', '-j'], quiet: true })
     return result.toString().trim()
   }
 
-  async checkSignIn(admin?: boolean) {
-    this.readUser(admin)
-    Logger.info('CHECK SIGN IN', { username: this.data.user && this.data.user.username, admin })
-    if (this.isSignedOut(admin)) await this.signIn(admin)
-  }
-
   async isNotInstalled() {
-    const installed = RemoteitInstaller.fileExists(RemoteitInstaller.binaryName)
-    d('CLI INSTALLED?', { installed, name: RemoteitInstaller.binaryName })
+    const installed = remoteitInstaller.fileExists(remoteitInstaller.binaryName)
+    d('CLI INSTALLED?', { installed, name: remoteitInstaller.binaryName })
     return !installed
   }
 
   async exec({
     params,
+    checkSignIn = false,
     admin = false,
-    checkSignIn = true,
     quiet = false,
   }: {
     params: any[]
-    admin?: boolean
     checkSignIn?: boolean
+    admin?: boolean
     quiet?: boolean
   }) {
-    if (await this.isNotInstalled()) return ''
-    if (checkSignIn) await this.checkSignIn(admin)
-    const command = new Command({ command: `"${RemoteitInstaller.binaryPath}" ${params.join(' ')}`, admin, quiet })
-    command.onError = (e: Error) => EventBus.emit(CLI.EVENTS.error, e.toString())
-    return await command.exec()
+    if (await this.isNotInstalled()) {
+      remoteitInstaller.check()
+      return ''
+    }
+
+    let result
+    let readUser = false
+    let commands = new Command({ admin, quiet })
+
+    if (checkSignIn && this.isSignedOut(admin)) {
+      readUser = true
+      commands.push(`"${remoteitInstaller.binaryPath()}" signin ${user.username} -a ${user.authHash} -j`)
+    }
+    commands.push(`"${remoteitInstaller.binaryPath()}" ${params.join(' ')}`)
+    commands.onError = (e: Error) => EventBus.emit(CLI.EVENTS.error, e.toString())
+
+    result = await commands.exec()
+    if (readUser) this.readUser(admin)
+
+    return result
   }
 
   isSignedOut(admin?: boolean) {
+    this.readUser(admin)
     return admin ? !this.data.admin || !this.data.admin.username : !this.data.user || !this.data.user.username
   }
 }

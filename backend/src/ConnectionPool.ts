@@ -1,10 +1,12 @@
 import debug from 'debug'
+import electronInterface from './electronInterface'
 import Connection from './Connection'
 import EventBus from './EventBus'
 import Logger from './Logger'
+import path from 'path'
+import environment from './environment'
 import PortScanner from './PortScanner'
-import ElectronApp from './ElectronApp'
-import TrayMenu from './TrayMenu'
+import JSONFile from './JSONFile'
 
 const d = debug('r3:backend:ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
@@ -13,13 +15,17 @@ export default class ConnectionPool {
   freePort?: number
 
   private pool: Connection[] = []
+  private connectionsFile: JSONFile<IConnection[]>
 
   static EVENTS = {
     updated: 'pool',
     freePort: 'freePort',
   }
 
-  constructor(connections: IConnection[]) {
+  constructor() {
+    this.connectionsFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
+    const connections: IConnection[] = this.connectionsFile.read() || []
+
     Logger.info('Initializing connections pool', { connections })
 
     connections.map(c => this.set(c))
@@ -34,8 +40,8 @@ export default class ConnectionPool {
     EventBus.on(Connection.EVENTS.disconnected, this.updated)
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(Connection.EVENTS.started, this.updated)
-    EventBus.on(ElectronApp.EVENTS.ready, this.updated)
-    EventBus.on(TrayMenu.EVENTS.forget, this.forget)
+    EventBus.on(electronInterface.EVENTS.forget, this.forget)
+    EventBus.on(electronInterface.EVENTS.ready, this.updated)
   }
 
   // maintain auto start connections
@@ -96,17 +102,22 @@ export default class ConnectionPool {
 
   stopAll = async () => {
     d('Stopping all services')
-    await this.pool.map(async c => await c.stop())
-    this.updated()
+    if (this.pool.length) {
+      await this.pool.map(async c => await c.stop())
+      this.updated()
+    }
   }
 
   reset = async () => {
     await this.stopAll()
     this.pool = []
+    this.connectionsFile.remove()
   }
 
-  updated = async () => {
-    EventBus.emit(ConnectionPool.EVENTS.updated, this.toJSON())
+  updated = () => {
+    const json = this.toJSON()
+    this.connectionsFile.write(json)
+    EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
 
   toJSON = (): IConnection[] => {

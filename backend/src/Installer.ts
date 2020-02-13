@@ -1,7 +1,7 @@
-import { application } from '.'
 import debug from 'debug'
+import cli from './cliInterface'
 import semverCompare from 'semver-compare'
-import Environment from './Environment'
+import environment from './environment'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import https from 'https'
@@ -48,11 +48,7 @@ export default class Installer {
     d('CHECK INSTALLATION', { name: this.name, version: this.version })
     const current = await this.isCurrent()
     current
-      ? EventBus.emit(Installer.EVENTS.installed, {
-          path: this.binaryPath,
-          version: this.version,
-          name: this.name,
-        } as InstallationInfo)
+      ? EventBus.emit(Installer.EVENTS.installed, this.toJSON())
       : EventBus.emit(Installer.EVENTS.notInstalled, this.name)
     return current
   }
@@ -68,18 +64,28 @@ export default class Installer {
     return !missing
   }
 
-  async isCurrent() {
+  toJSON() {
+    return {
+      path: this.binaryPath(),
+      version: this.version,
+      name: this.name,
+    } as InstallationInfo
+  }
+
+  async isCurrent(log?: boolean) {
     let current = false
+    let version = 'Installing'
     if (this.isInstalled()) {
-      const version = await application.cli.version()
-      current = semverCompare(version || '0', this.version) === 0
-      d('CURRENT', { name: this.name, checkVersion: version, version: this.version })
+      version = await cli.version()
+      current = semverCompare(version, this.version) >= 0
+      log && Logger.info('CURRENT', { name: this.name, checkVersion: version, version: this.version })
     }
+    if (!current && log) Logger.info('NOT CURRENT', { name: this.name, checkVersion: version, version: this.version })
     return current
   }
 
   fileExists(name: string) {
-    const filePath = path.join(Environment.binPath, name)
+    const filePath = path.join(environment.binPath(), name)
     const exists = existsSync(filePath)
     d('BINARY EXISTS', { name, exists, filePath })
     return exists
@@ -97,7 +103,7 @@ export default class Installer {
     })
     d('Attempting to install binary: %O', {
       name: this.name,
-      path: this.binaryPath,
+      path: this.binaryPath(),
       version: this.version,
       repoName: this.repoName,
     })
@@ -109,26 +115,26 @@ export default class Installer {
   }
 
   get downloadFileName() {
-    const name = `${this.name}_${this.version}_`
+    const name = `${this.name}_`
     let platform = 'linux_arm64'
-    if (Environment.isWindows) platform = 'windows_x86_64.exe'
-    else if (Environment.isMac) platform = 'mac-osx_x86_64'
-    else if (Environment.isPi) platform = 'linux_armv7'
-    else if (Environment.isArmLinux) platform = 'linux_arm64'
-    else if (Environment.isLinux) platform = 'linux_x86_64'
+    if (environment.isWindows) platform = 'windows_x86_64.exe'
+    else if (environment.isMac) platform = 'mac-osx_x86_64'
+    else if (environment.isPi) platform = 'linux_armv7'
+    else if (environment.isArmLinux) platform = 'linux_arm64'
+    else if (environment.isLinux) platform = 'linux_x86_64'
     return name + platform
   }
 
-  get binaryPath() {
-    return path.join(Environment.binPath, this.binaryName)
+  binaryPath(admin?: boolean) {
+    return path.join(environment.binPath(admin), this.binaryName)
   }
 
   get binaryName() {
-    return Environment.isWindows ? this.name + '.exe' : this.name
+    return environment.isWindows ? this.name + '.exe' : this.name
   }
 
   get dependencyNames() {
-    return this.dependencies.map(d => (Environment.isWindows ? d + '.exe' : d))
+    return this.dependencies.map(d => (environment.isWindows ? d + '.exe' : d))
   }
 
   private download(progress: ProgressCallback = () => {}) {

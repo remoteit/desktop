@@ -1,6 +1,6 @@
 # remote.it Desktop
 
-> Cross-platform remote.it "initiator" desktop application
+> Cross-platform remote.it desktop application
 
 ## Overview
 
@@ -16,6 +16,13 @@ The desktop application serves one primary purpose which is to create a Peer-to-
 nvm install
 nvm use
 npm install
+npm start
+```
+
+Start the frontend react dev server
+
+```shell
+cd frontend
 npm start
 ```
 
@@ -91,6 +98,14 @@ signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
 6. Enter the token password for the certificate
 
 The application should now be signed.
+
+## Packaging for running headless
+
+```cmd
+npm run package
+```
+
+Will create a tar file in `backend/remoteit-desktop-<version>.tgz`
 
 ## Run as root on Linux
 

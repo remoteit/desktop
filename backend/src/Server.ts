@@ -1,14 +1,13 @@
-import CLI from './CLI'
+import app from '.'
 import debug from 'debug'
 import EventBus from './EventBus'
 import express, { Express } from 'express'
 import user from './User'
 import cors from 'cors'
 import Logger from './Logger'
-import electron from 'electron'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
-import Environment from './Environment'
+import environment from './environment'
 import { createServer } from 'http'
 import { PORT, WEB_DIR } from './constants'
 
@@ -32,7 +31,7 @@ class Server {
     this.app.use('/', router)
 
     router.get('/system', async (request, response) => {
-      const system = await Environment.getSystemInfo()
+      const system = await environment.getSystemInfo()
       Logger.info('SEND SYSTEM INFO', { system })
       response.send(system)
     })
@@ -43,7 +42,7 @@ class Server {
     const server = createServer(this.app)
       .on('error', error => {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
-        electron.app.quit()
+        if (app.electron) app.electron.app.quit()
       })
       .listen(PORT, () => {
         d(`Listening on port ${PORT}`)

@@ -1,31 +1,24 @@
-import { WEB_DIR } from './constants'
+import { WEB_DIR, EVENTS, environment, EventBus, Logger, user } from 'remoteit-headless'
 import electron from 'electron'
-import Environment from './Environment'
 import TrayMenu from './TrayMenu'
-import EventBus from './EventBus'
-import Logger from './Logger'
+import AutoUpdater from './AutoUpdater'
 import debug from 'debug'
-import user from './User'
 import path from 'path'
 import url from 'url'
 
-const d = debug('r3:backend:ElectronApp')
+const d = debug('r3:headless:ElectronApp')
 
 export default class ElectronApp {
+  public app: electron.App
   public tray?: electron.Tray
   private window?: electron.BrowserWindow
-  private app: electron.App
+  private autoUpdater: AutoUpdater
   private quitSelected: boolean
-
-  static EVENTS = {
-    ready: 'app/ready',
-    open: 'app/open',
-    openOnLogin: 'app/open-on-login',
-  }
 
   constructor() {
     this.app = electron.app
     this.quitSelected = false
+    this.autoUpdater = new AutoUpdater()
 
     // Not primary instance of app
     if (!this.app.requestSingleInstanceLock()) this.app.quit()
@@ -35,8 +28,12 @@ export default class ElectronApp {
     this.app.on('before-quit', () => (this.quitSelected = true))
     this.app.on('second-instance', () => this.openWindow())
 
-    EventBus.on(ElectronApp.EVENTS.openOnLogin, this.handleOpenAtLogin)
-    EventBus.on(ElectronApp.EVENTS.open, this.openWindow)
+    EventBus.on(EVENTS.openOnLogin, this.handleOpenAtLogin)
+    EventBus.on(EVENTS.open, this.openWindow)
+  }
+
+  public check = () => {
+    this.autoUpdater.check()
   }
 
   get url() {
@@ -52,7 +49,7 @@ export default class ElectronApp {
   private handleAppReady = () => {
     this.createTrayIcon()
     this.createMainWindow()
-    EventBus.emit(ElectronApp.EVENTS.ready, this.tray)
+    EventBus.emit(EVENTS.ready, this.tray)
   }
 
   private handleActivate = () => {
@@ -75,7 +72,7 @@ export default class ElectronApp {
       height: 600,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
-      frame: !Environment.isMac,
+      frame: !environment.isMac,
       autoHideMenuBar: true,
     })
 
@@ -96,6 +93,8 @@ export default class ElectronApp {
             query: user.credentials,
           })
 
+    Logger.info('LOAD HEADLESS', { startUrl })
+
     this.window.loadURL(startUrl)
 
     this.window.on('close', e => {
@@ -114,13 +113,12 @@ export default class ElectronApp {
 
   private createTrayIcon() {
     d('Create tray icon')
-    Logger.info('Create tray icon')
 
-    const iconFile = Environment.isMac
+    const iconFile = environment.isMac
       ? 'iconTemplate.png'
-      : Environment.isWindows
+      : environment.isWindows
       ? 'iconwin.ico'
-      : Environment.isPi
+      : environment.isPi
       ? 'iconLinuxColor.png'
       : 'iconLinux.png'
     const iconPath = path.join(__dirname, 'images', iconFile)

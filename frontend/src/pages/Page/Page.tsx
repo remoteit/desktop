@@ -29,7 +29,12 @@ export function Page({ authenticated = true, children }: Props & React.HTMLProps
         className={css.error}
         key={cliError}
         open={!!cliError}
-        message={cliError}
+        message={
+          <>
+            <Icon name="exclamation-triangle" size="md" color="danger" fixedWidth inlineLeft />
+            {cliError}
+          </>
+        }
         action={
           <IconButton onClick={clearCliError}>
             <Icon name="times" size="md" color="white" fixedWidth />
@@ -57,6 +62,6 @@ const useStyles = makeStyles({
     backgroundColor: styles.colors.white,
   },
   error: {
-    '& .MuiPaper-root': { backgroundColor: styles.colors.danger },
+    // '& .MuiPaper-root': { backgroundColor: styles.colors.danger },
   },
 })
