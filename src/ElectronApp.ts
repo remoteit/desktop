@@ -1,4 +1,4 @@
-import { WEB_DIR, environment, EventBus, Logger, user } from 'remoteit-headless'
+import { WEB_DIR, EVENTS, environment, EventBus, Logger, user } from 'remoteit-headless'
 import electron from 'electron'
 import TrayMenu from './TrayMenu'
 import AutoUpdater from './AutoUpdater'
@@ -15,12 +15,6 @@ export default class ElectronApp {
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
 
-  static EVENTS = {
-    ready: 'app/ready',
-    open: 'app/open',
-    openOnLogin: 'app/open-on-login',
-  }
-
   constructor() {
     this.app = electron.app
     this.quitSelected = false
@@ -34,8 +28,8 @@ export default class ElectronApp {
     this.app.on('before-quit', () => (this.quitSelected = true))
     this.app.on('second-instance', () => this.openWindow())
 
-    EventBus.on(ElectronApp.EVENTS.openOnLogin, this.handleOpenAtLogin)
-    EventBus.on(ElectronApp.EVENTS.open, this.openWindow)
+    EventBus.on(EVENTS.openOnLogin, this.handleOpenAtLogin)
+    EventBus.on(EVENTS.open, this.openWindow)
   }
 
   public check = () => {
@@ -55,7 +49,7 @@ export default class ElectronApp {
   private handleAppReady = () => {
     this.createTrayIcon()
     this.createMainWindow()
-    EventBus.emit(ElectronApp.EVENTS.ready, this.tray)
+    EventBus.emit(EVENTS.ready, this.tray)
   }
 
   private handleActivate = () => {

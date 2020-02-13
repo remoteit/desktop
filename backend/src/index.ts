@@ -41,4 +41,5 @@ process
 export default new Application()
 
 // To support Electron wrapper
+export { EVENTS } from './electronInterface'
 export { ConnectionPool, environment, EventBus, hostName, IP_PRIVATE, LAN, Logger, user, WEB_DIR }

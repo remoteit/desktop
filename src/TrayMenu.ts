@@ -1,6 +1,14 @@
-import headless, { IP_PRIVATE, LAN, environment, EventBus, user, ConnectionPool, hostName } from 'remoteit-headless'
+import headless, {
+  IP_PRIVATE,
+  EVENTS,
+  LAN,
+  environment,
+  EventBus,
+  user,
+  ConnectionPool,
+  hostName,
+} from 'remoteit-headless'
 import electron from 'electron'
-import ElectronApp from './ElectronApp'
 import path from 'path'
 
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
@@ -11,10 +19,6 @@ export default class TrayMenu {
   private tray: any
   private privateIP: ipAddress
   private pool: IConnection[]
-
-  static EVENTS = {
-    forget: 'tray/forget',
-  }
 
   constructor(tray: electron.Tray) {
     this.tray = tray
@@ -95,7 +99,7 @@ export default class TrayMenu {
             { label: 'Copy to clipboard', click: () => this.copy(location) },
             connection.online
               ? { label: 'Launch', click: () => this.launch(location) }
-              : { label: 'Remove', click: () => EventBus.emit(TrayMenu.EVENTS.forget, connection) },
+              : { label: 'Remove', click: () => EventBus.emit(EVENTS.forget, connection) },
           ],
         })
       }
@@ -121,7 +125,7 @@ export default class TrayMenu {
 
   private handleOpen = (menuItem: any, browserWindow: any, event: any) =>
     EventBus.emit(
-      ElectronApp.EVENTS.open,
+      EVENTS.open,
       // Open dev tools when command+option clicked
       process.defaultApp && event.metaKey
     )
