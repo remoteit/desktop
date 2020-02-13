@@ -8,11 +8,11 @@
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
     "clean": "rimraf build/*",
     "compile": "tsc",
-    "server": "node build/index.js",
+    "start": "node build/index.js",
     "test": "NODE_ENV=test jest",
-    "start": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "pack": "npm-pack-all --output ../dist/remoteit-headless.tgz",
     "package": "NODE_ENV=production run-s clean compile pack",
+    "watch": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "watch-build": "tsc --watch",
     "watch-web": "onchange -i -k 'build/**/*' -- npm run server",
     "test-watch": "npm run test -- --watch"

@@ -17,6 +17,3 @@ src
 .DS_Store
 .vscode
 npm-debug.log*
-Certificates.p12
-entitlements.mac.plist
-jest.config.js
