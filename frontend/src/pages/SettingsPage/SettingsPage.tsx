@@ -107,7 +107,7 @@ export const SettingsPage = connect(
             icon="terminal"
             onClick={installWarning}
           />
-          {/* <UninstallSetting /> */}
+          <UninstallSetting />
         </List>
       </Container>
     )
