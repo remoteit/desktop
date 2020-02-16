@@ -70,20 +70,11 @@ class BinaryInstaller {
 
   async uninstall(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
-      const admin: boolean = true
       const options = { disableGlob: true }
 
       try {
-        // USER FILES
         installers.map(i => rimraf.sync(i.binaryPath(), options))
         rimraf.sync(environment.userPath, options)
-
-        // ADMIN FILES - Should only be here if installed target by entering password
-        // let adminCommands = new Command({ admin, onError: reject })
-        // installers.map(i => this.removeFile(adminCommands, i.binaryPath(admin)))
-        // this.removeDir(adminCommands, environment.adminPath)
-        // if (environment.isWindows) this.removeDir(adminCommands, environment.binPath(admin))
-        // await adminCommands.exec()
       } catch (e) {
         reject(e)
       }
