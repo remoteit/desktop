@@ -20,7 +20,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   color = 'success',
 }) => {
   const hidden = (connection && connection.active) || !service || service.state !== 'active'
-  const disabled: boolean = !!(connection && connection.connecting)
+  const connecting = !!(connection && connection.pid && !connection.active)
   const connect = () => Controller.emit('service/connect', connection || newConnection(service))
 
   return (
@@ -29,8 +29,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
         <DynamicButton
           title="Connect"
           icon="exchange"
+          loading={connecting}
           color={color}
-          disabled={disabled}
+          disabled={connecting}
           size={size}
           onClick={connect}
         />
