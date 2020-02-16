@@ -1,6 +1,8 @@
 import tmp from 'tmp'
 import path from 'path'
+import rimraf from 'rimraf'
 import debug from 'debug'
+import cli from './cliInterface'
 import EventBus from './EventBus'
 import environment from './environment'
 import Installer from './Installer'
@@ -13,15 +15,15 @@ const d = debug('r3:backend:BinaryInstaller')
 class BinaryInstaller {
   options = { name: 'remoteit' }
 
-  // 1) execute “sudo remoteit service stop”
-  // 2) Download and replace the CLI to new version
-  // 3) execute “sudo remoteit service start”
-
   async install(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
-      // Download and install binaries
       var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
+      var isInstalled: boolean = !(await cli.isNotInstalled())
 
+      // Service needs to stop in install a new version
+      if (isInstalled) await cli.stopService()
+
+      // Download and install binaries
       await Promise.all(
         installers.map(installer =>
           installer
@@ -60,6 +62,7 @@ class BinaryInstaller {
         EventBus.emit(Installer.EVENTS.installed, installer.toJSON())
       })
 
+      if (isInstalled) await cli.startService()
       tmpDir.removeCallback()
       resolve()
     })
@@ -67,38 +70,18 @@ class BinaryInstaller {
 
   async uninstall(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
-      const admin: boolean = true
+      const options = { disableGlob: true }
 
-      /*
-      Disabled 
-
-      // USER FILES
-      let commands = new Command({ onError: reject })
-      installers.map(i => this.removeFile(commands, i.binaryPath()))
-      this.removeDir(commands, environment.userPath)
-      await commands.exec()
-
-      // ADMIN FILES - Should only be here if installed target by entering password
-      let adminCommands = new Command({ admin, onError: reject })
-      installers.map(i => this.removeFile(adminCommands, i.binaryPath(admin)))
-      this.removeDir(adminCommands, environment.adminPath)
-      if (environment.isWindows) this.removeDir(adminCommands, environment.binPath(admin))
-      await adminCommands.exec()
-      */
+      try {
+        installers.map(i => rimraf.sync(i.binaryPath(), options))
+        rimraf.sync(environment.userPath, options)
+      } catch (e) {
+        reject(e)
+      }
 
       resolve()
     })
   }
-
-  // removeFile(commands: Command, path: string) {
-  //   if (!existsSync(path)) return
-  //   commands.push(environment.isWindows ? `del /Q /F "${path}"` : `rm -f ${path}`)
-  // }
-
-  // removeDir(commands: Command, path: string) {
-  //   if (!existsSync(path)) return
-  //   commands.push(environment.isWindows ? `rmdir /Q /S "${path}"` : `rm -rf ${path}`)
-  // }
 }
 
 export default new BinaryInstaller()
