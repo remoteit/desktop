@@ -99,6 +99,14 @@ export default class CLI {
     this.readTargets()
   }
 
+  async stopService() {
+    await this.exec({ params: ['service', 'stop'], admin: true, checkSignIn: true })
+  }
+
+  async startService() {
+    await this.exec({ params: ['service', 'start'], admin: true, checkSignIn: true })
+  }
+
   async register(device: IDevice) {
     await this.exec({ params: ['setup', `"${device.name}"`, '-j'], admin: true, checkSignIn: true })
     this.read()
