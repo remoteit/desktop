@@ -96,16 +96,10 @@ export default class Installer {
    * system and then make it writable.
    */
   install(tempDir: string, cb?: ProgressCallback) {
-    Logger.info('Installing Binary', {
+    Logger.info('INSTALLING BINARY', {
       name: this.name,
       repoName: this.repoName,
       version: this.version,
-    })
-    d('Attempting to install binary: %O', {
-      name: this.name,
-      path: this.binaryPath(),
-      version: this.version,
-      repoName: this.repoName,
     })
 
     this.tempFile = path.join(tempDir, this.binaryName)
