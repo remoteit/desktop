@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.5.8",
+  "version": "2.5.9",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -59,7 +59,7 @@
     "appId": "it.remote.desktop",
     "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
-    "productName": "remoteit-desktop",
+    "productName": "remoteit",
     "artifactName": "${productName}-${arch}-installer.${ext}",
     "publish": [
       "github"

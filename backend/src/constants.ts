@@ -31,5 +31,5 @@ export const UNIX_ADMIN_SETTINGS = '/etc/remoteit'
 
 export const WIN_USER_BINARIES = path.join(os.homedir(), 'AppData/Local/remoteit/bin')
 export const WIN_USER_SETTINGS = path.join(os.homedir(), 'AppData/Local/remoteit')
-export const WIN_ADMIN_BINARIES = path.normalize('/Program Files/remoteit')
+export const WIN_ADMIN_BINARIES = path.normalize('/Program Files/remoteit/bin')
 export const WIN_ADMIN_SETTINGS = path.normalize('/ProgramData/remoteit')
