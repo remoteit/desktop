@@ -2,6 +2,7 @@ import debug from 'debug'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
 import remoteitInstaller from './remoteitInstaller'
+import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import Logger from './Logger'
 import user from './User'
@@ -14,27 +15,26 @@ const d = debug('r3:backend:Application')
 export default class Application {
   public electron?: any
   public pool: ConnectionPool
-  private controller?: Controller
 
   constructor() {
     Logger.info('Application starting up!')
+    this.pool = new ConnectionPool()
+    this.constructorSync()
+  }
 
+  async constructorSync() {
     this.bindExitHandlers()
     environment.setElevatedState()
+    await this.install()
 
     // This electron now should be set externally (id application.electron = ElectronApp)
     this.electron = false
-
-    // Start pool and load connections from filesystem
-    this.pool = new ConnectionPool()
 
     // Start server and listen to events
     server.start()
 
     // create the event controller
-    if (server.io) this.controller = new Controller(server.io, this.pool)
-
-    this.install()
+    if (server.io) new Controller(server.io, this.pool)
 
     EventBus.on(user.EVENTS.signedIn, this.startHeartbeat)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
@@ -42,9 +42,9 @@ export default class Application {
 
   private install = async () => {
     const install = !(await remoteitInstaller.isCurrent(true))
-    if (install && this.controller) {
+    if (install) {
       Logger.info('INSTALLING BINARIES')
-      this.controller.installBinaries()
+      await binaryInstaller.install()
     }
   }
 
@@ -74,13 +74,13 @@ export default class Application {
   }
 
   private handleExit = async () => {
-    if (this.pool) await this.pool.stopAll()
+    this.pool && (await this.pool.stopAll())
     process.exit()
   }
 
   private handleException = async (code: any) => {
     if (code !== 0) Logger.warn('PROCESS EXCEPTION', { errorCode: code })
-    if (this.pool) await this.pool.stopAll()
+    this.pool && (await this.pool.stopAll())
   }
 
   /**
@@ -91,6 +91,6 @@ export default class Application {
     Logger.info('Signing out user')
 
     // Stop all connections cleanly
-    await this.pool.stopAll()
+    this.pool && (await this.pool.stopAll())
   }
 }

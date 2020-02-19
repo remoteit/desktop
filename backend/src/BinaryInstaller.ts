@@ -5,6 +5,7 @@ import debug from 'debug'
 import cli from './cliInterface'
 import EventBus from './EventBus'
 import environment from './environment'
+import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
 import { existsSync } from 'fs'
@@ -15,7 +16,11 @@ const d = debug('r3:backend:BinaryInstaller')
 class BinaryInstaller {
   options = { name: 'remoteit' }
 
-  async install(installers: Installer[]) {
+  async install() {
+    await this.installEach([remoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+  }
+
+  async installEach(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
       var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
       var isInstalled: boolean = !(await cli.isNotInstalled())
@@ -68,7 +73,11 @@ class BinaryInstaller {
     })
   }
 
-  async uninstall(installers: Installer[]) {
+  async uninstall() {
+    await this.uninstallEach([remoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+  }
+
+  async uninstallEach(installers: Installer[]) {
     return new Promise(async (resolve, reject) => {
       const options = { disableGlob: true }
 

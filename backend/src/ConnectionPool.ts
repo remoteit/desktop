@@ -26,12 +26,10 @@ export default class ConnectionPool {
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
     const connections: IConnection[] = this.connectionsFile.read() || []
 
-    Logger.info('Initializing connections pool', { connections })
+    Logger.info('Initializing connections pool', { length: connections.length })
 
+    // load connection data
     connections.map(c => this.set(c))
-
-    // start any auto-start connections
-    this.check()
 
     // init freeport
     this.nextFreePort()
@@ -63,17 +61,18 @@ export default class ConnectionPool {
 
   add = (connection: IConnection) => {
     const instance = new Connection(connection)
+    d('ADDING CONNECTION', connection.id)
     this.pool.push(instance)
     return instance
   }
 
   find = (id: string) => {
-    d('Find connection with ID:', { id, pool: this.pool })
+    d('FIND CONNECTION ID:', id)
     return this.pool.find(c => c.params.id === id)
   }
 
   start = async (connection: IConnection) => {
-    d('Connecting:', connection)
+    d('CONNECTING:', connection)
     if (!connection) return new Error('No connection data!')
     const instance = this.set(connection)
     if (!instance) return
@@ -83,13 +82,13 @@ export default class ConnectionPool {
   }
 
   stop = async ({ id }: IConnection, autoStart?: boolean) => {
-    d('Stopping connection:', id)
+    d('STOPPING CONNECTION:', id)
     const instance = this.find(id)
     instance && instance.stop(autoStart)
   }
 
   forget = async ({ id }: IConnection) => {
-    d('Forgetting connection:', id)
+    d('FORGETTING CONNECTION:', id)
     const connection = this.find(id)
     if (connection) {
       const index = this.pool.indexOf(connection)
@@ -101,7 +100,7 @@ export default class ConnectionPool {
   }
 
   stopAll = async () => {
-    d('Stopping all services')
+    d('STOPPING ALL CONNECTIONS')
     if (this.pool.length) {
       await this.pool.map(async c => await c.stop())
       this.updated()

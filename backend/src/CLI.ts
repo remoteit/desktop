@@ -100,11 +100,11 @@ export default class CLI {
   }
 
   async stopService() {
-    await this.exec({ params: ['service', 'stop'], admin: true, checkSignIn: true })
+    await this.exec({ params: ['service', 'stop'], checkSignIn: true })
   }
 
   async startService() {
-    await this.exec({ params: ['service', 'start'], admin: true, checkSignIn: true })
+    await this.exec({ params: ['service', 'start'], checkSignIn: true })
   }
 
   async register(device: IDevice) {

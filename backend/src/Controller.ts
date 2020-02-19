@@ -6,9 +6,8 @@ import cli from './cliInterface'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
 import Connection from './Connection'
-import BinaryInstaller from './BinaryInstaller'
+import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
-import remoteitInstaller from './remoteitInstaller'
 import ConnectionPool from './ConnectionPool'
 import Installer from './Installer'
 import EventBus from './EventBus'
@@ -140,12 +139,12 @@ class Controller {
     await this.pool.reset()
     await cli.delete()
     await cli.unInstall()
-    await BinaryInstaller.uninstall([remoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    await binaryInstaller.uninstall()
     this.quit()
   }
 
   installBinaries = async () => {
-    BinaryInstaller.install([remoteitInstaller]).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    await binaryInstaller.install()
   }
 
   openOnLogin = (open: boolean) => {
