@@ -48,7 +48,7 @@ export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onU
                 <Tooltip
                   title={
                     <span>
-                      Local network IP address to host this service.
+                      Local network IP address or FQDN to host this service.
                       <br />
                       Leave blank for this system to host.
                     </span>
