@@ -22,7 +22,7 @@
     "postinstall": "run-p install-*",
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
     "start": "run-p watch-*",
-    "watch-backend": "cd backend && npm run watch-build",
+    "watch-backend": "cd backend && npm run watch",
     "watch-build": "tsc --watch",
     "watch-images": "onchange -i -k 'src/images/**/*' -- npm run copy-images",
     "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron"

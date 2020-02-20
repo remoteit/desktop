@@ -69,6 +69,8 @@ function getEventHandlers() {
       auth.init()
     },
 
+    unauthorized: (error: Error) => auth.signInError(error.message),
+
     'server/authenticated': () => auth.authenticated(),
 
     disconnect: () => ui.disconnected(),

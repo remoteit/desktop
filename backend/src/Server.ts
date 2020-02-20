@@ -68,20 +68,25 @@ class Server {
 
     // Signed in
     if (user.is(credentials)) {
-      d(`User authenticated.`)
+      d('User authenticated.')
       user.authenticated()
       return callback(null, true)
 
+      // Update credentials
+    } else if (user.username === credentials.username) {
+      d('Update credentials', user.username)
+      return callback(null, await !!user.checkSignIn(credentials))
+
       // Sign in
     } else if (credentials.username && credentials.authHash) {
-      d(`User signing in.`)
-      if (user.signedIn) user.signOut()
+      d('User signing in!')
+      if (user.signedIn) return callback(new Error(`${user.username} is already logged in.`), false)
       return callback(null, await !!user.checkSignIn(credentials))
 
       // Deny
     } else {
       d('Authentication failed')
-      return callback(new Error('Authentication failed'))
+      return callback(new Error('Server authentication failed.'), false)
     }
   }
 

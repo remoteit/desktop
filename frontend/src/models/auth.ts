@@ -46,7 +46,6 @@ export default createModel({
       }
       if (user) {
         dispatch.auth.checkSignInStarted()
-        Controller.emit('authentication', { username: user.username, authHash: user.authHash })
         dispatch.auth.setUser(user)
       } else {
         dispatch.auth.signedOut()
@@ -114,6 +113,7 @@ export default createModel({
     },
     async signInError(error: string) {
       dispatch.auth.signInFinished()
+      dispatch.auth.checkSignInFinished()
       dispatch.auth.setError(error)
     },
     /**
@@ -167,6 +167,7 @@ export default createModel({
       state.user = user
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
+      Controller.emit('authentication', { username: user.username, authHash: user.authHash })
       updateUserCredentials(user)
     },
     setOpenOnLogin(state: AuthState, open: boolean) {
