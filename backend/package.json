@@ -13,7 +13,7 @@
     "pack": "npm-pack-all --output ../dist/remoteit-headless.tgz",
     "watch": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "watch-build": "tsc --watch",
-    "watch-web": "onchange -i -k 'build/**/*' -- npm run server",
+    "watch-web": "onchange -i -k 'build/**/*' -- npm start",
     "test-watch": "npm run test -- --watch"
   },
   "dependencies": {

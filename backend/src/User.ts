@@ -30,6 +30,7 @@ export class User {
 
     this.username = (user && user.username) || ''
     this.authHash = (user && user.authHash) || ''
+    if (this.hasCredentials) this.signedIn = true
   }
 
   get hasCredentials() {
