@@ -6,9 +6,68 @@
 
 The desktop application serves one primary purpose which is to create a Peer-to-Peer connection to a remote.it device. It downloads and installs connectd on the current system and then runs connectd to establish a Peer-to-Peer connection.
 
-## Usage
+## Features
 
-- Your connections are persisted to `~/.remoteit/connections.json`. You can add/remove connection manually if you'd like. Make sure to restart the desktop if you change this file.
+- Peer to peer initiator connections
+- Local area network (LAN) sharing of initiator connections
+- Custom local port and IP address binding for connections
+- Custom connection naming
+- Connection throughput monitoring
+- Quick launch to HTTP(S), SSH or VNC connections
+- Registering your system as a target device (traditional registration)
+- Run target services as system services
+- Jump services to other systems on the network
+- LAN scanning
+- Multi user system handling
+- Remote configuration through web hosted panel on port 29999
+- Out of band network detection
+
+## Platforms
+
+- Windows
+- Mac
+- Raspberry Pi
+- Ubuntu
+- Headless (No GUI system)
+
+
+## Headless
+
+The desktop can also be installed only as a web-service to manage a device in a headless environment. Install and run headless.
+
+```shell
+curl -O -L https://github.com/remoteit/desktop/releases/download/latest/remoteit-headless.tgz
+tar -xf remoteit-headless.tgz
+sudo node package/build
+```
+
+To run in the background
+
+```shell
+nohup sudo node package/build &
+```
+
+## Start as root / admin
+
+Start as root / admin to have hosted services persist for all users and continue to run even after the remote.it desktop app is quit
+
+### Windows
+
+Just run as Administrator from the start menu option.
+
+### MacOS
+
+Must be launched from a terminal
+
+```shell
+sudo /Applications/remoteit.app/Contents/MacOS/remoteit
+```
+
+### Linux
+
+```shell
+sudo /opt/remoteit/remoteit --no-sandbox
+```
 
 ## Development
 
@@ -60,6 +119,12 @@ If it's not working check that the developer account is signed into XCode and th
 
 More info can be found in this setup guide: [Notarizing on Mac OS](https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/)
 
+## Packaging for running headless
+
+```cmd
+npm run package
+```
+
 ### Publishing
 
 You should have an env var set `export GH_TOKEN="<YOUR_TOKEN_HERE>"`
@@ -98,40 +163,3 @@ signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
 6. Enter the token password for the certificate
 
 The application should now be signed.
-
-## Packaging for running headless
-
-```cmd
-npm run package
-```
-
-Will create a tar file in `backend/remoteit-desktop-<version>.tgz`
-
-## Run as root on Linux
-
-```cmd
-/opt/remoteit-desktop/remoteit-desktop --no-sandbox
-```
-
-## Features
-
-- Peer to peer initiator connections
-- Local area network (LAN) sharing of initiator connections
-- Custom local port and IP address binding for connections
-- Custom connection naming
-- Connection throughput monitoring
-- Quick launch to HTTP(S), SSH or VNC connections
-- Registering your system as a target device (traditional registration)
-- Run target services as system services
-- Jump services to other systems on the network
-- LAN scanning
-- Multi user system handling
-- Remote configuration through web hosted panel on port 29999
-- Out of band network detection
-
-## Platforms
-
-- Windows
-- Mac
-- Raspberry Pi
-- Ubuntu

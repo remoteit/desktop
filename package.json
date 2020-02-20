@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.5.9",
+  "version": "2.5.10-alpha",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -61,6 +61,7 @@
     "copyright": "remot3.it, Inc",
     "productName": "remoteit",
     "artifactName": "${productName}-${arch}-installer.${ext}",
+    "generateUpdatesFilesForAllChannels": true,
     "publish": [
       "github"
     ],
