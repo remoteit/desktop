@@ -11,15 +11,12 @@ import {
 } from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
-import Logger from './Logger'
-import lan from './LAN'
 import os from 'os'
 
 class environment {
   isElevated: boolean = false
 
   get isHeadless() {
-    Logger.info('IS HEADLESS', { headless: !app.electron })
     return !app.electron
   }
 
@@ -63,17 +60,6 @@ class environment {
 
   async setElevatedState() {
     this.isElevated = await isElevated()
-    Logger.info('ELEVATED STATE', { isElevated: this.isElevated })
-  }
-
-  async getSystemInfo() {
-    await lan.getInterfaces()
-    return {
-      arch: os.arch(),
-      platform: this.platform,
-      interfaces: lan.interfaces,
-      privateIP: lan.privateIP,
-    }
   }
 
   toJSON() {

@@ -6,7 +6,7 @@ import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import Logger from './Logger'
 import user from './User'
-import server from './Server'
+import server from './server'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
 

@@ -11,7 +11,7 @@ import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
 import Installer from './Installer'
 import EventBus from './EventBus'
-import server from './Server'
+import server from './server'
 import user from './User'
 import debug from 'debug'
 

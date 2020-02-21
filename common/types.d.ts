@@ -175,6 +175,8 @@ declare global {
   type ipClass = 'A' | 'B' | 'C'
 
   type IEvents = { [event: string]: string }
+
+  type ILookup = { [key: string]: any }
 }
 
 export {}
