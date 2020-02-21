@@ -27,9 +27,6 @@ export default class Application {
     environment.setElevatedState()
     await this.install()
 
-    // This electron now should be set externally (id application.electron = ElectronApp)
-    this.electron = false
-
     // Start server and listen to events
     server.start()
 
@@ -38,6 +35,18 @@ export default class Application {
 
     EventBus.on(user.EVENTS.signedIn, this.startHeartbeat)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
+  }
+
+  quit() {
+    if (this.electron) this.electron.app.quit()
+  }
+
+  restart() {
+    if (this.electron) this.electron.autoUpdater.restart()
+  }
+
+  recapitate(head: any) {
+    this.electron = head
   }
 
   private install = async () => {

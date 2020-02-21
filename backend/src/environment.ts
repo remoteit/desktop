@@ -19,6 +19,7 @@ class environment {
   isElevated: boolean = false
 
   get isHeadless() {
+    Logger.info('IS HEADLESS', { headless: !app.electron })
     return !app.electron
   }
 

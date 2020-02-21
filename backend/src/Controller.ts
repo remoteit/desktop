@@ -125,12 +125,13 @@ class Controller {
   }
 
   quit = () => {
-    if (app.electron) app.electron.app.quit()
+    Logger.info('WEB UI QUIT', { electron: app.electron })
+    app.quit()
   }
 
   restart = () => {
-    d('Restart')
-    if (app.electron) app.electron.autoUpdater.restart()
+    Logger.info('WEB UI AUTOUPDATE RESTART', { electron: app.electron })
+    app.restart()
   }
 
   uninstall = async () => {
