@@ -42,7 +42,7 @@ class Server {
     const server = createServer(this.app)
       .on('error', error => {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
-        if (app.electron) app.electron.app.quit()
+        app.quit()
       })
       .listen(PORT, () => {
         d(`Listening on port ${PORT}`)

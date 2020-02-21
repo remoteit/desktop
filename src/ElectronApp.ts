@@ -32,7 +32,7 @@ export default class ElectronApp {
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
-  public check = () => {
+  check = () => {
     this.autoUpdater.check()
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "remoteit-headless",
-  "version": "2.5.11-alpha",
+  "version": "2.5.12-alpha",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -13,7 +13,6 @@
     "pack": "npm-pack-all --output ../dist/remoteit-headless.tgz",
     "watch": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "watch-build": "tsc --watch",
-    "watch-web": "onchange -i -k 'build/**/*' -- npm start",
     "test-watch": "npm run test -- --watch"
   },
   "dependencies": {
