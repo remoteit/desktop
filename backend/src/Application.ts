@@ -26,14 +26,11 @@ export default class Application {
     this.bindExitHandlers()
     environment.setElevatedState()
     await this.install()
-
-    // Start server and listen to events
     server.start()
-
-    // create the event controller
+    this.startHeartbeat()
     if (server.io) new Controller(server.io, this.pool)
 
-    EventBus.on(user.EVENTS.signedIn, this.startHeartbeat)
+    EventBus.on(user.EVENTS.signedIn, this.check)
     EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
   }
 
@@ -58,12 +55,11 @@ export default class Application {
   }
 
   private startHeartbeat = () => {
-    // start heartbeat 1bpm
-    setInterval(this.check, 1000 * 60)
-    this.check()
+    setInterval(this.check, 1000 * 60) // 1bpm
   }
 
   private check = () => {
+    if (!user.signedIn) return
     this.electron && this.electron.check()
     remoteitInstaller.check()
     this.pool.check()
