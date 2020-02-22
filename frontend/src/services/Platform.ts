@@ -8,9 +8,15 @@ export function environment() {
   return BROWSER
 }
 
+export function os() {
+  if (isMac()) return 'mac'
+  if (isWindows()) return 'windows'
+  return 'linux'
+}
+
 export function isElectron() {
   const userAgent = navigator.userAgent.toLowerCase()
-  return userAgent.includes(' electron/')
+  return userAgent.includes('electron')
 }
 
 export function isMac() {
