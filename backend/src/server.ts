@@ -6,8 +6,8 @@ import user from './User'
 import cors from 'cors'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
+import systemInfo from './systemInfo'
 import socketioAuth from 'socketio-auth'
-import environment from './environment'
 import { createServer } from 'http'
 import { PORT, WEB_DIR } from './constants'
 
@@ -31,7 +31,7 @@ class Server {
     this.app.use('/', router)
 
     router.get('/system', async (request, response) => {
-      const system = await environment.getSystemInfo()
+      const system = await systemInfo()
       Logger.info('SEND SYSTEM INFO', { system })
       response.send(system)
     })

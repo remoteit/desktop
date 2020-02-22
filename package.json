@@ -24,7 +24,7 @@
     "start": "run-p watch-*",
     "watch-backend": "cd backend && npm run watch",
     "watch-build": "tsc --watch",
-    "watch-images": "onchange -i -k 'src/images/**/*' -- npm run copy-images",
+    "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
     "watch-electron": "onchange -i -k 'build/**/*' -- npm run electron"
   },
   "dependencies": {
