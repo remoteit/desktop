@@ -44,6 +44,6 @@ const useStyles = makeStyles({
   icon: {
     position: 'absolute',
     height: spacing.lg,
-    right: spacing.sm,
+    right: spacing.md,
   },
 })

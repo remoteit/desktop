@@ -73,7 +73,7 @@ const useStyles = makeStyles({
     // '& .MuiPaper-root': { backgroundColor: colors.danger },
   },
   full: { top: 0, left: 0, right: 0, bottom: 0, position: 'fixed' },
-  inset: { top: spacing.xl, left: spacing.xs, right: spacing.xs, bottom: spacing.xs },
+  inset: { top: spacing.xl, left: spacing.xs, right: spacing.xs, bottom: spacing.xs, borderRadius: spacing.sm },
   mac: { backgroundColor: colors.grayDark, padding: spacing.xs },
   linux: { backgroundColor: colors.success, padding: spacing.xs },
   windows: { backgroundColor: colors.primary, padding: spacing.xs },
