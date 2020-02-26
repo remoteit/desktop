@@ -45,6 +45,11 @@ class environment {
     return detectRPi()
   }
 
+  get isPiZero() {
+    // @ts-ignore
+    return detectRPi() && process.config.variables.arm_version === '6'
+  }
+
   get userPath() {
     return this.isWindows ? WIN_USER_SETTINGS : UNIX_USER_SETTINGS
   }

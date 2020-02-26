@@ -113,6 +113,7 @@ export default class Installer {
     let platform = 'linux_arm64'
     if (environment.isWindows) platform = 'windows_x86_64.exe'
     else if (environment.isMac) platform = 'mac-osx_x86_64'
+    else if (environment.isPiZero) platform = 'linux_armv6'
     else if (environment.isPi) platform = 'linux_armv7'
     else if (environment.isArmLinux) platform = 'linux_arm64'
     else if (environment.isLinux) platform = 'linux_x86_64'
