@@ -48,7 +48,10 @@ export default class Command {
 
       if (stderr) {
         this.log(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString() }, 'error')
-        AirBrake.notify({ message: 'COMMAND STDERR', command: this.toString(), stderr: stderr.toString() })
+        AirBrake.notify({
+          params: { type: 'COMMAND STDERR', command: this.toString() },
+          error: stderr.toString(),
+        })
         // Hiding these errors for now because successful CLI commands are in stderr
         // this.onError(stderr.toString())
         result = stderr.toString()
@@ -59,7 +62,10 @@ export default class Command {
         result = stdout.toString()
       }
     } catch (error) {
-      AirBrake.notify({ message: 'COMMAND ERROR', command: this.toString(), error })
+      AirBrake.notify({
+        params: { type: 'COMMAND ERROR', command: this.toString() },
+        error: error,
+      })
       this.log(`EXEC ERROR CAUGHT ${this.toString()}`, { error, errorMessage: error.message }, 'error')
       this.onError(error)
       result = error.toString()

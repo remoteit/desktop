@@ -125,12 +125,12 @@ class Controller {
   }
 
   quit = () => {
-    Logger.info('WEB UI QUIT', { electron: app.electron })
+    Logger.info('WEB UI QUIT')
     app.quit()
   }
 
   restart = () => {
-    Logger.info('WEB UI AUTOUPDATE RESTART', { electron: app.electron })
+    Logger.info('WEB UI AUTOUPDATE RESTART')
     app.restart()
   }
 

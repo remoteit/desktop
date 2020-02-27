@@ -26,16 +26,22 @@ Logger.info('Desktop starting up!')
 
 process
   .on('uncaughtException', (error: Error) => {
-    d('Caught exception', error)
-    AirBrake.notify({ message: 'CAUGHT EXCEPTION', error })
-    Logger.warn('CAUGHT EXCEPTION', { error, details: error.toString() })
-    EventBus.emit(CLI.EVENTS.error, error.toString())
+    d('Uncaught exception', error)
+    AirBrake.notify({
+      params: { type: 'UNCAUGHT EXCEPTION' },
+      error: error,
+    })
+    Logger.warn('UNCAUGHT EXCEPTION', { error, details: error.toString() })
+    // EventBus.emit(CLI.EVENTS.error, error.toString())
   })
   .on('unhandledRejection', (reason: Error | any, promise: Promise<any>) => {
     d('Caught exception', reason, promise)
-    AirBrake.notify({ message: 'UNHANDLED PROMISE REJECTION', reason, promise })
+    AirBrake.notify({
+      params: { type: 'UNHANDLED PROMISE REJECTION', promise },
+      error: reason,
+    })
     Logger.warn('UNHANDLED PROMISE REJECTION', { reason, details: reason.toString(), promise })
-    EventBus.emit(CLI.EVENTS.error, reason.toString())
+    // EventBus.emit(CLI.EVENTS.error, reason.toString())
   })
 
 export default new Application()

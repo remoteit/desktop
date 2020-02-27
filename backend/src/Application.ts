@@ -55,13 +55,21 @@ export default class Application {
   }
 
   private startHeartbeat = () => {
-    setInterval(this.check, 1000 * 60) // 1bpm
+    let count = 0
+    setInterval(() => {
+      this.check(count++)
+      if (count > 999) count = 0
+    }, 1000 * 60) // 1bpm
   }
 
-  private check = () => {
+  private check = (count: number) => {
     if (!user.signedIn) return
-    this.electron && this.electron.check()
-    remoteitInstaller.check()
+
+    // check every 5 minutes
+    if (count % 5 === 0) {
+      this.electron && this.electron.check()
+      remoteitInstaller.check()
+    }
     this.pool.check()
   }
 
