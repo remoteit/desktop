@@ -9,6 +9,7 @@ import Connection from './Connection'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
+import environment from './environment'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './server'
@@ -96,6 +97,7 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
     this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
+    this.io.emit('os', environment.simplesOS)
   }
 
   connections = () => {

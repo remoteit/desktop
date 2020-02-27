@@ -16,9 +16,10 @@ export interface Props {
 
 export function Page({ authenticated = true, children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend } = useDispatch<Dispatch>()
-  const { connected, cliError } = useSelector((state: ApplicationState) => ({
+  const { connected, cliError, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
     cliError: state.backend.cliError,
+    os: state.backend.os,
   }))
   const css = useStyles()
   const clearCliError = () => backend.set({ key: 'cliError', value: undefined })
@@ -27,13 +28,13 @@ export function Page({ authenticated = true, children }: Props & React.HTMLProps
 
   if (!isElectron()) {
     pageCss += ' ' + css.inset
-    remoteCss = css[os()]
-    remoteCss += ' ' + css.full
+    remoteCss = css.full + ' ' + css.default
+    remoteCss += os ? ' ' + css[os] : ''
   }
 
   return (
     <div className={remoteCss}>
-      <RemoteHeader />
+      <RemoteHeader os={os} />
       <div className={pageCss}>
         {children}
         <Snackbar open={authenticated && !connected} message="Webserver connection lost. Retrying..." />
@@ -61,6 +62,7 @@ export function Page({ authenticated = true, children }: Props & React.HTMLProps
 }
 
 const useStyles = makeStyles({
+  full: { top: 0, left: 0, right: 0, bottom: 0, position: 'fixed' },
   page: {
     overflow: 'hidden',
     display: 'flex',
@@ -72,9 +74,16 @@ const useStyles = makeStyles({
   error: {
     // '& .MuiPaper-root': { backgroundColor: colors.danger },
   },
-  full: { top: 0, left: 0, right: 0, bottom: 0, position: 'fixed' },
-  inset: { top: spacing.xl, left: spacing.xs, right: spacing.xs, bottom: spacing.xs, borderRadius: spacing.sm },
-  mac: { backgroundColor: colors.grayDark, padding: spacing.xs },
-  linux: { backgroundColor: colors.success, padding: spacing.xs },
-  windows: { backgroundColor: colors.primary, padding: spacing.xs },
+  inset: {
+    top: spacing.xl,
+    left: spacing.xs,
+    right: spacing.xs,
+    bottom: spacing.xs,
+    borderRadius: spacing.sm,
+  },
+  default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
+  mac: { backgroundColor: colors.grayDark },
+  rpi: { backgroundColor: colors.rpi },
+  linux: { backgroundColor: colors.success },
+  windows: { backgroundColor: colors.primary },
 })

@@ -119,6 +119,8 @@ function getEventHandlers() {
 
     privateIP: (result: ipAddress) => backend.set({ key: 'privateIP', value: result }),
 
+    os: (result: Ios) => backend.set({ key: 'os', value: result }),
+
     // User
     'signed-out': () => auth.signedOut(),
 

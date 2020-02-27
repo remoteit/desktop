@@ -1,31 +1,17 @@
 import React from 'react'
-import { os, isElectron } from '../../services/Platform'
-import { makeStyles } from '@material-ui/styles'
 import { colors, spacing, fontSizes } from '../../styling'
-import windows from '../../assets/windows.svg'
-import apple from '../../assets/apple.svg'
-import linux from '../../assets/linux.svg'
+import { isElectron } from '../../services/Platform'
+import { makeStyles } from '@material-ui/styles'
+import * as assets from '../../assets'
 
-export const RemoteHeader: React.FC = () => {
+export const RemoteHeader: React.FC<{ os?: Ios }> = ({ os }) => {
   const css = useStyles()
-  let icon = linux
 
   if (isElectron()) return null
 
-  switch (os()) {
-    case 'mac':
-      icon = apple
-      break
-    case 'windows':
-      icon = windows
-      break
-    case 'linux':
-      icon = linux
-  }
-
   return (
     <div className={css.remote}>
-      <img className={css.icon} src={icon} />
+      {os && <img className={css.icon} src={assets[os]} />}
       Remote View
     </div>
   )

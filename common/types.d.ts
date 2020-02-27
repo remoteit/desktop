@@ -85,6 +85,8 @@ declare global {
 
   type BinaryName = 'connectd' | 'muxer' | 'demuxer'
 
+  type Ios = 'mac' | 'windows' | 'linux' | 'rpi'
+
   interface InstallationInfo {
     name: string
     path: string
