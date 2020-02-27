@@ -34,6 +34,7 @@ export type Color =
   | 'grayDarkest'
   | 'white'
   | 'black'
+  | 'rpi'
 
 export const colors: { [key in Color]: string } = {
   primary: '#0096e7',
@@ -56,6 +57,7 @@ export const colors: { [key in Color]: string } = {
   grayDarkest: '#333',
   white: 'white',
   black: 'black',
+  rpi: '#C51A4A',
 }
 
 export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'

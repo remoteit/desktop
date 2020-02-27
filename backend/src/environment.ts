@@ -20,6 +20,13 @@ class environment {
     return !app.electron
   }
 
+  get simplesOS(): Ios {
+    if (this.isMac) return 'mac'
+    if (this.isWindows) return 'windows'
+    if (this.isPi) return 'rpi'
+    else return 'linux'
+  }
+
   get isWindows() {
     return os.platform() === 'win32'
   }
@@ -33,7 +40,7 @@ class environment {
   }
 
   get platform() {
-    if (this.isPi) return 'RPi'
+    if (this.isPi) return 'rpi'
     else return os.platform()
   }
 

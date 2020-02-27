@@ -1,23 +1,27 @@
 import React from 'react'
-import { os, isElectron } from '../../services/Platform'
-import { makeStyles } from '@material-ui/styles'
 import { colors, spacing, fontSizes } from '../../styling'
+import { isElectron } from '../../services/Platform'
+import { makeStyles } from '@material-ui/styles'
 import windows from '../../assets/windows.svg'
 import apple from '../../assets/apple.svg'
 import linux from '../../assets/linux.svg'
+import rpi from '../../assets/rpi.svg'
 
-export const RemoteHeader: React.FC = () => {
+export const RemoteHeader: React.FC<{ os?: Ios }> = ({ os }) => {
   const css = useStyles()
   let icon = linux
 
   if (isElectron()) return null
 
-  switch (os()) {
+  switch (os) {
     case 'mac':
       icon = apple
       break
     case 'windows':
       icon = windows
+      break
+    case 'rpi':
+      icon = rpi
       break
     case 'linux':
       icon = linux
