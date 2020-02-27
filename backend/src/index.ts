@@ -29,7 +29,7 @@ process
     d('Uncaught exception', error)
     AirBrake.notify({
       params: { type: 'UNCAUGHT EXCEPTION' },
-      error: error,
+      error,
     })
     Logger.warn('UNCAUGHT EXCEPTION', { error, details: error.toString() })
     // EventBus.emit(CLI.EVENTS.error, error.toString())

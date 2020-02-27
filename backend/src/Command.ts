@@ -64,7 +64,7 @@ export default class Command {
     } catch (error) {
       AirBrake.notify({
         params: { type: 'COMMAND ERROR', command: this.toString() },
-        error: error,
+        error,
       })
       this.log(`EXEC ERROR CAUGHT ${this.toString()}`, { error, errorMessage: error.message }, 'error')
       this.onError(error)
