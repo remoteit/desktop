@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Typography, Tooltip, IconButton } from '@material-ui/core'
-import { isElectron, isMac } from '../../services/Platform'
+import { isElectron, isMac } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles'

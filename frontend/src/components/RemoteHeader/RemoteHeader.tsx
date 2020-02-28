@@ -1,6 +1,6 @@
 import React from 'react'
 import { colors, spacing, fontSizes } from '../../styling'
-import { isElectron } from '../../services/Platform'
+import { isElectron } from '../../services/Browser'
 import { makeStyles } from '@material-ui/styles'
 import * as assets from '../../assets'
 

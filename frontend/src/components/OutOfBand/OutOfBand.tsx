@@ -1,18 +1,22 @@
 import React from 'react'
-import { isMac, isWindows } from '../../services/Platform'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { makeStyles } from '@material-ui/styles'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip, Link } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
 
 export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
+  const { os } = useSelector((state: ApplicationState) => state.backend)
   const css = useStyles()
-  if (isMac() || isWindows()) return null
+  if (os === 'mac' || os === 'windows') return null
   return (
     <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
-      <div className={css.oob + (active ? ' ' + css.active : '')}>
-        <span />
-        <small>Out of Band</small>
-      </div>
+      <Link href="https://docs.remote.it/guides/out-of-band" target="_blank">
+        <div className={css.oob + (active ? ' ' + css.active : '')}>
+          <span />
+          <small>Out of Band</small>
+        </div>
+      </Link>
     </Tooltip>
   )
 }

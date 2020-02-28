@@ -70,6 +70,7 @@ export default class ElectronApp {
     this.window = new electron.BrowserWindow({
       width: 800,
       height: 600,
+      maxWidth: 1000,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
       frame: !environment.isMac,
