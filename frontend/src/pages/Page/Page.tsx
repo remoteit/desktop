@@ -1,7 +1,7 @@
 import React from 'react'
+import { isElectron } from '../../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { isElectron, os } from '../../services/Platform'
 import { Snackbar, IconButton } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { UpdateNotice } from '../../components/UpdateNotice'
@@ -70,6 +70,8 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     flexWrap: 'nowrap',
     backgroundColor: colors.white,
+    maxWidth: 1000,
+    margin: 'auto',
   },
   error: {
     // '& .MuiPaper-root': { backgroundColor: colors.danger },

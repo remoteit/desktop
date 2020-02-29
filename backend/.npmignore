@@ -9,6 +9,8 @@ node_modules
 archive
 dist
 src
+tsconfig.json
+jest.config.js
 
 # package
 *.tgz

@@ -1,6 +1,6 @@
 import React from 'react'
 import Controller from '../../services/Controller'
-import { environment } from '../../services/Platform'
+import { environment } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
