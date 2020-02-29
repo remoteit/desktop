@@ -71,8 +71,6 @@ export const DevicesPage = connect(
   }: DevicesPageProps) => {
     const css = useStyles()
 
-    if (fetching && !allDevices.length) return <DeviceLoadingMessage />
-
     return (
       <Container
         header={
@@ -104,14 +102,18 @@ export const DevicesPage = connect(
           </div>
         }
       >
-        <DeviceList
-          devices={visibleDevices}
-          searchPerformed={searchOnly ? searchPerformed : Boolean(visibleDevices.length)}
-          connections={connections}
-          query={query}
-          searching={searching}
-          searchOnly={searchOnly}
-        />
+        {fetching && !allDevices.length ? (
+          <DeviceLoadingMessage />
+        ) : (
+          <DeviceList
+            devices={visibleDevices}
+            searchPerformed={searchOnly ? searchPerformed : Boolean(visibleDevices.length)}
+            connections={connections}
+            query={query}
+            searching={searching}
+            searchOnly={searchOnly}
+          />
+        )}
       </Container>
     )
   }

@@ -8,7 +8,6 @@ import { Header } from '../Header/Header'
 import { Page } from '../../pages/Page'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
-import { LoadingPage } from '../../pages/LoadingPage'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
@@ -26,7 +25,6 @@ import styles from '../../styling'
 const mapState = (state: ApplicationState) => ({
   user: state.auth.user,
   authenticated: state.auth.authenticated,
-  checkSignInStarted: state.auth.checkSignInStarted,
   installed:
     state.binaries.connectdInstalled &&
     state.binaries.muxerInstalled &&
@@ -36,7 +34,7 @@ const mapState = (state: ApplicationState) => ({
 
 export type AppProps = ReturnType<typeof mapState>
 
-export const App = connect(mapState)(({ installed, checkSignInStarted, user, authenticated }: AppProps) => {
+export const App = connect(mapState)(({ installed, user, authenticated }: AppProps) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -56,14 +54,6 @@ export const App = connect(mapState)(({ installed, checkSignInStarted, user, aut
       setNavigation({ ...navigation, [menu]: location.pathname })
     }
   }, [navigation, location, menu])
-
-  if (checkSignInStarted)
-    return (
-      <Page authenticated={authenticated}>
-        <Header />
-        <LoadingPage />
-      </Page>
-    )
 
   if (!user || !authenticated)
     return (

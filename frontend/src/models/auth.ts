@@ -8,7 +8,6 @@ const USER_KEY = 'user'
 const OPEN_ON_LOGIN_KEY = 'open-on-login'
 
 export interface AuthState {
-  checkSignInStarted: boolean
   openOnLogin: boolean
   signInStarted: boolean
   authenticated: boolean
@@ -17,7 +16,6 @@ export interface AuthState {
 }
 
 const state: AuthState = {
-  checkSignInStarted: false,
   authenticated: false,
   openOnLogin: false,
   signInStarted: false,
@@ -28,7 +26,6 @@ const state: AuthState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async authenticate() {},
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
 
@@ -45,11 +42,15 @@ export default createModel({
         if (storedUser) user = JSON.parse(storedUser)
       }
       if (user) {
-        dispatch.auth.checkSignInStarted()
         dispatch.auth.setUser(user)
       } else {
         dispatch.auth.signedOut()
       }
+    },
+    handleDisconnect(_: void, rootState: any) {
+      const { authenticated } = rootState.auth
+      // re-open if disconnected unintentionally
+      if (authenticated) Controller.open()
     },
     async checkSession(_: void, rootState: any) {
       let { user } = rootState.auth
@@ -96,7 +97,6 @@ export default createModel({
       const searchOnly = await dispatch.devices.shouldSearchDevices()
       if (!searchOnly) dispatch.devices.fetch()
       dispatch.auth.signInFinished()
-      dispatch.auth.checkSignInFinished()
     },
     async authenticated() {
       dispatch.auth.signedIn()
@@ -113,14 +113,12 @@ export default createModel({
     },
     async signInError(error: string) {
       dispatch.auth.signInFinished()
-      dispatch.auth.checkSignInFinished()
       dispatch.auth.setError(error)
     },
     /**
      * Gets called when the backend signs the user out
      */
     async signedOut() {
-      dispatch.auth.checkSignInFinished()
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
@@ -139,12 +137,6 @@ export default createModel({
     },
   }),
   reducers: {
-    checkSignInStarted(state: AuthState) {
-      state.checkSignInStarted = true
-    },
-    checkSignInFinished(state: AuthState) {
-      state.checkSignInStarted = false
-    },
     signInStarted(state: AuthState) {
       state.signInStarted = true
     },
