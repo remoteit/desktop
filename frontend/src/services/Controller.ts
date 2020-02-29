@@ -73,7 +73,11 @@ function getEventHandlers() {
 
     'server/authenticated': () => auth.authenticated(),
 
-    disconnect: () => ui.disconnected(),
+    disconnect: () => {
+      console.log('SOCKET DISCONNECT')
+      ui.disconnected()
+      auth.handleDisconnect()
+    },
 
     connect_error: () => backend.set({ key: 'error', value: true }),
 

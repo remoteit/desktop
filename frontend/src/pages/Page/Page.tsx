@@ -23,6 +23,7 @@ export function Page({ authenticated = true, children }: Props & React.HTMLProps
   }))
   const css = useStyles()
   const clearCliError = () => backend.set({ key: 'cliError', value: undefined })
+  let message = ''
   let remoteCss = ''
   let pageCss = css.page + ' ' + css.full
 
@@ -32,12 +33,14 @@ export function Page({ authenticated = true, children }: Props & React.HTMLProps
     remoteCss += os ? ' ' + css[os] : ''
   }
 
+  if (authenticated && !connected) message = 'Webserver connection lost. Retrying...'
+
   return (
     <div className={remoteCss}>
       <RemoteHeader os={os} />
       <div className={pageCss}>
         {children}
-        <Snackbar open={authenticated && !connected} message="Webserver connection lost. Retrying..." />
+        <Snackbar open={!!message} message={message} />
         <Snackbar
           className={css.error}
           key={cliError}
