@@ -7,7 +7,6 @@ import { version } from '../../../package.json'
 
 export const UninstallSetting: React.FC = () => {
   const update = useSelector((state: ApplicationState) => state.backend.update)
-  const updateAvailable = update && update !== version
 
   const warning = () =>
     window.confirm(
@@ -20,7 +19,6 @@ export const UninstallSetting: React.FC = () => {
       subLabel={`Completely remove all saved data and installed command line tools.`}
       icon="trash-alt"
       onClick={warning}
-      button={updateAvailable ? 'Restart' : undefined}
     />
   )
 }
