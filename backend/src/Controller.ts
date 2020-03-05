@@ -25,7 +25,7 @@ class Controller {
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.io = io
     this.pool = pool
-    EventBus.on(server.EVENTS.authenticated, this.openSockets)
+    EventBus.once(server.EVENTS.authenticated, this.openSockets)
 
     let eventNames = [
       ...Object.values(user.EVENTS),
@@ -34,12 +34,16 @@ class Controller {
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),
       ...Object.values(CLI.EVENTS),
+      ...Object.values(server.EVENTS),
       ...Object.values(electronInterface.EVENTS),
     ]
     new EventRelay(eventNames, EventBus, this.io.sockets)
   }
 
-  openSockets = (socket: SocketIO.Socket) => {
+  openSockets = () => {
+    const socket = server.socket
+    if (!socket) throw new Error('Socket.io server failed to start.')
+
     socket.on('user/sign-out', user.signOut)
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)

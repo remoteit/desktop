@@ -15,6 +15,7 @@ const d = debug('r3:backend:Server')
 
 class Server {
   public io?: SocketIO.Server
+  public socket?: SocketIO.Socket
   private app: Express
 
   EVENTS = {
@@ -91,8 +92,9 @@ class Server {
   }
 
   postAuthenticate = (socket: SocketIO.Socket) => {
-    EventBus.emit(this.EVENTS.authenticated, socket)
-    socket.emit('server/authenticated', socket.id)
+    this.socket = socket
+    Logger.info('POST AUTHENTICATE', { event: this.EVENTS.authenticated })
+    EventBus.emit(this.EVENTS.authenticated)
   }
 
   disconnect = (socket: SocketIO.Socket) => {
