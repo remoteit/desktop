@@ -66,7 +66,7 @@ export default class Application {
     if (!user.signedIn) return
 
     // check every 5 minutes
-    if (count % 5 === 0) {
+    if (count % 5 === 0 || isNaN(count)) {
       this.electron && this.electron.check()
       remoteitInstaller.check()
     }

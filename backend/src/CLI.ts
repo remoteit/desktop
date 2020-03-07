@@ -121,11 +121,11 @@ export default class CLI {
   }
 
   async install() {
-    await this.exec({ params: ['tools', 'install', '-j'] })
+    await this.exec({ params: ['tools', 'install', '-j'], admin: true })
   }
 
   async unInstall() {
-    await this.exec({ params: ['uninstall', '--yes', '-j'] })
+    await this.exec({ params: ['uninstall', '--yes', '-j'], admin: true })
   }
 
   async signIn(admin?: boolean) {
