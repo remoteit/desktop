@@ -11,7 +11,7 @@ export const RemoteHeader: React.FC<{ os?: Ios }> = ({ os }) => {
 
   return (
     <div className={css.remote}>
-      {os && <img className={css.icon} src={assets[os]} />}
+      {os && <img className={css.icon} src={assets[os]} alt={os} />}
       Remote View
     </div>
   )

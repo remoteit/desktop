@@ -125,6 +125,8 @@ function getEventHandlers() {
 
     os: (result: Ios) => backend.set({ key: 'os', value: result }),
 
+    dataReady: (result: boolean) => backend.set({ key: 'dataReady', value: result }),
+
     // User
     'signed-out': () => auth.signedOut(),
 

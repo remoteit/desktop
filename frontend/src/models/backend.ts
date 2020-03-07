@@ -15,6 +15,7 @@ type IBackendState = { [key: string]: any } & {
   update?: string
   cliError?: string
   os?: Ios
+  dataReady: boolean
 }
 
 const state: IBackendState = {
@@ -31,6 +32,7 @@ const state: IBackendState = {
   update: undefined,
   cliError: undefined,
   os: undefined,
+  dataReady: false,
 }
 
 export default createModel({

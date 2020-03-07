@@ -11,15 +11,16 @@ import { Icon } from '../../components/Icon'
 
 export interface Props {
   children: React.ReactNode
-  authenticated?: boolean
 }
 
-export function Page({ authenticated = true, children }: Props & React.HTMLProps<HTMLDivElement>) {
+export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend } = useDispatch<Dispatch>()
-  const { connected, cliError, os } = useSelector((state: ApplicationState) => ({
+  const { connected, cliError, authenticated, user, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
     cliError: state.backend.cliError,
     os: state.backend.os,
+    authenticated: state.auth.authenticated,
+    user: state.auth.user,
   }))
   const css = useStyles()
   const clearCliError = () => backend.set({ key: 'cliError', value: undefined })
@@ -33,7 +34,8 @@ export function Page({ authenticated = true, children }: Props & React.HTMLProps
     remoteCss += os ? ' ' + css[os] : ''
   }
 
-  if (authenticated && !connected) message = 'Webserver connection lost. Retrying...'
+  if (user && !authenticated) message = 'Authenticating...'
+  else if (authenticated && !connected) message = 'Webserver connection lost. Retrying...'
 
   return (
     <div className={remoteCss}>
