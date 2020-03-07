@@ -65,7 +65,8 @@ class environment {
     return this.isWindows ? WIN_ADMIN_SETTINGS : UNIX_ADMIN_SETTINGS
   }
 
-  binPath(elevated: boolean = this.isElevated) {
+  get binPath() {
+    const elevated: boolean = true //this.isElevated - always elevated for now
     if (this.isWindows) return elevated ? WIN_ADMIN_BINARIES : WIN_USER_BINARIES
     else return elevated ? UNIX_ADMIN_BINARIES : UNIX_USER_BINARIES
   }
@@ -80,7 +81,7 @@ class environment {
       isMac: this.isMac,
       userPath: this.userPath,
       adminPath: this.adminPath,
-      binPath: this.binPath(),
+      binPath: this.binPath,
     }
   }
 }

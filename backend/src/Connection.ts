@@ -82,7 +82,7 @@ export default class Connection extends EventEmitter {
 
     try {
       this.process = execFile(
-        path.join(environment.binPath(), 'connectd'),
+        path.join(environment.binPath, 'connectd'),
         params,
         {
           maxBuffer: Infinity,

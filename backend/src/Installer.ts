@@ -85,7 +85,7 @@ export default class Installer {
   }
 
   fileExists(name: string) {
-    const filePath = path.join(environment.binPath(), name)
+    const filePath = path.join(environment.binPath, name)
     const exists = existsSync(filePath)
     d('BINARY EXISTS', { name, exists, filePath })
     return exists
@@ -121,7 +121,7 @@ export default class Installer {
   }
 
   binaryPath(admin?: boolean) {
-    return path.join(environment.binPath(admin), this.binaryName)
+    return path.join(environment.binPath, this.binaryName)
   }
 
   get binaryName() {
