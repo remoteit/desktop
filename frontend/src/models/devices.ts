@@ -28,7 +28,7 @@ const state: DeviceState = {
   all: [],
   searchPerformed: false,
   fetched: false,
-  fetching: false,
+  fetching: true,
   searching: false,
   searchOnly: false,
   query: '',

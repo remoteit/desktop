@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.5.17-alpha",
+  "version": "2.5.18-alpha",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -21,7 +21,7 @@
     "package": "cd backend && npm run package //TODO rename and move to dist directory",
     "postinstall": "run-p install-*",
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
-    "start": "run-p copy-* watch-*",
+    "start": "npm-run-all -l -n -p copy-* watch-*",
     "watch-backend": "cd backend && npm run watch",
     "watch-build": "tsc --watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",

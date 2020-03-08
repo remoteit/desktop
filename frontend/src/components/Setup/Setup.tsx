@@ -4,6 +4,7 @@ import { REGEX_NAME_SAFE } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../Container'
 import { Targets } from '../Targets'
+import { Body } from '../Body'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 
@@ -37,69 +38,80 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, ...props })
 
   return (
     <Container header={<Typography variant="h1">Hosted Device</Typography>}>
-      <form
-        onSubmit={event => {
-          if (!name || registered) return
-          event.preventDefault()
-          onDevice({ ...device, name })
-          setRegistering(true)
-        }}
-      >
-        <section className={css.device}>
-          <div className={css.name}>
-            <TextField
-              label="Device Name"
-              className={css.input}
-              disabled={registering || registered}
-              value={name || device.name}
-              variant="filled"
-              onChange={event => {
-                const value = event.target.value.replace(REGEX_NAME_SAFE, '')
-                if (value !== event.target.value) setNotice(true)
-                setName(value)
-              }}
-              onFocus={event => event.target.select()}
-              helperText={!registered && '*Must be unique'}
-              inputProps={{ 'data-lpignore': 'true' }}
-            />
-            {deleting ? (
-              <CircularProgress className={css.loading} size={styles.fontSizes.lg} />
-            ) : (
-              device.uid && (
-                <Tooltip title="Delete">
-                  <IconButton
-                    onClick={() => {
-                      if (window.confirm(confirmMessage)) {
-                        onDelete()
-                        setDeleting(true)
-                      }
-                    }}
-                  >
-                    <Icon name="trash-alt" size="md" />
-                  </IconButton>
-                </Tooltip>
-              )
-            )}
-          </div>
-          <Button color="primary" variant="contained" size="medium" disabled={!name || registered} type="submit">
-            {registered ? 'Registered' : 'Register'}
-            {registering ? (
-              <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
-            ) : (
-              <Icon name="check" weight="regular" inline />
-            )}
-          </Button>
-        </section>
-      </form>
-
-      <Typography variant="h1">Hosted Services</Typography>
-      <section>
-        {registered ? (
-          <Targets device={device} {...props} />
-        ) : (
-          <p className={css.note}>You can add services after device registration.</p>
+      <Body center={!registered}>
+        {registered || (
+          // <Typography variant="subtitle2">Welcome to remote.it</Typography>
+          <Typography variant="caption" align="center">
+            Enter your system's name to host connections.
+          </Typography>
         )}
-      </section>
+        <form
+          onSubmit={event => {
+            if (!name || registered) return
+            event.preventDefault()
+            onDevice({ ...device, name })
+            setRegistering(true)
+          }}
+        >
+          <section className={css.device}>
+            <div className={css.name}>
+              <TextField
+                label="Device Name"
+                className={css.input}
+                disabled={registering || registered}
+                value={name || device.name}
+                variant="filled"
+                onChange={event => {
+                  const value = event.target.value.replace(REGEX_NAME_SAFE, '')
+                  if (value !== event.target.value) setNotice(true)
+                  setName(value)
+                }}
+                autoFocus={true}
+                onFocus={event => event.target.select()}
+                helperText={!registered && '*Must be unique'}
+                inputProps={{ 'data-lpignore': 'true' }}
+              />
+              {deleting ? (
+                <CircularProgress className={css.loading} size={styles.fontSizes.lg} />
+              ) : (
+                device.uid && (
+                  <Tooltip title="Delete">
+                    <IconButton
+                      onClick={() => {
+                        if (window.confirm(confirmMessage)) {
+                          onDelete()
+                          setDeleting(true)
+                        }
+                      }}
+                    >
+                      <Icon name="trash-alt" size="md" />
+                    </IconButton>
+                  </Tooltip>
+                )
+              )}
+              {registered || (
+                <Button color="primary" variant="contained" size="medium" disabled={!name} type="submit">
+                  {registered ? 'Registered' : 'Register'}
+                  {registering ? (
+                    <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
+                  ) : (
+                    <Icon name="check" weight="regular" inline />
+                  )}
+                </Button>
+              )}
+            </div>
+          </section>
+        </form>
+      </Body>
+
+      {registered && (
+        <>
+          <Typography variant="h1">Hosted Services</Typography>
+          <section>
+            <Targets device={device} {...props} />
+          </section>
+        </>
+      )}
       <Snackbar
         open={!!notice}
         autoHideDuration={2000}
@@ -113,8 +125,8 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, ...props })
 const useStyles = makeStyles({
   name: {
     '& button': {
-      marginTop: styles.spacing.md,
-      marginLeft: styles.spacing.md,
+      marginTop: styles.spacing.xxs,
+      marginLeft: styles.spacing.lg,
     },
   },
   device: {

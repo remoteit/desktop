@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
@@ -22,19 +22,18 @@ import { InstallationNotice } from '../InstallationNotice'
 import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
 
-const mapState = (state: ApplicationState) => ({
-  user: state.auth.user,
-  authenticated: state.auth.authenticated,
-  installed:
-    state.binaries.connectdInstalled &&
-    state.binaries.muxerInstalled &&
-    state.binaries.demuxerInstalled &&
-    state.binaries.remoteitInstalled,
-})
+export const App = () => {
+  const { installed, user, target, dataReady } = useSelector((state: ApplicationState) => ({
+    installed:
+      state.binaries.connectdInstalled &&
+      state.binaries.muxerInstalled &&
+      state.binaries.demuxerInstalled &&
+      state.binaries.remoteitInstalled,
+    user: state.auth.user,
+    target: state.backend.device,
+    dataReady: state.backend.dataReady,
+  }))
 
-export type AppProps = ReturnType<typeof mapState>
-
-export const App = connect(mapState)(({ installed, user, authenticated }: AppProps) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -55,9 +54,14 @@ export const App = connect(mapState)(({ installed, user, authenticated }: AppPro
     }
   }, [navigation, location, menu])
 
-  if (!user || !authenticated)
+  useEffect(() => {
+    console.log('target?', target.name)
+    if (dataReady && !target.name) history.push('/setup')
+  }, [history, target, dataReady])
+
+  if (!user)
     return (
-      <Page authenticated={authenticated}>
+      <Page>
         <Header />
         <SignInPage />
       </Page>
@@ -126,7 +130,7 @@ export const App = connect(mapState)(({ installed, user, authenticated }: AppPro
       </BottomNavigation>
     </Page>
   )
-})
+}
 
 const useStyles = makeStyles({
   footer: {
