@@ -21,6 +21,7 @@ class CLIInterface extends CLI {
         }
         break
     }
+    this.read()
   }
 
   async handle(targets: ITarget[]) {
