@@ -94,8 +94,6 @@ export default class ElectronApp {
             query: user.credentials,
           })
 
-    Logger.info('LOAD HEADLESS', { startUrl })
-
     this.window.loadURL(startUrl)
 
     this.window.on('close', e => {

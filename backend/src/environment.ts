@@ -63,9 +63,15 @@ export class Environment {
     return {
       isWindows: this.isWindows,
       isMac: this.isMac,
+      isLinux: this.isLinux,
+      isArmLinux: this.isArmLinux,
+      isPi: this.isPi,
+      isPiZero: this.isPiZero,
+      platform: this.platform,
       userPath: this.userPath,
       adminPath: this.adminPath,
       binPath: this.binPath,
+      simpleOS: this.simpleOS,
     }
   }
 }
