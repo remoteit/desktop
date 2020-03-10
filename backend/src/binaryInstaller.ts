@@ -1,5 +1,4 @@
 import tmp from 'tmp'
-import path from 'path'
 import rimraf from 'rimraf'
 import debug from 'debug'
 import cli from './cliInterface'
@@ -26,20 +25,7 @@ class BinaryInstaller {
       var isInstalled: boolean = !(await cli.isNotInstalled())
 
       // Download and install binaries
-      await Promise.all(
-        installers.map(installer =>
-          installer
-            .install(tmpDir.name, (progress: number) =>
-              EventBus.emit(Installer.EVENTS.progress, { progress, installer })
-            )
-            .catch(error =>
-              EventBus.emit(Installer.EVENTS.error, {
-                error: error.message,
-                installer,
-              })
-            )
-        )
-      )
+      await this.download(installers, tmpDir)
 
       const commands = new Command({ onError: reject, admin: true })
 
@@ -71,6 +57,21 @@ class BinaryInstaller {
       tmpDir.removeCallback()
       resolve()
     })
+  }
+
+  async download(installers: Installer[], tmpDir: tmp.DirResult) {
+    return Promise.all(
+      installers.map(installer =>
+        installer
+          .install(tmpDir.name, (progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
+          .catch(error =>
+            EventBus.emit(Installer.EVENTS.error, {
+              error: error.message,
+              installer,
+            })
+          )
+      )
+    )
   }
 
   async uninstall() {
