@@ -1,4 +1,3 @@
-import app from '.'
 import {
   UNIX_USER_SETTINGS,
   UNIX_USER_BINARIES,
@@ -13,62 +12,47 @@ import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import os from 'os'
 
-class environment {
+export class Environment {
   isElevated: boolean = false
+  isHeadless: boolean = true
+  isWindows: boolean
+  isMac: boolean
+  isLinux: boolean
+  isArmLinux: boolean
+  isPi: boolean
+  isPiZero: boolean
+  platform: string
+  simpleOS: Ios
+  userPath: string
+  adminPath: string
+  binPath: string
 
-  get isHeadless() {
-    return !app.electron
+  constructor() {
+    this.isWindows = os.platform() === 'win32'
+    this.isMac = os.platform() === 'darwin'
+    this.isLinux = os.platform() === 'linux'
+    this.isArmLinux = this.isLinux && os.arch() === 'arm64'
+    this.isPi = detectRPi()
+    // @ts-ignore
+    this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
+    this.platform = this.isPi ? 'rpi' : os.platform()
+    this.userPath = this.isWindows ? WIN_USER_SETTINGS : UNIX_USER_SETTINGS
+    this.adminPath = this.isWindows ? WIN_ADMIN_SETTINGS : UNIX_ADMIN_SETTINGS
+    this.binPath = this.setBinPath()
+    this.simpleOS = this.setSimpleOS()
   }
 
-  get simplesOS(): Ios {
+  setBinPath() {
+    const elevated: boolean = true //this.isElevated - always elevated for now
+    if (this.isWindows) return elevated ? WIN_ADMIN_BINARIES : WIN_USER_BINARIES
+    else return elevated ? UNIX_ADMIN_BINARIES : UNIX_USER_BINARIES
+  }
+
+  setSimpleOS() {
     if (this.isMac) return 'mac'
     if (this.isWindows) return 'windows'
     if (this.isPi) return 'rpi'
     else return 'linux'
-  }
-
-  get isWindows() {
-    return os.platform() === 'win32'
-  }
-
-  get isMac() {
-    return os.platform() === 'darwin'
-  }
-
-  get isLinux() {
-    return os.platform() === 'linux'
-  }
-
-  get platform() {
-    if (this.isPi) return 'rpi'
-    else return os.platform()
-  }
-
-  get isArmLinux() {
-    return this.isLinux && os.arch() === 'arm64'
-  }
-
-  get isPi() {
-    return detectRPi()
-  }
-
-  get isPiZero() {
-    // @ts-ignore
-    return detectRPi() && process.config.variables.arm_version === '6'
-  }
-
-  get userPath() {
-    return this.isWindows ? WIN_USER_SETTINGS : UNIX_USER_SETTINGS
-  }
-
-  get adminPath() {
-    return this.isWindows ? WIN_ADMIN_SETTINGS : UNIX_ADMIN_SETTINGS
-  }
-
-  get binPath() {
-    const elevated: boolean = true //this.isElevated - always elevated for now
-    if (this.isWindows) return elevated ? WIN_ADMIN_BINARIES : WIN_USER_BINARIES
-    else return elevated ? UNIX_ADMIN_BINARIES : UNIX_USER_BINARIES
   }
 
   async setElevatedState() {
@@ -79,11 +63,17 @@ class environment {
     return {
       isWindows: this.isWindows,
       isMac: this.isMac,
+      isLinux: this.isLinux,
+      isArmLinux: this.isArmLinux,
+      isPi: this.isPi,
+      isPiZero: this.isPiZero,
+      platform: this.platform,
       userPath: this.userPath,
       adminPath: this.adminPath,
       binPath: this.binPath,
+      simpleOS: this.simpleOS,
     }
   }
 }
 
-export default new environment()
+export default new Environment()

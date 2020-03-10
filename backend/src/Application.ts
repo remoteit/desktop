@@ -44,6 +44,7 @@ export default class Application {
 
   recapitate(head: any) {
     this.electron = head
+    environment.isHeadless = false
   }
 
   private install = async () => {

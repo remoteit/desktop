@@ -105,7 +105,7 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
     this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
-    this.io.emit('os', environment.simplesOS)
+    this.io.emit('os', environment.simpleOS)
     this.io.emit('dataReady', true)
   }
 

@@ -38,7 +38,12 @@ export default class Command {
     if (this.commands.length === 0) return ''
 
     let result = ''
-    this.log('EXEC', { exec: this.toString(), admin: this.admin })
+    this.log('EXEC', {
+      exec: this.toString(),
+      admin: this.admin,
+      headless: environment.isHeadless,
+      elevated: environment.isElevated,
+    })
 
     try {
       const { stdout, stderr } =

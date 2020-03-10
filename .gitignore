@@ -17,7 +17,6 @@ dist
 
 # misc
 .DS_Store
-.vscode
 .env.local
 .env.development.local
 .env.test.local

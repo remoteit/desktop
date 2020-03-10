@@ -1,0 +1,14 @@
+{
+  "cSpell.words": [
+    "failover",
+    "fsevents",
+    "portfinder",
+    "promisify",
+    "recapitate",
+    "submenu"
+  ],
+  "jest.pathToJest": "backend/node_modules/.bin/ts-jest",
+  "jest.pathToConfig": "/backend",
+  "jest.rootPath": "/backend/src",
+  "jest.restartJestOnSnapshotUpdate": true
+}
