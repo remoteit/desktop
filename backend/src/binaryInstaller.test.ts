@@ -22,7 +22,7 @@ describe('backend/binaryInstaller', () => {
       commandSpy = jest.spyOn(Command.prototype, 'push').mockImplementation()
       downloadSpy = jest
         .spyOn(binaryInstaller, 'download')
-        .mockImplementation((i: Installer[], t: tmp.DirResult) => Promise.resolve([]))
+        .mockImplementation((i: Installer, t: tmp.DirResult) => Promise.resolve())
     })
 
     beforeEach(() => {
@@ -33,31 +33,33 @@ describe('backend/binaryInstaller', () => {
     test('downloads and sets up an installer for Unix', async () => {
       environment.isWindows = false
 
-      await binaryInstaller.installEach([remoteitInstaller])
+      await binaryInstaller.installBinary(remoteitInstaller)
 
       expect(commandSpy).toBeCalledWith('mkdir -p ../jest/bin')
       expect(commandSpy).toBeCalledWith('mv undefined ../jest/bin/remoteit')
       expect(commandSpy).toBeCalledWith('chmod 755 ../jest/bin/remoteit')
+      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" tools install -j')
 
-      expect(commandSpy).toBeCalledTimes(3)
+      expect(commandSpy).toBeCalledTimes(4)
       expect(downloadSpy).toBeCalledTimes(1)
     })
 
     test('downloads and sets up an installer for Windows', async () => {
       environment.isWindows = true
 
-      await binaryInstaller.installEach([remoteitInstaller])
+      await binaryInstaller.installBinary(remoteitInstaller)
 
       expect(commandSpy).toBeCalledWith('md "../jest/bin"')
       expect(commandSpy).toBeCalledWith('move /y "undefined" "../jest/bin/remoteit.exe"')
       expect(commandSpy).toBeCalledWith('icacls "../jest/bin/remoteit.exe" /T /Q /grant "*S-1-5-32-545:RX"')
+      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" tools install -j')
 
-      expect(commandSpy).toBeCalledTimes(3)
+      expect(commandSpy).toBeCalledTimes(4)
       expect(downloadSpy).toBeCalledTimes(1)
     })
   })
 
-  describe('uninstallEach', () => {
+  describe('uninstallBinary', () => {
     let installSpy: jest.SpyInstance
 
     beforeAll(() => {
@@ -74,7 +76,7 @@ describe('backend/binaryInstaller', () => {
     test('removes the files from a Unix installer', async () => {
       environment.isWindows = false
 
-      await binaryInstaller.uninstallEach([remoteitInstaller])
+      await binaryInstaller.uninstallBinary(remoteitInstaller)
 
       expect(installSpy).toBeCalledWith('../jest/bin/remoteit', { disableGlob: true })
       expect(installSpy).toBeCalledWith('../jest/user', { disableGlob: true })
@@ -84,7 +86,7 @@ describe('backend/binaryInstaller', () => {
     test('removes the files from a Windows installer', async () => {
       environment.isWindows = true
 
-      await binaryInstaller.uninstallEach([remoteitInstaller])
+      await binaryInstaller.uninstallBinary(remoteitInstaller)
 
       expect(installSpy).toBeCalledWith('../jest/bin/remoteit.exe', { disableGlob: true })
       expect(installSpy).toBeCalledWith('../jest/user', { disableGlob: true })

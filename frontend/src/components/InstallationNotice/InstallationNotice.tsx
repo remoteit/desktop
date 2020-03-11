@@ -1,7 +1,10 @@
 import React from 'react'
 import { ApplicationState } from '../../store'
 import { connect } from 'react-redux'
-import { Button } from '@material-ui/core'
+import { Button, Typography } from '@material-ui/core'
+import { makeStyles } from '@material-ui/styles'
+import { spacing } from '../../styling'
+import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { Alert } from '../Alert'
 import { Logo } from '../Logo'
@@ -23,43 +26,45 @@ export const InstallationNotice = connect(
   mapState,
   mapDispatch
 )(({ connected, clearError, error, installing, install }: InstallationNoticeProps) => {
+  const css = useStyles()
+
   if (!connected) return null
   if (error) console.error(error)
   return (
-    <div className="h-100 bg-gray-lightest gray-dark df ai-center jc-center">
-      <div className="df ai-center jc-center fd-col p-sm mx-auto center" style={{ maxWidth: '400px' }}>
-        <Logo />
-        <h2 className="mt-lg gray-darkest upper ls-lg fw-lighter txt-lg">Welcome to remote.it Desktop!</h2>
-
-        {error && (
-          <Alert onClose={() => clearError()}>
-            {error === 'User did not grant permission.'
-              ? 'Please grant permissions to install CLI tools to continue'
-              : JSON.stringify(error)}
-          </Alert>
-        )}
-
-        <div className="my-md lh-md">
-          To get started with the remote.it Desktop, please install our command line tools so you can make peer-to-peer
-          connections to your services!
-        </div>
-        <div className="mt-md">
-          <Button
-            variant="contained"
-            className="ml-auto"
-            color="primary"
-            size="large"
-            disabled={installing}
-            onClick={() => install()}
-          >
-            {installing ? 'Installing...' : 'Install Now'}
-            <Icon name="cloud-download" className="ml-sm" />
-          </Button>
-        </div>
-        <div className="mt-sm gray center lh-md txt-sm">
-          You will be prompted to login so we can configure our command line tools on your system.
-        </div>
-      </div>
-    </div>
+    <Body center>
+      <Typography className={css.welcome} variant="caption" align="center">
+        Welcome to
+      </Typography>
+      <Logo className={css.space} />
+      {error && (
+        <Alert onClose={() => clearError()}>
+          {error === 'User did not grant permission.'
+            ? 'Please grant permissions to install CLI tools to continue'
+            : JSON.stringify(error)}
+        </Alert>
+      )}
+      <Typography variant="body1" align="center" gutterBottom>
+        Please grant permission to install the connection service.
+      </Typography>
+      <Typography className={css.space} variant="caption" align="center">
+        Run remote.it as an administrator to avoid future prompting.
+      </Typography>
+      <Button
+        className={css.space}
+        variant="contained"
+        color="primary"
+        size="large"
+        disabled={installing}
+        onClick={() => install()}
+      >
+        {installing ? 'Installing...' : 'Install Now'}
+        <Icon name="cloud-download" weight="regular" inline />
+      </Button>
+    </Body>
   )
+})
+
+const useStyles = makeStyles({
+  welcome: { marginBottom: spacing.md, letterSpacing: 3 },
+  space: { marginBottom: spacing.xl },
 })
