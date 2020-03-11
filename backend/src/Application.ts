@@ -25,7 +25,7 @@ export default class Application {
   async constructorSync() {
     this.bindExitHandlers()
     environment.setElevatedState()
-    await this.install()
+    // await this.install() // Disabled until we can connect with web sockets
     server.start()
     this.startHeartbeat()
     if (server.io) new Controller(server.io, this.pool)

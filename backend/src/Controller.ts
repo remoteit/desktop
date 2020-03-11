@@ -147,11 +147,11 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
-    user.signOut()
     await this.pool.reset()
     await cli.delete()
     await cli.unInstall()
     await binaryInstaller.uninstall()
+    user.signOut()
     this.quit()
   }
 

@@ -40,9 +40,9 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, ...props })
     <Container header={<Typography variant="h1">Hosted Device</Typography>}>
       <Body center={!registered}>
         {registered || (
-          // <Typography variant="subtitle2">Welcome to remote.it</Typography>
+          // <Typography variant="h2" gutterBottom>Welcome to remote.it</Typography>
           <Typography variant="caption" align="center">
-            Enter your system's name to host connections.
+            If you would like to host connections enter a name below.
           </Typography>
         )}
         <form
@@ -56,7 +56,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, ...props })
           <section className={css.device}>
             <div className={css.name}>
               <TextField
-                label="Device Name"
+                label="This System's Name"
                 className={css.input}
                 disabled={registering || registered}
                 value={name || device.name}

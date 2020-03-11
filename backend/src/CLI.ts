@@ -40,7 +40,6 @@ export default class CLI {
     this.adminConfigFile = new JSONFile<ConfigFile>(path.join(environment.adminPath, 'config.json'))
     EventBus.on(user.EVENTS.signedOut, () => this.signOut())
     EventBus.on(user.EVENTS.signedIn, () => this.read())
-    EventBus.on(Installer.EVENTS.afterInstall, binary => binary.name === 'remoteit' && this.install())
     this.read()
   }
 

@@ -10,7 +10,9 @@ class CLIInterface extends CLI {
         break
 
       case 'device':
-        if (!this.data.device.uid && value.name) {
+        if (!value) {
+          this.read()
+        } else if (!this.data.device.uid && value.name) {
           await this.register(value)
           Logger.info('REGISTER ' + value.name)
           Tracker.event('device', 'register', value.name)
@@ -21,7 +23,6 @@ class CLIInterface extends CLI {
         }
         break
     }
-    this.read()
   }
 
   async handle(targets: ITarget[]) {
