@@ -1,4 +1,5 @@
 import React from 'react'
+import classnames from 'classnames'
 import { spacing } from '../../styling'
 import { makeStyles } from '@material-ui/styles'
 
@@ -9,9 +10,7 @@ export const Body: React.FC<{ inset?: boolean; center?: boolean; className?: str
   children,
 }) => {
   const css = useStyles()
-  className += (className ? ' ' : '') + css.body
-  if (center) className += ' ' + css.center
-  if (inset) className += ' ' + css.inset
+  className = classnames(className, css.body, center && css.center, inset && css.inset)
   return <div className={className}>{children}</div>
 }
 

@@ -150,8 +150,8 @@ class Controller {
     await this.pool.reset()
     await cli.delete()
     await cli.unInstall()
-    await binaryInstaller.uninstall()
     user.signOut()
+    await binaryInstaller.uninstall()
     this.quit()
   }
 
