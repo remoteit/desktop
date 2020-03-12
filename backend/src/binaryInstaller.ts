@@ -27,7 +27,7 @@ class BinaryInstaller {
       var isInstalled: boolean = !(await cli.isNotInstalled())
 
       // Migrate v2.4.x bin location to v2.5.x
-      await this.stopDeprecatedBinary()
+      if (environment.isWindows) await this.stopDeprecatedBinary()
 
       // Download and install binaries
       await this.download(installer, tmpDir)
