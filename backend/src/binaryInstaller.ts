@@ -4,10 +4,12 @@ import debug from 'debug'
 import cli from './cliInterface'
 import EventBus from './EventBus'
 import environment from './environment'
+import Logger from './Logger'
 import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
-import { existsSync } from 'fs'
+import { existsSync, lstatSync } from 'fs'
+import { WIN_ADMIN_BINARY_DEPRECATED } from './constants'
 
 tmp.setGracefulCleanup()
 const d = debug('r3:backend:BinaryInstaller')
@@ -23,6 +25,9 @@ class BinaryInstaller {
     return new Promise(async (resolve, reject) => {
       var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
       var isInstalled: boolean = !(await cli.isNotInstalled())
+
+      // Migrate v2.4.x bin location to v2.5.x
+      await this.stopDeprecatedBinary()
 
       // Download and install binaries
       await this.download(installer, tmpDir)
@@ -53,6 +58,16 @@ class BinaryInstaller {
       tmpDir.removeCallback()
       resolve()
     })
+  }
+
+  async stopDeprecatedBinary() {
+    // Too small to be the desktop app -> must be cli
+    if (existsSync(WIN_ADMIN_BINARY_DEPRECATED) && lstatSync(WIN_ADMIN_BINARY_DEPRECATED).size < 30000000) {
+      Logger.info('STOPPING DEPRECATED BINARY', { path: WIN_ADMIN_BINARY_DEPRECATED })
+      await new Command({ admin: true, command: `"${WIN_ADMIN_BINARY_DEPRECATED}" service stop -j` }).exec()
+    } else {
+      Logger.info('DEPRECATED BINARY DOES NOT EXIST', { path: WIN_ADMIN_BINARY_DEPRECATED })
+    }
   }
 
   async download(installer: Installer, tmpDir: tmp.DirResult) {
