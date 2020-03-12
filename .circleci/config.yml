@@ -21,6 +21,7 @@ jobs: # a collection of steps
           paths:
             - ./node_modules
             - ./backend/node_modules
+            - ./frontend/node_modules
       - run: # run tests
           name: test
           command: npm test
