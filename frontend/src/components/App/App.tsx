@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
+import { LoadingMessage } from '../LoadingMessage'
 import { makeStyles } from '@material-ui/styles'
 import { Header } from '../Header/Header'
 import { Page } from '../../pages/Page'
@@ -23,7 +24,7 @@ import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
 
 export const App = () => {
-  const { installed, user, target, dataReady } = useSelector((state: ApplicationState) => ({
+  const { installed, user, target, dataReady, uninstalling } = useSelector((state: ApplicationState) => ({
     installed:
       state.binaries.connectdInstalled &&
       state.binaries.muxerInstalled &&
@@ -32,6 +33,7 @@ export const App = () => {
     user: state.auth.user,
     target: state.backend.device,
     dataReady: state.backend.dataReady,
+    uninstalling: state.ui.uninstalling,
   }))
 
   const css = useStyles()
@@ -58,6 +60,14 @@ export const App = () => {
     console.log('target?', target.name)
     if (dataReady && !target.name) history.push('/setup')
   }, [history, target, dataReady])
+
+  if (uninstalling)
+    return (
+      <Page>
+        <Header />
+        <LoadingMessage message="Please wait, uninstalling..." />
+      </Page>
+    )
 
   if (!user)
     return (

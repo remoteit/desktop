@@ -2,9 +2,10 @@ import { createModel } from '@rematch/core'
 
 interface UIState {
   connected: boolean
+  uninstalling: boolean
 }
 
-const state: UIState = { connected: false }
+const state: UIState = { connected: false, uninstalling: false }
 
 export default createModel({
   state,
@@ -18,6 +19,9 @@ export default createModel({
     },
   }),
   reducers: {
+    setUninstalling(state: UIState) {
+      state.uninstalling = true
+    },
     setConnected(state: UIState, connected: boolean) {
       state.connected = connected
     },
