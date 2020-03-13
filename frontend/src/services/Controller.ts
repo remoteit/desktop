@@ -1,10 +1,11 @@
 import io from 'socket.io-client'
 import { store } from '../store'
-import { PORT } from '../constants'
+import { PORT, RETRY_DELAY } from '../constants'
 import { EventEmitter } from 'events'
 
 class Controller extends EventEmitter {
   private socket: SocketIOClient.Socket
+  private retrying?: NodeJS.Timeout
 
   constructor() {
     super()
@@ -28,9 +29,16 @@ class Controller extends EventEmitter {
     }
   }
 
-  open() {
-    if (!this.socket.connected) {
-      this.socket.open()
+  // Retry open with delay, force skips delay
+  open(retry?: boolean, force?: boolean) {
+    if (force || (!this.socket.connected && !this.retrying)) {
+      this.retrying = setTimeout(
+        () => {
+          this.retrying = undefined
+          this.socket.open()
+        },
+        retry ? RETRY_DELAY : 0
+      )
     }
   }
 
@@ -79,7 +87,10 @@ function getEventHandlers() {
       auth.handleDisconnect()
     },
 
-    connect_error: () => backend.set({ key: 'error', value: true }),
+    connect_error: () => {
+      backend.set({ key: 'error', value: true })
+      auth.handleDisconnect()
+    },
 
     pool: (result: IConnection[]) => {
       console.log('socket pool', result)

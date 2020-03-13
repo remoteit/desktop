@@ -1,4 +1,6 @@
 import React from 'react'
+import Controller from '../../services/Controller'
+import classnames from 'classnames'
 import { isElectron } from '../../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -22,27 +24,34 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     authenticated: state.auth.authenticated,
     user: state.auth.user,
   }))
+
   const css = useStyles()
   const clearCliError = () => backend.set({ key: 'cliError', value: undefined })
-  let message = ''
+  const reconnect = () => Controller.open(false, true)
+
   let remoteCss = ''
-  let pageCss = css.page + ' ' + css.full
+  let pageCss = classnames(css.page, css.full)
 
   if (!isElectron()) {
-    pageCss += ' ' + css.inset
-    remoteCss = css.full + ' ' + css.default
-    remoteCss += os ? ' ' + css[os] : ''
+    pageCss = classnames(pageCss, css.inset)
+    remoteCss = classnames(css.full, css.default, os && css[os])
   }
-
-  if (user && !authenticated) message = 'Authenticating...'
-  else if (authenticated && !connected) message = 'Webserver connection lost. Retrying...'
 
   return (
     <div className={remoteCss}>
       <RemoteHeader os={os} />
       <div className={pageCss}>
         {children}
-        <Snackbar open={!!message} message={message} />
+        <Snackbar open={!!user && !authenticated} message="Authenticating..." />
+        <Snackbar
+          open={authenticated && !connected}
+          message="Webserver connection lost. Retrying..."
+          action={
+            <IconButton onClick={reconnect}>
+              <Icon name="sync" size="md" color="white" fixedWidth />
+            </IconButton>
+          }
+        />
         <Snackbar
           className={css.error}
           key={cliError}

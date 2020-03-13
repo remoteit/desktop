@@ -50,7 +50,7 @@ export default createModel({
     handleDisconnect(_: void, rootState: any) {
       const { authenticated } = rootState.auth
       // re-open if disconnected unintentionally
-      if (authenticated) Controller.open()
+      if (authenticated) Controller.open(true)
     },
     async checkSession(_: void, rootState: any) {
       let { user } = rootState.auth
