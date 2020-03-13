@@ -1,6 +1,6 @@
 import React from 'react'
 import { DeviceList } from '../../components/DeviceList'
-import { DeviceLoadingMessage } from '../../components/DeviceLoadingMessage'
+import { LoadingMessage } from '../../components/LoadingMessage'
 import { Container } from '../../components/Container'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
@@ -103,7 +103,7 @@ export const DevicesPage = connect(
         }
       >
         {fetching && !allDevices.length ? (
-          <DeviceLoadingMessage />
+          <LoadingMessage message="Loading devices..." />
         ) : (
           <DeviceList
             devices={visibleDevices}
