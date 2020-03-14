@@ -163,3 +163,9 @@ signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
 6. Enter the token password for the certificate
 
 The application should now be signed.
+
+## Windows Debug command
+
+```bash
+DEBUG=electron-builder ./node_modules/.bin/electron-builder -w
+```

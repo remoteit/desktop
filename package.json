@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "NODE_ENV=production run-s clean compile copy-* build-*",
+    "build": "cross-env NODE_ENV=production run-s clean compile copy-* build-*",
     "build-backend": "cd backend && npm run build",
     "build-electron": "electron-builder -wlm",
     "clean": "rimraf build/* dist/*",
@@ -68,7 +68,9 @@
       "github"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "certificateSubjectName": "remot3.it, Inc.",
+      "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4"
     },
     "nsis": {
       "oneClick": true,
