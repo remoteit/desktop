@@ -37,6 +37,7 @@
   "devDependencies": {
     "@types/electron": "1.6.10",
     "cross-env": "^7.0.0",
+    "dotenv": "^8.2.0",
     "electron": "^8.0.3",
     "electron-builder": "^22.2.0",
     "electron-notarize": "^0.2.1",
@@ -69,8 +70,7 @@
     ],
     "win": {
       "target": "nsis",
-      "certificateSubjectName": "remot3.it, Inc.",
-      "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4"
+      "sign": "scripts/sign.js"
     },
     "nsis": {
       "oneClick": true,
