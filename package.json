@@ -70,7 +70,8 @@
     ],
     "win": {
       "target": "nsis",
-      "sign": "scripts/sign.js"
+      "certificateSubjectName": "remot3.it, Inc.",
+      "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4"
     },
     "nsis": {
       "oneClick": true,
