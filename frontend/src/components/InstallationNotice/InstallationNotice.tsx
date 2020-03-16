@@ -43,8 +43,11 @@ export const InstallationNotice = connect(
             : JSON.stringify(error)}
         </Alert>
       )}
-      <Typography variant="body1" align="center" gutterBottom>
-        Please grant permission to install the connection service.
+      <Typography className={css.space} variant="h2" align="center">
+        Connection Service Installation Notice
+      </Typography>
+      <Typography variant="caption" align="center">
+        You will be prompted to login so we can setup the connection service.
       </Typography>
       <Typography className={css.space} variant="caption" align="center">
         Run remote.it as an administrator to avoid future prompting.
@@ -57,8 +60,8 @@ export const InstallationNotice = connect(
         disabled={installing}
         onClick={() => install()}
       >
-        {installing ? 'Installing...' : 'Install Now'}
-        <Icon name="cloud-download" weight="regular" inline />
+        {installing ? 'Installing...' : 'Install Service'}
+        <Icon name="arrow-to-bottom" weight="regular" inline />
       </Button>
     </Body>
   )
