@@ -1,3 +1,17 @@
+/* 
+  THIS FILE IS NOT IN USE
+ 
+  It was an attempt to get the builder to not ask for the password when building. 
+  However, I couldn't get it to work, and upon further investigation found that you cannot get 
+  an EV Signing Certificate to build without prompting. There was a workaround that 
+  the cert software has a checkbox to only ask once per login for the password, 
+  so I added that to the docs. I didn't want to throw away this signing script however, 
+  so I left it, kinda incomplete.
+  
+  This script could be used if we ever move to a standard Signing Cert so 
+  that we can build in an automated fashion.
+*/
+
 require('dotenv').config()
 
 exports.default = async function(conf) {
