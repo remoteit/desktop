@@ -2,7 +2,6 @@ import debug from 'debug'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
 import remoteitInstaller from './remoteitInstaller'
-import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import Logger from './Logger'
 import user from './User'
@@ -24,8 +23,8 @@ export default class Application {
 
   async constructorSync() {
     this.bindExitHandlers()
-    environment.setElevatedState()
-    // await this.install() // Disabled until we can connect with web sockets
+    await environment.setElevatedState()
+    await remoteitInstaller.check(true)
     server.start()
     this.startHeartbeat()
     if (server.io) new Controller(server.io, this.pool)
@@ -45,15 +44,7 @@ export default class Application {
   recapitate(head: any) {
     this.electron = head
     environment.isHeadless = false
-  }
-
-  private install = async () => {
-    const install = !(await remoteitInstaller.isCurrent(true))
-    if (install) {
-      Logger.info('INSTALLING BINARIES')
-      await binaryInstaller.install()
-    }
-  }
+  } // hi
 
   private startHeartbeat = () => {
     let count = 0
