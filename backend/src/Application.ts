@@ -44,7 +44,7 @@ export default class Application {
   recapitate(head: any) {
     this.electron = head
     environment.isHeadless = false
-  } // hi
+  }
 
   private startHeartbeat = () => {
     let count = 0
