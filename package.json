@@ -1,13 +1,13 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.5.20-alpha",
+  "version": "2.5.21-alpha",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "NODE_ENV=production run-s clean compile copy-* build-*",
+    "build": "cross-env NODE_ENV=production run-s clean compile copy-* build-*",
     "build-backend": "cd backend && npm run build",
-    "build-electron": "electron-builder -wlm",
+    "build-electron": "electron-builder -$PLATFORMS",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
@@ -37,6 +37,7 @@
   "devDependencies": {
     "@types/electron": "1.6.10",
     "cross-env": "^7.0.0",
+    "dotenv": "^8.2.0",
     "electron": "^8.0.3",
     "electron-builder": "^22.2.0",
     "electron-notarize": "^0.2.1",
@@ -68,7 +69,9 @@
       "github"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "certificateSubjectName": "remot3.it, Inc.",
+      "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4"
     },
     "nsis": {
       "oneClick": true,

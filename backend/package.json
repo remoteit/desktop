@@ -1,17 +1,17 @@
 {
   "name": "remoteit-headless",
-  "version": "2.5.20-alpha",
+  "version": "2.5.21-alpha",
   "private": true,
   "main": "build/index.js",
   "scripts": {
-    "build": "NODE_ENV=production run-s clean compile build-frontend pack",
+    "build": "cross-env NODE_ENV=production run-s clean compile build-frontend pack",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
     "clean": "rimraf build/*",
     "compile": "tsc",
     "start": "node build/index.js",
     "test": "NODE_ENV=test jest",
     "pack": "npm-pack-all --output ../dist/remoteit-headless.tgz",
-    "watch": "DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
+    "watch": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 run-p watch-*",
     "watch-compile": "tsc --watch",
     "test-watch": "npm run test -- --watch"
   },

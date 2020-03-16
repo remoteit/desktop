@@ -30,7 +30,6 @@ The desktop application serves one primary purpose which is to create a Peer-to-
 - Ubuntu
 - Headless (No GUI system)
 
-
 ## Headless
 
 The desktop can also be installed only as a web-service to manage a device in a headless environment. Install and run headless.
@@ -133,9 +132,7 @@ to publish `npm run publish`
 
 <!-- "release": "build -p always",  -->
 
-### Windows signing
-
-Windows signing is done on a Windows machine or VM. You will need:
+### Windows full app signing
 
 - Windows machine or VM
 - [Windows SDK installed](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
@@ -147,6 +144,25 @@ Windows signing is done on a Windows machine or VM. You will need:
   - Open the Environment Variables control panel
   - Find the 'Path' variable
   - Add the signtool directory
+
+**Set the sign tool to auto respond to the password prompt:**
+
+With an EV signing cert you cannot automate the token password, but you can set the sign tool to remember the password for the logged in session: https://stackoverflow.com/questions/17927895/automate-extended-validation-ev-code-signing
+
+**To sign the application follow these steps:**
+
+1. Insert USB Certificate
+2. `PLATFORMS=w npm run build`
+3. Enter the token password for the certificate if prompted (once per login)
+4. After build is completed copy these four files to the main build directory:
+
+- latest.yml
+- remoteit-installer.exe
+- remoteit-installer.exe.blockmap
+
+You should now have a fully signed windows app suite with installer, and uninstaller that can be auto-updated.
+
+### Windows partial manual signing
 
 To sign the application follow these steps:
 
@@ -162,4 +178,10 @@ signtool sign /a \Users\<USER>\Desktop\remoteit-desktop.exe
 5. A token password prompt should appear from SafeNet
 6. Enter the token password for the certificate
 
-The application should now be signed.
+The application should now be signed. It will not support auto-updating.
+
+## Windows Debug command
+
+```bash
+DEBUG=electron-builder ./node_modules/.bin/electron-builder -w
+```
