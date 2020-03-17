@@ -15,7 +15,10 @@ export const SetupPage: React.FC = () => {
   const css = useStyles()
   const { backend } = useDispatch<Dispatch>()
   const setAdded = (value: any) => backend.set({ key: 'added', value })
-  const { device, targets, added, admin, user, cliError } = useSelector((state: ApplicationState) => ({
+  const { device, targets, added, admin, user, cliError, nameBlacklist } = useSelector((state: ApplicationState) => ({
+    nameBlacklist: state.devices.all
+      .filter(device => device.shared !== 'shared-from')
+      .map(device => device.name.toLowerCase()),
     device: state.backend.device,
     targets: state.backend.targets,
     added: state.backend.added,
@@ -101,6 +104,7 @@ export const SetupPage: React.FC = () => {
       targets={targets}
       added={added}
       cliError={cliError}
+      nameBlacklist={nameBlacklist}
       onDevice={updateDevice}
       onUpdate={updateTargets}
       onDelete={deleteDevice}
