@@ -1,5 +1,6 @@
 import debug from 'debug'
 import cli from './cliInterface'
+import binaryInstaller from './binaryInstaller'
 import semverCompare from 'semver-compare'
 import environment from './environment'
 import EventBus from './EventBus'
@@ -44,13 +45,11 @@ export default class Installer {
     this.dependencies = args.dependencies
   }
 
-  async check() {
+  async check(log?: boolean) {
     d('CHECK INSTALLATION', { name: this.name, version: this.version })
-    const current = await this.isCurrent()
-    current
-      ? EventBus.emit(Installer.EVENTS.installed, this.toJSON())
-      : EventBus.emit(Installer.EVENTS.notInstalled, this.name)
-    return current
+    if (await this.isCurrent(log)) return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
+    if (environment.isElevated) return await binaryInstaller.install()
+    EventBus.emit(Installer.EVENTS.notInstalled, this.name)
   }
 
   /**
