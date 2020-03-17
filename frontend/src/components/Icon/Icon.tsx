@@ -32,8 +32,8 @@ export const Icon = React.forwardRef<Ref, IconProps>(
 
     const styles: any = {}
     if (color) styles.color = colors[color]
-    if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
-    if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
+    if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md
+    if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 2 : spacing.md
     if (size) styles.fontSize = fontSizes[size]
 
     return <span className={classes} {...props} style={styles} ref={ref} />
