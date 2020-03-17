@@ -1,4 +1,5 @@
 import electron from 'electron'
+import { cli } from 'remoteit-headless'
 import { EventBus, Logger, EVENTS } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 
@@ -28,7 +29,8 @@ export default class AppUpdater {
     }
   }
 
-  restart() {
+  async restart() {
+    await cli.stopService()
     autoUpdater.quitAndInstall()
     electron.app.quit()
   }
