@@ -39,18 +39,14 @@ export const InstallationNotice = connect(
       {error && (
         <Alert onClose={() => clearError()}>
           {error === 'User did not grant permission.'
-            ? 'Please grant permissions to install CLI tools to continue'
+            ? 'Please grant permissions to install CLI tools'
             : JSON.stringify(error)}
         </Alert>
       )}
       <Typography className={css.space} variant="h2" align="center">
-        Connection Service Installation Notice
-      </Typography>
-      <Typography variant="caption" align="center">
-        You will be prompted to login so we can setup the connection service.
-      </Typography>
-      <Typography className={css.space} variant="caption" align="center">
-        Run remote.it as an administrator to avoid future prompting.
+        We need to install our service onto your machine
+        <br />
+        in order to maintain background connections.
       </Typography>
       <Button
         className={css.space}
@@ -63,6 +59,12 @@ export const InstallationNotice = connect(
         {installing ? 'Installing...' : 'Install Service'}
         <Icon name="arrow-to-bottom" weight="regular" inline />
       </Button>
+      <Typography className={css.space} variant="caption" align="center">
+        <Icon name="info-circle" weight="regular" size="xs" inlineLeft />
+        You will be prompted for permission to continue the installation.
+        <br />
+        Run remote.it as an administrator to avoid future prompting.
+      </Typography>
     </Body>
   )
 })
