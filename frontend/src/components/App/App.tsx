@@ -24,13 +24,13 @@ import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
 
 export const App = () => {
-  const { installed, user, target, dataReady, uninstalling } = useSelector((state: ApplicationState) => ({
+  const { installed, signedIn, target, dataReady, uninstalling } = useSelector((state: ApplicationState) => ({
     installed:
       state.binaries.connectdInstalled &&
       state.binaries.muxerInstalled &&
       state.binaries.demuxerInstalled &&
       state.binaries.remoteitInstalled,
-    user: state.auth.user,
+    signedIn: state.auth.user && state.auth.authenticated,
     target: state.backend.device,
     dataReady: state.backend.dataReady,
     uninstalling: state.ui.uninstalling,
@@ -69,7 +69,7 @@ export const App = () => {
       </Page>
     )
 
-  if (!user)
+  if (!signedIn)
     return (
       <Page>
         <Header />

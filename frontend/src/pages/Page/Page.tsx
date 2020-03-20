@@ -42,7 +42,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <RemoteHeader os={os} />
       <div className={pageCss}>
         {children}
-        <Snackbar open={!!user && !authenticated} message="Authenticating..." />
         <Snackbar
           open={authenticated && !connected}
           message="Webserver connection lost. Retrying..."
