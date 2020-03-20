@@ -16,6 +16,7 @@ export const LaunchSetting: React.FC<{ service: IService; connection?: IConnecti
       value={currentLaunchUrl}
       displayValue={app.parse(currentLaunchUrl, connection)}
       label="Launch URL"
+      resetValue={app.launchUrl}
       onSave={launchUrl =>
         connection &&
         setConnection({

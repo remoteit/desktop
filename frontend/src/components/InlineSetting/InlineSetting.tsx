@@ -48,7 +48,7 @@ export const InlineSetting: React.FC<Props> = ({
   }
 
   const LeftIcon = (
-    <Tooltip open={iconTooltip ? undefined : false} title={iconTooltip}>
+    <Tooltip open={iconTooltip ? undefined : false} title={iconTooltip || ''}>
       <ListItemIcon>
         <Icon name={icon} size="md" weight="light" />
       </ListItemIcon>

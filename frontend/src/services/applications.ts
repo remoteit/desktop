@@ -8,7 +8,7 @@ class Application {
   launchUrl: string = 'http://[host]:[port]'
   copyUrl: string = '[host]:[port]'
   prompt: boolean = false
-  iconRotate: boolean = true
+  iconRotate: boolean = false
 
   constructor(options: { [key in keyof Application]?: any }) {
     Object.assign(this, options)
