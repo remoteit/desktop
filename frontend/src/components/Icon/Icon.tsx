@@ -29,7 +29,7 @@ export const Icon = React.forwardRef<Ref, IconProps>(
       `fa-${name}`,
       className
     )
-
+    if ((name = 'question-circle')) console.log('color', color)
     const styles: any = {}
     if (color) styles.color = colors[color]
     if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md

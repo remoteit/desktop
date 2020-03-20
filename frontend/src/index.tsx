@@ -104,10 +104,6 @@ const theme = createMuiTheme({
         letterSpacing: 3,
         fontWeight: 500,
       },
-      body1: {
-        color: colors.grayDarker,
-        fontSize: fontSizes.base,
-      },
       body2: {
         color: colors.gray,
         fontSize: fontSizes.base,

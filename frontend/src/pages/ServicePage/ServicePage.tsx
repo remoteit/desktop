@@ -16,6 +16,7 @@ import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { LanShareSelect } from '../../components/LanShareSelect'
+import { LaunchSetting } from '../../components/LaunchSetting'
 import { ConnectionLog } from '../../components/ConnectionLog'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
@@ -97,6 +98,7 @@ export const ServicePage: React.FC = () => {
           <HostSetting connection={connection} service={service} />
           <NameSetting connection={connection} service={service} />
           <UsernameSetting connection={connection} service={service} />
+          <LaunchSetting connection={connection} service={service} />
         </List>
         <div className={css.actions}>
           <ConnectButton connection={connection} service={service} size="medium" />

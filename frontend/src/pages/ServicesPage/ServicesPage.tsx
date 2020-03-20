@@ -46,7 +46,7 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
         </>
       }
     >
-      <Typography variant="subtitle1">Services</Typography>
+      {/* <Typography variant="subtitle1">Services</Typography> */}
       <ServiceList services={device.services} connections={serviceConnections} />
       <Divider />
       <Typography variant="subtitle1">Device details</Typography>
