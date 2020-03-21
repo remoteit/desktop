@@ -111,7 +111,7 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, cliError,
       <td>
         {changed && !loading && (
           <Tooltip title="Save">
-            <IconButton color="primary" onClick={save}>
+            <IconButton color="primary" onClick={save} disabled={state.name.length < 1}>
               <Icon name="check" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
