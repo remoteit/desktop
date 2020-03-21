@@ -112,12 +112,15 @@ declare global {
     autoStart?: boolean
     connecting?: boolean
     username?: string // support for launching where username could be saved
+    launchUrl?: string // deep link launch url
     createdTime?: number // unix timestamp track for garbage cleanup
     startTime?: number // unix timestamp connection start time
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
-    // deepLink?: string
+    [index: string]: any // needed to be able to iterate the keys :(
   }
+
+  type IConnectionKey = keyof IConnection
 
   interface ConnectionLookup {
     [id: string]: IConnection

@@ -18,6 +18,8 @@ type Props = {
   value?: string | number
   label: string
   icon?: string
+  displayValue?: string | number
+  iconTooltip?: string
   filter?: RegExp
   disabled?: boolean
   resetValue?: string | number
@@ -25,9 +27,11 @@ type Props = {
 }
 
 export const InlineSetting: React.FC<Props> = ({
-  value,
+  value = '',
   label,
   icon,
+  iconTooltip,
+  displayValue,
   disabled,
   resetValue,
   onSave,
@@ -35,7 +39,7 @@ export const InlineSetting: React.FC<Props> = ({
   children,
 }) => {
   const [edit, setEdit] = useState<boolean>(false)
-  const [editValue, setEditValue] = useState()
+  const [editValue, setEditValue] = useState<string | number>('')
 
   const css = useStyles()
   const showEdit = () => {
@@ -43,12 +47,18 @@ export const InlineSetting: React.FC<Props> = ({
     setEdit(true)
   }
 
+  const LeftIcon = (
+    <Tooltip open={iconTooltip ? undefined : false} title={iconTooltip || ''}>
+      <ListItemIcon>
+        <Icon name={icon} size="md" weight="light" />
+      </ListItemIcon>
+    </Tooltip>
+  )
+
   if (edit)
     return (
       <ListItem className={css.active}>
-        <ListItemIcon>
-          <Icon name={icon} color="gray" size="lg" />
-        </ListItemIcon>
+        {LeftIcon}
         <form
           className={css.form}
           onSubmit={() => {
@@ -59,6 +69,7 @@ export const InlineSetting: React.FC<Props> = ({
           {children}
           <TextField
             autoFocus
+            className={css.input}
             label={label}
             value={editValue}
             margin="dense"
@@ -89,12 +100,10 @@ export const InlineSetting: React.FC<Props> = ({
 
   return (
     <ListItem button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
-      <ListItemIcon>
-        <Icon name={icon} color="gray" size="lg" />
-      </ListItemIcon>
+      {LeftIcon}
       <span className={css.text}>
         <Typography variant="caption">{label}</Typography>
-        <Typography variant="h2">{value || '–'}</Typography>
+        <Typography variant="h2">{displayValue || value || '–'}</Typography>
       </span>
       {!disabled && (
         <ListItemSecondaryAction className={css.hidden}>
@@ -107,7 +116,12 @@ export const InlineSetting: React.FC<Props> = ({
 
 const useStyles = makeStyles({
   form: { display: 'flex', width: '100%', marginRight: 120 },
+  input: { flexGrow: 1 },
   text: { flexGrow: 1 },
   hidden: { display: 'none' },
-  active: { backgroundColor: colors.primaryHighlight, padding: 0 },
+  active: {
+    backgroundColor: colors.primaryHighlight,
+    padding: 0,
+    '& > .MuiListItemIcon-root': { paddingLeft: 23 },
+  },
 })

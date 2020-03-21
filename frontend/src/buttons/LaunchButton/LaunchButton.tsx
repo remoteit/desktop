@@ -26,7 +26,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   const [open, setOpen] = useState<boolean>(false)
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
 
-  if (!connection || !connection.active || !app || app.launchDisabled) return null
+  if (!connection || !connection.active || !app) return null
 
   const close = () => setOpen(false)
   const check = () => {
