@@ -8,7 +8,8 @@ const SSH_TYPE = 28
 
 export const LaunchSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   const app = useApplication(service.typeID)
-  const tokens = '[host] [port] [id]' + (service.typeID === SSH_TYPE ? ' [username]' : '')
+  let tokens = '[host] [port] [id]'
+  if (service.typeID === SSH_TYPE) tokens += ' [username]'
   if (!connection) connection = newConnection(service)
   let currentLaunchUrl = (connection && connection.launchUrl) || app.launchUrl
   return (
