@@ -145,7 +145,7 @@ export default class CLI {
   }
 
   async version() {
-    const result = await this.exec({ params: ['version', '-j'], quiet: true })
+    const result = await this.exec({ params: ['version'], quiet: true })
     return result.toString().trim()
   }
 

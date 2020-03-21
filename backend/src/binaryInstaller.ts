@@ -29,13 +29,13 @@ class BinaryInstaller {
       // Migrate v2.4.x bin location to v2.5.x
       if (environment.isWindows) await this.stopDeprecatedBinary()
 
+      // Service needs to stop in before a new version - done independently since it will fail if there isn't a service running and stop the rest of the commands
+      if (isInstalled) await new Command({ admin: true, command: `"${installer.binaryPath()}" service stop` }).exec()
+
       // Download and install binaries
       await this.download(installer, tmpDir)
 
       const commands = new Command({ onError: reject, admin: true })
-
-      // Service needs to stop in install a new version
-      if (isInstalled) commands.push(`"${installer.binaryPath()}" service stop`)
 
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
