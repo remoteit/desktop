@@ -20,6 +20,7 @@ class BinaryInstaller {
   async install() {
     await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
   }
+  //change
 
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {

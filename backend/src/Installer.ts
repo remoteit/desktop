@@ -72,13 +72,19 @@ export default class Installer {
 
   async isCurrent(log?: boolean) {
     let current = false
-    let version = 'Installing'
+    let cliVersion = 'Installing'
+
     if (this.isInstalled()) {
-      version = await cli.version()
-      current = semverCompare(version, this.version) >= 0
-      log && Logger.info('CURRENT', { name: this.name, checkVersion: version, version: this.version })
+      cliVersion = await cli.version()
+      current = semverCompare(cliVersion, this.version) <= 0
     }
-    if (!current && log) Logger.info('NOT CURRENT', { name: this.name, checkVersion: version, version: this.version })
+
+    if (current) {
+      log && Logger.info('CHECK VERSION', { current, name: this.name, cliVersion, desiredVersion: this.version })
+    } else {
+      Logger.info('NOT CURRENT', { name: this.name, cliVersion, desiredVersion: this.version })
+    }
+
     return current
   }
 
@@ -134,6 +140,7 @@ export default class Installer {
     return new Promise((resolve, reject) => {
       const url = `https://github.com/${this.repoName}/releases/download/v${this.version}/${this.downloadFileName}`
 
+      Logger.info('DOWNLOADING', { url })
       d(`Downloading ${this.name}:`, url)
 
       progress(0)
