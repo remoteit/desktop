@@ -48,7 +48,7 @@ class BinaryInstaller {
         commands.push(`chmod 755 ${installer.binaryPath()}`) // @TODO if this is going in the user folder must have user permissions
       }
 
-      commands.push(`"${installer.binaryPath()}" tools install -j`)
+      commands.push(`"${installer.binaryPath()}" tools install --update -j`)
       if (isInstalled) commands.push(`"${installer.binaryPath()}" service start`)
 
       await commands.exec()
