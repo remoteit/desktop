@@ -1,7 +1,7 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import binaryInstaller from './binaryInstaller'
-import semverCompare from 'semver-compare'
+import semverCompare from 'semver/functions/compare'
 import environment from './environment'
 import EventBus from './EventBus'
 import Logger from './Logger'
@@ -76,7 +76,11 @@ export default class Installer {
 
     if (this.isInstalled()) {
       cliVersion = await cli.version()
-      current = semverCompare(cliVersion, this.version) <= 0
+      try {
+        current = semverCompare(cliVersion, this.version) >= 0
+      } catch (error) {
+        Logger.warn('BAD VERSION', { error })
+      }
     }
 
     if (current) {
