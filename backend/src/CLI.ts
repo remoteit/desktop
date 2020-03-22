@@ -120,7 +120,7 @@ export default class CLI {
   }
 
   async install() {
-    await this.exec({ params: ['tools', 'install', '-j'], admin: true })
+    await this.exec({ params: ['tools', 'install', '--update', '-j'], admin: true })
   }
 
   async unInstall() {
