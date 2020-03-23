@@ -9,7 +9,11 @@ import * as screenfull from 'screenfull'
 import styles from '../../styling'
 
 export const Header: React.FC = () => {
-  const { device } = useSelector((state: ApplicationState) => state.backend)
+  const { device, admin, user } = useSelector((state: ApplicationState) => ({
+    device: state.backend.device,
+    admin: state.backend.admin,
+    user: state.auth.user,
+  }))
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
   const css = useStyles()
@@ -19,11 +23,15 @@ export const Header: React.FC = () => {
     if (screenfull.isEnabled) screenfull.toggle()
   }
 
+  const guest = admin && user && user.username !== admin
+
   if (!isMac() && isElectron()) return null
 
   return (
     <div className={css.header}>
-      <Typography>{device.name ? device.name : 'remote.it'}</Typography>
+      <Typography>
+        {device.name ? device.name : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
+      </Typography>
       {!isElectron() && fullscreenEnabled && (
         <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
           <IconButton onClick={toggleFullscreen}>
@@ -57,5 +65,8 @@ const useStyles = makeStyles({
       textAlign: 'center',
       width: '100%',
     },
+  },
+  guest: {
+    color: styles.colors.primary,
   },
 })
