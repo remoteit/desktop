@@ -41,7 +41,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
     <Container header={<Typography variant="h1">Hosted Device</Typography>}>
       <Body center={!registered}>
         {registered || (
-          <Typography variant="body1" align="center">
+          <Typography variant="caption" align="center">
             Enter a name if you would like to host connections.
           </Typography>
         )}

@@ -1,13 +1,13 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.5.23-alpha",
+  "version": "2.5.24-alpha.0",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s clean compile copy-* build-*",
     "build-backend": "cd backend && npm run build",
-    "build-electron": "electron-builder -$PLATFORMS",
+    "build-electron": "cross-env electron-builder -$PLATFORMS",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",

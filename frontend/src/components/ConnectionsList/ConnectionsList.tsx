@@ -2,9 +2,11 @@ import React from 'react'
 import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
+import { makeStyles } from '@material-ui/styles'
 import { IService } from 'remote.it'
 import { ServiceListItem } from '../ServiceListItem'
 import { Typography, Button, List } from '@material-ui/core'
+import styles from '../../styling'
 
 export interface Props {
   connections: IConnection[]
@@ -13,11 +15,12 @@ export interface Props {
 
 export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   const history = useHistory()
+  const css = useStyles()
 
   if (!connections || !connections.length) {
     return (
       <Body center>
-        <Typography variant="caption" gutterBottom>
+        <Typography className={css.message} variant="caption">
           You have no connections
         </Typography>
         <Button onClick={() => history.push('/devices')} variant="contained" color="primary" size="medium">
@@ -36,3 +39,5 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
     </List>
   )
 }
+
+const useStyles = makeStyles({ message: { marginBottom: styles.spacing.lg } })

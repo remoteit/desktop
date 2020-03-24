@@ -3,9 +3,9 @@ import { Container } from '../../components/Container'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Tooltip } from '@material-ui/core'
-import { spacing } from '../../styling'
 import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/styles'
+import { spacing, colors } from '../../styling'
 import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 import { Setup } from '../../components/Setup'
@@ -49,6 +49,9 @@ export const SetupPage: React.FC = () => {
         </Typography>
       }
     >
+      <Typography className={css.banner} variant="body2">
+        View Only
+      </Typography>
       <Columns count={1} inset>
         <p>
           <Typography variant="caption">Device Name</Typography>
@@ -75,7 +78,7 @@ export const SetupPage: React.FC = () => {
                 <Typography variant="caption">Port</Typography>
               </th>
               <th>
-                <Typography variant="caption">Jump IP Address</Typography>
+                <Typography variant="caption">Host Address</Typography>
               </th>
             </tr>
             {targets.map(target => (
@@ -118,5 +121,14 @@ const useStyles = makeStyles({
     '& th, td': { textAlign: 'left', padding: 0 },
     '& td': { minWidth: 50, paddingRight: spacing.lg },
     '& tr + tr': { height: 22, verticalAlign: 'bottom' },
+  },
+  banner: {
+    padding: spacing.sm,
+    backgroundColor: colors.primary,
+    color: colors.white,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    letterSpacing: 2,
+    fontWeight: 500,
   },
 })

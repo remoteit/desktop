@@ -38,7 +38,7 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toBeCalledWith('mkdir -p ../jest/bin')
       expect(commandSpy).toBeCalledWith('mv undefined ../jest/bin/remoteit')
       expect(commandSpy).toBeCalledWith('chmod 755 ../jest/bin/remoteit')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" tools install -j')
+      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" tools install --update -j')
 
       expect(commandSpy).toBeCalledTimes(4)
       expect(downloadSpy).toBeCalledTimes(1)
@@ -52,7 +52,7 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toBeCalledWith('md "../jest/bin"')
       expect(commandSpy).toBeCalledWith('move /y "undefined" "../jest/bin/remoteit.exe"')
       expect(commandSpy).toBeCalledWith('icacls "../jest/bin/remoteit.exe" /T /Q /grant "*S-1-5-32-545:RX"')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" tools install -j')
+      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" tools install --update -j')
 
       expect(commandSpy).toBeCalledTimes(4)
       expect(downloadSpy).toBeCalledTimes(1)
