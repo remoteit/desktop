@@ -16,9 +16,13 @@ const d = debug('r3:backend:BinaryInstaller')
 
 class BinaryInstaller {
   options = { name: 'remoteit' }
+  inProgress = false
 
   async install() {
+    if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
+    this.inProgress = true
     await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    this.inProgress = false
   }
   //change
 
@@ -83,7 +87,10 @@ class BinaryInstaller {
   }
 
   async uninstall() {
+    if (this.inProgress) return Logger.info('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
+    this.inProgress = true
     await this.uninstallBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    this.inProgress = false
   }
 
   async uninstallBinary(installer: Installer) {
