@@ -23,6 +23,7 @@ type Props = {
 export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlacklist, ...props }) => {
   const css = useStyles()
   const [name, setName] = useState<string>(device.name)
+  const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [registering, setRegistering] = useState<boolean>(false)
   const [deleting, setDeleting] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
@@ -68,7 +69,11 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
                     setNameError('Device names can only contain alpha numeric characters.')
                   } else if (nameBlacklist.includes(value.toLowerCase().trim())) {
                     setNameError('That device name is already in use.')
-                  } else setNameError(undefined)
+                    setDisableRegister(true)
+                  } else {
+                    setNameError(undefined)
+                    setDisableRegister(false)
+                  }
                   setName(value)
                 }}
                 autoFocus={true}
@@ -95,7 +100,13 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
                 )
               )}
               {registered || (
-                <Button color="primary" variant="contained" size="medium" disabled={!name || !!nameError} type="submit">
+                <Button
+                  color="primary"
+                  variant="contained"
+                  size="medium"
+                  disabled={!name || disableRegister}
+                  type="submit"
+                >
                   {registered ? 'Registered' : 'Register'}
                   {registering ? (
                     <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
