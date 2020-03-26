@@ -157,7 +157,7 @@ const useStyles = makeStyles({
     borderTop: `1px solid ${styles.colors.grayLighter}`,
   },
   port: {
-    paddingLeft: 54,
+    paddingLeft: 70,
     paddingRight: spacing.lg,
     '& div.MuiListItemText-root:nth-child(1)': {
       maxWidth: '20%',

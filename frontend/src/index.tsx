@@ -105,7 +105,6 @@ const theme = createMuiTheme({
         fontWeight: 500,
       },
       body2: {
-        color: colors.gray,
         fontSize: fontSizes.base,
       },
       caption: {
