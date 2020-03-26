@@ -9,10 +9,9 @@ import * as screenfull from 'screenfull'
 import styles from '../../styling'
 
 export const Header: React.FC = () => {
-  const { device, admin, user } = useSelector((state: ApplicationState) => ({
+  const { device, guest } = useSelector((state: ApplicationState) => ({
+    guest: state.backend.admin && state.auth.user && state.auth.user.username !== state.backend.admin,
     device: state.backend.device,
-    admin: state.backend.admin,
-    user: state.auth.user,
   }))
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
@@ -22,8 +21,6 @@ export const Header: React.FC = () => {
     setFullscreen(!fullscreen)
     if (screenfull.isEnabled) screenfull.toggle()
   }
-
-  const guest = admin && user && user.username !== admin
 
   if (!isMac() && isElectron()) return null
 

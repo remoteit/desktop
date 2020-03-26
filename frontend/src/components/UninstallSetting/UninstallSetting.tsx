@@ -1,11 +1,17 @@
 import React from 'react'
 import Controller from '../../services/Controller'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
 
 export const UninstallSetting: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
+
+  const { guest } = useSelector((state: ApplicationState) => ({
+    guest: state.backend.admin && state.auth.user && state.auth.user.username !== state.backend.admin,
+  }))
+
+  if (guest) return null
 
   const warning = () =>
     window.confirm(
