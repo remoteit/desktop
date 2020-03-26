@@ -28,7 +28,7 @@ export function SignInForm({ signInError, signInStarted, signIn }: SignInFormCon
   const formal = useFormal(initialValues, {
     schema,
     onSubmit: ({ password, username }: { password: string; username: string }) => {
-      signIn({ username, password })
+      signIn({ username: username.toLowerCase(), password })
     },
   })
 
