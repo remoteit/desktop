@@ -83,14 +83,6 @@
       "category": "Network",
       "target": [
         {
-          "target": "AppImage",
-          "arch": [
-            "armv7l",
-            "x64",
-            "arm64"
-          ]
-        },
-        {
           "target": "deb",
           "arch": [
             "armv7l",
