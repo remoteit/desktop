@@ -245,6 +245,7 @@ export default class Connection extends EventEmitter {
       if (line.startsWith('!!connected')) {
         this.params.startTime = Date.now()
         this.params.active = true
+        delete this.params.error
         event = events.connected
         Logger.info('connected!', line)
       } else if (line.includes('seconds since startup')) {
@@ -286,6 +287,8 @@ export default class Connection extends EventEmitter {
   }
 
   private handleStdErr = (buff: Buffer) => {
+    // todo log error
+
     const error = buff.toString()
     this.params.error = { message: error }
     EventBus.emit(Connection.EVENTS.error, {
