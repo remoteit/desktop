@@ -287,8 +287,6 @@ export default class Connection extends EventEmitter {
   }
 
   private handleStdErr = (buff: Buffer) => {
-    // todo log error
-
     const error = buff.toString()
     this.params.error = { message: error }
     EventBus.emit(Connection.EVENTS.error, {
