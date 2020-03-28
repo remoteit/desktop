@@ -24,7 +24,7 @@ export default class Application {
   async constructorSync() {
     this.bindExitHandlers()
     await environment.setElevatedState()
-    await remoteitInstaller.check(true)
+    remoteitInstaller.check(true)
     server.start()
     this.startHeartbeat()
     if (server.io) new Controller(server.io, this.pool)
