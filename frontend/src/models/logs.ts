@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 
-const MAX_LOG_LENGTH = 250
+const MAX_LOG_LENGTH = 1000
 
 const state: ILog = {}
 

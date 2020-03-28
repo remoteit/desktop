@@ -56,13 +56,18 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
         </ListItemIcon>
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         {connection && connection.active && <Throughput connection={connection} />}
+        <ErrorButton
+          className={css.error}
+          connection={connection}
+          onClick={() => setShowError(!showError)}
+          visible={showError}
+        />
         <ListItemSecondaryAction className={css.actions + ' hidden'}>
-          <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
         </ListItemSecondaryAction>
       </ListItemLocation>
-      {showError && <ConnectionErrorMessage connection={connection} service={service} />}
+      <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
     </>
   )
 }
@@ -78,4 +83,5 @@ const useStyles = makeStyles({
   },
   details: { '& > span': { marginLeft: spacing.xs } },
   restriction: { color: colors.grayDarker },
+  error: { marginRight: spacing.lg },
 })

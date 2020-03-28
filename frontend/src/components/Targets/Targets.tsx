@@ -1,6 +1,7 @@
 import React from 'react'
 import { Target } from '../Target'
 import { NewTarget } from '../NewTarget'
+import { TARGET_SERVICES_LIMIT } from '../../constants'
 import { InputLabel, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
@@ -17,7 +18,7 @@ type Props = {
 
 export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onUpdate, onCancel }) => {
   const css = useStyles()
-  const disabled = targets.length > 9
+  const disabled = targets.length + 1 > TARGET_SERVICES_LIMIT
 
   function update(key: number, target: ITarget) {
     onUpdate([...targets, target])

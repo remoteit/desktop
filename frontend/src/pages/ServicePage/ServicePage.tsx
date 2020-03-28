@@ -83,11 +83,9 @@ export const ServicePage: React.FC = () => {
             <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />
           </Typography>
-          {showError && (
-            <List className={css.errorMessage}>
-              <ConnectionErrorMessage connection={connection} service={service} />
-            </List>
-          )}
+          <List className={css.errorMessage}>
+            <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
+          </List>
         </>
       }
     >
