@@ -138,6 +138,8 @@ function getEventHandlers() {
 
     dataReady: (result: boolean) => backend.set({ key: 'dataReady', value: result }),
 
+    isElevated: (result: boolean) => backend.set({ key: 'isElevated', value: result }),
+
     // User
     'signed-out': () => auth.signedOut(),
 
