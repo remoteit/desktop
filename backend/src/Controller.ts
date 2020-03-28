@@ -1,7 +1,6 @@
 import SocketIO from 'socket.io'
 import app from '.'
 import lan from './LAN'
-import CLI from './CLI'
 import cli from './cliInterface'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
@@ -33,7 +32,7 @@ class Controller {
       ...Object.values(Connection.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),
-      ...Object.values(CLI.EVENTS),
+      ...Object.values(cli.EVENTS),
       ...Object.values(server.EVENTS),
       ...Object.values(electronInterface.EVENTS),
     ]

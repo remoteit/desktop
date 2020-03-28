@@ -26,7 +26,7 @@ export default class CLI {
   userConfigFile: JSONFile<ConfigFile>
   adminConfigFile: JSONFile<ConfigFile>
 
-  static EVENTS = {
+  EVENTS = {
     error: 'cli/error',
   }
 
@@ -180,7 +180,7 @@ export default class CLI {
       commands.push(`"${remoteitInstaller.binaryPath()}" signin ${user.username} -a ${user.authHash} -j`)
     }
     commands.push(`"${remoteitInstaller.binaryPath()}" ${params.join(' ')}`)
-    commands.onError = (e: Error) => EventBus.emit(CLI.EVENTS.error, e.toString())
+    commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())
 
     result = await commands.exec()
     if (readUser) this.readUser(admin)
