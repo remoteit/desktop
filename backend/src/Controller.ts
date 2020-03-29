@@ -106,6 +106,7 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
     this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
     this.io.emit('os', environment.simpleOS)
+    this.io.emit('isElevated', environment.isElevated)
     this.io.emit('dataReady', true)
   }
 
