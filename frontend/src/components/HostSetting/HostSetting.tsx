@@ -1,4 +1,5 @@
 import React from 'react'
+import { replaceHost } from '../../helpers/nameHelper'
 import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../constants'
 import { IService } from 'remote.it'
 import { InlineSetting } from '../InlineSetting'
@@ -14,6 +15,7 @@ export const HostSetting: React.FC<{ service: IService; connection?: IConnection
   return (
     <InlineSetting
       value={currentHost}
+      displayValue={replaceHost(currentHost)}
       label="Bind IP Address"
       disabled={disabled}
       resetValue={IP_PRIVATE}

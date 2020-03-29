@@ -1,5 +1,4 @@
-import { hostName } from '../helpers/nameHelper'
-// import { isWindows, isMac } from '../services/Platform'
+import { replaceHost } from '../helpers/nameHelper'
 
 class Application {
   types: number[] = []
@@ -24,6 +23,7 @@ class Application {
 
   parse(url: string, connection: IConnection) {
     for (const key in connection) url = url.replace(`[${key}]`, encodeURI(connection[key]))
+    url = replaceHost(url)
     return url
   }
 
