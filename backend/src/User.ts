@@ -1,3 +1,4 @@
+import cli from './cliInterface'
 import debug from 'debug'
 import Logger from './Logger'
 import Tracker from './Tracker'
@@ -43,6 +44,11 @@ export class User {
 
   is(user: UserCredentials) {
     return user.username === this.username && user.authHash === this.authHash
+  }
+
+  isDeviceOwner(user: UserCredentials) {
+    const { admin } = cli.data
+    return admin && user.username === admin.username
   }
 
   authenticated() {
