@@ -32,7 +32,6 @@ process
       error,
     })
     Logger.warn('UNCAUGHT EXCEPTION', { error, details: error.toString() })
-    // EventBus.emit(CLI.EVENTS.error, error.toString())
   })
   .on('unhandledRejection', (reason: Error | any, promise: Promise<any>) => {
     d('Caught exception', reason, promise)
@@ -41,7 +40,6 @@ process
       error: reason,
     })
     Logger.warn('UNHANDLED PROMISE REJECTION', { reason, details: reason.toString(), promise })
-    // EventBus.emit(CLI.EVENTS.error, reason.toString())
   })
 
 export default new Application()
