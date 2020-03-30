@@ -3,6 +3,10 @@ import { store } from '../store'
 
 const separator = ' - '
 
+export function replaceHost(url: string) {
+  return url.replace('127.0.0.1', 'localhost')
+}
+
 export function hostName(connection: IConnection) {
   const { host = '', port } = connection
   if (!port) return null

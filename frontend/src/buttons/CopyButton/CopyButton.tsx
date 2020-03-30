@@ -23,7 +23,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, ...
           <Icon name="clipboard" color={clipboard.copied ? 'success' : undefined} size="md" fixedWidth />
         </IconButton>
       </Tooltip>
-      <input type="hidden" style={{ display: 'none' }} ref={clipboard.target} value={app.copy(connection)} />
+      <input type="hidden" style={{ display: 'none' }} ref={clipboard.target} value={app.launch(connection)} />
     </span>
   )
 }
