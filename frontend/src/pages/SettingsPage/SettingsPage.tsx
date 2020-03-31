@@ -76,6 +76,7 @@ export const SettingsPage = connect(
       >
         <DeviceSetupItem />
         <Divider />
+        <Typography variant="subtitle1">User</Typography>
         <List>
           <SettingsListItem
             label="Send feedback"
@@ -83,14 +84,6 @@ export const SettingsPage = connect(
             onClick={() =>
               (window.location.href = encodeURI('mailto:support@remote.it?subject=Desktop Application Feedback'))
             }
-          />
-          <SettingsListItem label="Open at login" icon="power-off" toggle={openOnLogin} onClick={toggleOpenOnLogin} />
-          <SettingsListItem
-            label="Search only device list"
-            icon="search"
-            subLabel="Speed up the application by only showing search results. Use with a very large device list."
-            toggle={searchOnly}
-            onClick={toggleSearchOnly}
           />
           <SettingsListItem
             label="Sign out"
@@ -101,8 +94,21 @@ export const SettingsPage = connect(
           <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />
         </List>
         <Divider />
+        <Typography variant="subtitle1">Application</Typography>
         <List>
+          <SettingsListItem label="Open at login" icon="power-off" toggle={openOnLogin} onClick={toggleOpenOnLogin} />
+          <SettingsListItem
+            label="Search only device list"
+            icon="search"
+            subLabel="Speed up the application by only showing search results. Use with a very large device list."
+            toggle={searchOnly}
+            onClick={toggleSearchOnly}
+          />
           <UpdateSetting />
+        </List>
+        <Divider />
+        <Typography variant="subtitle1">Advanced</Typography>
+        <List>
           <SettingsListItem
             label={installing ? 'Installing...' : (installed ? 'Re-install' : 'Install') + ' command line tools'}
             subLabel={`Version ${remoteitVersion}`}
