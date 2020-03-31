@@ -28,7 +28,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
   const [deleting, setDeleting] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
   const registered = !!device.uid
-  const confirmMessage = "Are you sure?\nYou are about to permanently remove this device and all of it's services."
+  const confirmMessage = 'Are you sure?\nYou are about to permanently remove this device and all of its services.'
 
   useEffect(() => {
     if (registering && (device.uid || props.cliError)) setRegistering(false)
