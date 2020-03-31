@@ -40,7 +40,6 @@ const applications: Application[] = [
     title: 'VNC',
     icon: 'desktop',
     launchUrl: 'vnc://[host]:[port]',
-    copyUrl: '[host]:[port]',
   }),
   new Application({
     types: [28],
@@ -56,7 +55,6 @@ const applications: Application[] = [
     icon: 'arrow-right',
     iconRotate: true,
     launchUrl: 'https://[host]:[port]',
-    copyUrl: 'https://[host]:[port]',
   }),
   new Application({
     types: [7, 30, 38],
@@ -64,7 +62,6 @@ const applications: Application[] = [
     icon: 'arrow-right',
     iconRotate: true,
     launchUrl: 'http://[host]:[port]',
-    copyUrl: 'http://[host]:[port]',
   }),
 ]
 
@@ -74,7 +71,6 @@ const defaultApp = new Application({
   icon: 'arrow-right',
   iconRotate: true,
   launchUrl: 'https://[host]:[port]',
-  copyUrl: 'https://[host]:[port]',
 })
 
 export function useApplication(type?: number) {
