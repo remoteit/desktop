@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, Divider, Typography, Tooltip, ButtonBase, ListItemIcon, ListItemText } from '@material-ui/core'
+import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
@@ -9,7 +9,6 @@ import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
 import { connect } from 'react-redux'
 import { spacing } from '../../styling'
-import { Icon } from '../../components/Icon'
 import { Logo } from '../../components/Logo'
 
 const mapState = (state: ApplicationState) => ({

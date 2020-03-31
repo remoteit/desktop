@@ -60,7 +60,7 @@ export const App = () => {
   useEffect(() => {
     console.log('device?', device.name)
     if (dataReady && !device.name && os === 'rpi') history.push('/settings/setup')
-  }, [history, device, dataReady])
+  }, [history, device, dataReady, os])
 
   if (uninstalling)
     return (
