@@ -1,6 +1,6 @@
 import React from 'react'
 import { List, Divider, Typography, Tooltip, ButtonBase, ListItemIcon, ListItemText } from '@material-ui/core'
-import { ListItemLocation } from '../../components/ListItemLocation'
+import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
@@ -75,14 +75,7 @@ export const SettingsPage = connect(
           </Typography>
         }
       >
-        <List>
-          <ListItemLocation pathname={'/settings/setup'}>
-            <ListItemIcon>
-              <Icon name="hdd" size="md" weight="light" />
-            </ListItemIcon>
-            <ListItemText primary="Hosted connections" />
-          </ListItemLocation>
-        </List>
+        <DeviceSetupItem />
         <Divider />
         <List>
           <SettingsListItem

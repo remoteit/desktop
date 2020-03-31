@@ -50,8 +50,8 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
     >
       <Body center={!registered}>
         {registered || (
-          <Typography variant="body2" align="center">
-            Enter a name if you would like to host connections.
+          <Typography variant="body2" align="center" color="textSecondary">
+            Get started hosting or port forwarding connections.
           </Typography>
         )}
         <form

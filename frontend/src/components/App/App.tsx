@@ -24,16 +24,17 @@ import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
 
 export const App = () => {
-  const { installed, signedIn, target, dataReady, uninstalling } = useSelector((state: ApplicationState) => ({
+  const { installed, signedIn, device, dataReady, uninstalling, os } = useSelector((state: ApplicationState) => ({
     installed:
       state.binaries.connectdInstalled &&
       state.binaries.muxerInstalled &&
       state.binaries.demuxerInstalled &&
       state.binaries.remoteitInstalled,
     signedIn: state.auth.user && state.auth.authenticated,
-    target: state.backend.device,
+    device: state.backend.device,
     dataReady: state.backend.dataReady,
     uninstalling: state.ui.uninstalling,
+    os: state.backend.os,
   }))
 
   const css = useStyles()
@@ -57,9 +58,9 @@ export const App = () => {
   }, [navigation, location, menu])
 
   useEffect(() => {
-    console.log('target?', target.name)
-    if (dataReady && !target.name) history.push('/settings/setup')
-  }, [history, target, dataReady])
+    console.log('device?', device.name)
+    if (dataReady && !device.name && os === 'rpi') history.push('/settings/setup')
+  }, [history, device, dataReady])
 
   if (uninstalling)
     return (

@@ -122,7 +122,7 @@ const theme = createMuiTheme({
       root: {
         backgroundColor: colors.grayLightest,
         '&.Mui-disabled': {
-          backgroundColor: colors.grayLighter,
+          backgroundColor: colors.grayLightest,
         },
       },
     },
