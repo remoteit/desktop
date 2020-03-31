@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { TextField, Button, CircularProgress, Tooltip, IconButton, Snackbar, Typography } from '@material-ui/core'
+import { Breadcrumbs } from '../Breadcrumbs'
+import { TextField, Button, CircularProgress, Tooltip, IconButton, Typography } from '@material-ui/core'
 import { REGEX_NAME_SAFE } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../Container'
@@ -39,7 +40,14 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
   }, [device, deleting, registering, props.cliError])
 
   return (
-    <Container header={<Typography variant="h1">Hosted Device</Typography>}>
+    <Container
+      header={
+        <>
+          <Breadcrumbs />
+          <Typography variant="h1">Hosted Device</Typography>
+        </>
+      }
+    >
       <Body center={!registered}>
         {registered || (
           <Typography variant="body2" align="center">

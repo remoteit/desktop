@@ -1,5 +1,6 @@
 import React from 'react'
-import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
+import { List, Divider, Typography, Tooltip, ButtonBase, ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
@@ -8,6 +9,7 @@ import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
 import { connect } from 'react-redux'
 import { spacing } from '../../styling'
+import { Icon } from '../../components/Icon'
 import { Logo } from '../../components/Logo'
 
 const mapState = (state: ApplicationState) => ({
@@ -73,6 +75,15 @@ export const SettingsPage = connect(
           </Typography>
         }
       >
+        <List>
+          <ListItemLocation pathname={'/settings/setup'}>
+            <ListItemIcon>
+              <Icon name="hdd" size="md" weight="light" />
+            </ListItemIcon>
+            <ListItemText primary="Hosted connections" />
+          </ListItemLocation>
+        </List>
+        <Divider />
         <List>
           <SettingsListItem
             label="Send feedback"

@@ -40,7 +40,7 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
             <Icon name="plus" inline />
           </Button>
           <span className={css.or}>or</span>
-          <Link onClick={() => history.push('/network')}>Scan for services</Link>
+          <Link onClick={() => history.push('/settings/setup/network')}>Scan for services</Link>
         </td>
       </tr>
     )

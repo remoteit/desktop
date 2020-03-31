@@ -14,7 +14,7 @@ import { spacing, colors, fontSizes } from '../../styling'
 const pageNameMap: { [path: string]: string } = {
   connections: 'Connections',
   devices: 'Remote Devices',
-  setup: 'Local Setup',
+  setup: 'Hosted Device',
   network: 'Network',
   settings: 'Settings',
 }

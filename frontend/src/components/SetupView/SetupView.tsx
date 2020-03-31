@@ -1,11 +1,12 @@
 import React from 'react'
-import { Container } from '../../components/Container'
+import { Container } from '../Container'
 import { Typography, Tooltip } from '@material-ui/core'
+import { Breadcrumbs } from '../Breadcrumbs'
 import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/styles'
 import { spacing, colors, fontSizes } from '../../styling'
-import { Columns } from '../../components/Columns'
-import { Icon } from '../../components/Icon'
+import { Columns } from '../Columns'
+import { Icon } from '../Icon'
 
 export const SetupView: React.FC<{
   adminUser?: string
@@ -18,12 +19,15 @@ export const SetupView: React.FC<{
   return (
     <Container
       header={
-        <Typography variant="h1">
-          Hosted Device
-          <Tooltip title={`Only ${adminUser} can edit this device`}>
-            <Icon name="lock-alt" weight="regular" inline />
-          </Tooltip>
-        </Typography>
+        <>
+          <Breadcrumbs />
+          <Typography variant="h1">
+            Hosted Device
+            <Tooltip title={`Only ${adminUser} can edit this device`}>
+              <Icon name="lock-alt" weight="regular" inline />
+            </Tooltip>
+          </Typography>
+        </>
       }
     >
       <Typography className={css.banner} variant="body2">
