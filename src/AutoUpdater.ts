@@ -30,7 +30,6 @@ export default class AppUpdater {
   }
 
   async restart() {
-    await cli.stopService()
     autoUpdater.quitAndInstall()
     electron.app.quit()
   }
