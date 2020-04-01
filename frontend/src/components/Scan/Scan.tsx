@@ -5,6 +5,8 @@ import { makeStyles } from '@material-ui/styles'
 import { ScanNetwork } from '../ScanNetwork'
 import styles from '../../styling'
 
+const UNKNOWN = 'searching'
+
 type Props = {
   data: IScanData
   onAdd: (target: ITarget) => void
@@ -18,14 +20,14 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
   const css = useStyles()
   const [timestamp, setTimestamp] = useState<{ [interfaceName: string]: number }>({})
   const [loading, setLoading] = useState<{ [interfaceName: string]: boolean }>({})
-  const [activeInterface, setActiveInterface] = useState<string>('searching')
+  const [activeInterface, setActiveInterface] = useState<string>(UNKNOWN)
   const selected = data[activeInterface] || {}
   const selectedTimestamp = timestamp[activeInterface]
   const selectedLoading = loading[activeInterface]
   const noResults = selected.data && !selected.data.length
 
   useEffect(() => {
-    if (interfaces.length && activeInterface === 'searching') setActiveInterface(interfaces[0].name)
+    if (interfaces.length && activeInterface === UNKNOWN) setActiveInterface(getActiveInterfaceName())
   }, [interfaces, activeInterface])
 
   useEffect(() => {
@@ -34,6 +36,13 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
       setTimestamp({ [activeInterface]: selected.timestamp })
     }
   }, [selected.timestamp, selectedTimestamp, selectedLoading, activeInterface])
+
+  function getActiveInterfaceName() {
+    if (!interfaces.length) return UNKNOWN
+    let name = interfaces[0].name
+    interfaces.forEach(i => i.active && (name = i.name))
+    return name
+  }
 
   function interfaceType() {
     const i = interfaces.find(i => i.name === activeInterface)
@@ -53,11 +62,11 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
             {interfaces.length ? (
               interfaces.map((i: IInterface) => (
                 <MenuItem key={i.name} value={i.name}>
-                  {i.type} &nbsp; <samp>{i.name}</samp>
+                  {i.type}
                 </MenuItem>
               ))
             ) : (
-              <MenuItem key={0} value="searching">
+              <MenuItem key={0} value={UNKNOWN}>
                 Finding Network...
               </MenuItem>
             )}
