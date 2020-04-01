@@ -45,7 +45,7 @@ class BinaryInstaller {
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
         commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath()}"`)
-        commands.push(`icacls "${installer.binaryPath()}" /T /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
+        commands.push(`icacls "${installer.binaryPath()}" /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
       } else {
         if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
         commands.push(`mv ${installer.tempFile} ${installer.binaryPath()}`)

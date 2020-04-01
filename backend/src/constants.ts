@@ -19,7 +19,6 @@ export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00N
 
 // CLI
 export const CLI_VERSION = '1.1.0-pre.1'
-
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
 
