@@ -1,5 +1,8 @@
 import React from 'react'
 import { Scan } from '../Scan'
+import { Container } from '../Container'
+import { Breadcrumbs } from '../Breadcrumbs'
+import { Typography } from '@material-ui/core'
 
 type Props = {
   data: IScanData
@@ -11,5 +14,16 @@ type Props = {
 }
 
 export const Network: React.FC<Props> = ({ ...props }) => {
-  return <Scan {...props} />
+  return (
+    <Container
+      header={
+        <>
+          <Breadcrumbs />
+          <Typography variant="h1">Network Scan</Typography>
+        </>
+      }
+    >
+      <Scan {...props} />
+    </Container>
+  )
 }
