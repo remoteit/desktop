@@ -24,16 +24,17 @@ import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
 
 export const App = () => {
-  const { installed, signedIn, target, dataReady, uninstalling } = useSelector((state: ApplicationState) => ({
+  const { installed, signedIn, device, dataReady, uninstalling, os } = useSelector((state: ApplicationState) => ({
     installed:
       state.binaries.connectdInstalled &&
       state.binaries.muxerInstalled &&
       state.binaries.demuxerInstalled &&
       state.binaries.remoteitInstalled,
     signedIn: state.auth.user && state.auth.authenticated,
-    target: state.backend.device,
+    device: state.backend.device,
     dataReady: state.backend.dataReady,
     uninstalling: state.ui.uninstalling,
+    os: state.backend.os,
   }))
 
   const css = useStyles()
@@ -57,9 +58,9 @@ export const App = () => {
   }, [navigation, location, menu])
 
   useEffect(() => {
-    console.log('target?', target.name)
-    if (dataReady && !target.name) history.push('/setup')
-  }, [history, target, dataReady])
+    console.log('device?', device.name)
+    if (dataReady && !device.name && os === 'rpi') history.push('/settings/setup')
+  }, [history, device, dataReady, os])
 
   if (uninstalling)
     return (
@@ -117,11 +118,11 @@ export const App = () => {
           <Route path="/devices">
             <DevicesPage />
           </Route>
-          <Route path="/setup">
-            <SetupPage />
-          </Route>
-          <Route path="/network">
+          <Route path="/settings/setup/network">
             <NetworkPage />
+          </Route>
+          <Route path="/settings/setup">
+            <SetupPage />
           </Route>
           <Route path="/settings">
             <SettingsPage />
@@ -133,9 +134,7 @@ export const App = () => {
       </Body>
       <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
         <BottomNavigationAction label="Connections" value="/connections" icon={<Icon name="scrubber" size="lg" />} />
-        <BottomNavigationAction label="Remote" value="/devices" icon={<Icon name="chart-network" size="lg" />} />
-        <BottomNavigationAction label="Hosted" value="/setup" icon={<Icon name="hdd" size="lg" />} />
-        <BottomNavigationAction label="Network" value="/network" icon={<Icon name="network-wired" size="lg" />} />
+        <BottomNavigationAction label="Devices" value="/devices" icon={<Icon name="chart-network" size="lg" />} />
         <BottomNavigationAction label="Settings" value="/settings" icon={<Icon name="cog" size="lg" />} />
       </BottomNavigation>
     </Page>
@@ -146,6 +145,7 @@ const useStyles = makeStyles({
   footer: {
     borderTop: `1px solid ${styles.colors.grayLight}`,
     minHeight: 62,
+    justifyContent: 'space-evenly',
     '& .MuiButtonBase-root': { maxWidth: '18%' },
   },
 })
