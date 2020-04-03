@@ -51,7 +51,7 @@ describe('backend/binaryInstaller', () => {
 
       expect(commandSpy).toBeCalledWith('md "../jest/bin"')
       expect(commandSpy).toBeCalledWith('move /y "undefined" "../jest/bin/remoteit.exe"')
-      expect(commandSpy).toBeCalledWith('icacls "../jest/bin/remoteit.exe" /C /Q /grant "*S-1-5-32-545:RX"')
+      expect(commandSpy).toBeCalledWith('icacls "../jest/bin/remoteit.exe" /T /C /Q /grant "*S-1-5-32-545:RX"')
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" tools install --update -j')
 
       expect(commandSpy).toBeCalledTimes(4)
