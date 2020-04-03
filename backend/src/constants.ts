@@ -18,8 +18,7 @@ export const API_URL = process.env.API_URL || 'https://api.remot3.it/apv/v27'
 export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 // CLI
-export const CLI_VERSION = '1.0.5-Beta'
-
+export const CLI_VERSION = '1.1.0-pre.3'
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
 
@@ -34,7 +33,7 @@ export const UNIX_ADMIN_SETTINGS = '/etc/remoteit'
 
 export const WIN_USER_BINARIES = path.join(os.homedir(), 'AppData/Local/remoteit/bin')
 export const WIN_USER_SETTINGS = path.join(os.homedir(), 'AppData/Local/remoteit')
-export const WIN_ADMIN_BINARIES = path.resolve('/Program Files/remoteit/bin')
+export const WIN_ADMIN_BINARIES = path.resolve('/Windows')
 export const WIN_ADMIN_SETTINGS = path.resolve('/ProgramData/remoteit')
 
 // Temp for migrating v2.4.x to 2.5.x
