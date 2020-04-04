@@ -1,0 +1,17 @@
+[Unit]
+Description=Remoteit Headless Desktop
+Requires=rc-local.service
+After=network.target rc-local.service
+
+[Service]
+PIDFile=/tmp/remotit-headless-99.pid
+User=root
+Group=root
+Restart=always
+KillSignal=SIGQUIT
+WorkingDirectory=/opt/remoteit-headless
+ExecStart=/usr/bin/node /opt/remoteit-headless/build/index.js
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target
