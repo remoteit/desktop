@@ -1,6 +1,5 @@
 import electron from 'electron'
-import { cli } from 'remoteit-headless'
-import { EventBus, Logger, EVENTS } from 'remoteit-headless'
+import { EventBus, Logger, EVENTS, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 
 export default class AppUpdater {
@@ -23,7 +22,9 @@ export default class AppUpdater {
 
   check() {
     try {
-      autoUpdater.checkForUpdatesAndNotify()
+      if (environment.isMac || environment.isWindows) {
+        autoUpdater.checkForUpdatesAndNotify()
+      }
     } catch (error) {
       Logger.warn('AUTO UPDATE ERROR', { error })
     }
