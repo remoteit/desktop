@@ -1,13 +1,4 @@
-import {
-  UNIX_USER_SETTINGS,
-  UNIX_USER_BINARIES,
-  UNIX_ADMIN_SETTINGS,
-  UNIX_ADMIN_BINARIES,
-  WIN_USER_SETTINGS,
-  WIN_USER_BINARIES,
-  WIN_ADMIN_SETTINGS,
-  WIN_ADMIN_BINARIES,
-} from './constants'
+import { PATHS } from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import os from 'os'
@@ -21,31 +12,36 @@ export class Environment {
   isArmLinux: boolean
   isPi: boolean
   isPiZero: boolean
-  platform: string
   simpleOS: Ios
   userPath: string
   adminPath: string
   binPath: string
 
   constructor() {
+    const elevated: boolean = true //this.isElevated - always elevated for now
+
+    // @ts-ignore
+    this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
+    this.isPi = detectRPi()
     this.isWindows = os.platform() === 'win32'
     this.isMac = os.platform() === 'darwin'
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
-    this.isPi = detectRPi()
-    // @ts-ignore
-    this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
-    this.platform = this.isPi ? 'rpi' : os.platform()
-    this.userPath = this.isWindows ? WIN_USER_SETTINGS : UNIX_USER_SETTINGS
-    this.adminPath = this.isWindows ? WIN_ADMIN_SETTINGS : UNIX_ADMIN_SETTINGS
-    this.binPath = this.setBinPath()
     this.simpleOS = this.setSimpleOS()
-  }
 
-  setBinPath() {
-    const elevated: boolean = true //this.isElevated - always elevated for now
-    if (this.isWindows) return elevated ? WIN_ADMIN_BINARIES : WIN_USER_BINARIES
-    else return elevated ? UNIX_ADMIN_BINARIES : UNIX_USER_BINARIES
+    if (this.isWindows) {
+      this.userPath = PATHS.WIN_USER_SETTINGS
+      this.adminPath = PATHS.WIN_ADMIN_SETTINGS
+      this.binPath = elevated ? PATHS.WIN_ADMIN_BINARIES : PATHS.WIN_USER_BINARIES
+    } else if (this.isMac) {
+      this.userPath = PATHS.MAC_USER_SETTINGS
+      this.adminPath = PATHS.MAC_ADMIN_SETTINGS
+      this.binPath = elevated ? PATHS.MAC_ADMIN_BINARIES : PATHS.MAC_USER_BINARIES
+    } else {
+      this.userPath = PATHS.UNIX_USER_SETTINGS
+      this.adminPath = PATHS.UNIX_ADMIN_SETTINGS
+      this.binPath = elevated ? PATHS.UNIX_ADMIN_BINARIES : PATHS.UNIX_USER_BINARIES
+    }
   }
 
   setSimpleOS() {

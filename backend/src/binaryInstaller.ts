@@ -9,7 +9,11 @@ import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
 import { existsSync, lstatSync } from 'fs'
+<<<<<<< Updated upstream
 import { WIN_ADMIN_BINARY_DEPRECATED } from './constants'
+=======
+import { WIN_DEPRECATED_BINARIES, UNIX_DEPRECATED_BINARIES } from './constants'
+>>>>>>> Stashed changes
 
 tmp.setGracefulCleanup()
 const d = debug('r3:backend:BinaryInstaller')
@@ -24,18 +28,22 @@ class BinaryInstaller {
     await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
     this.inProgress = false
   }
-  //change
 
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
       var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
       var isInstalled: boolean = !(await cli.isNotInstalled())
 
+<<<<<<< Updated upstream
       // Migrate v2.4.x bin location to v2.5.x
       if (environment.isWindows) await this.stopDeprecatedBinary()
 
       // Service needs to stop in before a new version - done independently since it will fail if there isn't a service running and stop the rest of the commands
       if (isInstalled) await new Command({ admin: true, command: `"${installer.binaryPath()}" service stop` }).exec()
+=======
+      // Stop and remove old binaries
+      await this.migrateBinaries(installer.binaryPath())
+>>>>>>> Stashed changes
 
       // Download and install binaries
       await this.download(installer, tmpDir)
@@ -65,6 +73,7 @@ class BinaryInstaller {
     })
   }
 
+<<<<<<< Updated upstream
   async stopDeprecatedBinary() {
     // Too small to be the desktop app -> must be cli
     if (existsSync(WIN_ADMIN_BINARY_DEPRECATED) && lstatSync(WIN_ADMIN_BINARY_DEPRECATED).size < 30000000) {
@@ -73,6 +82,36 @@ class BinaryInstaller {
     } else {
       Logger.info('DEPRECATED BINARY DOES NOT EXIST', { path: WIN_ADMIN_BINARY_DEPRECATED })
     }
+=======
+  async migrateBinaries(installerPath?: string) {
+    const commands = new Command({ admin: true })
+    let files = environment.isWindows ? WIN_DEPRECATED_BINARIES : UNIX_DEPRECATED_BINARIES
+    let toDelete: string[] = []
+
+    if (installerPath) files.push(installerPath)
+
+    files.forEach(file => {
+      // Too small to be the desktop app -> must be cli
+      if (existsSync(file) && lstatSync(file).size < 30000000) {
+        Logger.info('MIGRATING DEPRECATED BINARY', { file })
+        commands.push(`"${file}" service stop`)
+        commands.push(`"${file}" tools uninstall`)
+        toDelete.push(file)
+      } else {
+        Logger.info('DEPRECATED BINARY DOES NOT EXIST', { file })
+      }
+    })
+
+    await commands.exec()
+
+    toDelete.forEach(file => {
+      try {
+        rimraf.sync(file, { disableGlob: true })
+      } catch (e) {
+        Logger.warn('FILE REMOVAL FAILED', { file })
+      }
+    })
+>>>>>>> Stashed changes
   }
 
   async download(installer: Installer, tmpDir: tmp.DirResult) {

@@ -21,7 +21,7 @@ d('Starting up backend application!')
 Logger.info('environment info:', environment.toJSON())
 
 Tracker.pageView('/')
-Tracker.event('app', 'startup', `App startup ${environment.platform}`)
+Tracker.event('app', 'startup', `App startup ${environment.simpleOS}`)
 Logger.info('Desktop starting up!')
 
 process
