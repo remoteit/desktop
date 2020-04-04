@@ -16,6 +16,7 @@ export class Environment {
   userPath: string
   adminPath: string
   binPath: string
+  deprecatedBinaries: string[]
 
   constructor() {
     const elevated: boolean = true //this.isElevated - always elevated for now
@@ -33,14 +34,17 @@ export class Environment {
       this.userPath = PATHS.WIN_USER_SETTINGS
       this.adminPath = PATHS.WIN_ADMIN_SETTINGS
       this.binPath = elevated ? PATHS.WIN_ADMIN_BINARIES : PATHS.WIN_USER_BINARIES
+      this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
     } else if (this.isMac) {
       this.userPath = PATHS.MAC_USER_SETTINGS
       this.adminPath = PATHS.MAC_ADMIN_SETTINGS
       this.binPath = elevated ? PATHS.MAC_ADMIN_BINARIES : PATHS.MAC_USER_BINARIES
+      this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
     } else {
-      this.userPath = PATHS.UNIX_USER_SETTINGS
-      this.adminPath = PATHS.UNIX_ADMIN_SETTINGS
-      this.binPath = elevated ? PATHS.UNIX_ADMIN_BINARIES : PATHS.UNIX_USER_BINARIES
+      this.userPath = PATHS.LINUX_USER_SETTINGS
+      this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
+      this.binPath = elevated ? PATHS.LINUX_ADMIN_BINARIES : PATHS.LINUX_USER_BINARIES
+      this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
     }
   }
 
