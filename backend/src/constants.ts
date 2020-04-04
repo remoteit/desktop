@@ -33,8 +33,11 @@ export const UNIX_ADMIN_SETTINGS = '/etc/remoteit'
 
 export const WIN_USER_BINARIES = path.join(os.homedir(), 'AppData/Local/remoteit/bin')
 export const WIN_USER_SETTINGS = path.join(os.homedir(), 'AppData/Local/remoteit')
-export const WIN_ADMIN_BINARIES = path.resolve('/Windows')
+export const WIN_ADMIN_BINARIES = path.resolve('/Program Files/remoteit-bin')
 export const WIN_ADMIN_SETTINGS = path.resolve('/ProgramData/remoteit')
 
 // Temp for migrating v2.4.x to 2.5.x
-export const WIN_ADMIN_BINARY_DEPRECATED = path.resolve('/Program Files/remoteit/remoteit.exe')
+export const WIN_DEPRECATED_BINARIES = [
+  path.resolve('/Program Files/remoteit/remoteit.exe'),
+  path.resolve('/Windows/remoteit.exe'),
+]
