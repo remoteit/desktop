@@ -1,13 +1,4 @@
-import {
-  UNIX_USER_SETTINGS,
-  UNIX_USER_BINARIES,
-  UNIX_ADMIN_SETTINGS,
-  UNIX_ADMIN_BINARIES,
-  WIN_USER_SETTINGS,
-  WIN_USER_BINARIES,
-  WIN_ADMIN_SETTINGS,
-  WIN_ADMIN_BINARIES,
-} from './constants'
+import { PATHS } from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import os from 'os'
@@ -21,31 +12,40 @@ export class Environment {
   isArmLinux: boolean
   isPi: boolean
   isPiZero: boolean
-  platform: string
   simpleOS: Ios
   userPath: string
   adminPath: string
   binPath: string
+  deprecatedBinaries: string[]
 
   constructor() {
+    const elevated: boolean = true //this.isElevated - always elevated for now
+
+    // @ts-ignore
+    this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
+    this.isPi = detectRPi()
     this.isWindows = os.platform() === 'win32'
     this.isMac = os.platform() === 'darwin'
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
-    this.isPi = detectRPi()
-    // @ts-ignore
-    this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
-    this.platform = this.isPi ? 'rpi' : os.platform()
-    this.userPath = this.isWindows ? WIN_USER_SETTINGS : UNIX_USER_SETTINGS
-    this.adminPath = this.isWindows ? WIN_ADMIN_SETTINGS : UNIX_ADMIN_SETTINGS
-    this.binPath = this.setBinPath()
     this.simpleOS = this.setSimpleOS()
-  }
 
-  setBinPath() {
-    const elevated: boolean = true //this.isElevated - always elevated for now
-    if (this.isWindows) return elevated ? WIN_ADMIN_BINARIES : WIN_USER_BINARIES
-    else return elevated ? UNIX_ADMIN_BINARIES : UNIX_USER_BINARIES
+    if (this.isWindows) {
+      this.userPath = PATHS.WIN_USER_SETTINGS
+      this.adminPath = PATHS.WIN_ADMIN_SETTINGS
+      this.binPath = elevated ? PATHS.WIN_ADMIN_BINARIES : PATHS.WIN_USER_BINARIES
+      this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
+    } else if (this.isMac) {
+      this.userPath = PATHS.MAC_USER_SETTINGS
+      this.adminPath = PATHS.MAC_ADMIN_SETTINGS
+      this.binPath = elevated ? PATHS.MAC_ADMIN_BINARIES : PATHS.MAC_USER_BINARIES
+      this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
+    } else {
+      this.userPath = PATHS.LINUX_USER_SETTINGS
+      this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
+      this.binPath = elevated ? PATHS.LINUX_ADMIN_BINARIES : PATHS.LINUX_USER_BINARIES
+      this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
+    }
   }
 
   setSimpleOS() {
@@ -61,17 +61,17 @@ export class Environment {
 
   toJSON() {
     return {
+      isPiZero: this.isPiZero,
+      isPi: this.isPi,
       isWindows: this.isWindows,
       isMac: this.isMac,
       isLinux: this.isLinux,
       isArmLinux: this.isArmLinux,
-      isPi: this.isPi,
-      isPiZero: this.isPiZero,
-      platform: this.platform,
+      simpleOS: this.simpleOS,
       userPath: this.userPath,
       adminPath: this.adminPath,
       binPath: this.binPath,
-      simpleOS: this.simpleOS,
+      deprecatedBinaries: this.deprecatedBinaries,
     }
   }
 }

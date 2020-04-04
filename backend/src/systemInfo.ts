@@ -7,8 +7,9 @@ export default async function systemInfo<ILookup>() {
   await lan.getInterfaces()
 
   return {
+    os: environment.simpleOS,
     arch: os.arch(),
-    platform: environment.platform,
+    platform: os.platform(),
     privateIP: lan.privateIP,
     name: cli.data.device.name,
     interfaces: lan.interfaces,

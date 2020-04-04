@@ -1,6 +1,5 @@
 import tmp from 'tmp'
 import rimraf from 'rimraf'
-import debug from 'debug'
 import cli from './cliInterface'
 import EventBus from './EventBus'
 import environment from './environment'
@@ -9,10 +8,8 @@ import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
 import { existsSync, lstatSync } from 'fs'
-import { WIN_DEPRECATED_BINARIES } from './constants'
 
 tmp.setGracefulCleanup()
-const d = debug('r3:backend:BinaryInstaller')
 
 class BinaryInstaller {
   options = { name: 'remoteit' }
@@ -24,18 +21,14 @@ class BinaryInstaller {
     await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
     this.inProgress = false
   }
-  //change
 
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
       var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
       var isInstalled: boolean = !(await cli.isNotInstalled())
 
-      // Migrate v2.4.x bin location to v2.5.x
-      if (environment.isWindows) await this.migrateBinaries()
-
-      // Service needs to stop in before a new version - done independently since it will fail if there isn't a service running and stop the rest of the commands
-      if (isInstalled) await new Command({ admin: true, command: `"${installer.binaryPath()}" service stop` }).exec()
+      // Stop and remove old binaries
+      await this.migrateBinaries(installer.binaryPath())
 
       // Download and install binaries
       await this.download(installer, tmpDir)
@@ -65,15 +58,17 @@ class BinaryInstaller {
     })
   }
 
-  async migrateBinaries() {
-    const files = WIN_DEPRECATED_BINARIES
+  async migrateBinaries(installerPath?: string) {
     const commands = new Command({ admin: true })
+    let files = environment.deprecatedBinaries
     let toDelete: string[] = []
+
+    if (installerPath) files.push(installerPath)
 
     files.forEach(file => {
       // Too small to be the desktop app -> must be cli
       if (existsSync(file) && lstatSync(file).size < 30000000) {
-        Logger.info('STOPPING DEPRECATED BINARY', { file })
+        Logger.info('MIGRATING DEPRECATED BINARY', { file })
         commands.push(`"${file}" service stop`)
         commands.push(`"${file}" tools uninstall`)
         toDelete.push(file)
