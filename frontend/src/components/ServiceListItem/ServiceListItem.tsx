@@ -10,6 +10,7 @@ import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { ListItemLocation } from '../ListItemLocation'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
+import { OfflineButton } from '../../buttons/OfflineButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { ErrorButton } from '../../buttons/ErrorButton'
@@ -48,12 +49,13 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
     <>
       <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner}>
         <div className={css.buttons}>
-          <ConnectButton connection={connection} service={service} size="small" color="success" />
-          <DisconnectButton connection={connection} size="small" color="primary" />
+          <ConnectButton connection={connection} service={service} size="small" />
+          <DisconnectButton connection={connection} size="small" />
+          <OfflineButton service={service} />
         </div>
-        <ListItemIcon>
+        {/* <ListItemIcon>
           <ConnectionStateIcon connection={connection} service={service} size="lg" />
-        </ListItemIcon>
+        </ListItemIcon> */}
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         {connection && connection.active && <Throughput connection={connection} />}
         <ErrorButton
@@ -78,8 +80,10 @@ const useStyles = makeStyles({
   buttons: {
     width: 121,
     marginLeft: spacing.md,
+    marginRight: spacing.lg,
     position: 'relative',
-    '& > div:first-child': { position: 'absolute', width: '100%' },
+    '& > div': { position: 'absolute', width: '100%' },
+    '& > div:last-child': { position: 'relative' },
   },
   details: { '& > span': { marginLeft: spacing.xs } },
   restriction: { color: colors.grayDarker },
