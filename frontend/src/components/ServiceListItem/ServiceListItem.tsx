@@ -4,8 +4,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { hostName } from '../../helpers/nameHelper'
 import { useLocation } from 'react-router-dom'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { ListItemLocation } from '../ListItemLocation'
@@ -53,9 +52,6 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
           <DisconnectButton connection={connection} size="small" />
           <OfflineButton service={service} />
         </div>
-        {/* <ListItemIcon>
-          <ConnectionStateIcon connection={connection} service={service} size="lg" />
-        </ListItemIcon> */}
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         {connection && connection.active && <Throughput connection={connection} />}
         <ErrorButton
