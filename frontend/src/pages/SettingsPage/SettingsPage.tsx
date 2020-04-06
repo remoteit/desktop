@@ -65,17 +65,19 @@ export const SettingsPage = connect(
     return (
       <Container
         header={
-          <Typography className={css.header} variant="h1">
-            <Tooltip title="Visit remote.it on the web">
-              <ButtonBase onClick={() => window.open('https://remote.it')}>
-                <Logo width={110} />
-              </ButtonBase>
-            </Tooltip>
-          </Typography>
+          <>
+            <Typography className={css.header} variant="h1">
+              <Tooltip title="Visit remote.it on the web">
+                <ButtonBase onClick={() => window.open('https://remote.it')}>
+                  <Logo width={110} />
+                </ButtonBase>
+              </Tooltip>
+            </Typography>
+            <DeviceSetupItem />
+            <Divider />
+          </>
         }
       >
-        <DeviceSetupItem />
-        <Divider />
         <Typography variant="subtitle1">User</Typography>
         <List>
           <SettingsListItem
@@ -87,7 +89,7 @@ export const SettingsPage = connect(
           />
           <SettingsListItem
             label="Sign out"
-            subLabel={`Signed is as ${user && user.username}`}
+            subLabel={`Signed in as ${user && user.username}`}
             icon="sign-out"
             onClick={signOutWarning}
           />

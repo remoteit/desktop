@@ -9,11 +9,21 @@ type Props = {
   color?: Color
   size?: 'icon' | 'medium' | 'small'
   disabled?: boolean
+  disabledColor?: Color
   loading?: boolean
   onClick: () => void
 }
 
-export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, size = 'icon', disabled, loading }) => {
+export const DynamicButton: React.FC<Props> = ({
+  title,
+  icon,
+  onClick,
+  color,
+  size = 'icon',
+  disabled,
+  disabledColor = 'grayDark',
+  loading,
+}) => {
   let styles = {}
 
   const clickHandler = (event: React.MouseEvent) => {
@@ -23,7 +33,7 @@ export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, si
   }
 
   if (loading) icon = 'spinner-third'
-  if (disabled) color = 'grayDark'
+  if (disabled) color = disabledColor
 
   const IconComponent = (
     <Icon

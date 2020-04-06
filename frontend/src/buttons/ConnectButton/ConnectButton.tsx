@@ -27,7 +27,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     <Fade in={!hidden} timeout={600}>
       <div>
         <DynamicButton
-          title="Connect"
+          title={connecting ? 'Connecting ...' : 'Connect'}
           icon="exchange"
           loading={connecting}
           color={color}
