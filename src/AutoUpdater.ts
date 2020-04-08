@@ -2,7 +2,11 @@ import electron from 'electron'
 import { EventBus, Logger, EVENTS, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 
+const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
+
 export default class AppUpdater {
+  nextCheck: number = 0
+
   constructor() {
     autoUpdater.logger = Logger
 
@@ -22,8 +26,9 @@ export default class AppUpdater {
 
   check() {
     try {
-      if (environment.isMac || environment.isWindows) {
+      if ((environment.isMac || environment.isWindows) && this.nextCheck < Date.now()) {
         autoUpdater.checkForUpdatesAndNotify()
+        this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
       }
     } catch (error) {
       Logger.warn('AUTO UPDATE ERROR', { error })
