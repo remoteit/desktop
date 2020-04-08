@@ -27,7 +27,7 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
 
   useEffect(() => {
     if (interfaces.length && activeInterface === UNKNOWN) setActiveInterface(getActiveInterfaceName())
-  }, [interfaces, activeInterface])
+  }, [interfaces, activeInterface, getActiveInterfaceName])
 
   useEffect(() => {
     if (selected.timestamp !== selectedTimestamp && selectedLoading) {

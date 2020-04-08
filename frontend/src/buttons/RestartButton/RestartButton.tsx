@@ -1,7 +1,5 @@
 import React from 'react'
-import Controller from '../../services/Controller'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { useDispatch } from 'react-redux'
 import { Icon } from '../../components/Icon'
 
 export type RestartButtonProps = {
