@@ -7,13 +7,21 @@ import { ListItemIcon, List, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
 
+const osName = {
+  mac: 'Mac',
+  windows: 'Windows PC',
+  linux: 'Linux system',
+  rpi: 'RaspberryPi',
+}
+
 export const DeviceSetupItem: React.FC = () => {
   const css = useStyles()
-  const { device } = useSelector((state: ApplicationState) => ({
+  const { device, os } = useSelector((state: ApplicationState) => ({
     device: state.backend.device,
+    os: state.backend.os,
   }))
 
-  let title: any = <span className={css.title}>Setup this device</span>
+  let title: any = <span className={css.title}>Setup this {os ? osName[os] : 'system'} as a device.</span>
   let subTitle = 'Host or port forward services with this system.'
 
   if (device.name) {

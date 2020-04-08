@@ -13,7 +13,7 @@ export const UpdateSetting: React.FC = () => {
     <SettingsListItem
       label={updateAvailable ? 'New version available' : 'About'}
       subLabel={`Version ${version} ${environment() === 'development' ? 'Development' : ''} —  © remot3.it inc.`}
-      icon="info-circle"
+      icon="info"
       onClick={updateAvailable ? () => emit('restart') : undefined}
       button={updateAvailable ? 'Restart' : undefined}
     />
