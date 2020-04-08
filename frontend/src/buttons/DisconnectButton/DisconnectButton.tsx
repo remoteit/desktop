@@ -1,5 +1,5 @@
 import React from 'react'
-import Controller from '../../services/Controller'
+import { emit } from '../../services/Controller'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
@@ -27,7 +27,7 @@ export const DisconnectButton: React.FC<Props> = ({
           color={color}
           disabled={disabled}
           size={size}
-          onClick={() => Controller.emit('service/disconnect', connection)}
+          onClick={() => emit('service/disconnect', connection)}
         />
       </div>
     </Fade>

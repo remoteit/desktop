@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { SetupView } from '../../components/SetupView'
 import { Setup } from '../../components/Setup'
-import Controller from '../../services/Controller'
+import { emit } from '../../services/Controller'
 
 export const SetupPage: React.FC = () => {
   const { backend } = useDispatch<Dispatch>()
@@ -27,15 +27,15 @@ export const SetupPage: React.FC = () => {
   const guest = admin && user && user.username !== admin
   const notElevated = !guest && !isElectron() && !isElevated
 
-  const updateTargets = (t: ITarget[]) => Controller.emit('targets', t)
-  const updateDevice = (d: IDevice) => Controller.emit('device', d)
+  const updateTargets = (t: ITarget[]) => emit('targets', t)
+  const updateDevice = (d: IDevice) => emit('device', d)
   const deleteDevice = () => {
-    Controller.emit('device', 'DELETE')
+    emit('device', 'DELETE')
   }
 
   useEffect(() => {
     // Refresh device data
-    Controller.emit('device')
+    emit('device')
   }, [])
 
   return guest || notElevated ? (

@@ -3,6 +3,7 @@ require('dotenv').config()
 import debug from 'debug'
 import AirBrake from './AirBrake'
 import Application from './Application'
+import preferences from './preferences'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import EventBus from './EventBus'
@@ -46,4 +47,4 @@ export default new Application()
 
 // To support Electron wrapper
 export { EVENTS } from './electronInterface'
-export { ConnectionPool, environment, EventBus, hostName, IP_PRIVATE, LAN, Logger, user, cli, WEB_DIR }
+export { ConnectionPool, environment, EventBus, hostName, preferences, Logger, user, cli, LAN, IP_PRIVATE, WEB_DIR }

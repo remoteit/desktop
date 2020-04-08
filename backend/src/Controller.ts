@@ -5,6 +5,7 @@ import cli from './cliInterface'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
 import Connection from './Connection'
+import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
@@ -35,6 +36,7 @@ class Controller {
       ...Object.values(cli.EVENTS),
       ...Object.values(server.EVENTS),
       ...Object.values(electronInterface.EVENTS),
+      ...Object.values(preferences.EVENTS),
     ]
 
     new EventRelay(eventNames, EventBus, this.io.sockets)
@@ -53,7 +55,6 @@ class Controller {
     socket.on('service/disconnect', this.disconnect)
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('app/open-on-login', this.openOnLogin)
     socket.on('init', this.syncBackend)
     socket.on('pool', this.connections)
     socket.on('connection', this.connection)
@@ -62,6 +63,7 @@ class Controller {
     socket.on('scan', this.scan)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
+    socket.on('preferences', this.preferences)
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
 
@@ -95,6 +97,8 @@ class Controller {
     this.io.emit('nextFreePort', this.pool.freePort)
   }
 
+  preferences = preferences.set
+
   syncBackend = async () => {
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
@@ -106,6 +110,7 @@ class Controller {
     this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
     this.io.emit('os', environment.simpleOS)
     this.io.emit('isElevated', environment.isElevated)
+    this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady', true)
   }
 
@@ -157,11 +162,6 @@ class Controller {
 
   installBinaries = async () => {
     await binaryInstaller.install()
-  }
-
-  openOnLogin = (open: boolean) => {
-    d('Open on login:', open)
-    EventBus.emit(electronInterface.EVENTS.openOnLogin, open)
   }
 }
 

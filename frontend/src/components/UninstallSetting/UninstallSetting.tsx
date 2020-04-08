@@ -1,5 +1,5 @@
 import React from 'react'
-import Controller from '../../services/Controller'
+import { emit } from '../../services/Controller'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
@@ -17,7 +17,7 @@ export const UninstallSetting: React.FC = () => {
     window.confirm(
       'Are you sure? \nYou will remove this system as a host, your connections and command line utilities.'
     ) &&
-    Controller.emit('uninstall') &&
+    emit('uninstall') &&
     ui.setUninstalling()
 
   return (

@@ -2,7 +2,7 @@ export const EVENTS = {
   forget: 'tray/forget',
   ready: 'app/ready',
   open: 'app/open',
-  openOnLogin: 'app/open-on-login',
+  preferences: 'preferences',
   downloaded: 'update/downloaded',
   available: 'update/available',
 }

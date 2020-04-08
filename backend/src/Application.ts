@@ -53,6 +53,7 @@ export default class Application {
   private check = () => {
     if (!user.signedIn) return
 
+    this.electron && this.electron.check()
     remoteitInstaller.check()
     this.pool.check()
   }

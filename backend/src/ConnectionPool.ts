@@ -39,7 +39,7 @@ export default class ConnectionPool {
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(Connection.EVENTS.started, this.updated)
     EventBus.on(electronInterface.EVENTS.forget, this.forget)
-    EventBus.on(electronInterface.EVENTS.ready, this.updated)
+    // EventBus.on(electronInterface.EVENTS.ready, this.updated)
   }
 
   // maintain auto start connections

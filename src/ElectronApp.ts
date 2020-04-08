@@ -1,4 +1,4 @@
-import { WEB_DIR, EVENTS, environment, EventBus, Logger, user } from 'remoteit-headless'
+import { WEB_DIR, EVENTS, environment, preferences, EventBus, user } from 'remoteit-headless'
 import electron from 'electron'
 import TrayMenu from './TrayMenu'
 import AutoUpdater from './AutoUpdater'
@@ -14,6 +14,7 @@ export default class ElectronApp {
   private window?: electron.BrowserWindow
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
+  private openAtLogin?: boolean
 
   constructor() {
     this.app = electron.app
@@ -28,7 +29,7 @@ export default class ElectronApp {
     this.app.on('before-quit', () => (this.quitSelected = true))
     this.app.on('second-instance', () => this.openWindow())
 
-    EventBus.on(EVENTS.openOnLogin, this.handleOpenAtLogin)
+    EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
@@ -49,18 +50,29 @@ export default class ElectronApp {
   private handleAppReady = () => {
     this.createTrayIcon()
     this.createMainWindow()
-    EventBus.emit(EVENTS.ready, this.tray)
+    console.log('PREFERENCES DATA', preferences)
+    this.handleOpenAtLogin(preferences.data || {})
+    // EventBus.emit(EVENTS.ready, this.tray)
   }
 
   private handleActivate = () => {
     this.openWindow()
   }
 
-  private handleOpenAtLogin = (open: boolean) => {
-    d('Handling open at login:', open)
-    this.app.setLoginItemSettings({
-      openAtLogin: open,
-    })
+  private handleOpenAtLogin = ({ openAtLogin }: IPreferences) => {
+    d('Handling open at login:', openAtLogin)
+    console.log(' ')
+    console.log(' ')
+    console.log(' ')
+    console.log(' OPENATLOGIN', openAtLogin)
+    console.log(' ')
+    console.log(' ')
+    console.log(' ')
+    console.log(' ')
+    if (this.openAtLogin !== openAtLogin) {
+      this.app.setLoginItemSettings({ openAtLogin })
+    }
+    this.openAtLogin = openAtLogin
   }
 
   private createMainWindow = () => {
