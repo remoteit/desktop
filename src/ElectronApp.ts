@@ -61,14 +61,6 @@ export default class ElectronApp {
 
   private handleOpenAtLogin = ({ openAtLogin }: IPreferences) => {
     d('Handling open at login:', openAtLogin)
-    console.log(' ')
-    console.log(' ')
-    console.log(' ')
-    console.log(' OPENATLOGIN', openAtLogin)
-    console.log(' ')
-    console.log(' ')
-    console.log(' ')
-    console.log(' ')
     if (this.openAtLogin !== openAtLogin) {
       this.app.setLoginItemSettings({ openAtLogin })
     }

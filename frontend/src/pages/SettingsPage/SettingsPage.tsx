@@ -13,7 +13,8 @@ import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
 
 export const SettingsPage = () => {
-  const { user, installing, remoteitVersion, preferences } = useSelector((state: ApplicationState) => ({
+  const { os, user, installing, remoteitVersion, preferences } = useSelector((state: ApplicationState) => ({
+    os: state.backend.os,
     user: state.auth.user,
     installing: state.binaries.installing,
     remoteitVersion: state.binaries.remoteitVersion,
@@ -68,12 +69,14 @@ export const SettingsPage = () => {
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
       <List>
-        <SettingsListItem
-          label="Auto Update"
-          icon="chevron-double-up"
-          toggle={preferences.autoUpdate}
-          onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
-        />
+        {(os === 'mac' || os === 'windows') && (
+          <SettingsListItem
+            label="Auto Update"
+            icon="chevron-double-up"
+            toggle={preferences.autoUpdate}
+            onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
+          />
+        )}
         <SettingsListItem
           label="Open at login"
           icon="power-off"

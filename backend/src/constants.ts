@@ -48,8 +48,3 @@ export const PATHS = {
     path.resolve('/Windows/remoteit.exe'),
   ],
 }
-
-export const DEFAULT_PREFERENCES = {
-  autoUpdate: true,
-  openAtLogin: true,
-}

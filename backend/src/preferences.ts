@@ -1,4 +1,3 @@
-import { DEFAULT_PREFERENCES } from './constants'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import JSONFile from './JSONFile'
@@ -13,9 +12,16 @@ export class Preferences {
 
   constructor() {
     this.file = new JSONFile<IPreferences>(path.join(environment.userPath, 'preferences.json'))
-    if (!this.file.exists) this.file.write(DEFAULT_PREFERENCES)
+    if (!this.file.exists) this.file.write(this.defaults)
     this.set(this.file.read() || {})
     Logger.info('PREFERENCES', { preferences: this.data })
+  }
+
+  get defaults(): IPreferences {
+    return {
+      autoUpdate: environment.isMac || environment.isWindows,
+      openAtLogin: true,
+    }
   }
 
   set = (preferences: IPreferences) => {
