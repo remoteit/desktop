@@ -2,17 +2,16 @@ import React, { useState } from 'react'
 import { Typography, Tooltip, IconButton } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { ApplicationState } from '../../store'
+import { usePermissions } from '../../hooks/usePermissions'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
-import * as screenfull from 'screenfull'
 import styles from '../../styling'
+import * as screenfull from 'screenfull'
 
 export const Header: React.FC = () => {
-  const { device, guest } = useSelector((state: ApplicationState) => ({
-    guest: state.backend.admin && state.auth.user && state.auth.user.username !== state.backend.admin,
-    device: state.backend.device,
-  }))
+  const { device } = useSelector((state: ApplicationState) => state.backend)
+  const { guest } = usePermissions()
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
   const css = useStyles()
