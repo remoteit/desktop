@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import Controller from '../../services/Controller'
+import { emit } from '../../services/Controller'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Snackbar, Button, IconButton } from '@material-ui/core'
@@ -19,7 +19,7 @@ export const UpdateNotice: React.FC = () => {
       open={updateNotice}
       message={`An update is available (v${update}).`}
       action={[
-        <Button variant="contained" color="primary" size="small" onClick={() => Controller.emit('restart')}>
+        <Button variant="contained" color="primary" size="small" onClick={() => emit('restart')}>
           Restart
         </Button>,
         <IconButton onClick={() => setUpdateNotice(false)}>

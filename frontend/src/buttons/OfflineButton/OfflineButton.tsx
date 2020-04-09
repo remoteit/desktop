@@ -1,7 +1,6 @@
 import React from 'react'
 import { IService } from 'remote.it'
 import { DynamicButton } from '../DynamicButton'
-import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 
 type Props = {

@@ -19,7 +19,7 @@ export const Network: React.FC<Props> = ({ ...props }) => {
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="h1">Network Scan</Typography>
+          <Typography variant="h1">Add from Network</Typography>
         </>
       }
     >

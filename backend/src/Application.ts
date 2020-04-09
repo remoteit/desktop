@@ -1,3 +1,4 @@
+import { HEARTBEAT_INTERVAL } from './constants'
 import debug from 'debug'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
@@ -47,21 +48,14 @@ export default class Application {
   }
 
   private startHeartbeat = () => {
-    let count = 0
-    setInterval(() => {
-      this.check(count++)
-      if (count > 999) count = 0
-    }, 1000 * 60) // 1bpm
+    setInterval(this.check, HEARTBEAT_INTERVAL)
   }
 
-  private check = (count: number) => {
+  private check = () => {
     if (!user.signedIn) return
 
-    // check every 5 minutes
-    if (count % 5 === 0 || isNaN(count)) {
-      this.electron && this.electron.check()
-      remoteitInstaller.check()
-    }
+    this.electron && this.electron.check()
+    remoteitInstaller.check()
     this.pool.check()
   }
 

@@ -17,6 +17,7 @@ type IBackendState = { [key: string]: any } & {
   os?: Ios
   dataReady: boolean
   isElevated: boolean
+  preferences: IPreferences
 }
 
 const state: IBackendState = {
@@ -35,6 +36,7 @@ const state: IBackendState = {
   os: undefined,
   dataReady: false,
   isElevated: false,
+  preferences: {},
 }
 
 export default createModel({

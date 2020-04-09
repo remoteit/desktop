@@ -35,13 +35,12 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
     return (
       <tr>
         <td colSpan={6} className={css.button}>
-          <Button color="primary" variant="contained" onClick={() => setShowNew(false)}>
-            Add
-            <Icon name="plus" inline />
+          <Button color="primary" variant="contained" onClick={() => history.push('/settings/setup/network')}>
+            Add from network
           </Button>
           <span className={css.or}>or</span>
-          <Link onClick={() => history.push('/settings/setup/network')}>
-            Add from network
+          <Link onClick={() => setShowNew(false)}>
+            Add manually
             <Icon name="chevron-right" inline />
           </Link>
         </td>

@@ -1,5 +1,5 @@
 import React from 'react'
-import Controller from '../../services/Controller'
+import { emit } from '../../services/Controller'
 import { IService } from 'remote.it'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
@@ -21,7 +21,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 }) => {
   const hidden = (connection && connection.active) || !service || service.state !== 'active'
   const connecting = !!(connection && connection.pid && !connection.active)
-  const connect = () => Controller.emit('service/connect', connection || newConnection(service))
+  const connect = () => emit('service/connect', connection || newConnection(service))
 
   return (
     <Fade in={!hidden} timeout={600}>

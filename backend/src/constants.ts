@@ -8,6 +8,7 @@ export const PORT = Number(process.env.PORT || 29999)
 
 // Google Analytics usage tracking
 export const GOOGLE_ANALYTICS_CODE = 'UA-76016818-10'
+export const HEARTBEAT_INTERVAL = 1000 * 60 // 1 bmp
 
 // Airbrake error reporting
 export const AIRBRAKE_PROJECT_ID = 223457

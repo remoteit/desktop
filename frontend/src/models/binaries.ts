@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import Controller from '../services/Controller'
+import { emit } from '../services/Controller'
 
 export interface BinariesState {
   error?: any
@@ -43,7 +43,7 @@ export default createModel({
     async install() {
       dispatch.binaries.clearError()
       dispatch.binaries.installing()
-      Controller.emit('binaries/install')
+      emit('binaries/install')
     },
   }),
   reducers: {

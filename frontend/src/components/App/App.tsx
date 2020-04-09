@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { isElectron } from '../services/Browser'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { LoadingMessage } from '../LoadingMessage'
@@ -58,8 +59,7 @@ export const App = () => {
   }, [navigation, location, menu])
 
   useEffect(() => {
-    console.log('device?', device.name)
-    if (dataReady && !device.name && os === 'rpi') history.push('/settings/setup')
+    if (dataReady && !device.name && !isElectron()) history.push('/settings/setup')
   }, [history, device, dataReady, os])
 
   if (uninstalling)

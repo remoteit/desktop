@@ -5,7 +5,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { makeStyles } from '@material-ui/styles'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Network } from '../../components/Network'
-import Controller from '../../services/Controller'
+import { emit } from '../../services/Controller'
 import styles from '../../styling'
 
 export const NetworkPage: React.FC = () => {
@@ -19,10 +19,10 @@ export const NetworkPage: React.FC = () => {
     privateIP: state.backend.privateIP,
   }))
 
-  const scan = (interfaceName: string) => Controller.emit('scan', interfaceName)
+  const scan = (interfaceName: string) => emit('scan', interfaceName)
 
   useEffect(() => {
-    Controller.emit('interfaces')
+    emit('interfaces')
   }, [])
 
   return (

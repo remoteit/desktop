@@ -1,4 +1,4 @@
-import Controller from '../services/Controller'
+import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../constants'
 import { IService, IDevice } from 'remote.it'
 import { store } from '../store'
@@ -34,12 +34,12 @@ export function setConnection(connection: IConnection) {
     console.warn('Connection missing data. Set failed', connection)
     return false
   }
-  Controller.emit('connection', connection)
+  emit('connection', connection)
 }
 
 export function clearConnectionError(connection: IConnection) {
   delete connection.error
-  Controller.emit('connection', connection)
+  emit('connection', connection)
 }
 
 export function updateConnections(devices: IDevice[]) {

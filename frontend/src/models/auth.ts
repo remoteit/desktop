@@ -5,10 +5,8 @@ import { createModel } from '@rematch/core'
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
 
 const USER_KEY = 'user'
-const OPEN_ON_LOGIN_KEY = 'open-on-login'
 
 export interface AuthState {
-  openOnLogin: boolean
   signInStarted: boolean
   authenticated: boolean
   signInError?: string
@@ -17,7 +15,6 @@ export interface AuthState {
 
 const state: AuthState = {
   authenticated: false,
-  openOnLogin: false,
   signInStarted: false,
   signInError: undefined,
   user: undefined,
@@ -28,9 +25,6 @@ export default createModel({
   effects: (dispatch: any) => ({
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
-
-      // Get "open on login" setting
-      dispatch.auth.getOpenOnLoginState()
 
       if (!user) {
         const storedUser = window.localStorage.getItem(USER_KEY)
@@ -126,15 +120,6 @@ export default createModel({
       Controller.close()
       window.location.search = ''
     },
-    async getOpenOnLoginState() {
-      // Get "open on login" setting
-      const openOnLogin = window.localStorage.getItem(OPEN_ON_LOGIN_KEY)
-      dispatch.auth.setOpenOnLogin(openOnLogin === 'true')
-    },
-    async toggleOpenOnLogin(_, state) {
-      const open = !state.auth.openOnLogin
-      dispatch.auth.setOpenOnLogin(open)
-    },
   }),
   reducers: {
     signInStarted(state: AuthState) {
@@ -161,11 +146,6 @@ export default createModel({
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
       Controller.emit('authentication', { username: user.username, authHash: user.authHash })
       updateUserCredentials(user)
-    },
-    setOpenOnLogin(state: AuthState, open: boolean) {
-      Controller.emit('app/open-on-login', open)
-      window.localStorage.setItem(OPEN_ON_LOGIN_KEY, open.toString())
-      state.openOnLogin = open
     },
   },
 })

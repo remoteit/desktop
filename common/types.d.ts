@@ -36,6 +36,7 @@ declare global {
     | 'freePort'
     | 'restart'
     | 'uninstall'
+    | 'preferences'
 
   type SocketEvent =
     // built-in events
@@ -82,6 +83,7 @@ declare global {
     | 'scan'
     | 'interfaces'
     | 'privateIP'
+    | 'preferences'
 
   type BinaryName = 'connectd' | 'muxer' | 'demuxer'
 
@@ -182,6 +184,8 @@ declare global {
   type IEvents = { [event: string]: string }
 
   type ILookup = { [key: string]: any }
+
+  type IPreferences = ILookup
 }
 
 export {}

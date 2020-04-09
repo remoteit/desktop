@@ -26,7 +26,11 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
   const noResults = selected.data && !selected.data.length
 
   useEffect(() => {
-    if (interfaces.length && activeInterface === UNKNOWN) setActiveInterface(getActiveInterfaceName())
+    if (interfaces.length && activeInterface === UNKNOWN) {
+      let name = interfaces[0].name
+      interfaces.forEach(i => i.active && (name = i.name))
+      setActiveInterface(name)
+    }
   }, [interfaces, activeInterface])
 
   useEffect(() => {
@@ -35,13 +39,6 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
       setTimestamp({ [activeInterface]: selected.timestamp })
     }
   }, [selected.timestamp, selectedTimestamp, selectedLoading, activeInterface])
-
-  function getActiveInterfaceName() {
-    if (!interfaces.length) return UNKNOWN
-    let name = interfaces[0].name
-    interfaces.forEach(i => i.active && (name = i.name))
-    return name
-  }
 
   function interfaceType() {
     const i = interfaces.find(i => i.name === activeInterface)

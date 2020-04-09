@@ -47,6 +47,7 @@ class BinaryInstaller {
 
       commands.push(`"${installer.binaryPath()}" tools install --update -j`)
       if (isInstalled) commands.push(`"${installer.binaryPath()}" service start`)
+      // else commands.push(`"${installer.binaryPath()}" service install`) // Validate with Nicolae if this is correct
 
       await commands.exec()
 

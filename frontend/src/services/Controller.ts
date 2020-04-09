@@ -58,7 +58,7 @@ class Controller extends EventEmitter {
     return this
   }
 
-  emit(event: SocketAction, ...args: any[]): boolean {
+  emit = (event: SocketAction, ...args: any[]): boolean => {
     console.log('Controller EMIT', event, args)
     this.socket.emit(event, ...args)
     return true
@@ -140,6 +140,8 @@ function getEventHandlers() {
 
     isElevated: (result: boolean) => backend.set({ key: 'isElevated', value: result }),
 
+    preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),
+
     // User
     'signed-out': () => auth.signedOut(),
 
@@ -187,4 +189,6 @@ function getEventHandlers() {
   } as EventHandlers
 }
 
-export default new Controller()
+const controller = new Controller()
+export default controller
+export const emit = controller.emit
