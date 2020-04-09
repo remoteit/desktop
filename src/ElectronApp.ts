@@ -50,9 +50,8 @@ export default class ElectronApp {
   private handleAppReady = () => {
     this.createTrayIcon()
     this.createMainWindow()
-    console.log('PREFERENCES DATA', preferences)
     this.handleOpenAtLogin(preferences.data || {})
-    // EventBus.emit(EVENTS.ready, this.tray)
+    EventBus.emit(EVENTS.ready, this.tray)
   }
 
   private handleActivate = () => {
