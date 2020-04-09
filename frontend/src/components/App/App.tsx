@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+<<<<<<< Updated upstream
+=======
+import { isElectron } from '../../services/Browser'
+>>>>>>> Stashed changes
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { LoadingMessage } from '../LoadingMessage'
