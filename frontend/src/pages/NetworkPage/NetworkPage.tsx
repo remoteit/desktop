@@ -16,7 +16,7 @@ export const NetworkPage: React.FC = () => {
     interfaces: state.backend.interfaces,
     targets: state.backend.targets,
     scanData: state.backend.scanData,
-    privateIP: state.backend.privateIP,
+    privateIP: state.backend.environment.privateIP,
   }))
 
   const scan = (interfaceName: string) => emit('scan', interfaceName)

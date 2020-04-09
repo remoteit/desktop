@@ -115,11 +115,6 @@ function getEventHandlers() {
       if (result) backend.set({ key: 'device', value: result })
     },
 
-    admin: (result: string) => {
-      console.log('admin user', result)
-      backend.set({ key: 'admin', value: result })
-    },
-
     scan: (result: IScanData) => {
       console.log('socket scan', result)
       if (result) backend.set({ key: 'scanData', value: result })
@@ -132,13 +127,9 @@ function getEventHandlers() {
 
     freePort: (result: number) => backend.set({ key: 'freePort', value: result }),
 
-    privateIP: (result: ipAddress) => backend.set({ key: 'privateIP', value: result }),
-
-    os: (result: Ios) => backend.set({ key: 'os', value: result }),
-
     dataReady: (result: boolean) => backend.set({ key: 'dataReady', value: result }),
 
-    isElevated: (result: boolean) => backend.set({ key: 'isElevated', value: result }),
+    environment: (result: ILookup) => backend.set({ key: 'environment', value: result }),
 
     preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { isElectron } from '../services/Browser'
+import { isElectron } from '../../services/Browser'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
 import { LoadingMessage } from '../LoadingMessage'

@@ -35,6 +35,7 @@ class Controller {
       ...Object.values(lan.EVENTS),
       ...Object.values(cli.EVENTS),
       ...Object.values(server.EVENTS),
+      ...Object.values(environment.EVENTS),
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
     ]
@@ -104,12 +105,9 @@ class Controller {
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
     this.io.emit('interfaces', lan.interfaces)
-    this.io.emit('admin', (cli.data.admin && cli.data.admin.username) || '')
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
-    this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
-    this.io.emit('os', environment.simpleOS)
-    this.io.emit('isElevated', environment.isElevated)
+    this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady', true)
   }

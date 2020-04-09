@@ -1,3 +1,4 @@
+import environment from './environment'
 import Logger from './Logger'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
@@ -28,7 +29,8 @@ class LAN {
       })
     }
     Logger.info('PRIVATE IP', { ip: this.privateIP })
-    EventBus.emit(this.EVENTS.privateIP, this.privateIP)
+    environment.privateIP = this.privateIP || ''
+    EventBus.emit(environment.EVENTS.send, environment.frontend)
   }
 
   async getInterfaces() {

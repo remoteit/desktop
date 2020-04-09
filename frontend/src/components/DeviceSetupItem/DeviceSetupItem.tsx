@@ -18,7 +18,7 @@ export const DeviceSetupItem: React.FC = () => {
   const css = useStyles()
   const { device, os } = useSelector((state: ApplicationState) => ({
     device: state.backend.device,
-    os: state.backend.os,
+    os: state.backend.environment.os,
   }))
 
   let title: any = <span className={css.title}>Setup this {os ? osName[os] : 'system'} as a device.</span>

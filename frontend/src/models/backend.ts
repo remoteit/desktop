@@ -9,14 +9,17 @@ type IBackendState = { [key: string]: any } & {
   interfaces: IInterface[]
   added?: ITarget
   error: boolean
-  privateIP: ipAddress
   freePort?: number
-  admin?: string
   update?: string
   cliError?: string
-  os?: Ios
   dataReady: boolean
-  isElevated: boolean
+  environment: {
+    os?: Ios
+    adminUsername?: string
+    isElevated: boolean
+    privateIP: ipAddress
+    hostname: string
+  }
   preferences: IPreferences
 }
 
@@ -28,14 +31,17 @@ const state: IBackendState = {
   interfaces: [],
   added: undefined,
   error: false,
-  privateIP: '',
   freePort: undefined,
-  admin: undefined,
   update: undefined,
   cliError: undefined,
-  os: undefined,
   dataReady: false,
-  isElevated: false,
+  environment: {
+    os: undefined,
+    adminUsername: undefined,
+    isElevated: false,
+    privateIP: '',
+    hostname: '',
+  },
   preferences: {},
 }
 

@@ -53,8 +53,10 @@ export default class CLI {
   readUser(admin?: boolean) {
     const config = this.readFile(admin)
     d('READ USER', config.auth)
-    if (admin) this.data.admin = config.auth
-    else this.data.user = config.auth
+    if (admin) {
+      this.data.admin = config.auth
+      environment.adminUsername = config.auth?.username || ''
+    } else this.data.user = config.auth
   }
 
   readDevice() {
