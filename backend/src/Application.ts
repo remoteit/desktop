@@ -1,3 +1,4 @@
+import { HEARTBEAT_INTERVAL } from './constants'
 import debug from 'debug'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
@@ -47,7 +48,7 @@ export default class Application {
   }
 
   private startHeartbeat = () => {
-    setInterval(this.check, 1000 * 60) // 1bpm
+    setInterval(this.check, HEARTBEAT_INTERVAL)
   }
 
   private check = () => {
