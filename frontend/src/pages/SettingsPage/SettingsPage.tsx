@@ -6,6 +6,7 @@ import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
+import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
@@ -21,6 +22,7 @@ export const SettingsPage = () => {
     preferences: state.backend.preferences,
   }))
 
+  const { guest, notElevated } = usePermissions()
   const { auth, binaries } = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -64,7 +66,7 @@ export const SettingsPage = () => {
           icon="sign-out"
           onClick={signOutWarning}
         />
-        <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />
+        {!guest && <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />}
       </List>
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
@@ -92,18 +94,22 @@ export const SettingsPage = () => {
         /> */}
         <UpdateSetting />
       </List>
-      <Divider />
-      <Typography variant="subtitle1">Advanced</Typography>
-      <List>
-        <SettingsListItem
-          label={installing ? 'Installing...' : 'Re-install command line tools'}
-          subLabel={`Version ${remoteitVersion}`}
-          disabled={installing}
-          icon="terminal"
-          onClick={installWarning}
-        />
-        <UninstallSetting />
-      </List>
+      {!(guest || notElevated) && (
+        <>
+          <Divider />
+          <Typography variant="subtitle1">Advanced</Typography>
+          <List>
+            <SettingsListItem
+              label={installing ? 'Installing...' : 'Re-install command line tools'}
+              subLabel={`Version ${remoteitVersion}`}
+              disabled={installing}
+              icon="terminal"
+              onClick={installWarning}
+            />
+            <UninstallSetting />
+          </List>
+        </>
+      )}
     </Container>
   )
 }
