@@ -59,8 +59,7 @@ export const App = () => {
   }, [navigation, location, menu])
 
   useEffect(() => {
-    // @TODO check if is headless instead of isElectron
-    if (dataReady && !device.name && isElectron()) history.push('/settings/setup')
+    if (dataReady && !device.name && !isElectron()) history.push('/settings/setup')
   }, [history, device, dataReady, os])
 
   if (uninstalling)
