@@ -1,3 +1,4 @@
+import { IP_PRIVATE } from './constants'
 import environment from './environment'
 import Logger from './Logger'
 import Tracker from './Tracker'
@@ -82,6 +83,7 @@ class LAN {
   }
 
   findNetmask(interfaceName: string) {
+    if (interfaceName === 'localhost') return IP_PRIVATE
     const network = !!this.interfaces && this.interfaces.find((i: IInterface) => i.name === interfaceName)
     if (!network) return ''
     const netmask = new Netmask(network.ip + '/' + network.netmask)

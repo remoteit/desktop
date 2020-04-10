@@ -21,8 +21,8 @@ export const SetupView: React.FC<{
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="h1">
-            Hosted Device
+          <Typography variant="subtitle1">
+            This Device
             <Tooltip title={`Only ${adminUser} can edit this device`}>
               <Icon name="lock-alt" weight="regular" inline />
             </Tooltip>

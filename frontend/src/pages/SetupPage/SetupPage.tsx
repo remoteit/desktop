@@ -8,7 +8,7 @@ import { emit } from '../../services/Controller'
 
 export const SetupPage: React.FC = () => {
   const { backend } = useDispatch<Dispatch>()
-  const { nameBlacklist, device, targets, added, cliError } = useSelector((state: ApplicationState) => ({
+  const { nameBlacklist, device, targets, added, cliError, hostname } = useSelector((state: ApplicationState) => ({
     nameBlacklist: state.devices.all
       .filter(device => device.shared !== 'shared-from')
       .map(device => device.name.toLowerCase()),
@@ -16,6 +16,7 @@ export const SetupPage: React.FC = () => {
     targets: state.backend.targets,
     added: state.backend.added,
     cliError: state.backend.cliError,
+    hostname: state.backend.environment.hostname,
   }))
 
   const { admin, guest, notElevated } = usePermissions()
@@ -39,6 +40,7 @@ export const SetupPage: React.FC = () => {
       targets={targets}
       added={added}
       cliError={cliError}
+      hostname={hostname}
       nameBlacklist={nameBlacklist}
       onDevice={updateDevice}
       onUpdate={updateTargets}

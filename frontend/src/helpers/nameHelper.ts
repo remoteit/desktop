@@ -1,3 +1,4 @@
+import { REGEX_LAST_NUMBER } from '../constants'
 import { IDevice } from 'remote.it'
 import { store } from '../store'
 
@@ -40,4 +41,14 @@ export function renameServices(devices: IDevice[]) {
     })
   })
   return devices
+}
+
+export function safeHostname(name: string, blacklist: string[]) {
+  let index = 1
+  name = name.replace('.local', '')
+  while (blacklist.includes(name.toLowerCase().trim())) {
+    name = name.replace(REGEX_LAST_NUMBER, `-${index}`)
+    index++
+  }
+  return name
 }

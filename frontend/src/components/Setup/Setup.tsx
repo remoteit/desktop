@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Breadcrumbs } from '../Breadcrumbs'
+import { LocalhostScanForm } from '../LocalhostScanForm'
 import { TextField, Button, CircularProgress, Tooltip, IconButton, Typography, Divider } from '@material-ui/core'
+import { safeHostname } from '../../helpers/nameHelper'
 import { REGEX_NAME_SAFE } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../Container'
@@ -15,15 +17,16 @@ type Props = {
   added?: ITarget
   cliError?: string
   nameBlacklist: string[]
+  hostname: string
   onUpdate: (target: ITarget[]) => void
   onDevice: (device: IDevice) => void
   onDelete: () => void
   onCancel: () => void
 }
 
-export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlacklist, ...props }) => {
+export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlacklist, hostname, ...props }) => {
   const css = useStyles()
-  const [name, setName] = useState<string>(device.name)
+  const [name, setName] = useState<string>(device.name || safeHostname(hostname, nameBlacklist))
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [registering, setRegistering] = useState<boolean>(false)
   const [deleting, setDeleting] = useState<boolean>(false)
@@ -45,7 +48,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
         <>
           <Breadcrumbs />
           <Typography variant="subtitle1" gutterBottom>
-            Hosted Device
+            This Device
           </Typography>
           <Divider />
         </>
@@ -68,7 +71,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
           <section className={css.device}>
             <div className={css.name}>
               <TextField
-                label="This System's Name"
+                label="Name"
                 className={css.input}
                 disabled={registering || registered}
                 value={name || device.name}
@@ -87,7 +90,6 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
                   }
                   setName(value)
                 }}
-                autoFocus={true}
                 onFocus={event => event.target.select()}
                 helperText={nameError || (!registered && '*Must be unique')}
                 inputProps={{ 'data-lpignore': 'true' }}
@@ -128,6 +130,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
               )}
             </div>
           </section>
+          {!registered && <LocalhostScanForm />}
         </form>
       </Body>
 

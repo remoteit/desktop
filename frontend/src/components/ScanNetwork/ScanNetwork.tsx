@@ -75,7 +75,9 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
   return (
     <>
       <div className={css.caption}>
-        <Typography variant="caption">Select a device to add a hosted service</Typography>
+        <Typography variant="subtitle1" gutterBottom>
+          Add a service
+        </Typography>
         <Link onClick={toggleAll} color="inherit" component="button" className={css.toggle}>
           {allClosed ? 'Expand All' : 'Close All'}
           {allClosed ? <Icon name="chevron-down" inline /> : <Icon name="chevron-up" inline />}
@@ -144,10 +146,9 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    paddingLeft: spacing.lg,
   },
   toggle: {
-    padding: '6px 22px 12px 22px',
+    padding: '6px 22px 0px 22px',
     '& .MuiSvgIcon-root': {
       marginBottom: -6,
       marginLeft: spacing.sm,

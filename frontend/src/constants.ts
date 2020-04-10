@@ -13,6 +13,7 @@ export const REGEX_NAME_SAFE = /[^a-zA-Z0-9_ -]/g
 export const REGEX_IP_SAFE = /[^0-9.]+/g
 export const REGEX_PORT_SAFE = /[^0-9]+/g
 export const REGEX_NUMERIC_VALUE = /=(\d+)/
+export const REGEX_LAST_NUMBER = /-*\d*$/
 export const DEFAULT_TARGET: ITarget | IDevice = {
   hardwareID: '',
   hostname: '127.0.0.1',

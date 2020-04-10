@@ -21,8 +21,9 @@ export const DeviceSetupItem: React.FC = () => {
     os: state.backend.environment.os,
   }))
 
-  let title: any = <span className={css.title}>Setup this {os ? osName[os] : 'system'} as a device.</span>
-  let subTitle = 'Host or port forward services with this system.'
+  let title: any = <span className={css.title}>Set up remote access</span>
+  let subTitle = `Set up remote access to your
+  ${os ? osName[os] : 'system'} or to any other service on this network.`
 
   if (device.name) {
     title = device.name
