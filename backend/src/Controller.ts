@@ -60,7 +60,7 @@ class Controller {
     socket.on('pool', this.connections)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
-    socket.on('device', this.device)
+    socket.on('registration', this.registration)
     socket.on('scan', this.scan)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
@@ -77,8 +77,8 @@ class Controller {
     this.io.emit('targets', cli.data.targets)
   }
 
-  device = async (result: IDevice) => {
-    await cli.set('device', result)
+  registration = async (result: IRegistration) => {
+    await cli.set('registration', result)
     this.io.emit('device', cli.data.device)
     this.io.emit('targets', cli.data.targets)
   }

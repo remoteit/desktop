@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { LocalhostScanForm } from '../LocalhostScanForm'
 import { TextField, Button, CircularProgress, Tooltip, IconButton, Typography, Divider } from '@material-ui/core'
-import { safeHostname } from '../../helpers/nameHelper'
+import { safeHostname, osName } from '../../helpers/nameHelper'
 import { REGEX_NAME_SAFE } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../Container'
@@ -18,19 +18,21 @@ type Props = {
   cliError?: string
   nameBlacklist: string[]
   hostname: string
-  onUpdate: (target: ITarget[]) => void
-  onDevice: (device: IDevice) => void
+  os?: Ios
+  onUpdate: (targets: ITarget[]) => void
+  onRegistration: (registration: IRegistration) => void
   onDelete: () => void
   onCancel: () => void
 }
 
-export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlacklist, hostname, ...props }) => {
+export const Setup: React.FC<Props> = ({ device, onRegistration, onDelete, nameBlacklist, hostname, os, ...props }) => {
   const css = useStyles()
   const [name, setName] = useState<string>(device.name || safeHostname(hostname, nameBlacklist))
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [registering, setRegistering] = useState<boolean>(false)
   const [deleting, setDeleting] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
+  const [selected, setSelected] = useState<ITarget[]>([])
   const registered = !!device.uid
   const confirmMessage = 'Are you sure?\nYou are about to permanently remove this device and all of its services.'
 
@@ -47,24 +49,28 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="subtitle1" gutterBottom>
-            This Device
-          </Typography>
-          <Divider />
+          {registered && (
+            <>
+              <Typography variant="subtitle1" gutterBottom>
+                This Device
+              </Typography>
+              <Divider />
+            </>
+          )}
         </>
       }
     >
       <Body center={!registered}>
         {registered || (
           <Typography variant="body2" align="center" color="textSecondary">
-            Get started hosting or port forwarding connections.
+            Register your {osName(os)} for remote access
           </Typography>
         )}
         <form
           onSubmit={event => {
             if (!name || registered) return
             event.preventDefault()
-            onDevice({ ...device, name })
+            onRegistration({ device: { ...device, name }, targets: selected })
             setRegistering(true)
           }}
         >
@@ -130,7 +136,7 @@ export const Setup: React.FC<Props> = ({ device, onDevice, onDelete, nameBlackli
               )}
             </div>
           </section>
-          {!registered && <LocalhostScanForm />}
+          {!registered && <LocalhostScanForm setSelected={setSelected} />}
         </form>
       </Body>
 

@@ -1,40 +1,63 @@
+import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../constants'
 import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Checkbox } from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
+import { getTypeId, findType } from '../../services/serviceTypes'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { colors, spacing } from '../../styling'
 import { makeStyles } from '@material-ui/styles'
 import { emit } from '../../services/Controller'
 
-export const LocalhostScanForm: React.FC = () => {
+type Props = {
+  setSelected: (targets: ITarget[]) => void
+}
+
+export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
+  const { scanData } = useSelector((state: ApplicationState) => state.backend)
+  const [state, setState] = useState<boolean[]>([])
   const css = useStyles()
-  const { scanData, hostname } = useSelector((state: ApplicationState) => ({
-    hostname: state.backend.environment.hostname,
-    scanData: state.backend.scanData,
+  let data: ITarget[] = scanData.localhost?.data[0][1].map(row => ({
+    ...DEFAULT_TARGET,
+    type: getTypeId(row[0]),
+    port: row[0],
+    name: row[1].replace(REGEX_NAME_SAFE, ''),
   }))
 
   useEffect(() => {
     emit('scan', 'localhost')
   }, [])
 
-  console.log('scanData', scanData, hostname)
-  //@ts-ignore
-  window.scanData = scanData
+  useEffect(() => {
+    if (scanData) {
+      state.length = data.length
+      state.fill(true)
+      updateTargets()
+    }
+  }, [scanData])
+
+  function updateTargets() {
+    const selected = data.filter((_, key) => state[key])
+    setSelected(selected)
+    console.log('SELECTED', selected)
+  }
+
   return (
     <List>
-      {scanData.localhost?.data[0][1].map(row => (
-        <ListItem key={row[0]} dense button onClick={() => {}}>
+      {state.map((checked, key) => (
+        <ListItem
+          key={key}
+          dense
+          button
+          onClick={() => {
+            state[key] = !state[key]
+            setState([...state])
+            updateTargets()
+          }}
+        >
           <ListItemIcon>
-            <Checkbox
-              edge="start"
-              // checked={checked.indexOf(value) !== -1 }
-              tabIndex={-1}
-              disableRipple
-              inputProps={{ 'aria-labelledby': row[0].toString() }}
-            />
+            <Checkbox checked={checked} color="primary" />
           </ListItemIcon>
-          <ListItemText primary={row[1]} secondary={row[0]} id={row[0].toString()} />
-          <ListItemSecondaryAction className={css.actions + ' hidden'}></ListItemSecondaryAction>
+          <ListItemText primary={data[key].name} secondary={findType(data[key].type).name} id={data[key].name} />
+          <ListItemSecondaryAction>Port {data[key].port}</ListItemSecondaryAction>
         </ListItem>
       ))}
     </List>
@@ -42,17 +65,5 @@ export const LocalhostScanForm: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  indent: { paddingLeft: spacing.xxl },
-  actions: { right: 70, display: 'none' },
-  buttons: {
-    width: 121,
-    marginLeft: spacing.md,
-    marginRight: spacing.lg,
-    position: 'relative',
-    '& > div': { position: 'absolute', width: '100%' },
-    '& > div:last-child': { position: 'relative' },
-  },
-  details: { '& > span': { marginLeft: spacing.xs } },
-  restriction: { color: colors.grayDarker },
-  error: { marginRight: spacing.lg },
+  indent: {},
 })

@@ -52,3 +52,13 @@ export function safeHostname(name: string, blacklist: string[]) {
   }
   return name
 }
+
+export function osName(os?: Ios) {
+  const name = {
+    mac: 'Mac',
+    windows: 'Windows PC',
+    linux: 'Linux system',
+    rpi: 'RaspberryPi',
+  }
+  return os ? name[os] : 'system'
+}

@@ -22,6 +22,19 @@ class CLIInterface extends CLI {
           Tracker.event('device', 'delete', this.data.device.name)
         }
         break
+
+      case 'registration':
+        // TODO
+        console.log('registration', value)
+        /* 
+          call device 
+          wait
+          loop
+          call target
+          ...
+          or build all so it's one command...
+         */
+        break
     }
   }
 

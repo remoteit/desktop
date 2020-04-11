@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
-import { serviceTypes } from '../../services/serviceTypes'
+import { getTypeId } from '../../services/serviceTypes'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE, IP_PRIVATE } from '../../constants'
 import styles, { spacing } from '../../styling'
 
@@ -59,11 +59,6 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
     } else {
       setOpen([])
     }
-  }
-
-  function getType(port: number) {
-    const type = serviceTypes.find(st => st.defaultPort === port)
-    return type ? type.id : DEFAULT_TARGET.type
   }
 
   function isAdded(ip: string, port: number) {
@@ -117,7 +112,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
                         onClick={() =>
                           onAdd({
                             ...DEFAULT_TARGET,
-                            type: getType(port[0]),
+                            type: getTypeId(port[0]),
                             hostname: ip[0] === privateIP ? '' : ip[0],
                             port: port[0],
                             name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
