@@ -1,10 +1,11 @@
-import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../constants'
-import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Checkbox } from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
+import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../constants'
+import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox } from '@material-ui/core'
 import { getTypeId, findType } from '../../services/serviceTypes'
-import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles'
+import { spacing } from '../../styling'
 import { emit } from '../../services/Controller'
 
 type Props = {
@@ -27,7 +28,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
   }, [])
 
   useEffect(() => {
-    if (scanData) {
+    if (scanData && data.length) {
       state.length = data.length
       state.fill(true)
       updateTargets()
@@ -45,19 +46,19 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
       {state.map((checked, key) => (
         <ListItem
           key={key}
-          dense
           button
           onClick={() => {
             state[key] = !state[key]
             setState([...state])
             updateTargets()
           }}
+          className={css.item}
         >
           <ListItemIcon>
             <Checkbox checked={checked} color="primary" />
           </ListItemIcon>
-          <ListItemText primary={data[key].name} secondary={findType(data[key].type).name} id={data[key].name} />
-          <ListItemSecondaryAction>Port {data[key].port}</ListItemSecondaryAction>
+          <ListItemText className={css.name} primary={data[key].name} />
+          <Chip label={findType(data[key].type).name + ' - ' + data[key].port} size="small" />
         </ListItem>
       ))}
     </List>
@@ -65,5 +66,6 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
 }
 
 const useStyles = makeStyles({
-  indent: {},
+  item: { padding: 0, paddingRight: spacing.md },
+  name: { width: '60%', flex: 'none' },
 })

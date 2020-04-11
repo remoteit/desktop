@@ -88,7 +88,7 @@ export default class CLI {
 
   async addTarget(t: ITarget) {
     await this.exec({
-      params: ['add', `"${t.name}"`, t.port, '--type', t.type, '--hostname', t.hostname || '127.0.0.1'],
+      cmds: [`add "${t.name}" ${t.port} --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`],
       admin: true,
       checkSignIn: true,
     })
@@ -96,58 +96,67 @@ export default class CLI {
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec({ params: ['remove', t.uid], admin: true, checkSignIn: true })
+    await this.exec({ cmds: [`remove ${t.uid}`], admin: true, checkSignIn: true })
     this.readTargets()
   }
 
-  async stopService() {
-    if (this.isSignedOut(true)) return
-    await this.exec({ params: ['service', 'stop'], admin: true, checkSignIn: true })
-  }
-
-  async startService() {
-    if (this.isSignedOut(true)) return
-    await this.exec({ params: ['service', 'start'], admin: true, checkSignIn: true })
-  }
-
   async register(device: IDevice) {
-    await this.exec({ params: ['setup', `"${device.name}"`, '-j'], admin: true, checkSignIn: true })
+    await this.exec({ cmds: [`setup "${device.name}" -j`], admin: true, checkSignIn: true })
+    this.read()
+  }
+
+  async registerAll(registration: IRegistration) {
+    let cmds = [`setup "${registration.device.name}" -j`]
+    registration.targets.forEach((t: ITarget) => {
+      cmds.push(`add "${t.name}" ${t.port} --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`)
+    })
+    await this.exec({ cmds, admin: true, checkSignIn: true })
     this.read()
   }
 
   async delete() {
     if (!this.data.device.uid) return
-    await this.exec({ params: ['teardown', '--yes', '-j'], admin: true, checkSignIn: true })
+    await this.exec({ cmds: ['teardown --yes -j'], admin: true, checkSignIn: true })
     this.read()
   }
 
+  async stopService() {
+    if (this.isSignedOut(true)) return
+    await this.exec({ cmds: ['service stop'], admin: true, checkSignIn: true })
+  }
+
+  async startService() {
+    if (this.isSignedOut(true)) return
+    await this.exec({ cmds: ['service start'], admin: true, checkSignIn: true })
+  }
+
   async install() {
-    await this.exec({ params: ['tools', 'install', '--update', '-j'], admin: true })
+    await this.exec({ cmds: ['tools install --update -j'], admin: true })
   }
 
   async unInstall() {
-    await this.exec({ params: ['uninstall', '--yes', '-j'], admin: true })
+    await this.exec({ cmds: ['uninstall --yes -j'], admin: true })
   }
 
   async signIn(admin?: boolean) {
     // if (!user.signedIn) return // can't sign in to cli if the user hasn't signed in yet - can remove because not trying to sudo install cli
-    await this.exec({ params: ['signin', user.username, '-a', user.authHash, '-j'], admin, checkSignIn: false })
+    await this.exec({ cmds: [`signin ${user.username} -a ${user.authHash} -j`], admin, checkSignIn: false })
     this.read()
   }
 
   async signOut() {
     // *This will not sign out the admin user
-    if (!this.isSignedOut()) await this.exec({ params: ['signout'], checkSignIn: false })
+    if (!this.isSignedOut()) await this.exec({ cmds: ['signout'], checkSignIn: false })
     this.read()
   }
 
   async scan(ipMask: string) {
-    const result = await this.exec({ params: ['scan', '-j', '-m', ipMask] })
+    const result = await this.exec({ cmds: [`scan -j -m ${ipMask}`] })
     return JSON.parse(result)
   }
 
   async version() {
-    const result = await this.exec({ params: ['version'], quiet: true })
+    const result = await this.exec({ cmds: ['version'], quiet: true })
     return result.toString().trim()
   }
 
@@ -158,12 +167,12 @@ export default class CLI {
   }
 
   async exec({
-    params,
+    cmds,
     checkSignIn = false,
     admin = false,
     quiet = false,
   }: {
-    params: any[]
+    cmds: string[]
     checkSignIn?: boolean
     admin?: boolean
     quiet?: boolean
@@ -179,9 +188,9 @@ export default class CLI {
 
     if (checkSignIn && this.isSignedOut(admin)) {
       readUser = true
-      commands.push(`"${remoteitInstaller.binaryPath()}" signin ${user.username} -a ${user.authHash} -j`)
+      cmds.unshift(`signin ${user.username} -a ${user.authHash} -j`)
     }
-    commands.push(`"${remoteitInstaller.binaryPath()}" ${params.join(' ')}`)
+    cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPath()}" ${cmd}`))
     commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())
 
     result = await commands.exec()

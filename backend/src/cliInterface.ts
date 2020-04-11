@@ -24,16 +24,12 @@ class CLIInterface extends CLI {
         break
 
       case 'registration':
-        // TODO
-        console.log('registration', value)
-        /* 
-          call device 
-          wait
-          loop
-          call target
-          ...
-          or build all so it's one command...
-         */
+        await this.registerAll(value)
+        Logger.info('REGISTER ' + value.device.name, { targets: value.targets })
+        Tracker.event('device', 'register', value.device.name)
+        value.targets.forEach((target: ITarget) => {
+          Tracker.event('target', 'add', `${target.name} ${target.port} ${target.type} ${target.hostname}`)
+        })
         break
     }
   }
