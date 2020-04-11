@@ -3,7 +3,6 @@ import { emit } from '../../services/Controller'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
-import { usePermissions } from '../../hooks/usePermissions'
 
 export const UninstallSetting: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()

@@ -29,18 +29,20 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
   }, [])
 
   useEffect(() => {
-    if (scanData) {
+    if (scanData && scanData.length !== state.length) {
       state.length = scanData.length
       state.fill(true)
       updateTargets()
     }
-  }, [])
+  }, [scanData, state, updateTargets])
 
   function updateTargets() {
     const selected = scanData.filter((_, key) => state[key])
     setSelected(selected)
     console.log('SELECTED', selected)
   }
+
+  if (!scanData) return null
 
   return (
     <List>
