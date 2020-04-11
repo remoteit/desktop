@@ -13,30 +13,31 @@ type Props = {
 }
 
 export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
-  const { scanData } = useSelector((state: ApplicationState) => state.backend)
+  const scanData = useSelector((state: ApplicationState) =>
+    state.backend.scanData.localhost?.data[0][1].map(row => ({
+      ...DEFAULT_TARGET,
+      type: getTypeId(row[0]),
+      port: row[0],
+      name: row[1].replace(REGEX_NAME_SAFE, ''),
+    }))
+  )
   const [state, setState] = useState<boolean[]>([])
   const css = useStyles()
-  let data: ITarget[] = scanData.localhost?.data[0][1].map(row => ({
-    ...DEFAULT_TARGET,
-    type: getTypeId(row[0]),
-    port: row[0],
-    name: row[1].replace(REGEX_NAME_SAFE, ''),
-  }))
 
   useEffect(() => {
     emit('scan', 'localhost')
   }, [])
 
   useEffect(() => {
-    if (scanData && data.length) {
-      state.length = data.length
+    if (scanData) {
+      state.length = scanData.length
       state.fill(true)
       updateTargets()
     }
-  }, [scanData])
+  }, [])
 
   function updateTargets() {
-    const selected = data.filter((_, key) => state[key])
+    const selected = scanData.filter((_, key) => state[key])
     setSelected(selected)
     console.log('SELECTED', selected)
   }
@@ -57,8 +58,8 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
           <ListItemIcon>
             <Checkbox checked={checked} color="primary" />
           </ListItemIcon>
-          <ListItemText className={css.name} primary={data[key].name} />
-          <Chip label={findType(data[key].type).name + ' - ' + data[key].port} size="small" />
+          <ListItemText className={css.name} primary={scanData[key].name} />
+          <Chip label={findType(scanData[key].type).name + ' - ' + scanData[key].port} size="small" />
         </ListItem>
       ))}
     </List>
