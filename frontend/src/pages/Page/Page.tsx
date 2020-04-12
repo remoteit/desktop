@@ -56,7 +56,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           open={!!cliError}
           message={
             <>
-              <Icon name="exclamation-triangle" size="md" color="danger" fixedWidth inlineLeft />
+              <Icon name="exclamation-triangle" size="md" color="danger" weight="regular" fixedWidth inlineLeft />
               {cliError}
             </>
           }

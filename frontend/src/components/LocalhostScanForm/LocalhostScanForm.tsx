@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../constants'
 import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox } from '@material-ui/core'
 import { getTypeId, findType } from '../../services/serviceTypes'
@@ -28,6 +28,11 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
     emit('scan', 'localhost')
   }, [])
 
+  const updateTargets = useCallback(() => {
+    const selected = scanData.filter((_, key) => state[key])
+    setSelected(selected)
+  }, [scanData, setSelected, state])
+
   useEffect(() => {
     if (scanData && scanData.length !== state.length) {
       state.length = scanData.length
@@ -35,12 +40,6 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected }) => {
       updateTargets()
     }
   }, [scanData, state, updateTargets])
-
-  function updateTargets() {
-    const selected = scanData.filter((_, key) => state[key])
-    setSelected(selected)
-    console.log('SELECTED', selected)
-  }
 
   if (!scanData) return null
 
