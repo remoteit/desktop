@@ -13,8 +13,8 @@ import { spacing, colors, fontSizes } from '../../styling'
 
 const pageNameMap: { [path: string]: string } = {
   connections: 'Connections',
-  devices: 'Remote Devices',
-  setup: 'Hosted Device',
+  devices: 'Devices',
+  setup: 'This Device',
   network: 'Network',
   settings: 'Settings',
 }
@@ -55,8 +55,8 @@ export const Breadcrumbs: React.FC = ({ children }) => {
       </Tooltip>
       {crumbs.reduce((result: any[], crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
-        if (index > 0) result.unshift(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
-        result.unshift(
+        if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
+        result.push(
           <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
             {pageName(crumb)}
           </Link>

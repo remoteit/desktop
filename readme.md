@@ -68,6 +68,17 @@ sudo /Applications/remoteit.app/Contents/MacOS/remoteit
 sudo /opt/remoteit/remoteit --no-sandbox
 ```
 
+## Remote view
+
+The desktop app runs a web service at port 29999 for remote access.
+
+- Setup prompt: If you log in to a device through your browser for remote setup it will by default put you on the device setup screen instead of the device list.
+
+## Guest view
+
+If a device has already been setup by a user, other users that log in will be in guest view and have limited abilities.
+Also a user in guest view can be logged out if the primary user logs in.
+
 ## Development
 
 ```shell

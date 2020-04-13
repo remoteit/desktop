@@ -36,6 +36,9 @@ const theme = createMuiTheme({
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
     },
+    MuiChip: {
+      root: { borderRadius: 4, backgroundColor: colors.grayLighter },
+    },
     MuiListItem: {
       root: { opacity: 1 },
       button: {

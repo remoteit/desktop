@@ -28,7 +28,7 @@ type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams()
-  const privateIP = useSelector((state: ApplicationState) => state.backend.privateIP)
+  const privateIP = useSelector((state: ApplicationState) => state.backend.environment.privateIP)
   const connection = useSelector((state: ApplicationState) => {
     let c = state.backend.connections.find(c => c.id === serviceID)
     if (c) return c

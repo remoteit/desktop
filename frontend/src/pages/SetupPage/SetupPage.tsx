@@ -8,7 +8,7 @@ import { emit } from '../../services/Controller'
 
 export const SetupPage: React.FC = () => {
   const { backend } = useDispatch<Dispatch>()
-  const { nameBlacklist, device, targets, added, cliError } = useSelector((state: ApplicationState) => ({
+  const { nameBlacklist, device, targets, added, cliError, hostname, os } = useSelector((state: ApplicationState) => ({
     nameBlacklist: state.devices.all
       .filter(device => device.shared !== 'shared-from')
       .map(device => device.name.toLowerCase()),
@@ -16,12 +16,17 @@ export const SetupPage: React.FC = () => {
     targets: state.backend.targets,
     added: state.backend.added,
     cliError: state.backend.cliError,
+    hostname: state.backend.environment.hostname,
+    os: state.backend.environment.os,
   }))
 
   const { admin, guest, notElevated } = usePermissions()
   const setAdded = (value: any) => backend.set({ key: 'added', value })
   const updateTargets = (t: ITarget[]) => emit('targets', t)
-  const updateDevice = (d: IDevice) => emit('device', d)
+  const updateRegistration = (r: IRegistration) => {
+    emit('registration', r)
+  }
+
   const deleteDevice = () => {
     emit('device', 'DELETE')
   }
@@ -35,12 +40,14 @@ export const SetupPage: React.FC = () => {
     <SetupView adminUser={admin} device={device} targets={targets} notElevated={notElevated} />
   ) : (
     <Setup
+      os={os}
       device={device}
       targets={targets}
       added={added}
       cliError={cliError}
+      hostname={hostname}
       nameBlacklist={nameBlacklist}
-      onDevice={updateDevice}
+      onRegistration={updateRegistration}
       onUpdate={updateTargets}
       onDelete={deleteDevice}
       onCancel={() => setAdded(undefined)}

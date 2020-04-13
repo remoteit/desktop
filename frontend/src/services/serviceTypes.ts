@@ -1,3 +1,5 @@
+import { DEFAULT_TARGET } from '../constants'
+
 export const serviceTypes = [
   {
     name: 'TCP',
@@ -98,6 +100,11 @@ export const emptyServiceType = {
   hex: '',
 }
 
-export function findType(type: number) {
-  return serviceTypes.find(st => st.id === type) || emptyServiceType
+export function findType(typeId: number) {
+  return serviceTypes.find(st => st.id === typeId) || emptyServiceType
+}
+
+export function getTypeId(port: number) {
+  const type = serviceTypes.find(st => st.defaultPort === port)
+  return type ? type.id : DEFAULT_TARGET.type
 }

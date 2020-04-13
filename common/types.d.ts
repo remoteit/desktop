@@ -31,6 +31,7 @@ declare global {
     | 'init'
     | 'targets'
     | 'device'
+    | 'registration'
     | 'scan'
     | 'interfaces'
     | 'freePort'
@@ -152,6 +153,11 @@ declare global {
   }
 
   interface IDevice extends ITarget {}
+
+  interface IRegistration {
+    device: IDevice
+    targets: ITarget[]
+  }
 
   type IScan = [string, [number, string][]] // address, port, type string
 

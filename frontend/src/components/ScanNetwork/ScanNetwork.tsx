@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
-import { serviceTypes } from '../../services/serviceTypes'
+import { getTypeId } from '../../services/serviceTypes'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE, IP_PRIVATE } from '../../constants'
 import styles, { spacing } from '../../styling'
 
@@ -61,11 +61,6 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
     }
   }
 
-  function getType(port: number) {
-    const type = serviceTypes.find(st => st.defaultPort === port)
-    return type ? type.id : DEFAULT_TARGET.type
-  }
-
   function isAdded(ip: string, port: number) {
     return targets.find(
       target => (target.hostname === ip || (IP_PRIVATE === target.hostname && privateIP === ip)) && target.port === port
@@ -75,7 +70,9 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
   return (
     <>
       <div className={css.caption}>
-        <Typography variant="caption">Select a device to add a hosted service</Typography>
+        <Typography variant="subtitle1" gutterBottom>
+          Add a service
+        </Typography>
         <Link onClick={toggleAll} color="inherit" component="button" className={css.toggle}>
           {allClosed ? 'Expand All' : 'Close All'}
           {allClosed ? <Icon name="chevron-down" inline /> : <Icon name="chevron-up" inline />}
@@ -115,7 +112,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
                         onClick={() =>
                           onAdd({
                             ...DEFAULT_TARGET,
-                            type: getType(port[0]),
+                            type: getTypeId(port[0]),
                             hostname: ip[0] === privateIP ? '' : ip[0],
                             port: port[0],
                             name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
@@ -144,10 +141,9 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    paddingLeft: spacing.lg,
   },
   toggle: {
-    padding: '6px 22px 12px 22px',
+    padding: '6px 22px 0px 22px',
     '& .MuiSvgIcon-root': {
       marginBottom: -6,
       marginLeft: spacing.sm,

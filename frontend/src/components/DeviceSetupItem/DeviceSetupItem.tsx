@@ -2,27 +2,21 @@ import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { osName } from '../../helpers/nameHelper'
 import { colors } from '../../styling'
 import { ListItemIcon, List, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
 
-const osName = {
-  mac: 'Mac',
-  windows: 'Windows PC',
-  linux: 'Linux system',
-  rpi: 'RaspberryPi',
-}
-
 export const DeviceSetupItem: React.FC = () => {
   const css = useStyles()
   const { device, os } = useSelector((state: ApplicationState) => ({
     device: state.backend.device,
-    os: state.backend.os,
+    os: state.backend.environment.os,
   }))
 
-  let title: any = <span className={css.title}>Setup this {os ? osName[os] : 'system'} as a device.</span>
-  let subTitle = 'Host or port forward services with this system.'
+  let title: any = <span className={css.title}>Set up remote access</span>
+  let subTitle = `Set up remote access to your ${osName(os)} or to any other service on this network.`
 
   if (device.name) {
     title = device.name

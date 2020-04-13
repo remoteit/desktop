@@ -2,7 +2,7 @@ import React from 'react'
 import { Scan } from '../Scan'
 import { Container } from '../Container'
 import { Breadcrumbs } from '../Breadcrumbs'
-import { Typography } from '@material-ui/core'
+import { Typography, Divider } from '@material-ui/core'
 
 type Props = {
   data: IScanData
@@ -19,7 +19,10 @@ export const Network: React.FC<Props> = ({ ...props }) => {
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="h1">Add from Network</Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            Add from Network
+          </Typography>
+          <Divider />
         </>
       }
     >

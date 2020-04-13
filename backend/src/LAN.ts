@@ -1,3 +1,5 @@
+import { IP_PRIVATE } from './constants'
+import environment from './environment'
 import Logger from './Logger'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
@@ -28,7 +30,8 @@ class LAN {
       })
     }
     Logger.info('PRIVATE IP', { ip: this.privateIP })
-    EventBus.emit(this.EVENTS.privateIP, this.privateIP)
+    environment.privateIP = this.privateIP || ''
+    EventBus.emit(environment.EVENTS.send, environment.frontend)
   }
 
   async getInterfaces() {
@@ -80,6 +83,7 @@ class LAN {
   }
 
   findNetmask(interfaceName: string) {
+    if (interfaceName === 'localhost') return IP_PRIVATE
     const network = !!this.interfaces && this.interfaces.find((i: IInterface) => i.name === interfaceName)
     if (!network) return ''
     const netmask = new Netmask(network.ip + '/' + network.netmask)

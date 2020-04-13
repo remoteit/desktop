@@ -35,6 +35,7 @@ class Controller {
       ...Object.values(lan.EVENTS),
       ...Object.values(cli.EVENTS),
       ...Object.values(server.EVENTS),
+      ...Object.values(environment.EVENTS),
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
     ]
@@ -60,6 +61,7 @@ class Controller {
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
+    socket.on('registration', this.registration)
     socket.on('scan', this.scan)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
@@ -78,6 +80,12 @@ class Controller {
 
   device = async (result: IDevice) => {
     await cli.set('device', result)
+    this.io.emit('device', cli.data.device)
+    this.io.emit('targets', cli.data.targets)
+  }
+
+  registration = async (result: IRegistration) => {
+    await cli.set('registration', result)
     this.io.emit('device', cli.data.device)
     this.io.emit('targets', cli.data.targets)
   }
@@ -104,12 +112,9 @@ class Controller {
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
     this.io.emit('interfaces', lan.interfaces)
-    this.io.emit('admin', (cli.data.admin && cli.data.admin.username) || '')
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
-    this.io.emit(lan.EVENTS.privateIP, lan.privateIP)
-    this.io.emit('os', environment.simpleOS)
-    this.io.emit('isElevated', environment.isElevated)
+    this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady', true)
   }

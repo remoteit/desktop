@@ -13,10 +13,14 @@ export class Environment {
   isPi: boolean
   isPiZero: boolean
   simpleOS: Ios
+  privateIP: ipAddress = ''
+  adminUsername: string = ''
   userPath: string
   adminPath: string
   binPath: string
   deprecatedBinaries: string[]
+
+  EVENTS = { send: 'environment' }
 
   constructor() {
     const elevated: boolean = true //this.isElevated - always elevated for now
@@ -57,6 +61,16 @@ export class Environment {
 
   async setElevatedState() {
     this.isElevated = await isElevated()
+  }
+
+  get frontend() {
+    return {
+      os: this.simpleOS,
+      adminUsername: this.adminUsername,
+      isElevated: this.isElevated,
+      privateIP: this.privateIP,
+      hostname: os.hostname(),
+    }
   }
 
   toJSON() {

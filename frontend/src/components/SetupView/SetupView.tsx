@@ -21,8 +21,8 @@ export const SetupView: React.FC<{
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="h1">
-            Hosted Device
+          <Typography variant="subtitle1">
+            This Device
             <Tooltip title={`Only ${adminUser} can edit this device`}>
               <Icon name="lock-alt" weight="regular" inline />
             </Tooltip>
@@ -31,7 +31,7 @@ export const SetupView: React.FC<{
       }
     >
       <Typography className={css.banner} variant="body2">
-        <h2>View Only</h2>
+        <span>View Only</span>
         {notElevated && <>remote.it must be running as admin in order to remotely manage services</>}
       </Typography>
 
@@ -97,7 +97,8 @@ const useStyles = makeStyles({
     padding: spacing.md,
     backgroundColor: colors.secondary,
     textAlign: 'center',
-    '& h2': {
+    '& span': {
+      display: 'block',
       fontSize: fontSizes.md,
       textTransform: 'uppercase',
       letterSpacing: 2,

@@ -22,6 +22,15 @@ class CLIInterface extends CLI {
           Tracker.event('device', 'delete', this.data.device.name)
         }
         break
+
+      case 'registration':
+        await this.registerAll(value)
+        Logger.info('REGISTER ' + value.device.name, { targets: value.targets })
+        Tracker.event('device', 'register', value.device.name)
+        value.targets.forEach((target: ITarget) => {
+          Tracker.event('target', 'add', `${target.name} ${target.port} ${target.type} ${target.hostname}`)
+        })
+        break
     }
   }
 
