@@ -1,3 +1,4 @@
+import { CLI_DOWNLOAD } from './constants'
 import debug from 'debug'
 import cli from './cliInterface'
 import binaryInstaller from './binaryInstaller'
@@ -142,7 +143,10 @@ export default class Installer {
 
   private download(progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url = `https://github.com/${this.repoName}/releases/download/v${this.version}/${this.downloadFileName}`
+      const url =
+        CLI_DOWNLOAD === 'AWS'
+          ? `https://dev-cli.s3-us-west-2.amazonaws.com/v${this.version}/${this.downloadFileName}`
+          : `https://github.com/${this.repoName}/releases/download/v${this.version}/${this.downloadFileName}`
 
       Logger.info('DOWNLOADING', { url })
       d(`Downloading ${this.name}:`, url)
@@ -151,30 +155,41 @@ export default class Installer {
 
       https
         .get(url, res1 => {
-          if (!res1 || !res1.headers || !res1.headers.location) {
+          if (!res1 || !res1.headers) {
             d('No response from download URL', res1, this)
             return reject(new Error('No response from download URL!'))
           }
-          https
-            .get(res1.headers.location, res2 => {
-              if (!res2 || !res2.headers || !res2.headers['content-length'])
-                return reject(new Error('No response from location URL!'))
-              const total = parseInt(res2.headers['content-length'], 10)
-              let completed = 0
-              if (!this.tempFile) return reject(new Error('No temp file path set'))
-              const w = fs.createWriteStream(this.tempFile)
-              res2.pipe(w)
-              res2.on('data', data => {
-                completed += data.length
-                progress(completed / total)
+          if (res1.headers['content-length']) {
+            stream(res1)
+          } else if (res1.headers.location) {
+            https
+              .get(res1.headers.location, res2 => {
+                if (!res2 || !res2.headers || !res2.headers['content-length'])
+                  return reject(new Error('No response from location URL!'))
+                stream(res2)
               })
-              res2.on('progress', progress)
-              res2.on('error', reject)
-              res2.on('end', resolve)
-            })
-            .on('error', reject)
+              .on('error', reject)
+          } else {
+            d('No download header in download URL', res1)
+            return reject(new Error('No download header in download URL!'))
+          }
         })
         .on('error', reject)
+
+      const stream = (res: any) => {
+        const total = parseInt(res.headers['content-length'], 10)
+        let completed = 0
+        if (!this.tempFile) return reject(new Error('No temp file path set'))
+        const w = fs.createWriteStream(this.tempFile)
+        res.pipe(w)
+        res.on('data', (data: any) => {
+          completed += data.length
+          progress(completed / total)
+        })
+        res.on('progress', progress)
+        res.on('error', reject)
+        res.on('end', resolve)
+      }
     })
   }
 }
