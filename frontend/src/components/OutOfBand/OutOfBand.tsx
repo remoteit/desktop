@@ -6,7 +6,7 @@ import { Tooltip, Link } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
 
 export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
-  const { os } = useSelector((state: ApplicationState) => state.backend)
+  const { os } = useSelector((state: ApplicationState) => state.backend.environment)
   const css = useStyles()
   if (os === 'mac' || os === 'windows') return null
   return (

@@ -96,15 +96,6 @@ export default createModel({
       dispatch.auth.signedIn()
       dispatch.auth.setAuthenticated(true)
     },
-    /**
-     * Triggers a signout via the backend process
-     */
-    async signOut() {
-      Controller.emit('user/sign-out')
-    },
-    async quit() {
-      Controller.emit('user/quit')
-    },
     async signInError(error: string) {
       dispatch.auth.signInFinished()
       dispatch.auth.setError(error)

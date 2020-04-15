@@ -7,6 +7,7 @@ import {
   ListItemSecondaryAction,
   IconButton,
   Collapse,
+  Divider,
   Button,
   Link,
   Typography,
@@ -69,6 +70,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
 
   return (
     <>
+      <Divider />
       <div className={css.caption}>
         <Typography variant="subtitle1" gutterBottom>
           Add a service
@@ -78,7 +80,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
           {allClosed ? <Icon name="chevron-down" inline /> : <Icon name="chevron-up" inline />}
         </Link>
       </div>
-      <List className={css.list}>
+      <List>
         {data.map((ip, row) => (
           <span key={row}>
             <ListItem button onClick={() => toggle(row)}>
@@ -148,9 +150,6 @@ const useStyles = makeStyles({
       marginBottom: -6,
       marginLeft: spacing.sm,
     },
-  },
-  list: {
-    borderTop: `1px solid ${styles.colors.grayLighter}`,
   },
   port: {
     paddingLeft: 70,

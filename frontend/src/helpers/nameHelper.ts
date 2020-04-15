@@ -58,7 +58,7 @@ export function osName(os?: Ios) {
     mac: 'Mac',
     windows: 'Windows PC',
     linux: 'Linux system',
-    rpi: 'RaspberryPi',
+    rpi: 'Raspberry Pi',
   }
   return os ? name[os] : 'system'
 }

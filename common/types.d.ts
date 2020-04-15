@@ -7,6 +7,7 @@ declare global {
     | 'user/check-sign-in'
     | 'user/sign-in'
     | 'user/sign-out'
+    | 'user/clear-all'
     | 'user/quit'
 
     // binaries

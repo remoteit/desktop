@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { LocalhostScanForm } from '../LocalhostScanForm'
-import { TextField, Button, CircularProgress, Tooltip, IconButton, Typography, Snackbar } from '@material-ui/core'
+import {
+  TextField,
+  Button,
+  CircularProgress,
+  Tooltip,
+  IconButton,
+  Typography,
+  Snackbar,
+  Divider,
+} from '@material-ui/core'
 import { safeHostname, osName } from '../../helpers/nameHelper'
 import { REGEX_NAME_SAFE } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
@@ -46,7 +55,7 @@ export const Setup: React.FC<Props> = ({ device, onRegistration, onDelete, nameB
       setDeleting(false)
       setName(safeHostname(hostname, nameBlacklist))
     }
-  }, [device, deleting, registering, props.cliError])
+  }, [device, deleting, registering, hostname, nameBlacklist, props.cliError])
 
   return (
     <>
@@ -140,13 +149,14 @@ export const Setup: React.FC<Props> = ({ device, onRegistration, onDelete, nameB
                 )}
               </div>
             </section>
-            {!registered && <LocalhostScanForm setSelected={setSelected} />}
+            {!registered && <LocalhostScanForm setSelected={setSelected} disabled={registering} />}
           </form>
         </Body>
 
         {registered && (
           <>
-            <Typography variant="h1" gutterBottom>
+            <Divider />
+            <Typography variant="subtitle1" gutterBottom>
               Hosted Services
             </Typography>
             <section>
@@ -165,6 +175,11 @@ export const Setup: React.FC<Props> = ({ device, onRegistration, onDelete, nameB
           </>
         }
         autoHideDuration={5000}
+        action={
+          <IconButton onClick={() => setSuccessMessage(false)}>
+            <Icon name="times" size="md" color="white" fixedWidth />
+          </IconButton>
+        }
       />
     </>
   )

@@ -67,7 +67,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
             <Button onClick={close} color="primary" size="small" type="button">
               Cancel
             </Button>
-            <Button variant="contained" color="primary" size="small">
+            <Button variant="contained" color="primary" size="small" type="submit">
               Launch
             </Button>
           </DialogActions>
