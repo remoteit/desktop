@@ -58,7 +58,7 @@ export default class Command {
           error: stderr.toString(),
         })
         // Hiding these errors for now because successful CLI commands are in stderr
-        // this.onError(stderr.toString())
+        this.onError(stderr.toString())
         result = stderr.toString()
       }
 
