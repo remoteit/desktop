@@ -167,6 +167,10 @@ export default class CLI {
     return result.toString().trim()
   }
 
+  async setManufactureId() {
+    const result = await this.exec({ cmds: [`set-manufacture ${environment.manufactureId}`], checkSignIn: false })
+  }
+
   async isNotInstalled() {
     const installed = remoteitInstaller.fileExists(remoteitInstaller.binaryName)
     d('CLI INSTALLED?', { installed, name: remoteitInstaller.binaryName })
