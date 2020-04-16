@@ -79,12 +79,12 @@ export const serviceTypes = [
     id: 39,
     hex: '27',
   },
-  {
-    defaultPort: 25565,
-    name: 'Minecraft',
-    id: 41,
-    hex: '29',
-  },
+  // {
+  //   defaultPort: 25565,
+  //   name: 'Minecraft',
+  //   id: 41,
+  //   hex: '29',
+  // },
   {
     defaultPort: 65535,
     name: 'MultiPort',
