@@ -20,7 +20,7 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   if (!connections || !connections.length) {
     return (
       <Body center>
-        <Typography className={css.message} variant="caption">
+        <Typography className={css.message} variant="h2" align="center">
           You have no connections
         </Typography>
         <Button onClick={() => history.push('/devices')} variant="contained" color="primary" size="medium">
@@ -40,4 +40,4 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   )
 }
 
-const useStyles = makeStyles({ message: { marginBottom: styles.spacing.lg } })
+const useStyles = makeStyles({ message: { marginBottom: styles.spacing.xl } })
