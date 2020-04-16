@@ -85,26 +85,32 @@ Also a user in guest view can be logged out if the primary user logs in.
 
 If things aren't working the best way to clear everything and start over is to use the "Uninstall command line tools" menu in the advanced settings screen.
 
-### CLI tools
+**CLI tools**
 
 The Desktop installs and depends on the remote.it CLI tools.
 At startup they are installed here:
 
-Mac `/usr/local/bin/`
-Windows `C:\Program Files\remoteit-bin\`
-Linux `/usr/bin/`
+```
+Mac      /usr/local/bin/
+Linux    /usr/bin/
+Windows  C:\Program Files\remoteit-bin\
+```
 
-### Configuration and log files
+**Configuration and log files**
 
-Mac `~/.remoteit/`
-Windows `C:\Users\%username%\AppData\Local\remoteit\`
-Linux `~/.remoteit/`
+```
+Mac      ~/.remoteit/
+Linux    ~/.remoteit/
+Windows  C:\Users\%username%\AppData\Local\remoteit\
+```
 
-### CLI config files
+**CLI config files**
 
-Mac `/etc/remoteit/`
-Windows `C:\ProgramData\remoteit\`
-Linux `/etc/remoteit/`
+```
+Mac      /etc/remoteit/
+Linux    /etc/remoteit/
+Windows  C:\ProgramData\remoteit\
+```
 
 ## Development
 
