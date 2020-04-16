@@ -23,13 +23,16 @@ export const SetupPage: React.FC = () => {
 
   const { admin, guest, notElevated } = usePermissions()
   const setAdded = (value: any) => backend.set({ key: 'added', value })
-  const updateTargets = (t: ITarget[]) => emit('targets', t)
+  const updateTargets = (t: ITarget[]) => {
+    emit('targets', t)
+  }
   const updateRegistration = (r: IRegistration) => {
     Analytics.Instance.track('SetupDevice')
     emit('registration', r)
   }
 
   const deleteDevice = () => {
+    Analytics.Instance.track('RemoveDevice')
     emit('device', 'DELETE')
   }
 
