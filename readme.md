@@ -46,6 +46,8 @@ To run in the background
 nohup sudo node package/build &
 ```
 
+Desktop can then be accessed on port 29999, either on localhost or over the local network.
+
 ## Start as root / admin
 
 Start as root / admin to have hosted services persist for all users and continue to run even after the remote.it desktop app is quit
@@ -78,6 +80,31 @@ The desktop app runs a web service at port 29999 for remote access.
 
 If a device has already been setup by a user, other users that log in will be in guest view and have limited abilities.
 Also a user in guest view can be logged out if the primary user logs in.
+
+## Troubleshooting
+
+If things aren't working the best way to clear everything and start over is to use the "Uninstall command line tools" menu in the advanced settings screen.
+
+### CLI tools
+
+The Desktop installs and depends on the remote.it CLI tools.
+At startup they are installed here:
+
+Mac `/usr/local/bin/`
+Windows `C:\Program Files\remoteit-bin\`
+Linux `/usr/bin/`
+
+### Configuration and log files
+
+Mac `~/.remoteit/`
+Windows `C:\Users\%username%\AppData\Local\remoteit\`
+Linux `~/.remoteit/`
+
+### CLI config files
+
+Mac `/etc/remoteit/`
+Windows `C:\ProgramData\remoteit\`
+Linux `/etc/remoteit/`
 
 ## Development
 
