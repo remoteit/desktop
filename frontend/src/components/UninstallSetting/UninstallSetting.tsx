@@ -16,8 +16,9 @@ export const UninstallSetting: React.FC = () => {
 
   return (
     <SettingsListItem
-      label="Uninstall"
-      subLabel={`Completely remove all saved data and installed command line tools.`}
+      label="Uninstall command line tools"
+      subLabel={`Completely remove all saved data and installed command line tools. 
+        Do this before removing, or uninstalling the application from your system.`}
       icon="trash-alt"
       onClick={warning}
     />

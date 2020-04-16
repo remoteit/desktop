@@ -101,6 +101,11 @@ export class User {
 
     EventBus.emit(this.EVENTS.signedOut)
   }
+
+  clearAll = () => {
+    this.signOut()
+    cli.signOut(true)
+  }
 }
 
 export default new User()

@@ -51,6 +51,7 @@ class Controller {
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
 
     socket.on('user/sign-out', user.signOut)
+    socket.on('user/clear-all', user.clearAll)
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)

@@ -20,7 +20,7 @@ export const DeviceSetupItem: React.FC = () => {
 
   if (device.name) {
     title = device.name
-    subTitle = 'This system’s hosted or port forwarded services.'
+    subTitle = `Remote access to your ${osName(os)} or to any other service on this network.`
   }
 
   return (

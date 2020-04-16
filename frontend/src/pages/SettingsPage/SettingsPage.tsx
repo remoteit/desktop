@@ -15,7 +15,7 @@ import { Logo } from '../../components/Logo'
 
 export const SettingsPage = () => {
   const { os, user, installing, remoteitVersion, preferences } = useSelector((state: ApplicationState) => ({
-    os: state.backend.os,
+    os: state.backend.environment.os,
     user: state.auth.user,
     installing: state.binaries.installing,
     remoteitVersion: state.binaries.remoteitVersion,
@@ -23,14 +23,19 @@ export const SettingsPage = () => {
   }))
 
   const { guest, notElevated } = usePermissions()
-  const { auth, binaries } = useDispatch<Dispatch>()
+  const { binaries } = useDispatch<Dispatch>()
   const css = useStyles()
 
-  const quitWarning = () => window.confirm('Are you sure? Quitting will close all active connections.') && auth.quit()
+  const quitWarning = () =>
+    window.confirm('Are you sure? Quitting will close all active connections.') && emit('user/quit')
   const signOutWarning = () =>
     window.confirm(
       'Are you sure? Signing out will close all active connections, but leave the hosted services running.'
-    ) && auth.signOut()
+    ) && emit('user/sign-out')
+
+  const clearWarning = () =>
+    window.confirm('Are you sure? The next user that signs in will be able to claim this device as their own.') &&
+    emit('user/clear-all')
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install()
@@ -107,6 +112,16 @@ export const SettingsPage = () => {
               onClick={installWarning}
             />
             <UninstallSetting />
+            <SettingsListItem
+              label={'Clear all credentials'}
+              subLabel={`This will remove all remote.it user credentials from this device. 
+                Credentials should be removed before transferring a device. 
+                The next user to sign in with elevated permissions will claim this device. 
+                The hosted services will only remain active until the next reboot 
+                if another user does not sign in and claim the device.`}
+              icon="user-slash"
+              onClick={clearWarning}
+            />
           </List>
         </>
       )}

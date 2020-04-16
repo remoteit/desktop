@@ -1,6 +1,6 @@
 import React from 'react'
 import { Container } from '../Container'
-import { Typography, Tooltip } from '@material-ui/core'
+import { Typography, Tooltip, Divider } from '@material-ui/core'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/styles'
@@ -21,7 +21,7 @@ export const SetupView: React.FC<{
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="subtitle1">
+          <Typography variant="h1">
             This Device
             <Tooltip title={`Only ${adminUser} can edit this device`}>
               <Icon name="lock-alt" weight="regular" inline />
@@ -45,7 +45,8 @@ export const SetupView: React.FC<{
           <Typography variant="h2">{adminUser}</Typography>
         </p>
       </Columns>
-      <Typography variant="h1">Hosted Services</Typography>
+      <Divider />
+      <Typography variant="subtitle1">Hosted Services</Typography>
       <Columns count={1} inset>
         <table className={css.table}>
           <tbody>

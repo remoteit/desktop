@@ -39,6 +39,10 @@ const theme = createMuiTheme({
     MuiChip: {
       root: { borderRadius: 4, backgroundColor: colors.grayLighter },
     },
+    MuiSnackbar: {
+      root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
+      anchorOriginBottomCenter: { bottom: '80px !important' },
+    },
     MuiListItem: {
       root: { opacity: 1 },
       button: {

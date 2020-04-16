@@ -3,7 +3,7 @@ import { DEFAULT_TARGET } from '../constants'
 export const serviceTypes = [
   {
     name: 'TCP',
-    defaultPort: 445,
+    defaultPort: 0,
     id: 1,
     hex: '01',
   },
@@ -18,18 +18,6 @@ export const serviceTypes = [
     defaultPort: 3389,
     id: 5,
     hex: '05',
-  },
-  {
-    name: 'HTTP reverse proxy',
-    defaultPort: 80,
-    id: 7,
-    hex: '07',
-  },
-  {
-    name: 'HTTPS reverse proxy',
-    defaultPort: 443,
-    id: 8,
-    hex: '08',
   },
   {
     name: 'SSH',
@@ -48,6 +36,18 @@ export const serviceTypes = [
     defaultPort: 443,
     id: 33,
     hex: '21',
+  },
+  {
+    name: 'HTTP reverse proxy',
+    defaultPort: 80,
+    id: 7,
+    hex: '07',
+  },
+  {
+    name: 'HTTPS reverse proxy',
+    defaultPort: 443,
+    id: 8,
+    hex: '08',
   },
   {
     name: 'Samba',
@@ -91,6 +91,12 @@ export const serviceTypes = [
     id: 40,
     hex: '28',
   },
+  // {
+  // defaultPort: 29999,
+  // name: 'remoteit admin',
+  // id: 42,
+  // hex: '2A',
+  // },
 ]
 
 export const emptyServiceType = {
@@ -106,5 +112,7 @@ export function findType(typeId: number) {
 
 export function getTypeId(port: number) {
   const type = serviceTypes.find(st => st.defaultPort === port)
+  // FIXME: temp hack to get remoteit admin to be http reverse proxy
+  if (port === 29999) return 7
   return type ? type.id : DEFAULT_TARGET.type
 }

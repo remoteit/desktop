@@ -35,7 +35,7 @@ export const App = () => {
     device: state.backend.device,
     dataReady: state.backend.dataReady,
     uninstalling: state.ui.uninstalling,
-    os: state.backend.os,
+    os: state.backend.environment.os,
   }))
 
   const css = useStyles()

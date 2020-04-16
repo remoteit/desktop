@@ -39,8 +39,16 @@ export default class CLI {
     this.userConfigFile = new JSONFile<ConfigFile>(path.join(environment.userPath, 'config.json'))
     this.adminConfigFile = new JSONFile<ConfigFile>(path.join(environment.adminPath, 'config.json'))
     EventBus.on(user.EVENTS.signedOut, () => this.signOut())
-    EventBus.on(user.EVENTS.signedIn, () => this.read())
     this.read()
+  }
+
+  check = () => {
+    const admin = true
+    this.readUser()
+    this.readUser(true)
+    if (this.isSignedOut(admin) && this.data.device.uid) {
+      this.signIn(admin)
+    }
   }
 
   read() {
@@ -101,12 +109,12 @@ export default class CLI {
   }
 
   async register(device: IDevice) {
-    await this.exec({ cmds: [`setup "${device.name}" -j`], admin: true, checkSignIn: true })
+    await this.exec({ cmds: [`-j setup "${device.name}"`], admin: true, checkSignIn: true })
     this.read()
   }
 
   async registerAll(registration: IRegistration) {
-    let cmds = [`setup "${registration.device.name}" -j`]
+    let cmds = [`-j setup "${registration.device.name}"`]
     registration.targets.forEach((t: ITarget) => {
       cmds.push(`add "${t.name}" ${t.port} --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`)
     })
@@ -116,7 +124,7 @@ export default class CLI {
 
   async delete() {
     if (!this.data.device.uid) return
-    await this.exec({ cmds: ['teardown --yes -j'], admin: true, checkSignIn: true })
+    await this.exec({ cmds: ['-j teardown --yes'], admin: true, checkSignIn: true })
     this.read()
   }
 
@@ -131,27 +139,26 @@ export default class CLI {
   }
 
   async install() {
-    await this.exec({ cmds: ['tools install --update -j'], admin: true })
+    await this.exec({ cmds: ['-j tools install --update'], admin: true })
   }
 
   async unInstall() {
-    await this.exec({ cmds: ['uninstall --yes -j'], admin: true })
+    await this.exec({ cmds: ['-j uninstall --yes'], admin: true })
   }
 
   async signIn(admin?: boolean) {
     // if (!user.signedIn) return // can't sign in to cli if the user hasn't signed in yet - can remove because not trying to sudo install cli
-    await this.exec({ cmds: [`signin ${user.username} -a ${user.authHash} -j`], admin, checkSignIn: false })
+    await this.exec({ cmds: [`-j signin ${user.username} -a ${user.authHash}`], admin, checkSignIn: false })
     this.read()
   }
 
-  async signOut() {
-    // *This will not sign out the admin user
-    if (!this.isSignedOut()) await this.exec({ cmds: ['signout'], checkSignIn: false })
+  async signOut(admin?: boolean) {
+    if (!this.isSignedOut(admin)) await this.exec({ cmds: ['signout'], checkSignIn: false, admin })
     this.read()
   }
 
   async scan(ipMask: string) {
-    const result = await this.exec({ cmds: [`scan -j -m ${ipMask}`] })
+    const result = await this.exec({ cmds: [`-j scan -m ${ipMask}`] })
     return JSON.parse(result)
   }
 
@@ -188,7 +195,7 @@ export default class CLI {
 
     if (checkSignIn && this.isSignedOut(admin)) {
       readUser = true
-      cmds.unshift(`signin ${user.username} -a ${user.authHash} -j`)
+      cmds.unshift(`-j signin ${user.username} -a ${user.authHash}`)
     }
     cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPath()}" ${cmd}`))
     commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())

@@ -1,16 +1,14 @@
 import { HEARTBEAT_INTERVAL } from './constants'
-import debug from 'debug'
 import Controller from './Controller'
 import ConnectionPool from './ConnectionPool'
 import remoteitInstaller from './remoteitInstaller'
 import environment from './environment'
 import Logger from './Logger'
+import cli from './cliInterface'
 import user from './User'
 import server from './server'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
-
-const d = debug('r3:backend:Application')
 
 export default class Application {
   public electron?: any
@@ -57,6 +55,7 @@ export default class Application {
     this.electron && this.electron.check()
     remoteitInstaller.check()
     this.pool.check()
+    cli.check()
   }
 
   private bindExitHandlers = () => {
