@@ -34,8 +34,6 @@ export default class Installer {
     error: 'binary/install/error',
     installed: 'binary/installed',
     notInstalled: 'binary/not-installed',
-    afterInstall: 'binary/after-install',
-    // uninstalled: 'binary/uninstalled',
   }
 
   constructor(args: InstallerArgs) {
@@ -73,7 +71,7 @@ export default class Installer {
 
   async isCurrent(log?: boolean) {
     let current = false
-    let cliVersion = 'Installing'
+    let cliVersion = 'Not Installed'
 
     if (this.isInstalled()) {
       cliVersion = await cli.version()

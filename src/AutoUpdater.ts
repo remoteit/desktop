@@ -2,7 +2,7 @@ import electron from 'electron'
 import { EventBus, Logger, EVENTS, environment, preferences } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 
-const AUTO_UPDATE_CHECK_INTERVAL = 5000 //43200000 // one half day
+const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 
 export default class AppUpdater {
   nextCheck: number = 0
