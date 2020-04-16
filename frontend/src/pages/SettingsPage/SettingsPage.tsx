@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
@@ -12,6 +12,7 @@ import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
+import Analytics from '../../helpers/Analytics'
 
 export const SettingsPage = () => {
   const { os, user, installing, remoteitVersion, preferences } = useSelector((state: ApplicationState) => ({
@@ -39,6 +40,10 @@ export const SettingsPage = () => {
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install()
+
+  useEffect(() => {
+    Analytics.Instance.page('SettingsPage')
+  }, [])
 
   return (
     <Container

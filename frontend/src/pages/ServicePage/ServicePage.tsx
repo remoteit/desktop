@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/styles'
 import { useSelector } from 'react-redux'
@@ -27,6 +27,7 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
+import Analytics from '../../helpers/Analytics'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -36,6 +37,10 @@ export const ServicePage: React.FC = () => {
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
 
   let data: IDataDisplay[] = []
+
+  useEffect(() => {
+    Analytics.Instance.page('ServicePage')
+  }, [])
 
   if (!service || !device)
     return (

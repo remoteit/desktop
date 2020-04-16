@@ -3,6 +3,7 @@ import { parse } from 'url'
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
+import Analytics from '../helpers/Analytics'
 
 const USER_KEY = 'user'
 
@@ -37,6 +38,7 @@ export default createModel({
       }
       if (user) {
         dispatch.auth.setUser(user)
+        Analytics.Instance.identify(user.username, user.username)
       } else {
         dispatch.auth.signedOut()
       }
@@ -84,6 +86,8 @@ export default createModel({
           }
           return
         })
+      Analytics.Instance.identify(username, username)
+      Analytics.Instance.track('SignedIn')
       return user
     },
     async signedIn() {
@@ -104,6 +108,8 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     async signedOut() {
+      Analytics.Instance.track('SignedOut')
+      Analytics.Instance.clearIdentity()
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
