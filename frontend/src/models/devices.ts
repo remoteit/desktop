@@ -4,6 +4,7 @@ import { IDevice, IService } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { renameServices } from '../helpers/nameHelper'
 import { updateConnections } from '../helpers/connectionHelper'
+import { IRawDevice } from 'remote.it'
 import { r3 } from '../services/remote.it'
 
 // Slightly below the API limit for search of 300 services.
@@ -21,6 +22,14 @@ interface DeviceState {
   searching: boolean
   query: string
   sort: SortType
+}
+
+async function fetchAll(cache: boolean = true): Promise<IDevice[]> {
+  const [allDevices, metadata] = await Promise.all([
+    r3.get(`/device/list/all?cache=${cache.toString()}`).then(({ devices }: { devices: IRawDevice[] }) => devices),
+    r3.devices.metadata(),
+  ])
+  return r3.devices.group(allDevices, metadata)
 }
 
 const state: DeviceState = {
@@ -60,7 +69,7 @@ export default createModel({
       dispatch.devices.setSearchOnly(searchOnly)
       return searchOnly
     },
-    async fetch() {
+    async fetch(cache: boolean = true) {
       // TODO: Deal with device search only UI
       const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
 
@@ -71,8 +80,7 @@ export default createModel({
 
       fetchStarted()
 
-      return r3.devices
-        .all()
+      return fetchAll(cache)
         .then(renameServices)
         .then(updateConnections)
         .then(setDevices)

@@ -93,7 +93,7 @@ export const DevicesPage = connect(
             {!searchOnly && (
               <Tooltip title="Refresh devices">
                 <div>
-                  <IconButton onClick={() => fetch()} disabled={fetching}>
+                  <IconButton onClick={() => fetch(false)} disabled={fetching}>
                     <Icon name="sync" spin={fetching} size="sm" weight="regular" />
                   </IconButton>
                 </div>
