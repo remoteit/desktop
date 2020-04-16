@@ -16,11 +16,11 @@ export const DeviceSetupItem: React.FC = () => {
   }))
 
   let title: any = <span className={css.title}>Set up remote access</span>
-  let subTitle = `Set up remote access to your ${osName(os)} or to any other service on this network.`
+  let subTitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
 
   if (device.name) {
     title = device.name
-    subTitle = `Remote access to your ${osName(os)} or to any other service on this network.`
+    subTitle = `Remote access to this ${osName(os)} or any other service on the network.`
   }
 
   return (

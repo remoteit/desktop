@@ -1,6 +1,7 @@
 import React from 'react'
 import { IDevice } from 'remote.it'
 import { DeviceListItem } from '../DeviceListItem'
+import { DeviceListEmpty } from '../DeviceListEmpty'
 import { Body } from '../Body'
 import { List } from '@material-ui/core'
 import classnames from 'classnames'
@@ -15,7 +16,7 @@ export interface DeviceListProps {
   query: string
 }
 
-const NoDevicesMessage = () => <Body center>You have no devices, devices added to your account will appear here.</Body>
+const NoDevicesMessage = () => <DeviceListEmpty />
 const NoResultsMessage = () => <Body center>Your search didn't match any results, please try a different search.</Body>
 const SearchOnlyMessage = () => <Body center>Please search for a device or service.</Body>
 const SearchingMessage = () => <Body center>Searching for devices and services...</Body>
