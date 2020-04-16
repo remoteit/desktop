@@ -5,6 +5,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { SetupView } from '../../components/SetupView'
 import { Setup } from '../../components/Setup'
 import { emit } from '../../services/Controller'
+import Analytics from '../../helpers/Analytics'
 
 export const SetupPage: React.FC = () => {
   const { backend } = useDispatch<Dispatch>()
@@ -24,6 +25,7 @@ export const SetupPage: React.FC = () => {
   const setAdded = (value: any) => backend.set({ key: 'added', value })
   const updateTargets = (t: ITarget[]) => emit('targets', t)
   const updateRegistration = (r: IRegistration) => {
+    Analytics.Instance.track('SetupDevice')
     emit('registration', r)
   }
 
@@ -34,6 +36,10 @@ export const SetupPage: React.FC = () => {
   useEffect(() => {
     // Refresh device data
     emit('device')
+  }, [])
+
+  useEffect(() => {
+    Analytics.Instance.page('SetupPage')
   }, [])
 
   return guest || notElevated ? (

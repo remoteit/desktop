@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { IDevice, IService } from 'remote.it'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
+import Analytics from '../../helpers/Analytics'
 
 export const ConnectionsPage: React.FC = () => {
   const connections = useSelector((state: ApplicationState) => state.backend.connections.filter(c => !!c.startTime))
@@ -12,6 +13,10 @@ export const ConnectionsPage: React.FC = () => {
       connections.map(c => c.id)
     )
   )
+  useEffect(() => {
+    Analytics.Instance.page('ConnectionsPage')
+  }, [])
+
   return <ConnectionsList connections={connections} services={services} />
 }
 

@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles'
 import { spacing } from '../../styling'
 import { emit } from '../../services/Controller'
+import Analytics from '../../helpers/Analytics'
 
 type Props = {
   setSelected: (targets: ITarget[]) => void
@@ -26,6 +27,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) =>
   const css = useStyles()
 
   useEffect(() => {
+    Analytics.Instance.track('ScanLocalNetwork')
     emit('scan', 'localhost')
   }, [])
 
