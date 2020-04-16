@@ -11,6 +11,8 @@ import {
   Snackbar,
   Divider,
 } from '@material-ui/core'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import { safeHostname, osName } from '../../helpers/nameHelper'
 import { REGEX_NAME_SAFE } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
@@ -35,6 +37,7 @@ type Props = {
 }
 
 export const Setup: React.FC<Props> = ({ device, onRegistration, onDelete, nameBlacklist, hostname, os, ...props }) => {
+  const { devices } = useDispatch<Dispatch>()
   const css = useStyles()
   const [name, setName] = useState<string>(device.name || safeHostname(hostname, nameBlacklist))
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
@@ -50,10 +53,12 @@ export const Setup: React.FC<Props> = ({ device, onRegistration, onDelete, nameB
     if (registering && (device.uid || props.cliError)) {
       setRegistering(false)
       setSuccessMessage(true)
+      devices.fetch(false)
     }
     if (deleting && (!device.uid || props.cliError)) {
       setDeleting(false)
       setName(safeHostname(hostname, nameBlacklist))
+      devices.fetch(false)
     }
   }, [device, deleting, registering, hostname, nameBlacklist, props.cliError])
 
