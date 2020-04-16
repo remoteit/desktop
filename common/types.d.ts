@@ -6,6 +6,7 @@ declare global {
     // user/auth
     | 'user/check-sign-in'
     | 'user/sign-in'
+    | 'user/sign-out-complete'
     | 'user/sign-out'
     | 'user/clear-all'
     | 'user/quit'

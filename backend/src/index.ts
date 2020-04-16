@@ -10,7 +10,7 @@ import EventBus from './EventBus'
 import Tracker from './Tracker'
 import Logger from './Logger'
 import LAN from './LAN'
-import user from './User'
+import user, { User } from './User'
 import cli from './cliInterface'
 import { hostName } from './helpers/nameHelper'
 import { IP_PRIVATE } from './constants'
@@ -47,4 +47,17 @@ export default new Application()
 
 // To support Electron wrapper
 export { EVENTS } from './electronInterface'
-export { ConnectionPool, environment, EventBus, hostName, preferences, Logger, user, cli, LAN, IP_PRIVATE, WEB_DIR }
+export {
+  ConnectionPool,
+  environment,
+  EventBus,
+  hostName,
+  preferences,
+  Logger,
+  User,
+  user,
+  cli,
+  LAN,
+  IP_PRIVATE,
+  WEB_DIR,
+}

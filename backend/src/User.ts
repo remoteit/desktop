@@ -11,7 +11,7 @@ import { r3 } from './remote.it'
 const d = debug('r3:backend:User')
 
 export class User {
-  EVENTS = {
+  static EVENTS = {
     signInError: 'user/sign-in/error',
     signedOut: 'signed-out',
     signedIn: 'signed-in',
@@ -53,7 +53,7 @@ export class User {
 
   authenticated() {
     this.signedIn = true
-    EventBus.emit(this.EVENTS.signedIn, this.credentials)
+    EventBus.emit(User.EVENTS.signedIn, this.credentials)
   }
 
   checkSignIn = async (credentials?: UserCredentials) => {
@@ -83,7 +83,7 @@ export class User {
     this.username = user.username
     this.authHash = user.authHash
 
-    EventBus.emit(this.EVENTS.signedIn, user)
+    EventBus.emit(User.EVENTS.signedIn, user)
 
     return user
   }
@@ -99,7 +99,8 @@ export class User {
     this.authHash = ''
     this.signedIn = false
 
-    EventBus.emit(this.EVENTS.signedOut)
+    EventBus.emit(User.EVENTS.signedOut)
+    // await delay(1000)
   }
 
   clearAll = () => {
@@ -107,5 +108,9 @@ export class User {
     cli.signOut(true)
   }
 }
+
+// function delay(ms: number) {
+//   return new Promise(resolve => setTimeout(resolve, ms))
+// }
 
 export default new User()

@@ -3,6 +3,7 @@ import { parse } from 'url'
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
+import { emit } from '../services/Controller'
 
 const USER_KEY = 'user'
 
@@ -103,13 +104,15 @@ export default createModel({
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut() {
+    signedOut() {
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
-      Controller.close()
       window.location.search = ''
+      console.log('SIGNOUT COMPLETE')
+      emit('user/sign-out-complete')
+      Controller.close()
     },
   }),
   reducers: {

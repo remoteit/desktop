@@ -13,7 +13,7 @@ import environment from './environment'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './server'
-import user from './User'
+import user, { User } from './User'
 import debug from 'debug'
 
 const d = debug('r3:backend:Server')
@@ -21,6 +21,7 @@ const d = debug('r3:backend:Server')
 class Controller {
   private io: SocketIO.Server
   private pool: ConnectionPool
+  private uninstallInitiated = false
 
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.io = io
@@ -28,7 +29,7 @@ class Controller {
     EventBus.on(server.EVENTS.authenticated, this.openSockets)
 
     let eventNames = [
-      ...Object.values(user.EVENTS),
+      ...Object.values(User.EVENTS),
       ...Object.values(Installer.EVENTS),
       ...Object.values(Connection.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
@@ -51,6 +52,7 @@ class Controller {
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
 
     socket.on('user/sign-out', user.signOut)
+    socket.on('user/sign-out-complete', this.signOutComplete)
     socket.on('user/clear-all', user.clearAll)
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
@@ -72,6 +74,13 @@ class Controller {
 
     // things are ready - send the secure data
     this.syncBackend()
+  }
+
+  signOutComplete = () => {
+    Logger.info('FRONTEND SIGNOUT COMPLETE')
+    if (this.uninstallInitiated) {
+      this.quit()
+    }
   }
 
   targets = async (result: ITarget[]) => {
@@ -158,12 +167,13 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
+    this.uninstallInitiated = true
     await this.pool.reset()
     await cli.delete()
     await cli.unInstall()
-    user.signOut()
     await binaryInstaller.uninstall()
-    this.quit()
+    user.signOut()
+    //frontend will emit user/sign-out-complete and then we will call exit
   }
 
   installBinaries = async () => {
