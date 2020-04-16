@@ -5,6 +5,7 @@ import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
+import Analytics from '../../helpers/Analytics'
 
 export type ConnectButtonProps = {
   connection?: IConnection
@@ -21,7 +22,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 }) => {
   const hidden = (connection && connection.active) || !service || service.state !== 'active'
   const connecting = !!(connection && connection.pid && !connection.active)
-  const connect = () => emit('service/connect', connection || newConnection(service))
+  const connect = () => {
+    Analytics.Instance.track('Connect')
+    emit('service/connect', connection || newConnection(service))
+  }
 
   return (
     <Fade in={!hidden} timeout={600}>

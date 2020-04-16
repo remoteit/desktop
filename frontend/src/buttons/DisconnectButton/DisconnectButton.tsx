@@ -3,6 +3,7 @@ import { emit } from '../../services/Controller'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
+import Analytics from '../../helpers/Analytics'
 
 type Props = {
   disabled?: boolean
@@ -27,7 +28,10 @@ export const DisconnectButton: React.FC<Props> = ({
           color={color}
           disabled={disabled}
           size={size}
-          onClick={() => emit('service/disconnect', connection)}
+          onClick={() => {
+            Analytics.Instance.track('Disconnect')
+            emit('service/disconnect', connection)
+          }}
         />
       </div>
     </Fade>
