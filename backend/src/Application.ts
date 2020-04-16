@@ -5,7 +5,7 @@ import remoteitInstaller from './remoteitInstaller'
 import environment from './environment'
 import Logger from './Logger'
 import cli from './cliInterface'
-import user from './User'
+import user, { User } from './User'
 import server from './server'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
@@ -28,8 +28,8 @@ export default class Application {
     this.startHeartbeat()
     if (server.io) new Controller(server.io, this.pool)
 
-    EventBus.on(user.EVENTS.signedIn, this.check)
-    EventBus.on(user.EVENTS.signedOut, this.handleSignedOut)
+    EventBus.on(User.EVENTS.signedIn, this.check)
+    EventBus.on(User.EVENTS.signedOut, this.handleSignedOut)
   }
 
   quit() {

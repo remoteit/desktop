@@ -8,7 +8,7 @@ import Command from './Command'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
-import user from './User'
+import user, { User } from './User'
 import { removeDeviceName } from './helpers/nameHelper'
 
 const d = debug('r3:backend:CLI')
@@ -38,7 +38,7 @@ export default class CLI {
     Logger.info('ADMIN FILE', { path: path.join(environment.adminPath, 'config.json') })
     this.userConfigFile = new JSONFile<ConfigFile>(path.join(environment.userPath, 'config.json'))
     this.adminConfigFile = new JSONFile<ConfigFile>(path.join(environment.adminPath, 'config.json'))
-    EventBus.on(user.EVENTS.signedOut, () => this.signOut())
+    EventBus.on(User.EVENTS.signedOut, () => this.signOut())
     this.read()
   }
 
