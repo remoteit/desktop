@@ -20,7 +20,10 @@ export const NetworkPage: React.FC = () => {
     privateIP: state.backend.environment.privateIP,
   }))
 
-  const scan = (interfaceName: string) => emit('scan', interfaceName)
+  const scan = (interfaceName: string) => {
+    Analytics.Instance.track('ScanLocalNetwork')
+    emit('scan', interfaceName)
+  }
 
   useEffect(() => {
     emit('interfaces')
