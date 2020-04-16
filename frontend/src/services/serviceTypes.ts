@@ -85,6 +85,12 @@ export const serviceTypes = [
     id: 41,
     hex: '29',
   },
+  {
+    defaultPort: 65535,
+    name: 'MultiPort',
+    id: 40,
+    hex: '28',
+  },
   // {
   // defaultPort: 29999,
   // name: 'remoteit admin',
