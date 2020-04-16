@@ -13,7 +13,6 @@ export class Environment {
   isPi: boolean
   isPiZero: boolean
   simpleOS: Ios
-  pids: number[]
   privateIP: ipAddress = ''
   adminUsername: string = ''
   userPath: string
@@ -34,7 +33,6 @@ export class Environment {
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
     this.simpleOS = this.setSimpleOS()
-    this.pids = [process.pid]
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
