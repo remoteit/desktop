@@ -7,6 +7,7 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Network } from '../../components/Network'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
+import Analytics from '../../helpers/Analytics'
 
 export const NetworkPage: React.FC = () => {
   const css = useStyles()
@@ -23,6 +24,10 @@ export const NetworkPage: React.FC = () => {
 
   useEffect(() => {
     emit('interfaces')
+  }, [])
+
+  useEffect(() => {
+    Analytics.Instance.page('NetworkPage')
   }, [])
 
   return (

@@ -1,5 +1,7 @@
 import { DeviceState, ServiceState } from 'remote.it'
 
+/// <reference types="@types/segment-analytics" />
+
 declare global {
   /**
    * Device sort options. Defaults to 'alpha'
@@ -58,6 +60,7 @@ declare global {
     process?: {
       type?: string
     }
+    analytics: SegmentAnalytics.AnalyticsJS
   }
 
   export interface IDataDisplay {

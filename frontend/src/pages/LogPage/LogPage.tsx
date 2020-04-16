@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
@@ -8,12 +8,17 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 import { spacing } from '../../styling'
+import Analytics from '../../helpers/Analytics'
 
 export const LogPage: React.FC = () => {
   const { serviceID = '' } = useParams()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const id = connection ? connection.id : ''
   const log = useSelector((state: ApplicationState) => state.logs[id] || [])
+
+  useEffect(() => {
+    Analytics.Instance.page('LogPage')
+  }, [])
 
   return (
     <Container
