@@ -50,8 +50,6 @@ class BinaryInstaller {
       commands.push(`"${installer.binaryPath()}" -j service install`)
 
       await commands.exec()
-
-      EventBus.emit(Installer.EVENTS.afterInstall, installer)
       EventBus.emit(Installer.EVENTS.installed, installer.toJSON())
 
       tmpDir.removeCallback()

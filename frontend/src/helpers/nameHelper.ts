@@ -1,4 +1,4 @@
-import { REGEX_LAST_NUMBER } from '../constants'
+import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE } from '../constants'
 import { IDevice } from 'remote.it'
 import { store } from '../store'
 
@@ -50,7 +50,7 @@ export function safeHostname(name: string, blacklist: string[]) {
     name = name.replace(REGEX_LAST_NUMBER, `-${index}`)
     index++
   }
-  return name
+  return name.replace(REGEX_NAME_SAFE, '-')
 }
 
 export function osName(os?: Ios) {
