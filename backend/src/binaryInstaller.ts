@@ -25,7 +25,6 @@ class BinaryInstaller {
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
       var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
-      var isInstalled: boolean = !(await cli.isNotInstalled())
 
       // Stop and remove old binaries
       await this.migrateBinaries(installer.binaryPath())
@@ -45,9 +44,10 @@ class BinaryInstaller {
         commands.push(`chmod 755 ${installer.binaryPath()}`) // @TODO if this is going in the user folder must have user permissions
       }
 
+      commands.push(`"${installer.binaryPath()}" -j service stop --kill-all`)
       commands.push(`"${installer.binaryPath()}" -j tools install --update`)
-      if (isInstalled) commands.push(`"${installer.binaryPath()}" service start`)
-      // else commands.push(`"${installer.binaryPath()}" service install`) // Validate with Nicolae if this is correct
+      commands.push(`"${installer.binaryPath()}" -j service uninstall`)
+      commands.push(`"${installer.binaryPath()}" -j service install`)
 
       await commands.exec()
 
@@ -70,7 +70,7 @@ class BinaryInstaller {
       // Too small to be the desktop app -> must be cli
       if (existsSync(file) && lstatSync(file).size < 30000000) {
         Logger.info('MIGRATING DEPRECATED BINARY', { file })
-        commands.push(`"${file}" service stop`)
+        commands.push(`"${file}" service uninstall`)
         commands.push(`"${file}" tools uninstall`)
         toDelete.push(file)
       } else {
