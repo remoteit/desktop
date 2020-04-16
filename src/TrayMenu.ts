@@ -4,6 +4,7 @@ import headless, {
   LAN,
   environment,
   EventBus,
+  User,
   user,
   ConnectionPool,
   hostName,
@@ -31,8 +32,8 @@ export default class TrayMenu {
       })
     }
 
-    EventBus.on(user.EVENTS.signedIn, this.render)
-    EventBus.on(user.EVENTS.signedOut, this.render)
+    EventBus.on(User.EVENTS.signedIn, this.render)
+    EventBus.on(User.EVENTS.signedOut, this.render)
     EventBus.on(ConnectionPool.EVENTS.updated, this.updatePool)
     EventBus.on(LAN.EVENTS.privateIP, privateIP => (this.privateIP = privateIP))
   }
