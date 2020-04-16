@@ -32,20 +32,16 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) =>
   const updateTargets = useCallback(
     checked => {
       const selected = scanData.filter((_, key) => checked[key])
-      console.log('selected', selected)
       setSelected(selected)
     },
     [scanData, setSelected]
   )
 
-  // useEffect(() => {
   if (scanData && scanData.length !== state.length) {
     const checked = scanData.map(row => !!serviceTypes.find(st => st.defaultPort === row.port || 29999 === row.port)) // 29999 temp hack to have remoteit admin checked
-    console.log('CHECKED', checked)
     setState(checked)
     updateTargets(checked)
   }
-  // }, [scanData, setState, updateTargets])
 
   if (!scanData) return null
 
