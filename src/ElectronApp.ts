@@ -107,6 +107,12 @@ export default class ElectronApp {
       }
     })
 
+    environment.pids.push(this.window.webContents.getOSProcessId())
+    environment.pids.push(process.pid)
+    d('ELECTRON OS PID', this.window.webContents.getOSProcessId())
+    d('ELECTRON WINDOW PID', this.window.webContents.getProcessId())
+    d('ELECTRON PROCESS PID', process.pid)
+
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()
       electron.shell.openExternal(url)
