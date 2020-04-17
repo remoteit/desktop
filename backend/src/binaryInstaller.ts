@@ -44,7 +44,6 @@ class BinaryInstaller {
         commands.push(`chmod 755 ${installer.binaryPath()}`) // @TODO if this is going in the user folder must have user permissions
       }
 
-      commands.push(`"${installer.binaryPath()}" -j service stop --kill-all`)
       commands.push(`"${installer.binaryPath()}" -j tools install --update`)
       commands.push(`"${installer.binaryPath()}" -j service uninstall`)
       commands.push(`"${installer.binaryPath()}" -j service install`)
