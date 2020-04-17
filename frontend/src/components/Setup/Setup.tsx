@@ -141,10 +141,10 @@ export const Setup: React.FC<Props> = ({ device, onRegistration, onDelete, nameB
                     color="primary"
                     variant="contained"
                     size="medium"
-                    disabled={!name || disableRegister}
+                    disabled={!name || registering || disableRegister}
                     type="submit"
                   >
-                    {registered ? 'Registered' : 'Register'}
+                    {registering ? 'Registering' : registered ? 'Registered' : 'Register'}
                     {registering ? (
                       <CircularProgress className={css.registering} size={styles.fontSizes.lg} thickness={4} />
                     ) : (
