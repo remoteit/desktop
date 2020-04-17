@@ -13,7 +13,6 @@ export class Environment {
   isPi: boolean
   isPiZero: boolean
   simpleOS: Ios
-  manufactureId: number
   privateIP: ipAddress = ''
   adminUsername: string = ''
   userPath: string
@@ -34,7 +33,6 @@ export class Environment {
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
     this.simpleOS = this.setSimpleOS()
-    this.manufactureId = this.isHeadless ? MANUFACTURE_ID_HEADLESS : MANUFACTURE_ID_STANDARD
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
@@ -63,6 +61,10 @@ export class Environment {
 
   async setElevatedState() {
     this.isElevated = await isElevated()
+  }
+
+  get manufactureId() {
+    return this.isHeadless ? MANUFACTURE_ID_HEADLESS : MANUFACTURE_ID_STANDARD
   }
 
   get frontend() {
