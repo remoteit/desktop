@@ -1,4 +1,4 @@
-import { PATHS } from './constants'
+import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD } from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import os from 'os'
@@ -13,6 +13,7 @@ export class Environment {
   isPi: boolean
   isPiZero: boolean
   simpleOS: Ios
+  manufactureId: number
   privateIP: ipAddress = ''
   adminUsername: string = ''
   userPath: string
@@ -33,6 +34,7 @@ export class Environment {
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
     this.simpleOS = this.setSimpleOS()
+    this.manufactureId = this.isHeadless ? MANUFACTURE_ID_HEADLESS : MANUFACTURE_ID_STANDARD
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
