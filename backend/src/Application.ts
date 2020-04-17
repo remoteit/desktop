@@ -23,7 +23,6 @@ export default class Application {
   async constructorSync() {
     this.bindExitHandlers()
     await environment.setElevatedState()
-    cli.setManufactureId()
     remoteitInstaller.check(true)
     server.start()
     this.startHeartbeat()
