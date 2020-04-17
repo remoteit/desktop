@@ -95,11 +95,7 @@ export default class CLI {
   }
 
   async addTarget(t: ITarget) {
-    await this.exec({
-      cmds: [`add "${t.name}" ${t.port} --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`],
-      admin: true,
-      checkSignIn: true,
-    })
+    await this.exec({ cmds: [this.addString(t)], admin: true, checkSignIn: true })
     this.readTargets()
   }
 
@@ -109,17 +105,27 @@ export default class CLI {
   }
 
   async register(device: IDevice) {
-    await this.exec({ cmds: [`-j setup "${device.name}"`], admin: true, checkSignIn: true })
+    await this.exec({ cmds: [this.setupString(device)], admin: true, checkSignIn: true })
     this.read()
   }
 
   async registerAll(registration: IRegistration) {
-    let cmds = [`-j setup "${registration.device.name}"`]
+    let cmds = [this.setupString(registration.device)]
     registration.targets.forEach((t: ITarget) => {
-      cmds.push(`add "${t.name}" ${t.port} --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`)
+      cmds.push(this.addString(t))
     })
     await this.exec({ cmds, admin: true, checkSignIn: true })
     this.read()
+  }
+
+  setupString(device: IDevice) {
+    return `-j --manufacture-id ${environment.manufactureId} setup "${device.name}"`
+  }
+
+  addString(t: ITarget) {
+    return `-j --manufacture-id ${environment.manufactureId} add "${t.name}" ${t.port} --type ${t.type} --hostname ${
+      t.hostname || '127.0.0.1'
+    }`
   }
 
   async delete() {
