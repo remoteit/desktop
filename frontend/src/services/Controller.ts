@@ -2,6 +2,7 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT, RETRY_DELAY } from '../constants'
 import { EventEmitter } from 'events'
+import Analytics from '../helpers/Analytics'
 
 class Controller extends EventEmitter {
   private socket: SocketIOClient.Socket
@@ -133,6 +134,13 @@ function getEventHandlers() {
 
     preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),
 
+    //Analytics
+    setOSInfo: (osInfo: IosInfo) => {
+      Analytics.Instance.setOS(osInfo.os)
+      Analytics.Instance.setOsVersion(osInfo.version)
+      Analytics.Instance.setArch(osInfo.arch)
+    },
+
     // User
     'signed-out': () => auth.signedOut(),
 
@@ -153,6 +161,15 @@ function getEventHandlers() {
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
+      let context = {
+        connection: {
+          connectionType: 'peer',
+          serviceId: msg.connection?.deviceID,
+          serviceName: msg.connection?.name,
+          serviceType: msg.connection?.typeID,
+        },
+      }
+      Analytics.Instance.track('connectionSucceeded', context)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
@@ -162,6 +179,15 @@ function getEventHandlers() {
     'service/error': (msg: ConnectionErrorMessage) => {
       logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.error}\n` })
       backend.setConnection(msg.connection)
+      let context = {
+        connection: {
+          connectionType: 'peer',
+          serviceId: msg.connection?.deviceID,
+          serviceName: msg.connection?.name,
+          serviceType: msg.connection?.typeID,
+        },
+      }
+      Analytics.Instance.track('connectionFailed', context)
     },
     'service/status': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),

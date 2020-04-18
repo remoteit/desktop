@@ -23,6 +23,7 @@ import { LogPage } from '../../pages/LogPage'
 import { InstallationNotice } from '../InstallationNotice'
 import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
+import Analytics from '../../helpers/Analytics'
 
 export const App = () => {
   const { installed, signedIn, device, dataReady, uninstalling, os } = useSelector((state: ApplicationState) => ({
@@ -37,6 +38,8 @@ export const App = () => {
     uninstalling: state.ui.uninstalling,
     os: state.backend.environment.os,
   }))
+
+  Analytics.Instance.getOsInfo()
 
   const css = useStyles()
   const history = useHistory()

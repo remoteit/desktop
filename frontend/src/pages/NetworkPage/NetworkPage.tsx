@@ -21,7 +21,7 @@ export const NetworkPage: React.FC = () => {
   }))
 
   const scan = (interfaceName: string) => {
-    Analytics.Instance.track('ScanLocalNetwork')
+    Analytics.Instance.track('networkScan')
     emit('scan', interfaceName)
   }
 
