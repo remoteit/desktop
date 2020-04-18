@@ -23,8 +23,17 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const hidden = (connection && connection.active) || !service || service.state !== 'active'
   const connecting = !!(connection && connection.pid && !connection.active)
   const connect = () => {
-    Analytics.Instance.track('Connect')
-    emit('service/connect', connection || newConnection(service))
+    let theConnection = connection || newConnection(service)
+    let context = {
+      connection: {
+        connectionType: 'peer',
+        serviceId: service?.deviceID,
+        serviceName: service?.name,
+        serviceType: service?.typeID,
+      },
+    }
+    Analytics.Instance.track('connectionInitiated', context)
+    emit('service/connect', theConnection)
   }
 
   return (

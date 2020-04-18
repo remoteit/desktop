@@ -40,6 +40,7 @@ declare global {
     | 'restart'
     | 'uninstall'
     | 'preferences'
+    | 'osInfo'
 
   type SocketEvent =
     // built-in events
@@ -126,6 +127,12 @@ declare global {
   }
 
   type IConnectionKey = keyof IConnection
+
+  interface IosInfo {
+    os: IConnection
+    version: string
+    arch: any
+  }
 
   interface ConnectionLookup {
     [id: string]: IConnection

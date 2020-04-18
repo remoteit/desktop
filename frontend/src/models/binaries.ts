@@ -45,7 +45,7 @@ export default createModel({
       dispatch.binaries.clearError()
       dispatch.binaries.installing()
       emit('binaries/install')
-      Analytics.Instance.track('InstallBinaries')
+      Analytics.Instance.track('install')
     },
   }),
   reducers: {

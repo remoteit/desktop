@@ -5,6 +5,7 @@ import { ApplicationState } from '../../store'
 import { Snackbar, Button, IconButton } from '@material-ui/core'
 import { version } from '../../../package.json'
 import { Icon } from '../../components/Icon'
+import Analytics from '../../helpers/Analytics'
 
 export const UpdateNotice: React.FC = () => {
   const [updateNotice, setUpdateNotice] = useState<boolean>(false)
@@ -19,7 +20,15 @@ export const UpdateNotice: React.FC = () => {
       open={updateNotice}
       message={`An update is available (v${update}).`}
       action={[
-        <Button variant="contained" color="primary" size="small" onClick={() => emit('restart')}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
+          onClick={() => {
+            Analytics.Instance.track('update')
+            emit('restart')
+          }}
+        >
           Restart
         </Button>,
         <IconButton onClick={() => setUpdateNotice(false)}>

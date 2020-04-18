@@ -4,9 +4,11 @@ import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import Analytics from '../../helpers/Analytics'
+import { IService } from 'remote.it'
 
 type Props = {
   disabled?: boolean
+  service?: IService
   connection?: IConnection
   color?: Color
   size?: 'icon' | 'medium' | 'small'
@@ -14,6 +16,7 @@ type Props = {
 
 export const DisconnectButton: React.FC<Props> = ({
   disabled = false,
+  service,
   size = 'icon',
   color = 'primary',
   connection,
@@ -29,7 +32,15 @@ export const DisconnectButton: React.FC<Props> = ({
           disabled={disabled}
           size={size}
           onClick={() => {
-            Analytics.Instance.track('Disconnect')
+            let context = {
+              connection: {
+                connectionType: 'peer',
+                serviceId: service?.deviceID,
+                serviceName: service?.name,
+                serviceType: service?.typeID,
+              },
+            }
+            Analytics.Instance.track('connectionClosed', context)
             emit('service/disconnect', connection)
           }}
         />

@@ -14,7 +14,7 @@ export const UninstallSetting: React.FC = () => {
     ) &&
       emit('uninstall') &&
       ui.setUninstalling()
-    Analytics.Instance.track('Uninstall')
+    Analytics.Instance.track('uninstall')
   }
 
   return (

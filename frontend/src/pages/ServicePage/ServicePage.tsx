@@ -94,7 +94,7 @@ export const ServicePage: React.FC = () => {
         </>
       }
     >
-      <ServiceConnected connection={connection} />
+      <ServiceConnected connection={connection} service={service} />
       <Columns center>
         <List>
           <PortSetting connection={connection} service={service} />

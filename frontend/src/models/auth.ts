@@ -39,7 +39,7 @@ export default createModel({
       }
       if (user) {
         dispatch.auth.setUser(user)
-        Analytics.Instance.identify(user.username, user.username)
+        Analytics.Instance.identify(user.id)
       } else {
         dispatch.auth.signedOut()
       }
@@ -75,6 +75,8 @@ export default createModel({
           r3.user.updateCredentials(user)
           dispatch.auth.setUser(user)
           Controller.open()
+          Analytics.Instance.identify(user.id)
+          Analytics.Instance.track('signIn')
         })
         .catch(error => {
           const e = error.response.data
@@ -87,8 +89,6 @@ export default createModel({
           }
           return
         })
-      Analytics.Instance.identify(username, username)
-      Analytics.Instance.track('SignedIn')
       return user
     },
     async signedIn() {
@@ -109,7 +109,7 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     signedOut() {
-      Analytics.Instance.track('SignedOut')
+      Analytics.Instance.track('signOut')
       Analytics.Instance.clearIdentity()
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()
