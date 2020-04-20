@@ -24,10 +24,10 @@ const useStyles = makeStyles({
     fontSize: fontSizes.sm,
     fontFamily: 'Roboto Mono',
     color: colors.grayDarker,
-    '&>span': {
+    '& > span': {
       fontFamily: 'Roboto',
       color: colors.gray,
-      width: 172,
+      width: 142,
     },
   },
 })
