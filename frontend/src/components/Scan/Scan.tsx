@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { ScanNetwork } from '../ScanNetwork'
@@ -25,13 +25,23 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
   const selectedLoading = loading[activeInterface]
   const noResults = selected.data && !selected.data.length
 
+  const scan = useCallback(
+    (i: string) => {
+      onScan(i)
+      setTimestamp({ [i]: selected.timestamp })
+      setLoading({ [i]: true })
+    },
+    [selected, onScan]
+  )
+
   useEffect(() => {
     if (interfaces.length && activeInterface === UNKNOWN) {
       let name = interfaces[0].name
       interfaces.forEach(i => i.active && (name = i.name))
       setActiveInterface(name)
+      scan(name)
     }
-  }, [interfaces, activeInterface])
+  }, [interfaces, activeInterface, scan])
 
   useEffect(() => {
     if (selected.timestamp !== selectedTimestamp && selectedLoading) {
@@ -72,16 +82,7 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
           Scan your system and network <br />
           for open ports to host
         </Typography>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={() => {
-            onScan(activeInterface)
-            setTimestamp({ [activeInterface]: selected.timestamp })
-            setLoading({ [activeInterface]: true })
-          }}
-          disabled={selectedLoading}
-        >
+        <Button color="primary" variant="contained" onClick={() => scan(activeInterface)} disabled={selectedLoading}>
           {selectedLoading ? (
             <>
               Scanning
