@@ -7,7 +7,6 @@ import { useHistory } from 'react-router-dom'
 import { osName } from '../../helpers/nameHelper'
 import { spacing } from '../../styling'
 import { Body } from '../Body'
-import { Icon } from '../Icon'
 
 export const DeviceListEmpty: React.FC = () => {
   const css = useStyles()
@@ -25,7 +24,7 @@ export const DeviceListEmpty: React.FC = () => {
       {!device.name && (
         <>
           <Button
-            onClick={() => history.push('/settings/setup')}
+            onClick={() => history.push('/settings/setupDevice')}
             variant="contained"
             color="primary"
             size="medium"

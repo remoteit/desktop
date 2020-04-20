@@ -1,19 +1,19 @@
 import React from 'react'
-import { Container } from '../Container'
+import { Container } from '../../components/Container'
 import { Typography, Tooltip, Divider } from '@material-ui/core'
-import { Breadcrumbs } from '../Breadcrumbs'
+import { usePermissions } from '../../hooks/usePermissions'
+import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/styles'
 import { spacing, colors, fontSizes } from '../../styling'
-import { Columns } from '../Columns'
-import { Icon } from '../Icon'
+import { Columns } from '../../components/Columns'
+import { Icon } from '../../components/Icon'
 
 export const SetupView: React.FC<{
-  adminUser?: string
-  notElevated?: boolean
   device: IDevice
   targets: ITarget[]
-}> = ({ adminUser, notElevated, device, targets }) => {
+}> = ({ device, targets }) => {
+  const { adminUsername, guest, notElevated } = usePermissions()
   const css = useStyles()
 
   return (
@@ -23,7 +23,7 @@ export const SetupView: React.FC<{
           <Breadcrumbs />
           <Typography variant="h1">
             This Device
-            <Tooltip title={`Only ${adminUser} can edit this device`}>
+            <Tooltip title={`Only ${adminUsername} can edit this device`}>
               <Icon name="lock-alt" weight="regular" inline />
             </Tooltip>
           </Typography>
@@ -42,7 +42,7 @@ export const SetupView: React.FC<{
         </p>
         <p>
           <Typography variant="caption">Registered To</Typography>
-          <Typography variant="h2">{adminUser}</Typography>
+          <Typography variant="h2">{adminUsername}</Typography>
         </p>
       </Columns>
       <Divider />

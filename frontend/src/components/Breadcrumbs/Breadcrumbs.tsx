@@ -14,9 +14,9 @@ import { spacing, colors, fontSizes } from '../../styling'
 const pageNameMap: { [path: string]: string } = {
   connections: 'Connections',
   devices: 'Devices',
-  setup: 'This Device',
   network: 'Network',
   settings: 'Settings',
+  setupServices: 'This Device',
 }
 
 export const Breadcrumbs: React.FC = ({ children }) => {
@@ -76,6 +76,8 @@ const useStyles = makeStyles({
       color: colors.grayDarker,
       fontSize: fontSizes.xs,
       padding: `${spacing.xxs}px ${spacing.xs}px`,
+      marginLeft: spacing.xs,
+      marginRight: spacing.xs,
       letterSpacing: 2,
     },
   },

@@ -21,12 +21,11 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
     return (
       <Body center>
         <Typography className={css.message} variant="h2" align="center">
-          You have no connections
+          You have no outbound connections
         </Typography>
-        <Button onClick={() => history.push('/devices')} variant="contained" color="primary" size="medium">
-          Add a Connection
-          <Icon name="arrow-right" weight="regular" size="md" fixedWidth inline />
-        </Button>
+        <Typography variant="body2" align="center" color="textSecondary">
+          Select device to connect to from the devices tab below.
+        </Typography>
       </Body>
     )
   }

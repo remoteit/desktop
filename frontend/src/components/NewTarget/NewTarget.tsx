@@ -35,7 +35,7 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
     return (
       <tr>
         <td colSpan={6} className={css.button}>
-          <Button color="primary" variant="contained" onClick={() => history.push('/settings/setup/network')}>
+          <Button color="primary" variant="contained" onClick={() => history.push('/settings/setupServices/network')}>
             Add from network
           </Button>
           <span className={css.or}>or</span>

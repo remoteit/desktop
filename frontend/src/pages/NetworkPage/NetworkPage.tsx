@@ -37,7 +37,7 @@ export const NetworkPage: React.FC = () => {
         onScan={scan}
         privateIP={privateIP}
         onAdd={target => {
-          history.push('/settings/setup')
+          history.push('/settings/setupServices')
           backend.set({ key: 'added', value: target })
         }}
       />
