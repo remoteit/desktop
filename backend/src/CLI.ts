@@ -44,8 +44,7 @@ export default class CLI {
 
   check = () => {
     const admin = true
-    this.readUser()
-    this.readUser(true)
+    this.read()
     if (this.isSignedOut(admin) && this.data.device.uid) {
       this.signIn(admin)
     }
