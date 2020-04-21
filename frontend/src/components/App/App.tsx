@@ -13,7 +13,11 @@ import { Icon } from '../Icon'
 import { SignInPage } from '../../pages/SignInPage'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
-import { SetupPage } from '../../pages/SetupPage'
+import { SetupServices } from '../../pages/SetupServices'
+import { SetupDevice } from '../../pages/SetupDevice'
+import { SetupWaiting } from '../../pages/SetupWaiting'
+import { SetupSuccess } from '../../pages/SetupSuccess'
+import { SetupView } from '../../pages/SetupView'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
 import { ServicesPage } from '../../pages/ServicesPage'
@@ -25,18 +29,21 @@ import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
 
 export const App = () => {
-  const { installed, signedIn, device, dataReady, uninstalling, os } = useSelector((state: ApplicationState) => ({
-    installed:
-      state.binaries.connectdInstalled &&
-      state.binaries.muxerInstalled &&
-      state.binaries.demuxerInstalled &&
-      state.binaries.remoteitInstalled,
-    signedIn: state.auth.user && state.auth.authenticated,
-    device: state.backend.device,
-    dataReady: state.backend.dataReady,
-    uninstalling: state.ui.uninstalling,
-    os: state.backend.environment.os,
-  }))
+  const { installed, signedIn, device, targets, dataReady, uninstalling, os } = useSelector(
+    (state: ApplicationState) => ({
+      installed:
+        state.binaries.connectdInstalled &&
+        state.binaries.muxerInstalled &&
+        state.binaries.demuxerInstalled &&
+        state.binaries.remoteitInstalled,
+      signedIn: state.auth.user && state.auth.authenticated,
+      device: state.backend.device,
+      targets: state.backend.targets,
+      dataReady: state.backend.dataReady,
+      uninstalling: state.ui.uninstalling,
+      os: state.backend.environment.os,
+    })
+  )
 
   const css = useStyles()
   const history = useHistory()
@@ -59,7 +66,7 @@ export const App = () => {
   }, [navigation, location, menu])
 
   useEffect(() => {
-    if (dataReady && !device.name && !isElectron()) history.push('/settings/setup')
+    if (dataReady && !device.name && !isElectron()) history.push('/settings/setupDevice')
   }, [history, device, dataReady, os])
 
   if (uninstalling)
@@ -118,11 +125,23 @@ export const App = () => {
           <Route path="/devices">
             <DevicesPage />
           </Route>
-          <Route path="/settings/setup/network">
+          <Route path="/settings/setupServices/network">
             <NetworkPage />
           </Route>
-          <Route path="/settings/setup">
-            <SetupPage />
+          <Route path="/settings/setupServices">
+            <SetupServices os={os} device={device} targets={targets} />
+          </Route>
+          <Route path="/settings/setupSuccess">
+            <SetupSuccess os={os} device={device} />
+          </Route>
+          <Route path="/settings/setupWaiting">
+            <SetupWaiting os={os} device={device} />
+          </Route>
+          <Route path="/settings/setupDevice">
+            <SetupDevice os={os} device={device} />
+          </Route>
+          <Route path="/settings/setupView">
+            <SetupView device={device} targets={targets} />
           </Route>
           <Route path="/settings">
             <SettingsPage />

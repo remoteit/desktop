@@ -11,7 +11,7 @@ import Analytics from '../../helpers/Analytics'
 
 type Props = {
   setSelected: (targets: ITarget[]) => void
-  disabled: boolean
+  disabled?: boolean
 }
 
 export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) => {

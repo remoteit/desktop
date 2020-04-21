@@ -70,7 +70,7 @@ const theme = createMuiTheme({
       underline: { '&.Mui-disabled:before': { borderColor: colors.grayLight } },
     },
     MuiLink: {
-      root: { padding: `${spacing.xs}px ${spacing.sm}px` },
+      root: { padding: `${spacing.xs}px ${spacing.xs}px` },
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.grayLightest,
