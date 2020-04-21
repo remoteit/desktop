@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../constants'
 import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox, Typography } from '@material-ui/core'
 import { getTypeId, findType, serviceTypes } from '../../services/serviceTypes'
@@ -6,8 +6,6 @@ import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles'
 import { spacing } from '../../styling'
-import { emit } from '../../services/Controller'
-import Analytics from '../../helpers/Analytics'
 
 type Props = {
   setSelected: (targets: ITarget[]) => void
@@ -15,6 +13,8 @@ type Props = {
 }
 
 export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) => {
+  const [state, setState] = useState<boolean[]>([])
+  const css = useStyles()
   const scanData = useSelector((state: ApplicationState) =>
     state.backend.scanData.localhost?.data[0][1].map(row => ({
       ...DEFAULT_TARGET,
@@ -23,13 +23,6 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) =>
       name: row[1].replace(REGEX_NAME_SAFE, ''),
     }))
   )
-  const [state, setState] = useState<boolean[]>([])
-  const css = useStyles()
-
-  useEffect(() => {
-    Analytics.Instance.track('ScanLocalNetwork')
-    emit('scan', 'localhost')
-  }, [])
 
   const updateTargets = useCallback(
     checked => {

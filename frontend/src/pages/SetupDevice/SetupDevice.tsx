@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
@@ -21,11 +21,12 @@ type Props = {
 }
 
 export const SetupDevice: React.FC<Props> = ({ os, device }) => {
-  const { nameBlacklist, hostname } = useSelector((state: ApplicationState) => ({
+  const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
+    hostname: state.backend.environment.hostname,
+    loading: !state.backend.scanData.localhost,
     nameBlacklist: state.devices.all
       .filter(device => device.shared !== 'shared-from')
       .map(device => device.name.toLowerCase()),
-    hostname: state.backend.environment.hostname,
   }))
   const history = useHistory()
   const css = useStyles()
@@ -47,6 +48,11 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
     emit('registration', { device: { ...device, name }, targets: selected })
     history.push('/settings/setupWaiting')
   }
+
+  useEffect(() => {
+    Analytics.Instance.track('ScanLocalNetwork')
+    emit('scan', 'localhost')
+  }, [])
 
   return (
     <Container header={<Breadcrumbs />}>
@@ -90,11 +96,20 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
               color="primary"
               variant="contained"
               size="medium"
-              disabled={!name || disableRegister}
+              disabled={!name || disableRegister || loading}
               type="submit"
             >
-              Register
-              <Icon name="check" weight="regular" inline />
+              {loading ? (
+                <>
+                  Loading
+                  <Icon name="spinner-third" spin={true} weight="regular" inline />
+                </>
+              ) : (
+                <>
+                  Register
+                  <Icon name="check" weight="regular" inline />
+                </>
+              )}
             </Button>
           </section>
           <LocalhostScanForm setSelected={setSelected} />

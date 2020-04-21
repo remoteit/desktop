@@ -29,6 +29,7 @@ const theme = createMuiTheme({
     MuiButton: {
       root: {
         color: colors.grayDark,
+        borderRadius: spacing.xs,
         backgroundColor: colors.grayLightest,
         padding: `${spacing.sm}px ${spacing.md}px`,
         '& .MuiSvgIcon-root': { marginLeft: spacing.sm },
@@ -59,7 +60,7 @@ const theme = createMuiTheme({
       },
     },
     MuiListItemSecondaryAction: { root: { right: gutters } },
-    MuiListItemIcon: { root: { justifyContent: 'center' } },
+    MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
     MuiInput: {
       root: {
         '&.Mui-disabled': {
@@ -81,6 +82,7 @@ const theme = createMuiTheme({
       },
     },
     MuiTypography: {
+      gutterBottom: { marginBottom: spacing.md },
       h1: {
         fontSize: '1rem',
         fontWeight: 400,
