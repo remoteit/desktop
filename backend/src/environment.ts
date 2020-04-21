@@ -89,9 +89,16 @@ export class Environment {
         this.manufacturerDetails = manufactererFile.manufacturer
       } catch (e) {
         //catch if file does not exist
+        let version = undefined
+        try {
+          let packageFile = JSON.parse(fs.readFileSync(path.join(process.cwd(), '/package.json'), 'utf8'))
+          version = packageFile.version
+        } catch (e) {
+          //could not read file
+        }
         this.manufacturerDetails = {
           name: MANUFACTURER_NAME,
-          product: { name: PRODUCT_NAME, code: this.manufactureId, version: 'version' },
+          product: { name: PRODUCT_NAME, code: this.manufactureId, version: version },
           platform: { name: undefined, code: undefined },
         }
       }
