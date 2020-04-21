@@ -1,6 +1,5 @@
 import { version } from '../../package.json'
 
-/// <reference types="@types/segment-analytics" />
 ///  <reference types="@types/google.analytics" />
 
 export default class Analytics {
@@ -29,11 +28,11 @@ export default class Analytics {
 
   public setManufacturerDetails(details: IManufacturer) {
     this.context.manufacturerName = details.name
-    this.context.manufacturerProductVersion = details.product.version
-    this.context.manufacturerProductName = details.product.name
-    this.context.manufacturerProductCode = details.product.code
-    this.context.manufacturerPlatformName = details.platform.name
-    this.context.manufacturerPlatformCode = details.platform.code
+    this.context.manufacturerProductVersion = details.product?.version
+    this.context.manufacturerProductName = details.product?.name
+    this.context.manufacturerProductCode = details.product?.code
+    this.context.manufacturerPlatformName = details.platform?.name
+    this.context.manufacturerPlatformCode = details.platform?.code
   }
 
   public setArch(arch: any) {

@@ -204,8 +204,8 @@ declare global {
 
   type IManufacturer = {
     name?: string
-    product: { version?: string; name?: string; code?: number }
-    platform: { name?: string; code?: number }
+    product?: { version?: string; name?: string; code?: number }
+    platform?: { name?: string; code?: number }
   }
 }
 

@@ -83,12 +83,13 @@ export class Environment {
       }
     }
 
-    if (this.manufacturerDetails === undefined) {
+    if (!this.manufacturerDetails) {
       try {
         let manufactererFile = JSON.parse(fs.readFileSync(path.join(this.adminPath, 'manufacturer.json'), 'utf8'))
         this.manufacturerDetails = manufactererFile.manufacturer
       } catch (e) {
-        //catch if file does not exist
+        //catch if file does not exist or does not parse
+        //load defaults
         let version = undefined
         try {
           let packageFile = JSON.parse(fs.readFileSync(path.join(process.cwd(), '/package.json'), 'utf8'))
