@@ -47,7 +47,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, ...props }) => {
       history.push('/settings/setupDevice')
       devices.fetch(false)
     }
-  }, [device, devices, deleting])
+  }, [device, devices, deleting, history])
 
   return (
     <Container
@@ -58,7 +58,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, ...props }) => {
             <Icon className={css.icon} name="hdd" size="md" weight="light" />
             <span className={css.title}>{device.name}</span>
             {deleting ? (
-              <CircularProgress className={css.loading} size={styles.fontSizes.lg} />
+              <CircularProgress className={css.loading} size={styles.fontSizes.md} />
             ) : (
               <Tooltip title="Delete">
                 <IconButton onClick={() => window.confirm(confirmMessage) && onDelete()}>
@@ -83,5 +83,5 @@ export const SetupServices: React.FC<Props> = ({ device, os, ...props }) => {
 const useStyles = makeStyles({
   title: { flexGrow: 1 },
   icon: { marginRight: styles.spacing.md },
-  loading: { color: styles.colors.gray, margin: styles.spacing.md },
+  loading: { color: styles.colors.danger, margin: styles.spacing.sm },
 })

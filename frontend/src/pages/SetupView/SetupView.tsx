@@ -13,7 +13,7 @@ export const SetupView: React.FC<{
   device: IDevice
   targets: ITarget[]
 }> = ({ device, targets }) => {
-  const { adminUsername, guest, notElevated } = usePermissions()
+  const { adminUsername, notElevated } = usePermissions()
   const css = useStyles()
 
   return (

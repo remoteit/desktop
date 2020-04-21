@@ -1,10 +1,11 @@
 import React from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { Typography, Tooltip, IconButton, Link, Divider, List, ListItem, ListItemText } from '@material-ui/core'
+import { Typography, Tooltip, IconButton, Link, Divider } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { osName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
+import { DocsLinks } from '../../components/DocsLinks'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
@@ -35,32 +36,17 @@ export const SetupSuccess: React.FC<Props> = ({ device, os }) => {
             {device.name} Registered Successfully!
           </Typography>
           <Typography variant="body2" align="center" color="textSecondary">
-            You can now connect to this {osName(os)} from any
-            <Link href="https://remote.it" target="_blank">
-              remote.it
+            You can now remotely connect to this {osName(os)} from
+            <Link href="https://app.remote.it" target="_blank">
+              remote.it,
             </Link>
-            enabled device.
+            just click to give it a try.
           </Typography>
         </section>
         <div className={css.divider}>
           <Divider />
         </div>
-        <section className={css.links}>
-          <Typography variant="body2" align="center" gutterBottom>
-            What's next?
-          </Typography>
-          <Link href="https://google.com" target="_blank">
-            Connect to this {osName(os)} from another device
-            <Icon className={css.rotate} name="arrow-right" size="sm" weight="regular" />
-          </Link>
-          <Link href="https://google.com" target="_blank">
-            Connect to a Windows Remote Desktop
-            <Icon className={css.rotate} name="arrow-right" size="sm" weight="regular" />
-          </Link>
-          <Link href="https://google.com" target="_blank">
-            Connect to a Mac Screen Share <Icon className={css.rotate} name="arrow-right" size="sm" weight="regular" />
-          </Link>
-        </section>
+        <DocsLinks os={os} />
       </Body>
     </Container>
   )
@@ -75,10 +61,4 @@ const useStyles = makeStyles({
   },
   title: { marginBottom: styles.spacing.sm },
   divider: { width: 400 },
-  rotate: { transform: 'rotate(-45deg)', paddingLeft: 5, marginLeft: 3 },
-  links: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
 })
