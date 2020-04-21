@@ -83,7 +83,15 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
         Services
       </Typography>
       <section>
-        <Targets device={device} onUpdate={onUpdate} onCancel={onCancel} added={added} cliError={cliError} {...props} />
+        <Targets
+          device={device}
+          targets={targets}
+          onUpdate={onUpdate}
+          onCancel={onCancel}
+          added={added}
+          cliError={cliError}
+          {...props}
+        />
       </section>
     </Container>
   )

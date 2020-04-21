@@ -36,7 +36,7 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
 
   const onRegistration = () => {
     console.log({ device: { ...device, name }, targets: selected })
-    Analytics.Instance.track('deviceCreated', { deviceId: device.uid, deviceName: device.name })
+    Analytics.Instance.track('deviceCreated', { deviceId: device.uid, deviceName: name })
     selected.forEach(target => {
       Analytics.Instance.track('serviceCreated', {
         serviceId: target.uid,
