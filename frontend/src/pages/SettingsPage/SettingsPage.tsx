@@ -29,10 +29,13 @@ export const SettingsPage = () => {
 
   const quitWarning = () =>
     window.confirm('Are you sure? Quitting will close all active connections.') && emit('user/quit')
-  const signOutWarning = () =>
+  const signOutWarning = () => {
     window.confirm(
       'Are you sure? Signing out will close all active connections, but leave the hosted services running.'
     ) && emit('user/sign-out')
+    Analytics.Instance.track('signOut')
+    Analytics.Instance.clearIdentity()
+  }
 
   const clearWarning = () =>
     window.confirm('Are you sure? The next user that signs in will be able to claim this device as their own.') &&

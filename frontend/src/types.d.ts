@@ -61,6 +61,7 @@ declare global {
       type?: string
     }
     analytics: SegmentAnalytics.AnalyticsJS
+    ga: S
   }
 
   export interface IDataDisplay {

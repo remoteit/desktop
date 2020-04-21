@@ -1,7 +1,10 @@
-import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD } from './constants'
+import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PRODUCT_NAME, MANUFACTURER_NAME } from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import os from 'os'
+import plist from 'plist'
+import fs from 'fs'
+import path from 'path'
 
 export class Environment {
   isElevated: boolean = false
@@ -19,6 +22,7 @@ export class Environment {
   adminPath: string
   binPath: string
   deprecatedBinaries: string[]
+  manufacturerDetails?: IManufacturer = undefined
 
   EVENTS = { send: 'environment' }
 
@@ -63,13 +67,41 @@ export class Environment {
     this.isElevated = await isElevated()
   }
 
-  get manufactureId() {
+  get manufactureId(): number {
     return this.isHeadless ? MANUFACTURE_ID_HEADLESS : MANUFACTURE_ID_STANDARD
   }
 
   get frontend() {
+    let osVersion = os.release()
+    if (this.isMac) {
+      try {
+        let versionInfo: any = plist.parse(fs.readFileSync('/System/Library/CoreServices/SystemVersion.plist', 'utf8'))
+        console.log(JSON.stringify(versionInfo.ProductVersion))
+        osVersion = versionInfo.ProductVersion
+      } catch {
+        console.log('No System Version File: /System/Library/CoreServices/SystemVersion.plist')
+      }
+    }
+
+    if (this.manufacturerDetails === undefined) {
+      try {
+        let manufactererFile = JSON.parse(fs.readFileSync(path.join(this.adminPath, 'manufacturer.json'), 'utf8'))
+        this.manufacturerDetails = manufactererFile.manufacturer
+      } catch (e) {
+        //catch if file does not exist
+        this.manufacturerDetails = {
+          name: MANUFACTURER_NAME,
+          product: { name: PRODUCT_NAME, code: this.manufactureId, version: 'version' },
+          platform: { name: undefined, code: undefined },
+        }
+      }
+    }
+
     return {
       os: this.simpleOS,
+      osVersion: osVersion,
+      arch: os.arch(),
+      manufacturerDetails: this.manufacturerDetails,
       adminUsername: this.adminUsername,
       isElevated: this.isElevated,
       privateIP: this.privateIP,

@@ -33,12 +33,10 @@ export const DisconnectButton: React.FC<Props> = ({
           size={size}
           onClick={() => {
             let context = {
-              connection: {
-                connectionType: 'peer',
-                serviceId: service?.deviceID,
-                serviceName: service?.name,
-                serviceType: service?.typeID,
-              },
+              connectionType: 'peer',
+              serviceId: service?.deviceID,
+              serviceName: service?.name,
+              serviceType: service?.typeID,
             }
             Analytics.Instance.track('connectionClosed', context)
             emit('service/disconnect', connection)

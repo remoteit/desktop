@@ -25,12 +25,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const connect = () => {
     let theConnection = connection || newConnection(service)
     let context = {
-      connection: {
-        connectionType: 'peer',
-        serviceId: service?.deviceID,
-        serviceName: service?.name,
-        serviceType: service?.typeID,
-      },
+      connectionType: 'peer',
+      serviceId: service?.deviceID,
+      serviceName: service?.name,
+      serviceType: service?.typeID,
     }
     Analytics.Instance.track('connectionInitiated', context)
     emit('service/connect', theConnection)

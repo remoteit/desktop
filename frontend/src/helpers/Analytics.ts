@@ -1,52 +1,63 @@
 import { version } from '../../package.json'
-import { emit } from '../services/Controller'
 
 /// <reference types="@types/segment-analytics" />
+///  <reference types="@types/google.analytics" />
 
 export default class Analytics {
   private static _instance: Analytics
-  private desktopVersion: string
   private context: any
+  private gaAppSet: boolean
 
   private constructor() {
-    this.desktopVersion = version
+    this.gaAppSet = false
     this.context = {
-      product: {
-        name: 'Desktop',
-        version: this.desktopVersion,
-      },
-      system: {
-        //retrieved from backend
-        OS: '',
-        Version: '',
-        Arch: '',
-      },
-      manufacturer: {
-        Code: '',
-        Version: '',
-      },
+      category: 'Desktop',
+      productName: 'Desktop',
+      productVersion: version,
+      //retrieved from backend
+      systemOS: '',
+      systemOSVersion: '',
+      systemArch: '',
+      manufacturerName: '',
+      manufacturerProductVersion: '',
+      manufacturerProductName: '',
+      manufacturerProductCode: '',
+      manufacturerPlatformName: '',
+      manufacturerPlatformCode: '',
     }
   }
 
-  public getOsInfo() {
-    emit('osInfo')
+  public setManufacturerDetails(details: IManufacturer) {
+    this.context.manufacturerName = details.name
+    this.context.manufacturerProductVersion = details.product.version
+    this.context.manufacturerProductName = details.product.name
+    this.context.manufacturerProductCode = details.product.code
+    this.context.manufacturerPlatformName = details.platform.name
+    this.context.manufacturerPlatformCode = details.platform.code
   }
 
   public setArch(arch: any) {
-    this.context.system.Arch = arch
+    this.context.systemArch = arch
   }
 
   public setOS(os: any) {
-    this.context.system.OS = os
+    this.context.systemOS = os
   }
 
   public setOsVersion(version: any) {
-    this.context.system.Version = version
+    this.context.systemOSVersion = version
   }
 
   public static get Instance() {
+    let instance = this._instance || (this._instance = new this())
     // Do you need arguments? Make it a regular static method instead.
-    return this._instance || (this._instance = new this())
+    if (typeof ga !== 'undefined' && !instance.gaAppSet) {
+      console.log('SET GA APP VERSION')
+      ga('set', 'appName', 'Desktop')
+      ga('set', 'appVersion', version)
+      instance.gaAppSet = true
+    }
+    return instance
   }
 
   public identify(userId: string) {

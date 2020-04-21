@@ -130,7 +130,17 @@ function getEventHandlers() {
 
     dataReady: (result: boolean) => backend.set({ key: 'dataReady', value: result }),
 
-    environment: (result: ILookup) => backend.set({ key: 'environment', value: result }),
+    environment: (result: ILookup) => {
+      console.log('ENVIRONMENT')
+      console.log(result)
+      backend.set({ key: 'environment', value: result })
+      Analytics.Instance.setOS(result.os)
+      Analytics.Instance.setOsVersion(result.osVersion)
+      Analytics.Instance.setArch(result.arch)
+      Analytics.Instance.setManufacturerDetails(result.manufacturerDetails)
+      console.log('MANUFACTURER DETAILS')
+      console.log(result.manufacturerDetails)
+    },
 
     preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),
 
@@ -162,12 +172,10 @@ function getEventHandlers() {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
       let context = {
-        connection: {
-          connectionType: 'peer',
-          serviceId: msg.connection?.deviceID,
-          serviceName: msg.connection?.name,
-          serviceType: msg.connection?.typeID,
-        },
+        connectionType: 'peer',
+        serviceId: msg.connection?.deviceID,
+        serviceName: msg.connection?.name,
+        serviceType: msg.connection?.typeID,
       }
       Analytics.Instance.track('connectionSucceeded', context)
     },
@@ -180,12 +188,12 @@ function getEventHandlers() {
       logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.error}\n` })
       backend.setConnection(msg.connection)
       let context = {
-        connection: {
-          connectionType: 'peer',
-          serviceId: msg.connection?.deviceID,
-          serviceName: msg.connection?.name,
-          serviceType: msg.connection?.typeID,
-        },
+        connectionType: 'peer',
+        serviceId: msg.connection?.deviceID,
+        serviceName: msg.connection?.name,
+        serviceType: msg.connection?.typeID,
+        errorCode: msg.code,
+        errorMessage: msg.error,
       }
       Analytics.Instance.track('connectionFailed', context)
     },

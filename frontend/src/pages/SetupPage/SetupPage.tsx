@@ -27,17 +27,25 @@ export const SetupPage: React.FC = () => {
     emit('targets', t)
   }
   const updateRegistration = (r: IRegistration) => {
-    Analytics.Instance.track('deviceCreated', { device: { id: r.device.uid, name: r.device.name } })
+    Analytics.Instance.track('deviceCreated', { deviceId: r.device.uid, deviceName: r.device.name })
     r.targets.forEach(target => {
-      Analytics.Instance.track('serviceCreated', { service: { id: target.uid, name: target.name, type: target.type } })
+      Analytics.Instance.track('serviceCreated', {
+        serviceId: target.uid,
+        serviceName: target.name,
+        serviceType: target.type,
+      })
     })
     emit('registration', r)
   }
 
   const deleteDevice = () => {
-    Analytics.Instance.track('deviceRemoved', { device: { id: device.uid, name: device.name } })
+    Analytics.Instance.track('deviceRemoved', { deviceId: device.uid, deviceName: device.name })
     targets.forEach(target => {
-      Analytics.Instance.track('serviceRemoved', { service: { id: target.uid, name: target.name, type: target.type } })
+      Analytics.Instance.track('serviceRemoved', {
+        serviceId: target.uid,
+        serviceName: target.name,
+        serviceType: target.type,
+      })
     })
     emit('device', 'DELETE')
   }

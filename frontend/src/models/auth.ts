@@ -109,7 +109,6 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     signedOut() {
-      Analytics.Instance.track('signOut')
       Analytics.Instance.clearIdentity()
       dispatch.auth.signOutFinished()
       dispatch.devices.reset()

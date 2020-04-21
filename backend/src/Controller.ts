@@ -15,9 +15,6 @@ import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
 import debug from 'debug'
-import OS from 'os'
-import plist from 'plist'
-import fs from 'fs'
 
 const d = debug('r3:backend:Server')
 
@@ -74,25 +71,9 @@ class Controller {
     socket.on('preferences', this.preferences)
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
-    socket.on('osInfo', this.getOSInfo)
 
     // things are ready - send the secure data
     this.syncBackend()
-  }
-
-  getOSInfo = () => {
-    Logger.info('GetOSInfo')
-
-    let platform = OS.platform()
-    let version = OS.release()
-    if (platform == 'darwin') {
-      let versionInfo: any = plist.parse(fs.readFileSync('/System/Library/CoreServices/SystemVersion.plist', 'utf8'))
-      console.log(JSON.stringify(versionInfo.ProductVersion))
-      version = versionInfo.ProductVersion
-    }
-
-    let info = { os: platform, version: version, arch: OS.arch() }
-    this.io.emit('setOSInfo', info)
   }
 
   signOutComplete = () => {

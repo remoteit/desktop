@@ -22,13 +22,21 @@ export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onU
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
 
   function update(key: number, target: ITarget) {
-    Analytics.Instance.track('serviceCreated', { service: { id: target.uid, name: target.name, type: target.type } })
+    Analytics.Instance.track('serviceCreated', {
+      serviceId: target.uid,
+      serviceName: target.name,
+      serviceType: target.type,
+    })
     onUpdate([...targets, target])
   }
 
   function remove(key: number) {
     let target = targets[key]
-    Analytics.Instance.track('serviceRemoved', { service: { id: target.uid, name: target.name, type: target.type } })
+    Analytics.Instance.track('serviceRemoved', {
+      serviceId: target.uid,
+      serviceName: target.name,
+      serviceType: target.type,
+    })
     targets.splice(key, 1)
 
     onUpdate(targets)
