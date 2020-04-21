@@ -26,7 +26,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     let theConnection = connection || newConnection(service)
     let context = {
       connectionType: 'peer',
-      serviceId: service?.deviceID,
+      serviceId: service?.id,
       serviceName: service?.name,
       serviceType: service?.typeID,
     }

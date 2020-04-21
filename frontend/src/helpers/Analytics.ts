@@ -4,6 +4,7 @@ import { version } from '../../package.json'
 
 export default class Analytics {
   private static _instance: Analytics
+  private static segment: any
   private context: any
   private gaAppSet: boolean
 
@@ -24,6 +25,58 @@ export default class Analytics {
       manufacturerPlatformName: '',
       manufacturerPlatformCode: '',
     }
+  }
+
+  public static setup() {
+    var analytics = (window.analytics = window.analytics || [])
+    if (!analytics.initialize)
+      if (analytics.invoked) window.console && console.error && console.error('Segment snippet included twice.')
+      else {
+        analytics.invoked = !0
+        analytics.methods = [
+          'trackSubmit',
+          'trackClick',
+          'trackLink',
+          'trackForm',
+          'pageview',
+          'identify',
+          'reset',
+          'group',
+          'track',
+          'ready',
+          'alias',
+          'debug',
+          'page',
+          'once',
+          'off',
+          'on',
+        ]
+        analytics.factory = function (t: any) {
+          return function () {
+            var e = Array.prototype.slice.call(arguments)
+            e.unshift(t)
+            analytics.push(e)
+            return analytics
+          }
+        }
+        for (var t = 0; t < analytics.methods.length; t++) {
+          var e = analytics.methods[t]
+          analytics[e] = analytics.factory(e)
+        }
+        analytics.load = function (t: any, e: any) {
+          var n = document.createElement('script')
+          n.type = 'text/javascript'
+          n.async = !0
+          n.src = 'https://cdn.segment.com/analytics.js/v1/' + t + '/analytics.min.js'
+          var a = document.getElementsByTagName('script')[0]
+          a.parentNode?.insertBefore(n, a)
+          analytics._loadOptions = e
+        }
+        analytics.SNIPPET_VERSION = '4.1.0'
+        analytics.load('tMedSrVUwDIeRs6kndztUPgjPiVlDmAe')
+        // analytics.page()
+      }
+    Analytics.segment = analytics
   }
 
   public setManufacturerDetails(details: IManufacturer) {
@@ -60,11 +113,11 @@ export default class Analytics {
   }
 
   public identify(userId: string) {
-    window.analytics.identify(userId, { trait: {} })
+    Analytics.segment.identify(userId, { trait: {} })
   }
 
   public clearIdentity() {
-    window.analytics.reset()
+    Analytics.segment.reset()
   }
 
   public page(pageName: string, additionalContext?: any) {
@@ -72,7 +125,7 @@ export default class Analytics {
     if (additionalContext) {
       localContext = { ...additionalContext, ...localContext }
     }
-    window.analytics.page(pageName, localContext)
+    Analytics.segment.page(pageName, localContext)
   }
 
   public track(trackName: string, additionalContext?: any) {
@@ -80,6 +133,6 @@ export default class Analytics {
     if (additionalContext) {
       localContext = { ...additionalContext, ...localContext }
     }
-    window.analytics.track(trackName, localContext)
+    Analytics.segment.track(trackName, localContext)
   }
 }

@@ -16,6 +16,7 @@ export class Environment {
   isPi: boolean
   isPiZero: boolean
   simpleOS: Ios
+  osVersion: string
   privateIP: ipAddress = ''
   adminUsername: string = ''
   userPath: string
@@ -37,6 +38,16 @@ export class Environment {
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
     this.simpleOS = this.setSimpleOS()
+
+    this.osVersion = os.release()
+    if (this.isMac) {
+      try {
+        let versionInfo: any = plist.parse(fs.readFileSync('/System/Library/CoreServices/SystemVersion.plist', 'utf8'))
+        this.osVersion = versionInfo.ProductVersion
+      } catch {
+        //No System Version File: /System/Library/CoreServices/SystemVersion.plist'
+      }
+    }
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
@@ -72,17 +83,6 @@ export class Environment {
   }
 
   get frontend() {
-    let osVersion = os.release()
-    if (this.isMac) {
-      try {
-        let versionInfo: any = plist.parse(fs.readFileSync('/System/Library/CoreServices/SystemVersion.plist', 'utf8'))
-        console.log(JSON.stringify(versionInfo.ProductVersion))
-        osVersion = versionInfo.ProductVersion
-      } catch {
-        console.log('No System Version File: /System/Library/CoreServices/SystemVersion.plist')
-      }
-    }
-
     if (!this.manufacturerDetails) {
       try {
         let manufactererFile = JSON.parse(fs.readFileSync(path.join(this.adminPath, 'manufacturer.json'), 'utf8'))
@@ -107,7 +107,7 @@ export class Environment {
 
     return {
       os: this.simpleOS,
-      osVersion: osVersion,
+      osVersion: this.osVersion,
       arch: os.arch(),
       manufacturerDetails: this.manufacturerDetails,
       adminUsername: this.adminUsername,

@@ -34,7 +34,7 @@ export const DisconnectButton: React.FC<Props> = ({
           onClick={() => {
             let context = {
               connectionType: 'peer',
-              serviceId: service?.deviceID,
+              serviceId: service?.id,
               serviceName: service?.name,
               serviceType: service?.typeID,
             }
