@@ -3,16 +3,19 @@ import { emit } from '../../services/Controller'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
+import analytics from '../../helpers/Analytics'
 
 export const UninstallSetting: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
 
-  const warning = () =>
+  const warning = () => {
     window.confirm(
       'Are you sure? \nYou will remove this system as a host, your connections and command line utilities.'
     ) &&
-    emit('uninstall') &&
-    ui.setUninstalling()
+      emit('uninstall') &&
+      ui.setUninstalling()
+    analytics.track('uninstall')
+  }
 
   return (
     <SettingsListItem

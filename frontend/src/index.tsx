@@ -13,6 +13,9 @@ import './services/Controller'
 import './styling/index.css'
 import './styling/euphoria.css'
 import './styling/fonts.css'
+import analytics from './helpers/Analytics'
+
+analytics.setup()
 
 const gutters = 28
 const theme = createMuiTheme({

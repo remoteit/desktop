@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/styles'
 import { useSelector } from 'react-redux'
@@ -27,6 +27,7 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
+import analytics from '../../helpers/Analytics'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -36,6 +37,10 @@ export const ServicePage: React.FC = () => {
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
 
   let data: IDataDisplay[] = []
+
+  useEffect(() => {
+    analytics.page('ServicePage')
+  }, [])
 
   if (!service || !device)
     return (
@@ -89,7 +94,7 @@ export const ServicePage: React.FC = () => {
         </>
       }
     >
-      <ServiceConnected connection={connection} />
+      <ServiceConnected connection={connection} service={service} />
       <Columns center>
         <List>
           <PortSetting connection={connection} service={service} />

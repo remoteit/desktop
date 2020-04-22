@@ -49,7 +49,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
       <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner}>
         <div className={css.buttons}>
           <ConnectButton connection={connection} service={service} size="small" />
-          <DisconnectButton connection={connection} size="small" />
+          <DisconnectButton connection={connection} service={service} size="small" />
           <OfflineButton service={service} />
         </div>
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />

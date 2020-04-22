@@ -6,12 +6,14 @@ import { DataDisplay } from '../DataDisplay'
 import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
+import { IService } from 'remote.it'
 
 type Props = {
   connection?: IConnection
+  service?: IService
 }
 
-export const ServiceConnected: React.FC<Props> = ({ connection }) => {
+export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
   const visible = connection && connection.active
 
   return (
@@ -28,7 +30,7 @@ export const ServiceConnected: React.FC<Props> = ({ connection }) => {
           ]}
         />
         <div>
-          <DisconnectButton connection={connection} size="medium" />
+          <DisconnectButton connection={connection} service={service} size="medium" />
         </div>
       </Columns>
       <Divider />

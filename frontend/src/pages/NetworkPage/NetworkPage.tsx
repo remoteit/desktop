@@ -7,6 +7,7 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Network } from '../../components/Network'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
+import analytics from '../../helpers/Analytics'
 
 export const NetworkPage: React.FC = () => {
   const css = useStyles()
@@ -19,10 +20,17 @@ export const NetworkPage: React.FC = () => {
     privateIP: state.backend.environment.privateIP,
   }))
 
-  const scan = (interfaceName: string) => emit('scan', interfaceName)
+  const scan = (interfaceName: string) => {
+    analytics.track('networkScan')
+    emit('scan', interfaceName)
+  }
 
   useEffect(() => {
     emit('interfaces')
+  }, [])
+
+  useEffect(() => {
+    analytics.page('NetworkPage')
   }, [])
 
   return (

@@ -1,7 +1,10 @@
 import os from 'os'
 import path from 'path'
 
+//General
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
+export const PRODUCT_NAME = 'Desktop'
+export const MANUFACTURER_NAME = 'remote.it'
 
 // Port for the Socket.io websocket server
 export const PORT = Number(process.env.PORT || 29999)

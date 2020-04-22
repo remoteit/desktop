@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { DeviceList } from '../../components/DeviceList'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { Container } from '../../components/Container'
@@ -10,6 +10,7 @@ import { connect } from 'react-redux'
 import { IDevice } from 'remote.it'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
+import analytics from '../../helpers/Analytics'
 
 interface SelectResponse {
   visibleDevices: IDevice[]
@@ -70,6 +71,10 @@ export const DevicesPage = connect(
     visibleDevices,
   }: DevicesPageProps) => {
     const css = useStyles()
+
+    useEffect(() => {
+      analytics.page('DevicesPage')
+    }, [])
 
     return (
       <Container

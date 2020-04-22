@@ -10,6 +10,7 @@ import { Targets } from '../../components/Targets'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
+import analytics from '../../helpers/Analytics'
 
 type Props = {
   os?: Ios
@@ -17,7 +18,7 @@ type Props = {
   device: IDevice
 }
 
-export const SetupServices: React.FC<Props> = ({ device, os, ...props }) => {
+export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }) => {
   const { added, cliError } = useSelector((state: ApplicationState) => ({
     added: state.backend.added,
     cliError: state.backend.cliError,
@@ -34,6 +35,14 @@ export const SetupServices: React.FC<Props> = ({ device, os, ...props }) => {
   const onCancel = () => backend.set({ key: 'added', undefined })
   const onDelete = () => {
     setDeleting(true)
+    analytics.track('deviceRemoved', { deviceId: device.uid, deviceName: device.name })
+    targets.forEach(target => {
+      analytics.track('serviceRemoved', {
+        serviceId: target.uid,
+        serviceName: target.name,
+        serviceType: target.type,
+      })
+    })
     emit('device', 'DELETE')
   }
 
@@ -74,7 +83,15 @@ export const SetupServices: React.FC<Props> = ({ device, os, ...props }) => {
         Services
       </Typography>
       <section>
-        <Targets device={device} onUpdate={onUpdate} onCancel={onCancel} added={added} cliError={cliError} {...props} />
+        <Targets
+          device={device}
+          targets={targets}
+          onUpdate={onUpdate}
+          onCancel={onCancel}
+          added={added}
+          cliError={cliError}
+          {...props}
+        />
       </section>
     </Container>
   )

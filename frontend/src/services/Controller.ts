@@ -2,6 +2,7 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT, RETRY_DELAY } from '../constants'
 import { EventEmitter } from 'events'
+import analytics from '../helpers/Analytics'
 
 class Controller extends EventEmitter {
   private socket: SocketIOClient.Socket
@@ -129,9 +130,26 @@ function getEventHandlers() {
 
     dataReady: (result: boolean) => backend.set({ key: 'dataReady', value: result }),
 
-    environment: (result: ILookup) => backend.set({ key: 'environment', value: result }),
+    environment: (result: ILookup) => {
+      console.log('ENVIRONMENT')
+      console.log(result)
+      backend.set({ key: 'environment', value: result })
+      analytics.setOS(result.os)
+      analytics.setOsVersion(result.osVersion)
+      analytics.setArch(result.arch)
+      analytics.setManufacturerDetails(result.manufacturerDetails)
+      console.log('MANUFACTURER DETAILS')
+      console.log(result.manufacturerDetails)
+    },
 
     preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),
+
+    //Analytics
+    setOSInfo: (osInfo: IosInfo) => {
+      analytics.setOS(osInfo.os)
+      analytics.setOsVersion(osInfo.version)
+      analytics.setArch(osInfo.arch)
+    },
 
     // User
     'signed-out': () => auth.signedOut(),
@@ -153,6 +171,13 @@ function getEventHandlers() {
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
+      let context = {
+        connectionType: 'peer',
+        serviceId: msg.connection?.deviceID,
+        serviceName: msg.connection?.name,
+        serviceType: msg.connection?.typeID,
+      }
+      analytics.track('connectionSucceeded', context)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
@@ -162,6 +187,15 @@ function getEventHandlers() {
     'service/error': (msg: ConnectionErrorMessage) => {
       logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.error}\n` })
       backend.setConnection(msg.connection)
+      let context = {
+        connectionType: 'peer',
+        serviceId: msg.connection?.deviceID,
+        serviceName: msg.connection?.name,
+        serviceType: msg.connection?.typeID,
+        errorCode: msg.code,
+        errorMessage: msg.error,
+      }
+      analytics.track('connectionFailed', context)
     },
     'service/status': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),

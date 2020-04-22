@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { ServiceName } from '../../components/ServiceName'
@@ -10,6 +10,7 @@ import { ServiceList } from '../../components/ServiceList'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
+import analytics from '../../helpers/Analytics'
 
 const mapState = (state: ApplicationState, params: any) => ({
   connections: state.backend.connections,
@@ -26,6 +27,10 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
     result[c.id] = c
     return result
   }, {})
+
+  useEffect(() => {
+    analytics.page('ServicesPage')
+  }, [])
 
   if (!device) return <Typography variant="h1">No device found</Typography>
 

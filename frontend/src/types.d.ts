@@ -1,4 +1,5 @@
 import { DeviceState, ServiceState } from 'remote.it'
+import { AnalyticsJS } from 'segment-analytics'
 
 declare global {
   /**
@@ -58,6 +59,7 @@ declare global {
     process?: {
       type?: string
     }
+    analytics: AnalyticsJS
   }
 
   export interface IDataDisplay {

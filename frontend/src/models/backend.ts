@@ -15,6 +15,9 @@ type IBackendState = { [key: string]: any } & {
   dataReady: boolean
   environment: {
     os?: Ios
+    osVersion?: string
+    arch?: string
+    manufacturerDetails?: IManufacturer
     adminUsername?: string
     isElevated: boolean
     privateIP: ipAddress
@@ -37,6 +40,9 @@ const state: IBackendState = {
   dataReady: false,
   environment: {
     os: undefined,
+    osVersion: '',
+    arch: '',
+    manufacturerDetails: undefined,
     adminUsername: undefined,
     isElevated: false,
     privateIP: '',

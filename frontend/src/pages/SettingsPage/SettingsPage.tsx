@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
@@ -12,6 +12,7 @@ import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
+import analytics from '../../helpers/Analytics'
 
 export const SettingsPage = () => {
   const { os, user, installing, remoteitVersion, preferences } = useSelector((state: ApplicationState) => ({
@@ -28,10 +29,13 @@ export const SettingsPage = () => {
 
   const quitWarning = () =>
     window.confirm('Are you sure? Quitting will close all active connections.') && emit('user/quit')
-  const signOutWarning = () =>
+  const signOutWarning = () => {
     window.confirm(
       'Are you sure? Signing out will close all active connections, but leave the hosted services running.'
     ) && emit('user/sign-out')
+    analytics.track('signOut')
+    analytics.clearIdentity()
+  }
 
   const clearWarning = () =>
     window.confirm('Are you sure? The next user that signs in will be able to claim this device as their own.') &&
@@ -39,6 +43,10 @@ export const SettingsPage = () => {
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install()
+
+  useEffect(() => {
+    analytics.page('SettingsPage')
+  }, [])
 
   return (
     <Container

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Button,
   List,
@@ -23,6 +23,7 @@ import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
+import analytics from '../../helpers/Analytics'
 
 type Selections = { value: string | Function; name: string; note: string }
 
@@ -45,6 +46,10 @@ export const LanSharePage: React.FC = () => {
     { value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
     { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
+
+  useEffect(() => {
+    analytics.page('LanSharePage')
+  }, [])
 
   const [enabled, setEnabled] = useState<boolean>(connection.host === IP_OPEN)
   const restriction: ipAddress = enabled && connection.restriction ? connection.restriction : IP_LATCH
