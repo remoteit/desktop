@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react'
+import { useHistory } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { ServiceName } from '../../components/ServiceName'
 import { ApplicationState } from '../../store'
-import { Typography, Divider } from '@material-ui/core'
+import { Typography } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
+import { DeleteButton } from '../../buttons/DeleteButton'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { DataDisplay } from '../../components/DataDisplay'
@@ -21,6 +23,7 @@ export type ServicesPageProps = ReturnType<typeof mapState>
 
 export const ServicesPage = connect(mapState)(({ connections, devices }: ServicesPageProps) => {
   const { deviceID } = useParams()
+  const history = useHistory()
   const device = devices.find(d => d.id === deviceID)
   const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
   const serviceConnections = connections.reduce((result: ConnectionLookup, c: IConnection) => {
@@ -30,7 +33,8 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
 
   useEffect(() => {
     analytics.page('ServicesPage')
-  }, [])
+    if (!device) history.push('/devices')
+  }, [device])
 
   if (!device) return <Typography variant="h1">No device found</Typography>
 
@@ -47,13 +51,13 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
               shared={device.shared === 'shared-from'}
               inline
             />
+            <DeleteButton device={device} />
           </Typography>
         </>
       }
     >
       {/* <Typography variant="subtitle1">Services</Typography> */}
       <ServiceList services={device.services} connections={serviceConnections} />
-      <Divider />
       <Typography variant="subtitle1">Device details</Typography>
       <Columns count={1} inset>
         <DataDisplay
