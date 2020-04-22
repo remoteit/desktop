@@ -27,7 +27,7 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -39,7 +39,7 @@ export const ServicePage: React.FC = () => {
   let data: IDataDisplay[] = []
 
   useEffect(() => {
-    Analytics.Instance.page('ServicePage')
+    analytics.page('ServicePage')
   }, [])
 
   if (!service || !device)

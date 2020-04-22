@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
 import { version } from '../../../package.json'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export const UpdateSetting: React.FC = () => {
   const update = useSelector((state: ApplicationState) => state.backend.update)
@@ -19,7 +19,7 @@ export const UpdateSetting: React.FC = () => {
         updateAvailable
           ? () => {
               emit('restart')
-              Analytics.Instance.track('update')
+              analytics.track('update')
             }
           : undefined
       }

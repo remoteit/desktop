@@ -8,7 +8,7 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 import { spacing } from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export const LogPage: React.FC = () => {
   const { serviceID = '' } = useParams()
@@ -17,7 +17,7 @@ export const LogPage: React.FC = () => {
   const log = useSelector((state: ApplicationState) => state.logs[id] || [])
 
   useEffect(() => {
-    Analytics.Instance.page('LogPage')
+    analytics.page('LogPage')
   }, [])
 
   return (

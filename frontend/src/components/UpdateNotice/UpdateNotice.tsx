@@ -5,7 +5,7 @@ import { ApplicationState } from '../../store'
 import { Snackbar, Button, IconButton } from '@material-ui/core'
 import { version } from '../../../package.json'
 import { Icon } from '../../components/Icon'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export const UpdateNotice: React.FC = () => {
   const [updateNotice, setUpdateNotice] = useState<boolean>(false)
@@ -25,7 +25,7 @@ export const UpdateNotice: React.FC = () => {
           color="primary"
           size="small"
           onClick={() => {
-            Analytics.Instance.track('update')
+            analytics.track('update')
             emit('restart')
           }}
         >

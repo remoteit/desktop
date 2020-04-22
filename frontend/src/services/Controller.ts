@@ -2,7 +2,7 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT, RETRY_DELAY } from '../constants'
 import { EventEmitter } from 'events'
-import Analytics from '../helpers/Analytics'
+import analytics from '../helpers/Analytics'
 
 class Controller extends EventEmitter {
   private socket: SocketIOClient.Socket
@@ -134,10 +134,10 @@ function getEventHandlers() {
       console.log('ENVIRONMENT')
       console.log(result)
       backend.set({ key: 'environment', value: result })
-      Analytics.Instance.setOS(result.os)
-      Analytics.Instance.setOsVersion(result.osVersion)
-      Analytics.Instance.setArch(result.arch)
-      Analytics.Instance.setManufacturerDetails(result.manufacturerDetails)
+      analytics.setOS(result.os)
+      analytics.setOsVersion(result.osVersion)
+      analytics.setArch(result.arch)
+      analytics.setManufacturerDetails(result.manufacturerDetails)
       console.log('MANUFACTURER DETAILS')
       console.log(result.manufacturerDetails)
     },
@@ -146,9 +146,9 @@ function getEventHandlers() {
 
     //Analytics
     setOSInfo: (osInfo: IosInfo) => {
-      Analytics.Instance.setOS(osInfo.os)
-      Analytics.Instance.setOsVersion(osInfo.version)
-      Analytics.Instance.setArch(osInfo.arch)
+      analytics.setOS(osInfo.os)
+      analytics.setOsVersion(osInfo.version)
+      analytics.setArch(osInfo.arch)
     },
 
     // User
@@ -177,7 +177,7 @@ function getEventHandlers() {
         serviceName: msg.connection?.name,
         serviceType: msg.connection?.typeID,
       }
-      Analytics.Instance.track('connectionSucceeded', context)
+      analytics.track('connectionSucceeded', context)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
@@ -195,7 +195,7 @@ function getEventHandlers() {
         errorCode: msg.code,
         errorMessage: msg.error,
       }
-      Analytics.Instance.track('connectionFailed', context)
+      analytics.track('connectionFailed', context)
     },
     'service/status': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),

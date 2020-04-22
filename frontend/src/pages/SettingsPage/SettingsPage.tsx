@@ -12,7 +12,7 @@ import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export const SettingsPage = () => {
   const { os, user, installing, remoteitVersion, preferences } = useSelector((state: ApplicationState) => ({
@@ -33,8 +33,8 @@ export const SettingsPage = () => {
     window.confirm(
       'Are you sure? Signing out will close all active connections, but leave the hosted services running.'
     ) && emit('user/sign-out')
-    Analytics.Instance.track('signOut')
-    Analytics.Instance.clearIdentity()
+    analytics.track('signOut')
+    analytics.clearIdentity()
   }
 
   const clearWarning = () =>
@@ -45,7 +45,7 @@ export const SettingsPage = () => {
     binaries.install()
 
   useEffect(() => {
-    Analytics.Instance.page('SettingsPage')
+    analytics.page('SettingsPage')
   }, [])
 
   return (

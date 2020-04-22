@@ -7,7 +7,7 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Network } from '../../components/Network'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export const NetworkPage: React.FC = () => {
   const css = useStyles()
@@ -21,7 +21,7 @@ export const NetworkPage: React.FC = () => {
   }))
 
   const scan = (interfaceName: string) => {
-    Analytics.Instance.track('networkScan')
+    analytics.track('networkScan')
     emit('scan', interfaceName)
   }
 
@@ -30,7 +30,7 @@ export const NetworkPage: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    Analytics.Instance.page('NetworkPage')
+    analytics.page('NetworkPage')
   }, [])
 
   return (

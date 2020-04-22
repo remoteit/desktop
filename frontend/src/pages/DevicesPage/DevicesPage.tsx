@@ -10,7 +10,7 @@ import { connect } from 'react-redux'
 import { IDevice } from 'remote.it'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 interface SelectResponse {
   visibleDevices: IDevice[]
@@ -73,7 +73,7 @@ export const DevicesPage = connect(
     const css = useStyles()
 
     useEffect(() => {
-      Analytics.Instance.page('DevicesPage')
+      analytics.page('DevicesPage')
     }, [])
 
     return (

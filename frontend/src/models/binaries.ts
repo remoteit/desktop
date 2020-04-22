@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
-import Analytics from '../helpers/Analytics'
+import analytics from '../helpers/Analytics'
 
 export interface BinariesState {
   error?: any
@@ -45,7 +45,7 @@ export default createModel({
       dispatch.binaries.clearError()
       dispatch.binaries.installing()
       emit('binaries/install')
-      Analytics.Instance.track('install')
+      analytics.track('install')
     },
   }),
   reducers: {

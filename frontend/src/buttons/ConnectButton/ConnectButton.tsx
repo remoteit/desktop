@@ -5,7 +5,7 @@ import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export type ConnectButtonProps = {
   connection?: IConnection
@@ -30,7 +30,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       serviceName: service?.name,
       serviceType: service?.typeID,
     }
-    Analytics.Instance.track('connectionInitiated', context)
+    analytics.track('connectionInitiated', context)
     emit('service/connect', theConnection)
   }
 

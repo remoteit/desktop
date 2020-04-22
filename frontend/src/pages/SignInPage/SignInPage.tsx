@@ -4,11 +4,11 @@ import { Body } from '../../components/Body'
 import { SignInFormController } from '../../controllers/SignInFormController/SignInFormController'
 import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export function SignInPage() {
   useEffect(() => {
-    Analytics.Instance.page('SigninPage')
+    analytics.page('SigninPage')
   }, [])
 
   const css = useStyles()

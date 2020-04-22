@@ -3,7 +3,7 @@ import { emit } from '../../services/Controller'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { SettingsListItem } from '../SettingsListItem'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 export const UninstallSetting: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
@@ -14,7 +14,7 @@ export const UninstallSetting: React.FC = () => {
     ) &&
       emit('uninstall') &&
       ui.setUninstalling()
-    Analytics.Instance.track('uninstall')
+    analytics.track('uninstall')
   }
 
   return (

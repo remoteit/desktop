@@ -13,7 +13,7 @@ import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 type Props = {
   os?: Ios
@@ -37,9 +37,9 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
 
   const onRegistration = () => {
     console.log({ device: { ...device, name }, targets: selected })
-    Analytics.Instance.track('deviceCreated', { deviceId: device.uid, deviceName: name })
+    analytics.track('deviceCreated', { deviceId: device.uid, deviceName: name })
     selected.forEach(target => {
-      Analytics.Instance.track('serviceCreated', {
+      analytics.track('serviceCreated', {
         serviceId: target.uid,
         serviceName: target.name,
         serviceType: target.type,
@@ -50,7 +50,7 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   }
 
   useEffect(() => {
-    Analytics.Instance.track('networkScan')
+    analytics.track('networkScan')
     emit('scan', 'localhost')
   }, [])
 

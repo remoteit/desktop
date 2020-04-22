@@ -10,7 +10,7 @@ import { Targets } from '../../components/Targets'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 type Props = {
   os?: Ios
@@ -35,9 +35,9 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   const onCancel = () => backend.set({ key: 'added', undefined })
   const onDelete = () => {
     setDeleting(true)
-    Analytics.Instance.track('deviceRemoved', { deviceId: device.uid, deviceName: device.name })
+    analytics.track('deviceRemoved', { deviceId: device.uid, deviceName: device.name })
     targets.forEach(target => {
-      Analytics.Instance.track('serviceRemoved', {
+      analytics.track('serviceRemoved', {
         serviceId: target.uid,
         serviceName: target.name,
         serviceType: target.type,

@@ -3,7 +3,7 @@ import { emit } from '../../services/Controller'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 import { IService } from 'remote.it'
 
 type Props = {
@@ -38,7 +38,7 @@ export const DisconnectButton: React.FC<Props> = ({
               serviceName: service?.name,
               serviceType: service?.typeID,
             }
-            Analytics.Instance.track('connectionClosed', context)
+            analytics.track('connectionClosed', context)
             emit('service/disconnect', connection)
           }}
         />

@@ -2,14 +2,11 @@ import { version } from '../../package.json'
 
 ///  <reference types="@types/google.analytics" />
 
-export default class Analytics {
-  private static _instance: Analytics
-  private static segment: any
+export class Analytics {
   private context: any
   private gaAppSet: boolean
 
-  private constructor() {
-    this.gaAppSet = false
+  public constructor() {
     this.context = {
       category: 'Desktop',
       productName: 'Desktop',
@@ -25,9 +22,10 @@ export default class Analytics {
       manufacturerPlatformName: '',
       manufacturerPlatformCode: '',
     }
+    this.gaAppSet = false
   }
 
-  public static setup() {
+  public setup = () => {
     var analytics = (window.analytics = window.analytics || [])
     if (!analytics.initialize)
       if (analytics.invoked) window.console && console.error && console.error('Segment snippet included twice.')
@@ -74,9 +72,9 @@ export default class Analytics {
         }
         analytics.SNIPPET_VERSION = '4.1.0'
         analytics.load('tMedSrVUwDIeRs6kndztUPgjPiVlDmAe')
+
         // analytics.page()
       }
-    Analytics.segment = analytics
   }
 
   public setManufacturerDetails(details: IManufacturer) {
@@ -100,39 +98,40 @@ export default class Analytics {
     this.context.systemOSVersion = version
   }
 
-  public static get Instance() {
-    let instance = this._instance || (this._instance = new this())
-    // Do you need arguments? Make it a regular static method instead.
-    if (typeof ga !== 'undefined' && !instance.gaAppSet) {
-      console.log('SET GA APP VERSION')
-      ga('set', 'appName', 'Desktop')
-      ga('set', 'appVersion', version)
-      instance.gaAppSet = true
-    }
-    return instance
-  }
-
   public identify(userId: string) {
-    Analytics.segment.identify(userId, { trait: {} })
+    window.analytics.identify(userId, { trait: {} })
   }
 
   public clearIdentity() {
-    Analytics.segment.reset()
+    window.analytics.reset()
   }
 
-  public page(pageName: string, additionalContext?: any) {
+  private setGAAppVersion() {
+    if (typeof window.ga !== 'undefined' && !this.gaAppSet) {
+      console.log('SET GA APP VERSION')
+      window.ga('set', 'appName', 'Desktop')
+      window.ga('set', 'appVersion', version)
+      this.gaAppSet = true
+    }
+  }
+
+  public page = (pageName: string, additionalContext?: any) => {
+    this.setGAAppVersion()
     let localContext = this.context
     if (additionalContext) {
       localContext = { ...additionalContext, ...localContext }
     }
-    Analytics.segment.page(pageName, localContext)
+    window.analytics.page(pageName, localContext)
   }
 
   public track(trackName: string, additionalContext?: any) {
+    this.setGAAppVersion()
     let localContext = this.context
     if (additionalContext) {
       localContext = { ...additionalContext, ...localContext }
     }
-    Analytics.segment.track(trackName, localContext)
+    window.analytics.track(trackName, localContext)
   }
 }
+
+export default new Analytics()

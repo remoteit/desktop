@@ -6,7 +6,7 @@ import { InputLabel, Tooltip, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
-import Analytics from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 type Props = {
   targets: ITarget[]
@@ -22,7 +22,7 @@ export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onU
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
 
   function update(key: number, target: ITarget) {
-    Analytics.Instance.track('serviceCreated', {
+    analytics.track('serviceCreated', {
       serviceId: target.uid,
       serviceName: target.name,
       serviceType: target.type,
@@ -32,7 +32,7 @@ export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onU
 
   function remove(key: number) {
     let target = targets[key]
-    Analytics.Instance.track('serviceRemoved', {
+    analytics.track('serviceRemoved', {
       serviceId: target.uid,
       serviceName: target.name,
       serviceType: target.type,
