@@ -1,5 +1,7 @@
 import React from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import { Typography, CircularProgress, Divider } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { osName } from '../../helpers/nameHelper'
@@ -12,10 +14,14 @@ import styles from '../../styling'
 type Props = { os?: Ios; device: IDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
+  const { devices } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
 
-  if (device.uid) history.push('/settings/setupSuccess')
+  if (device.uid) {
+    history.push('/settings/setupSuccess')
+    devices.fetch(false)
+  }
 
   return (
     <Container header={<Breadcrumbs />}>
