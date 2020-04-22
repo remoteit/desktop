@@ -22,7 +22,7 @@ export const API_URL = process.env.API_URL || 'https://api.remot3.it/apv/v27'
 export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 // CLI
-export const CLI_VERSION = '1.1.7'
+export const CLI_VERSION = '1.1.8'
 export const CLI_DOWNLOAD = 'AWS' // AWS or GitHub
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
@@ -30,6 +30,20 @@ export const IP_PRIVATE: ipAddress = '127.0.0.1'
 // CLI product tracking codes
 export const MANUFACTURE_ID_STANDARD = 32770
 export const MANUFACTURE_ID_HEADLESS = 32777
+
+// CONNECTD platform tracking codes
+export const PLATFORM_CODES = {
+  REMOTEIT_PI: 1075, // This will come in out of the manufacture.json
+  RASPBERRY_PI: 1072,
+  LINUX_DEBIAN: 1120, // Might not be able to detect
+  LINUX_ARM: 1200,
+  LINUX: 769,
+  WINDOWS_DESKTOP: 5,
+  WINDOWS_SERVER: 10, // Might not be able to detect
+  MAC: 256,
+  UNIX: 768, // Might not be able to detect
+  UNKNOWN: 65535,
+}
 
 // Web directory
 export const WEB_DIR = path.join(__dirname, '../build')

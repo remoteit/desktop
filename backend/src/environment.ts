@@ -1,12 +1,21 @@
-import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PRODUCT_NAME, MANUFACTURER_NAME } from './constants'
+import {
+  PATHS,
+  MANUFACTURE_ID_HEADLESS,
+  MANUFACTURE_ID_STANDARD,
+  PLATFORM_CODES,
+  PRODUCT_NAME,
+  MANUFACTURER_NAME,
+} from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
-import os from 'os'
+import JSONFile from './JSONFile'
 import plist from 'plist'
-import fs from 'fs'
 import path from 'path'
+import os from 'os'
+import fs from 'fs'
 
 export class Environment {
+  version: string
   isElevated: boolean = false
   isHeadless: boolean = true
   isWindows: boolean
@@ -17,13 +26,14 @@ export class Environment {
   isPiZero: boolean
   simpleOS: Ios
   osVersion: string
+  platformCode: number
   privateIP: ipAddress = ''
   adminUsername: string = ''
   userPath: string
   adminPath: string
   binPath: string
   deprecatedBinaries: string[]
-  manufacturerDetails?: IManufacturer = undefined
+  manufacturerDetails: IManufacturer
 
   EVENTS = { send: 'environment' }
 
@@ -37,17 +47,9 @@ export class Environment {
     this.isMac = os.platform() === 'darwin'
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
-    this.simpleOS = this.setSimpleOS()
-
-    this.osVersion = os.release()
-    if (this.isMac) {
-      try {
-        let versionInfo: any = plist.parse(fs.readFileSync('/System/Library/CoreServices/SystemVersion.plist', 'utf8'))
-        this.osVersion = versionInfo.ProductVersion
-      } catch {
-        //No System Version File: /System/Library/CoreServices/SystemVersion.plist'
-      }
-    }
+    this.simpleOS = this.getSimpleOS()
+    this.osVersion = this.getOsVersion()
+    this.version = this.getAppVersion()
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
@@ -65,17 +67,9 @@ export class Environment {
       this.binPath = elevated ? PATHS.LINUX_ADMIN_BINARIES : PATHS.LINUX_USER_BINARIES
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
     }
-  }
 
-  setSimpleOS() {
-    if (this.isMac) return 'mac'
-    if (this.isWindows) return 'windows'
-    if (this.isPi) return 'rpi'
-    else return 'linux'
-  }
-
-  async setElevatedState() {
-    this.isElevated = await isElevated()
+    this.manufacturerDetails = this.getManufacturerDetails()
+    this.platformCode = this.getPlatformCode()
   }
 
   get manufactureId(): number {
@@ -83,28 +77,6 @@ export class Environment {
   }
 
   get frontend() {
-    if (!this.manufacturerDetails) {
-      try {
-        let manufactererFile = JSON.parse(fs.readFileSync(path.join(this.adminPath, 'manufacturer.json'), 'utf8'))
-        this.manufacturerDetails = manufactererFile.manufacturer
-      } catch (e) {
-        //catch if file does not exist or does not parse
-        //load defaults
-        let version = undefined
-        try {
-          let packageFile = JSON.parse(fs.readFileSync(path.join(process.cwd(), '/package.json'), 'utf8'))
-          version = packageFile.version
-        } catch (e) {
-          //could not read file
-        }
-        this.manufacturerDetails = {
-          name: MANUFACTURER_NAME,
-          product: { name: PRODUCT_NAME, code: this.manufactureId, version: version },
-          platform: { name: undefined, code: undefined },
-        }
-      }
-    }
-
     return {
       os: this.simpleOS,
       osVersion: this.osVersion,
@@ -115,6 +87,59 @@ export class Environment {
       privateIP: this.privateIP,
       hostname: os.hostname(),
     }
+  }
+
+  getSimpleOS() {
+    if (this.isMac) return 'mac'
+    if (this.isWindows) return 'windows'
+    if (this.isPi) return 'rpi'
+    else return 'linux'
+  }
+
+  getPlatformCode() {
+    if (this.manufacturerDetails && this.manufacturerDetails.platform.code)
+      return this.manufacturerDetails.platform.code
+    if (this.isMac) return PLATFORM_CODES.MAC
+    if (this.isWindows) return PLATFORM_CODES.WINDOWS_DESKTOP
+    if (this.isPi) return PLATFORM_CODES.RASPBERRY_PI
+    if (this.isLinux) return PLATFORM_CODES.LINUX
+    if (this.isArmLinux) return PLATFORM_CODES.LINUX_ARM
+    return PLATFORM_CODES.UNKNOWN
+  }
+
+  getAppVersion() {
+    let data = new JSONFile<any>(path.join(__dirname, '../package.json')).read()
+    return data.version
+  }
+
+  getOsVersion() {
+    let release = os.release()
+    if (this.isMac) {
+      try {
+        const versionInfo: any = plist.parse(
+          fs.readFileSync('/System/Library/CoreServices/SystemVersion.plist', 'utf8')
+        )
+        release = versionInfo?.ProductVersion
+      } catch {
+        release = `Unknown Mac (${release})`
+      }
+    }
+    return release
+  }
+
+  getManufacturerDetails(): IManufacturer {
+    let data = new JSONFile<ManufacturerFile>(path.join(this.adminPath, 'manufacturer.json')).read()
+    return (
+      data?.manufacturer || {
+        name: MANUFACTURER_NAME,
+        product: { name: PRODUCT_NAME, code: this.manufactureId, version: this.version },
+        platform: { name: undefined, code: undefined },
+      }
+    )
+  }
+
+  async setElevatedState() {
+    this.isElevated = await isElevated()
   }
 
   toJSON() {
