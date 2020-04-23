@@ -116,21 +116,29 @@ export class Analytics {
   }
 
   public page = (pageName: string, additionalContext?: any) => {
-    this.setGAAppVersion()
-    let localContext = this.context
-    if (additionalContext) {
-      localContext = { ...additionalContext, ...localContext }
+    try {
+      this.setGAAppVersion()
+      let localContext = this.context
+      if (additionalContext) {
+        localContext = { ...additionalContext, ...localContext }
+      }
+      window.analytics.page(pageName, localContext)
+    } catch (e) {
+      console.log('Error sending data to Segment: ' + e)
     }
-    window.analytics.page(pageName, localContext)
   }
 
   public track(trackName: string, additionalContext?: any) {
-    this.setGAAppVersion()
-    let localContext = this.context
-    if (additionalContext) {
-      localContext = { ...additionalContext, ...localContext }
+    try {
+      this.setGAAppVersion()
+      let localContext = this.context
+      if (additionalContext) {
+        localContext = { ...additionalContext, ...localContext }
+      }
+      window.analytics.track(trackName, localContext)
+    } catch (e) {
+      console.log('Error sending data to Segment: ' + e)
     }
-    window.analytics.track(trackName, localContext)
   }
 }
 
