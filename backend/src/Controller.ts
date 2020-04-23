@@ -27,6 +27,7 @@ class Controller {
     this.io = io
     this.pool = pool
     EventBus.on(server.EVENTS.authenticated, this.openSockets)
+    EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
 
     let eventNames = [
       ...Object.values(User.EVENTS),
@@ -76,8 +77,13 @@ class Controller {
     this.syncBackend()
   }
 
+  recapitate = () => {
+    // environment changes after recapitation
+    this.io.emit(environment.EVENTS.send, environment.frontend)
+  }
+
   signOutComplete = () => {
-    Logger.info('FRONTEND SIGNOUT COMPLETE')
+    Logger.info('FRONTEND SIGN OUT COMPLETE')
     if (this.uninstallInitiated) {
       this.quit()
     }
@@ -127,6 +133,10 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady', true)
+  }
+
+  environment = () => {
+    this.io.emit(environment.EVENTS.send, environment.frontend)
   }
 
   connections = () => {

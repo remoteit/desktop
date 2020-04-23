@@ -27,6 +27,7 @@ export class Environment {
   simpleOS: Ios
   osVersion: string
   platformCode: number
+  manufactureId: number
   privateIP: ipAddress = ''
   adminUsername: string = ''
   userPath: string
@@ -68,12 +69,9 @@ export class Environment {
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
     }
 
+    this.manufactureId = MANUFACTURE_ID_HEADLESS
     this.manufacturerDetails = this.getManufacturerDetails()
     this.platformCode = this.getPlatformCode()
-  }
-
-  get manufactureId(): number {
-    return this.isHeadless ? MANUFACTURE_ID_HEADLESS : MANUFACTURE_ID_STANDARD
   }
 
   get frontend() {
@@ -89,6 +87,12 @@ export class Environment {
     }
   }
 
+  recapitate() {
+    this.isHeadless = false
+    this.manufactureId = MANUFACTURE_ID_STANDARD
+    this.manufacturerDetails = this.getManufacturerDetails()
+  }
+
   getSimpleOS() {
     if (this.isMac) return 'mac'
     if (this.isWindows) return 'windows'
@@ -97,8 +101,7 @@ export class Environment {
   }
 
   getPlatformCode() {
-    if (this.manufacturerDetails && this.manufacturerDetails.platform.code)
-      return this.manufacturerDetails.platform.code
+    if (this.manufacturerDetails?.platform?.code) return this.manufacturerDetails.platform.code
     if (this.isMac) return PLATFORM_CODES.MAC
     if (this.isWindows) return PLATFORM_CODES.WINDOWS_DESKTOP
     if (this.isPi) return PLATFORM_CODES.RASPBERRY_PI
@@ -128,14 +131,14 @@ export class Environment {
   }
 
   getManufacturerDetails(): IManufacturer {
-    let data = new JSONFile<ManufacturerFile>(path.join(this.adminPath, 'manufacturer.json')).read()
-    return (
-      data?.manufacturer || {
-        name: MANUFACTURER_NAME,
-        product: { name: PRODUCT_NAME, code: this.manufactureId, version: this.version },
-        platform: { name: undefined, code: undefined },
-      }
-    )
+    const fileData = new JSONFile<ManufacturerFile>(path.join(this.adminPath, 'manufacturer.json')).read()
+    const manufacturer: IManufacturer = fileData?.manufacturer || {}
+
+    return {
+      name: manufacturer.name || MANUFACTURER_NAME,
+      product: manufacturer.product || { name: PRODUCT_NAME, code: this.manufactureId, version: this.version },
+      platform: manufacturer.platform || { name: `Desktop ${this.simpleOS}`, code: this.platformCode },
+    }
   }
 
   async setElevatedState() {
