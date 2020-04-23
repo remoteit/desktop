@@ -135,10 +135,6 @@ class Controller {
     this.io.emit('dataReady', true)
   }
 
-  environment = () => {
-    this.io.emit(environment.EVENTS.send, environment.frontend)
-  }
-
   connections = () => {
     d('List connections')
     this.io.emit('pool', this.pool.toJSON())
