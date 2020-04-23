@@ -1,5 +1,6 @@
 import { HEARTBEAT_INTERVAL } from './constants'
 import Controller from './Controller'
+import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
 import remoteitInstaller from './remoteitInstaller'
 import environment from './environment'
@@ -42,7 +43,8 @@ export default class Application {
 
   recapitate(head: any) {
     this.electron = head
-    environment.isHeadless = false
+    environment.recapitate()
+    EventBus.emit(electronInterface.EVENTS.recapitate)
   }
 
   private startHeartbeat = () => {

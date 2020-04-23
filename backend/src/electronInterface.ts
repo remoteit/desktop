@@ -5,5 +5,6 @@ export const EVENTS = {
   preferences: 'preferences',
   downloaded: 'update/downloaded',
   available: 'update/available',
+  recapitate: 'recapitate',
 }
 export default { EVENTS }

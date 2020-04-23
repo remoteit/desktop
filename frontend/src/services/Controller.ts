@@ -131,15 +131,11 @@ function getEventHandlers() {
     dataReady: (result: boolean) => backend.set({ key: 'dataReady', value: result }),
 
     environment: (result: ILookup) => {
-      console.log('ENVIRONMENT')
-      console.log(result)
       backend.set({ key: 'environment', value: result })
       analytics.setOS(result.os)
       analytics.setOsVersion(result.osVersion)
       analytics.setArch(result.arch)
       analytics.setManufacturerDetails(result.manufacturerDetails)
-      console.log('MANUFACTURER DETAILS')
-      console.log(result.manufacturerDetails)
     },
 
     preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),
@@ -173,7 +169,7 @@ function getEventHandlers() {
       backend.setConnection(msg.connection)
       let context = {
         connectionType: 'peer',
-        serviceId: msg.connection?.deviceID,
+        serviceId: msg.connection?.id,
         serviceName: msg.connection?.name,
         serviceType: msg.connection?.typeID,
       }
@@ -189,7 +185,7 @@ function getEventHandlers() {
       backend.setConnection(msg.connection)
       let context = {
         connectionType: 'peer',
-        serviceId: msg.connection?.deviceID,
+        serviceId: msg.connection?.id,
         serviceName: msg.connection?.name,
         serviceType: msg.connection?.typeID,
         errorCode: msg.code,

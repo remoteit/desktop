@@ -65,7 +65,10 @@ export default class Connection extends EventEmitter {
 
     const usernameBase64 = Buffer.from(user.username).toString('base64')
     const params = [
-      // TODO: Support password login too?
+      '-mfg',
+      `${environment.manufactureId}`,
+      '-ptf',
+      `${environment.platformCode}`,
       '-s',
       '-p',
       usernameBase64,
@@ -229,10 +232,7 @@ export default class Connection extends EventEmitter {
   private handleStdOut = (buff: Buffer) => {
     // Split incoming lines from stdout so we can parse them
     // individually.
-    const lines = buff
-      .toString()
-      .trim()
-      .split(/\r?\n/)
+    const lines = buff.toString().trim().split(/\r?\n/)
 
     const events = Connection.EVENTS
 
