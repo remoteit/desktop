@@ -38,11 +38,11 @@ export default createModel({
 
       if (!user) {
         const storedUser = window.localStorage.getItem(USER_KEY)
-        console.log('INIT AUTH', { storedUser })
         if (storedUser) user = JSON.parse(storedUser)
       }
+
       if (user?.username) {
-        console.log('WE HAVE A USER', user)
+        console.log('WE HAVE A USER', user.username)
         dispatch.auth.setUser(user)
         analytics.identify(user.id)
       } else {
