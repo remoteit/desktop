@@ -111,7 +111,10 @@ export class Analytics {
     if (additionalContext) {
       localContext = { ...additionalContext, ...localContext }
     }
-    window.analytics.page(pageName, localContext)
+    localContext.referrer = ''
+    localContext.search = ''
+    localContext.url = ''
+    window.analytics.page(pageName, localContext, localContext)
   }
 
   public track(trackName: string, additionalContext?: any) {

@@ -214,6 +214,9 @@ declare global {
     productId?: string
     productPlatform?: number
     productAppCode?: number
+    url?: string
+    search?: string
+    referrer?: string
   }
 
   type ManufacturerDetails = {
