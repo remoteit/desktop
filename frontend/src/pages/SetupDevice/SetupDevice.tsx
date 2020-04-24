@@ -23,7 +23,7 @@ type Props = {
 export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
-    loading: !state.backend.scanData.localhost,
+    loading: !state.backend.scanData.localhost || state.devices.fetching,
     nameBlacklist: state.devices.all
       .filter(device => device.shared !== 'shared-from')
       .map(device => device.name.toLowerCase()),
@@ -36,7 +36,6 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   const [selected, setSelected] = useState<ITarget[]>([])
 
   const onRegistration = () => {
-    console.log({ device: { ...device, name }, targets: selected })
     analytics.track('deviceCreated', { deviceId: device.uid, deviceName: name })
     selected.forEach(target => {
       analytics.track('serviceCreated', {
@@ -48,6 +47,10 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
     emit('registration', { device: { ...device, name }, targets: selected })
     history.push('/settings/setupWaiting')
   }
+
+  useEffect(() => {
+    if (!loading) setName(safeHostname(hostname, nameBlacklist))
+  }, [loading])
 
   useEffect(() => {
     analytics.track('networkScan')
@@ -74,6 +77,7 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
               value={name}
               variant="filled"
               error={!!nameError}
+              disabled={loading}
               onChange={event => {
                 const value = event.target.value.replace(REGEX_NAME_SAFE, '')
                 if (value !== event.target.value) {
