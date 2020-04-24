@@ -11,4 +11,9 @@ declare global {
   type ManufacturerFile = {
     manufacturer: IManufacturer
   }
+
+  type CliStderr = {
+    status: 1 | 0 | -1
+    details: string[]
+  }
 }
