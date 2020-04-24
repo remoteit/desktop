@@ -114,7 +114,7 @@ export class Analytics {
     localContext.referrer = ''
     localContext.search = ''
     localContext.url = ''
-    window.analytics.page(pageName, localContext, localContext)
+    window.analytics.page(pageName, localContext)
   }
 
   public track(trackName: string, additionalContext?: any) {
