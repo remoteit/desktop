@@ -3,9 +3,8 @@ import Logger from './Logger'
 import environment from './environment'
 import { promisify } from 'util'
 import { exec } from 'child_process'
-import * as sudo from 'sudo-prompt'
+import { sudoPromise } from './sudoPromise'
 
-const sudoPromise = promisify(sudo.exec)
 const execPromise = promisify(exec)
 
 export default class Command {
@@ -34,6 +33,15 @@ export default class Command {
     if (!this.quiet) Logger[type](message, params)
   }
 
+  parseCliErrors(stderr: string) {
+    const jsonError = stderr.substring(0, stderr.indexOf('}') + 1)
+    if (jsonError) {
+      const { details }: CliStderr = JSON.parse(jsonError)
+      return details.join('\n')
+    }
+    return stderr
+  }
+
   async exec() {
     if (this.commands.length === 0) return ''
 
@@ -57,8 +65,8 @@ export default class Command {
           params: { type: 'COMMAND STDERR', command: this.toString() },
           error: stderr.toString(),
         })
-        this.onError(stderr.toString())
-        result = stderr.toString()
+        result = this.parseCliErrors(stderr)
+        this.onError(new Error(result))
       }
 
       if (stdout) {

@@ -1,19 +1,22 @@
 import React from 'react'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
 import { Typography, CircularProgress, Divider } from '@material-ui/core'
+import { ApplicationState } from '../../store'
+import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { osName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
-import { Body } from '../../components/Body'
 import { DocsLinks } from '../../components/DocsLinks'
+import { Dispatch } from '../../store'
+import { osName } from '../../helpers/nameHelper'
+import { Body } from '../../components/Body'
 import styles from '../../styling'
 
 type Props = { os?: Ios; device: IDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
+  const { cliError } = useSelector((state: ApplicationState) => state.backend)
   const { devices } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
@@ -22,6 +25,8 @@ export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
     history.push('/settings/setupSuccess')
     devices.fetch(false)
   }
+
+  if (cliError) history.push('/settings/setupDevice')
 
   return (
     <Container header={<Breadcrumbs />}>
