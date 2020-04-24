@@ -88,13 +88,11 @@ export default class ElectronApp {
             protocol: 'http',
             hostname: 'localhost',
             port: '3000',
-            query: user.credentials,
           })
         : url.format({
             pathname: path.join(WEB_DIR, 'index.html'),
             protocol: 'file',
             slashes: true,
-            query: user.credentials,
           })
 
     this.window.loadURL(startUrl)
@@ -106,6 +104,10 @@ export default class ElectronApp {
         this.closeWindow()
       }
     })
+
+    if (user.signedIn) {
+      this.window.webContents.executeJavaScript(`setAuth(${JSON.stringify(user.credentials)})`)
+    }
 
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()

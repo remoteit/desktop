@@ -1,5 +1,5 @@
 import Controller from '../services/Controller'
-import { parse } from 'url'
+import { store } from '../store'
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
@@ -9,6 +9,7 @@ import analytics from '../helpers/Analytics'
 const USER_KEY = 'user'
 
 export interface AuthState {
+  loadingInitialState: boolean
   signInStarted: boolean
   authenticated: boolean
   signInError?: string
@@ -16,10 +17,17 @@ export interface AuthState {
 }
 
 const state: AuthState = {
+  loadingInitialState: true,
   authenticated: false,
   signInStarted: false,
   signInError: undefined,
   user: undefined,
+}
+
+// @ts-ignore
+window.setAuth = (credentials: UserCredentials) => {
+  store.dispatch.auth.setUser(credentials)
+  Controller.open()
 }
 
 export default createModel({
@@ -30,14 +38,11 @@ export default createModel({
 
       if (!user) {
         const storedUser = window.localStorage.getItem(USER_KEY)
-        const backendCredentials = parse(window.location.href, true).query
-
-        console.log('INIT AUTH', { backendCredentials, storedUser })
-
-        if (backendCredentials.username && backendCredentials.authHash) user = backendCredentials
+        console.log('INIT AUTH', { storedUser })
         if (storedUser) user = JSON.parse(storedUser)
       }
-      if (user) {
+      if (user?.username) {
+        console.log('WE HAVE A USER', user)
         dispatch.auth.setUser(user)
         analytics.identify(user.id)
       } else {
@@ -135,6 +140,8 @@ export default createModel({
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {
       state.authenticated = authenticated
+      state.loadingInitialState = false
+      console.log('NOT LOADING INITIAL STATE ANY MORE')
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
