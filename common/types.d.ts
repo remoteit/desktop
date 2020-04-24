@@ -202,10 +202,33 @@ declare global {
 
   type IPreferences = ILookup
 
-  type IManufacturer = {
-    name?: string
-    product?: { version?: string; name?: string; code?: number }
-    platform?: { name?: string; code?: number }
+  type SegmentContext = {
+    category?: string
+    appName?: string
+    appVersion?: string
+    systemOS?: string
+    systemOSVersion?: string
+    systemArch?: string
+    manufacturerId?: string
+    productVersion?: string
+    productId?: string
+    productPlatform?: number
+    productAppCode?: number
+    url?: string
+    search?: string
+    referrer?: string
+  }
+
+  type ManufacturerDetails = {
+    manufacturer: {
+      id?: string
+    }
+    product: {
+      id?: string
+      version?: string
+      platform?: number
+      appCode?: number //called manufacturerId in connectd
+    }
   }
 }
 

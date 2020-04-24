@@ -28,8 +28,8 @@ export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
 
 // CLI product tracking codes
-export const MANUFACTURE_ID_STANDARD = 32770
-export const MANUFACTURE_ID_HEADLESS = 32777
+export const MANUFACTURE_ID_STANDARD = 33280
+export const MANUFACTURE_ID_HEADLESS = 33536
 
 // CONNECTD platform tracking codes
 export const PLATFORM_CODES = {

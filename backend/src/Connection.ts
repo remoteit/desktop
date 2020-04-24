@@ -66,9 +66,9 @@ export default class Connection extends EventEmitter {
     const usernameBase64 = Buffer.from(user.username).toString('base64')
     const params = [
       '-mfg',
-      `${environment.manufactureId}`,
+      `${environment.manufacturerDetails.product.appCode}`,
       '-ptf',
-      `${environment.platformCode}`,
+      `${environment.manufacturerDetails.product.platform}`,
       '-s',
       '-p',
       usernameBase64,

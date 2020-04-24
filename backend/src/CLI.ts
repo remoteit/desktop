@@ -118,13 +118,13 @@ export default class CLI {
   }
 
   setupString(device: IDevice) {
-    return `-j --manufacture-id ${environment.manufactureId} setup "${device.name}"`
+    return `-j --manufacture-id ${environment.manufacturerDetails.product.appCode} setup "${device.name}"`
   }
 
   addString(t: ITarget) {
-    return `-j --manufacture-id ${environment.manufactureId} add "${t.name}" ${t.port} --type ${t.type} --hostname ${
-      t.hostname || '127.0.0.1'
-    }`
+    return `-j --manufacture-id ${environment.manufacturerDetails.product.appCode} add "${t.name}" ${t.port} --type ${
+      t.type
+    } --hostname ${t.hostname || '127.0.0.1'}`
   }
 
   async delete() {

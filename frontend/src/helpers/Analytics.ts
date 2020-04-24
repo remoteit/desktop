@@ -3,24 +3,15 @@ import { version } from '../../package.json'
 ///  <reference types="@types/google.analytics" />
 
 export class Analytics {
-  private context: any
+  private context: SegmentContext
   private gaAppSet: boolean
 
   public constructor() {
     this.context = {
       category: 'Desktop',
-      productName: 'Desktop',
-      productVersion: version,
-      //retrieved from backend
-      systemOS: '',
-      systemOSVersion: '',
-      systemArch: '',
-      manufacturerName: '',
-      manufacturerProductVersion: '',
-      manufacturerProductName: '',
-      manufacturerProductCode: '',
-      manufacturerPlatformName: '',
-      manufacturerPlatformCode: '',
+      appName: 'Desktop',
+      appVersion: version,
+      // remaining retrieved from backend if available
     }
     this.gaAppSet = false
   }
@@ -77,13 +68,12 @@ export class Analytics {
       }
   }
 
-  public setManufacturerDetails(details: IManufacturer) {
-    this.context.manufacturerName = details.name
-    this.context.manufacturerProductVersion = details.product?.version
-    this.context.manufacturerProductName = details.product?.name
-    this.context.manufacturerProductCode = details.product?.code
-    this.context.manufacturerPlatformName = details.platform?.name
-    this.context.manufacturerPlatformCode = details.platform?.code
+  public setManufacturerDetails(details: ManufacturerDetails) {
+    this.context.manufacturerId = details.manufacturer.id
+    this.context.productVersion = details.product.version
+    this.context.productId = details.product.id
+    this.context.productPlatform = details.product.platform
+    this.context.productAppCode = details.product.appCode
   }
 
   public setArch(arch: any) {
@@ -121,6 +111,9 @@ export class Analytics {
     if (additionalContext) {
       localContext = { ...additionalContext, ...localContext }
     }
+    localContext.referrer = ''
+    localContext.search = ''
+    localContext.url = ''
     window.analytics.page(pageName, localContext)
   }
 

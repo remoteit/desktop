@@ -17,7 +17,7 @@ type IBackendState = { [key: string]: any } & {
     os?: Ios
     osVersion?: string
     arch?: string
-    manufacturerDetails?: IManufacturer
+    manufacturerDetails?: ManufacturerDetails
     adminUsername?: string
     isElevated: boolean
     privateIP: ipAddress

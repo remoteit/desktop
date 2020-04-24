@@ -15,7 +15,6 @@ import os from 'os'
 import fs from 'fs'
 
 export class Environment {
-  version: string
   isElevated: boolean = false
   isHeadless: boolean = true
   isWindows: boolean
@@ -26,15 +25,14 @@ export class Environment {
   isPiZero: boolean
   simpleOS: Ios
   osVersion: string
-  platformCode: number
-  manufactureId: number
   privateIP: ipAddress = ''
   adminUsername: string = ''
   userPath: string
   adminPath: string
   binPath: string
   deprecatedBinaries: string[]
-  manufacturerDetails: IManufacturer
+  manufacturerDetails: ManufacturerDetails
+  version: string
 
   EVENTS = { send: 'environment' }
 
@@ -68,10 +66,7 @@ export class Environment {
       this.binPath = elevated ? PATHS.LINUX_ADMIN_BINARIES : PATHS.LINUX_USER_BINARIES
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
     }
-
-    this.manufactureId = MANUFACTURE_ID_HEADLESS
     this.manufacturerDetails = this.getManufacturerDetails()
-    this.platformCode = this.getPlatformCode()
   }
 
   get frontend() {
@@ -89,8 +84,7 @@ export class Environment {
 
   recapitate() {
     this.isHeadless = false
-    this.manufactureId = MANUFACTURE_ID_STANDARD
-    this.manufacturerDetails = this.getManufacturerDetails()
+    this.manufacturerDetails.product.appCode = MANUFACTURE_ID_STANDARD
   }
 
   getSimpleOS() {
@@ -101,18 +95,12 @@ export class Environment {
   }
 
   getPlatformCode() {
-    if (this.manufacturerDetails?.platform?.code) return this.manufacturerDetails.platform.code
     if (this.isMac) return PLATFORM_CODES.MAC
     if (this.isWindows) return PLATFORM_CODES.WINDOWS_DESKTOP
     if (this.isPi) return PLATFORM_CODES.RASPBERRY_PI
     if (this.isLinux) return PLATFORM_CODES.LINUX
     if (this.isArmLinux) return PLATFORM_CODES.LINUX_ARM
     return PLATFORM_CODES.UNKNOWN
-  }
-
-  getAppVersion() {
-    let data = new JSONFile<any>(path.join(__dirname, '../package.json')).read()
-    return data.version
   }
 
   getOsVersion() {
@@ -130,15 +118,22 @@ export class Environment {
     return release
   }
 
-  getManufacturerDetails(): IManufacturer {
-    const fileData = new JSONFile<ManufacturerFile>(path.join(this.adminPath, 'manufacturer.json')).read()
-    const manufacturer: IManufacturer = fileData?.manufacturer || {}
+  getAppVersion() {
+    let data = new JSONFile<any>(path.join(__dirname, '../package.json')).read()
+    return data.version
+  }
 
-    return {
-      name: manufacturer.name || MANUFACTURER_NAME,
-      product: manufacturer.product || { name: PRODUCT_NAME, code: this.manufactureId, version: this.version },
-      platform: manufacturer.platform || { name: `Desktop ${this.simpleOS}`, code: this.platformCode },
+  getManufacturerDetails(): ManufacturerDetails {
+    const fileData = new JSONFile<ManufacturerDetails>(path.join(this.adminPath, 'manufacturer.json')).read()
+    const manufacturerDetails: ManufacturerDetails = fileData || { manufacturer: {}, product: {} }
+    manufacturerDetails.manufacturer = manufacturerDetails.manufacturer || {} //guarantees it to have manufacturer field even if it is empty
+    manufacturerDetails.product = manufacturerDetails.product || {} //guarantees it to have product field even if it is empty
+    if (!manufacturerDetails.product.platform) {
+      manufacturerDetails.product.platform = this.getPlatformCode()
     }
+
+    manufacturerDetails.product.appCode = MANUFACTURE_ID_HEADLESS // Default to headless, update later if not
+    return manufacturerDetails
   }
 
   async setElevatedState() {
