@@ -32,6 +32,7 @@ export class Environment {
   binPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
+  version: string
 
   EVENTS = { send: 'environment' }
 
@@ -47,6 +48,7 @@ export class Environment {
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
+    this.version = this.getAppVersion()
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
@@ -114,6 +116,11 @@ export class Environment {
       }
     }
     return release
+  }
+
+  getAppVersion() {
+    let data = new JSONFile<any>(path.join(__dirname, '../package.json')).read()
+    return data.version
   }
 
   getManufacturerDetails(): ManufacturerDetails {
