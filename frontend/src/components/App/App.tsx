@@ -29,14 +29,14 @@ import { REGEX_FIRST_PATH } from '../../constants'
 import styles from '../../styling'
 
 export const App = () => {
-  const { installed, signedIn, device, targets, dataReady, uninstalling, os } = useSelector(
+  const { installed, signedOut, device, targets, dataReady, uninstalling, os } = useSelector(
     (state: ApplicationState) => ({
       installed:
         state.binaries.connectdInstalled &&
         state.binaries.muxerInstalled &&
         state.binaries.demuxerInstalled &&
         state.binaries.remoteitInstalled,
-      signedIn: state.auth.user && state.auth.authenticated,
+      signedOut: (!state.auth.user || !state.auth.authenticated) && !state.auth.loadingInitialState,
       device: state.backend.device,
       targets: state.backend.targets,
       dataReady: state.backend.dataReady,
@@ -77,7 +77,7 @@ export const App = () => {
       </Page>
     )
 
-  if (!signedIn)
+  if (signedOut)
     return (
       <Page>
         <Header />

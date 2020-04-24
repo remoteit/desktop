@@ -29,8 +29,8 @@ export class User {
     d('Reading user credentials:', { user })
     Logger.info('Setting user:', { username: user && user.username })
 
-    this.username = (user && user.username) || ''
-    this.authHash = (user && user.authHash) || ''
+    this.username = user?.username || ''
+    this.authHash = user?.authHash || ''
     if (this.hasCredentials) this.signedIn = true
   }
 
@@ -100,7 +100,6 @@ export class User {
     this.signedIn = false
 
     EventBus.emit(User.EVENTS.signedOut)
-    // await delay(1000)
   }
 
   clearAll = () => {
@@ -108,9 +107,5 @@ export class User {
     cli.signOut(true)
   }
 }
-
-// function delay(ms: number) {
-//   return new Promise(resolve => setTimeout(resolve, ms))
-// }
 
 export default new User()
