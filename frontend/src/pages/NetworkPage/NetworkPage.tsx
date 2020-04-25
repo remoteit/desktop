@@ -32,7 +32,11 @@ export const NetworkPage: React.FC = () => {
   }, [])
   return (
     <>
-      <span className={css.oob}>{oobAvailable ? <OutOfBand active={oobActive} /> : ''}</span>
+      {oobAvailable && (
+        <span className={css.oob}>
+          <OutOfBand active={oobActive} />
+        </span>
+      )}
       <Network
         data={scanData}
         targets={targets}
