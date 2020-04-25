@@ -24,6 +24,7 @@ export const NetworkPage: React.FC = () => {
     })
   )
   const scan = (interfaceName: string) => {
+    analytics.track('networkScan')
     emit('scan', interfaceName)
   }
 
