@@ -18,11 +18,10 @@ class LAN {
   oobActive?: boolean
   nextCheck?: number
 
-  private static readonly OOB_CHECK_INTERVAL = 1000 //30 * 60 * 1000 //30 Min in ms
+  private static readonly OOB_CHECK_INTERVAL = 30 * 60 * 1000 //30 Min in ms
 
   EVENTS = {
     privateIP: 'privateIP',
-    lan: 'lan',
     oob: 'oob',
   }
 

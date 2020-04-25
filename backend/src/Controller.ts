@@ -15,6 +15,7 @@ import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
 import debug from 'debug'
+import logger from './Logger'
 
 const d = debug('r3:backend:Server')
 
@@ -67,7 +68,7 @@ class Controller {
     socket.on('device', this.device)
     socket.on('registration', this.registration)
     socket.on('scan', this.scan)
-    socket.on('lan', this.lan)
+    socket.on('obb', this.oobCheck)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
     socket.on('preferences', this.preferences)
@@ -107,9 +108,11 @@ class Controller {
     this.io.emit('targets', cli.data.targets)
   }
 
-  lan = async () => {
+  oobCheck = async () => {
+    logger.info('OOB CHECK NOW')
+    Logger.info('oob: ' + lan.oobAvailable, lan.oobActive)
     await lan.checkOob()
-    this.io.emit('lan', lan)
+    this.io.emit(lan.EVENTS.oob, { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
   }
 
   interfaces = async () => {
@@ -132,7 +135,7 @@ class Controller {
   syncBackend = async () => {
     await lan.getInterfaces()
     await lan.checkOob()
-    this.io.emit('lan', lan)
+    this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)

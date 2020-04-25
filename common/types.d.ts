@@ -35,7 +35,7 @@ declare global {
     | 'device'
     | 'registration'
     | 'scan'
-    | 'lan'
+    | 'oob'
     | 'interfaces'
     | 'freePort'
     | 'restart'

@@ -8,8 +8,8 @@ export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
   const css = useStyles()
 
   useEffect(() => {
-    emit('lan')
-    let timer = setInterval(() => emit('lan'), 30000)
+    emit('oob')
+    let timer = setInterval(() => emit('oob'), 30000)
 
     return () => {
       clearInterval(timer)

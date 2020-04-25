@@ -128,13 +128,6 @@ function getEventHandlers() {
       analytics.setOobActive(oob.oobActive)
     },
 
-    lan: (lan: ILan) => {
-      console.log('lan', lan)
-      backend.set({ key: 'lan', value: lan })
-      analytics.setOobAvailable(lan.oobAvailable)
-      analytics.setOobActive(lan.oobActive)
-    },
-
     interfaces: (result: IInterface[]) => {
       console.log('socket interfaces', result)
       if (result) backend.set({ key: 'interfaces', value: result })
