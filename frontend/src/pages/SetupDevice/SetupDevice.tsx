@@ -54,6 +54,8 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
 
   useEffect(() => {
     analytics.track('networkScan')
+    // Refresh device data
+    emit('device')
     emit('scan', 'localhost')
   }, [])
 
