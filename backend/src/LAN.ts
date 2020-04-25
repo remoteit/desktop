@@ -22,13 +22,15 @@ class LAN {
 
   EVENTS = {
     privateIP: 'privateIP',
+    lan: 'lan',
+    oob: 'oob',
   }
 
   constructor() {
     wifi.init({
       iface: null, // network interface, choose a random wifi interface if set to null
     })
-    this.oobAvailable = false
+    this.oobAvailable = environment.manufacturerDetails.product.platform === PLATFORM_CODES.REMOTEIT_PI
     this.oobActive = false
     this.getInterfaces()
   }
@@ -47,15 +49,11 @@ class LAN {
 
   //Called from electron on heartbeat
   async check() {
-    Logger.info('Check LAN')
     if (this.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
-      Logger.info('Check OOB')
       let prevOobActive = this.oobActive
       await this.checkOob()
-      Logger.info('PREVIOUS: ' + prevOobActive + ' NOW: ' + this.oobActive)
       if (prevOobActive !== this.oobActive) {
-        Logger.info('EMIT LAN')
-        EventBus.emit('lan', this)
+        EventBus.emit(this.EVENTS.oob, { oobAvailable: this.oobAvailable, oobActive: this.oobActive })
       }
       this.nextCheck = Date.now() + LAN.OOB_CHECK_INTERVAL
     }
@@ -63,7 +61,6 @@ class LAN {
 
   async checkOob() {
     return new Promise<void>((success, failure) => {
-      this.oobAvailable = environment.manufacturerDetails.product.platform === PLATFORM_CODES.REMOTEIT_PI
       const lan = this
       wifi.getCurrentConnections(function (error: any, currentConnections: any) {
         if (error) failure(error)

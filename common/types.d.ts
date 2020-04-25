@@ -169,6 +169,11 @@ declare global {
     targets: ITarget[]
   }
 
+  interface IOob {
+    oobAvailable: boolean
+    oobActive: boolean
+  }
+
   interface ILan {
     oobAvailable: boolean
     oobActive: boolean
