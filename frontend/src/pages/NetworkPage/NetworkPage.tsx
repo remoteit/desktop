@@ -28,6 +28,10 @@ export const NetworkPage: React.FC = () => {
   }
 
   useEffect(() => {
+    emit('interfaces')
+  }, [])
+
+  useEffect(() => {
     analytics.page('NetworkPage')
   }, [])
   return (
