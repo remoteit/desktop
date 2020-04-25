@@ -1,14 +1,21 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
+import React, { useEffect } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { Tooltip, Link } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
+import { emit } from '../../services/Controller'
 
 export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
-  const { os } = useSelector((state: ApplicationState) => state.backend.environment)
   const css = useStyles()
-  if (os === 'mac' || os === 'windows') return null
+
+  useEffect(() => {
+    emit('oobCheck')
+    let timer = setInterval(() => emit('oobCheck'), 30000)
+
+    return () => {
+      clearInterval(timer)
+    }
+  }, [])
+
   return (
     <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
       <Link href="https://docs.remote.it/guides/out-of-band" target="_blank">

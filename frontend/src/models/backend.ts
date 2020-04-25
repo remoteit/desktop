@@ -7,6 +7,10 @@ type IBackendState = { [key: string]: any } & {
   targets: ITarget[]
   scanData: IScanData
   interfaces: IInterface[]
+  lan: {
+    oobAvailable: boolean
+    oobActive: boolean
+  }
   added?: ITarget
   error: boolean
   freePort?: number
@@ -32,6 +36,10 @@ const state: IBackendState = {
   targets: [],
   scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
+  lan: {
+    oobAvailable: false,
+    oobActive: false,
+  },
   added: undefined,
   error: false,
   freePort: undefined,

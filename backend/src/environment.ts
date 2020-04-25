@@ -1,11 +1,4 @@
-import {
-  PATHS,
-  MANUFACTURE_ID_HEADLESS,
-  MANUFACTURE_ID_STANDARD,
-  PLATFORM_CODES,
-  PRODUCT_NAME,
-  MANUFACTURER_NAME,
-} from './constants'
+import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import JSONFile from './JSONFile'

@@ -13,13 +13,16 @@ export const NetworkPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const { backend } = useDispatch<Dispatch>()
-  const { interfaces, targets, scanData, privateIP } = useSelector((state: ApplicationState) => ({
-    interfaces: state.backend.interfaces,
-    targets: state.backend.targets,
-    scanData: state.backend.scanData,
-    privateIP: state.backend.environment.privateIP,
-  }))
-
+  const { interfaces, targets, scanData, privateIP, oobAvailable, oobActive } = useSelector(
+    (state: ApplicationState) => ({
+      interfaces: state.backend.interfaces,
+      targets: state.backend.targets,
+      scanData: state.backend.scanData,
+      privateIP: state.backend.environment.privateIP,
+      oobAvailable: state.backend.lan.oobAvailable,
+      oobActive: state.backend.lan.oobActive,
+    })
+  )
   const scan = (interfaceName: string) => {
     analytics.track('networkScan')
     emit('scan', interfaceName)
@@ -32,12 +35,13 @@ export const NetworkPage: React.FC = () => {
   useEffect(() => {
     analytics.page('NetworkPage')
   }, [])
-
   return (
     <>
-      <span className={css.oob}>
-        <OutOfBand active={interfaces.length > 1} />
-      </span>
+      {oobAvailable && (
+        <span className={css.oob}>
+          <OutOfBand active={oobActive} />
+        </span>
+      )}
       <Network
         data={scanData}
         targets={targets}

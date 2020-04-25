@@ -121,6 +121,13 @@ function getEventHandlers() {
       if (result) backend.set({ key: 'scanData', value: result })
     },
 
+    oob: (oob: IOob) => {
+      console.log('oob', oob)
+      backend.set({ key: 'lan', value: oob })
+      analytics.setOobAvailable(oob.oobAvailable)
+      analytics.setOobActive(oob.oobActive)
+    },
+
     interfaces: (result: IInterface[]) => {
       console.log('socket interfaces', result)
       if (result) backend.set({ key: 'interfaces', value: result })

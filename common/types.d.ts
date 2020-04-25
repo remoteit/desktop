@@ -35,6 +35,7 @@ declare global {
     | 'device'
     | 'registration'
     | 'scan'
+    | 'oobCheck'
     | 'interfaces'
     | 'freePort'
     | 'restart'
@@ -168,6 +169,16 @@ declare global {
     targets: ITarget[]
   }
 
+  interface IOob {
+    oobAvailable: boolean
+    oobActive: boolean
+  }
+
+  interface ILan {
+    oobAvailable: boolean
+    oobActive: boolean
+  }
+
   type IScan = [string, [number, string][]] // address, port, type string
 
   type IScanData = {
@@ -214,6 +225,8 @@ declare global {
     productId?: string
     productPlatform?: number
     productAppCode?: number
+    oobAvailable?: boolean
+    oobActive?: boolean
     url?: string
     search?: string
     referrer?: string

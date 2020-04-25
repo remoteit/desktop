@@ -1,4 +1,4 @@
-import { IP_PRIVATE } from './constants'
+import { IP_PRIVATE, PLATFORM_CODES, REMOTEIT_PI_WIFI } from './constants'
 import environment from './environment'
 import Logger from './Logger'
 import Tracker from './Tracker'
@@ -6,6 +6,7 @@ import EventBus from './EventBus'
 import cli from './cliInterface'
 import nm from 'netmask'
 import nw from 'network'
+import wifi from 'node-wifi'
 
 const { Netmask } = nm
 
@@ -13,12 +14,23 @@ class LAN {
   data: IScanData = {}
   interfaces?: IInterface[]
   privateIP?: ipAddress = 'unknown'
+  oobAvailable?: boolean
+  oobActive?: boolean
+  nextCheck?: number
+
+  private static readonly OOB_CHECK_INTERVAL = 30 * 60 * 1000 //30 Min in ms
 
   EVENTS = {
     privateIP: 'privateIP',
+    oob: 'oob',
   }
 
   constructor() {
+    wifi.init({
+      iface: null, // network interface, choose a random wifi interface if set to null
+    })
+    this.oobAvailable = environment.manufacturerDetails.product.platform === PLATFORM_CODES.REMOTEIT_PI
+    this.oobActive = false
     this.getInterfaces()
   }
 
@@ -32,6 +44,42 @@ class LAN {
     Logger.info('PRIVATE IP', { ip: this.privateIP })
     environment.privateIP = this.privateIP || ''
     EventBus.emit(environment.EVENTS.send, environment.frontend)
+  }
+
+  //Called from electron on heartbeat
+  async check() {
+    if (this.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
+      let prevOobActive = this.oobActive
+      await this.checkOob()
+      if (prevOobActive !== this.oobActive) {
+        EventBus.emit(this.EVENTS.oob, { oobAvailable: this.oobAvailable, oobActive: this.oobActive })
+      }
+      this.nextCheck = Date.now() + LAN.OOB_CHECK_INTERVAL
+    }
+  }
+
+  async checkOob() {
+    return new Promise<void>((success, failure) => {
+      const lan = this
+      if (!lan.oobAvailable) {
+        lan.oobAvailable = false
+        success()
+        return
+      }
+      wifi.getCurrentConnections(function (error: any, currentConnections: any) {
+        if (error) failure(error)
+        for (let connection of currentConnections) {
+          if (connection.ssid === REMOTEIT_PI_WIFI) {
+            lan.oobActive = true
+            success()
+            return
+          }
+        }
+        lan.oobActive = false
+        success()
+        return
+      })
+    })
   }
 
   async getInterfaces() {
