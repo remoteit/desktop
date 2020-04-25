@@ -4,7 +4,6 @@ import { ConnectionsList } from '../../components/ConnectionsList'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import analytics from '../../helpers/Analytics'
-import { emit } from '../../services/Controller'
 
 export const ConnectionsPage: React.FC = () => {
   const connections = useSelector((state: ApplicationState) => state.backend.connections.filter(c => !!c.startTime))
