@@ -26,7 +26,7 @@ export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
     devices.fetch(false)
   }
 
-  if (cliError) history.push('/settings/setupDevice')
+  if (cliError) history.push('/settings')
 
   return (
     <Container header={<Breadcrumbs />}>

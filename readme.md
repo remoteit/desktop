@@ -83,7 +83,7 @@ Also a user in guest view can be logged out if the primary user logs in.
 
 ## Troubleshooting
 
-If things aren't working the best way to clear everything and start over is to use the "Uninstall command line tools" menu in the advanced settings screen.
+If things aren't working the best way to clear everything and start over is to use the **Uninstall command line tools** menu in the advanced settings screen.
 
 **CLI tools**
 
