@@ -1,10 +1,21 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { Tooltip, Link } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
+import { emit } from '../../services/Controller'
 
 export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
   const css = useStyles()
+
+  useEffect(() => {
+    emit('lan')
+    let timer = setInterval(() => emit('lan'), 30000)
+
+    return () => {
+      clearInterval(timer)
+    }
+  }, [])
+
   return (
     <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
       <Link href="https://docs.remote.it/guides/out-of-band" target="_blank">

@@ -25,19 +25,7 @@ export const NetworkPage: React.FC = () => {
   )
   const scan = (interfaceName: string) => {
     emit('scan', interfaceName)
-    emit('lan')
   }
-
-  useEffect(() => {
-    if (oobAvailable) {
-      emit('lan')
-      let timer = setInterval(() => emit('lan'), 30000)
-
-      return () => {
-        clearInterval(timer)
-      }
-    }
-  }, [])
 
   useEffect(() => {
     analytics.page('NetworkPage')
