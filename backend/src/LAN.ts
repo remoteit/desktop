@@ -6,6 +6,7 @@ import EventBus from './EventBus'
 import cli from './cliInterface'
 import nm from 'netmask'
 import nw from 'network'
+import wifi from 'node-wifi'
 
 const { Netmask } = nm
 
@@ -19,6 +20,9 @@ class LAN {
   }
 
   constructor() {
+    wifi.init({
+      iface: null, // network interface, choose a random wifi interface if set to null
+    })
     this.getInterfaces()
   }
 
@@ -61,6 +65,19 @@ class LAN {
           success()
         })
       })
+    })
+  }
+
+  async checkForWifiNetwork(ssid: string, callback: (b: boolean) => void) {
+    wifi.getCurrentConnections(function (_: any, currentConnections: any) {
+      for (let connection of currentConnections) {
+        if (connection.ssid === ssid) {
+          callback(true)
+          return
+        }
+      }
+      callback(false)
+      return
     })
   }
 

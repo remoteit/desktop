@@ -57,6 +57,7 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
     // Refresh device data
     emit('device')
     emit('scan', 'localhost')
+    emit('interfaces')
   }, [])
 
   return (

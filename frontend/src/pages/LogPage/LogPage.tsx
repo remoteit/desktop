@@ -9,6 +9,7 @@ import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
+import { emit } from '../../services/Controller'
 
 export const LogPage: React.FC = () => {
   const { serviceID = '' } = useParams()
@@ -18,6 +19,7 @@ export const LogPage: React.FC = () => {
 
   useEffect(() => {
     analytics.page('LogPage')
+    emit('interfaces')
   }, [])
 
   return (

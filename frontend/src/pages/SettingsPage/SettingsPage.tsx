@@ -46,6 +46,7 @@ export const SettingsPage = () => {
 
   useEffect(() => {
     analytics.page('SettingsPage')
+    emit('interfaces')
   }, [])
 
   return (

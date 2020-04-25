@@ -26,6 +26,7 @@
     "is-elevated": "^3.0.0",
     "netmask": "^1.0.6",
     "network": "^0.5.0",
+    "node-wifi": "^2.0.12",
     "plist": "^3.0.1",
     "portfinder": "^1.0.25",
     "remote.it": "^0.44.1",

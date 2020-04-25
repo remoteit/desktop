@@ -214,6 +214,8 @@ declare global {
     productId?: string
     productPlatform?: number
     productAppCode?: number
+    oobAvailable?: boolean
+    oobActive?: boolean
     url?: string
     search?: string
     referrer?: string

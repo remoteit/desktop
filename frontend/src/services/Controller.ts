@@ -136,6 +136,8 @@ function getEventHandlers() {
       analytics.setOsVersion(result.osVersion)
       analytics.setArch(result.arch)
       analytics.setManufacturerDetails(result.manufacturerDetails)
+      analytics.setOobAvailable(result.oobAvailable)
+      analytics.setOobActive(result.oobActive)
     },
 
     preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),

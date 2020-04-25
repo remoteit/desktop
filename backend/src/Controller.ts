@@ -108,6 +108,7 @@ class Controller {
 
   interfaces = async () => {
     await lan.getInterfaces()
+    environment.checkOob()
     this.io.emit('interfaces', lan.interfaces)
   }
 
@@ -124,6 +125,8 @@ class Controller {
   preferences = preferences.set
 
   syncBackend = async () => {
+    environment.checkOob()
+    await lan.getInterfaces()
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)

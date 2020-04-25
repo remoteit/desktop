@@ -22,6 +22,8 @@ type IBackendState = { [key: string]: any } & {
     isElevated: boolean
     privateIP: ipAddress
     hostname: string
+    oobAvailable: boolean
+    oobActive: boolean
   }
   preferences: IPreferences
 }
@@ -47,6 +49,8 @@ const state: IBackendState = {
     isElevated: false,
     privateIP: '',
     hostname: '',
+    oobAvailable: false,
+    oobActive: false,
   },
   preferences: {},
 }

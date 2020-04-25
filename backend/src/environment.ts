@@ -5,6 +5,7 @@ import {
   PLATFORM_CODES,
   PRODUCT_NAME,
   MANUFACTURER_NAME,
+  REMOTEIT_PI_WIFI,
 } from './constants'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
@@ -13,6 +14,9 @@ import plist from 'plist'
 import path from 'path'
 import os from 'os'
 import fs from 'fs'
+import lan from './LAN'
+import { environment } from '.'
+import EventBus from './EventBus'
 
 export class Environment {
   isElevated: boolean = false
@@ -33,6 +37,8 @@ export class Environment {
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   version: string
+  oobAvailable: boolean
+  oobActive: boolean
 
   EVENTS = { send: 'environment' }
 
@@ -67,6 +73,9 @@ export class Environment {
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
     }
     this.manufacturerDetails = this.getManufacturerDetails()
+
+    this.oobAvailable = this.manufacturerDetails.product.platform === PLATFORM_CODES.REMOTEIT_PI
+    this.oobActive = false
   }
 
   get frontend() {
@@ -78,6 +87,8 @@ export class Environment {
       adminUsername: this.adminUsername,
       isElevated: this.isElevated,
       privateIP: this.privateIP,
+      oobAvailable: this.oobAvailable,
+      oobActive: this.oobActive,
       hostname: os.hostname(),
     }
   }
@@ -85,6 +96,16 @@ export class Environment {
   recapitate() {
     this.isHeadless = false
     this.manufacturerDetails.product.appCode = MANUFACTURE_ID_STANDARD
+  }
+
+  checkOob() {
+    lan.checkForWifiNetwork(REMOTEIT_PI_WIFI, Environment.updateOob)
+  }
+
+  //passsed to and called by wifi checking function
+  static updateOob(isActive: boolean) {
+    environment.oobActive = isActive
+    EventBus.emit(environment.EVENTS.send, environment.frontend)
   }
 
   getSimpleOS() {

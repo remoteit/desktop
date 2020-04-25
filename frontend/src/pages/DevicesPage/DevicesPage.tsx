@@ -11,6 +11,7 @@ import { IDevice } from 'remote.it'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 import analytics from '../../helpers/Analytics'
+import { emit } from '../../services/Controller'
 
 interface SelectResponse {
   visibleDevices: IDevice[]
@@ -74,6 +75,7 @@ export const DevicesPage = connect(
 
     useEffect(() => {
       analytics.page('DevicesPage')
+      emit('interfaces')
     }, [])
 
     return (

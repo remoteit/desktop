@@ -76,6 +76,14 @@ export class Analytics {
     this.context.productAppCode = details.product.appCode
   }
 
+  public setOobAvailable(isAvailable: boolean) {
+    this.context.oobAvailable = isAvailable
+  }
+
+  public setOobActive(isActive: boolean) {
+    this.context.oobActive = isActive
+  }
+
   public setArch(arch: any) {
     this.context.systemArch = arch
   }
