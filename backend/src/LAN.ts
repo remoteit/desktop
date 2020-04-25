@@ -62,6 +62,11 @@ class LAN {
   async checkOob() {
     return new Promise<void>((success, failure) => {
       const lan = this
+      if (!lan.oobAvailable) {
+        lan.oobAvailable = false
+        success()
+        return
+      }
       wifi.getCurrentConnections(function (error: any, currentConnections: any) {
         if (error) failure(error)
         for (let connection of currentConnections) {
