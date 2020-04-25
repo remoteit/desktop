@@ -15,7 +15,6 @@ import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
 import debug from 'debug'
-import logger from './Logger'
 
 const d = debug('r3:backend:Server')
 
