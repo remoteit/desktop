@@ -16,6 +16,9 @@ class LAN {
   privateIP?: ipAddress = 'unknown'
   oobAvailable?: boolean
   oobActive?: boolean
+  nextCheck?: number
+
+  private static readonly OOB_CHECK_INTERVAL = 1000 //30 * 60 * 1000 //30 Min in ms
 
   EVENTS = {
     privateIP: 'privateIP',
@@ -40,6 +43,22 @@ class LAN {
     Logger.info('PRIVATE IP', { ip: this.privateIP })
     environment.privateIP = this.privateIP || ''
     EventBus.emit(environment.EVENTS.send, environment.frontend)
+  }
+
+  //Called from electron on heartbeat
+  async check() {
+    Logger.info('Check LAN')
+    if (this.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
+      Logger.info('Check OOB')
+      let prevOobActive = this.oobActive
+      await this.checkOob()
+      Logger.info('PREVIOUS: ' + prevOobActive + ' NOW: ' + this.oobActive)
+      if (prevOobActive !== this.oobActive) {
+        Logger.info('EMIT LAN')
+        EventBus.emit('lan', this)
+      }
+      this.nextCheck = Date.now() + LAN.OOB_CHECK_INTERVAL
+    }
   }
 
   async checkOob() {

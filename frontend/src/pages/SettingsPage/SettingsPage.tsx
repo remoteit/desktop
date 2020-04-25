@@ -46,7 +46,6 @@ export const SettingsPage = () => {
 
   useEffect(() => {
     analytics.page('SettingsPage')
-    emit('lan')
   }, [])
 
   return (

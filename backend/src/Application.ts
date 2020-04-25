@@ -10,6 +10,7 @@ import user, { User } from './User'
 import server from './server'
 import Tracker from './Tracker'
 import EventBus from './EventBus'
+import lan from './LAN'
 
 export default class Application {
   public electron?: any
@@ -58,6 +59,7 @@ export default class Application {
     remoteitInstaller.check()
     this.pool.check()
     cli.check()
+    lan.check()
   }
 
   private bindExitHandlers = () => {
