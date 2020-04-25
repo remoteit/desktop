@@ -8,7 +8,6 @@ import { emit } from '../../services/Controller'
 export function DebugPage() {
   useEffect(() => {
     analytics.page('DebugPage')
-    emit('interfaces')
   }, [])
 
   return (

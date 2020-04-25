@@ -75,7 +75,7 @@ export const DevicesPage = connect(
 
     useEffect(() => {
       analytics.page('DevicesPage')
-      emit('interfaces')
+      emit('lan')
     }, [])
 
     return (

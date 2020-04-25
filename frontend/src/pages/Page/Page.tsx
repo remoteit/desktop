@@ -17,12 +17,11 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend } = useDispatch<Dispatch>()
-  const { connected, cliError, authenticated, os, oobAvailable } = useSelector((state: ApplicationState) => ({
+  const { connected, cliError, authenticated, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
     cliError: state.backend.cliError,
     os: state.backend.environment.os,
     authenticated: state.auth.authenticated,
-    oobAvailable: state.backend.environment.oobAvailable,
   }))
 
   const css = useStyles()

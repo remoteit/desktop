@@ -1,6 +1,4 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
 import { makeStyles } from '@material-ui/styles'
 import { Tooltip, Link } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'

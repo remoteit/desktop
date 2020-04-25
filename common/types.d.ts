@@ -35,6 +35,7 @@ declare global {
     | 'device'
     | 'registration'
     | 'scan'
+    | 'lan'
     | 'interfaces'
     | 'freePort'
     | 'restart'
@@ -166,6 +167,11 @@ declare global {
   interface IRegistration {
     device: IDevice
     targets: ITarget[]
+  }
+
+  interface ILan {
+    oobAvailable: boolean
+    oobActive: boolean
   }
 
   type IScan = [string, [number, string][]] // address, port, type string

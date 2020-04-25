@@ -5,12 +5,10 @@ import { SignInFormController } from '../../controllers/SignInFormController/Sig
 import { makeStyles } from '@material-ui/styles'
 import styles from '../../styling'
 import analytics from '../../helpers/Analytics'
-import { emit } from '../../services/Controller'
 
 export function SignInPage() {
   useEffect(() => {
     analytics.page('SigninPage')
-    emit('interfaces')
   }, [])
 
   const css = useStyles()

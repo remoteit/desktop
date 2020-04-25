@@ -67,6 +67,7 @@ class Controller {
     socket.on('device', this.device)
     socket.on('registration', this.registration)
     socket.on('scan', this.scan)
+    socket.on('lan', this.lan)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
     socket.on('preferences', this.preferences)
@@ -106,9 +107,13 @@ class Controller {
     this.io.emit('targets', cli.data.targets)
   }
 
+  lan = async () => {
+    await lan.checkOob()
+    this.io.emit('lan', lan)
+  }
+
   interfaces = async () => {
     await lan.getInterfaces()
-    environment.checkOob()
     this.io.emit('interfaces', lan.interfaces)
   }
 
@@ -125,8 +130,9 @@ class Controller {
   preferences = preferences.set
 
   syncBackend = async () => {
-    environment.checkOob()
     await lan.getInterfaces()
+    await lan.checkOob()
+    this.io.emit('lan', lan)
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)

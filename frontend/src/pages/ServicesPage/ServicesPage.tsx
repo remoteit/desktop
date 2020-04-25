@@ -11,7 +11,6 @@ import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import analytics from '../../helpers/Analytics'
-import { emit } from '../../services/Controller'
 
 const mapState = (state: ApplicationState, params: any) => ({
   connections: state.backend.connections,
@@ -31,7 +30,6 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
 
   useEffect(() => {
     analytics.page('ServicesPage')
-    emit('interfaces')
   }, [])
 
   if (!device) return <Typography variant="h1">No device found</Typography>

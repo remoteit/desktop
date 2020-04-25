@@ -19,20 +19,19 @@ export const NetworkPage: React.FC = () => {
       targets: state.backend.targets,
       scanData: state.backend.scanData,
       privateIP: state.backend.environment.privateIP,
-      oobAvailable: state.backend.environment.oobAvailable,
-      oobActive: state.backend.environment.oobActive,
+      oobAvailable: state.backend.lan.oobAvailable,
+      oobActive: state.backend.lan.oobActive,
     })
   )
-
   const scan = (interfaceName: string) => {
     emit('scan', interfaceName)
-    emit('interfaces')
+    emit('lan')
   }
 
   useEffect(() => {
     if (oobAvailable) {
-      emit('interfaces')
-      let timer = setInterval(() => emit('interfaces'), 30000)
+      emit('lan')
+      let timer = setInterval(() => emit('lan'), 30000)
 
       return () => {
         clearInterval(timer)

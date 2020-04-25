@@ -7,6 +7,10 @@ type IBackendState = { [key: string]: any } & {
   targets: ITarget[]
   scanData: IScanData
   interfaces: IInterface[]
+  lan: {
+    oobAvailable: boolean
+    oobActive: boolean
+  }
   added?: ITarget
   error: boolean
   freePort?: number
@@ -22,8 +26,6 @@ type IBackendState = { [key: string]: any } & {
     isElevated: boolean
     privateIP: ipAddress
     hostname: string
-    oobAvailable: boolean
-    oobActive: boolean
   }
   preferences: IPreferences
 }
@@ -34,6 +36,10 @@ const state: IBackendState = {
   targets: [],
   scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
+  lan: {
+    oobAvailable: false,
+    oobActive: false,
+  },
   added: undefined,
   error: false,
   freePort: undefined,
@@ -49,8 +55,6 @@ const state: IBackendState = {
     isElevated: false,
     privateIP: '',
     hostname: '',
-    oobAvailable: false,
-    oobActive: false,
   },
   preferences: {},
 }

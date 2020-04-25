@@ -121,6 +121,13 @@ function getEventHandlers() {
       if (result) backend.set({ key: 'scanData', value: result })
     },
 
+    lan: (lan: ILan) => {
+      console.log('lan', lan)
+      backend.set({ key: 'lan', value: lan })
+      analytics.setOobAvailable(lan.oobAvailable)
+      analytics.setOobActive(lan.oobActive)
+    },
+
     interfaces: (result: IInterface[]) => {
       console.log('socket interfaces', result)
       if (result) backend.set({ key: 'interfaces', value: result })
@@ -136,8 +143,6 @@ function getEventHandlers() {
       analytics.setOsVersion(result.osVersion)
       analytics.setArch(result.arch)
       analytics.setManufacturerDetails(result.manufacturerDetails)
-      analytics.setOobAvailable(result.oobAvailable)
-      analytics.setOobActive(result.oobActive)
     },
 
     preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),

@@ -1,4 +1,4 @@
-import { IP_PRIVATE } from './constants'
+import { IP_PRIVATE, PLATFORM_CODES, REMOTEIT_PI_WIFI } from './constants'
 import environment from './environment'
 import Logger from './Logger'
 import Tracker from './Tracker'
@@ -14,6 +14,8 @@ class LAN {
   data: IScanData = {}
   interfaces?: IInterface[]
   privateIP?: ipAddress = 'unknown'
+  oobAvailable?: boolean
+  oobActive?: boolean
 
   EVENTS = {
     privateIP: 'privateIP',
@@ -23,6 +25,8 @@ class LAN {
     wifi.init({
       iface: null, // network interface, choose a random wifi interface if set to null
     })
+    this.oobAvailable = false
+    this.oobActive = false
     this.getInterfaces()
   }
 
@@ -36,6 +40,26 @@ class LAN {
     Logger.info('PRIVATE IP', { ip: this.privateIP })
     environment.privateIP = this.privateIP || ''
     EventBus.emit(environment.EVENTS.send, environment.frontend)
+  }
+
+  async checkOob() {
+    return new Promise<void>((success, failure) => {
+      this.oobAvailable = environment.manufacturerDetails.product.platform === PLATFORM_CODES.REMOTEIT_PI
+      const lan = this
+      wifi.getCurrentConnections(function (error: any, currentConnections: any) {
+        if (error) failure(error)
+        for (let connection of currentConnections) {
+          if (connection.ssid === REMOTEIT_PI_WIFI) {
+            lan.oobActive = true
+            success()
+            return
+          }
+        }
+        lan.oobActive = false
+        success()
+        return
+      })
+    })
   }
 
   async getInterfaces() {
@@ -65,19 +89,6 @@ class LAN {
           success()
         })
       })
-    })
-  }
-
-  async checkForWifiNetwork(ssid: string, callback: (b: boolean) => void) {
-    wifi.getCurrentConnections(function (_: any, currentConnections: any) {
-      for (let connection of currentConnections) {
-        if (connection.ssid === ssid) {
-          callback(true)
-          return
-        }
-      }
-      callback(false)
-      return
     })
   }
 

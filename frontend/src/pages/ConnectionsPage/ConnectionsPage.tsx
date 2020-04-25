@@ -16,7 +16,7 @@ export const ConnectionsPage: React.FC = () => {
   )
   useEffect(() => {
     analytics.page('ConnectionsPage')
-    emit('interfaces')
+    emit('lan')
   }, [])
 
   return <ConnectionsList connections={connections} services={services} />

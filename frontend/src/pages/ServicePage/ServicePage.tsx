@@ -28,7 +28,6 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
-import { emit } from '../../services/Controller'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -41,7 +40,6 @@ export const ServicePage: React.FC = () => {
 
   useEffect(() => {
     analytics.page('ServicePage')
-    emit('interfaces')
   }, [])
 
   if (!service || !device)
