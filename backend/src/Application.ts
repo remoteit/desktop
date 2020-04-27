@@ -23,6 +23,7 @@ export default class Application {
   }
 
   async constructorSync() {
+    await lan.checkOob()
     this.bindExitHandlers()
     await environment.setElevatedState()
     remoteitInstaller.check(true)

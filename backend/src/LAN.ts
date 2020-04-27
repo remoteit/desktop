@@ -6,7 +6,7 @@ import EventBus from './EventBus'
 import cli from './cliInterface'
 import nm from 'netmask'
 import nw from 'network'
-import wifi from 'node-wifi'
+import PiWifi from 'rpi-wifi-connection'
 
 const { Netmask } = nm
 
@@ -26,9 +26,6 @@ class LAN {
   }
 
   constructor() {
-    wifi.init({
-      iface: null, // network interface, choose a random wifi interface if set to null
-    })
     this.oobAvailable = environment.manufacturerDetails.product.platform === PLATFORM_CODES.REMOTEIT_PI
     this.oobActive = false
     this.getInterfaces()
@@ -59,27 +56,25 @@ class LAN {
   }
 
   async checkOob() {
-    return new Promise<void>((success, failure) => {
-      const lan = this
-      if (!lan.oobAvailable) {
-        lan.oobAvailable = false
-        success()
-        return
-      }
-      wifi.getCurrentConnections(function (error: any, currentConnections: any) {
-        if (error) failure(error)
-        for (let connection of currentConnections) {
-          if (connection.ssid === REMOTEIT_PI_WIFI) {
-            lan.oobActive = true
-            success()
-            return
-          }
+    this.oobActive = false
+    if (!this.oobAvailable) {
+      return
+    }
+    try {
+      if (environment.isPi || environment.isPiZero) {
+        Logger.info('GET WIFI STATUS')
+        let piWifi = new PiWifi()
+        let status = await piWifi.getStatus()
+        Logger.info('Status:')
+        Logger.info(status)
+        if (status.ssid === REMOTEIT_PI_WIFI) {
+          this.oobActive = true
+          return
         }
-        lan.oobActive = false
-        success()
-        return
-      })
-    })
+      }
+    } catch (error) {
+      Logger.error(error)
+    }
   }
 
   async getInterfaces() {

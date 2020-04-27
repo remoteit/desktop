@@ -130,8 +130,6 @@ class Controller {
   preferences = preferences.set
 
   syncBackend = async () => {
-    await lan.getInterfaces()
-    await lan.checkOob()
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
