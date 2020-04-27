@@ -23,8 +23,8 @@ export const API_URL = process.env.API_URL || 'https://api.remot3.it/apv/v27'
 export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 // CLI
-export const CLI_VERSION = '1.2.0'
-export const CLI_DOWNLOAD = 'AWS' // AWS or GitHub
+export const CLI_VERSION = '1.2.1'
+export const CLI_DOWNLOAD: 'AWS' | 'GitHub' = 'GitHub' // AWS or GitHub
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
 

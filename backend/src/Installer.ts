@@ -157,9 +157,7 @@ export default class Installer {
             d('No response from download URL', res1, this)
             return reject(new Error('No response from download URL!'))
           }
-          if (res1.headers['content-length']) {
-            stream(res1)
-          } else if (res1.headers.location) {
+          if (res1.headers.location) {
             https
               .get(res1.headers.location, res2 => {
                 if (!res2 || !res2.headers || !res2.headers['content-length'])
@@ -167,6 +165,8 @@ export default class Installer {
                 stream(res2)
               })
               .on('error', reject)
+          } else if (res1.headers['content-length']) {
+            stream(res1)
           } else {
             d('No download header in download URL', res1)
             return reject(new Error('No download header in download URL!'))
