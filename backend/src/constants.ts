@@ -24,7 +24,7 @@ export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00N
 
 // CLI
 export const CLI_VERSION = '1.2.1'
-export const CLI_DOWNLOAD = 'GitHub' // AWS or GitHub
+export const CLI_DOWNLOAD: 'AWS' | 'GitHub' = 'GitHub' // AWS or GitHub
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
 
