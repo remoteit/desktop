@@ -3,7 +3,7 @@ import { store } from '../store'
 
 export function lanShareRestriction(connection?: IConnection) {
   if (!connection || connection.host !== IP_OPEN) return 'Off'
-  const { privateIP } = store.getState().backend
+  const { privateIP } = store.getState().backend.environment
 
   if (connection.restriction === undefined) return 'Off'
   if (connection.restriction === IP_OPEN) return 'No restriction'
