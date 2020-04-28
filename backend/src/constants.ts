@@ -7,9 +7,6 @@ export const PRODUCT_NAME = 'Desktop'
 export const MANUFACTURER_NAME = 'remote.it'
 export const REMOTEIT_PI_WIFI = 'remote.itPi'
 
-// Port for the Socket.io websocket server
-export const PORT = Number(process.env.PORT || 29999)
-
 // Google Analytics usage tracking
 export const GOOGLE_ANALYTICS_CODE = 'UA-76016818-10'
 export const HEARTBEAT_INTERVAL = 1000 * 60 // 1 bmp
@@ -48,6 +45,11 @@ export const PLATFORM_CODES = {
 
 // Web directory
 export const WEB_DIR = path.join(__dirname, '../build')
+export const SSL_DIR = path.join(__dirname, '../ssl')
+
+// Port for the Socket.io websocket server
+export const WEB_PORT = Number(process.env.PORT || 29999)
+export const SSL_PORT = WEB_PORT - 1
 
 // Install paths
 export const PATHS = {
