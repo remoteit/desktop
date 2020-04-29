@@ -18,7 +18,6 @@ const d = debug('r3:backend:Server')
 
 class Server {
   public io?: SocketIO.Server
-  public ioSSL?: SocketIO.Server
   public socket?: SocketIO.Socket
   private app: Express
 
@@ -72,8 +71,9 @@ class Server {
         Logger.info('HTTPS SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
       })
 
-    this.io = SocketIO(server)
-    this.ioSSL = SocketIO(secureServer)
+    this.io = SocketIO()
+    this.io.attach(server)
+    this.io.attach(secureServer)
 
     const authOptions = {
       authenticate: this.authenticate,
@@ -82,7 +82,6 @@ class Server {
     }
 
     socketioAuth(this.io, authOptions)
-    socketioAuth(this.ioSSL, authOptions)
   }
 
   authenticate = async (

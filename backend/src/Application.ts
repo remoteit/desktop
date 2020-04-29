@@ -31,7 +31,6 @@ export default class Application {
     this.startHeartbeat()
 
     if (server.io) new Controller(server.io, this.pool)
-    if (server.ioSSL) new Controller(server.ioSSL, this.pool)
 
     EventBus.on(User.EVENTS.signedIn, this.check)
     EventBus.on(User.EVENTS.signedOut, this.handleSignedOut)
