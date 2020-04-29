@@ -29,6 +29,7 @@ export default class Application {
     remoteitInstaller.check(true)
     server.start()
     this.startHeartbeat()
+
     if (server.io) new Controller(server.io, this.pool)
 
     EventBus.on(User.EVENTS.signedIn, this.check)

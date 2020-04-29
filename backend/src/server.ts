@@ -2,6 +2,9 @@ import app from '.'
 import debug from 'debug'
 import EventBus from './EventBus'
 import express, { Express } from 'express'
+import fs from 'fs'
+import path from 'path'
+import https from 'https'
 import user from './User'
 import cors from 'cors'
 import Logger from './Logger'
@@ -9,7 +12,7 @@ import SocketIO from 'socket.io'
 import systemInfo from './systemInfo'
 import socketioAuth from 'socketio-auth'
 import { createServer } from 'http'
-import { PORT, WEB_DIR } from './constants'
+import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 
 const d = debug('r3:backend:Server')
 
@@ -26,6 +29,13 @@ class Server {
   constructor() {
     this.app = express()
     const router = express.Router()
+
+    // ipAddress detection disabled until needed
+    // this.app.use((req, res, next) => {
+    //   const ipAddress = (req.ip || req.connection?.remoteAddress || undefined)?.replace(/.*:/g, '')
+    //   Logger.info('REQUEST IP_ADDRESS', { ipAddress })
+    //   next()
+    // })
 
     this.app.use(cors())
     this.app.use(express.static(WEB_DIR))
@@ -44,18 +54,34 @@ class Server {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
         app.quit()
       })
-      .listen(PORT, () => {
-        d(`Listening on port ${PORT}`)
-        Logger.info('SERVER STARTED', { port: PORT, directory: WEB_DIR })
+      .listen(WEB_PORT, () => {
+        d(`Listening on port ${WEB_PORT}`)
+        Logger.info('SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
       })
 
-    this.io = SocketIO(server)
+    const key = fs.readFileSync(path.join(SSL_DIR, 'key.pem'))
+    const cert = fs.readFileSync(path.join(SSL_DIR, 'cert.pem'))
+    const secureServer = https
+      .createServer({ key, cert }, this.app)
+      .on('error', error => {
+        Logger.warn('HTTPS SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
+        app.quit()
+      })
+      .listen(SSL_PORT, () => {
+        Logger.info('HTTPS SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
+      })
 
-    socketioAuth(this.io, {
+    this.io = SocketIO()
+    this.io.attach(server)
+    this.io.attach(secureServer)
+
+    const authOptions = {
       authenticate: this.authenticate,
       postAuthenticate: this.postAuthenticate,
       disconnect: this.disconnect,
-    })
+    }
+
+    socketioAuth(this.io, authOptions)
   }
 
   authenticate = async (
