@@ -18,6 +18,7 @@ const d = debug('r3:backend:Server')
 
 class Server {
   public io?: SocketIO.Server
+  public ioSSL?: SocketIO.Server
   public socket?: SocketIO.Socket
   private app: Express
 
@@ -30,10 +31,12 @@ class Server {
     this.app = express()
     const router = express.Router()
 
-    this.app.use((req, res, next) => {
-      Logger.info('REQUEST IP_ADDRESS', { ipAddress: req.ip || req.connection?.remoteAddress || undefined })
-      next()
-    })
+    // ipAddress detection disabled until needed
+    // this.app.use((req, res, next) => {
+    //   const ipAddress = (req.ip || req.connection?.remoteAddress || undefined)?.replace(/.*:/g, '')
+    //   Logger.info('REQUEST IP_ADDRESS', { ipAddress })
+    //   next()
+    // })
 
     this.app.use(cors())
     this.app.use(express.static(WEB_DIR))
@@ -63,21 +66,23 @@ class Server {
       .createServer({ key, cert }, this.app)
       .on('error', error => {
         Logger.warn('HTTPS SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
+        app.quit()
       })
       .listen(SSL_PORT, () => {
         Logger.info('HTTPS SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
       })
 
-    console.log(key)
-    console.log(cert)
+    this.io = SocketIO(server)
+    this.ioSSL = SocketIO(secureServer)
 
-    this.io = SocketIO(secureServer)
-
-    socketioAuth(this.io, {
+    const authOptions = {
       authenticate: this.authenticate,
       postAuthenticate: this.postAuthenticate,
       disconnect: this.disconnect,
-    })
+    }
+
+    socketioAuth(this.io, authOptions)
+    socketioAuth(this.ioSSL, authOptions)
   }
 
   authenticate = async (

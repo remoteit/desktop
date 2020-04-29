@@ -29,7 +29,9 @@ export default class Application {
     remoteitInstaller.check(true)
     server.start()
     this.startHeartbeat()
+
     if (server.io) new Controller(server.io, this.pool)
+    if (server.ioSSL) new Controller(server.ioSSL, this.pool)
 
     EventBus.on(User.EVENTS.signedIn, this.check)
     EventBus.on(User.EVENTS.signedOut, this.handleSignedOut)
