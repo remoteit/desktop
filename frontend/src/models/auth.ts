@@ -44,7 +44,6 @@ export default createModel({
       if (user?.username) {
         console.log('WE HAVE A USER', user.username)
         dispatch.auth.setUser(user)
-        analytics.identify(user.id)
       } else {
         dispatch.auth.signedOut()
       }
@@ -80,7 +79,6 @@ export default createModel({
           r3.user.updateCredentials(user)
           dispatch.auth.setUser(user)
           Controller.open()
-          analytics.identify(user.id)
           analytics.track('signIn')
         })
         .catch(error => {
@@ -150,6 +148,7 @@ export default createModel({
       state.user = user
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
+      analytics.identify(user.id)
       Controller.emit('authentication', { username: user.username, authHash: user.authHash })
       updateUserCredentials(user)
     },
