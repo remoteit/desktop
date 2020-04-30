@@ -24,6 +24,10 @@ export class Preferences {
     }
   }
 
+  get(): IPreferences {
+    return this.data || {}
+  }
+
   set = (preferences: IPreferences, quiet?: boolean) => {
     this.file.write(preferences)
     this.data = preferences

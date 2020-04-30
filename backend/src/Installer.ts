@@ -77,7 +77,7 @@ export default class Installer {
   }
 
   isDesktopCurrent(log?: boolean) {
-    let desktopVersion = preferences.data?.version
+    let desktopVersion = preferences.get().version
     let current = semverCompare(desktopVersion, environment.version) >= 0
     if (current) {
       log && Logger.info('DESKTOP CURRENT', { desktopVersion })
