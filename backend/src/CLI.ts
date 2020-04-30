@@ -143,6 +143,10 @@ export default class CLI {
     await this.exec({ cmds: ['service start'], admin: true, checkSignIn: true })
   }
 
+  async restartService() {
+    await this.exec({ cmds: ['-j service uninstall', '-j service install'], admin: true })
+  }
+
   async install() {
     await this.exec({ cmds: ['-j tools install --update'], admin: true })
   }
