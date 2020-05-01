@@ -22,10 +22,10 @@ export const SetupView: React.FC<{
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            This Device
             <Tooltip title={`Only ${adminUsername} can edit this device`}>
-              <Icon name="lock-alt" weight="regular" inline />
+              <Icon name="lock-alt" weight="regular" color="primary" inlineLeft />
             </Tooltip>
+            {device.name}
           </Typography>
         </>
       }
@@ -36,14 +36,8 @@ export const SetupView: React.FC<{
       </Typography>
 
       <Columns count={1} inset>
-        <p>
-          <Typography variant="caption">Device Name</Typography>
-          <Typography variant="h2">{device.name}</Typography>
-        </p>
-        <p>
-          <Typography variant="caption">Registered To</Typography>
-          <Typography variant="h2">{adminUsername}</Typography>
-        </p>
+        <Typography variant="caption">Registered To</Typography>
+        <Typography variant="h2">{adminUsername}</Typography>
       </Columns>
       <Divider />
       <Typography variant="subtitle1">Hosted Services</Typography>
@@ -64,8 +58,8 @@ export const SetupView: React.FC<{
                 <Typography variant="caption">Host Address</Typography>
               </th>
             </tr>
-            {targets.map(target => (
-              <tr>
+            {targets.map((target, key) => (
+              <tr key={key}>
                 <td>
                   <Typography variant="h2">{target.name}</Typography>
                 </td>

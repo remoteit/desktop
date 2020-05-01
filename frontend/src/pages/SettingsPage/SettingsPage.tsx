@@ -67,6 +67,11 @@ export const SettingsPage = () => {
       <Typography variant="subtitle1">User</Typography>
       <List>
         <SettingsListItem
+          label="Help documentation"
+          icon="books"
+          onClick={() => window.open('https://docs.remote.it/desktop-help')}
+        />
+        <SettingsListItem
           label="Send feedback"
           icon="envelope"
           onClick={() =>

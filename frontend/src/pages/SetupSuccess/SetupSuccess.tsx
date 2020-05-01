@@ -1,11 +1,10 @@
 import React from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { Typography, Tooltip, IconButton, Link, Divider } from '@material-ui/core'
+import { Typography, Tooltip, IconButton, Link, Divider, Button } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { osName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
-import { DocsLinks } from '../../components/DocsLinks'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
@@ -40,13 +39,23 @@ export const SetupSuccess: React.FC<Props> = ({ device, os }) => {
             <Link href="https://app.remote.it" target="_blank">
               remote.it,
             </Link>
-            just click to give it a try.
+            give it a try.
           </Typography>
         </section>
         <div className={css.divider}>
           <Divider />
         </div>
-        <DocsLinks os={os} />
+        <section className={css.section}>
+          <Typography variant="body2" align="center" color="textSecondary">
+            Next, add remote access to devices on your network:
+          </Typography>
+          <Button color="primary" variant="contained" onClick={() => history.push('/settings/setupServices/network')}>
+            Scan network
+          </Button>
+          <Button variant="contained" onClick={() => history.push('/settings/setupServices')}>
+            Close
+          </Button>
+        </section>
       </Body>
     </Container>
   )
@@ -61,4 +70,13 @@ const useStyles = makeStyles({
   },
   title: { marginBottom: styles.spacing.sm },
   divider: { width: 400 },
+  section: {
+    '&  Button': {
+      display: 'block',
+      margin: `${styles.spacing.lg}px auto 0`,
+    },
+    '& Button + Button': {
+      marginTop: styles.spacing.sm,
+    },
+  },
 })
