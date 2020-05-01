@@ -20,6 +20,7 @@ interface DeviceState {
   fetching: boolean
   searchOnly: boolean
   searching: boolean
+  destroying: boolean
   query: string
   sort: SortType
 }
@@ -33,13 +34,13 @@ async function fetchAll(cache: boolean = true): Promise<IDevice[]> {
 }
 
 const state: DeviceState = {
-  // TODO: Store this as objects with keys based on ID?
   all: [],
   searchPerformed: false,
   fetched: false,
   fetching: true,
   searching: false,
   searchOnly: false,
+  destroying: false,
   query: '',
   sort: (window.localStorage.getItem(SORT_SETTING_KEY) || 'state') as SortType,
 }
@@ -129,8 +130,25 @@ export default createModel({
       dispatch.devices.setQuery('')
       dispatch.devices.changeSort('state')
     },
+
+    destroy(device: IDevice) {
+      dispatch.devices.setDestroying(true)
+      r3.post(`/developer/device/delete/registered/${device.id}`)
+        .then(async () => {
+          await dispatch.devices.fetch(false)
+          dispatch.devices.setDestroying(false)
+        })
+        .catch(error => {
+          dispatch.devices.setDestroying(false)
+          dispatch.backend.set({ key: 'cliError', value: error.message })
+          console.warn(error)
+        })
+    },
   }),
   reducers: {
+    setDestroying(state: DeviceState, destroying: boolean) {
+      state.destroying = destroying
+    },
     setQuery(state: DeviceState, query: string) {
       state.query = query
       if (state.searchOnly) {
