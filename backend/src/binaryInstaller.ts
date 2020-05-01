@@ -19,10 +19,16 @@ class BinaryInstaller {
   async install() {
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
+    const updateCli = !(await remoteitInstaller.isCliCurrent(true))
+    const updateDesktop = !remoteitInstaller.isDesktopCurrent(true)
 
-    if (!remoteitInstaller.isCliCurrent()) {
+    Logger.info('INSTALLING BINARIES', { updateCli, updateDesktop })
+
+    if (updateCli) {
+      Logger.info('UPDATING CLI')
       await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
-    } else if (!remoteitInstaller.isDesktopCurrent()) {
+    } else if (updateDesktop) {
+      Logger.info('RESTARTING CLI SYSTEM SERVICES')
       await this.restartService()
     }
 

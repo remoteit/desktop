@@ -82,7 +82,7 @@ export default class Installer {
     if (current) {
       log && Logger.info('DESKTOP CURRENT', { desktopVersion })
     } else {
-      Logger.info('DESKTOP UPDATED', { oldVersion: desktopVersion, thisVersion: environment.version })
+      Logger.info('DESKTOP UPDATE DETECTED', { oldVersion: desktopVersion, thisVersion: environment.version })
     }
 
     return current
