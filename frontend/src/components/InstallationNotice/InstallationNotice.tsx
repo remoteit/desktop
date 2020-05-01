@@ -1,7 +1,8 @@
 import React from 'react'
-import { ApplicationState } from '../../store'
 import { connect } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { Button, Typography } from '@material-ui/core'
+import { isWindows } from '../../services/Browser'
 import { makeStyles } from '@material-ui/styles'
 import { spacing } from '../../styling'
 import { Body } from '../Body'
@@ -44,7 +45,7 @@ export const InstallationNotice = connect(
         </Alert>
       )}
       <Typography className={css.space} variant="h2" align="center">
-        We need to install our service onto your machine
+        We need to install or update our service
         <br />
         in order to maintain background connections.
       </Typography>
@@ -63,7 +64,7 @@ export const InstallationNotice = connect(
         <Icon name="info-circle" weight="regular" size="xs" inlineLeft />
         You will be prompted for permission to continue the installation.
         <br />
-        Run remote.it as an administrator to avoid future prompting.
+        Run remote.it {isWindows() ? 'as an administrator' : 'with sudo'} to avoid future prompting.
       </Typography>
     </Body>
   )

@@ -1,6 +1,7 @@
 import { CLI_DOWNLOAD } from './constants'
 import debug from 'debug'
 import cli from './cliInterface'
+import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import semverCompare from 'semver/functions/compare'
 import environment from './environment'
@@ -45,9 +46,15 @@ export default class Installer {
 
   async check(log?: boolean) {
     d('CHECK INSTALLATION', { name: this.name, version: this.version })
-    if (await this.isCurrent(log)) return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
-    if (environment.isElevated) return await binaryInstaller.install()
-    EventBus.emit(Installer.EVENTS.notInstalled, this.name)
+    const cliCurrent = await this.isCliCurrent(log)
+    const desktopCurrent = this.isDesktopCurrent(log)
+
+    if (cliCurrent && desktopCurrent) {
+      return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
+    } else {
+      if (environment.isElevated) await binaryInstaller.install()
+      else EventBus.emit(Installer.EVENTS.notInstalled, this.name)
+    }
   }
 
   /**
@@ -69,23 +76,35 @@ export default class Installer {
     } as InstallationInfo
   }
 
-  async isCurrent(log?: boolean) {
-    let current = false
+  isDesktopCurrent(log?: boolean) {
+    let desktopVersion = preferences.get().version
+    let current = semverCompare(desktopVersion, environment.version) >= 0
+    if (current) {
+      log && Logger.info('DESKTOP CURRENT', { desktopVersion })
+    } else {
+      Logger.info('DESKTOP UPDATED', { oldVersion: desktopVersion, thisVersion: environment.version })
+    }
+
+    return current
+  }
+
+  async isCliCurrent(log?: boolean) {
     let cliVersion = 'Not Installed'
+    let current = false
 
     if (this.isInstalled()) {
       cliVersion = await cli.version()
       try {
         current = semverCompare(cliVersion, this.version) >= 0
       } catch (error) {
-        Logger.warn('BAD VERSION', { error })
+        Logger.warn('BAD CLI VERSION', { error })
       }
     }
 
     if (current) {
-      log && Logger.info('CHECK VERSION', { current, name: this.name, cliVersion, desiredVersion: this.version })
+      log && Logger.info('CHECK CLI VERSION', { current, name: this.name, cliVersion, desiredVersion: this.version })
     } else {
-      Logger.info('NOT CURRENT', { name: this.name, cliVersion, desiredVersion: this.version })
+      Logger.info('CLI NOT CURRENT', { name: this.name, cliVersion, desiredVersion: this.version })
     }
 
     return current

@@ -12,23 +12,27 @@ export class Preferences {
 
   constructor() {
     this.file = new JSONFile<IPreferences>(path.join(environment.userPath, 'preferences.json'))
-    if (!this.file.exists) this.file.write(this.defaults)
-    this.set(this.file.read() || {})
+    this.set({ ...this.defaults, ...this.file.read() })
     Logger.info('PREFERENCES', { preferences: this.data })
   }
 
   get defaults(): IPreferences {
     return {
+      version: environment.version,
       autoUpdate: environment.isMac || environment.isWindows,
       openAtLogin: true,
     }
   }
 
-  set = (preferences: IPreferences) => {
+  get(): IPreferences {
+    return this.data || {}
+  }
+
+  set = (preferences: IPreferences, quiet?: boolean) => {
     this.file.write(preferences)
     this.data = preferences
     Logger.info('SET PREFERENCES', { preferences })
-    EventBus.emit(this.EVENTS.update, this.data)
+    if (!quiet) EventBus.emit(this.EVENTS.update, this.data)
   }
 }
 

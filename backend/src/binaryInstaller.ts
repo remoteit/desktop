@@ -1,12 +1,13 @@
 import tmp from 'tmp'
-import rimraf from 'rimraf'
 import cli from './cliInterface'
+import rimraf from 'rimraf'
 import EventBus from './EventBus'
 import environment from './environment'
-import Logger from './Logger'
+import preferences from './preferences'
 import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
+import Logger from './Logger'
 import { existsSync, lstatSync } from 'fs'
 
 tmp.setGracefulCleanup()
@@ -18,7 +19,15 @@ class BinaryInstaller {
   async install() {
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
-    await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+
+    if (!remoteitInstaller.isCliCurrent()) {
+      await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    } else if (!remoteitInstaller.isDesktopCurrent()) {
+      await this.restartService()
+    }
+
+    preferences.set({ ...preferences.data, version: environment.version }, true)
+    EventBus.emit(Installer.EVENTS.installed, remoteitInstaller.toJSON())
     this.inProgress = false
   }
 
@@ -49,11 +58,13 @@ class BinaryInstaller {
       commands.push(`"${installer.binaryPath()}" -j service install`)
 
       await commands.exec()
-      EventBus.emit(Installer.EVENTS.installed, installer.toJSON())
-
       tmpDir.removeCallback()
       resolve()
     })
+  }
+
+  async restartService() {
+    await cli.restartService()
   }
 
   async migrateBinaries(installerPath?: string) {

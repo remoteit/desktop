@@ -1,6 +1,7 @@
 import binaryInstaller from './binaryInstaller'
 import Installer from './Installer'
 import environment from './environment'
+import preferences from './preferences'
 import EventBus from './EventBus'
 import cli from './cliInterface'
 import fs from 'fs'
@@ -11,7 +12,10 @@ describe('backend/Installer', () => {
     const outdated = '0.30.1'
     const name = 'remoteit'
 
-    let installSpy: jest.SpyInstance, eventSpy: jest.SpyInstance, versionSpy: jest.SpyInstance
+    let installSpy: jest.SpyInstance,
+      eventSpy: jest.SpyInstance,
+      versionSpy: jest.SpyInstance,
+      prefSpy: jest.SpyInstance
     let installer: Installer
     let path: string
 
@@ -24,11 +28,13 @@ describe('backend/Installer', () => {
       })
 
       path = installer.binaryPath()
+      prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: environment.version }))
       installSpy = jest.spyOn(binaryInstaller, 'install').mockImplementation()
       eventSpy = jest.spyOn(EventBus, 'emit').mockImplementation()
     })
 
     afterEach(() => {
+      prefSpy.mockClear()
       installSpy.mockClear()
       eventSpy.mockClear()
       versionSpy.mockClear()
@@ -46,7 +52,20 @@ describe('backend/Installer', () => {
       expect(versionSpy).toBeCalledTimes(1)
     })
 
-    test('should notify if outdated', async () => {
+    test('should notify if desktop outdated', async () => {
+      jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
+      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
+      prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: '0.0.1' }))
+
+      await installer.check()
+
+      expect(installSpy).toBeCalledTimes(0)
+      expect(eventSpy).toBeCalledTimes(1)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
+      expect(versionSpy).toBeCalledTimes(1)
+    })
+
+    test('should notify if cli outdated', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))
 
@@ -108,7 +127,7 @@ describe('backend/Installer', () => {
     test('should detect old version', async () => {
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('0.30.1'))
 
-      const isCurrent = await installer.isCurrent()
+      const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
       expect(isCurrent).toBe(false)
@@ -117,7 +136,7 @@ describe('backend/Installer', () => {
     test('should detect same version', async () => {
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('0.37.6'))
 
-      const isCurrent = await installer.isCurrent()
+      const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
       expect(isCurrent).toBe(true)
@@ -126,7 +145,7 @@ describe('backend/Installer', () => {
     test('should consider a bad response as not current', async () => {
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('Error'))
 
-      const isCurrent = await installer.isCurrent()
+      const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
       expect(isCurrent).toBe(false)
@@ -135,7 +154,7 @@ describe('backend/Installer', () => {
     test('should consider a newer version as current', async () => {
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('1.0.0'))
 
-      const isCurrent = await installer.isCurrent()
+      const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
       expect(isCurrent).toBe(true)
@@ -144,7 +163,7 @@ describe('backend/Installer', () => {
     test('should handle beta tags', async () => {
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('0.37.7-Beta'))
 
-      const isCurrent = await installer.isCurrent()
+      const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
       expect(isCurrent).toBe(true)
