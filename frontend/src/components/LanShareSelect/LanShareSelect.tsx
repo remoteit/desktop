@@ -16,16 +16,16 @@ export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   const css = useStyles()
   const location = useLocation()
   const shared = lanShared(connection)
-  const disabled: boolean = (connection && connection.active) || service.state !== 'active'
-
+  const disabled: boolean = connection?.active || service.state !== 'active'
+  const color = shared ? 'primary' : undefined
   return (
     <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'}>
       <ListItemIcon>
-        <Icon name="network-wired" color={shared ? 'primary' : undefined} size="md" weight="light" />
+        <Icon name="network-wired" color={color} size="md" weight="light" />
       </ListItemIcon>
       <span className={css.text}>
         <Typography variant="caption">Local Network Sharing</Typography>
-        <Typography variant="h2">
+        <Typography variant="h2" color={color}>
           {shared && 'On -'} {lanShareRestriction(connection)}
         </Typography>
       </span>
