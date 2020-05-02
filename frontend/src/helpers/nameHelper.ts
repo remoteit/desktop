@@ -1,26 +1,24 @@
-import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE } from '../constants'
+import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, IP_PRIVATE, IP_OPEN } from '../constants'
 import { IDevice } from 'remote.it'
 import { store } from '../store'
 
 const separator = ' - '
 
 export function replaceHost(url: string) {
-  return url.replace('127.0.0.1', 'localhost')
+  if (url.includes(IP_PRIVATE)) {
+    return url.replace(IP_PRIVATE, 'localhost')
+  }
+  if (url.includes(IP_OPEN)) {
+    const { privateIP } = store.getState().backend.environment
+    return url.replace(IP_OPEN, privateIP)
+  }
+  return url
 }
 
 export function hostName(connection: IConnection) {
   const { host = '', port } = connection
   if (!port) return null
-
-  switch (host) {
-    case '127.0.0.1':
-      return `localhost:${port}`
-    case '0.0.0.0':
-      const { privateIP } = store.getState().backend
-      return `${privateIP}:${port}`
-    default:
-      return `${host}:${port}`
-  }
+  return `${replaceHost(host)}:${port}`
 }
 
 export function removeDeviceName(deviceName: string, name: string) {
