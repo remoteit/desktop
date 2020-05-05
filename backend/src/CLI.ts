@@ -207,7 +207,7 @@ export default class CLI {
       cmds.unshift(`-j signin ${user.username} -a ${user.authHash}`)
     }
     cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPath()}" ${cmd}`))
-    commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())
+    if (!quiet) commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())
 
     result = await commands.exec()
     if (readUser) this.readUser(admin)
