@@ -41,6 +41,7 @@ export const Header: React.FC = () => {
 
 const useStyles = makeStyles({
   header: {
+    position: 'relative',
     backgroundColor: styles.colors.white,
     padding: `${styles.spacing.xxs}px ${styles.spacing.sm}px`,
     display: 'flex',

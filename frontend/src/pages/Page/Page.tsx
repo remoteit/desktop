@@ -4,7 +4,7 @@ import classnames from 'classnames'
 import { isElectron } from '../../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Snackbar, IconButton } from '@material-ui/core'
+import { Snackbar, IconButton, Box } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
@@ -13,6 +13,14 @@ import { Icon } from '../../components/Icon'
 
 export interface Props {
   children: React.ReactNode
+}
+
+export const ContextSidebar: React.FC<{ className: string }> = ({ className, ...props }) => {
+  return (
+    <Box className={className} {...props}>
+      I am Sidebar.
+    </Box>
+  )
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
@@ -33,41 +41,44 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   if (!isElectron()) {
     pageCss = classnames(pageCss, css.inset)
-    remoteCss = classnames(css.full, css.default, os && css[os])
+    remoteCss = classnames(css.full, css.default /* , os && css[os] */)
   }
 
   return (
     <div className={remoteCss}>
       <RemoteHeader os={os} />
       <div className={pageCss}>
-        {children}
-        <Snackbar
-          open={authenticated && !connected}
-          message="Webserver connection lost. Retrying..."
-          action={
-            <IconButton onClick={reconnect}>
-              <Icon name="sync" size="md" color="white" fixedWidth />
-            </IconButton>
-          }
-        />
-        <Snackbar
-          className={css.error}
-          key={cliError}
-          open={!!cliError}
-          message={
-            <>
-              <Icon name="exclamation-triangle" size="md" color="danger" weight="regular" fixedWidth inlineLeft />
-              {cliError}
-            </>
-          }
-          action={
-            <IconButton onClick={clearCliError}>
-              <Icon name="times" size="md" color="white" fixedWidth />
-            </IconButton>
-          }
-          onClose={clearCliError}
-        />
-        <UpdateNotice />
+        <ContextSidebar className={css.sideBar} />
+        <div className={css.pageBody}>
+          {children}
+          <Snackbar
+            open={authenticated && !connected}
+            message="Webserver connection lost. Retrying..."
+            action={
+              <IconButton onClick={reconnect}>
+                <Icon name="sync" size="md" color="white" fixedWidth />
+              </IconButton>
+            }
+          />
+          <Snackbar
+            className={css.error}
+            key={cliError}
+            open={!!cliError}
+            message={
+              <>
+                <Icon name="exclamation-triangle" size="md" color="danger" weight="regular" fixedWidth inlineLeft />
+                {cliError}
+              </>
+            }
+            action={
+              <IconButton onClick={clearCliError}>
+                <Icon name="times" size="md" color="white" fixedWidth />
+              </IconButton>
+            }
+            onClose={clearCliError}
+          />
+          <UpdateNotice />
+        </div>
       </div>
     </div>
   )
@@ -78,21 +89,35 @@ const useStyles = makeStyles({
   page: {
     overflow: 'hidden',
     display: 'flex',
-    flexFlow: 'column',
-    justifyContent: 'space-between',
-    flexWrap: 'nowrap',
+    flexFlow: 'row',
     backgroundColor: colors.white,
     maxWidth: 1000,
     margin: 'auto',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+  },
+  pageBody: {
+    display: 'flex',
+    flexFlow: 'column',
+    justifyContent: 'space-between',
+    flexWrap: 'nowrap',
+    flexGrow: 1,
+  },
+  sideBar: {
+    color: colors.white,
+    backgroundColor: colors.primary,
+    width: 200,
+    height: '100%',
+    padding: spacing.md,
+    boxShadow: 'inset -6px 0px 4px -4px rgba(0,0,0,0.1)',
   },
   error: {
     // '& .MuiPaper-root': { backgroundColor: colors.danger },
   },
   inset: {
     top: spacing.xl,
-    left: spacing.xs,
-    right: spacing.xs,
-    bottom: spacing.xs,
+    left: spacing.sm,
+    right: spacing.sm,
+    bottom: spacing.sm,
     borderRadius: spacing.sm,
   },
   default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
