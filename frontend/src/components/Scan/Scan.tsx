@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { DEFAULT_INTERFACE } from '../../models/ui'
 import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
+import { Dispatch, ApplicationState } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/styles'
 import { ScanNetwork } from '../ScanNetwork'
 import styles from '../../styling'
-
-const UNKNOWN = 'searching'
 
 type Props = {
   data: IScanData
@@ -17,41 +18,44 @@ type Props = {
 
 export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, privateIP }) => {
   const css = useStyles()
-  const [timestamp, setTimestamp] = useState<{ [interfaceName: string]: number }>({})
-  const [loading, setLoading] = useState<{ [interfaceName: string]: boolean }>({})
-  const [activeInterface, setActiveInterface] = useState<string>(UNKNOWN)
-  const selected = data[activeInterface] || {}
-  const selectedTimestamp = timestamp[activeInterface]
-  const selectedLoading = loading[activeInterface]
+  const { ui } = useDispatch<Dispatch>()
+  const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: ApplicationState) => state.ui)
+  const selected = data[scanInterface] || {}
+  const selectedTimestamp = scanTimestamp[scanInterface]
+  const selectedLoading = scanLoading[scanInterface]
   const noResults = selected.data && !selected.data.length
 
   const scan = useCallback(
     (i: string) => {
       onScan(i)
-      setTimestamp({ [i]: selected.timestamp })
-      setLoading({ [i]: true })
+      ui.set({
+        scanLoading: { [i]: true },
+        scanTimestamp: { [i]: selected.timestamp },
+      })
     },
     [selected, onScan]
   )
 
   useEffect(() => {
-    if (interfaces.length && activeInterface === UNKNOWN) {
+    if (interfaces.length && scanInterface === DEFAULT_INTERFACE) {
       let name = interfaces[0].name
       interfaces.forEach(i => i.active && (name = i.name))
-      setActiveInterface(name)
+      ui.set({ scanInterface: name })
       scan(name)
     }
-  }, [interfaces, activeInterface, scan])
+  }, [interfaces, scanInterface, scan])
 
   useEffect(() => {
     if (selected.timestamp !== selectedTimestamp && selectedLoading) {
-      setLoading({ [activeInterface]: false })
-      setTimestamp({ [activeInterface]: selected.timestamp })
+      ui.set({
+        scanLoading: { [scanInterface]: false },
+        scanTimestamp: { [scanInterface]: selected.timestamp },
+      })
     }
-  }, [selected.timestamp, selectedTimestamp, selectedLoading, activeInterface])
+  }, [selected.timestamp, selectedTimestamp, selectedLoading, scanInterface])
 
   function interfaceType() {
-    const i = interfaces.find(i => i.name === activeInterface)
+    const i = interfaces.find(i => i.name === scanInterface)
     return (i ? i.type : '') as IInterfaceType
   }
 
@@ -61,9 +65,9 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
         <div>
           <TextField
             select
-            value={activeInterface}
+            value={scanInterface}
             variant="filled"
-            onChange={event => setActiveInterface(event.target.value as string)}
+            onChange={event => ui.set({ scanInterface: event.target.value as string })}
           >
             {interfaces.length ? (
               interfaces.map((i: IInterface) => (
@@ -72,7 +76,7 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
                 </MenuItem>
               ))
             ) : (
-              <MenuItem key={0} value={UNKNOWN}>
+              <MenuItem key={0} value={DEFAULT_INTERFACE}>
                 Finding Network...
               </MenuItem>
             )}
@@ -82,7 +86,7 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
           Scan your system and network <br />
           for open ports to host
         </Typography>
-        <Button color="primary" variant="contained" onClick={() => scan(activeInterface)} disabled={selectedLoading}>
+        <Button color="primary" variant="contained" onClick={() => scan(scanInterface)} disabled={selectedLoading}>
           {selectedLoading ? (
             <>
               Scanning

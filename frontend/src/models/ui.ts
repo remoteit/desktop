@@ -1,12 +1,23 @@
 import { createModel } from '@rematch/core'
 
-type UIParams = { [key: string]: boolean | string | number }
+export const DEFAULT_INTERFACE = 'searching'
+
+type UIParams = { [key: string]: any }
 type UIState = UIParams & {
   connected: boolean
   uninstalling: boolean
+  scanLoading: { [interfaceName: string]: boolean }
+  scanTimestamp: { [interfaceName: string]: number }
+  scanInterface: string
 }
 
-const state: UIState = { connected: false, uninstalling: false }
+const state: UIState = {
+  connected: false,
+  uninstalling: false,
+  scanLoading: {},
+  scanTimestamp: {},
+  scanInterface: DEFAULT_INTERFACE,
+}
 
 export default createModel({
   state,
