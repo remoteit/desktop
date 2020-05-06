@@ -59,6 +59,7 @@ export const DynamicButton: React.FC<Props> = ({
     return (
       <Button style={styles} variant="contained" onClick={clickHandler} disabled={disabled} size={size} fullWidth>
         {title}
+        {loading && IconComponent}
       </Button>
     )
   }
