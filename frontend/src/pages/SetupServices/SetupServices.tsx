@@ -32,7 +32,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   // @TODO handle cli errors
 
   const onUpdate = (t: ITarget[]) => emit('targets', t)
-  const onCancel = () => backend.set({ key: 'added', undefined })
+  const onCancel = () => backend.set({ added: undefined })
   const onDelete = () => {
     setDeleting(true)
     analytics.track('deviceRemoved', { deviceId: device.uid, deviceName: device.name })

@@ -50,7 +50,7 @@ export const NetworkPage: React.FC = () => {
         privateIP={privateIP}
         onAdd={target => {
           history.push('/settings/setupServices')
-          backend.set({ key: 'added', value: target })
+          backend.set({ added: target })
         }}
       />
     </>
