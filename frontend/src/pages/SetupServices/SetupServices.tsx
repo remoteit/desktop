@@ -19,22 +19,19 @@ type Props = {
 }
 
 export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }) => {
-  const { added, cliError } = useSelector((state: ApplicationState) => ({
+  const { added, cliError, setupDeletingService } = useSelector((state: ApplicationState) => ({
     added: state.backend.added,
     cliError: state.backend.cliError,
+    setupDeletingService: state.ui.setupDeletingService,
   }))
-  const { devices, backend } = useDispatch<Dispatch>()
-  const [deleting, setDeleting] = useState<boolean>(false)
+  const { devices, backend, ui } = useDispatch<Dispatch>()
   const confirmMessage = 'Are you sure?\nYou are about to permanently remove this device and all of its services.'
   const history = useHistory()
   const css = useStyles()
-
-  // @TODO handle cli errors
-
   const onUpdate = (t: ITarget[]) => emit('targets', t)
   const onCancel = () => backend.set({ added: undefined })
   const onDelete = () => {
-    setDeleting(true)
+    ui.set({ setupDeletingService: true })
     analytics.track('deviceRemoved', { deviceId: device.uid, deviceName: device.name })
     targets.forEach(target => {
       analytics.track('serviceRemoved', {
@@ -52,21 +49,21 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   }, [])
 
   useEffect(() => {
-    if (deleting && !device.uid) {
+    if (setupDeletingService && !device.uid) {
       devices.fetch(false) // @FIXME this will only run if the page is active
       history.push('/settings/setupDevice')
     }
-  }, [device, devices, deleting, history])
+  }, [device, devices, setupDeletingService, history])
 
   return (
     <Container
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="h1" gutterBottom>
+          <Typography variant="h1">
             <Icon className={css.icon} name="hdd" size="md" weight="light" />
             <span className={css.title}>{device.name}</span>
-            {deleting ? (
+            {setupDeletingService ? (
               <CircularProgress className={css.loading} size={styles.fontSizes.md} />
             ) : (
               <Tooltip title="Delete">

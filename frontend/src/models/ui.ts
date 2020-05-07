@@ -9,6 +9,9 @@ type UIState = UIParams & {
   scanLoading: { [interfaceName: string]: boolean }
   scanTimestamp: { [interfaceName: string]: number }
   scanInterface: string
+  setupDeletingService: boolean
+  setupServicesCount: number
+  setupServicesNew: boolean
 }
 
 const state: UIState = {
@@ -17,6 +20,9 @@ const state: UIState = {
   scanLoading: {},
   scanTimestamp: {},
   scanInterface: DEFAULT_INTERFACE,
+  setupDeletingService: false,
+  setupServicesCount: 0,
+  setupServicesNew: false,
 }
 
 export default createModel({

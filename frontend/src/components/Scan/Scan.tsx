@@ -9,14 +9,13 @@ import styles from '../../styling'
 
 type Props = {
   data: IScanData
-  onAdd: (target: ITarget) => void
   onScan: (network: string) => void
   interfaces: IInterface[]
   targets: ITarget[]
   privateIP: string
 }
 
-export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets, privateIP }) => {
+export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, privateIP }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: ApplicationState) => state.ui)
@@ -97,13 +96,7 @@ export const Scan: React.FC<Props> = ({ data, onAdd, onScan, interfaces, targets
           )}
         </Button>
       </section>
-      <ScanNetwork
-        onAdd={onAdd}
-        data={selected.data || []}
-        targets={targets}
-        interfaceType={interfaceType()}
-        privateIP={privateIP}
-      />
+      <ScanNetwork data={selected.data || []} targets={targets} interfaceType={interfaceType()} privateIP={privateIP} />
       <section className={css.loading}>{noResults && 'No results'}</section>
     </>
   )
