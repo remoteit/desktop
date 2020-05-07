@@ -39,7 +39,7 @@ export default createModel({
     setupUpdated(count: number, globalState: any) {
       if (count !== globalState.ui.setupServicesCount) {
         dispatch.ui.reset()
-        dispatch.ui.set({ setupServicesCount: count })
+        dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
     },
   }),
@@ -48,12 +48,10 @@ export default createModel({
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },
     reset(state: UIState) {
-      state.setupAdded = undefined
       state.setupBusy = false
       state.setupDeletingDevice = false
       state.setupAddingService = false
       state.setupDeletingService = undefined
-      state.setupServicesNew = true
     },
   },
 })

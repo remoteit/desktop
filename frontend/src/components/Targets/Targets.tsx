@@ -47,7 +47,7 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
   }
 
   return (
-    <div className={css.targets}>
+    <form className={css.targets}>
       <table>
         <tbody>
           <tr>
@@ -101,7 +101,7 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
           )}
         </tbody>
       </table>
-    </div>
+    </form>
   )
 }
 
