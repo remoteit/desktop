@@ -9,7 +9,11 @@ type UIState = UIParams & {
   scanLoading: { [interfaceName: string]: boolean }
   scanTimestamp: { [interfaceName: string]: number }
   scanInterface: string
-  setupDeletingService: boolean
+  setupBusy: boolean
+  setupAdded?: ITarget
+  setupDeletingDevice: boolean
+  setupAddingService: boolean
+  setupDeletingService?: number
   setupServicesCount: number
   setupServicesNew: boolean
 }
@@ -20,16 +24,36 @@ const state: UIState = {
   scanLoading: {},
   scanTimestamp: {},
   scanInterface: DEFAULT_INTERFACE,
-  setupDeletingService: false,
+  setupBusy: false,
+  setupAdded: undefined,
+  setupDeletingDevice: false,
+  setupDeletingService: undefined,
+  setupAddingService: false,
   setupServicesCount: 0,
-  setupServicesNew: false,
+  setupServicesNew: true,
 }
 
 export default createModel({
   state,
+  effects: (dispatch: any) => ({
+    setupUpdated(count: number, globalState: any) {
+      if (count !== globalState.ui.setupServicesCount) {
+        dispatch.ui.reset()
+        dispatch.ui.set({ setupServicesCount: count })
+      }
+    },
+  }),
   reducers: {
     set(state: UIState, params: UIParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+    },
+    reset(state: UIState) {
+      state.setupAdded = undefined
+      state.setupBusy = false
+      state.setupDeletingDevice = false
+      state.setupAddingService = false
+      state.setupDeletingService = undefined
+      state.setupServicesNew = true
     },
   },
 })

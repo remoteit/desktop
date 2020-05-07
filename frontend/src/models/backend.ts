@@ -12,7 +12,6 @@ type IBackendState = BackendStateParams & {
     oobAvailable: boolean
     oobActive: boolean
   }
-  added?: ITarget
   error: boolean
   freePort?: number
   update?: string
@@ -41,7 +40,6 @@ const state: IBackendState = {
     oobAvailable: false,
     oobActive: false,
   },
-  added: undefined,
   error: false,
   freePort: undefined,
   update: undefined,

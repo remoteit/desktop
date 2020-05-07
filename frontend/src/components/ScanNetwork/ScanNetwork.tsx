@@ -42,7 +42,7 @@ const InterfaceIcon: IInterfaceIcon = {
 export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, privateIP }) => {
   const css = useStyles()
   const history = useHistory()
-  const { backend } = useDispatch<Dispatch>()
+  const { ui } = useDispatch<Dispatch>()
   const [open, setOpen] = useState<number[]>([])
   const allClosed = open.length === 0
   const disabled = targets.length > 9
@@ -117,8 +117,8 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                         disabled={disabled}
                         onClick={() => {
                           history.push('/settings/setupServices')
-                          backend.set({
-                            added: {
+                          ui.set({
+                            setupAdded: {
                               ...DEFAULT_TARGET,
                               type: getTypeId(port[0]),
                               hostname: ip[0] === privateIP ? '' : ip[0],

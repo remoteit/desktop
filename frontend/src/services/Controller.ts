@@ -107,8 +107,8 @@ function getEventHandlers() {
     targets: (result: ITarget[]) => {
       console.log('socket targets', result)
       if (result) {
-        backend.set({ added: undefined })
         backend.set({ targets: result })
+        ui.setupUpdated(result.length)
       }
     },
 
@@ -165,6 +165,7 @@ function getEventHandlers() {
     'cli/error': error => {
       backend.set({ cliError: '' }) // So we re-trigger a new error if one exists
       backend.set({ cliError: error })
+      ui.reset()
     },
 
     // Connections

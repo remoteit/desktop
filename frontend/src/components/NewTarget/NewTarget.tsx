@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,33 +10,18 @@ import { Target } from '../Target'
 import styles from '../../styling'
 
 type Props = {
-  count: number
-  added?: ITarget
   device: IDevice
-  cliError?: string
   onSave: (target: ITarget) => void
   onCancel: () => void
 }
 
-export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
-  const history = useHistory()
+export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
+  const { setupServicesNew, setupAddingService, setupAdded } = useSelector((state: ApplicationState) => state.ui)
   const { ui } = useDispatch<Dispatch>()
-  const { setupServicesCount, setupServicesNew } = useSelector((state: ApplicationState) => state.ui)
+  const history = useHistory()
   const css = useStyles()
 
-  useEffect(() => {
-    ui.set({ setupServicesCount: count })
-  }, [])
-
-  useEffect(() => {
-    if (count > setupServicesCount) {
-      ui.set({ setupServicesNew: true, setupServicesCount: count })
-    } else if (!!added) {
-      ui.set({ setupServicesNew: false })
-    }
-  }, [setupServicesCount, count, added])
-
-  if (setupServicesNew)
+  if (setupServicesNew && !(setupAddingService || setupAdded))
     return (
       <tr>
         <td colSpan={6} className={css.button}>
@@ -56,7 +41,8 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
       {...props}
       init
       disable={false}
-      data={added || DEFAULT_TARGET}
+      data={setupAdded || DEFAULT_TARGET}
+      adding={setupAddingService}
       onCancel={() => {
         ui.set({ setupServicesNew: true })
         onCancel()
