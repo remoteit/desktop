@@ -166,8 +166,8 @@ export default class CLI {
     this.read()
   }
 
-  async scan(ipMask: string) {
-    const result = await this.exec({ cmds: [`-j scan -m ${ipMask}`] })
+  async scan(ipMask?: string) {
+    const result = await this.exec({ cmds: ipMask ? [`-j scan -m ${ipMask}`] : ['-j scan'] })
     return JSON.parse(result)
   }
 
