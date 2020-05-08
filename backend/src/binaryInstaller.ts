@@ -106,12 +106,7 @@ class BinaryInstaller {
   async download(installer: Installer, tmpDir: tmp.DirResult) {
     return installer
       .install(tmpDir.name, (progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
-      .catch(error =>
-        EventBus.emit(Installer.EVENTS.error, {
-          error: error.message,
-          installer,
-        })
-      )
+      .catch(error => EventBus.emit(Installer.EVENTS.error, error.message))
   }
 
   async uninstall() {
