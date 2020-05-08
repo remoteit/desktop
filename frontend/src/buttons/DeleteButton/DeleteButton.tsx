@@ -38,6 +38,8 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
     }
   }
 
+  if (disabled) return null
+
   if (destroying) return <CircularProgress className={css.loading} size={styles.fontSizes.md} />
 
   return (

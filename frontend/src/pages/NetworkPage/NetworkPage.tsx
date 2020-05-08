@@ -42,17 +42,7 @@ export const NetworkPage: React.FC = () => {
           <OutOfBand active={oobActive} />
         </span>
       )}
-      <Network
-        data={scanData}
-        targets={targets}
-        interfaces={interfaces}
-        onScan={scan}
-        privateIP={privateIP}
-        onAdd={target => {
-          history.push('/settings/setupServices')
-          backend.set({ key: 'added', value: target })
-        }}
-      />
+      <Network data={scanData} targets={targets} interfaces={interfaces} onScan={scan} privateIP={privateIP} />
     </>
   )
 }

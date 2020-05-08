@@ -125,7 +125,7 @@ export default createModel({
     },
     async reset() {
       dispatch.devices.setDevices([])
-      dispatch.backend.set({ key: 'connections', value: [] })
+      dispatch.backend.set({ connections: [] })
       dispatch.devices.setSearchOnly(false)
       dispatch.devices.setQuery('')
       dispatch.devices.changeSort('state')
@@ -140,7 +140,7 @@ export default createModel({
         })
         .catch(error => {
           dispatch.devices.setDestroying(false)
-          dispatch.backend.set({ key: 'cliError', value: error.message })
+          dispatch.backend.set({ cliError: error.message })
           console.warn(error)
         })
     },

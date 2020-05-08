@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useHistory } from 'react-router-dom'
+import { Dispatch, ApplicationState } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
 import { Button, Link } from '@material-ui/core'
@@ -8,40 +10,27 @@ import { Target } from '../Target'
 import styles from '../../styling'
 
 type Props = {
-  count: number
-  added?: ITarget
   device: IDevice
-  cliError?: string
   onSave: (target: ITarget) => void
   onCancel: () => void
 }
 
-export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props }) => {
+export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
+  const { setupServicesNew, setupAddingService, setupAdded } = useSelector((state: ApplicationState) => state.ui)
+  const { ui } = useDispatch<Dispatch>()
   const history = useHistory()
-  const [showNew, setShowNew] = useState<boolean>(!added)
-  const [lastCount, setLastCount] = useState<number>(count)
   const css = useStyles()
 
-  useEffect(() => {
-    if (count > lastCount) {
-      setShowNew(true)
-      setLastCount(count)
-    } else if (!!added) {
-      setShowNew(false)
-    }
-  }, [lastCount, count, added])
-
-  if (showNew)
+  if (setupServicesNew && !(setupAddingService || setupAdded))
     return (
       <tr>
         <td colSpan={6} className={css.button}>
           <Button color="primary" variant="contained" onClick={() => history.push('/settings/setupServices/network')}>
             Add from network
           </Button>
-          <span className={css.or}>or</span>
-          <Link onClick={() => setShowNew(false)}>
+          <Link onClick={() => ui.set({ setupServicesNew: false })}>
             Add manually
-            <Icon name="chevron-right" inline />
+            <Icon name="plus" inline />
           </Link>
         </td>
       </tr>
@@ -52,9 +41,10 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
       {...props}
       init
       disable={false}
-      data={added || DEFAULT_TARGET}
+      data={setupAdded || DEFAULT_TARGET}
+      adding={setupAddingService}
       onCancel={() => {
-        setShowNew(true)
+        ui.set({ setupServicesNew: true })
         onCancel()
       }}
       onDelete={() => {}}
@@ -64,8 +54,8 @@ export const NewTarget: React.FC<Props> = ({ added, count, onCancel, ...props })
 
 const useStyles = makeStyles({
   button: {
-    paddingTop: styles.spacing.lg,
+    paddingTop: styles.spacing.xl,
     color: styles.colors.gray,
+    '& button': { marginRight: styles.spacing.md },
   },
-  or: { paddingLeft: styles.spacing.md },
 })

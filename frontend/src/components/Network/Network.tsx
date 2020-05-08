@@ -6,7 +6,6 @@ import { Typography } from '@material-ui/core'
 
 type Props = {
   data: IScanData
-  onAdd: (target: ITarget) => void
   onScan: (network: string) => void
   interfaces: IInterface[]
   targets: ITarget[]

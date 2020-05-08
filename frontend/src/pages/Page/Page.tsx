@@ -25,7 +25,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   }))
 
   const css = useStyles()
-  const clearCliError = () => backend.set({ key: 'cliError', value: undefined })
+  const clearCliError = () => backend.set({ cliError: undefined })
   const reconnect = () => Controller.open(false, true)
 
   let remoteCss = ''

@@ -16,13 +16,15 @@ import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import { getTypeId } from '../../services/serviceTypes'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE, IP_PRIVATE } from '../../constants'
+import { Dispatch } from '../../store'
+import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import styles, { spacing } from '../../styling'
 
 type Props = {
   data: IScan[]
   targets: ITarget[]
   interfaceType: IInterfaceType
-  onAdd: (target: ITarget) => void
   privateIP: string
 }
 
@@ -37,8 +39,10 @@ const InterfaceIcon: IInterfaceIcon = {
   Other: <Icon name="usb" weight="regular" />,
 }
 
-export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onAdd, privateIP }) => {
+export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, privateIP }) => {
   const css = useStyles()
+  const history = useHistory()
+  const { ui } = useDispatch<Dispatch>()
   const [open, setOpen] = useState<number[]>([])
   const allClosed = open.length === 0
   const disabled = targets.length > 9
@@ -111,15 +115,18 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, onA
                         variant="contained"
                         size="small"
                         disabled={disabled}
-                        onClick={() =>
-                          onAdd({
-                            ...DEFAULT_TARGET,
-                            type: getTypeId(port[0]),
-                            hostname: ip[0] === privateIP ? '' : ip[0],
-                            port: port[0],
-                            name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
+                        onClick={() => {
+                          history.push('/settings/setupServices')
+                          ui.set({
+                            setupAdded: {
+                              ...DEFAULT_TARGET,
+                              type: getTypeId(port[0]),
+                              hostname: ip[0] === privateIP ? '' : ip[0],
+                              port: port[0],
+                              name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
+                            },
                           })
-                        }
+                        }}
                       >
                         Add
                         <Icon name="plus" inline />

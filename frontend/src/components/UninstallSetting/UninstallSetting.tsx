@@ -13,7 +13,7 @@ export const UninstallSetting: React.FC = () => {
       'Are you sure? \nYou will remove this system as a host, your connections and command line utilities.'
     ) &&
       emit('uninstall') &&
-      ui.setUninstalling()
+      ui.set({ uninstalling: true })
     analytics.track('uninstall')
   }
 

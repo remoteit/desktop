@@ -3,6 +3,8 @@ import { Target } from '../Target'
 import { NewTarget } from '../NewTarget'
 import { TARGET_SERVICES_LIMIT } from '../../constants'
 import { InputLabel, Tooltip, Typography } from '@material-ui/core'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
@@ -11,39 +13,41 @@ import analytics from '../../helpers/Analytics'
 type Props = {
   targets: ITarget[]
   device: IDevice
-  added?: ITarget
-  cliError?: string
   onUpdate: (targets: ITarget[]) => void
   onCancel: () => void
 }
 
-export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onUpdate, onCancel }) => {
+export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }) => {
+  const { setupBusy, setupDeletingService } = useSelector((state: ApplicationState) => state.ui)
+  const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
 
-  function update(key: number, target: ITarget) {
+  function add(target: ITarget) {
     analytics.track('serviceCreated', {
       serviceId: target.uid,
       serviceName: target.name,
       serviceType: target.type,
     })
+    ui.set({ setupBusy: true, setupAddingService: true })
     onUpdate([...targets, target])
   }
 
   function remove(key: number) {
-    let target = targets[key]
+    const target = targets[key]
     analytics.track('serviceRemoved', {
       serviceId: target.uid,
       serviceName: target.name,
       serviceType: target.type,
     })
-    targets.splice(key, 1)
-
-    onUpdate(targets)
+    let copy = [...targets]
+    copy.splice(key, 1)
+    ui.set({ setupBusy: true, setupDeletingService: key })
+    onUpdate(copy)
   }
 
   return (
-    <div className={css.targets}>
+    <form className={css.targets}>
       <table>
         <tbody>
           <tr>
@@ -75,12 +79,12 @@ export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onU
           </tr>
           {targets.map((target, index) => (
             <Target
-              key={target.hostname + target.port}
+              key={target.uid}
               data={target}
-              device={device}
               disable={true}
-              cliError={cliError}
-              onSave={(t: ITarget) => update(index, t)}
+              busy={setupBusy}
+              deleting={setupDeletingService === index}
+              onSave={(t: ITarget) => add(t)}
               onDelete={() => remove(index)}
             />
           ))}
@@ -93,18 +97,11 @@ export const Targets: React.FC<Props> = ({ targets, device, added, cliError, onU
               </td>
             </tr>
           ) : (
-            <NewTarget
-              added={added}
-              count={targets.length}
-              device={device}
-              cliError={cliError}
-              onSave={(t: ITarget) => update(targets.length, t)}
-              onCancel={onCancel}
-            />
+            <NewTarget device={device} onSave={(t: ITarget) => add(t)} onCancel={onCancel} />
           )}
         </tbody>
       </table>
-    </div>
+    </form>
   )
 }
 

@@ -20,8 +20,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   size = 'medium',
   color = 'success',
 }) => {
-  const hidden = (connection && connection.active) || !service || service.state !== 'active'
-  const connecting = !!(connection && connection.pid && !connection.active)
+  const hidden = connection?.active || !service || service.state !== 'active'
+  const connecting = !!connection?.pid
   const connect = () => {
     let theConnection = connection || newConnection(service)
     let context = {
@@ -38,7 +38,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     <Fade in={!hidden} timeout={600}>
       <div>
         <DynamicButton
-          title={connecting ? 'Connecting ...' : 'Connect'}
+          title={connecting ? 'Connecting' : 'Connect'}
           icon="exchange"
           loading={connecting}
           color={color}

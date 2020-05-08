@@ -74,7 +74,8 @@ function getEventHandlers() {
   return {
     connect: () => {
       console.log('SOCKET CONNECT')
-      ui.connected()
+      ui.set({ connected: true })
+      backend.set({ error: false })
       auth.init()
     },
 
@@ -84,18 +85,18 @@ function getEventHandlers() {
 
     disconnect: () => {
       console.log('SOCKET DISCONNECT')
-      ui.disconnected()
+      ui.set({ connected: false })
       auth.handleDisconnect()
     },
 
     connect_error: () => {
-      backend.set({ key: 'error', value: true })
+      backend.set({ error: true })
       auth.handleDisconnect()
     },
 
     pool: (result: IConnection[]) => {
       console.log('socket pool', result)
-      backend.set({ key: 'connections', value: result })
+      backend.set({ connections: result })
     },
 
     connection: (result: IConnection) => {
@@ -106,46 +107,46 @@ function getEventHandlers() {
     targets: (result: ITarget[]) => {
       console.log('socket targets', result)
       if (result) {
-        backend.set({ key: 'added', value: undefined })
-        backend.set({ key: 'targets', value: result })
+        backend.set({ targets: result })
+        ui.setupUpdated(result.length)
       }
     },
 
     device: (result: IDevice) => {
       console.log('socket device', result)
-      if (result) backend.set({ key: 'device', value: result })
+      if (result) backend.set({ device: result })
     },
 
     scan: (result: IScanData) => {
       console.log('socket scan', result)
-      if (result) backend.set({ key: 'scanData', value: result })
+      if (result) backend.set({ scanData: result })
     },
 
     oob: (oob: IOob) => {
       console.log('oob', oob)
-      backend.set({ key: 'lan', value: oob })
+      backend.set({ lan: oob })
       analytics.setOobAvailable(oob.oobAvailable)
       analytics.setOobActive(oob.oobActive)
     },
 
     interfaces: (result: IInterface[]) => {
       console.log('socket interfaces', result)
-      if (result) backend.set({ key: 'interfaces', value: result })
+      if (result) backend.set({ interfaces: result })
     },
 
-    freePort: (result: number) => backend.set({ key: 'freePort', value: result }),
+    freePort: (result: number) => backend.set({ freePort: result }),
 
-    dataReady: (result: boolean) => backend.set({ key: 'dataReady', value: result }),
+    dataReady: (result: boolean) => backend.set({ dataReady: result }),
 
     environment: (result: ILookup) => {
-      backend.set({ key: 'environment', value: result })
+      backend.set({ environment: result })
       analytics.setOS(result.os)
       analytics.setOsVersion(result.osVersion)
       analytics.setArch(result.arch)
       analytics.setManufacturerDetails(result.manufacturerDetails)
     },
 
-    preferences: (result: IPreferences) => backend.set({ key: 'preferences', value: result }),
+    preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
     //Analytics
     setOSInfo: (osInfo: IosInfo) => {
@@ -158,12 +159,13 @@ function getEventHandlers() {
     'signed-out': () => auth.signedOut(),
 
     // AutoUpdate
-    'update/downloaded': version => backend.set({ key: 'update', value: version }),
+    'update/downloaded': version => backend.set({ update: version }),
 
     // AutoUpdate
     'cli/error': error => {
-      backend.set({ key: 'cliError', value: '' }) // So we re-trigger a new error if one exists
-      backend.set({ key: 'cliError', value: error })
+      backend.set({ cliError: '' }) // So we re-trigger a new error if one exists
+      backend.set({ cliError: error })
+      ui.reset()
     },
 
     // Connections

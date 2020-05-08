@@ -1,29 +1,57 @@
 import { createModel } from '@rematch/core'
 
-interface UIState {
+export const DEFAULT_INTERFACE = 'searching'
+
+type UIParams = { [key: string]: any }
+type UIState = UIParams & {
   connected: boolean
   uninstalling: boolean
+  scanLoading: { [interfaceName: string]: boolean }
+  scanTimestamp: { [interfaceName: string]: number }
+  scanInterface: string
+  setupBusy: boolean
+  setupAdded?: ITarget
+  setupDeletingDevice: boolean
+  setupAddingService: boolean
+  setupDeletingService?: number
+  setupServicesCount: number
+  setupServicesNew: boolean
 }
 
-const state: UIState = { connected: false, uninstalling: false }
+const state: UIState = {
+  connected: false,
+  uninstalling: false,
+  scanLoading: {},
+  scanTimestamp: {},
+  scanInterface: DEFAULT_INTERFACE,
+  setupBusy: false,
+  setupAdded: undefined,
+  setupDeletingDevice: false,
+  setupDeletingService: undefined,
+  setupAddingService: false,
+  setupServicesCount: 0,
+  setupServicesNew: true,
+}
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async connected() {
-      dispatch.ui.setConnected(true)
-      dispatch.backend.set({ key: 'error', value: false })
-    },
-    async disconnected() {
-      dispatch.ui.setConnected(false)
+    setupUpdated(count: number, globalState: any) {
+      if (count !== globalState.ui.setupServicesCount) {
+        dispatch.ui.reset()
+        dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
+      }
     },
   }),
   reducers: {
-    setUninstalling(state: UIState) {
-      state.uninstalling = true
+    set(state: UIState, params: UIParams) {
+      Object.keys(params).forEach(key => (state[key] = params[key]))
     },
-    setConnected(state: UIState, connected: boolean) {
-      state.connected = connected
+    reset(state: UIState) {
+      state.setupBusy = false
+      state.setupDeletingDevice = false
+      state.setupAddingService = false
+      state.setupDeletingService = undefined
     },
   },
 })

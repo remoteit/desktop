@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import { REGEX_NAME_SAFE } from '../../constants'
 import { serviceTypes, findType } from '../../services/serviceTypes'
-import { addDeviceName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
@@ -10,20 +9,30 @@ import styles from '../../styling'
 type Props = {
   init?: boolean
   data: ITarget
-  device: IDevice
   disable: boolean
-  cliError?: string
+  busy?: boolean
+  adding?: boolean
+  deleting?: boolean
   onSave: (target: ITarget) => void
   onDelete: () => void
   onCancel?: () => void
 }
 
-export const Target: React.FC<Props> = ({ init, data, disable, device, cliError, onSave, onDelete, onCancel }) => {
+export const Target: React.FC<Props> = ({
+  init,
+  data,
+  disable,
+  busy,
+  adding,
+  deleting,
+  onSave,
+  onDelete,
+  onCancel,
+}) => {
   const [state, setState] = useState<ITarget>(data)
-  const [loading, setLoading] = useState<boolean>()
   const css = useStyles()
   const type = findType(data.type)
-  const disabled = disable || loading
+  const disabled = disable || deleting
   const same = useCallback(
     () =>
       data.name === state.name &&
@@ -32,15 +41,10 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, cliError,
       data.hostname === state.hostname,
     [data, state]
   )
-  const changed = (!loading && !same()) || init
+  const changed = (!deleting && !same()) || init
 
   function update(key: string, value: any) {
     setState({ ...state, [key]: value })
-  }
-
-  function save() {
-    onSave(state)
-    setLoading(true)
   }
 
   function cancel() {
@@ -50,14 +54,10 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, cliError,
 
   useEffect(() => {
     if (same()) {
-      if (!data.port) data.port = type.defaultPort || 0
+      if (!data.port) data.port = type.defaultPort || 1
       setState(data)
     }
   }, [same, data, type])
-
-  useEffect(() => {
-    if (cliError) setLoading(false)
-  }, [cliError])
 
   return (
     <tr className={css.service + (changed ? ' ' + css.serviceEdited : '')}>
@@ -71,7 +71,7 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, cliError,
             const value = event.target.value.replace(REGEX_NAME_SAFE, '')
             update('name', value)
           }}
-          helperText={addDeviceName(device.name, state.name)}
+          // helperText={addDeviceName(device.name, state.name)}
         />
       </td>
       <td className={css.cell}>
@@ -109,16 +109,16 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, cliError,
         />
       </td>
       <td>
-        {changed && !loading && (
+        {changed && !adding && (
           <Tooltip title="Save">
-            <IconButton color="primary" onClick={save} disabled={state.name.length < 1}>
+            <IconButton color="primary" onClick={() => onSave(state)} type="submit" disabled={state.name.length < 1}>
               <Icon name="check" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
         )}
       </td>
       <td>
-        {loading ? (
+        {deleting || adding ? (
           <CircularProgress className={css.loading} size={styles.fontSizes.lg} />
         ) : changed ? (
           <Tooltip title="Cancel">
@@ -128,12 +128,7 @@ export const Target: React.FC<Props> = ({ init, data, disable, device, cliError,
           </Tooltip>
         ) : (
           <Tooltip title="Delete">
-            <IconButton
-              onClick={() => {
-                onDelete()
-                setLoading(true)
-              }}
-            >
+            <IconButton disabled={busy} onClick={() => onDelete()}>
               <Icon name="trash-alt" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
