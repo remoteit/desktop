@@ -23,7 +23,6 @@ class CLIInterface extends CLI {
       case 'registration':
         await this.registerAll(value)
         Logger.info('REGISTER ' + value.device.name, { targets: value.targets })
-        value.targets.forEach((target: ITarget) => {})
         break
     }
   }
