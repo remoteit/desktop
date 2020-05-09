@@ -7,7 +7,6 @@ import preferences from './preferences'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import EventBus from './EventBus'
-import Tracker from './Tracker'
 import Logger from './Logger'
 import LAN from './LAN'
 import user, { User } from './User'
@@ -21,8 +20,6 @@ const d = debug('r3:backend:backend')
 d('Starting up backend application!')
 Logger.info('environment info:', environment.toJSON())
 
-Tracker.pageView('/')
-Tracker.event('app', 'startup', `App startup ${environment.simpleOS}`)
 Logger.info('Desktop starting up!')
 
 process

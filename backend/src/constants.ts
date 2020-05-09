@@ -8,7 +8,6 @@ export const MANUFACTURER_NAME = 'remote.it'
 export const REMOTEIT_PI_WIFI = 'remote.itPi'
 
 // Google Analytics usage tracking
-export const GOOGLE_ANALYTICS_CODE = 'UA-76016818-10'
 export const HEARTBEAT_INTERVAL = 1000 * 60 // 1 bmp
 
 // Airbrake error reporting

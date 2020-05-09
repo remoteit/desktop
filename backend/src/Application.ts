@@ -8,7 +8,6 @@ import Logger from './Logger'
 import cli from './cliInterface'
 import user, { User } from './User'
 import server from './server'
-import Tracker from './Tracker'
 import EventBus from './EventBus'
 import lan from './LAN'
 
@@ -65,7 +64,6 @@ export default class Application {
   }
 
   private bindExitHandlers = () => {
-    Tracker.event('app', 'close', 'closing application')
     // Do something when app is closing
     process.on('exit', this.handleException)
 

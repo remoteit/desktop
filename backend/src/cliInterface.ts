@@ -1,6 +1,5 @@
 import CLI from './CLI'
 import Logger from './Logger'
-import Tracker from './Tracker'
 
 class CLIInterface extends CLI {
   async set(key: string, value: any) {
@@ -15,21 +14,16 @@ class CLIInterface extends CLI {
         } else if (!this.data.device.uid && value.name) {
           await this.register(value)
           Logger.info('REGISTER ' + value.name)
-          Tracker.event('device', 'register', value.name)
         } else if (value === 'DELETE') {
           await this.delete()
           Logger.info('DELETE ' + this.data.device.name)
-          Tracker.event('device', 'delete', this.data.device.name)
         }
         break
 
       case 'registration':
         await this.registerAll(value)
         Logger.info('REGISTER ' + value.device.name, { targets: value.targets })
-        Tracker.event('device', 'register', value.device.name)
-        value.targets.forEach((target: ITarget) => {
-          Tracker.event('target', 'add', `${target.name} ${target.port} ${target.type} ${target.hostname}`)
-        })
+        value.targets.forEach((target: ITarget) => {})
         break
     }
   }
@@ -45,14 +39,12 @@ class CLIInterface extends CLI {
       if (target) {
         await this.removeTarget(target)
         Logger.info('DELETE', target)
-        Tracker.event('target', 'delete', target.name)
       }
     } else if (targets.length > length) {
       const target = this.diff(this.data.targets, targets)
       if (target) {
         await this.addTarget(target)
         Logger.info('ADD', target)
-        Tracker.event('target', 'add', `${target.name} ${target.port} ${target.type} ${target.hostname}`)
       }
     }
   }

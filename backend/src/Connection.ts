@@ -3,7 +3,6 @@ import path from 'path'
 import user from './User'
 import debug from 'debug'
 import Logger from './Logger'
-import Tracker from './Tracker'
 import EventBus from './EventBus'
 import environment from './environment'
 import { EventEmitter } from 'events'
@@ -59,8 +58,6 @@ export default class Connection extends EventEmitter {
 
     // Listen to events to synchronize state
     EventBus.emit(Connection.EVENTS.started, { connection: this.toJSON(), raw: 'Connection started' })
-    Tracker.pageView(`/connections/${this.params.id}/start`)
-    Tracker.event('connection', 'start', `connecting to service: ${this.params.id}`)
     Logger.info('Starting connection: ', this.toJSON())
 
     const usernameBase64 = Buffer.from(user.username).toString('base64')
@@ -123,8 +120,6 @@ export default class Connection extends EventEmitter {
   async kill() {
     d('Killing service:', this.params.id)
     Logger.info('Killing connection:', this.toJSON())
-    Tracker.pageView(`/connections/${this.params.id}/kill`)
-    Tracker.event('connection', 'kill', `kill service: ${this.params.id}`)
 
     if (this.process) this.process.kill()
     this.process = undefined
@@ -137,8 +132,6 @@ export default class Connection extends EventEmitter {
     if (autoStart !== undefined) this.params.autoStart = autoStart
 
     d('Stopping service:', this.params.id)
-    Tracker.pageView(`/connections/${this.params.id}/stop`)
-    Tracker.event('connection', 'stop', `stopping service: ${this.params.id}`)
 
     // Make sure the process is completely dead.
     await this.kill()
@@ -150,8 +143,6 @@ export default class Connection extends EventEmitter {
 
   async restart() {
     Logger.info('Restarting connection:', this.toJSON())
-    Tracker.pageView(`/connections/${this.params.id}/restart`)
-    Tracker.event('connection', 'restart', `restarting service: ${this.params.id}`)
 
     d('Restart - stopping service:', this.params.id)
     if (this.process && this.process.pid) await this.stop()
@@ -169,7 +160,6 @@ export default class Connection extends EventEmitter {
 
   private handleError = (error: Error) => {
     Logger.error('connectd error: ', error)
-    Tracker.event('connection', 'error', `connection error: ${this.params.id}`)
     this.params.error = error
   }
 
@@ -182,7 +172,6 @@ export default class Connection extends EventEmitter {
     if (code === 15) return
 
     Logger.error(`Connection closed with code: ${code}`)
-    Tracker.event('connection', 'connection-closed', `connection closed ${code}: ${this.params.id}`)
 
     // Make sure kill the process.
     this.kill()
