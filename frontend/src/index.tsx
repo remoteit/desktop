@@ -74,6 +74,17 @@ const theme = createMuiTheme({
       },
       underline: { '&.Mui-disabled:before': { borderColor: colors.grayLight } },
     },
+    MuiFilledInput: {
+      root: {
+        backgroundColor: colors.grayLightest,
+        '&.Mui-disabled': { backgroundColor: colors.grayLightest },
+      },
+    },
+    MuiFormControl: {
+      marginDense: {
+        '& .MuiFilledInput-input': { paddingTop: spacing.sm, paddingBottom: spacing.sm },
+      },
+    },
     MuiLink: {
       root: { padding: `${spacing.xs}px ${spacing.xs}px` },
       underlineHover: {
@@ -95,6 +106,7 @@ const theme = createMuiTheme({
         padding: `${spacing.xxs}px ${gutters}px`,
         borderBottom: `1px solid ${colors.grayLighter}`,
         minHeight: 50,
+        '& span + span': { marginLeft: spacing.md },
       },
       h2: {
         fontSize: '1rem',
@@ -131,14 +143,6 @@ const theme = createMuiTheme({
     },
     MuiDialogContent: { root: { margin: `${spacing.md}px ${gutters}px`, padding: 0 } },
     MuiDialogActions: { root: { margin: `${spacing.md}px ${gutters}px`, padding: 0 } },
-    MuiFilledInput: {
-      root: {
-        backgroundColor: colors.grayLightest,
-        '&.Mui-disabled': {
-          backgroundColor: colors.grayLightest,
-        },
-      },
-    },
   },
 })
 

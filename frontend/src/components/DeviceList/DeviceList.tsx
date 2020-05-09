@@ -2,6 +2,9 @@ import React from 'react'
 import { IDevice } from 'remote.it'
 import { DeviceListItem } from '../DeviceListItem'
 import { DeviceListEmpty } from '../DeviceListEmpty'
+import { DeviceSetupItem } from '../DeviceSetupItem'
+import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
 import { Body } from '../Body'
 import { List } from '@material-ui/core'
 import classnames from 'classnames'
@@ -30,6 +33,9 @@ export function DeviceList({
   searching = false,
   searchPerformed = false,
 }: DeviceListProps & React.HTMLProps<HTMLDivElement>) {
+  const myDevice = useSelector((state: ApplicationState) => state.backend.device)
+  const thisDevice = devices.find(device => myDevice.uid === device.id)
+
   if (searching) return <SearchingMessage />
 
   if (searchOnly) {
@@ -42,9 +48,22 @@ export function DeviceList({
 
   return (
     <List component="nav" className={classnames(className, 'py-none of-auto fg-1')}>
-      {devices.map(device => (
-        <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
-      ))}
+      {thisDevice && (
+        <DeviceListItem
+          key={thisDevice.id}
+          device={thisDevice}
+          connections={connections[thisDevice.id]}
+          thisDevice={true}
+        />
+        // ) : (
+        // <DeviceSetupItem />
+      )}
+      {devices.map(
+        device =>
+          thisDevice !== device && (
+            <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
+          )
+      )}
     </List>
   )
 }

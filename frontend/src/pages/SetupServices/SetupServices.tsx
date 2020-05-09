@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { CircularProgress, Tooltip, IconButton, Typography } from '@material-ui/core'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useRouteMatch } from 'react-router-dom'
 import { makeStyles } from '@material-ui/styles'
 import { Container } from '../../components/Container'
 import { Targets } from '../../components/Targets'
@@ -25,6 +25,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   }))
   const { devices, ui } = useDispatch<Dispatch>()
   const confirmMessage = 'Are you sure?\nYou are about to permanently remove this device and all of its services.'
+  const match = useRouteMatch()
   const history = useHistory()
   const css = useStyles()
   const onUpdate = (t: ITarget[]) => emit('targets', t)
@@ -43,16 +44,16 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   }
 
   useEffect(() => {
-    // Refresh device data
-    emit('device')
+    emit('device') // Refresh device data
   }, [])
 
   useEffect(() => {
     if (setupDeletingDevice && !device.uid) {
       devices.fetch(false) // @FIXME this will only run if the page is active
-      history.push('/settings/setupDevice')
+      if (match.path.includes('devices')) history.push(`/devices`)
+      else history.push('/settings/setupDevice')
     }
-  }, [device, devices, setupBusy, history])
+  }, [device, devices, setupDeletingDevice, history])
 
   return (
     <Container
@@ -60,7 +61,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <Icon className={css.icon} name="hdd" size="md" weight="light" />
+            <Icon name="hdd" size="lg" weight="light" color="grayDarker" fixedWidth />
             <span className={css.title}>{device.name}</span>
             {setupDeletingDevice ? (
               <CircularProgress className={css.loading} size={styles.fontSizes.md} />
@@ -85,6 +86,5 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
 
 const useStyles = makeStyles({
   title: { flexGrow: 1 },
-  icon: { marginRight: styles.spacing.md },
   loading: { color: styles.colors.danger, margin: styles.spacing.sm },
 })

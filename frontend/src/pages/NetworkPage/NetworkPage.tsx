@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { makeStyles } from '@material-ui/styles'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Network } from '../../components/Network'
@@ -11,8 +10,6 @@ import analytics from '../../helpers/Analytics'
 
 export const NetworkPage: React.FC = () => {
   const css = useStyles()
-  const history = useHistory()
-  const { backend } = useDispatch<Dispatch>()
   const { interfaces, targets, scanData, privateIP, oobAvailable, oobActive } = useSelector(
     (state: ApplicationState) => ({
       interfaces: state.backend.interfaces,

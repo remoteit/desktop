@@ -15,10 +15,10 @@ import {
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/styles'
 import { getTypeId } from '../../services/serviceTypes'
-import { DEFAULT_TARGET, REGEX_NAME_SAFE, IP_PRIVATE } from '../../constants'
+import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../constants'
+import { useHistory, useRouteMatch } from 'react-router-dom'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
-import { useHistory } from 'react-router-dom'
 import styles, { spacing } from '../../styling'
 
 type Props = {
@@ -43,6 +43,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
   const css = useStyles()
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
+  const match = useRouteMatch()
   const [open, setOpen] = useState<number[]>([])
   const allClosed = open.length === 0
   const disabled = targets.length > 9
@@ -71,7 +72,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
       target => (target.hostname === ip || (IP_PRIVATE === target.hostname && privateIP === ip)) && target.port === port
     )
   }
-
+  console.log('MATCH PATH', match)
   return (
     <>
       <Divider />
@@ -116,7 +117,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                         size="small"
                         disabled={disabled}
                         onClick={() => {
-                          history.push('/settings/setupServices')
+                          history.push(`${match.path.replace(REGEX_LAST_PATH, '')}/setupServices`)
                           ui.set({
                             setupAdded: {
                               ...DEFAULT_TARGET,
