@@ -1,5 +1,5 @@
 import electron from 'electron'
-import { EventBus, Logger, EVENTS, environment, preferences } from 'remoteit-headless'
+import { EventBus, Logger, EVENTS, preferences } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
@@ -29,12 +29,12 @@ export default class AppUpdater {
       this.autoUpdate = autoUpdate
     })
 
-    this.autoUpdate = preferences.data?.autoUpdate
+    this.autoUpdate = preferences.get().autoUpdate
   }
 
   check(force?: boolean) {
     try {
-      if (force || (this.nextCheck < Date.now() && preferences.data?.autoUpdate)) {
+      if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
         autoUpdater.checkForUpdatesAndNotify()
         this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
       }

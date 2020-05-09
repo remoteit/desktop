@@ -32,7 +32,7 @@ class BinaryInstaller {
       await this.restartService()
     }
 
-    preferences.set({ ...preferences.data, version: environment.version }, true)
+    preferences.update({ version: environment.version })
     EventBus.emit(Installer.EVENTS.installed, remoteitInstaller.toJSON())
     this.inProgress = false
   }
