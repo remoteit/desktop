@@ -6,7 +6,7 @@ import { DeviceSetupItem } from '../DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { Body } from '../Body'
-import { List } from '@material-ui/core'
+import { List, Divider } from '@material-ui/core'
 import classnames from 'classnames'
 
 export interface DeviceListProps {
@@ -48,16 +48,17 @@ export function DeviceList({
 
   return (
     <List component="nav" className={classnames(className, 'py-none of-auto fg-1')}>
-      {thisDevice && (
+      {thisDevice ? (
         <DeviceListItem
           key={thisDevice.id}
           device={thisDevice}
           connections={connections[thisDevice.id]}
           thisDevice={true}
         />
-        // ) : (
-        // <DeviceSetupItem />
+      ) : (
+        <DeviceSetupItem thisDevice={true} />
       )}
+      <Divider />
       {devices.map(
         device =>
           thisDevice !== device && (
