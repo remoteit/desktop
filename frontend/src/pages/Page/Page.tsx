@@ -8,6 +8,7 @@ import { Snackbar, IconButton } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
+import { Sidebar } from '../../components/Sidebar'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
 
@@ -20,8 +21,8 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { connected, cliError, authenticated, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
     cliError: state.backend.cliError,
-    os: state.backend.environment.os,
     authenticated: state.auth.authenticated,
+    os: state.backend.environment.os,
   }))
 
   const css = useStyles()
@@ -33,41 +34,43 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   if (!isElectron()) {
     pageCss = classnames(pageCss, css.inset)
-    remoteCss = classnames(css.full, css.default, os && css[os])
+    remoteCss = classnames(css.full, css.default)
   }
 
   return (
     <div className={remoteCss}>
       <RemoteHeader os={os} />
       <div className={pageCss}>
-        {children}
-        <Snackbar
-          open={authenticated && !connected}
-          message="Webserver connection lost. Retrying..."
-          action={
-            <IconButton onClick={reconnect}>
-              <Icon name="sync" size="md" color="white" fixedWidth />
-            </IconButton>
-          }
-        />
-        <Snackbar
-          className={css.error}
-          key={cliError}
-          open={!!cliError}
-          message={
-            <>
-              <Icon name="exclamation-triangle" size="md" color="danger" weight="regular" fixedWidth inlineLeft />
-              {cliError}
-            </>
-          }
-          action={
-            <IconButton onClick={clearCliError}>
-              <Icon name="times" size="md" color="white" fixedWidth />
-            </IconButton>
-          }
-          onClose={clearCliError}
-        />
-        <UpdateNotice />
+        <Sidebar />
+        <div className={css.pageBody}>
+          {children}
+          <Snackbar
+            open={authenticated && !connected}
+            message="Webserver connection lost. Retrying..."
+            action={
+              <IconButton onClick={reconnect}>
+                <Icon name="sync" size="md" color="white" fixedWidth />
+              </IconButton>
+            }
+          />
+          <Snackbar
+            key={cliError}
+            open={!!cliError}
+            message={
+              <>
+                <Icon name="exclamation-triangle" size="md" color="danger" weight="regular" fixedWidth inlineLeft />
+                {cliError}
+              </>
+            }
+            action={
+              <IconButton onClick={clearCliError}>
+                <Icon name="times" size="md" color="white" fixedWidth />
+              </IconButton>
+            }
+            onClose={clearCliError}
+          />
+          <UpdateNotice />
+        </div>
       </div>
     </div>
   )
@@ -78,26 +81,26 @@ const useStyles = makeStyles({
   page: {
     overflow: 'hidden',
     display: 'flex',
-    flexFlow: 'column',
-    justifyContent: 'space-between',
-    flexWrap: 'nowrap',
+    flexFlow: 'row',
     backgroundColor: colors.white,
     maxWidth: 1000,
     margin: 'auto',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
   },
-  error: {
-    // '& .MuiPaper-root': { backgroundColor: colors.danger },
+  pageBody: {
+    display: 'flex',
+    flexFlow: 'column',
+    justifyContent: 'space-between',
+    backgroundColor: colors.white,
+    flexWrap: 'nowrap',
+    flexGrow: 1,
   },
   inset: {
     top: spacing.xl,
-    left: spacing.xs,
-    right: spacing.xs,
-    bottom: spacing.xs,
+    left: spacing.sm,
+    right: spacing.sm,
+    bottom: spacing.sm,
     borderRadius: spacing.sm,
   },
-  default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
-  mac: { backgroundColor: colors.grayDark },
-  rpi: { backgroundColor: colors.rpi },
-  linux: { backgroundColor: colors.success },
-  windows: { backgroundColor: colors.primary },
+  default: { backgroundColor: colors.gray, padding: spacing.xs },
 })

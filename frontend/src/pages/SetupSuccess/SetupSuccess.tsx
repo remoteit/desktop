@@ -1,9 +1,10 @@
 import React from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { Typography, Tooltip, IconButton, Link, Divider, Button } from '@material-ui/core'
+import { Typography, Link, Divider, Button } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { osName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
+import { CloseButton } from '../../buttons/CloseButton'
 import { Container } from '../../components/Container'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
@@ -20,11 +21,7 @@ export const SetupSuccess: React.FC<Props> = ({ device, os }) => {
       header={
         <div className={css.header}>
           <Breadcrumbs />
-          <Tooltip title="Close">
-            <IconButton onClick={() => history.push('/settings/setupServices')}>
-              <Icon name="times" size="md" fixedWidth />
-            </IconButton>
-          </Tooltip>
+          <CloseButton onClick={() => history.push('/settings/setupServices')} />
         </div>
       }
     >

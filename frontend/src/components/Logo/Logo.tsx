@@ -1,5 +1,5 @@
 import React from 'react'
-import logoColor from '../../assets/logo.svg'
+import logoColor from './logo.svg'
 import logoWhite from './logo-white.svg'
 import logomarkWhite from './logomark-white.svg'
 

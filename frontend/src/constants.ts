@@ -16,7 +16,7 @@ export const REGEX_NUMERIC_VALUE = /=(\d+)/
 export const REGEX_LAST_NUMBER = /-*\d*$/
 export const DEFAULT_TARGET: ITarget | IDevice = {
   hardwareID: '',
-  hostname: '127.0.0.1',
+  hostname: IP_PRIVATE,
   name: '',
   port: 0,
   secret: '',
