@@ -34,7 +34,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
 
   if (!isElectron()) {
     pageCss = classnames(pageCss, css.inset)
-    remoteCss = classnames(css.full, css.default /* , os && css[os] */)
+    remoteCss = classnames(css.full, css.default)
   }
 
   return (
@@ -107,8 +107,4 @@ const useStyles = makeStyles({
     borderRadius: spacing.sm,
   },
   default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
-  mac: { backgroundColor: colors.grayDark },
-  rpi: { backgroundColor: colors.rpi },
-  linux: { backgroundColor: colors.success },
-  windows: { backgroundColor: colors.primary },
 })
