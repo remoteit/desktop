@@ -54,7 +54,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
             }
           />
           <Snackbar
-            className={css.error}
             key={cliError}
             open={!!cliError}
             message={
@@ -96,9 +95,6 @@ const useStyles = makeStyles({
     flexWrap: 'nowrap',
     flexGrow: 1,
   },
-  error: {
-    // '& .MuiPaper-root': { backgroundColor: colors.danger },
-  },
   inset: {
     top: spacing.xl,
     left: spacing.sm,
@@ -106,5 +102,5 @@ const useStyles = makeStyles({
     bottom: spacing.sm,
     borderRadius: spacing.sm,
   },
-  default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
+  default: { backgroundColor: colors.gray, padding: spacing.xs },
 })
