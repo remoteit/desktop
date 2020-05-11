@@ -4,10 +4,11 @@ import classnames from 'classnames'
 import { isElectron } from '../../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Snackbar, IconButton, Box } from '@material-ui/core'
+import { Snackbar, IconButton } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
+import { Sidebar } from '../../components/Sidebar'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
 
@@ -15,21 +16,13 @@ export interface Props {
   children: React.ReactNode
 }
 
-export const ContextSidebar: React.FC<{ className: string }> = ({ className, ...props }) => {
-  return (
-    <Box className={className} {...props}>
-      I am Sidebar.
-    </Box>
-  )
-}
-
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend } = useDispatch<Dispatch>()
   const { connected, cliError, authenticated, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
     cliError: state.backend.cliError,
-    os: state.backend.environment.os,
     authenticated: state.auth.authenticated,
+    os: state.backend.environment.os,
   }))
 
   const css = useStyles()
@@ -48,7 +41,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     <div className={remoteCss}>
       <RemoteHeader os={os} />
       <div className={pageCss}>
-        <ContextSidebar className={css.sideBar} />
+        <Sidebar />
         <div className={css.pageBody}>
           {children}
           <Snackbar
@@ -99,16 +92,9 @@ const useStyles = makeStyles({
     display: 'flex',
     flexFlow: 'column',
     justifyContent: 'space-between',
+    backgroundColor: colors.white,
     flexWrap: 'nowrap',
     flexGrow: 1,
-  },
-  sideBar: {
-    color: colors.white,
-    backgroundColor: colors.primary,
-    width: 200,
-    height: '100%',
-    padding: spacing.md,
-    boxShadow: 'inset -6px 0px 4px -4px rgba(0,0,0,0.1)',
   },
   error: {
     // '& .MuiPaper-root': { backgroundColor: colors.danger },
