@@ -28,11 +28,15 @@ export class Preferences {
     return this.data || {}
   }
 
-  set = (preferences: IPreferences, quiet?: boolean) => {
+  update(pref: { [key: string]: any }) {
+    this.set({ ...this.data, ...pref })
+  }
+
+  set = (preferences: IPreferences) => {
     this.file.write(preferences)
     this.data = preferences
     Logger.info('SET PREFERENCES', { preferences })
-    if (!quiet) EventBus.emit(this.EVENTS.update, this.data)
+    EventBus.emit(this.EVENTS.update, this.data)
   }
 }
 
