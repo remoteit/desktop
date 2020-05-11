@@ -59,7 +59,9 @@ export const SettingsPage = () => {
               </ButtonBase>
             </Tooltip>
           </Typography>
-          <DeviceSetupItem />
+          <List>
+            <DeviceSetupItem />
+          </List>
           <Divider />
         </>
       }

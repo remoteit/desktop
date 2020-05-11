@@ -1,8 +1,6 @@
 import React from 'react'
 import { IDevice } from 'remote.it'
-import { useSelector } from 'react-redux'
 import { ServiceName } from '../ServiceName'
-import { ApplicationState } from '../../store'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
@@ -11,9 +9,10 @@ import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-u
 type Props = {
   device: IDevice
   connections?: IConnection[]
+  thisDevice?: boolean
 }
 
-const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
+const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevice }) => {
   return (
     <>
       {device.services.map(service => (
@@ -22,28 +21,29 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
           service={service}
           connection={connections.find(c => c.id === service.id)}
           pathname={`/devices/${device.id}/${service.id}`}
+          disabled={thisDevice}
         />
       ))}
     </>
   )
 }
 
-export const DeviceListItem = ({ device, connections }: Props) => {
-  const myDevice = useSelector((state: ApplicationState) => state.backend.device)
+export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice }) => {
   const activeConnection = connections && connections.find(c => c.active)
+
   return (
-    <ListItemLocation pathname={`/devices/${device.id}`}>
+    <ListItemLocation pathname={thisDevice ? '/devices/setup' : `/devices/${device.id}`}>
       <ListItemIcon>
-        <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
+        <ConnectionStateIcon service={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
       <ListItemText
         primary={
           <ServiceName service={device} shared={device.shared === 'shared-from'} connection={activeConnection} />
         }
-        secondary={myDevice.uid === device.id && 'This system'}
+        secondary={thisDevice && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>
-        <ServiceIndicators device={device} connections={connections} />
+        <ServiceIndicators device={device} connections={connections} thisDevice={thisDevice} />
       </ListItemSecondaryAction>
     </ListItemLocation>
   )

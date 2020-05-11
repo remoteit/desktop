@@ -9,9 +9,10 @@ interface Props {
   connection?: IConnection
   service?: IService | IDevice
   pathname: string
+  disabled?: boolean
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathname }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathname, disabled }) => {
   const history = useHistory()
   const css = useStyles()
 
@@ -45,9 +46,11 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
 
   return (
     <Tooltip title={service ? `${service.name} - ${state}` : state}>
-      <IconButton className={css.button} onClick={() => history.push(pathname)}>
-        <span style={{ backgroundColor: colors[colorName] }} />
-      </IconButton>
+      <span>
+        <IconButton className={css.button} onClick={() => history.push(pathname)} disabled={disabled}>
+          <span style={{ backgroundColor: colors[colorName] }} />
+        </IconButton>
+      </span>
     </Tooltip>
   )
 }

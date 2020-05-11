@@ -19,7 +19,7 @@ const pageNameMap: { [path: string]: string } = {
   setupServices: 'This Device',
 }
 
-export const Breadcrumbs: React.FC = ({ children }) => {
+export const Breadcrumbs: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()

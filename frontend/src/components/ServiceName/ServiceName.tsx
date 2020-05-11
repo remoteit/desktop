@@ -13,7 +13,7 @@ type Props = {
   inline?: boolean
 }
 
-export const ServiceName: React.FC<Props> = ({ connection, service, shared, inline }) => {
+export const ServiceName: React.FC<Props> = ({ connection, service, shared }) => {
   const location = useLocation()
   const css = useStyles()
 
@@ -21,13 +21,12 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared, inli
   const name = menu && menu[0] === '/connections' ? connection && connection.name : service && service.name
 
   let color: string | undefined = colors.grayDark
-  let marginLeft = inline ? spacing.md : 0
 
   if (service && service.state === 'active') color = undefined
   if (connection && connection.active) color = undefined
 
   return (
-    <span className={css.title} style={{ color, marginLeft }}>
+    <span className={css.title} style={{ color }}>
       {!service && !connection ? 'No device found' : name}
       {shared && (
         <sup>

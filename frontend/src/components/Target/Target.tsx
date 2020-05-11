@@ -64,6 +64,7 @@ export const Target: React.FC<Props> = ({
       <td className={css.cell}>
         <TextField
           autoFocus={init}
+          margin="dense"
           value={state.name}
           disabled={disabled}
           variant="filled"
@@ -77,6 +78,7 @@ export const Target: React.FC<Props> = ({
       <td className={css.cell}>
         <TextField
           select
+          margin="dense"
           value={state.type}
           disabled={disabled}
           variant="filled"
@@ -94,6 +96,7 @@ export const Target: React.FC<Props> = ({
       </td>
       <td className={css.cell}>
         <TextField
+          margin="dense"
           value={state.port}
           disabled={disabled}
           variant="filled"
@@ -102,6 +105,7 @@ export const Target: React.FC<Props> = ({
       </td>
       <td className={css.cell}>
         <TextField
+          margin="dense"
           value={state.hostname || ''}
           disabled={disabled}
           variant="filled"

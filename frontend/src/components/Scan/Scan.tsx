@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { DEFAULT_INTERFACE } from '../../models/ui'
 import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
@@ -32,7 +32,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
         scanTimestamp: { [i]: selected.timestamp },
       })
     },
-    [selected, onScan]
+    [selected, onScan, ui]
   )
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
       ui.set({ scanInterface: name })
       scan(name)
     }
-  }, [interfaces, scanInterface, scan])
+  }, [interfaces, scanInterface, scan, ui])
 
   useEffect(() => {
     if (selected.timestamp !== selectedTimestamp && selectedLoading) {
@@ -51,7 +51,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
         scanTimestamp: { [scanInterface]: selected.timestamp },
       })
     }
-  }, [selected.timestamp, selectedTimestamp, selectedLoading, scanInterface])
+  }, [selected.timestamp, selectedTimestamp, selectedLoading, scanInterface, ui])
 
   function interfaceType() {
     const i = interfaces.find(i => i.name === scanInterface)
@@ -64,6 +64,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
         <div>
           <TextField
             select
+            margin="dense"
             value={scanInterface}
             variant="filled"
             onChange={event => ui.set({ scanInterface: event.target.value as string })}

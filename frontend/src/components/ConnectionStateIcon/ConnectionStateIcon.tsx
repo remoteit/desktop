@@ -11,13 +11,22 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
   service?: IService | IDevice
   state?: ConnectionState
   mini?: boolean
+  thisDevice?: boolean
 }
 
-export function ConnectionStateIcon({ connection, service, state, mini, ...props }: ConnectionStateIconProps) {
+export function ConnectionStateIcon({
+  connection,
+  service,
+  state,
+  mini,
+  thisDevice,
+  ...props
+}: ConnectionStateIconProps) {
   const css = useStyles()
 
   let icon = 'question-circle'
   let colorName: Color = 'warning'
+  let element: any
 
   state = state || (service ? service.state : 'unknown')
 
@@ -52,29 +61,43 @@ export function ConnectionStateIcon({ connection, service, state, mini, ...props
       colorName = 'grayLight'
   }
 
-  return (
-    <Tooltip title={mini && service ? `${service.name} - ${state}` : state}>
-      {mini ? (
-        <span className={css.mini}>
-          <span style={{ backgroundColor: colors[colorName] }} />
-        </span>
-      ) : (
-        <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
-      )}
-    </Tooltip>
-  )
+  if (mini)
+    element = (
+      <span className={css.mini}>
+        <span style={{ backgroundColor: colors[colorName] }} />
+      </span>
+    )
+  else if (thisDevice)
+    element = (
+      <span className={css.combo}>
+        <Icon {...props} name="hdd" color="grayDarker" fixedWidth />
+        <sup>
+          <Icon name={icon} color={colorName} spin={state === 'connecting'} size="sm" weight="regular" fixedWidth />
+        </sup>
+      </span>
+    )
+  else element = <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+
+  return <Tooltip title={mini && service ? `${service.name} - ${state}` : state}>{element}</Tooltip>
 }
 
 const useStyles = makeStyles({
   mini: {
-    // display: 'inline-block',
-
     '& > span': {
       height: 4,
       borderRadius: 4,
       width: spacing.md,
       display: 'inline-block',
       marginLeft: spacing.xxs,
+    },
+  },
+  combo: {
+    '& sup': {
+      position: 'absolute',
+      marginTop: -6,
+      marginLeft: -8,
+      backgroundColor: colors.white,
+      borderRadius: '50%',
     },
   },
 })

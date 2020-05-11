@@ -23,9 +23,9 @@ export const SetupView: React.FC<{
           <Breadcrumbs />
           <Typography variant="h1">
             <Tooltip title={`Only ${adminUsername} can edit this device`}>
-              <Icon name="lock-alt" weight="regular" color="primary" inlineLeft />
+              <Icon name="lock-alt" weight="light" color="primary" size="lg" fixedWidth />
             </Tooltip>
-            {device.name}
+            <span>{device.name}</span>
           </Typography>
         </>
       }

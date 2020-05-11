@@ -34,7 +34,7 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
   useEffect(() => {
     analytics.page('ServicesPage')
     if (!device) history.push('/devices')
-  }, [device])
+  }, [device, history])
 
   if (!device) return <Typography variant="h1">No device found</Typography>
 
@@ -56,7 +56,6 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
         </>
       }
     >
-      {/* <Typography variant="subtitle1">Services</Typography> */}
       <ServiceList services={device.services} connections={serviceConnections} />
       <Typography variant="subtitle1">Device details</Typography>
       <Columns count={1} inset>

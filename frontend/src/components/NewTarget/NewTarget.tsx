@@ -2,6 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
+import { useRouteMatch } from 'react-router-dom'
 import { DEFAULT_TARGET } from '../../constants'
 import { makeStyles } from '@material-ui/styles'
 import { Button, Link } from '@material-ui/core'
@@ -18,6 +19,7 @@ type Props = {
 export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
   const { setupServicesNew, setupAddingService, setupAdded } = useSelector((state: ApplicationState) => state.ui)
   const { ui } = useDispatch<Dispatch>()
+  const match = useRouteMatch()
   const history = useHistory()
   const css = useStyles()
 
@@ -25,7 +27,7 @@ export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
     return (
       <tr>
         <td colSpan={6} className={css.button}>
-          <Button color="primary" variant="contained" onClick={() => history.push('/settings/setupServices/network')}>
+          <Button color="primary" variant="contained" onClick={() => history.push(`${match.path}/network`)}>
             Add from network
           </Button>
           <Link onClick={() => ui.set({ setupServicesNew: false })}>
