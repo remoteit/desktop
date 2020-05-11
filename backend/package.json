@@ -36,7 +36,6 @@
     "socketio-auth": "^0.1.1",
     "sudo-prompt": "^9.1.1",
     "tmp": "^0.1.0",
-    "universal-analytics": "0.4.20",
     "winston": "3.2.1"
   },
   "devDependencies": {
@@ -52,7 +51,6 @@
     "@types/semver": "^7.1.0",
     "@types/socket.io": "^2.1.4",
     "@types/tmp": "^0.1.0",
-    "@types/universal-analytics": "^0.4.3",
     "cross-env": "^7.0.2",
     "jest": "^25.1.0",
     "npm-pack-all": "^1.11.1",

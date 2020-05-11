@@ -1,7 +1,6 @@
 import cli from './cliInterface'
 import debug from 'debug'
 import Logger from './Logger'
-import Tracker from './Tracker'
 import EventBus from './EventBus'
 import JSONFile from './JSONFile'
 import environment from './environment'
@@ -58,7 +57,6 @@ export class User {
 
   checkSignIn = async (credentials?: UserCredentials) => {
     Logger.info('Check sign in:', { username: credentials && credentials.username })
-    Tracker.event('auth', 'check-sign-in', 'check user sign in')
 
     if (!credentials) {
       Logger.warn('No user, sign in failed')
@@ -89,8 +87,6 @@ export class User {
   }
 
   signOut = () => {
-    Tracker.event('auth', 'sign-out', 'user signed out')
-    Tracker.pageView('/sign-out')
     Logger.info('SIGN OUT USER')
 
     this.userFile.remove()

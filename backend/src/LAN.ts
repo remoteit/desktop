@@ -1,7 +1,6 @@
 import { IP_PRIVATE, PLATFORM_CODES, REMOTEIT_PI_WIFI } from './constants'
 import environment from './environment'
 import Logger from './Logger'
-import Tracker from './Tracker'
 import EventBus from './EventBus'
 import cli from './cliInterface'
 import nm from 'netmask'
@@ -108,8 +107,6 @@ class LAN {
   }
 
   async scan(interfaceName: string) {
-    Logger.info('SCAN start', { interfaceName })
-    Tracker.event('scan', 'start', `${interfaceName} scan`)
     if (!interfaceName) return
 
     try {
