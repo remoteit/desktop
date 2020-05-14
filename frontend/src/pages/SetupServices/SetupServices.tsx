@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -15,7 +15,7 @@ import analytics from '../../helpers/Analytics'
 type Props = {
   os?: Ios
   targets: ITarget[]
-  device: IDevice
+  device: ITargetDevice
 }
 
 export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }) => {

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useApplication } from '../../services/applications'
 import { setConnection } from '../../helpers/connectionHelper'
-import { IService } from 'remote.it'
 import {
   IconButton,
   Tooltip,

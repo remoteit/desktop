@@ -1,5 +1,3 @@
-import { IDevice } from 'remote.it'
-
 const separator = ' - '
 
 export function hostName(connection: IConnection, privateIP: ipAddress) {

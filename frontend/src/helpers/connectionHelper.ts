@@ -1,6 +1,5 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../constants'
-import { IService, IDevice } from 'remote.it'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {

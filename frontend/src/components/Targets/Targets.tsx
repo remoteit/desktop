@@ -12,7 +12,7 @@ import analytics from '../../helpers/Analytics'
 
 type Props = {
   targets: ITarget[]
-  device: IDevice
+  device: ITargetDevice
   onUpdate: (targets: ITarget[]) => void
   onCancel: () => void
 }

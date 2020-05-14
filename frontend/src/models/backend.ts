@@ -4,7 +4,7 @@ import { DEFAULT_TARGET } from '../constants'
 type BackendStateParams = { [key: string]: any }
 type IBackendState = BackendStateParams & {
   connections: IConnection[]
-  device: IDevice
+  device: ITargetDevice
   targets: ITarget[]
   scanData: IScanData
   interfaces: IInterface[]

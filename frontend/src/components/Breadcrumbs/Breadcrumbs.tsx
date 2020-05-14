@@ -7,7 +7,6 @@ import { Tooltip, IconButton, Link } from '@material-ui/core'
 import { removeDeviceName } from '../../helpers/nameHelper'
 import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
-import { IDevice } from 'remote.it'
 import { REGEX_LAST_PATH } from '../../constants'
 import { spacing, colors, fontSizes } from '../../styling'
 

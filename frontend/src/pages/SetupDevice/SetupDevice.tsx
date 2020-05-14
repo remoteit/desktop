@@ -17,16 +17,14 @@ import analytics from '../../helpers/Analytics'
 
 type Props = {
   os?: Ios
-  device: IDevice
+  device: ITargetDevice
 }
 
 export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost || state.devices.fetching,
-    nameBlacklist: state.devices.all
-      .filter(device => device.shared !== 'shared-from')
-      .map(device => device.name.toLowerCase()),
+    nameBlacklist: state.devices.all.filter(device => !device.shared).map(device => device.name.toLowerCase()),
   }))
   const history = useHistory()
   const css = useStyles()

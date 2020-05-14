@@ -162,10 +162,41 @@ declare global {
     type: number //         application_type   service type
   }
 
-  interface IDevice extends ITarget {}
+  interface ITargetDevice extends ITarget {}
+
+  interface IDevice {
+    id: string
+    name: string
+    owner: string
+    state: DeviceState
+    hardwareID?: string
+    lastExternalIP: string
+    lastInternalIP: string
+    region: string
+    createdAt: Date
+    contactedAt: Date
+    shared: boolean
+    services: IService[]
+  }
+
+  export interface IService {
+    contactedAt: Date
+    createdAt: Date
+    id: string
+    lastExternalIP: string
+    name: string
+    protocol: string
+    region: string
+    state: ServiceState
+    type: string
+    deviceID: string
+    connection?: IConnection
+    typeID?: number
+    port?: number
+  }
 
   interface IRegistration {
-    device: IDevice
+    device: ITargetDevice
     targets: ITarget[]
   }
 

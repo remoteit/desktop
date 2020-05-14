@@ -10,7 +10,7 @@ import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 
 export const SetupView: React.FC<{
-  device: IDevice
+  device: ITargetDevice
   targets: ITarget[]
 }> = ({ device, targets }) => {
   const { adminUsername, notElevated } = usePermissions()

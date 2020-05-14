@@ -10,7 +10,7 @@ import { Target } from '../Target'
 import styles from '../../styling'
 
 type Props = {
-  device: IDevice
+  device: ITargetDevice
   onSave: (target: ITarget) => void
   onCancel: () => void
 }

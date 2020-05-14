@@ -45,12 +45,7 @@ export const ServicesPage = connect(mapState)(({ connections, devices }: Service
           <Breadcrumbs />
           <Typography variant="h1">
             <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
-            <ServiceName
-              service={device}
-              connection={activeConnection}
-              shared={device.shared === 'shared-from'}
-              inline
-            />
+            <ServiceName service={device} connection={activeConnection} shared={device.shared} inline />
             <DeleteButton device={device} />
           </Typography>
         </>

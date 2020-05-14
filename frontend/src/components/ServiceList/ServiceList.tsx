@@ -1,5 +1,4 @@
 import React from 'react'
-import { IService } from 'remote.it'
 import { List, Typography, Divider } from '@material-ui/core'
 import { ServiceListItem } from '../ServiceListItem'
 import { spacing } from '../../styling'

@@ -4,7 +4,6 @@ import { makeStyles } from '@material-ui/styles'
 import { REGEX_FIRST_PATH } from '../../constants'
 import { Icon } from '../Icon'
 import { colors, spacing } from '../../styling'
-import { IService, IDevice } from 'remote.it'
 
 type Props = {
   connection?: IConnection

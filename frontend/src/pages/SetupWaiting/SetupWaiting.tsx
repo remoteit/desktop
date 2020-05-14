@@ -13,7 +13,7 @@ import { osName } from '../../helpers/nameHelper'
 import { Body } from '../../components/Body'
 import styles from '../../styling'
 
-type Props = { os?: Ios; device: IDevice }
+type Props = { os?: Ios; device: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
   const { cliError } = useSelector((state: ApplicationState) => state.backend)

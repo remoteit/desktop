@@ -1,4 +1,4 @@
-import { IDevice, IService, IUser } from 'remote.it'
+import { IUser } from 'remote.it'
 
 export function device({ name = 'Mock Device', state = 'active', ...other }: Partial<IDevice> = {}): IDevice {
   return {
@@ -12,7 +12,7 @@ export function device({ name = 'Mock Device', state = 'active', ...other }: Par
     region: 'us-west',
     createdAt: new Date('june 20, 2018'),
     contactedAt: new Date('jan 10, 2019'),
-    shared: 'shared-from',
+    shared: true,
     services: [service(), service({ name: 'Webcam', type: 'NX Witness' }), service({ name: 'HTTP', type: 'HTTP' })],
     ...other,
   }

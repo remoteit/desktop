@@ -1,10 +1,10 @@
 import fuzzy from 'fuzzy'
 import Device from '../services/Device'
-import { IDevice, IService } from 'remote.it'
+import axios from 'axios'
+import { parseType } from '../services/serviceTypes'
 import { createModel } from '@rematch/core'
 import { renameServices } from '../helpers/nameHelper'
 import { updateConnections } from '../helpers/connectionHelper'
-import { IRawDevice } from 'remote.it'
 import { r3 } from '../services/remote.it'
 
 // Slightly below the API limit for search of 300 services.
@@ -13,7 +13,7 @@ const SEARCH_ONLY_SERVICE_LIMIT = 300
 const SORT_SETTING_KEY = 'sort'
 const SEARCH_ONLY_SETTING_KEY = 'search-only'
 
-interface DeviceState {
+interface IDeviceState {
   all: IDevice[]
   searchPerformed: boolean
   fetched: boolean
@@ -25,15 +25,111 @@ interface DeviceState {
   sort: SortType
 }
 
-async function fetchAll(cache: boolean = true): Promise<IDevice[]> {
-  const [allDevices, metadata] = await Promise.all([
-    r3.get(`/device/list/all?cache=${cache.toString()}`).then(({ devices }: { devices: IRawDevice[] }) => devices),
-    r3.devices.metadata(),
-  ])
-  return r3.devices.group(allDevices, metadata)
+// async function fetchAll(cache: boolean = true): Promise<IDevice[]> {
+//   const [allDevices, metadata] = await Promise.all([
+//     r3.get(`/device/list/all?cache=${cache.toString()}`).then(({ devices }: { devices: IRawDevice[] }) => devices),
+//     r3.devices.metadata(),
+//   ])
+//   return r3.devices.group(allDevices, metadata)
+// }
+
+async function fetchAllGQL(): Promise<IDevice[]> {
+  const data = await axios
+    .request({
+      url: 'https://api.remote.it/v1/graphql',
+      method: 'post',
+      headers: {
+        token: r3.token,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        query: `
+        {
+          login {
+            id
+            devices(size: 200) {
+              total
+              items {
+                id
+                name
+                created
+                hardwareId
+                owner {
+                  id
+                }
+                services {
+                  name
+                  id
+                  port
+                  title
+                  type
+                  bulk
+                  created
+                  endpoint {
+                    availability
+                    instability
+                    state
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      },
+    })
+    .catch(e => console.warn(e))
+
+  return graphQLAdaptor(data)
 }
 
-const state: DeviceState = {
+function graphQLAdaptor(gqlData: any): IDevice[] {
+  const login = gqlData?.data?.data?.login
+  let data = login?.devices?.items.map(
+    (d: any): IDevice => {
+      let deviceState = 'inactive'
+      const services = d.services.reduce((result: IService[], s: any): IService[] => {
+        const { typeID, type } = parseType(s.type)
+        deviceState = s.endpoint?.state === 'active' ? 'active' : deviceState
+        if (!s.bulk)
+          result.push({
+            type,
+            typeID,
+            contactedAt: new Date(s.endpoint?.timestamp),
+            createdAt: new Date(s.created),
+            deviceID: d.id,
+            id: s.id,
+            lastExternalIP: '',
+            name: s.name,
+            port: s.port,
+            protocol: '',
+            region: '',
+            state: s.endpoint?.state,
+          })
+        return result
+      }, [])
+
+      return {
+        id: d.id,
+        name: d.name,
+        owner: d.owner.email,
+        state: deviceState,
+        hardwareID: d.hardwareId,
+        createdAt: new Date(d.created),
+        contactedAt: new Date(d.endpoint?.timestamp),
+        shared: login.id !== d.owner.id,
+        lastExternalIP: '',
+        lastInternalIP: '',
+        region: '',
+        services,
+      }
+    }
+  )
+
+  return data
+}
+
+const state: IDeviceState = {
   all: [],
   searchPerformed: false,
   fetched: false,
@@ -63,8 +159,8 @@ export default createModel({
       }
 
       if (!searchOnly) {
-        const count = await r3.devices.count()
-        searchOnly = count.services > SEARCH_ONLY_SERVICE_LIMIT
+        // const count = await r3.devices.count()
+        searchOnly = false //count.services > SEARCH_ONLY_SERVICE_LIMIT
       }
 
       dispatch.devices.setSearchOnly(searchOnly)
@@ -81,7 +177,7 @@ export default createModel({
 
       fetchStarted()
 
-      return fetchAll(cache)
+      return fetchAllGQL()
         .then(renameServices)
         .then(updateConnections)
         .then(setDevices)
@@ -146,47 +242,48 @@ export default createModel({
     },
   }),
   reducers: {
-    setDestroying(state: DeviceState, destroying: boolean) {
+    setDestroying(state: IDeviceState, destroying: boolean) {
       state.destroying = destroying
     },
-    setQuery(state: DeviceState, query: string) {
+    setQuery(state: IDeviceState, query: string) {
       state.query = query
       if (state.searchOnly) {
         state.all = []
         state.searchPerformed = false
       }
     },
-    setSearchOnly(state: DeviceState, searchOnly: boolean) {
+    setSearchOnly(state: IDeviceState, searchOnly: boolean) {
       state.searchOnly = searchOnly
       window.localStorage.setItem(SEARCH_ONLY_SETTING_KEY, String(searchOnly))
     },
-    fetchStarted(state: DeviceState) {
+    fetchStarted(state: IDeviceState) {
       state.fetched = false
       state.fetching = true
     },
-    changeSort(state: DeviceState, sort: SortType) {
+    changeSort(state: IDeviceState, sort: SortType) {
       state.sort = sort
       state.all = Device.sort(state.all, sort)
       window.localStorage.setItem(SORT_SETTING_KEY, sort)
     },
-    setDevices(state: DeviceState, devices: IDevice[]) {
+    setDevices(state: IDeviceState, devices: IDevice[]) {
       // window.localStorage.setItem('devices', JSON.stringify(devices)) // disabled as we're not reading it
+      console.log('DEVICE DATA', devices)
       state.all = Device.sort(devices, state.sort)
     },
-    fetchFinished(state: DeviceState) {
+    fetchFinished(state: IDeviceState) {
       state.fetched = true
       state.fetching = false
     },
-    setSearching(state: DeviceState, searching: boolean) {
+    setSearching(state: IDeviceState, searching: boolean) {
       state.searching = searching
     },
-    setSearchPerformed(state: DeviceState, searchPerformed: boolean) {
+    setSearchPerformed(state: IDeviceState, searchPerformed: boolean) {
       state.searchPerformed = searchPerformed
     },
   },
   selectors: slice => ({
     visible() {
-      return slice((state: DeviceState): IDevice[] => {
+      return slice((state: IDeviceState): IDevice[] => {
         const filtered = filterDevices(state.all, state.query)
         const sorted = Device.sort(filtered, state.sort)
         // console.log('FILTERED:', filtered)

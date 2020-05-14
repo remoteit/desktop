@@ -1,5 +1,4 @@
 import { ChildProcess } from 'child_process'
-import { IService } from 'remote.it'
 
 declare global {
   type ConfigFile = {

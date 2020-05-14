@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { IService } from 'remote.it'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { hostName } from '../../helpers/nameHelper'

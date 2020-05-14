@@ -1,5 +1,4 @@
 import React from 'react'
-import { IDevice } from 'remote.it'
 import { DeviceListItem } from '../DeviceListItem'
 import { DeviceListEmpty } from '../DeviceListEmpty'
 import { Body } from '../Body'

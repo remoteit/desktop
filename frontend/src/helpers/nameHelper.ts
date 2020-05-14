@@ -1,5 +1,4 @@
 import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, IP_PRIVATE, IP_OPEN } from '../constants'
-import { IDevice } from 'remote.it'
 import { store } from '../store'
 
 const separator = ' - '

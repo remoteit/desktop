@@ -2,7 +2,6 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
-import { IService, IDevice } from 'remote.it'
 import { makeStyles } from '@material-ui/styles'
 import { colors, spacing, Color } from '../../styling'
 

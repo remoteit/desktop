@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { IDevice, IService } from 'remote.it'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'

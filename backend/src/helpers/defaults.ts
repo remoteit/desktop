@@ -1,4 +1,4 @@
-const defaults: ITarget | IDevice = {
+const defaults: ITarget | ITargetDevice = {
   hardwareID: '',
   hostname: '',
   name: '',

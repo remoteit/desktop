@@ -6,7 +6,6 @@ import { DataDisplay } from '../DataDisplay'
 import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
-import { IService } from 'remote.it'
 
 type Props = {
   connection?: IConnection

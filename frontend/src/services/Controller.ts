@@ -112,7 +112,7 @@ function getEventHandlers() {
       }
     },
 
-    device: (result: IDevice) => {
+    device: (result: ITargetDevice) => {
       console.log('socket device', result)
       if (result) backend.set({ device: result })
     },

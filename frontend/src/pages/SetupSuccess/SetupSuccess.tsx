@@ -9,7 +9,7 @@ import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 
-type Props = { os?: Ios; device: IDevice }
+type Props = { os?: Ios; device: ITargetDevice }
 
 export const SetupSuccess: React.FC<Props> = ({ device, os }) => {
   const history = useHistory()
