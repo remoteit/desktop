@@ -96,8 +96,7 @@ export default createModel({
     },
     async signedIn() {
       await dispatch.auth.checkSession()
-      const searchOnly = await dispatch.devices.shouldSearchDevices()
-      if (!searchOnly) dispatch.devices.fetch()
+      dispatch.devices.fetch()
       dispatch.auth.signInFinished()
     },
     async authenticated() {

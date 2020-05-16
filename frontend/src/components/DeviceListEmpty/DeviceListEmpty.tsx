@@ -18,8 +18,8 @@ export const DeviceListEmpty: React.FC = () => {
 
   return (
     <Body center>
-      <Typography variant="h2" align="center" className={css.block}>
-        You have no devices.
+      <Typography variant="body1" color="textSecondary" align="center">
+        Your search returned no results
       </Typography>
       {!device.name && (
         <>

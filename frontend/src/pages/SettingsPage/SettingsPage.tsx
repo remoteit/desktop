@@ -103,13 +103,6 @@ export const SettingsPage = () => {
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
-        {/* <SettingsListItem
-          label="Search only device list"
-          icon="search"
-          subLabel="Speed up the application by only showing search results. Use with a very large device list."
-          toggle={searchOnly}
-          onClick={devices.toggleSearchOnly}
-        /> */}
         <UpdateSetting />
       </List>
       {!(guest || notElevated) && (

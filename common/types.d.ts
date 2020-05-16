@@ -179,7 +179,7 @@ declare global {
     services: IService[]
   }
 
-  export interface IService {
+  interface IService {
     contactedAt: Date
     createdAt: Date
     id: string

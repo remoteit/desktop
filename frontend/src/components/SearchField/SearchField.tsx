@@ -1,67 +1,54 @@
 import React from 'react'
-import { InputBase, IconButton, Tooltip } from '@material-ui/core'
-import { Icon } from '../Icon'
-import { makeStyles } from '@material-ui/styles'
+import { InputBase, IconButton, Tooltip, Typography } from '@material-ui/core'
+import { Dispatch, ApplicationState } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { spacing, colors } from '../../styling'
+import { makeStyles } from '@material-ui/styles'
+import { Icon } from '../Icon'
 
-export interface SearchFieldProps {
-  onSubmit?: () => void
-  onChange: (query: string) => void
-  value?: string
-  searching: boolean
-  searchOnly: boolean
-}
-
-export function SearchField({
-  value,
-  onSubmit,
-  onChange,
-  searching = false,
-  searchOnly = false,
-  ...props
-}: SearchFieldProps) {
-  const disabled = Boolean(searching || !value)
+export const SearchField: React.FC = () => {
+  const { total, results, query, searched, fetching } = useSelector((state: ApplicationState) => state.devices)
+  const { devices } = useDispatch<Dispatch>()
+  const disabled = Boolean(fetching || !query)
   const css = useStyles()
 
   return (
     <form
-      {...props}
       className={css.field}
       onSubmit={e => {
         e.preventDefault()
-        if (searchOnly && onSubmit) {
-          onSubmit()
-        }
+        devices.set({ searched: true })
+        devices.fetch()
       }}
     >
       <InputBase
         autoFocus
+        value={query}
         className={css.input}
-        onChange={e => onChange(e.target.value)}
-        id="input-with-icon-adornment"
+        onChange={e => devices.set({ query: e.target.value })}
         placeholder="Search devices and services..."
-        value={value}
       />
-      <div className={css.icons}>
-        {value && (
+      <div className={css.right}>
+        <Tooltip className={css.total} title={searched ? 'Results / Total' : 'Total Devices'}>
+          <Typography variant="caption">{searched ? `${results}/${total}` : total}</Typography>
+        </Tooltip>
+        {(searched || query) && (
           <Tooltip title="Clear search">
-            <IconButton type="button" onClick={() => onChange('')}>
-              <Icon name="times" size="sm" weight="regular" color="grayDarker" />
+            <IconButton
+              type="button"
+              onClick={() => {
+                devices.set({ query: '', searched: false })
+                devices.fetch()
+              }}
+            >
+              <Icon name="times" size="md" weight="light" color="grayDarker" fixedWidth />
             </IconButton>
           </Tooltip>
         )}
         <Tooltip title="Search">
-          <span>
-            <IconButton type="submit" disabled={disabled}>
-              <Icon
-                name={searching ? 'spinner-third' : 'search'}
-                spin={searching}
-                size="sm"
-                weight="regular"
-                color="grayDarker"
-              />
-            </IconButton>
-          </span>
+          <IconButton type="submit" disabled={disabled}>
+            <Icon name="search" size="md" weight="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
+          </IconButton>
         </Tooltip>
       </div>
     </form>
@@ -87,7 +74,10 @@ const useStyles = makeStyles({
       backgroundColor: colors.grayLight,
     },
   },
-  icons: {
+  total: {
+    marginRight: spacing.sm,
+  },
+  right: {
     position: 'absolute',
     right: spacing.lg,
   },

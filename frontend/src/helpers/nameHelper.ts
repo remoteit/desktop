@@ -30,7 +30,7 @@ export function addDeviceName(deviceName: string, name: string) {
   return deviceName + separator + ext
 }
 
-export function renameServices(devices: IDevice[]) {
+export function renameServices(devices: IDevice[] = []) {
   devices.forEach(d => {
     d.services = d.services.map(s => {
       s.name = removeDeviceName(d.name, s.name)

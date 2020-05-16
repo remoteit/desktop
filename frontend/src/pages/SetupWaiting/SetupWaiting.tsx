@@ -23,7 +23,7 @@ export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
 
   if (device.uid) {
     history.push('/settings/setupSuccess')
-    devices.fetch(false)
+    devices.fetch()
   }
 
   if (cliError) history.push('/settings')

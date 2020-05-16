@@ -49,7 +49,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
 
   useEffect(() => {
     if (setupDeletingDevice && !device.uid) {
-      devices.fetch(false) // @FIXME this will only run if the page is active
+      devices.fetch() // @FIXME this will only run if the page is active
       history.push('/settings/setupDevice')
     }
   }, [device, devices, setupBusy, history])
