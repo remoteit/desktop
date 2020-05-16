@@ -7,8 +7,6 @@ import { updateConnections } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { r3 } from '../services/remote.it'
 
-const SORT_SETTING_KEY = 'sort'
-
 type gqlOptions = {
   size: number
   from: number
@@ -35,11 +33,11 @@ const state: IDeviceState = {
   all: [],
   total: 0,
   results: 0,
-  searched: false, // if displaying search results
+  searched: false,
   fetching: true,
   destroying: false,
   query: '',
-  filter: window.localStorage.getItem(SORT_SETTING_KEY) === 'true',
+  filter: false,
   size: 25,
   from: 0,
 }
@@ -110,10 +108,6 @@ export default createModel({
     set(state: IDeviceState, params: DeviceParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },
-    setFilter(state: IDeviceState, sort: boolean) {
-      state.filter = sort
-      window.localStorage.setItem(SORT_SETTING_KEY, sort.toString())
-    },
     setDevices(state: IDeviceState, devices: IDevice[]) {
       state.all = devices
     },
@@ -121,7 +115,6 @@ export default createModel({
 })
 
 async function fetchAllGQL({ size, from, state = '', name = '' }: gqlOptions) {
-  console.log('FETCH', size, from, state, name)
   return await axios
     .request({
       url: 'https://api.remote.it/v1/graphql',

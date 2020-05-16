@@ -26,7 +26,7 @@ export const Pager: React.FC = () => {
         defaultValue={currentPage}
         onChangeCommitted={(_, page) => {
           dispatch.devices.set({ from: (+page - 1) * size })
-          searched ? dispatch.devices.search() : dispatch.devices.fetch()
+          dispatch.devices.fetch()
         }}
         valueLabelDisplay="auto"
         step={1}

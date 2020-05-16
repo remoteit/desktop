@@ -7,17 +7,20 @@ import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../Icon'
 
 export const SearchField: React.FC = () => {
-  const { total, results, query, searched, fetching } = useSelector((state: ApplicationState) => state.devices)
+  const { total, results, query, searched, fetching, filter } = useSelector((state: ApplicationState) => state.devices)
   const { devices } = useDispatch<Dispatch>()
   const disabled = Boolean(fetching || !query)
   const css = useStyles()
+
+  const totalTitle = filter ? 'Filtered' : 'Total'
+  const title = searched ? `Searched / ${totalTitle}` : `${totalTitle} Devices`
 
   return (
     <form
       className={css.field}
       onSubmit={e => {
         e.preventDefault()
-        devices.set({ searched: true })
+        devices.set({ searched: true, from: 0 })
         devices.fetch()
       }}
     >
@@ -29,7 +32,7 @@ export const SearchField: React.FC = () => {
         placeholder="Search devices and services..."
       />
       <div className={css.right}>
-        <Tooltip className={css.total} title={searched ? 'Results / Total' : 'Total Devices'}>
+        <Tooltip className={css.total} title={title}>
           <Typography variant="caption">{searched ? `${results}/${total}` : total}</Typography>
         </Tooltip>
         {(searched || query) && (
@@ -37,7 +40,7 @@ export const SearchField: React.FC = () => {
             <IconButton
               type="button"
               onClick={() => {
-                devices.set({ query: '', searched: false })
+                devices.set({ query: '', searched: false, from: 0 })
                 devices.fetch()
               }}
             >

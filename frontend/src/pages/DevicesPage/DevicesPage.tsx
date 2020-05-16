@@ -39,7 +39,7 @@ export const DevicesPage = () => {
             <Tooltip title={filter ? 'Show all devices' : 'Show online devices'}>
               <IconButton
                 onClick={() => {
-                  devices.set({ filter: !filter })
+                  devices.set({ filter: !filter, from: 0 })
                   devices.fetch()
                 }}
               >
