@@ -5,7 +5,7 @@ import { ApplicationState } from '../../store'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton, Link } from '@material-ui/core'
 import { removeDeviceName } from '../../helpers/nameHelper'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import { REGEX_LAST_PATH } from '../../constants'
 import { spacing, colors, fontSizes } from '../../styling'
@@ -26,7 +26,7 @@ export const Breadcrumbs: React.FC = ({ children }) => {
   const parentPath = location.pathname.replace(REGEX_LAST_PATH, '')
   const crumbs = parentPath.substr(1).split('/')
 
-  const findDevice = (id: string) => devices.find(d => d.id === id)
+  const findDevice = (id: string) => devices.find((d: IDevice) => d.id === id)
   const pageName = (path: string) => {
     const name: string | undefined = pageNameMap[path]
     if (name) return name

@@ -7,7 +7,7 @@ import { TextField, Button, Typography } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { safeHostname, osName } from '../../helpers/nameHelper'
 import { REGEX_NAME_SAFE } from '../../constants'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
@@ -24,7 +24,9 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost || state.devices.fetching,
-    nameBlacklist: state.devices.all.filter(device => !device.shared).map(device => device.name.toLowerCase()),
+    nameBlacklist: state.devices.all
+      .filter((device: IDevice) => !device.shared)
+      .map((d: IDevice) => d.name.toLowerCase()),
   }))
   const history = useHistory()
   const css = useStyles()

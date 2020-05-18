@@ -6,7 +6,7 @@ import { IconButton, Tooltip, LinearProgress, Typography } from '@material-ui/co
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { SearchField } from '../../components/SearchField'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
@@ -14,7 +14,7 @@ import analytics from '../../helpers/Analytics'
 
 export const DevicesPage = () => {
   const { allDevices, connections, fetching, filter } = useSelector((state: ApplicationState) => ({
-    allDevices: state.devices.all,
+    allDevices: state.devices.all.filter((d: IDevice) => !d.hidden),
     connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]

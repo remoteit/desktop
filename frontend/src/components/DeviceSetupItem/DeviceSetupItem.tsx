@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { useSelector } from 'react-redux'
 import { usePermissions } from '../../hooks/usePermissions'
 import { ApplicationState } from '../../store'

@@ -12,7 +12,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
   return (
     <>
       <List>
-        {devices.map(device => (
+        {devices.map((device, index) => (
           <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
         ))}
       </List>

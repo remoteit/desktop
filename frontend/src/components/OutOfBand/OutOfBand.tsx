@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Tooltip, Link } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
 import { emit } from '../../services/Controller'

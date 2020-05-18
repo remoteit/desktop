@@ -17,7 +17,7 @@ export function newConnection(service?: IService | null, data = {}) {
   }
 
   if (service) {
-    const device = devices.all.find(d => d.id === service.deviceID)
+    const device = devices.all.find((d: IDevice) => d.id === service.deviceID)
     connection.name = service.name
     connection.id = service.id
     connection.deviceID = service.deviceID

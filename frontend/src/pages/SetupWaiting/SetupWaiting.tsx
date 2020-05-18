@@ -5,7 +5,7 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { DocsLinks } from '../../components/DocsLinks'
 import { Dispatch } from '../../store'
@@ -16,7 +16,7 @@ import styles from '../../styling'
 type Props = { os?: Ios; device: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
-  const { cliError } = useSelector((state: ApplicationState) => state.backend)
+  const { globalError: globalError } = useSelector((state: ApplicationState) => state.backend)
   const { devices } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
@@ -26,7 +26,7 @@ export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
     devices.fetch()
   }
 
-  if (cliError) history.push('/settings')
+  if (globalError) history.push('/settings')
 
   return (
     <Container header={<Breadcrumbs />}>

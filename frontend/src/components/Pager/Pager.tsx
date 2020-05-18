@@ -3,7 +3,8 @@ import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, colors } from '../../styling'
 import { Box, Slider, Typography } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles, withStyles } from '@material-ui/core/styles'
+import Pagination from '@material-ui/lab/Pagination'
 
 export const Pager: React.FC = () => {
   const { from, size, total, results, searched } = useSelector((state: ApplicationState) => state.devices)
@@ -18,10 +19,20 @@ export const Pager: React.FC = () => {
 
   return (
     <Box className={css.box}>
-      <Typography variant="caption" color="textPrimary">
+      {/* <Typography variant="caption" color="textPrimary">
         Page
-      </Typography>
-      <Slider
+      </Typography> */}
+      <Pagination
+        count={pages}
+        page={currentPage}
+        siblingCount={4}
+        onChange={(_, page) => {
+          dispatch.devices.set({ from: (+page - 1) * size })
+          dispatch.devices.fetch()
+        }}
+        // renderItem={params => <div {...params}></div>}
+      />
+      {/* <PageSlider
         className={css.slider}
         defaultValue={currentPage}
         onChangeCommitted={(_, page) => {
@@ -33,7 +44,7 @@ export const Pager: React.FC = () => {
         marks={true}
         min={1}
         max={pages}
-      />
+      /> */}
     </Box>
   )
 }
@@ -41,13 +52,21 @@ export const Pager: React.FC = () => {
 const useStyles = makeStyles({
   box: {
     display: 'flex',
-    justifyContent: 'start',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: spacing.lg,
-    paddingRight: spacing.xl,
-    paddingBottom: spacing.lg,
-    paddingLeft: spacing.md,
-    '& > *': { margin: spacing.sm },
+    padding: spacing.lg,
+    // paddingTop: spacing.lg,
+    // paddingRight: spacing.xl,
+    // paddingBottom: spacing.lg,
+    // paddingLeft: spacing.md,
+    // '& > *': { margin: spacing.sm },
   },
   slider: {},
 })
+
+const PageSlider = withStyles({
+  root: { color: colors.grayDark },
+  rail: { backgroundColor: colors.grayLight },
+  mark: { backgroundColor: colors.gray },
+  markActive: { backgroundColor: colors.grayLighter },
+})(Slider)

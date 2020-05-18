@@ -15,7 +15,7 @@ import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Throughput } from '../Throughput'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { colors, spacing } from '../../styling'
 
 export interface ServiceListItemProps {

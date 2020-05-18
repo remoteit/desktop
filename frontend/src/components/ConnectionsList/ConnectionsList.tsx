@@ -1,7 +1,7 @@
 import React from 'react'
 import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { ServiceListItem } from '../ServiceListItem'
 import { Typography, Link, List } from '@material-ui/core'
 import styles from '../../styling'

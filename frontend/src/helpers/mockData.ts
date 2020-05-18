@@ -10,6 +10,7 @@ export function device({ name = 'Mock Device', state = 'active', ...other }: Par
     lastExternalIP: '88.888.88.888',
     lastInternalIP: '10.0.1.125',
     region: 'us-west',
+    lastReported: new Date('sept 10, 2019'),
     createdAt: new Date('june 20, 2018'),
     contactedAt: new Date('jan 10, 2019'),
     shared: true,

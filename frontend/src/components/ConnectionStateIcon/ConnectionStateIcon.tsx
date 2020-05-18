@@ -2,7 +2,7 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { colors, spacing, Color } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
@@ -18,7 +18,7 @@ export function ConnectionStateIcon({ connection, service, state, mini, ...props
   let icon = 'question-circle'
   let colorName: Color = 'warning'
 
-  state = state || (service ? service.state : 'unknown')
+  state = state || service?.state
 
   if (connection) {
     if (connection.pid && !connection.active) state = 'connecting'
@@ -52,7 +52,7 @@ export function ConnectionStateIcon({ connection, service, state, mini, ...props
   }
 
   return (
-    <Tooltip title={mini && service ? `${service.name} - ${state}` : state}>
+    <Tooltip title={mini && service ? `${service.name} - ${state}` : state || 'unknown'}>
       {mini ? (
         <span className={css.mini}>
           <span style={{ backgroundColor: colors[colorName] }} />
