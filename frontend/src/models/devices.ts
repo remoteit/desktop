@@ -1,10 +1,9 @@
-// import Device from '../services/Device'
 import axios from 'axios'
 import { parseType } from '../services/serviceTypes'
 import { createModel } from '@rematch/core'
 import { renameServices } from '../helpers/nameHelper'
+import { GRAPHQL_API_URL } from '../constants'
 import { updateConnections } from '../helpers/connectionHelper'
-import { ApplicationState } from '../store'
 import { r3 } from '../services/remote.it'
 
 type gqlOptions = {
@@ -12,18 +11,21 @@ type gqlOptions = {
   from: number
   state?: string
   name?: string
+  ids?: string[]
 }
 
 type DeviceParams = { [key: string]: any }
 
 type IDeviceState = DeviceParams & {
   all: IDevice[]
+  recent: IDevice[]
   total: number
   results: number
   searched: boolean
   fetching: boolean
   destroying: boolean
   query: string
+  append: boolean
   filter: boolean
   size: number
   from: number
@@ -31,28 +33,31 @@ type IDeviceState = DeviceParams & {
 
 const state: IDeviceState = {
   all: [],
+  recent: [],
   total: 0,
   results: 0,
   searched: false,
   fetching: true,
   destroying: false,
   query: '',
+  append: false,
   filter: false,
-  size: 25,
+  size: 50,
   from: 0,
 }
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async fetch(_, globalState: ApplicationState) {
-      const { set, graphQLExtractor, setDevices } = dispatch.devices
-      const { query, filter, size, from } = globalState.devices
+    async fetch(_, globalState: any) {
+      const { set, graphQLProcessor } = dispatch.devices
+      const { query, filter, size, from, append } = globalState.devices
       const options: gqlOptions = {
         size,
         from,
         state: filter ? 'active' : '',
         name: query.length > 1 ? query : '',
+        ids: append ? [] : globalState.backend.connections.map((c: IConnection) => c.id),
       }
 
       if (!r3.token || !r3.authHash) {
@@ -62,44 +67,60 @@ export default createModel({
 
       set({ fetching: true })
 
-      return fetchAllGQL(options)
-        .then(graphQLExtractor)
-        .then(graphQLAdaptor)
-        .then(renameServices)
-        .then(updateConnections)
-        .then(setDevices)
-        .catch(error => {
-          console.error('Fetch error:', error, error.response)
-          if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
-            setDevices([])
-            dispatch.auth.signedOut()
-          }
-        })
-        .finally(() => set({ fetching: false }))
+      try {
+        const gqlData = await fetchGQL(options)
+        await graphQLProcessor(gqlData)
+      } catch (error) {
+        console.error('Fetch error:', error, error.response)
+        if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
+          dispatch.backend.set({ globalError: error.message })
+          dispatch.auth.handleDisconnect()
+        }
+      }
+
+      set({ fetching: false, append: false })
     },
-    async graphQLExtractor(gqlData: any, globalState: ApplicationState) {
+    async graphQLProcessor(gqlData: any, globalState: any) {
+      const { set, graphQLExtractor } = dispatch.devices
+      const { all, append } = globalState.devices
+
+      const gqlLoginData = await graphQLExtractor(gqlData)
+      const connections = graphQLAdaptor(gqlLoginData.connections, gqlLoginData.id, true)
+      const devices = graphQLAdaptor(gqlLoginData.devices, gqlLoginData.id)
+
+      console.log('SET DEVICE DATA', connections, all, devices)
+      if (append) set({ all: [...all, ...devices], recent: connections })
+      else set({ all: [...connections, ...devices], recent: connections })
+    },
+    async graphQLExtractor(gqlData: any, globalState: any) {
       const { searched } = globalState.devices
+      const { errors } = gqlData?.data
+
+      if (errors) {
+        dispatch.backend.set({ globalError: errors[0].message })
+      }
+
       const login = gqlData?.data?.data?.login
       const total = login?.devices?.total || 0
       if (searched) dispatch.devices.set({ results: total })
       else dispatch.devices.set({ total })
+
       return login
     },
     async reset() {
       dispatch.backend.set({ connections: [] })
-      dispatch.devices.setDevices([])
-      dispatch.devices.set({ query: '', filter: false })
+      dispatch.devices.set({ all: [], recent: [], query: '', filter: false })
     },
-    destroy(device: IDevice) {
+    async destroy(device: IDevice) {
       dispatch.devices.set({ destroying: true })
       r3.post(`/developer/device/delete/registered/${device.id}`)
         .then(async () => {
-          await dispatch.devices.fetch(false)
+          await dispatch.devices.fetch()
           dispatch.devices.set({ destroying: false })
         })
         .catch(error => {
           dispatch.devices.set({ destroying: false })
-          dispatch.backend.set({ cliError: error.message })
+          dispatch.backend.set({ globalError: error.message })
           console.warn(error)
         })
     },
@@ -108,79 +129,64 @@ export default createModel({
     set(state: IDeviceState, params: DeviceParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },
-    setDevices(state: IDeviceState, devices: IDevice[]) {
-      state.all = devices
-    },
   },
 })
 
-async function fetchAllGQL({ size, from, state = '', name = '' }: gqlOptions) {
-  return await axios
-    .request({
-      url: 'https://api.remote.it/v1/graphql',
-      method: 'post',
-      headers: { token: r3.token },
-      data: {
-        query: `
+async function fetchGQL({ size, from, state = '', name = '', ids = [] }: gqlOptions) {
+  console.log('GQL OPTIONS', size, from, state, name, ids)
+  const connections = `connections: devices(id:${JSON.stringify(ids)})`
+  const devices = `devices(size:${size}, from:${from}, name:"${name}", state: "${state}")`
+  const select = `
+  {
+    total
+    items {
+      id
+      name
+      state
+      created
+      hardwareId
+      lastReported
+      owner {
+        id
+      }
+      services {
+        name
+        id
+        port
+        type
+        created
+        endpoint {
+          state
+        }
+      }
+    }
+  }
+  `
+  return await axios.request({
+    url: GRAPHQL_API_URL,
+    method: 'post',
+    headers: { token: r3.token },
+    data: {
+      query: `
         {
           login {
             id
-            devices(size:${size}, from:${from}, name:"${name}", state: "${state}" ) {
-              total
-              items {
-                id
-                name
-                created
-                hardwareId
-                owner {
-                  id
-                }
-                services {
-                  name
-                  id
-                  port
-                  title
-                  type
-                  bulk
-                  created
-                  endpoint {
-                    availability
-                    instability
-                    state
-                  }
-                }
-              }
-            }
+            ${devices}${select}
+            ${connections}${select}
           }
         }
       `,
-      },
-    })
-    .catch(e => console.warn(e))
-}
-
-export function findService(devices: IDevice[], id: string) {
-  return devices.reduce(
-    (all, d) => {
-      const service = d.services.find(s => s.id === id)
-      if (service) {
-        all[0] = service
-        all[1] = d
-      }
-      return all
     },
-    [null, null] as [IService | null, IDevice | null]
-  )
+  })
 }
 
-function graphQLAdaptor(gqlDataLogin: any): IDevice[] {
-  let data = gqlDataLogin?.devices?.items.map(
+function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolean): IDevice[] {
+  if (!gqlDevices) return []
+  let data = gqlDevices?.items.map(
     (d: any): IDevice => {
-      let deviceState = 'inactive'
       const services = d.services.reduce((result: IService[], s: any): IService[] => {
         const { typeID, type } = parseType(s.type)
-        deviceState = s.endpoint?.state === 'active' ? 'active' : deviceState
-        if (!s.bulk)
+        if (typeID !== 35)
           result.push({
             type,
             typeID,
@@ -202,18 +208,34 @@ function graphQLAdaptor(gqlDataLogin: any): IDevice[] {
         id: d.id,
         name: d.name,
         owner: d.owner.email,
-        state: deviceState,
+        state: d.state,
         hardwareID: d.hardwareId,
         createdAt: new Date(d.created),
         contactedAt: new Date(d.endpoint?.timestamp),
-        shared: gqlDataLogin.id !== d.owner.id,
+        shared: loginId !== d.owner.id,
+        lastReported: new Date(d.lastReported),
         lastExternalIP: '',
         lastInternalIP: '',
         region: '',
         services,
+        hidden,
       }
     }
   )
 
-  return data
+  return updateConnections(renameServices(data))
+}
+
+export function findService(devices: IDevice[], id: string) {
+  return devices.reduce(
+    (all, d) => {
+      const service = d.services.find(s => s.id === id)
+      if (service) {
+        all[0] = service
+        all[1] = d
+      }
+      return all
+    },
+    [null, null] as [IService | null, IDevice | null]
+  )
 }

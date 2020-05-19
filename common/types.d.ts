@@ -170,6 +170,7 @@ declare global {
     owner: string
     state: DeviceState
     hardwareID?: string
+    lastReported: Date
     lastExternalIP: string
     lastInternalIP: string
     region: string
@@ -177,6 +178,7 @@ declare global {
     contactedAt: Date
     shared: boolean
     services: IService[]
+    hidden?: boolean
   }
 
   interface IService {

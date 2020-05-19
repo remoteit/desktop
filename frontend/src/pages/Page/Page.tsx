@@ -4,11 +4,10 @@ import classnames from 'classnames'
 import { isElectron } from '../../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Snackbar, IconButton } from '@material-ui/core'
+import { Snackbar, IconButton, makeStyles } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
-import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../../components/Icon'
 
 export interface Props {

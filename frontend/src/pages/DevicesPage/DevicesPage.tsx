@@ -53,7 +53,13 @@ export const DevicesPage = () => {
             </Tooltip>
             <Tooltip title="Refresh devices">
               <div>
-                <IconButton onClick={() => devices.fetch()} disabled={fetching}>
+                <IconButton
+                  onClick={() => {
+                    devices.set({ from: 0 })
+                    devices.fetch()
+                  }}
+                  disabled={fetching}
+                >
                   <Icon name="sync" size="sm" weight="regular" />
                 </IconButton>
               </div>

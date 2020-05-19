@@ -1,6 +1,6 @@
 import React from 'react'
 import { DeviceListItem } from '../DeviceListItem'
-import { Pager } from '../Pager'
+import { LoadMore } from '../LoadMore'
 import { List } from '@material-ui/core'
 
 export interface DeviceListProps {
@@ -16,7 +16,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
           <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
         ))}
       </List>
-      <Pager />
+      <LoadMore />
     </>
   )
 }
