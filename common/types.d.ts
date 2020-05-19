@@ -197,6 +197,14 @@ declare global {
     port?: number
   }
 
+  type gqlOptions = {
+    size: number
+    from: number
+    state?: string
+    name?: string
+    ids?: string[]
+  }
+
   interface IRegistration {
     device: ITargetDevice
     targets: ITarget[]
