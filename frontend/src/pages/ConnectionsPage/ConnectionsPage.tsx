@@ -8,7 +8,7 @@ export const ConnectionsPage: React.FC = () => {
   const connections = useSelector((state: ApplicationState) => state.backend.connections.filter(c => !!c.startTime))
   const services = useSelector((state: ApplicationState) =>
     findServices(
-      state.devices.recent,
+      state.devices.all,
       connections.map(c => c.id)
     )
   )

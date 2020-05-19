@@ -5,6 +5,7 @@ import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { IconButton, Tooltip, LinearProgress, Typography } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
+import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
 import { makeStyles } from '@material-ui/core/styles'
 import { Body } from '../../components/Body'
@@ -13,15 +14,14 @@ import styles from '../../styling'
 import analytics from '../../helpers/Analytics'
 
 export const DevicesPage = () => {
-  const { allDevices, connections, fetching, filter } = useSelector((state: ApplicationState) => ({
+  const { allDevices, connections, fetching } = useSelector((state: ApplicationState) => ({
+    fetching: state.devices.fetching,
     allDevices: state.devices.all.filter((d: IDevice) => !d.hidden),
     connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
       return lookup
     }, {}),
-    fetching: state.devices.fetching,
-    filter: state.devices.filter,
   }))
   const { devices } = useDispatch<Dispatch>()
   const css = useStyles()
@@ -36,21 +36,7 @@ export const DevicesPage = () => {
         <>
           <div className={css.header}>
             <SearchField />
-            <Tooltip title={filter ? 'Show all devices' : 'Show online devices'}>
-              <IconButton
-                onClick={() => {
-                  devices.set({ filter: !filter, from: 0 })
-                  devices.fetch()
-                }}
-              >
-                <Icon
-                  name={filter ? 'check-circle' : 'minus-circle'}
-                  color={filter ? 'success' : 'grayLight'}
-                  size="base"
-                  weight="regular"
-                />
-              </IconButton>
-            </Tooltip>
+            <FilterButton />
             <Tooltip title="Refresh devices">
               <div>
                 <IconButton

@@ -40,9 +40,4 @@ const useStyles = makeStyles({
     paddingBottom: spacing.xl,
     height: 100,
   },
-  // count: {
-  //   position: 'absolute',
-  //   color: colors.grayLight,
-  //   right: spacing.xxl,
-  // },
 })

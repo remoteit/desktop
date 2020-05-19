@@ -18,7 +18,6 @@ type DeviceParams = { [key: string]: any }
 
 type IDeviceState = DeviceParams & {
   all: IDevice[]
-  recent: IDevice[]
   total: number
   results: number
   searched: boolean
@@ -26,14 +25,13 @@ type IDeviceState = DeviceParams & {
   destroying: boolean
   query: string
   append: boolean
-  filter: boolean
+  filter: 'all' | 'active' | 'inactive'
   size: number
   from: number
 }
 
 const state: IDeviceState = {
   all: [],
-  recent: [],
   total: 0,
   results: 0,
   searched: false,
@@ -41,7 +39,7 @@ const state: IDeviceState = {
   destroying: false,
   query: '',
   append: false,
-  filter: false,
+  filter: 'all',
   size: 50,
   from: 0,
 }
@@ -55,7 +53,7 @@ export default createModel({
       const options: gqlOptions = {
         size,
         from,
-        state: filter ? 'active' : '',
+        state: filter === 'all' ? '' : filter,
         name: query.length > 1 ? query : '',
         ids: append ? [] : globalState.backend.connections.map((c: IConnection) => c.id),
       }
@@ -88,9 +86,8 @@ export default createModel({
       const connections = graphQLAdaptor(gqlLoginData.connections, gqlLoginData.id, true)
       const devices = graphQLAdaptor(gqlLoginData.devices, gqlLoginData.id)
 
-      console.log('SET DEVICE DATA', connections, all, devices)
-      if (append) set({ all: [...all, ...devices], recent: connections })
-      else set({ all: [...connections, ...devices], recent: connections })
+      if (append) set({ all: [...all, ...devices] })
+      else set({ all: [...connections, ...devices] })
     },
     async graphQLExtractor(gqlData: any, globalState: any) {
       const { searched } = globalState.devices
@@ -109,7 +106,7 @@ export default createModel({
     },
     async reset() {
       dispatch.backend.set({ connections: [] })
-      dispatch.devices.set({ all: [], recent: [], query: '', filter: false })
+      dispatch.devices.set({ all: [], query: '', filter: 'all' })
     },
     async destroy(device: IDevice) {
       dispatch.devices.set({ destroying: true })
