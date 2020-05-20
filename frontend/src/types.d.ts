@@ -2,11 +2,6 @@ import { DeviceState, ServiceState } from 'remote.it'
 import { AnalyticsJS } from 'segment-analytics'
 
 declare global {
-  /**
-   * Device sort options. Defaults to 'alpha'
-   */
-  export type SortType = 'alpha' | 'state'
-
   // @FIXME this should only be connection state info, not overloading device / service state
   export type ConnectionState = DeviceState | ServiceState | 'connecting' | 'disconnected' | 'unknown'
   // | 'active''

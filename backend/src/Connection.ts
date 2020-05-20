@@ -75,7 +75,7 @@ export default class Connection extends EventEmitter {
       '2', // Encryption
       `${this.params.host}`, // Bind address
       `${this.params.restriction}`, // Restricted connection IP
-      '12', // Max out
+      '35', // Max out make config.json settable at some point
       '0', // Lifetime
       '0', // Grace period
     ]

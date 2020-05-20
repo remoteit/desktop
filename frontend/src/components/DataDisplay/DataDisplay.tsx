@@ -1,6 +1,6 @@
 import React from 'react'
 import { List, ListItem } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { colors, fontSizes, spacing } from '../../styling'
 
 export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
@@ -11,7 +11,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
       {data.map(item => (
         <ListItem className={css.item} key={item.label}>
           <span>{item.label}:</span>
-          {item.value}
+          {item.value || '-'}
         </ListItem>
       ))}
     </List>

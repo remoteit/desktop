@@ -8,7 +8,7 @@ import { SettingsListItem } from '../../components/SettingsListItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
@@ -105,13 +105,6 @@ export const SettingsPage = () => {
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
-        {/* <SettingsListItem
-          label="Search only device list"
-          icon="search"
-          subLabel="Speed up the application by only showing search results. Use with a very large device list."
-          toggle={searchOnly}
-          onClick={devices.toggleSearchOnly}
-        /> */}
         <UpdateSetting />
       </List>
       {!(guest || notElevated) && (

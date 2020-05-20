@@ -4,7 +4,7 @@ import { DEFAULT_TARGET } from '../constants'
 type BackendStateParams = { [key: string]: any }
 type IBackendState = BackendStateParams & {
   connections: IConnection[]
-  device: IDevice
+  device: ITargetDevice
   targets: ITarget[]
   scanData: IScanData
   interfaces: IInterface[]
@@ -15,7 +15,7 @@ type IBackendState = BackendStateParams & {
   error: boolean
   freePort?: number
   update?: string
-  cliError?: string
+  globalError?: string
   dataReady: boolean
   environment: {
     os?: Ios
@@ -43,7 +43,7 @@ const state: IBackendState = {
   error: false,
   freePort: undefined,
   update: undefined,
-  cliError: undefined,
+  globalError: undefined,
   dataReady: false,
   environment: {
     os: undefined,

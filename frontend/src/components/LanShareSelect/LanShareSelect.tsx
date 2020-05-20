@@ -1,6 +1,5 @@
 import React from 'react'
-import { IService } from 'remote.it'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { useLocation } from 'react-router-dom'
 import { ListItemIcon, Typography } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'

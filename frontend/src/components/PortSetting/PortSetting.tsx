@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
-import { IService } from 'remote.it'
 import { useSelector } from 'react-redux'
 import { InlineSetting } from '../InlineSetting'
 import { REGEX_PORT_SAFE } from '../../constants'

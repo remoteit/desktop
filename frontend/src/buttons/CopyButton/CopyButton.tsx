@@ -1,5 +1,4 @@
 import React from 'react'
-import { IService } from 'remote.it'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { useApplication } from '../../services/applications'
 import { useClipboard } from 'use-clipboard-copy'

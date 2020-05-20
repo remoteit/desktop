@@ -1,5 +1,4 @@
 import React from 'react'
-import { IService } from 'remote.it'
 import { SettingsListItem } from '../SettingsListItem'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 

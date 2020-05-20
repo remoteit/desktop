@@ -3,7 +3,7 @@ import { DEFAULT_INTERFACE } from '../../models/ui'
 import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { ScanNetwork } from '../ScanNetwork'
 import styles from '../../styling'
 

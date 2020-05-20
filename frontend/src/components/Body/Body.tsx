@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { spacing } from '../../styling'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 
 export const Body: React.FC<{ inset?: boolean; center?: boolean; className?: string }> = ({
   inset,

@@ -1,5 +1,4 @@
 import React from 'react'
-import { IDevice } from 'remote.it'
 import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
@@ -37,9 +36,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
         <ConnectionStateIcon service={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
       <ListItemText
-        primary={
-          <ServiceName service={device} shared={device.shared === 'shared-from'} connection={activeConnection} />
-        }
+        primary={<ServiceName service={device} shared={device.shared} connection={activeConnection} />}
         secondary={thisDevice && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>

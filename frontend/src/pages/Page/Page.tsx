@@ -4,12 +4,11 @@ import classnames from 'classnames'
 import { isElectron } from '../../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Snackbar, IconButton } from '@material-ui/core'
+import { Snackbar, IconButton, makeStyles } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
 import { Sidebar } from '../../components/Sidebar'
-import { makeStyles } from '@material-ui/styles'
 import { Icon } from '../../components/Icon'
 
 export interface Props {
@@ -18,15 +17,15 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend } = useDispatch<Dispatch>()
-  const { connected, cliError, authenticated, os } = useSelector((state: ApplicationState) => ({
+  const { connected, globalError, authenticated, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
-    cliError: state.backend.cliError,
+    globalError: state.backend.globalError,
     authenticated: state.auth.authenticated,
     os: state.backend.environment.os,
   }))
 
   const css = useStyles()
-  const clearCliError = () => backend.set({ cliError: undefined })
+  const clearCliError = () => backend.set({ globalError: undefined })
   const reconnect = () => Controller.open(false, true)
 
   let remoteCss = ''
@@ -54,12 +53,12 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
             }
           />
           <Snackbar
-            key={cliError}
-            open={!!cliError}
+            key={globalError}
+            open={!!globalError}
             message={
               <>
                 <Icon name="exclamation-triangle" size="md" color="danger" weight="regular" fixedWidth inlineLeft />
-                {cliError}
+                {globalError}
               </>
             }
             action={

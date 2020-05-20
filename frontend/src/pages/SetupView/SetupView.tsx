@@ -4,13 +4,13 @@ import { Typography, Tooltip, Divider } from '@material-ui/core'
 import { usePermissions } from '../../hooks/usePermissions'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { findType } from '../../services/serviceTypes'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { spacing, colors, fontSizes } from '../../styling'
 import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 
 export const SetupView: React.FC<{
-  device: IDevice
+  device: ITargetDevice
   targets: ITarget[]
 }> = ({ device, targets }) => {
   const { adminUsername, notElevated } = usePermissions()

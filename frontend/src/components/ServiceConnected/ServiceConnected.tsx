@@ -6,7 +6,6 @@ import { DataDisplay } from '../DataDisplay'
 import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
-import { IService } from 'remote.it'
 
 type Props = {
   connection?: IConnection
@@ -24,9 +23,9 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
       <Columns inset>
         <DataDisplay
           data={[
-            { label: 'Connection URL', value: connection ? hostName(connection) : '-' },
-            { label: 'Duration', value: connection ? <Duration startTime={connection.startTime} /> : '-' },
-            { label: 'Throughput', value: connection ? <Throughput connection={connection} /> : '-' },
+            { label: 'Connection URL', value: connection && hostName(connection) },
+            { label: 'Duration', value: connection && <Duration startTime={connection.startTime} /> },
+            { label: 'Throughput', value: connection && <Throughput connection={connection} /> },
           ]}
         />
         <div>

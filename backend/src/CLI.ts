@@ -13,7 +13,7 @@ import { removeDeviceName } from './helpers/nameHelper'
 
 const d = debug('r3:backend:CLI')
 
-type IData = { user?: UserCredentials; admin?: UserCredentials; device: IDevice; targets: ITarget[] }
+type IData = { user?: UserCredentials; admin?: UserCredentials; device: ITargetDevice; targets: ITarget[] }
 
 export default class CLI {
   data: IData = {
@@ -103,7 +103,7 @@ export default class CLI {
     this.readTargets()
   }
 
-  async register(device: IDevice) {
+  async register(device: ITargetDevice) {
     await this.exec({ cmds: [this.setupString(device)], admin: true, checkSignIn: true })
     this.read()
   }
@@ -117,7 +117,7 @@ export default class CLI {
     this.read()
   }
 
-  setupString(device: IDevice) {
+  setupString(device: ITargetDevice) {
     return `-j --manufacture-id ${environment.manufacturerDetails.product.appCode} setup "${device.name}"`
   }
 

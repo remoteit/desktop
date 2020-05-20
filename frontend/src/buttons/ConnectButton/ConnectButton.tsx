@@ -1,6 +1,5 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
-import { IService } from 'remote.it'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'

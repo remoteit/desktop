@@ -1,22 +1,4 @@
-import { IDevice, IService, IUser } from 'remote.it'
-
-export function device({ name = 'Mock Device', state = 'active', ...other }: Partial<IDevice> = {}): IDevice {
-  return {
-    id: `some-device-id-${randomNumber()}`,
-    name,
-    owner: 'foo@bar.com',
-    state,
-    hardwareID: 'some-hardward-id',
-    lastExternalIP: '88.888.88.888',
-    lastInternalIP: '10.0.1.125',
-    region: 'us-west',
-    createdAt: new Date('june 20, 2018'),
-    contactedAt: new Date('jan 10, 2019'),
-    shared: 'shared-from',
-    services: [service(), service({ name: 'Webcam', type: 'NX Witness' }), service({ name: 'HTTP', type: 'HTTP' })],
-    ...other,
-  }
-}
+import { IUser } from 'remote.it'
 
 export function service({ name = 'SSH', type = 'SSH', state = 'active', ...other }: Partial<IService> = {}): IService {
   return {
@@ -32,16 +14,6 @@ export function service({ name = 'SSH', type = 'SSH', state = 'active', ...other
     deviceID: 'some-device-id',
     typeID: 30,
     ...other,
-    // connection: {
-    // expiresIn: number;
-    // hostname: string;
-    // id: string;
-    // port: number | null;
-    // protocol: string;
-    // requestedAt: Date;
-    // type: string;
-    // url: string;
-    // },
   }
 }
 

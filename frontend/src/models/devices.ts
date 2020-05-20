@@ -1,212 +1,121 @@
-import fuzzy from 'fuzzy'
-import Device from '../services/Device'
-import { IDevice, IService } from 'remote.it'
+import { graphQLFetch, graphQLAdaptor } from '../services/graphQL'
 import { createModel } from '@rematch/core'
-import { renameServices } from '../helpers/nameHelper'
-import { updateConnections } from '../helpers/connectionHelper'
-import { IRawDevice } from 'remote.it'
 import { r3 } from '../services/remote.it'
 
-// Slightly below the API limit for search of 300 services.
-const SEARCH_ONLY_SERVICE_LIMIT = 300
+type DeviceParams = { [key: string]: any }
 
-const SORT_SETTING_KEY = 'sort'
-const SEARCH_ONLY_SETTING_KEY = 'search-only'
-
-interface DeviceState {
+type IDeviceState = DeviceParams & {
   all: IDevice[]
-  searchPerformed: boolean
-  fetched: boolean
+  total: number
+  results: number
+  searched: boolean
   fetching: boolean
-  searchOnly: boolean
-  searching: boolean
   destroying: boolean
   query: string
-  sort: SortType
+  append: boolean
+  filter: 'all' | 'active' | 'inactive'
+  size: number
+  from: number
 }
 
-async function fetchAll(cache: boolean = true): Promise<IDevice[]> {
-  const [allDevices, metadata] = await Promise.all([
-    r3.get(`/device/list/all?cache=${cache.toString()}`).then(({ devices }: { devices: IRawDevice[] }) => devices),
-    r3.devices.metadata(),
-  ])
-  return r3.devices.group(allDevices, metadata)
-}
-
-const state: DeviceState = {
+const state: IDeviceState = {
   all: [],
-  searchPerformed: false,
-  fetched: false,
+  total: 0,
+  results: 0,
+  searched: false,
   fetching: true,
-  searching: false,
-  searchOnly: false,
   destroying: false,
   query: '',
-  sort: (window.localStorage.getItem(SORT_SETTING_KEY) || 'state') as SortType,
+  append: false,
+  filter: 'all',
+  size: 50,
+  from: 0,
 }
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    /**
-     * Decide if the user should only search for devices veruses
-     * us fetching all of their devices at the getgo.
-     */
-    async shouldSearchDevices() {
-      // First see if they have already decided on their preference
-      const pref = window.localStorage.getItem(SEARCH_ONLY_SETTING_KEY)
-      let searchOnly = false
-
-      // Handle unset state - localStorage turns bool into string
-      if (typeof pref === 'string') {
-        searchOnly = pref === 'true'
+    async fetch(_, globalState: any) {
+      const { set, graphQLProcessor } = dispatch.devices
+      const { query, filter, size, from, append } = globalState.devices
+      const options: gqlOptions = {
+        size,
+        from,
+        state: filter === 'all' ? '' : filter,
+        name: query.length > 1 ? query : '',
+        ids: append ? [] : globalState.backend.connections.map((c: IConnection) => c.id),
       }
-
-      if (!searchOnly) {
-        const count = await r3.devices.count()
-        searchOnly = count.services > SEARCH_ONLY_SERVICE_LIMIT
-      }
-
-      dispatch.devices.setSearchOnly(searchOnly)
-      return searchOnly
-    },
-    async fetch(cache: boolean = true) {
-      // TODO: Deal with device search only UI
-      const { fetchStarted, fetchFinished, setDevices } = dispatch.devices
 
       if (!r3.token || !r3.authHash) {
         console.warn('Fetch missing api token or authHash. Fetch aborted. Token:', r3.token, 'AuthHash:', r3.authHash)
         return
       }
 
-      fetchStarted()
+      set({ fetching: true })
 
-      return fetchAll(cache)
-        .then(renameServices)
-        .then(updateConnections)
-        .then(setDevices)
-        .catch(error => {
-          console.error('Fetch error:', error, error.response)
-          if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
-            setDevices([])
-            dispatch.auth.signedOut()
-          }
-        })
-        .finally(fetchFinished)
-    },
-    async localSearch(_, globalState: any) {
-      const query = globalState.devices.query
-      dispatch.devices.setQuery(query)
-    },
-    async remoteSearch(_, globalState: any) {
-      const query = globalState.devices.query
-      dispatch.devices.setDevices([])
-      dispatch.devices.setSearching(true)
-      dispatch.devices.setSearchPerformed(true)
-      return r3.devices
-        .search(query)
-        .then(devices => {
-          dispatch.devices.setDevices(devices)
-          dispatch.devices.setSearchPerformed(true)
-        })
-        .finally(() => dispatch.devices.setSearching(false))
-    },
-    async toggleSearchOnly(_, state) {
-      const searchOnly = !state.devices.searchOnly
-
-      dispatch.devices.setSearchOnly(searchOnly)
-      dispatch.devices.setQuery('')
-      if (searchOnly) {
-        dispatch.devices.setDevices([])
-      } else {
-        dispatch.devices.setDevices([])
-        dispatch.devices.fetch()
+      try {
+        const gqlData = await graphQLFetch(options)
+        await graphQLProcessor(gqlData)
+      } catch (error) {
+        console.error('Fetch error:', error, error.response)
+        if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
+          dispatch.backend.set({ globalError: error.message })
+          dispatch.auth.handleDisconnect()
+        }
       }
+
+      set({ fetching: false, append: false })
+    },
+    async graphQLProcessor(gqlData: any, globalState: any) {
+      const { set, graphQLExtractor } = dispatch.devices
+      const { all, append } = globalState.devices
+
+      const gqlLoginData = await graphQLExtractor(gqlData)
+      const connections = graphQLAdaptor(gqlLoginData.connections, gqlLoginData.id, true)
+      const devices = graphQLAdaptor(gqlLoginData.devices, gqlLoginData.id)
+
+      if (append) set({ all: [...all, ...devices] })
+      else set({ all: [...connections, ...devices] })
+    },
+    async graphQLExtractor(gqlData: any, globalState: any) {
+      const { searched } = globalState.devices
+      const { errors } = gqlData?.data
+
+      if (errors) {
+        dispatch.backend.set({ globalError: errors[0].message })
+      }
+
+      const login = gqlData?.data?.data?.login
+      const total = login?.devices?.total || 0
+      if (searched) dispatch.devices.set({ results: total })
+      else dispatch.devices.set({ total })
+
+      return login
     },
     async reset() {
-      dispatch.devices.setDevices([])
       dispatch.backend.set({ connections: [] })
-      dispatch.devices.setSearchOnly(false)
-      dispatch.devices.setQuery('')
-      dispatch.devices.changeSort('state')
+      dispatch.devices.set({ all: [], query: '', filter: 'all' })
     },
-
-    destroy(device: IDevice) {
-      dispatch.devices.setDestroying(true)
+    async destroy(device: IDevice) {
+      dispatch.devices.set({ destroying: true })
       r3.post(`/developer/device/delete/registered/${device.id}`)
         .then(async () => {
-          await dispatch.devices.fetch(false)
-          dispatch.devices.setDestroying(false)
+          await dispatch.devices.fetch()
+          dispatch.devices.set({ destroying: false })
         })
         .catch(error => {
-          dispatch.devices.setDestroying(false)
-          dispatch.backend.set({ cliError: error.message })
+          dispatch.devices.set({ destroying: false })
+          dispatch.backend.set({ globalError: error.message })
           console.warn(error)
         })
     },
   }),
   reducers: {
-    setDestroying(state: DeviceState, destroying: boolean) {
-      state.destroying = destroying
-    },
-    setQuery(state: DeviceState, query: string) {
-      state.query = query
-      if (state.searchOnly) {
-        state.all = []
-        state.searchPerformed = false
-      }
-    },
-    setSearchOnly(state: DeviceState, searchOnly: boolean) {
-      state.searchOnly = searchOnly
-      window.localStorage.setItem(SEARCH_ONLY_SETTING_KEY, String(searchOnly))
-    },
-    fetchStarted(state: DeviceState) {
-      state.fetched = false
-      state.fetching = true
-    },
-    changeSort(state: DeviceState, sort: SortType) {
-      state.sort = sort
-      state.all = Device.sort(state.all, sort)
-      window.localStorage.setItem(SORT_SETTING_KEY, sort)
-    },
-    setDevices(state: DeviceState, devices: IDevice[]) {
-      // window.localStorage.setItem('devices', JSON.stringify(devices)) // disabled as we're not reading it
-      state.all = Device.sort(devices, state.sort)
-    },
-    fetchFinished(state: DeviceState) {
-      state.fetched = true
-      state.fetching = false
-    },
-    setSearching(state: DeviceState, searching: boolean) {
-      state.searching = searching
-    },
-    setSearchPerformed(state: DeviceState, searchPerformed: boolean) {
-      state.searchPerformed = searchPerformed
+    set(state: IDeviceState, params: DeviceParams) {
+      Object.keys(params).forEach(key => (state[key] = params[key]))
     },
   },
-  selectors: slice => ({
-    visible() {
-      return slice((state: DeviceState): IDevice[] => {
-        const filtered = filterDevices(state.all, state.query)
-        const sorted = Device.sort(filtered, state.sort)
-        // console.log('FILTERED:', filtered)
-        // console.log('SORTED:', state.sort, sorted)
-        return sorted
-      })
-    },
-  }),
 })
-
-function filterDevices(devices: IDevice[], query: string) {
-  const options = {
-    extract: (dev: IDevice) => {
-      let matchString = dev.name
-      if (dev.services && dev.services.length) matchString += dev.services.map(s => s.name).join('')
-      return matchString
-    },
-  }
-  return fuzzy.filter(query, devices, options).map(d => d.original)
-}
 
 export function findService(devices: IDevice[], id: string) {
   return devices.reduce(

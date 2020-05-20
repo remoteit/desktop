@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { ListItemIcon, ListItemText } from '@material-ui/core'

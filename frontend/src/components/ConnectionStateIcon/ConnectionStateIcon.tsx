@@ -2,8 +2,7 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
-import { IService, IDevice } from 'remote.it'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { colors, spacing, Color } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
@@ -28,7 +27,7 @@ export function ConnectionStateIcon({
   let colorName: Color = 'warning'
   let element: any
 
-  state = state || (service ? service.state : 'unknown')
+  state = state || service?.state
 
   if (connection) {
     if (connection.pid && !connection.active) state = 'connecting'
@@ -78,7 +77,7 @@ export function ConnectionStateIcon({
     )
   else element = <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
 
-  return <Tooltip title={mini && service ? `${service.name} - ${state}` : state}>{element}</Tooltip>
+  return <Tooltip title={mini && service ? `${service.name} - ${state}` : state || 'unknown'}>{element}</Tooltip>
 }
 
 const useStyles = makeStyles({

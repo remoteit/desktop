@@ -3,14 +3,14 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { Typography, Link, Divider, Button } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { osName } from '../../helpers/nameHelper'
-import { makeStyles } from '@material-ui/styles'
 import { CloseButton } from '../../buttons/CloseButton'
+import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 
-type Props = { os?: Ios; device: IDevice }
+type Props = { os?: Ios; device: ITargetDevice }
 
 export const SetupSuccess: React.FC<Props> = ({ device, os }) => {
   const history = useHistory()
