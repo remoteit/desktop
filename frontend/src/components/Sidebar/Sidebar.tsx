@@ -1,7 +1,16 @@
 import React, { useState } from 'react'
 import { PORT, IP_PRIVATE } from '../../constants'
-import { makeStyles } from '@material-ui/styles'
-import { Typography, List, ListItem, ListItemText, Box, Divider, Tooltip, IconButton } from '@material-ui/core'
+import {
+  makeStyles,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Box,
+  Divider,
+  Tooltip,
+  IconButton,
+} from '@material-ui/core'
 import { spacing, colors, fontSizes } from '../../styling'
 import { useSelector } from 'react-redux'
 import { isElectron } from '../../services/Browser'
