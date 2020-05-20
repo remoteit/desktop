@@ -116,3 +116,15 @@ export function getTypeId(port: number) {
   if (port === 29999) return 7
   return type ? type.id : DEFAULT_TARGET.type
 }
+
+export function parseType(rawType: string) {
+  const pairs = rawType.split(':')
+  const typeHex = '0x' + pairs[0] + pairs[1]
+  const portHex = '0x' + pairs[10] + pairs[11]
+  const typeID = parseInt(typeHex, 16)
+  return {
+    typeID,
+    port: parseInt(portHex, 16),
+    type: findType(typeID).name,
+  }
+}

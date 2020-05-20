@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { SignInFormController } from '../../controllers/SignInFormController/SignInFormController'
 import { Link, Typography } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { isElectron } from '../../services/Browser'
 import { Logo } from '../../components/Logo'
 import { Body } from '../../components/Body'

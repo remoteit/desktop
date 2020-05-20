@@ -162,10 +162,58 @@ declare global {
     type: number //         application_type   service type
   }
 
-  interface IDevice extends ITarget {}
+  interface ITargetDevice extends ITarget {}
+
+  interface IDevice {
+    id: string
+    name: string
+    owner: string
+    state: DeviceState
+    hardwareID?: string
+    lastReported: Date
+    externalAddress: ipAddress
+    internalAddress: ipAddress
+    serverAddress: ipAddress
+    availability: number
+    instability: number
+    geo: {
+      country: string
+      state: string | number
+      isp: string
+    }
+    createdAt: Date
+    contactedAt: Date
+    shared: boolean
+    services: IService[]
+    hidden?: boolean
+  }
+
+  interface IService {
+    contactedAt: Date
+    createdAt: Date
+    id: string
+    lastExternalIP: string
+    name: string
+    protocol: string
+    region: string
+    state: ServiceState
+    type: string
+    deviceID: string
+    connection?: IConnection
+    typeID?: number
+    port?: number
+  }
+
+  type gqlOptions = {
+    size: number
+    from: number
+    state?: string
+    name?: string
+    ids?: string[]
+  }
 
   interface IRegistration {
-    device: IDevice
+    device: ITargetDevice
     targets: ITarget[]
   }
 

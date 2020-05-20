@@ -95,7 +95,7 @@ class Controller {
     this.io.emit('targets', cli.data.targets)
   }
 
-  device = async (result: IDevice) => {
+  device = async (result: ITargetDevice) => {
     await cli.set('device', result)
     this.io.emit('device', cli.data.device)
     this.io.emit('targets', cli.data.targets)

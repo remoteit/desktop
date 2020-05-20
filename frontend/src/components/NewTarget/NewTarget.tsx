@@ -3,14 +3,14 @@ import { useHistory } from 'react-router-dom'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../constants'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Button, Link } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { Target } from '../Target'
 import styles from '../../styling'
 
 type Props = {
-  device: IDevice
+  device: ITargetDevice
   onSave: (target: ITarget) => void
   onCancel: () => void
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { colors, spacing, fontSizes } from '../../styling'
 import { isElectron } from '../../services/Browser'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import * as assets from '../../assets'
 
 export const RemoteHeader: React.FC<{ os?: Ios }> = ({ os }) => {

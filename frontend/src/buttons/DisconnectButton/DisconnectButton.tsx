@@ -4,7 +4,6 @@ import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import analytics from '../../helpers/Analytics'
-import { IService } from 'remote.it'
 
 type Props = {
   disabled?: boolean

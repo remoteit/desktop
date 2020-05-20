@@ -1,5 +1,4 @@
 import React from 'react'
-import { IDevice } from 'remote.it'
 import { useSelector } from 'react-redux'
 import { ServiceName } from '../ServiceName'
 import { ApplicationState } from '../../store'
@@ -37,9 +36,7 @@ export const DeviceListItem = ({ device, connections }: Props) => {
         <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
       </ListItemIcon>
       <ListItemText
-        primary={
-          <ServiceName service={device} shared={device.shared === 'shared-from'} connection={activeConnection} />
-        }
+        primary={<ServiceName service={device} shared={device.shared} connection={activeConnection} />}
         secondary={myDevice.uid === device.id && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>

@@ -10,7 +10,7 @@ import {
 } from '@material-ui/core'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { colors } from '../../styling'
 import { Icon } from '../Icon'
 

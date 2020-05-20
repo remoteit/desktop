@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Typography, Button } from '@material-ui/core'
@@ -18,8 +18,8 @@ export const DeviceListEmpty: React.FC = () => {
 
   return (
     <Body center>
-      <Typography variant="h2" align="center" className={css.block}>
-        You have no devices.
+      <Typography variant="body1" color="textSecondary" align="center">
+        Your search returned no results
       </Typography>
       {!device.name && (
         <>

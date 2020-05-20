@@ -1,6 +1,6 @@
 import React from 'react'
 import useFormal from '@kevinwolf/formal-web'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Button, TextField, Link } from '@material-ui/core'
 import { SignInFormControllerProps } from '../../controllers/SignInFormController/SignInFormController'
 import styles from '../../styling'
@@ -11,11 +11,7 @@ const schema = yup.object().shape({
     .string()
     // .email()
     .required(),
-  password: yup
-    .string()
-    .min(7)
-    .max(64)
-    .required(),
+  password: yup.string().min(7).max(64).required(),
 })
 
 const initialValues = {

@@ -1,9 +1,8 @@
 import React from 'react'
-import { IDevice } from 'remote.it'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Tooltip, IconButton, CircularProgress } from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 
@@ -27,7 +26,7 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
     disabled = true
     tooltip = 'Device must be offline'
   }
-  if (device.shared === 'shared-from') {
+  if (device.shared) {
     disabled = true
     tooltip = 'You must be the device owner'
   }

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { CircularProgress, Tooltip, IconButton, Typography } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { Targets } from '../../components/Targets'
 import { Icon } from '../../components/Icon'
@@ -15,7 +15,7 @@ import analytics from '../../helpers/Analytics'
 type Props = {
   os?: Ios
   targets: ITarget[]
-  device: IDevice
+  device: ITargetDevice
 }
 
 export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }) => {
@@ -49,7 +49,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
 
   useEffect(() => {
     if (setupDeletingDevice && !device.uid) {
-      devices.fetch(false) // @FIXME this will only run if the page is active
+      devices.fetch() // @FIXME this will only run if the page is active
       history.push('/settings/setupDevice')
     }
   }, [device, devices, setupBusy, history])

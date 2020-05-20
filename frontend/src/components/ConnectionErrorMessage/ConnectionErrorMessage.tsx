@@ -1,7 +1,6 @@
 import React from 'react'
-import { IService } from 'remote.it'
 import { useHistory } from 'react-router'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { clearConnectionError } from '../../helpers/connectionHelper'
 import {
   ListItem,

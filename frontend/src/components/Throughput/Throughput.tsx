@@ -3,7 +3,7 @@ import Controller from '../../services/Controller'
 import { Icon } from '../Icon'
 import { REGEX_NUMERIC_VALUE } from '../../constants'
 import fileSize from 'filesize'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { spacing } from '../../styling'
 
 interface Props {

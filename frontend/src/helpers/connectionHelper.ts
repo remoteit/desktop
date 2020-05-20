@@ -1,6 +1,5 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../constants'
-import { IService, IDevice } from 'remote.it'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
@@ -18,7 +17,7 @@ export function newConnection(service?: IService | null, data = {}) {
   }
 
   if (service) {
-    const device = devices.all.find(d => d.id === service.deviceID)
+    const device = devices.all.find((d: IDevice) => d.id === service.deviceID)
     connection.name = service.name
     connection.id = service.id
     connection.deviceID = service.deviceID
@@ -54,7 +53,6 @@ export function updateConnections(devices: IDevice[]) {
       const connection = lookup[s.id]
       const online = s.state === 'active'
       if (connection && connection.online !== online) {
-        console.log('SET CONNECTION', connection, online)
         setConnection({ ...connection, online })
       }
     })

@@ -4,7 +4,7 @@ import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox, Typography 
 import { getTypeId, findType, serviceTypes } from '../../services/serviceTypes'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { spacing } from '../../styling'
 
 type Props = {

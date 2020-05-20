@@ -1,5 +1,4 @@
 import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, IP_PRIVATE, IP_OPEN } from '../constants'
-import { IDevice } from 'remote.it'
 import { store } from '../store'
 
 const separator = ' - '
@@ -31,7 +30,7 @@ export function addDeviceName(deviceName: string, name: string) {
   return deviceName + separator + ext
 }
 
-export function renameServices(devices: IDevice[]) {
+export function renameServices(devices: IDevice[] = []) {
   devices.forEach(d => {
     d.services = d.services.map(s => {
       s.name = removeDeviceName(d.name, s.name)
