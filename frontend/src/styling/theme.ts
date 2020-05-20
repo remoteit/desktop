@@ -95,7 +95,7 @@ export default createMuiTheme({
         fontSize: fontSizes.sm,
         fontFamily: 'Roboto Mono',
         color: colors.gray,
-        padding: `${spacing.lg}px ${gutters}px 0`,
+        padding: `${spacing.lg}px ${spacing.sm}px 0 ${gutters}px`,
         marginLeft: spacing.xxs,
         textTransform: 'uppercase',
         letterSpacing: 3,

@@ -171,9 +171,16 @@ declare global {
     state: DeviceState
     hardwareID?: string
     lastReported: Date
-    lastExternalIP: string
-    lastInternalIP: string
-    region: string
+    externalAddress: ipAddress
+    internalAddress: ipAddress
+    serverAddress: ipAddress
+    availability: number
+    instability: number
+    geo: {
+      country: string
+      state: string | number
+      isp: string
+    }
     createdAt: Date
     contactedAt: Date
     shared: boolean

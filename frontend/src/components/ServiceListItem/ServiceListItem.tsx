@@ -43,8 +43,6 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 
   const className = indent ? css.indent : undefined
 
-  console.log('SERVICE LIST ITEM', 'service', service?.state, 'connection', connection?.active)
-
   return (
     <>
       <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner}>

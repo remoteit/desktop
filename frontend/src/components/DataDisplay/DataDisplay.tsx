@@ -11,7 +11,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
       {data.map(item => (
         <ListItem className={css.item} key={item.label}>
           <span>{item.label}:</span>
-          {item.value}
+          {item.value || '-'}
         </ListItem>
       ))}
     </List>

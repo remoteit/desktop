@@ -19,8 +19,21 @@ export async function graphQLFetch({ size, from, state = '', name = '', ids = []
       created
       hardwareId
       lastReported
+      endpoint {
+        externalAddress
+        internalAddress
+        serverAddress
+        availability
+        instability
+        geo {
+          country
+          state
+          isp
+        }
+      }
       owner {
         id
+        email
       }
       services {
         name
@@ -80,16 +93,19 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
       return {
         id: d.id,
         name: d.name,
-        owner: d.owner.email,
+        owner: d.owner?.email,
         state: d.state,
         hardwareID: d.hardwareId,
         createdAt: new Date(d.created),
         contactedAt: new Date(d.endpoint?.timestamp),
         shared: loginId !== d.owner.id,
-        lastReported: new Date(d.lastReported),
-        lastExternalIP: '',
-        lastInternalIP: '',
-        region: '',
+        lastReported: d.lastReported && new Date(d.lastReported),
+        externalAddress: d.endpoint?.externalAddress,
+        internalAddress: d.endpoint?.internalAddress,
+        serverAddress: d.endpoint?.serverAddress,
+        availability: d.endpoint?.availability,
+        instability: d.endpoint?.instability,
+        geo: d.endpoint?.geo,
         services,
         hidden,
       }
