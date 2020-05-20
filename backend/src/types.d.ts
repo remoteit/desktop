@@ -2,7 +2,7 @@ import { ChildProcess } from 'child_process'
 
 declare global {
   type ConfigFile = {
-    device?: IDevice | undefined
+    device?: ITargetDevice | undefined
     services?: ITarget[]
     auth?: UserCredentials | undefined
   } & { [key: string]: any }
