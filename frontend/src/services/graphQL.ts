@@ -6,7 +6,6 @@ import { GRAPHQL_API_URL } from '../constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
 export async function graphQLFetch({ size, from, state = '', name = '', ids = [] }: gqlOptions) {
-  console.log('GQL OPTIONS', size, from, state, name, ids)
   const connections = `connections: devices(id:${JSON.stringify(ids)})`
   const devices = `devices(size:${size}, from:${from}, name:"${name}", state: "${state}")`
   const select = `

@@ -42,7 +42,6 @@ export default createModel({
       }
 
       if (user?.username) {
-        console.log('WE HAVE A USER', user.username)
         dispatch.auth.setUser(user)
       } else {
         dispatch.auth.signedOut()
@@ -117,7 +116,6 @@ export default createModel({
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
       window.location.search = ''
-      console.log('SIGNOUT COMPLETE')
       emit('user/sign-out-complete')
       Controller.close()
     },
@@ -138,7 +136,6 @@ export default createModel({
     setAuthenticated(state: AuthState, authenticated: boolean) {
       state.authenticated = authenticated
       state.loadingInitialState = false
-      console.log('NOT LOADING INITIAL STATE ANY MORE')
     },
     setError(state: AuthState, error: string) {
       state.signInError = error

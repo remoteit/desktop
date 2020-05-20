@@ -53,7 +53,6 @@ export function updateConnections(devices: IDevice[]) {
       const connection = lookup[s.id]
       const online = s.state === 'active'
       if (connection && connection.online !== online) {
-        console.log('SET CONNECTION', connection, online)
         setConnection({ ...connection, online })
       }
     })

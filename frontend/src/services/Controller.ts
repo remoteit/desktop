@@ -13,8 +13,6 @@ class Controller extends EventEmitter {
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'
     const url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
-
-    console.log('SOCKET URL', url)
     this.socket = io(url)
   }
 
@@ -60,7 +58,7 @@ class Controller extends EventEmitter {
   }
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
-    console.log('Controller EMIT', event, args)
+    console.log('Controller emit', event, args)
     this.socket.emit(event, ...args)
     return true
   }
@@ -73,7 +71,6 @@ function getEventHandlers() {
 
   return {
     connect: () => {
-      console.log('SOCKET CONNECT')
       ui.set({ connected: true })
       backend.set({ error: false })
       auth.init()
@@ -84,7 +81,6 @@ function getEventHandlers() {
     'server/authenticated': () => auth.authenticated(),
 
     disconnect: () => {
-      console.log('SOCKET DISCONNECT')
       ui.set({ connected: false })
       auth.handleDisconnect()
     },

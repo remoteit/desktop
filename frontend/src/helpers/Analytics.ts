@@ -106,7 +106,6 @@ export class Analytics {
 
   private setGAAppVersion() {
     if (typeof window.ga !== 'undefined' && !this.gaAppSet) {
-      console.log('SET GA APP VERSION')
       window.ga('set', 'appName', 'Desktop')
       window.ga('set', 'appVersion', version)
       this.gaAppSet = true
