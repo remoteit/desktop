@@ -9,7 +9,7 @@ import { Icon } from '../Icon'
 export const SearchField: React.FC = () => {
   const { total, results, query, searched, fetching, filter } = useSelector((state: ApplicationState) => state.devices)
   const { devices } = useDispatch<Dispatch>()
-  const disabled = Boolean(fetching || !query)
+  const disabled = Boolean(fetching || query.length < 2)
   const css = useStyles()
 
   const totalTitle = filter ? 'Filtered' : 'Total'
@@ -73,9 +73,10 @@ const useStyles = makeStyles({
     marginRight: spacing.sm,
     padding: `${spacing.sm}px ${spacing.md}px`,
     transition: 'background-color 300ms',
-    '&:focus,&:hover': {
-      backgroundColor: colors.grayLight,
-    },
+    borderWidth: '1px 1px 0 1px',
+    borderStyle: 'solid',
+    borderColor: colors.grayLighter,
+    '&:focus,&:hover': { borderColor: colors.grayLight },
   },
   total: {
     marginRight: spacing.sm,

@@ -60,6 +60,7 @@ declare global {
   export interface IDataDisplay {
     label: string
     value?: any
+    help?: string
   }
 }
 

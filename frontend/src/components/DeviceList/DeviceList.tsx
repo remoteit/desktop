@@ -12,23 +12,25 @@ export interface DeviceListProps {
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {} }) => {
-  const myDevice = useSelector((state: ApplicationState) => state.backend.device)
-  const thisDevice = devices.find(device => myDevice.uid === device.id)
+  const myDevice = useSelector((state: ApplicationState) =>
+    state.devices.all.find(device => device.id === state.backend.device.uid)
+  )
+
   return (
     <>
       <List>
-        {thisDevice ? (
+        {myDevice?.id ? (
           <DeviceListItem
-            key={thisDevice.id}
-            device={thisDevice}
-            connections={connections[thisDevice.id]}
+            key={myDevice.id}
+            device={myDevice}
+            connections={connections[myDevice.id]}
             thisDevice={true}
           />
         ) : (
           <DeviceSetupItem thisDevice={true} />
         )}
         <Divider />
-        {devices.map((device, index) => (
+        {devices.map(device => (
           <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
         ))}
       </List>

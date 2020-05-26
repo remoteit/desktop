@@ -58,14 +58,14 @@ export const ServicesPage: React.FC = () => {
       <Columns count={1} inset>
         <DataDisplay
           data={[
-            { label: 'Availability', value: percent(device.availability) },
-            { label: 'Instability', value: percent(device.instability) },
-            { label: 'Location', value: location(device.geo) },
-            { label: 'ISP', value: device.geo?.isp },
+            { label: 'Availability', value: availability(device.availability), help: 'Average time online per day' },
+            { label: 'Instability', value: instability(device.instability), help: 'Average disconnects per day' },
             { label: 'Last reported', value: duration(device.lastReported) },
+            { label: 'ISP', value: device.geo?.isp },
+            { label: 'Connection type', value: device.geo?.connectionType },
+            { label: 'Location', value: location(device.geo) },
             { label: 'External IP address', value: device.externalAddress },
             { label: 'Internal IP address', value: device.internalAddress },
-            { label: 'Server IP address', value: device.serverAddress },
             { label: 'Device ID', value: device.id },
             { label: 'Hardware ID', value: device.hardwareID },
           ]}
@@ -79,12 +79,20 @@ function duration(date: Date) {
   if (date) return <Duration startTime={date.getTime()} ago />
 }
 
-function percent(value: number) {
+function availability(value: number) {
   if (value) return Math.round(value) + '%'
+}
+
+function instability(value: number) {
+  return Math.round(value * 10) / 10
 }
 
 function location(geo: IDevice['geo']) {
   if (!geo) return null
-  let loc = isNaN(+geo.state) ? geo.state + ' ' : ''
-  return loc + geo.country
+  return [geo.city, geo.stateName, geo.countryName].map(value => (
+    <>
+      {value}
+      <br />
+    </>
+  ))
 }

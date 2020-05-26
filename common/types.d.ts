@@ -173,12 +173,13 @@ declare global {
     lastReported: Date
     externalAddress: ipAddress
     internalAddress: ipAddress
-    serverAddress: ipAddress
     availability: number
     instability: number
     geo: {
-      country: string
-      state: string | number
+      connectionType: string
+      countryName: string
+      stateName: string
+      city: string
       isp: string
     }
     createdAt: Date

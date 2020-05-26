@@ -5,62 +5,65 @@ import { renameServices } from '../helpers/nameHelper'
 import { GRAPHQL_API_URL } from '../constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
-export async function graphQLFetch({ size, from, state = '', name = '', ids = [] }: gqlOptions) {
-  const connections = `connections: devices(id:${JSON.stringify(ids)})`
-  const devices = `devices(size:${size}, from:${from}, name:"${name}", state: "${state}")`
-  const select = `
-  {
-    total
-    items {
+const DEVICE_SELECT = `{
+  total
+  items {
+    id
+    name
+    state
+    created
+    hardwareId
+    lastReported
+    endpoint {
+      externalAddress
+      internalAddress
+      availability
+      instability
+      geo {
+        connectionType
+        countryName
+        stateName
+        city
+        isp
+      }
+    }
+    owner {
+      id
+      email
+    }
+    services {
       id
       name
       state
+      port
+      type
       created
-      hardwareId
-      lastReported
-      endpoint {
-        externalAddress
-        internalAddress
-        serverAddress
-        availability
-        instability
-        geo {
-          country
-          state
-          isp
-        }
-      }
-      owner {
-        id
-        email
-      }
-      services {
-        name
-        id
-        port
-        type
-        created
-        endpoint {
-          state
-        }
-      }
     }
   }
-  `
+}`
+
+export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
   return await axios.request({
     url: GRAPHQL_API_URL,
     method: 'post',
     headers: { token: r3.token },
     data: {
       query: `
-        {
+        query($ids: [String!], $size: Int, $from: Int, $name: String, $state: String) {
           login {
             id
-            ${devices}${select}
-            ${connections}${select}
+            devices(size:$size, from:$from, name:$name, state:$state) ${DEVICE_SELECT}
+            connections: devices(id:$ids) ${DEVICE_SELECT}
           }
         }
       `,
+      variables: {
+        ids,
+        size,
+        from,
+        name,
+        state,
+      },
     },
   })
 }
@@ -75,16 +78,16 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
           result.push({
             type,
             typeID,
+            id: s.id,
+            state: s.state,
+            deviceID: d.id,
             contactedAt: new Date(s.endpoint?.timestamp),
             createdAt: new Date(s.created),
-            deviceID: d.id,
-            id: s.id,
             lastExternalIP: '',
             name: s.name,
             port: s.port,
             protocol: '',
             region: '',
-            state: s.endpoint?.state,
           })
         return result
       }, [])
@@ -101,7 +104,6 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
         lastReported: d.lastReported && new Date(d.lastReported),
         externalAddress: d.endpoint?.externalAddress,
         internalAddress: d.endpoint?.internalAddress,
-        serverAddress: d.endpoint?.serverAddress,
         availability: d.endpoint?.availability,
         instability: d.endpoint?.instability,
         geo: d.endpoint?.geo,

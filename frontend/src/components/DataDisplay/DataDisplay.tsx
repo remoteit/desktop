@@ -1,7 +1,8 @@
 import React from 'react'
-import { List, ListItem } from '@material-ui/core'
+import { List, ListItem, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { colors, fontSizes, spacing } from '../../styling'
+import { Icon } from '../Icon'
 
 export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
   const css = useStyles()
@@ -10,7 +11,15 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
     <List>
       {data.map(item => (
         <ListItem className={css.item} key={item.label}>
-          <span>{item.label}:</span>
+          <span>
+            {item.label}
+            {item.help && (
+              <Tooltip title={item.help}>
+                <Icon name="question-circle" weight="light" size="sm" inline />
+              </Tooltip>
+            )}
+            :
+          </span>
           {item.value || '-'}
         </ListItem>
       ))}
@@ -24,10 +33,14 @@ const useStyles = makeStyles({
     fontSize: fontSizes.sm,
     fontFamily: 'Roboto Mono',
     color: colors.grayDarker,
+    alignItems: 'start',
     '& > span': {
       fontFamily: 'Roboto',
-      color: colors.gray,
+      color: colors.grayDark,
       width: 142,
+    },
+    '& .fal': {
+      color: colors.grayDarker,
     },
   },
 })
