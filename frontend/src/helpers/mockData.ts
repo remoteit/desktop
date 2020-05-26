@@ -4,11 +4,9 @@ export function service({ name = 'SSH', type = 'SSH', state = 'active', ...other
   return {
     contactedAt: new Date('mar 11 2019'),
     createdAt: new Date('aug 9, 2018'),
+    lastReported: new Date('aug 9, 2018'),
     id: `some-service-id-${randomNumber()}`,
-    lastExternalIP: '77.777.77.777',
     name,
-    protocol: 'nxwitness',
-    region: 'us-west',
     state,
     type,
     deviceID: 'some-device-id',

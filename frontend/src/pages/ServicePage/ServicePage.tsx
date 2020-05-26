@@ -67,6 +67,7 @@ export const ServicePage: React.FC = () => {
   }
 
   data = data.concat([
+    { label: 'Last reported', value: service.lastReported, format: 'duration' },
     { label: 'Service Name', value: service.name },
     { label: 'Device Name', value: device.name },
     { label: 'Owner', value: device.owner },

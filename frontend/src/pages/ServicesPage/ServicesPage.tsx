@@ -11,7 +11,6 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
-import { Duration } from '../../components/Duration'
 import { Subtitle } from '../../components/Subtitle'
 import { Columns } from '../../components/Columns'
 import analytics from '../../helpers/Analytics'
@@ -58,14 +57,19 @@ export const ServicesPage: React.FC = () => {
       <Columns count={1} inset>
         <DataDisplay
           data={[
-            { label: 'Availability', value: percent(device.availability) },
-            { label: 'Instability', value: percent(device.instability) },
-            { label: 'Location', value: location(device.geo) },
+            {
+              label: 'Availability',
+              value: device.availability,
+              format: 'percent',
+              help: 'Average time online per day',
+            },
+            { label: 'Instability', value: device.instability, format: 'round', help: 'Average disconnects per day' },
+            { label: 'Last reported', value: device.lastReported, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
-            { label: 'Last reported', value: duration(device.lastReported) },
+            { label: 'Connection type', value: device.geo?.connectionType },
+            { label: 'Location', value: device.geo, format: 'location' },
             { label: 'External IP address', value: device.externalAddress },
             { label: 'Internal IP address', value: device.internalAddress },
-            { label: 'Server IP address', value: device.serverAddress },
             { label: 'Device ID', value: device.id },
             { label: 'Hardware ID', value: device.hardwareID },
           ]}
@@ -73,18 +77,4 @@ export const ServicesPage: React.FC = () => {
       </Columns>
     </Container>
   )
-}
-
-function duration(date: Date) {
-  if (date) return <Duration startTime={date.getTime()} ago />
-}
-
-function percent(value: number) {
-  if (value) return Math.round(value) + '%'
-}
-
-function location(geo: IDevice['geo']) {
-  if (!geo) return null
-  let loc = isNaN(+geo.state) ? geo.state + ' ' : ''
-  return loc + geo.country
 }

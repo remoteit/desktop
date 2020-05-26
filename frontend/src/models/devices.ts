@@ -38,12 +38,18 @@ export default createModel({
     async fetch(_, globalState: any) {
       const { set, graphQLProcessor } = dispatch.devices
       const { query, filter, size, from, append } = globalState.devices
+      const { connections, device, targets } = globalState.backend
       const options: gqlOptions = {
         size,
         from,
-        state: filter === 'all' ? '' : filter,
-        name: query.length > 1 ? query : '',
-        ids: append ? [] : globalState.backend.connections.map((c: IConnection) => c.id),
+        state: filter === 'all' ? undefined : filter,
+        name: query,
+        ids: append
+          ? []
+          : [device.uid].concat(
+              connections.map((c: IConnection) => c.id),
+              targets.map((t: ITarget) => t.uid)
+            ),
       }
 
       if (!r3.token || !r3.authHash) {

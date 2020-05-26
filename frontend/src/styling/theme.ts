@@ -59,9 +59,13 @@ export default createMuiTheme({
       underline: { '&.Mui-disabled:before': { borderColor: colors.grayLight } },
     },
     MuiFilledInput: {
+      focused: {
+        backgroundColor: colors.primaryHighlight,
+      },
       root: {
         backgroundColor: colors.grayLightest,
         '&.Mui-disabled': { backgroundColor: colors.grayLightest },
+        '&:hover': { backgroundColor: colors.success },
       },
     },
     MuiFormControl: {
