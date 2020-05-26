@@ -193,10 +193,8 @@ declare global {
     contactedAt: Date
     createdAt: Date
     id: string
-    lastExternalIP: string
     name: string
-    protocol: string
-    region: string
+    lastReported: Date
     state: ServiceState
     type: string
     deviceID: string

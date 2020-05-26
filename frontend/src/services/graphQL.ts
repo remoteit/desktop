@@ -12,8 +12,8 @@ const DEVICE_SELECT = `{
     name
     state
     created
-    hardwareId
     lastReported
+    hardwareId
     endpoint {
       externalAddress
       internalAddress
@@ -35,9 +35,10 @@ const DEVICE_SELECT = `{
       id
       name
       state
+      created
+      lastReported
       port
       type
-      created
     }
   }
 }`
@@ -81,13 +82,11 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
             id: s.id,
             state: s.state,
             deviceID: d.id,
-            contactedAt: new Date(s.endpoint?.timestamp),
             createdAt: new Date(s.created),
-            lastExternalIP: '',
+            lastReported: s.lastReported && new Date(s.lastReported),
+            contactedAt: new Date(s.endpoint?.timestamp),
             name: s.name,
             port: s.port,
-            protocol: '',
-            region: '',
           })
         return result
       }, [])

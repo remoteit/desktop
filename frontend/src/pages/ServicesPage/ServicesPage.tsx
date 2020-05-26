@@ -11,7 +11,6 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
-import { Duration } from '../../components/Duration'
 import { Subtitle } from '../../components/Subtitle'
 import { Columns } from '../../components/Columns'
 import analytics from '../../helpers/Analytics'
@@ -58,12 +57,17 @@ export const ServicesPage: React.FC = () => {
       <Columns count={1} inset>
         <DataDisplay
           data={[
-            { label: 'Availability', value: availability(device.availability), help: 'Average time online per day' },
-            { label: 'Instability', value: instability(device.instability), help: 'Average disconnects per day' },
-            { label: 'Last reported', value: duration(device.lastReported) },
+            {
+              label: 'Availability',
+              value: device.availability,
+              format: 'percent',
+              help: 'Average time online per day',
+            },
+            { label: 'Instability', value: device.instability, format: 'round', help: 'Average disconnects per day' },
+            { label: 'Last reported', value: device.lastReported, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
             { label: 'Connection type', value: device.geo?.connectionType },
-            { label: 'Location', value: location(device.geo) },
+            { label: 'Location', value: device.geo, format: 'location' },
             { label: 'External IP address', value: device.externalAddress },
             { label: 'Internal IP address', value: device.internalAddress },
             { label: 'Device ID', value: device.id },
@@ -73,26 +77,4 @@ export const ServicesPage: React.FC = () => {
       </Columns>
     </Container>
   )
-}
-
-function duration(date: Date) {
-  if (date) return <Duration startTime={date.getTime()} ago />
-}
-
-function availability(value: number) {
-  if (value) return Math.round(value) + '%'
-}
-
-function instability(value: number) {
-  return Math.round(value * 10) / 10
-}
-
-function location(geo: IDevice['geo']) {
-  if (!geo) return null
-  return [geo.city, geo.stateName, geo.countryName].map(value => (
-    <>
-      {value}
-      <br />
-    </>
-  ))
 }

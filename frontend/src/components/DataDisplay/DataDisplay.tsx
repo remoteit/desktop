@@ -1,7 +1,8 @@
 import React from 'react'
 import { List, ListItem, Tooltip } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
 import { colors, fontSizes, spacing } from '../../styling'
+import { makeStyles } from '@material-ui/core/styles'
+import { Duration } from '../../components/Duration'
 import { Icon } from '../Icon'
 
 export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
@@ -20,11 +21,32 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
             )}
             :
           </span>
-          {item.value || '-'}
+          {item.format ? formats[item.format](item.value) : item.value || '-'}
         </ListItem>
       ))}
     </List>
   )
+}
+
+const formats = {
+  duration: (date: Date) => {
+    if (typeof date === 'object') return <Duration startTime={date.getTime()} ago />
+  },
+  percent: (value: number) => {
+    if (value) return Math.round(value) + '%'
+  },
+  round: (value: number) => {
+    return Math.round(value * 10) / 10
+  },
+  location: (geo: IDevice['geo']) => {
+    if (!geo) return null
+    return [geo.city, geo.stateName, geo.countryName].map(value => (
+      <>
+        {value}
+        <br />
+      </>
+    ))
+  },
 }
 
 const useStyles = makeStyles({

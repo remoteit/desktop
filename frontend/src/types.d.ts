@@ -61,6 +61,7 @@ declare global {
     label: string
     value?: any
     help?: string
+    format?: 'duration' | 'percent' | 'round' | 'location'
   }
 }
 
