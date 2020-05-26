@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import { Typography, Tooltip, IconButton } from '@material-ui/core'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { ApplicationState } from '../../store'
-import { Typography } from '@material-ui/core'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
+import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
@@ -13,6 +14,7 @@ import analytics from '../../helpers/Analytics'
 export const LogPage: React.FC = () => {
   const { serviceID = '' } = useParams()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
+  const dispatch = useDispatch<Dispatch>()
   const id = connection ? connection.id : ''
   const log = useSelector((state: ApplicationState) => state.logs[id] || [])
 
@@ -22,12 +24,18 @@ export const LogPage: React.FC = () => {
 
   return (
     <Container
+      scrollbars
       header={
         <>
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="stream" size="lg" />
-            <span style={{ marginLeft: spacing.md }}>Raw Connection Log</span>
+            <Title primary="Raw Connection Log" />
+            <Tooltip title="Clear log">
+              <IconButton onClick={() => dispatch.logs.clear(id)}>
+                <Icon name="trash-alt" size="md" fixedWidth />
+              </IconButton>
+            </Tooltip>
           </Typography>
         </>
       }
