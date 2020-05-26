@@ -143,8 +143,7 @@ export default class ConnectionPool {
     const { port } = connection.params
     if (port) {
       if (!(await PortScanner.isPortFree(port))) {
-        connection.params.error = { message: `Port ${port} is in use. Port auto-assigned` }
-        connection.params.port = await this.nextFreePort()
+        connection.params.error = { message: `Port ${port} is in use.` }
       }
     } else {
       connection.params.port = await this.nextFreePort()
