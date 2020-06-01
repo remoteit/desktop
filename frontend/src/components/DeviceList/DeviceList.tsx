@@ -30,9 +30,12 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
           <DeviceSetupItem thisDevice={true} />
         )}
         <Divider />
-        {devices.map(device => (
-          <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
-        ))}
+        {devices.map(
+          device =>
+            device.id !== myDevice?.id && (
+              <DeviceListItem key={device.id} device={device} connections={connections[device.id]} />
+            )
+        )}
       </List>
       <LoadMore />
     </>

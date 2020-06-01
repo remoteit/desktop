@@ -59,13 +59,13 @@ export const SettingsPage = () => {
               </ButtonBase>
             </Tooltip>
           </Typography>
-          <List>
-            <DeviceSetupItem />
-          </List>
-          <Divider />
         </>
       }
     >
+      <List>
+        <DeviceSetupItem />
+      </List>
+      <Divider />
       <Typography variant="subtitle1">User</Typography>
       <List>
         <SettingsListItem

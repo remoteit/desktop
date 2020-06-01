@@ -21,7 +21,7 @@ export const DeviceSetupItem: React.FC<{ thisDevice?: boolean }> = ({ thisDevice
 
   if (registered) {
     title = device.name
-    subTitle = `Remote access to this ${osName(os)} or any other service on the network.`
+    subTitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
   }
 
   if (thisDevice) {
