@@ -35,8 +35,11 @@ export const Router: React.FC = () => {
   if (guest || notElevated) setupLocation = 'setupView'
 
   useEffect(() => {
-    if (dataReady && !device.name && !isElectron()) history.push('/settings/setupDevice')
-  }, [history, device, dataReady])
+    if (dataReady) {
+      if (!device.name && !isElectron()) history.push('/settings/setupDevice')
+      else history.push('/')
+    }
+  }, [dataReady])
 
   return (
     <Switch>
