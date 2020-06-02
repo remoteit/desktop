@@ -63,6 +63,13 @@ const applications: Application[] = [
     iconRotate: true,
     launchUrl: 'http://[host]:[port]',
   }),
+  new Application({
+    types: [34],
+    title: 'Samba',
+    icon: 'folders',
+    iconRotate: true,
+    launchUrl: 'smb://[host]:[port]',
+  }),
 ]
 
 const defaultApp = new Application({

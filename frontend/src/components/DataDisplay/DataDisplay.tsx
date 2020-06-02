@@ -13,15 +13,14 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
       {data.map(item => (
         <ListItem className={css.item} key={item.label}>
           <span>
-            {item.label}
+            {item.label}:
             {item.help && (
               <Tooltip title={item.help}>
                 <Icon name="question-circle" weight="light" size="sm" inline />
               </Tooltip>
             )}
-            :
           </span>
-          {item.format ? formats[item.format](item.value) : item.value || '-'}
+          {(item.format ? formats[item.format](item.value) : item.value) || '-'}
         </ListItem>
       ))}
     </List>
@@ -30,7 +29,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
 
 const formats = {
   duration: (date: Date) => {
-    if (typeof date === 'object') return <Duration startTime={date.getTime()} ago />
+    if (date instanceof Date) return <Duration startTime={date.getTime()} ago />
   },
   percent: (value: number) => {
     if (value) return Math.round(value) + '%'
