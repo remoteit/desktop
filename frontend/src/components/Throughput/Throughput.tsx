@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Controller from '../../services/Controller'
 import { Icon } from '../Icon'
-import { REGEX_NUMERIC_VALUE } from '../../constants'
+import { REGEX_NUMERIC_VALUE } from '../../shared/constants'
 import fileSize from 'filesize'
 import { makeStyles } from '@material-ui/core/styles'
 import { spacing } from '../../styling'

@@ -15,7 +15,7 @@ import {
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { getTypeId } from '../../services/serviceTypes'
-import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../constants'
+import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'

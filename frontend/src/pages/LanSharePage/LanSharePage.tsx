@@ -11,7 +11,7 @@ import {
   TextField,
   MenuItem,
 } from '@material-ui/core'
-import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../constants'
+import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../shared/constants'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/core/styles'

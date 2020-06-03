@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
-import { REGEX_NAME_SAFE } from '../../constants'
+import { REGEX_NAME_SAFE } from '../../shared/constants'
 import { serviceTypes, findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'

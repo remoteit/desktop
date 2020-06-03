@@ -83,6 +83,7 @@ export default class TrayMenu {
   }
 
   private connectionsList() {
+    console.log('CONNECTION ONE:', this.pool[0])
     return this.pool.reduce((result: any[], connection) => {
       if (connection.startTime && connection.owner === user.username) {
         const location = hostName(connection, this.privateIP)

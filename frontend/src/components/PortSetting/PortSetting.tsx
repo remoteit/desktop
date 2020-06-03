@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
 import { useSelector } from 'react-redux'
 import { InlineSetting } from '../InlineSetting'
-import { REGEX_PORT_SAFE } from '../../constants'
+import { REGEX_PORT_SAFE } from '../../shared/constants'
 import { ApplicationState } from '../../store'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 

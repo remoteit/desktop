@@ -1,5 +1,5 @@
 import setup, { IUser } from 'remote.it'
-import { API_URL, DEVELOPER_KEY } from '../constants'
+import { API_URL, DEVELOPER_KEY } from '../shared/constants'
 
 export function updateUserCredentials(user: IUser) {
   r3.token = user.token

@@ -9,7 +9,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { DocsLinks } from '../../components/DocsLinks'
 import { Dispatch } from '../../store'
-import { osName } from '../../helpers/nameHelper'
+import { osName } from '../../shared/nameHelper'
 import { Body } from '../../components/Body'
 import styles from '../../styling'
 

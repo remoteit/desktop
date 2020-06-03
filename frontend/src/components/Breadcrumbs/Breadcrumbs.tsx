@@ -4,10 +4,10 @@ import { findService } from '../../models/devices'
 import { ApplicationState } from '../../store'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton, Link } from '@material-ui/core'
-import { removeDeviceName } from '../../helpers/nameHelper'
+import { removeDeviceName } from '../../shared/nameHelper'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
-import { REGEX_LAST_PATH } from '../../constants'
+import { REGEX_LAST_PATH } from '../../shared/constants'
 import { spacing, colors, fontSizes } from '../../styling'
 
 const pageNameMap: { [path: string]: string } = {

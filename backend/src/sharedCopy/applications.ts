@@ -1,10 +1,17 @@
-import { replaceHost } from '../helpers/nameHelper'
+/* 
+  This is a shared file between backend and frontend
+  It will be copied from the frontend to the backend on build
+  
+  ONLY EDIT THE SOURCE FILE IN frontend
+*/
+
+import { replaceHost } from './nameHelper'
 
 class Application {
   types: number[] = []
   title: string = 'URL'
   icon: string = 'arrow-right'
-  launchUrl: string = 'http://[host]:[port]'
+  launchTemplate: string = 'http://[host]:[port]'
   copyUrl: string = '[host]:[port]'
   prompt: boolean = false
   iconRotate: boolean = false
@@ -14,7 +21,7 @@ class Application {
   }
 
   launch(connection: IConnection) {
-    return this.parse(connection.launchUrl || this.launchUrl, connection)
+    return this.parse(connection.launchTemplate || this.launchTemplate, connection)
   }
 
   copy(connection: IConnection) {
@@ -39,14 +46,14 @@ const applications: Application[] = [
     types: [4],
     title: 'VNC',
     icon: 'desktop',
-    launchUrl: 'vnc://[host]:[port]',
+    launchTemplate: 'vnc://[host]:[port]',
   }),
   new Application({
     types: [28],
     title: 'SSH',
     icon: 'terminal',
     prompt: true,
-    launchUrl: 'ssh://[username]@[host]:[port]',
+    launchTemplate: 'ssh://[username]@[host]:[port]',
     copyUrl: 'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
   }),
   new Application({
@@ -54,21 +61,21 @@ const applications: Application[] = [
     title: 'Secure Browser',
     icon: 'arrow-right',
     iconRotate: true,
-    launchUrl: 'https://[host]:[port]',
+    launchTemplate: 'https://[host]:[port]',
   }),
   new Application({
     types: [7, 30, 38],
     title: 'Browser',
     icon: 'arrow-right',
     iconRotate: true,
-    launchUrl: 'http://[host]:[port]',
+    launchTemplate: 'http://[host]:[port]',
   }),
   new Application({
     types: [34],
     title: 'Samba',
     icon: 'folders',
     iconRotate: true,
-    launchUrl: 'smb://[host]:[port]',
+    launchTemplate: 'smb://[host]:[port]',
   }),
 ]
 
@@ -77,8 +84,10 @@ const defaultApp = new Application({
   title: 'URL',
   icon: 'arrow-right',
   iconRotate: true,
-  launchUrl: 'https://[host]:[port]',
+  launchTemplate: 'https://[host]:[port]',
 })
+
+export default useApplication
 
 export function useApplication(type?: number) {
   let app = applications.find(a => a.types.includes(type || 0))

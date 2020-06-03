@@ -1,11 +1,11 @@
 import { emit } from '../services/Controller'
-import { IP_OPEN, IP_PRIVATE } from '../constants'
+import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
   const { auth, devices } = store.getState()
 
-  let connection = {
+  let connection: IConnection = {
     host: IP_PRIVATE,
     restriction: IP_OPEN,
     owner: auth.user ? auth.user.username : 'Unknown',
@@ -18,10 +18,12 @@ export function newConnection(service?: IService | null, data = {}) {
 
   if (service) {
     const device = devices.all.find((d: IDevice) => d.id === service.deviceID)
+    // @TODO The whole service obj should be in the connection
     connection.name = service.name
     connection.id = service.id
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'
+    connection.typeID = service.typeID
     if (device) connection.name = `${device.name} - ${service.name}`
   }
 

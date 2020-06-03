@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { DEFAULT_TARGET } from '../constants'
+import { DEFAULT_TARGET } from '../shared/constants'
 
 type BackendStateParams = { [key: string]: any }
 type IBackendState = BackendStateParams & {

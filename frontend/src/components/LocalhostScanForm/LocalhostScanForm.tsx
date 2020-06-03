@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../constants'
+import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../shared/constants'
 import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox, Typography } from '@material-ui/core'
 import { getTypeId, findType, serviceTypes } from '../../services/serviceTypes'
 import { ApplicationState } from '../../store'

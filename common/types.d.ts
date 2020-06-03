@@ -115,11 +115,13 @@ declare global {
     port?: number
     active?: boolean
     host?: ipAddress // Bind address
+    typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address
     autoStart?: boolean
     connecting?: boolean
     username?: string // support for launching where username could be saved
-    launchUrl?: string // deep link launch url
+    launchTemplate?: string // deep link launch url template
+    launchUrl?: string // composed deep link launch url
     createdTime?: number // unix timestamp track for garbage cleanup
     startTime?: number // unix timestamp connection start time
     endTime?: number // unix timestamp connection close time

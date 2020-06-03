@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { PORT, IP_PRIVATE } from '../../constants'
+import { PORT, IP_PRIVATE } from '../../shared/constants'
 import {
   makeStyles,
   Typography,

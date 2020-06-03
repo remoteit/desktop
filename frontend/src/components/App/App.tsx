@@ -12,7 +12,7 @@ import { Icon } from '../Icon'
 import { Page } from '../../pages/Page'
 import { SignInPage } from '../../pages/SignInPage'
 import { InstallationNotice } from '../InstallationNotice'
-import { REGEX_FIRST_PATH } from '../../constants'
+import { REGEX_FIRST_PATH } from '../../shared/constants'
 import styles from '../../styling'
 
 export const App: React.FC = () => {

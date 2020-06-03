@@ -1,7 +1,7 @@
+import { removeDeviceName } from './sharedCopy/nameHelper'
+import { DEFAULT_TARGET } from './sharedCopy/constants'
 import remoteitInstaller from './remoteitInstaller'
 import environment from './environment'
-import Installer from './Installer'
-import defaults from './helpers/defaults'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
 import Command from './Command'
@@ -9,7 +9,6 @@ import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
 import user, { User } from './User'
-import { removeDeviceName } from './helpers/nameHelper'
 
 const d = debug('r3:backend:CLI')
 
@@ -19,8 +18,8 @@ export default class CLI {
   data: IData = {
     user: undefined,
     admin: undefined,
-    device: defaults,
-    targets: [defaults],
+    device: DEFAULT_TARGET,
+    targets: [DEFAULT_TARGET],
   }
 
   userConfigFile: JSONFile<ConfigFile>
@@ -69,7 +68,7 @@ export default class CLI {
   readDevice() {
     const config = this.readFile(true)
     d('READ DEVICE', config.device)
-    const device = config.device || defaults
+    const device = config.device || DEFAULT_TARGET
     this.data.device = {
       ...device,
       hostname: device.hostname || '',

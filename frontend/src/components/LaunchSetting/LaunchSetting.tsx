@@ -1,6 +1,6 @@
 import React from 'react'
 import { InlineSetting } from '../InlineSetting'
-import { useApplication } from '../../services/applications'
+import { useApplication } from '../../shared/applications'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 const SSH_TYPE = 28
@@ -10,7 +10,7 @@ export const LaunchSetting: React.FC<{ service: IService; connection?: IConnecti
   let tokens = '[host] [port] [id]'
   if (service.typeID === SSH_TYPE) tokens += ' [username]'
   if (!connection) connection = newConnection(service)
-  let currentLaunchUrl = (connection && connection.launchUrl) || app.launchUrl
+  let currentLaunchUrl = (connection && connection.launchTemplate) || app.launchTemplate
   return (
     <InlineSetting
       icon="question-circle"
@@ -18,12 +18,12 @@ export const LaunchSetting: React.FC<{ service: IService; connection?: IConnecti
       value={currentLaunchUrl}
       displayValue={app.parse(currentLaunchUrl, connection)}
       label="Launch URL"
-      resetValue={app.launchUrl}
-      onSave={launchUrl =>
+      resetValue={app.launchTemplate}
+      onSave={launchTemplate =>
         connection &&
         setConnection({
           ...connection,
-          launchUrl: launchUrl.toString(),
+          launchTemplate: launchTemplate.toString(),
         })
       }
     />

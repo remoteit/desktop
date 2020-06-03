@@ -1,4 +1,5 @@
-import { IP_PRIVATE, PLATFORM_CODES, REMOTEIT_PI_WIFI } from './constants'
+import { PLATFORM_CODES, REMOTEIT_PI_WIFI } from './constants'
+import { IP_PRIVATE } from './sharedCopy/constants'
 import environment from './environment'
 import Logger from './Logger'
 import EventBus from './EventBus'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { hostName } from '../../helpers/nameHelper'
+import { hostName } from '../../shared/nameHelper'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { Typography, Divider, Collapse } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'

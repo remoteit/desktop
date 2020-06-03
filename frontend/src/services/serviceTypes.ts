@@ -1,4 +1,4 @@
-import { DEFAULT_TARGET } from '../constants'
+import { DEFAULT_TARGET } from '../shared/constants'
 
 export const serviceTypes = [
   {

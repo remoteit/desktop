@@ -4,6 +4,7 @@ import debug from 'debug'
 import AirBrake from './AirBrake'
 import Application from './Application'
 import preferences from './preferences'
+import getApplication from './sharedCopy/applications'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import EventBus from './EventBus'
@@ -11,8 +12,8 @@ import Logger from './Logger'
 import LAN from './LAN'
 import user, { User } from './User'
 import cli from './cliInterface'
-import { hostName } from './helpers/nameHelper'
-import { IP_PRIVATE } from './constants'
+import { hostName } from './sharedCopy/nameHelper'
+import { IP_PRIVATE } from './sharedCopy/constants'
 import { WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
@@ -45,6 +46,7 @@ export default new Application()
 // To support Electron wrapper
 export { EVENTS } from './electronInterface'
 export {
+  getApplication,
   ConnectionPool,
   environment,
   EventBus,
