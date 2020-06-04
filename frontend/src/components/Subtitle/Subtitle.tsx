@@ -1,5 +1,5 @@
 import React from 'react'
-import { spacing, colors } from '../../styling'
+import { colors } from '../../styling'
 import { makeStyles, Box, Typography } from '@material-ui/core'
 
 export const Subtitle: React.FC<{ primary: string; secondary?: string }> = ({ primary, secondary }) => {

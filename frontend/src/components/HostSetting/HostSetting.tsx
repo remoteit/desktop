@@ -1,6 +1,6 @@
 import React from 'react'
-import { replaceHost } from '../../helpers/nameHelper'
-import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../constants'
+import { replaceHost } from '../../shared/nameHelper'
+import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../shared/constants'
 import { InlineSetting } from '../InlineSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 

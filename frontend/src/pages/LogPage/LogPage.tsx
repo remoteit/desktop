@@ -8,7 +8,6 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
-import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
 
 export const LogPage: React.FC = () => {

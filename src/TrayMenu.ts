@@ -8,6 +8,7 @@ import headless, {
   user,
   ConnectionPool,
   hostName,
+  getApplication,
 } from 'remoteit-headless'
 import electron from 'electron'
 import path from 'path'
@@ -85,7 +86,6 @@ export default class TrayMenu {
   private connectionsList() {
     return this.pool.reduce((result: any[], connection) => {
       if (connection.startTime && connection.owner === user.username) {
-        const location = hostName(connection, this.privateIP)
         result.push({
           label: connection.name,
           icon: connection.active ? iconConnected : connection.online ? iconOnline : iconOffline,
@@ -96,10 +96,10 @@ export default class TrayMenu {
               ? { label: 'Connect', click: () => this.connect(connection) }
               : { label: 'Offline', enabled: false },
             { type: 'separator' },
-            { label: location, enabled: false },
-            { label: 'Copy to clipboard', click: () => this.copy(location) },
+            { label: hostName(connection), enabled: false },
+            { label: 'Copy to clipboard', click: () => this.copy(connection) },
             connection.online
-              ? { label: 'Launch', click: () => this.launch(location) }
+              ? { label: 'Launch', enabled: connection.active, click: () => this.launch(connection) }
               : { label: 'Remove', click: () => EventBus.emit(EVENTS.forget, connection) },
           ],
         })
@@ -139,11 +139,13 @@ export default class TrayMenu {
     headless.pool.stop(connection, false)
   }
 
-  private copy(location: string) {
-    electron.clipboard.writeText(location)
+  private copy(connection: IConnection) {
+    const app = getApplication(connection.typeID)
+    electron.clipboard.writeText(app.copy(connection))
   }
 
-  private launch(location: string) {
-    electron.shell.openExternal(`http://${location}`)
+  private launch(connection: IConnection) {
+    const app = getApplication(connection.typeID)
+    electron.shell.openExternal(app.launch(connection))
   }
 }

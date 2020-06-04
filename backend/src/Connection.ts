@@ -7,7 +7,7 @@ import EventBus from './EventBus'
 import environment from './environment'
 import { EventEmitter } from 'events'
 import { execFile, ChildProcess } from 'child_process'
-import { IP_OPEN, IP_PRIVATE } from './constants'
+import { IP_OPEN, IP_PRIVATE } from './sharedCopy/constants'
 
 const d = debug('r3:backend:Connection')
 const REGEX_ERROR_CODE = /\[(\d+)\]/

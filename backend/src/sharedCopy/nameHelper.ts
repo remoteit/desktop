@@ -1,5 +1,12 @@
-import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, IP_PRIVATE, IP_OPEN } from '../constants'
-import { store } from '../store'
+/* 
+  This is a shared file between backend and frontend
+  It will be copied from the frontend to the backend on build
+  
+  ONLY EDIT THE SOURCE FILE IN frontend
+*/
+
+import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, IP_PRIVATE, IP_OPEN } from './constants'
+import { getEnvironment } from '../sharedAdaptor'
 
 const separator = ' - '
 
@@ -8,7 +15,7 @@ export function replaceHost(url: string) {
     return url.replace(IP_PRIVATE, 'localhost')
   }
   if (url.includes(IP_OPEN)) {
-    const { privateIP } = store.getState().backend.environment
+    const { privateIP } = getEnvironment()
     return url.replace(IP_OPEN, privateIP)
   }
   return url
@@ -16,7 +23,7 @@ export function replaceHost(url: string) {
 
 export function hostName(connection: IConnection) {
   const { host = '', port } = connection
-  if (!port) return null
+  if (!port) return ''
   return `${replaceHost(host)}:${port}`
 }
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { hostName } from '../../helpers/nameHelper'
+import { hostName } from '../../shared/nameHelper'
 import { useLocation } from 'react-router-dom'
 import { ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
@@ -35,7 +35,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 
   const details = (
     <span className={css.details}>
-      {connection && `URL ${hostName(connection)}`}
+      {connection && hostName(connection)}
       {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
       {notOwner && <span>Owned by {owner}</span>}
     </span>

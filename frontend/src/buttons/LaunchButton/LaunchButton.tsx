@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useApplication } from '../../services/applications'
+import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
 import {
   IconButton,

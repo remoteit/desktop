@@ -1,4 +1,4 @@
-import { IP_OPEN, IP_LATCH } from '../constants'
+import { IP_OPEN, IP_LATCH } from '../shared/constants'
 import { store } from '../store'
 
 export function lanShareRestriction(connection?: IConnection) {

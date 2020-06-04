@@ -1,6 +1,6 @@
 import io from 'socket.io-client'
 import { store } from '../store'
-import { PORT, RETRY_DELAY } from '../constants'
+import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analytics from '../helpers/Analytics'
 
@@ -36,7 +36,7 @@ class Controller extends EventEmitter {
           this.retrying = undefined
           this.socket.open()
         },
-        retry ? RETRY_DELAY : 0
+        retry ? FRONTEND_RETRY_DELAY : 0
       )
     }
   }

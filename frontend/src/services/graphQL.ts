@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { r3 } from '../services/remote.it'
 import { parseType } from '../services/serviceTypes'
-import { renameServices } from '../helpers/nameHelper'
-import { GRAPHQL_API_URL } from '../constants'
+import { renameServices } from '../shared/nameHelper'
+import { GRAPHQL_API_URL } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
 const DEVICE_SELECT = `{

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Typography, Button } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { osName } from '../../helpers/nameHelper'
+import { osName } from '../../shared/nameHelper'
 import { spacing } from '../../styling'
 import { Body } from '../Body'
 

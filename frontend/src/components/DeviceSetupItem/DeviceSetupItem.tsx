@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
-import { osName } from '../../helpers/nameHelper'
+import { osName } from '../../shared/nameHelper'
 import { colors } from '../../styling'
 import { Icon } from '../Icon'
 

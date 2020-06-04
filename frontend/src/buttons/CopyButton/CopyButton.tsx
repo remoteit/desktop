@@ -1,6 +1,6 @@
 import React from 'react'
 import { IconButton, Tooltip } from '@material-ui/core'
-import { useApplication } from '../../services/applications'
+import { useApplication } from '../../shared/applications'
 import { useClipboard } from 'use-clipboard-copy'
 import { Icon } from '../../components/Icon'
 

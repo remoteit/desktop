@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
-import { REGEX_FIRST_PATH } from '../../constants'
+import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { Icon } from '../Icon'
 import { colors, spacing } from '../../styling'
 
