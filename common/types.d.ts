@@ -121,7 +121,6 @@ declare global {
     connecting?: boolean
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template
-    launchUrl?: string // composed deep link launch url
     createdTime?: number // unix timestamp track for garbage cleanup
     startTime?: number // unix timestamp connection start time
     endTime?: number // unix timestamp connection close time
