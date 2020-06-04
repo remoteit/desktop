@@ -23,7 +23,7 @@ export function replaceHost(url: string) {
 
 export function hostName(connection: IConnection) {
   const { host = '', port } = connection
-  if (!port) return null
+  if (!port) return ''
   return `${replaceHost(host)}:${port}`
 }
 
