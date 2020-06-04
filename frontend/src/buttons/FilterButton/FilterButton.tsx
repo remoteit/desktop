@@ -3,7 +3,7 @@ import { Tooltip, IconButton } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { Icon } from '../../components/Icon'
-import { spacing, Color } from '../../styling'
+import { Color } from '../../styling'
 
 export const FilterButton: React.FC<{}> = () => {
   const { filter } = useSelector((state: ApplicationState) => state.devices)

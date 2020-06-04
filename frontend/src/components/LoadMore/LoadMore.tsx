@@ -1,8 +1,8 @@
 import React from 'react'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { spacing, colors } from '../../styling'
-import { makeStyles, Box, Button, CircularProgress, Typography } from '@material-ui/core'
+import { makeStyles, Box, Button } from '@material-ui/core'
+import { spacing } from '../../styling'
 
 export const LoadMore: React.FC = () => {
   const { from, size, total, results, searched, fetching } = useSelector((state: ApplicationState) => state.devices)
