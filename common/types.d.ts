@@ -202,6 +202,12 @@ declare global {
     connection?: IConnection
     typeID?: number
     port?: number
+    sessions?: session[]
+  }
+
+  type session = {
+    timestamp: Date
+    email: string
   }
 
   type gqlOptions = {

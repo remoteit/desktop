@@ -3,10 +3,11 @@ import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { colors, spacing, Color } from '../../styling'
+import { Icon } from '../Icon'
 
 interface Props {
   connection?: IConnection
-  service?: IService | IDevice
+  service?: IService
   pathname: string
   disabled?: boolean
 }
@@ -17,6 +18,8 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'
+  let title = state
+  let sessions = service?.sessions?.length
 
   if (connection) {
     if (connection.pid && !connection.active) state = 'connecting'
@@ -43,11 +46,29 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
       colorName = 'grayLight'
   }
 
+  if (service) {
+    title = (
+      <>
+        {service.name}
+        <br />
+        {sessions ? `${sessions} connected` : state}
+      </>
+    )
+  }
+
   return (
-    <Tooltip title={service ? `${service.name} - ${state}` : state}>
+    <Tooltip title={title}>
       <span>
-        <IconButton className={css.button} onClick={() => history.push(pathname)} disabled={disabled}>
-          <span style={{ backgroundColor: colors[colorName] }} />
+        <IconButton
+          className={sessions ? css.icon : css.button}
+          onClick={() => history.push(pathname)}
+          disabled={disabled}
+        >
+          {sessions ? (
+            <Icon name="user" weight="solid" size="xs" color={colorName} fixedWidth />
+          ) : (
+            <span className={css.indicator} style={{ backgroundColor: colors[colorName] }} />
+          )}
         </IconButton>
       </span>
     </Tooltip>
@@ -55,15 +76,14 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
 }
 
 const useStyles = makeStyles({
-  button: {
-    padding: `8px 0`,
-    '& > span > span': {
-      height: 2,
-      borderRadius: 2,
-      width: spacing.sm,
-      display: 'inline-block',
-      marginLeft: 2,
-      marginRight: 2,
-    },
+  button: { padding: '8px 0' },
+  icon: { padding: '0 0 8px' },
+  indicator: {
+    height: 2,
+    borderRadius: 2,
+    width: spacing.sm,
+    display: 'inline-block',
+    marginLeft: 2,
+    marginRight: 2,
   },
 })

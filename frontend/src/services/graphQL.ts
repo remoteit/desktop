@@ -39,6 +39,12 @@ const DEVICE_SELECT = `{
       lastReported
       port
       type
+      sessions {
+        timestamp
+        user {
+          email
+        }
+      }
     }
   }
 }`
@@ -72,12 +78,26 @@ export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOpt
 
 export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices) return []
-  let data = gqlDevices?.items.map(
-    (d: any): IDevice => {
-      const services = d.services.reduce((result: IService[], s: any): IService[] => {
-        const { typeID, type } = parseType(s.type)
-        if (typeID !== 35)
-          result.push({
+  let data: IDevice[] = gqlDevices?.items.map(
+    (d: any): IDevice => ({
+      id: d.id,
+      name: d.name,
+      owner: d.owner?.email,
+      state: d.state,
+      hardwareID: d.hardwareId,
+      createdAt: new Date(d.created),
+      contactedAt: new Date(d.endpoint?.timestamp),
+      shared: loginId !== d.owner.id,
+      lastReported: d.lastReported && new Date(d.lastReported),
+      externalAddress: d.endpoint?.externalAddress,
+      internalAddress: d.endpoint?.internalAddress,
+      availability: d.endpoint?.availability,
+      instability: d.endpoint?.instability,
+      geo: d.endpoint?.geo,
+      services: d.services.map(
+        (s: any): IService => {
+          const { typeID, type } = parseType(s.type)
+          return {
             type,
             typeID,
             id: s.id,
@@ -88,30 +108,15 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
             contactedAt: new Date(s.endpoint?.timestamp),
             name: s.name,
             port: s.port,
-          })
-        return result
-      }, [])
-
-      return {
-        id: d.id,
-        name: d.name,
-        owner: d.owner?.email,
-        state: d.state,
-        hardwareID: d.hardwareId,
-        createdAt: new Date(d.created),
-        contactedAt: new Date(d.endpoint?.timestamp),
-        shared: loginId !== d.owner.id,
-        lastReported: d.lastReported && new Date(d.lastReported),
-        externalAddress: d.endpoint?.externalAddress,
-        internalAddress: d.endpoint?.internalAddress,
-        availability: d.endpoint?.availability,
-        instability: d.endpoint?.instability,
-        geo: d.endpoint?.geo,
-        services,
-        hidden,
-      }
-    }
+            sessions: s.sessions.map((e: any) => ({
+              timestamp: new Date(e.timestamp),
+              email: e.user?.email,
+            })),
+          }
+        }
+      ),
+      hidden,
+    })
   )
-
   return updateConnections(renameServices(data))
 }

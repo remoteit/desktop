@@ -14,7 +14,7 @@ import { LaunchButton } from '../../buttons/LaunchButton'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
-import { Throughput } from '../Throughput'
+import { Sessions } from '../Sessions'
 import { makeStyles } from '@material-ui/core/styles'
 import { colors, spacing } from '../../styling'
 
@@ -52,16 +52,11 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
           <OfflineButton service={service} />
         </div>
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
-        {connection && connection.active && <Throughput connection={connection} />}
-        <ErrorButton
-          className={css.error}
-          connection={connection}
-          onClick={() => setShowError(!showError)}
-          visible={showError}
-        />
-        <ListItemSecondaryAction className={css.actions + ' hidden'}>
+        <ListItemSecondaryAction className={css.actions}>
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
+          <Sessions service={service} />
+          <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
         </ListItemSecondaryAction>
       </ListItemLocation>
       <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
@@ -71,7 +66,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 
 const useStyles = makeStyles({
   indent: { paddingLeft: spacing.xxl },
-  actions: { right: 70, display: 'none' },
+  actions: { right: 70 },
   buttons: {
     width: 121,
     marginLeft: spacing.md,
@@ -82,5 +77,4 @@ const useStyles = makeStyles({
   },
   details: { '& > span': { marginLeft: spacing.xs } },
   restriction: { color: colors.grayDarker },
-  error: { marginRight: spacing.lg },
 })
