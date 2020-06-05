@@ -25,6 +25,7 @@ import { ErrorButton } from '../../buttons/ErrorButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
+import { Sessions } from '../../components/Sessions'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
@@ -69,10 +70,10 @@ export const ServicePage: React.FC = () => {
   data = data.concat([
     { label: 'Last reported', value: service.lastReported, format: 'duration' },
     { label: 'Service Name', value: service.name },
-    { label: 'Device Name', value: device.name },
-    { label: 'Owner', value: device.owner },
     { label: 'Remote Port', value: service.port },
     { label: 'Service Type', value: service.type },
+    { label: 'Device Name', value: device.name },
+    { label: 'Owner', value: device.owner },
     { label: 'Service ID', value: service.id },
   ])
 
@@ -96,6 +97,7 @@ export const ServicePage: React.FC = () => {
       }
     >
       <ServiceConnected connection={connection} service={service} />
+      <Sessions service={service} />
       <Columns center>
         <List>
           <PortSetting connection={connection} service={service} />

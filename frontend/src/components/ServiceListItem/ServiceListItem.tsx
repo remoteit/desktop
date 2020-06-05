@@ -11,10 +11,10 @@ import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { OfflineButton } from '../../buttons/OfflineButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
+import { SessionsIcon } from '../SessionsIcon'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
-import { Sessions } from '../Sessions'
 import { makeStyles } from '@material-ui/core/styles'
 import { colors, spacing } from '../../styling'
 
@@ -55,7 +55,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
         <ListItemSecondaryAction className={css.actions}>
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
-          <Sessions service={service} />
+          <SessionsIcon service={service} />
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
         </ListItemSecondaryAction>
       </ListItemLocation>

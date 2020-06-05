@@ -1,0 +1,1 @@
+export { SessionsIcon } from './SessionsIcon'
