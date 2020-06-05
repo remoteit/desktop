@@ -10,19 +10,22 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
 
   return (
     <List>
-      {data.map(item => (
-        <ListItem className={css.item} key={item.label}>
-          <span>
-            {item.label}:
-            {item.help && (
-              <Tooltip title={item.help}>
-                <Icon name="question-circle" weight="light" size="sm" inline />
-              </Tooltip>
-            )}
-          </span>
-          {(item.format ? formats[item.format](item.value) : item.value) || '-'}
-        </ListItem>
-      ))}
+      {data.map(
+        item =>
+          item.value && (
+            <ListItem className={css.item} key={item.label}>
+              <span>
+                {item.label}:
+                {item.help && (
+                  <Tooltip title={item.help}>
+                    <Icon name="question-circle" weight="light" size="sm" inline />
+                  </Tooltip>
+                )}
+              </span>
+              {(item.format ? formats[item.format](item.value) : item.value) || '-'}
+            </ListItem>
+          )
+      )}
     </List>
   )
 }

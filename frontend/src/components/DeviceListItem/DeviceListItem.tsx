@@ -1,4 +1,5 @@
 import React from 'react'
+import { IUser } from 'remote.it'
 import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
@@ -9,9 +10,10 @@ type Props = {
   device?: IDevice
   connections?: IConnection[]
   thisDevice?: boolean
+  user?: IUser
 }
 
-const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevice }) => {
+const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevice, user }) => {
   if (!device) return null
   return (
     <>
@@ -19,6 +21,7 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevi
         <ServiceMiniState
           key={service.id}
           service={service}
+          user={user}
           connection={connections.find(c => c.id === service.id)}
           pathname={`/devices/${device.id}/${service.id}`}
           disabled={thisDevice}
@@ -28,7 +31,7 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevi
   )
 }
 
-export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice }) => {
+export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, user }) => {
   const activeConnection = connections && connections.find(c => c.active)
 
   return (
@@ -41,7 +44,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
         secondary={thisDevice && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>
-        <ServiceIndicators device={device} connections={connections} thisDevice={thisDevice} />
+        <ServiceIndicators device={device} connections={connections} thisDevice={thisDevice} user={user} />
       </ListItemSecondaryAction>
     </ListItemLocation>
   )

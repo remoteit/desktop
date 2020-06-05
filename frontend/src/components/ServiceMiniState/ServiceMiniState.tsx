@@ -1,4 +1,5 @@
 import React from 'react'
+import { IUser } from 'remote.it'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Tooltip, IconButton } from '@material-ui/core'
@@ -10,16 +11,19 @@ interface Props {
   service?: IService
   pathname: string
   disabled?: boolean
+  user?: IUser
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathname, disabled }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathname, disabled, user }) => {
   const history = useHistory()
   const css = useStyles()
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'
   let title = state
-  let sessions = service?.sessions?.length
+  let sessions = service?.sessions?.reduce((count, session) => {
+    return session.email === user?.email ? count : ++count
+  }, 0)
 
   if (connection) {
     if (connection.pid && !connection.active) state = 'connecting'
@@ -47,12 +51,31 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
   }
 
   if (service) {
+    const list = service?.sessions?.reduce((list: string[], session, index, all) => {
+      console.log('SESSION', session.email)
+      if (index > 3) return list
+      if (index === 3) list.push(`and ${all.length - index} more`)
+      else session.email === user?.email ? list.unshift('You') : list.push(session.email)
+      return list
+    }, [])
+
     title = (
       <>
         {service.name}
         <br />
+        {list?.map(item => (
+          <>
+            {item}
+            <br />
+          </>
+        ))}
         {sessions ? `${sessions} connected` : state}
       </>
+      // <>
+      //   {service.name}
+      //   <br />
+      //   {sessions ? `${sessions} connected` : state}
+      // </>
     )
   }
 
@@ -65,7 +88,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
           disabled={disabled}
         >
           {sessions ? (
-            <Icon name="user" weight="solid" size="xs" color={colorName} fixedWidth />
+            <Icon name="user-friends" weight="solid" size="xs" color={colorName} fixedWidth />
           ) : (
             <span className={css.indicator} style={{ backgroundColor: colors[colorName] }} />
           )}
@@ -77,7 +100,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
 
 const useStyles = makeStyles({
   button: { padding: '8px 0' },
-  icon: { padding: '0 0 8px' },
+  icon: { padding: '2px 0 8px' },
   indicator: {
     height: 2,
     borderRadius: 2,
@@ -87,3 +110,12 @@ const useStyles = makeStyles({
     marginRight: 2,
   },
 })
+
+/* 
+
+One that has them all instead of one each.
+replace your username with you.
+
+List of people connected on service detail page
+
+*/
