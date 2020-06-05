@@ -84,8 +84,8 @@ class BinaryInstaller {
       // Too small to be the desktop app -> must be cli
       if (existsSync(file) && lstatSync(file).size < 30000000) {
         Logger.info('MIGRATING DEPRECATED BINARY', { file })
-        commands.push(`"${file}" service uninstall`)
-        commands.push(`"${file}" tools uninstall`)
+        commands.push(`"${file}" -j service uninstall`)
+        commands.push(`"${file}" -j tools uninstall`)
         toDelete.push(file)
       } else {
         Logger.info('DEPRECATED BINARY DOES NOT EXIST', { file })
