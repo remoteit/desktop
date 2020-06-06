@@ -66,7 +66,7 @@ export const ServicesPage: React.FC = () => {
             { label: 'Instability', value: device.instability, format: 'round', help: 'Average disconnects per day' },
             { label: 'Last reported', value: device.lastReported, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
-            { label: 'Connection type', value: device.geo?.connectionType },
+            { label: 'Connection type', value: device.geo.connectionType },
             { label: 'Location', value: device.geo, format: 'location' },
             { label: 'External IP address', value: device.externalAddress },
             { label: 'Internal IP address', value: device.internalAddress },

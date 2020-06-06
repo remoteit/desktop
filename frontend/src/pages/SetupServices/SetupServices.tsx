@@ -2,7 +2,8 @@ import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { CircularProgress, Tooltip, IconButton, Typography } from '@material-ui/core'
+import { CircularProgress, Tooltip, IconButton, Typography, Divider } from '@material-ui/core'
+import { NetworkScanLocation } from '../../components/NetworkScanLocation'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
@@ -75,6 +76,12 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
           </Typography>
         </>
       }
+      // footer={
+      //   <>
+      //     <Divider />
+      //     <NetworkScanLocation />
+      //   </>
+      // }
     >
       <Typography variant="subtitle1">Services</Typography>
       <section>

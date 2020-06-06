@@ -108,7 +108,6 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
 const useStyles = makeStyles({
   targets: {
     '&, & table': { width: '100%' },
-    '& table': { marginBottom: styles.spacing.lg },
     '& th:nth-child(3)': { width: 80 },
     '& td:nth-child(5),& td:nth-child(6)': { width: 50 },
     '& th': { textAlign: 'left' },
