@@ -72,7 +72,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
       target => (target.hostname === ip || (IP_PRIVATE === target.hostname && privateIP === ip)) && target.port === port
     )
   }
-  console.log('MATCH PATH', match)
+
   return (
     <>
       <Divider />

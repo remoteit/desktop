@@ -47,6 +47,7 @@ export default class Command {
 
     let result = ''
     this.log('EXEC', {
+      quiet: !this.onError,
       exec: this.toString(),
       admin: this.admin,
       headless: environment.isHeadless,

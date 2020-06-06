@@ -40,7 +40,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
       let name = interfaces[0].name
       interfaces.forEach(i => i.active && (name = i.name))
       ui.set({ scanInterface: name })
-      scan(name)
+      // scan(name) // don't auto scan
     }
   }, [interfaces, scanInterface, scan, ui])
 

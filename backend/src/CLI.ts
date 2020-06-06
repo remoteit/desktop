@@ -98,7 +98,7 @@ export default class CLI {
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec({ cmds: [`remove ${t.uid}`], admin: true, checkSignIn: true })
+    await this.exec({ cmds: [`remove --id ${t.uid}`], admin: true, checkSignIn: true })
     this.readTargets()
   }
 
