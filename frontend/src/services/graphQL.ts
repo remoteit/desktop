@@ -39,9 +39,16 @@ const DEVICE_SELECT = `{
       lastReported
       port
       type
+      access {
+        user {
+          email
+          created
+        }
+      }
       sessions {
         timestamp
         user {
+          id
           email
         }
       }
@@ -108,15 +115,24 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
             contactedAt: new Date(s.endpoint?.timestamp),
             name: s.name,
             port: s.port,
-            sessions: s.sessions.map((e: any) => ({
-              timestamp: new Date(e.timestamp),
+            access: s.access.map((e: any) => ({
               email: e.user?.email,
+              created: new Date(e.user?.created),
             })),
+            sessions: s.sessions.reduce((result: IUser[], e: any) => {
+              if (loginId !== e.user?.id)
+                result.push({
+                  timestamp: new Date(e.timestamp),
+                  email: e.user?.email,
+                })
+              return result
+            }, []),
           }
         }
       ),
       hidden,
     })
   )
+  console.log('DATA', data)
   return updateConnections(renameServices(data))
 }

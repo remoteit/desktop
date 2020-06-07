@@ -6,17 +6,16 @@ const MAX_SESSIONS_DISPLAY = 3
 
 interface Props {
   service?: IService
-  user?: IUser
   label?: boolean
 }
 
-export const SessionsTooltip: React.FC<Props> = ({ service, user, label, children }) => {
+export const SessionsTooltip: React.FC<Props> = ({ service, label, children }) => {
   if (!service) return null
 
   const list = service?.sessions?.reduce((list: string[], session, index, all) => {
     if (index > MAX_SESSIONS_DISPLAY) return list
     if (index === MAX_SESSIONS_DISPLAY) list.push(`...and ${all.length - index} more`)
-    else session.email === user?.email ? list.unshift('You') : list.push(session.email)
+    else list.push(session.email)
     return list
   }, [])
 
@@ -28,12 +27,13 @@ export const SessionsTooltip: React.FC<Props> = ({ service, user, label, childre
           {!!list?.length && (
             <>
               {label && <Divider />}
-              {list?.map(item => (
-                <>
+              {list?.map((item, index) => (
+                <span key={index}>
                   {item}
                   <br />
-                </>
+                </span>
               ))}
+              connected
             </>
           )}
         </>

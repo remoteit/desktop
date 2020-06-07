@@ -21,11 +21,11 @@ import { ConnectionLog } from '../../components/ConnectionLog'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
+import { UsersSelect } from '../../components/UsersSelect'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
-import { Sessions } from '../../components/Sessions'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
@@ -97,7 +97,6 @@ export const ServicePage: React.FC = () => {
       }
     >
       <ServiceConnected connection={connection} service={service} />
-      <Sessions service={service} />
       <Columns center>
         <List>
           <PortSetting connection={connection} service={service} />
@@ -112,6 +111,7 @@ export const ServicePage: React.FC = () => {
       </Columns>
       <Divider />
       <List>
+        <UsersSelect service={service} />
         <LanShareSelect connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
         <ConnectionLog connection={connection} />

@@ -202,12 +202,14 @@ declare global {
     connection?: IConnection
     typeID?: number
     port?: number
-    sessions?: session[]
+    sessions: IUser[]
+    access: IUser[]
   }
 
-  type session = {
-    timestamp: Date
+  type IUser = {
     email: string
+    timestamp?: Date
+    created?: Date
   }
 
   type gqlOptions = {

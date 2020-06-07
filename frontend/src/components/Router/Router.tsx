@@ -16,6 +16,7 @@ import { DevicesPage } from '../../pages/DevicesPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
+import { UsersPage } from '../../pages/UsersPage'
 import { LogPage } from '../../pages/LogPage'
 
 export const Router: React.FC = () => {
@@ -84,6 +85,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices/:deviceID/:serviceID/log">
         <LogPage />
+      </Route>
+      <Route path="/devices/:deviceID/:serviceID/users">
+        <UsersPage />
       </Route>
       <Route path="/devices/:deviceID/:serviceID">
         <ServicePage />

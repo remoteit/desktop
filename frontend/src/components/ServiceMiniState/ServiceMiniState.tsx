@@ -7,25 +7,19 @@ import { colors, spacing, Color } from '../../styling'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
 
-const MAX_SESSIONS_DISPLAY = 3
-
 interface Props {
   connection?: IConnection
   service?: IService
   pathname: string
   disabled?: boolean
-  user?: IUser
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathname, disabled, user }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathname, disabled }) => {
   const history = useHistory()
   const css = useStyles()
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'
-  let sessions = service?.sessions?.reduce((count, session) => {
-    return session.email === user?.email ? count : ++count
-  }, 0)
 
   if (connection) {
     if (connection.pid && !connection.active) state = 'connecting'
@@ -53,13 +47,13 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
   }
 
   return (
-    <SessionsTooltip service={service} user={user} label>
+    <SessionsTooltip service={service} label>
       <IconButton
-        className={sessions ? css.icon : css.button}
+        className={service?.sessions.length ? css.icon : css.button}
         onClick={() => history.push(pathname)}
         disabled={disabled}
       >
-        {sessions ? (
+        {service?.sessions.length ? (
           <Icon name="user" weight="solid" size="xs" color={colorName} fixedWidth />
         ) : (
           <span className={css.indicator} style={{ backgroundColor: colors[colorName] }} />

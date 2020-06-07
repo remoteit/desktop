@@ -42,11 +42,11 @@ const formats = {
   },
   location: (geo: IDevice['geo']) => {
     if (!geo) return null
-    return [geo.city, geo.stateName, geo.countryName].map(value => (
-      <>
+    return [geo.city, geo.stateName, geo.countryName].map((value, index) => (
+      <span key={index}>
         {value}
         <br />
-      </>
+      </span>
     ))
   },
 }

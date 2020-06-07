@@ -8,10 +8,10 @@ import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { ListItemLocation } from '../ListItemLocation'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
+import { SessionsButton } from '../../buttons/SessionsButton'
 import { OfflineButton } from '../../buttons/OfflineButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { SessionsIcon } from '../SessionsIcon'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
@@ -55,7 +55,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
         <ListItemSecondaryAction className={css.actions}>
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
-          <SessionsIcon service={service} />
+          <SessionsButton service={service} />
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
         </ListItemSecondaryAction>
       </ListItemLocation>
