@@ -177,11 +177,11 @@ declare global {
     availability: number
     instability: number
     geo: {
-      connectionType: string
-      countryName: string
-      stateName: string
-      city: string
-      isp: string
+      connectionType?: string
+      countryName?: string
+      stateName?: string
+      city?: string
+      isp?: string
     }
     createdAt: Date
     contactedAt: Date
