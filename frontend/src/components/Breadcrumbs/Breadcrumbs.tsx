@@ -70,6 +70,7 @@ const useStyles = makeStyles({
   header: {
     marginLeft: spacing.md,
     marginBottom: -spacing.xs,
+    '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
       color: colors.grayDarker,

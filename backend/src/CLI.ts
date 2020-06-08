@@ -98,7 +98,7 @@ export default class CLI {
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec({ cmds: [`remove ${t.uid}`], admin: true, checkSignIn: true })
+    await this.exec({ cmds: [`remove --id ${t.uid}`], admin: true, checkSignIn: true })
     this.readTargets()
   }
 
@@ -116,30 +116,24 @@ export default class CLI {
     this.read()
   }
 
+  signinString() {
+    return `-j signin --user ${user.username} --authhash ${user.authHash}`
+  }
+
   setupString(device: ITargetDevice) {
-    return `-j --manufacture-id ${environment.manufacturerDetails.product.appCode} setup "${device.name}"`
+    return `-j --manufacture-id ${environment.manufacturerDetails.product.appCode} setup --name "${device.name}"`
   }
 
   addString(t: ITarget) {
-    return `-j --manufacture-id ${environment.manufacturerDetails.product.appCode} add "${t.name}" ${t.port} --type ${
-      t.type
-    } --hostname ${t.hostname || '127.0.0.1'}`
+    return `-j --manufacture-id ${environment.manufacturerDetails.product.appCode} add --name "${t.name}" --port ${
+      t.port
+    } --type ${t.type} --hostname ${t.hostname || '127.0.0.1'}`
   }
 
   async delete() {
     if (!this.data.device.uid) return
     await this.exec({ cmds: ['-j teardown --yes'], admin: true, checkSignIn: true })
     this.read()
-  }
-
-  async stopService() {
-    if (this.isSignedOut(true)) return
-    await this.exec({ cmds: ['service stop'], admin: true, checkSignIn: true })
-  }
-
-  async startService() {
-    if (this.isSignedOut(true)) return
-    await this.exec({ cmds: ['service start'], admin: true, checkSignIn: true })
   }
 
   async restartService() {
@@ -156,12 +150,12 @@ export default class CLI {
 
   async signIn(admin?: boolean) {
     // if (!user.signedIn) return // can't sign in to cli if the user hasn't signed in yet - can remove because not trying to sudo install cli
-    await this.exec({ cmds: [`-j signin ${user.username} -a ${user.authHash}`], admin, checkSignIn: false })
+    await this.exec({ cmds: [this.signinString()], admin, checkSignIn: false })
     this.read()
   }
 
   async signOut(admin?: boolean) {
-    if (!this.isSignedOut(admin)) await this.exec({ cmds: ['signout'], checkSignIn: false, admin })
+    if (!this.isSignedOut(admin)) await this.exec({ cmds: ['-j signout'], checkSignIn: false, admin })
     this.read()
   }
 
@@ -203,7 +197,7 @@ export default class CLI {
 
     if (checkSignIn && this.isSignedOut(admin)) {
       readUser = true
-      cmds.unshift(`-j signin ${user.username} -a ${user.authHash}`)
+      cmds.unshift(this.signinString())
     }
     cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPath()}" ${cmd}`))
     if (!quiet) commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())

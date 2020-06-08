@@ -1,7 +1,7 @@
 import { colors, spacing, fontSizes } from './'
 import { createMuiTheme } from '@material-ui/core'
 
-const gutters = 28
+const gutters = 32
 export default createMuiTheme({
   palette: {
     primary: { main: colors.primary },
@@ -93,7 +93,7 @@ export default createMuiTheme({
         padding: `${spacing.xxs}px ${gutters}px`,
         borderBottom: `1px solid ${colors.grayLighter}`,
         minHeight: 50,
-        '& span + span': { marginLeft: spacing.md },
+        '& span + span': { marginLeft: spacing.lg },
       },
       h2: {
         fontSize: '1rem',

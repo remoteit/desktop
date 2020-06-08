@@ -2,9 +2,9 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { Body } from '../Body'
 
-type Props = { header: any; inset?: boolean; scrollbars?: boolean }
+type Props = { header: any; footer?: any; inset?: boolean; scrollbars?: boolean }
 
-export const Container: React.FC<Props> = ({ header, inset, scrollbars, children }) => {
+export const Container: React.FC<Props> = ({ header, footer, inset, scrollbars, children }) => {
   const css = useStyles()
   return (
     <div className={css.container}>
@@ -12,6 +12,7 @@ export const Container: React.FC<Props> = ({ header, inset, scrollbars, children
       <Body inset={inset} scrollbars={scrollbars}>
         {children}
       </Body>
+      {footer && <div>{footer}</div>}
     </div>
   )
 }
