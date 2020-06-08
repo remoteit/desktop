@@ -129,6 +129,10 @@ export default createMuiTheme({
       },
     },
     MuiDialogContent: { root: { margin: `${spacing.md}px ${gutters}px`, padding: 0 } },
-    MuiDialogActions: { root: { margin: `${spacing.md}px ${gutters}px`, padding: 0 } },
+    MuiTooltip: {
+      tooltip: {
+        '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 },
+      },
+    },
   },
 })

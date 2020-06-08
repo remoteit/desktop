@@ -88,7 +88,8 @@ export default createModel({
       const { errors } = gqlData?.data
 
       if (errors) {
-        dispatch.backend.set({ globalError: errors[0].message })
+        errors.forEach((error: Error) => console.warn('graphQL error:', error))
+        dispatch.backend.set({ globalError: 'GraphQL: ' + errors[0].message })
       }
 
       const login = gqlData?.data?.data?.login

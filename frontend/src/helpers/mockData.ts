@@ -11,6 +11,8 @@ export function service({ name = 'SSH', type = 'SSH', state = 'active', ...other
     type,
     deviceID: 'some-device-id',
     typeID: 30,
+    sessions: [],
+    access: [],
     ...other,
   }
 }
