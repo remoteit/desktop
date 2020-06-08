@@ -64,6 +64,7 @@ export const ServicesPage: React.FC = () => {
               help: 'Average time online per day',
             },
             { label: 'Instability', value: device.instability, format: 'round', help: 'Average disconnects per day' },
+            { label: 'Owner', value: device.owner },
             { label: 'Last reported', value: device.lastReported, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
             { label: 'Connection type', value: device.geo.connectionType },

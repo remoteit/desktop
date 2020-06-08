@@ -21,6 +21,7 @@ import { ConnectionLog } from '../../components/ConnectionLog'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
+import { UsersSelect } from '../../components/UsersSelect'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../buttons/CopyButton'
@@ -69,10 +70,10 @@ export const ServicePage: React.FC = () => {
   data = data.concat([
     { label: 'Last reported', value: service.lastReported, format: 'duration' },
     { label: 'Service Name', value: service.name },
-    { label: 'Device Name', value: device.name },
-    { label: 'Owner', value: device.owner },
     { label: 'Remote Port', value: service.port },
     { label: 'Service Type', value: service.type },
+    { label: 'Device Name', value: device.name },
+    { label: 'Owner', value: device.owner },
     { label: 'Service ID', value: service.id },
   ])
 
@@ -110,6 +111,7 @@ export const ServicePage: React.FC = () => {
       </Columns>
       <Divider />
       <List>
+        <UsersSelect service={service} />
         <LanShareSelect connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
         <ConnectionLog connection={connection} />

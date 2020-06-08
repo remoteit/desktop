@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { useLocation } from 'react-router-dom'
-import { ListItemIcon, Typography } from '@material-ui/core'
+import { ListItemIcon, ListItemText, Typography } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
@@ -12,7 +12,6 @@ type Props = {
 }
 
 export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
-  const css = useStyles()
   const location = useLocation()
   const shared = lanShared(connection)
   const disabled: boolean = connection?.active || service.state !== 'active'
@@ -22,16 +21,11 @@ export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
       <ListItemIcon>
         <Icon name="network-wired" color={color} size="md" weight="light" />
       </ListItemIcon>
-      <span className={css.text}>
-        <Typography variant="caption">Local Network Sharing</Typography>
-        <Typography variant="h2" color={color}>
-          {shared && 'On -'} {lanShareRestriction(connection)}
-        </Typography>
-      </span>
+      <ListItemText
+        primary="Local Network Sharing"
+        secondaryTypographyProps={{ color }}
+        secondary={(shared ? 'On -' : '') + lanShareRestriction(connection)}
+      />
     </ListItemLocation>
   )
 }
-
-const useStyles = makeStyles({
-  text: { flexGrow: 1 },
-})
