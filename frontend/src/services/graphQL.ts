@@ -133,6 +133,5 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
       hidden,
     })
   )
-  console.log('DATA', data)
   return updateConnections(renameServices(data))
 }

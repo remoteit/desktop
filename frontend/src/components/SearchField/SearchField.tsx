@@ -49,9 +49,11 @@ export const SearchField: React.FC = () => {
           </Tooltip>
         )}
         <Tooltip title="Search">
-          <IconButton type="submit" disabled={disabled}>
-            <Icon name="search" size="md" weight="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
-          </IconButton>
+          <span>
+            <IconButton type="submit" disabled={disabled}>
+              <Icon name="search" size="md" weight="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
+            </IconButton>
+          </span>
         </Tooltip>
       </div>
     </form>
