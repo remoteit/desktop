@@ -31,7 +31,7 @@ export const DeviceSetupItem: React.FC<{ thisDevice?: boolean }> = ({ thisDevice
   return (
     <ListItemLocation pathname="/settings/setup">
       <ListItemIcon>
-        <Icon name="hdd" size="md" weight="light" />
+        <Icon name="hdd" size="md" type="light" />
       </ListItemIcon>
       <ListItemText primary={title} secondary={subTitle} />
     </ListItemLocation>

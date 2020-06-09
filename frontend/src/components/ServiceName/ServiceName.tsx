@@ -29,7 +29,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared }) =>
       {!service && !connection ? 'No device found' : name}
       {shared && (
         <sup>
-          <Icon name="user-friends" size="xxxs" weight="solid" fixedWidth />
+          <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
         </sup>
       )}
     </span>

@@ -108,12 +108,12 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
               {loading ? (
                 <>
                   Loading
-                  <Icon name="spinner-third" spin={true} weight="regular" inline />
+                  <Icon name="spinner-third" spin={true} type="regular" inline />
                 </>
               ) : (
                 <>
                   Register
-                  <Icon name="check" weight="regular" inline />
+                  <Icon name="check" type="regular" inline />
                 </>
               )}
             </Button>

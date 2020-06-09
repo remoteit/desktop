@@ -46,7 +46,7 @@ export const DevicesPage = () => {
                   }}
                   disabled={fetching}
                 >
-                  <Icon name="sync" size="sm" weight="regular" />
+                  <Icon name="sync" size="sm" type="regular" />
                 </IconButton>
               </div>
             </Tooltip>

@@ -29,14 +29,14 @@ export function SignInPage() {
         <div className={css.link}>
           {secure ? (
             <div className={css.secure}>
-              <Icon name="lock" weight="solid" size="xs" inlineLeft /> Secure Session
+              <Icon name="lock" type="solid" size="xs" inlineLeft /> Secure Session
             </div>
           ) : (
             <div className={css.insecure}>
               <Typography variant="body2" align="center" gutterBottom>
                 On an insecure network?{' '}
                 <Link href={switchUrl}>
-                  <Icon name="lock" weight="solid" size="xs" inlineLeft inline />
+                  <Icon name="lock" type="solid" size="xs" inlineLeft inline />
                   Use secure session
                 </Link>
               </Typography>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { List, ListItem, ListItemIcon, ListItemText, Divider } from '@material-ui/core'
 import { Duration } from '../Duration'
+import { Platform } from '../Platform'
 import { Icon } from '../Icon'
 
 interface Props {
@@ -24,7 +25,7 @@ export const Users: React.FC<Props> = ({ service, connected }) => {
           return (
             <ListItem key={index}>
               <ListItemIcon>
-                <Icon name="user" weight="light" size="md" color={connected ? 'primary' : undefined} fixedWidth />
+                <Platform id={user.platform} connected={connected} />
               </ListItemIcon>
               {connected ? (
                 <ListItemText

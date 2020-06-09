@@ -27,7 +27,7 @@ export function Alert({ closable = true, onClose, className = '', children, type
 
   return (
     <div className={classes} {...props}>
-      <Icon name={icon} weight="solid" className="mr-md" />
+      <Icon name={icon} type="solid" className="mr-md" />
       {children}
       {closable && (
         <div className="ml-auto pl-md">

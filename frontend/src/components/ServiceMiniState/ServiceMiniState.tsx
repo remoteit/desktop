@@ -54,7 +54,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
         disabled={disabled}
       >
         {service?.sessions.length ? (
-          <Icon name="user" weight="solid" size="xs" color={colorName} fixedWidth />
+          <Icon name="user" type="solid" size="xs" color={colorName} fixedWidth />
         ) : (
           <span className={css.indicator} style={{ backgroundColor: colors[colorName] }} />
         )}

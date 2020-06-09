@@ -39,7 +39,7 @@ declare global {
     createdAt?: Date
   }
 
-  export type IconWeight = 'light' | 'regular' | 'solid'
+  export type IconType = 'light' | 'regular' | 'solid' | 'brands'
 
   /**
    * Action which are called by components that are wrapped

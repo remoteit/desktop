@@ -40,7 +40,7 @@ export const FilterButton: React.FC<{}> = () => {
           devices.fetch()
         }}
       >
-        <Icon name={icon} color={color} size="base" weight="regular" />
+        <Icon name={icon} color={color} size="base" type="regular" />
       </IconButton>
     </Tooltip>
   )

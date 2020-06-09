@@ -47,6 +47,9 @@ const DEVICE_SELECT = `{
       }
       sessions {
         timestamp
+        endpoint {
+          platform
+        }
         user {
           id
           email
@@ -119,14 +122,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
               email: e.user?.email,
               created: new Date(e.user?.created),
             })),
-            sessions: s.sessions.reduce((result: IUser[], e: any) => {
-              if (loginId !== e.user?.id)
-                result.push({
-                  timestamp: new Date(e.timestamp),
-                  email: e.user?.email,
-                })
-              return result
-            }, []),
+            sessions: processSessions(s.sessions, loginId),
           }
         }
       ),
@@ -134,4 +130,28 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
     })
   )
   return updateConnections(renameServices(data))
+
+  /* 
+    Sort and filter session data
+      - Sort by timestamp
+      - Filter out this user's sessions
+      - Combine same user sessions
+  */
+  function processSessions(response: any, loginId: string): IUser[] {
+    const dates = response.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
+    const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
+    const result = sorted.reduce((sessions: IUser[], e: any) => {
+      if (
+        loginId !== e.user?.id &&
+        !sessions.some(s => s.email === e.user?.email && s.platform === e.endpoint.platform)
+      )
+        sessions.push({
+          timestamp: e.timestamp,
+          email: e.user?.email,
+          platform: e.endpoint.platform,
+        })
+      return sessions
+    }, [])
+    return result
+  }
 }

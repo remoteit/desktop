@@ -11,7 +11,7 @@ export const NetworkScanLocation: React.FC = () => {
     <List>
       <ListItemLocation pathname={`${match.path}/network`}>
         <ListItemIcon>
-          <Icon name="wifi" size="md" weight="light" />
+          <Icon name="wifi" size="md" type="light" />
         </ListItemIcon>
         <ListItemText primary="Add from network" />
       </ListItemLocation>

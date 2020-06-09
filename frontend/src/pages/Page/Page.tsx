@@ -57,7 +57,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
             open={!!globalError}
             message={
               <>
-                <Icon name="exclamation-triangle" size="md" color="danger" weight="regular" fixedWidth inlineLeft />
+                <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
                 {globalError}
               </>
             }

@@ -71,7 +71,7 @@ export function ConnectionStateIcon({
       <span className={css.combo}>
         <Icon {...props} name="hdd" color="grayDarker" fixedWidth />
         <sup>
-          <Icon name={icon} color={colorName} spin={state === 'connecting'} size="sm" weight="regular" fixedWidth />
+          <Icon name={icon} color={colorName} spin={state === 'connecting'} size="sm" type="regular" fixedWidth />
         </sup>
       </span>
     )

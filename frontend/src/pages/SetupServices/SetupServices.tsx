@@ -62,7 +62,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <Icon name="hdd" size="lg" weight="light" color="grayDarker" fixedWidth />
+            <Icon name="hdd" size="lg" type="light" color="grayDarker" fixedWidth />
             <span className={css.title}>{device.name}</span>
             {setupDeletingDevice ? (
               <CircularProgress className={css.loading} size={styles.fontSizes.md} />

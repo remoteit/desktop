@@ -17,7 +17,7 @@ export const RestartButton: React.FC<RestartButtonProps> = ({ disabled = false, 
           color="primary"
           onClick={() => console.warn("unimplemented emit('service/restart', connection)")}
         >
-          <Icon name="redo" size="md" weight="regular" fixedWidth />
+          <Icon name="redo" size="md" type="regular" fixedWidth />
         </IconButton>
       </span>
     </Tooltip>

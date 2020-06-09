@@ -32,11 +32,11 @@ export const Throughput: React.FC<Props> = ({ connection, ...props }) => {
   return (
     <div className={css.data + ' hoverHide'} {...props}>
       <span>
-        <Icon name="arrow-up" color={sent ? 'primary' : 'gray'} weight="solid" size="sm" />
+        <Icon name="arrow-up" color={sent ? 'primary' : 'gray'} type="solid" size="sm" />
         {fileSize(sent)}ps
       </span>
       <span>
-        <Icon name="arrow-down" color={received ? 'primary' : 'gray'} weight="solid" size="sm" />
+        <Icon name="arrow-down" color={received ? 'primary' : 'gray'} type="solid" size="sm" />
         {fileSize(received)}ps
       </span>
     </div>
