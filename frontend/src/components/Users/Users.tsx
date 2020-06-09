@@ -18,6 +18,8 @@ export const Users: React.FC<Props> = ({ service, connected }) => {
     ? service.sessions
     : service.access.filter(user => !service.sessions.some(session => user.email === session.email))
 
+  if (!users.length) return null
+
   return (
     <>
       <List>

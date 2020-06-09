@@ -22,7 +22,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
                   </Tooltip>
                 )}
               </span>
-              {(item.format ? formats[item.format](item.value) : item.value) || '-'}
+              {item.format ? formats[item.format](item.value) : item.value}
             </ListItem>
           )
       )}
@@ -42,12 +42,15 @@ const formats = {
   },
   location: (geo: IDevice['geo']) => {
     if (!geo) return null
-    return [geo.city, geo.stateName, geo.countryName].map((value, index) => (
-      <span key={index}>
-        {value}
+    return (
+      <>
+        {geo.city}
         <br />
-      </span>
-    ))
+        {geo.stateName}
+        <br />
+        {geo.countryName}
+      </>
+    )
   },
 }
 
