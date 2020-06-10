@@ -61,7 +61,7 @@ export default class Command {
           : await execPromise(this.toString())
 
       if (stderr) {
-        this.log(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString() }, 'error')
+        this.log(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString().trim() }, 'error')
         AirBrake.notify({
           params: { type: 'COMMAND STDERR', command: this.toString() },
           error: stderr.toString(),
@@ -71,15 +71,15 @@ export default class Command {
       }
 
       if (stdout) {
-        this.log(`EXEC SUCCESS ${this.toString()}`, { stdout: stdout.toString() })
+        this.log(`EXEC SUCCESS ${this.toString()}`, { stdout: stdout.toString().trim() })
         result = stdout.toString()
       }
     } catch (error) {
       AirBrake.notify({
-        params: { type: 'COMMAND ERROR', command: this.toString() },
+        params: { type: 'COMMAND ERROR', command: this.toString().trim() },
         error,
       })
-      this.log(`EXEC ERROR CAUGHT ${this.toString()}`, { error, errorMessage: error.message }, 'error')
+      this.log(`EXEC ERROR CAUGHT ${this.toString().trim()}`, { error, errorMessage: error.message }, 'error')
       this.onError(error)
       result = error.toString()
     }

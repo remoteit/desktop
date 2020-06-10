@@ -65,8 +65,6 @@ export default createModel({
           return
         }
       }
-
-      console.log('Session still active')
     },
     async signIn({ password, username }) {
       dispatch.auth.signInStarted()
@@ -103,7 +101,7 @@ export default createModel({
       dispatch.auth.setAuthenticated(true)
     },
     async signInError(error: string) {
-      dispatch.auth.signInFinished()
+      dispatch.auth.signedOut()
       dispatch.auth.setError(error)
     },
     /**
@@ -112,6 +110,7 @@ export default createModel({
     signedOut() {
       analytics.clearIdentity()
       dispatch.auth.signOutFinished()
+      dispatch.auth.signInFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)

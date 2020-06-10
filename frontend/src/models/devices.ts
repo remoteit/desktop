@@ -66,7 +66,7 @@ export default createModel({
         console.error('Fetch error:', error, error.response)
         if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
           dispatch.backend.set({ globalError: error.message })
-          dispatch.auth.handleDisconnect()
+          dispatch.auth.checkSession()
         }
       }
 
