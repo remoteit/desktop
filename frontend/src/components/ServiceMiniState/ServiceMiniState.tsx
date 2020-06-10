@@ -10,13 +10,13 @@ import { Icon } from '../Icon'
 interface Props {
   connection?: IConnection
   service?: IService
-  pathname: string
   disabled?: boolean
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathname, disabled }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, disabled }) => {
   const history = useHistory()
   const css = useStyles()
+  const connected = !!service?.sessions.length
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'
@@ -49,12 +49,12 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, pathnam
   return (
     <SessionsTooltip service={service} label>
       <IconButton
-        className={service?.sessions.length ? css.icon : css.button}
-        onClick={() => history.push(pathname)}
+        className={connected ? css.icon : css.button}
+        onClick={() => history.push(`/devices/${service?.deviceID}/${service?.id}${connected ? '/users' : ''}`)}
         disabled={disabled}
       >
-        {service?.sessions.length ? (
-          <Icon name="user" weight="solid" size="xs" color={colorName} fixedWidth />
+        {connected ? (
+          <Icon name="user" type="solid" size="xs" color={colorName} fixedWidth />
         ) : (
           <span className={css.indicator} style={{ backgroundColor: colors[colorName] }} />
         )}

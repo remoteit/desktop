@@ -31,12 +31,12 @@ type Props = {
 type IInterfaceIcon = { [interfaceType in IInterfaceType]: any }
 
 const InterfaceIcon: IInterfaceIcon = {
-  Wireless: <Icon name="wifi" weight="regular" />,
-  Wired: <Icon name="ethernet" weight="regular" />,
-  FireWire: <Icon name="fire" weight="regular" />,
-  Thunderbolt: <Icon name="bolt" weight="regular" />,
-  Bluetooth: <Icon name="bluetooth-b" weight="regular" />,
-  Other: <Icon name="usb" weight="regular" />,
+  Wireless: <Icon name="wifi" type="regular" />,
+  Wired: <Icon name="ethernet" type="regular" />,
+  FireWire: <Icon name="fire" type="regular" />,
+  Thunderbolt: <Icon name="bolt" type="regular" />,
+  Bluetooth: <Icon name="bluetooth-b" type="regular" />,
+  Other: <Icon name="usb" type="regular" />,
 }
 
 export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, privateIP }) => {
@@ -90,7 +90,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
           <span key={row}>
             <ListItem button onClick={() => toggle(row)}>
               <ListItemIcon>
-                {ip[0] === privateIP ? <Icon name="hdd" weight="regular" /> : InterfaceIcon[interfaceType]}
+                {ip[0] === privateIP ? <Icon name="hdd" type="regular" /> : InterfaceIcon[interfaceType]}
               </ListItemIcon>
               <ListItemText primary={ip[0]} secondary={ip[0] === privateIP ? 'This system' : null} />
               <ListItemSecondaryAction>

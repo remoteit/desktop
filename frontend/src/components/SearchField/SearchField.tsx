@@ -44,14 +44,14 @@ export const SearchField: React.FC = () => {
                 devices.fetch()
               }}
             >
-              <Icon name="times" size="md" weight="light" color="grayDarker" fixedWidth />
+              <Icon name="times" size="md" type="light" color="grayDarker" fixedWidth />
             </IconButton>
           </Tooltip>
         )}
         <Tooltip title="Search">
           <span>
             <IconButton type="submit" disabled={disabled}>
-              <Icon name="search" size="md" weight="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
+              <Icon name="search" size="md" type="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
             </IconButton>
           </span>
         </Tooltip>

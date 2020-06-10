@@ -38,7 +38,7 @@ export const DynamicButton: React.FC<Props> = ({
   const IconComponent = (
     <Icon
       name={icon}
-      weight="regular"
+      type="regular"
       size={size === 'small' ? 'sm' : 'md'}
       color={size === 'icon' ? color : undefined}
       inline={size !== 'icon'}

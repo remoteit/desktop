@@ -19,7 +19,7 @@ export const SessionsButton: React.FC<Props> = ({ service }) => {
   return (
     <SessionsTooltip service={service}>
       <IconButton color="primary" onClick={() => history.push(`${location.pathname}/${service?.id}/users`)}>
-        <Icon name="user" weight="light" size="md" />
+        <Icon name="user" type="light" size="md" />
         <Typography className={css.label} variant="caption" color="textPrimary">
           {service?.sessions.length}
         </Typography>

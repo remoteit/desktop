@@ -72,7 +72,7 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
                     </span>
                   }
                 >
-                  <Icon name="question-circle" weight="light" size="sm" inline />
+                  <Icon name="question-circle" type="light" size="sm" inline />
                 </Tooltip>
               </InputLabel>
             </th>

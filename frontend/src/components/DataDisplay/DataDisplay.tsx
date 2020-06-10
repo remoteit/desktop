@@ -18,11 +18,11 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
                 {item.label}:
                 {item.help && (
                   <Tooltip title={item.help}>
-                    <Icon name="question-circle" weight="light" size="sm" inline />
+                    <Icon name="question-circle" type="light" size="sm" inline />
                   </Tooltip>
                 )}
               </span>
-              {(item.format ? formats[item.format](item.value) : item.value) || '-'}
+              {item.format ? formats[item.format](item.value) : item.value}
             </ListItem>
           )
       )}
@@ -42,12 +42,15 @@ const formats = {
   },
   location: (geo: IDevice['geo']) => {
     if (!geo) return null
-    return [geo.city, geo.stateName, geo.countryName].map((value, index) => (
-      <span key={index}>
-        {value}
+    return (
+      <>
+        {geo.city}
         <br />
-      </span>
-    ))
+        {geo.stateName}
+        <br />
+        {geo.countryName}
+      </>
+    )
   },
 }
 

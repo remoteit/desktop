@@ -6,7 +6,7 @@ export const EditButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   return (
     <Tooltip title="Edit">
       <IconButton onClick={() => onClick && onClick()}>
-        <Icon name="pen" size="md" weight="regular" fixedWidth />
+        <Icon name="pen" size="md" type="regular" fixedWidth />
       </IconButton>
     </Tooltip>
   )

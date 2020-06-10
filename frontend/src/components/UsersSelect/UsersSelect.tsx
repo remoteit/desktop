@@ -16,7 +16,7 @@ export const UsersSelect: React.FC<Props> = ({ service }) => {
   return (
     <ListItemLocation disabled={!service.access.length} pathname={location.pathname + '/users'}>
       <ListItemIcon>
-        <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" weight="light" />
+        <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
       </ListItemIcon>
       <ListItemText
         primary="Users"

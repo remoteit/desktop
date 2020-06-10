@@ -210,6 +210,7 @@ declare global {
     email: string
     timestamp?: Date
     created?: Date
+    platform?: number
   }
 
   type gqlOptions = {

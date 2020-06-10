@@ -21,7 +21,6 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevi
           key={service.id}
           service={service}
           connection={connections.find(c => c.id === service.id)}
-          pathname={`/devices/${device.id}/${service.id}`}
           disabled={thisDevice}
         />
       ))}

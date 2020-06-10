@@ -50,6 +50,9 @@ export const Router: React.FC = () => {
       <Route path="/connections/:serviceID/log">
         <LogPage />
       </Route>
+      <Route path="/connections/:serviceID/users">
+        <UsersPage />
+      </Route>
       <Route path="/connections/:serviceID">
         <ServicePage />
       </Route>

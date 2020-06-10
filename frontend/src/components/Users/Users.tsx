@@ -1,6 +1,7 @@
 import React from 'react'
 import { List, ListItem, ListItemIcon, ListItemText, Divider } from '@material-ui/core'
 import { Duration } from '../Duration'
+import { Platform } from '../Platform'
 import { Icon } from '../Icon'
 
 interface Props {
@@ -17,6 +18,8 @@ export const Users: React.FC<Props> = ({ service, connected }) => {
     ? service.sessions
     : service.access.filter(user => !service.sessions.some(session => user.email === session.email))
 
+  if (!users.length) return null
+
   return (
     <>
       <List>
@@ -24,7 +27,7 @@ export const Users: React.FC<Props> = ({ service, connected }) => {
           return (
             <ListItem key={index}>
               <ListItemIcon>
-                <Icon name="user" weight="light" size="md" color={connected ? 'primary' : undefined} fixedWidth />
+                <Platform id={user.platform} connected={connected} />
               </ListItemIcon>
               {connected ? (
                 <ListItemText
@@ -33,10 +36,7 @@ export const Users: React.FC<Props> = ({ service, connected }) => {
                   secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
                 />
               ) : (
-                <ListItemText
-                  primary={`${user.email}`}
-                  secondary={`Member since ${user.created?.toLocaleDateString(undefined, dateOptions)}`}
-                />
+                <ListItemText primary={`${user.email}`} />
               )}
             </ListItem>
           )

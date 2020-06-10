@@ -20,7 +20,7 @@ export const SettingsListItem: React.FC<Props> = ({ icon, label, subLabel, butto
   return (
     <ListItem button onClick={onClick} disabled={disabled} style={{ opacity: 1 }}>
       <ListItemIcon>
-        <Icon name={icon} size="md" weight="light" />
+        <Icon name={icon} size="md" type="light" />
       </ListItemIcon>
       <ListItemText primary={label} secondary={subLabel} />
       {(showToggle || showButton) && (

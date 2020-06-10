@@ -7,13 +7,6 @@ storiesOf('components', module)
   .addDecorator(withKnobs)
   .add('Icon', () => (
     <div className="my-xxl center">
-      <Icon
-        name={text('name', 'rocket')}
-        weight={select<IconWeight>(
-          'weight',
-          ['light', 'regular', 'solid'],
-          'light'
-        )}
-      />
+      <Icon name={text('name', 'rocket')} type={select<IconType>('weight', ['light', 'regular', 'solid'], 'light')} />
     </div>
   ))
