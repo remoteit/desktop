@@ -42,7 +42,6 @@ const DEVICE_SELECT = `{
       access {
         user {
           email
-          created
         }
       }
       sessions {
@@ -118,10 +117,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
             contactedAt: new Date(s.endpoint?.timestamp),
             name: s.name,
             port: s.port,
-            access: s.access.map((e: any) => ({
-              email: e.user?.email,
-              created: new Date(e.user?.created),
-            })),
+            access: s.access.map((e: any) => ({ email: e.user?.email })),
             sessions: processSessions(s.sessions, loginId),
           }
         }

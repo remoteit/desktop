@@ -36,10 +36,7 @@ export const Users: React.FC<Props> = ({ service, connected }) => {
                   secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
                 />
               ) : (
-                <ListItemText
-                  primary={`${user.email}`}
-                  secondary={`Member since ${user.created?.toLocaleDateString(undefined, dateOptions)}`}
-                />
+                <ListItemText primary={`${user.email}`} />
               )}
             </ListItem>
           )
