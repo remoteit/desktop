@@ -1,6 +1,6 @@
 {
   "name": "remoteit-headless",
-  "version": "2.6.0-alpha.3",
+  "version": "2.6.0",
   "private": true,
   "main": "build/index.js",
   "scripts": {
