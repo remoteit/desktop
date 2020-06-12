@@ -61,7 +61,7 @@ const DEVICE_SELECT = `{
 
 export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
   return await axios.request({
-    url: version.includes('alpha') ? GRAPHQL_API : GRAPHQL_BETA_API,
+    url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
     method: 'post',
     headers: { token: r3.token },
     data: {
