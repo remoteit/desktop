@@ -12,7 +12,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
     <List>
       {data.map(
         item =>
-          item.value && (
+          item.value != null && (
             <ListItem className={css.item} key={item.label}>
               <span>
                 {item.label}:
