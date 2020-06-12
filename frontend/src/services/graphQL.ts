@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { r3 } from '../services/remote.it'
+import { version } from '../../package.json'
 import { parseType } from '../services/serviceTypes'
 import { renameServices } from '../shared/nameHelper'
-import { GRAPHQL_API_URL } from '../shared/constants'
+import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
 const DEVICE_SELECT = `{
@@ -60,7 +61,7 @@ const DEVICE_SELECT = `{
 
 export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
   return await axios.request({
-    url: GRAPHQL_API_URL,
+    url: version.includes('alpha') ? GRAPHQL_API : GRAPHQL_BETA_API,
     method: 'post',
     headers: { token: r3.token },
     data: {
