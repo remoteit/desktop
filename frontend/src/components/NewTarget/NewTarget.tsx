@@ -28,7 +28,7 @@ export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
       <tr>
         <td colSpan={6} className={css.button}>
           <Button color="primary" variant="contained" onClick={() => history.push(`${match.path}/network`)}>
-            Network add
+            Add from Network
           </Button>
           <Link onClick={() => ui.set({ setupServicesNew: false })}>
             Add manually
