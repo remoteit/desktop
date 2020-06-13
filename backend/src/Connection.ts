@@ -245,10 +245,9 @@ export default class Connection extends EventEmitter {
       } else if (line.startsWith('!!request')) {
         event = events.request
       } else if (line.includes('!!exit')) {
-        event = events.error
         const match = line.match(REGEX_ERROR_CODE)
         if (match && match.length) this.handleClose(parseInt(match[1], 10))
-        return
+        // return
       } else if (line.includes('exit - process closed')) {
         event = events.disconnected
       } else if (line.includes('connecttunnel')) {

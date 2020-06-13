@@ -199,7 +199,7 @@ function getEventHandlers() {
       analytics.track('connectionFailed', context)
     },
     'service/status': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
-    'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),
+    'service/uptime': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/request': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/tunnel/opened': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
     'service/tunnel/closed': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
