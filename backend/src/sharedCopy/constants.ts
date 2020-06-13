@@ -26,6 +26,7 @@ export const REGEX_LAST_NUMBER = /-*\d*$/
 
 export const FRONTEND_RETRY_DELAY = 20000
 export const TARGET_SERVICES_LIMIT = 10
+export const MAX_NAME_LENGTH = 100
 
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',
