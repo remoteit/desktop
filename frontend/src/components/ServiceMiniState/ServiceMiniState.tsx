@@ -22,7 +22,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, disable
   let state = service ? service.state : 'unknown'
 
   if (connection) {
-    if (connection.pid && !connection.active) state = 'connecting'
+    if (connection.connecting && !connection.active) state = 'connecting'
     if (connection.active) state = 'connected'
   }
 

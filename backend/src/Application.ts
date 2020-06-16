@@ -69,8 +69,6 @@ export default class Application {
 
     // Catches ctrl+c event
     process.on('SIGINT', this.handleException)
-
-    // Catches "kill pid" (for example: nodemon restart)
     process.on('SIGUSR1', this.handleException)
     process.on('SIGUSR2', this.handleException)
   }

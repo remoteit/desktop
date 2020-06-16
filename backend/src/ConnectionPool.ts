@@ -1,4 +1,5 @@
 import debug from 'debug'
+import cli from './cliInterface'
 import electronInterface from './electronInterface'
 import Connection from './Connection'
 import EventBus from './EventBus'
@@ -8,7 +9,7 @@ import environment from './environment'
 import PortScanner from './PortScanner'
 import JSONFile from './JSONFile'
 
-const d = debug('r3:backend:ConnectionPool')
+const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
@@ -44,9 +45,18 @@ export default class ConnectionPool {
 
   // maintain auto start connections
   check = () => {
-    this.toJSON().map(connection => {
-      // start if auto start set, not running, has been started before and is online
-      if (connection.autoStart && !connection.pid && connection.startTime && connection.online) this.start(connection)
+    this.syncCLI()
+    // this.toJSON().map(connection => {
+    //   // start if auto start set, not running, has been started before and is online
+    //   if (connection.autoStart && connection.startTime && connection.online) this.start(connection)
+    // })
+  }
+
+  syncCLI = () => {
+    cli.data.connections.forEach(c => {
+      const connection = this.find(c.id)?.params || { startTime: Date.now() }
+      d('SYNC CLI CONNECTION', connection, c)
+      this.set({ ...connection, ...c })
     })
   }
 
@@ -102,7 +112,7 @@ export default class ConnectionPool {
   stopAll = async () => {
     d('STOPPING ALL CONNECTIONS')
     if (this.pool.length) {
-      await this.pool.map(async c => await c.stop())
+      await this.pool.forEach(async c => await c.stop())
       this.updated()
     }
   }
@@ -121,7 +131,7 @@ export default class ConnectionPool {
 
   toJSON = (): IConnection[] => {
     return this.pool
-      .map(c => c.toJSON())
+      .map(c => c.params)
       .sort((a, b) => {
         return this.sort(a.active, b.active) || this.sort(a.startTime, b.startTime)
       })

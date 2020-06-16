@@ -19,6 +19,7 @@ export const IP_PRIVATE: ipAddress = '127.0.0.1'
 export const REGEX_LAST_PATH = /\/[^/]+$/g
 export const REGEX_FIRST_PATH = /^\/(\w+)/g
 export const REGEX_NAME_SAFE = /[^a-zA-Z0-9_ -]/g
+export const REGEX_NOT_FILE_SAFE = /[\W]/g
 export const REGEX_IP_SAFE = /[^0-9.]+/g
 export const REGEX_PORT_SAFE = /[^0-9]+/g
 export const REGEX_NUMERIC_VALUE = /=(\d+)/

@@ -19,10 +19,12 @@ export class User {
   username: string
   authHash: string
   signedIn: boolean = false
+  // configFile: JSONFile<ConfigFile>
   private userFile: JSONFile<UserCredentials>
 
   constructor() {
     this.userFile = new JSONFile<UserCredentials>(path.join(environment.userPath, 'user.json'))
+    // this.configFile = new JSONFile<UserCredentials>(path.join(environment.userPath, 'user.json'))
     const user = this.userFile.read()
 
     d('Reading user credentials:', { user })

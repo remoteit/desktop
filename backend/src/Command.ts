@@ -8,7 +8,6 @@ import { sudoPromise } from './sudoPromise'
 const execPromise = promisify(exec)
 
 export default class Command {
-  name: string = 'remoteit'
   commands: string[] = []
   admin: boolean = false
   quiet: boolean = false
@@ -57,7 +56,7 @@ export default class Command {
     try {
       const { stdout, stderr } =
         this.admin && !environment.isHeadless && !environment.isElevated
-          ? await sudoPromise(this.toString(), { name: this.name })
+          ? await sudoPromise(this.toString())
           : await execPromise(this.toString())
 
       if (stderr) {

@@ -53,7 +53,6 @@ export function connection(name = 'Some service name', port = 33001): IConnectio
     port,
     owner: 'username',
     online: true,
-    // pid?: number
   }
 }
 
