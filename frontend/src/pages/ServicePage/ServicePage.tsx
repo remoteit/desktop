@@ -8,6 +8,7 @@ import { NameSetting } from '../../components/NameSetting'
 import { findService } from '../../models/devices'
 import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { ProxySetting } from '../../components/ProxySetting'
 import { UsernameSetting } from '../../components/UsernameSetting'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { ServiceConnected } from '../../components/ServiceConnected'
@@ -113,6 +114,7 @@ export const ServicePage: React.FC = () => {
       <List>
         <UsersSelect service={service} />
         <LanShareSelect connection={connection} service={service} />
+        <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
         <ConnectionLog connection={connection} />
       </List>

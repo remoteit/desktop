@@ -14,6 +14,7 @@ export function newConnection(service?: IService | null, data = {}) {
     deviceID: 'Unknown',
     autoStart: true,
     online: false,
+    failover: true,
   }
 
   if (service) {
