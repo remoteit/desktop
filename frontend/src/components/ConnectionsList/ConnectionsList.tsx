@@ -3,7 +3,7 @@ import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { ServiceListItem } from '../ServiceListItem'
-import { Typography, Link, List } from '@material-ui/core'
+import { Typography, Link, List, Divider } from '@material-ui/core'
 import styles from '../../styling'
 
 export interface Props {
@@ -14,6 +14,7 @@ export interface Props {
 export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   const history = useHistory()
   const css = useStyles()
+  let lastActive: boolean
 
   if (!connections || !connections.length) {
     return (
@@ -30,9 +31,18 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
     )
   }
 
+  const connected = connections.filter(c => c.active)
+  const recent = connections.filter(c => !c.active)
+
   return (
     <List>
-      {connections.map(c => (
+      {!!connected.length && <Typography variant="subtitle1">Connected</Typography>}
+      {connected.map(c => (
+        <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
+      ))}
+      {!!recent.length && !!connected.length && <Divider />}
+      {!!recent.length && <Typography variant="subtitle1">Recent</Typography>}
+      {recent.map(c => (
         <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
     </List>
