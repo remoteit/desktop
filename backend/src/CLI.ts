@@ -227,7 +227,7 @@ export default class CLI {
     if (!quiet) commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())
 
     result = await commands.exec()
-    if (readUser) this.readUser(admin)
+    if (readUser) this.readUser()
 
     return result
   }
