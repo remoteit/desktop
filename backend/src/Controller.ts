@@ -61,7 +61,6 @@ class Controller {
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('init', this.syncBackend)
-    socket.on('pool', this.connections)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -142,29 +141,22 @@ class Controller {
     this.io.emit('dataReady', true)
   }
 
-  connections = () => {
-    d('List connections')
-    this.io.emit('pool', this.pool.toJSON())
-  }
-
   connection = async (connection: IConnection) => {
-    d('Connection set:', connection)
-    await this.pool.set(connection)
+    await this.pool.set(connection, true)
   }
 
   connect = async (connection: IConnection) => {
-    Logger.info('Connect:', { connection })
-    d('Connect:', connection)
+    Logger.info('CONNECT', { id: connection.id })
     await this.pool.start(connection)
   }
 
   disconnect = async (connection: IConnection) => {
-    d('Disconnect Socket:', connection)
+    Logger.info('DISCONNECT', { id: connection.id })
     await this.pool.stop(connection, false)
   }
 
   forget = async (connection: IConnection) => {
-    d('Forget:', connection)
+    Logger.info('FORGET', { id: connection.id })
     await this.pool.forget(connection)
   }
 
@@ -182,10 +174,9 @@ class Controller {
     Logger.info('UNINSTALL INITIATED')
     this.uninstallInitiated = true
     await this.pool.reset()
-    await cli.delete()
+    await user.signOut()
     await cli.unInstall()
     await binaryInstaller.uninstall()
-    user.signOut()
     //frontend will emit user/sign-out-complete and then we will call exit
   }
 
