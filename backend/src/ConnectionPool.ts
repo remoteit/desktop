@@ -30,7 +30,7 @@ export default class ConnectionPool {
     Logger.info('Initializing connections pool', { length: connections.length })
 
     // load connection data
-    connections.map(c => this.set(c))
+    connections.map(async c => await this.set(c))
 
     // init freeport
     this.nextFreePort()
@@ -43,27 +43,35 @@ export default class ConnectionPool {
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
   }
 
-  // maintain auto start connections
-  check = () => {
-    this.syncCLI()
-    // this.toJSON().map(connection => {
-    //   // start if auto start set, not running, has been started before and is online
-    //   if (connection.autoStart && connection.startTime && connection.online) this.start(connection)
-    // })
-  }
-
   syncCLI = () => {
-    cli.data.connections.forEach(c => {
-      const connection = this.find(c.id)?.params || { startTime: Date.now() }
+    // move connections: cli -> desktop
+    cli.data.connections.forEach(async c => {
+      const connection = this.find(c.id)?.params
       d('SYNC CLI CONNECTION', connection, c)
-      this.set({ ...connection, ...c })
+      if (
+        connection &&
+        (connection.startTime !== c.startTime ||
+          connection.active !== c.active ||
+          connection.failover !== c.failover ||
+          connection.autoStart !== c.autoStart)
+      ) {
+        await this.set({ ...connection, ...c })
+      }
+    })
+    // start any connections: desktop -> cli
+    this.pool.forEach(connection => {
+      const cliConnection = cli.data.connections.find(c => c.id === connection.params.id)
+      if (!cliConnection && connection.params.active) connection.start()
     })
   }
 
-  set = (connection: IConnection) => {
+  check = this.syncCLI
+
+  // update single connection
+  set = async (connection: IConnection, setCLI?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
-    if (instance) instance.set(connection)
+    if (instance) await instance.set(connection, setCLI)
     else instance = this.add(connection)
     this.updated()
     return instance
@@ -84,7 +92,7 @@ export default class ConnectionPool {
   start = async (connection: IConnection) => {
     d('CONNECTING:', connection)
     if (!connection) return new Error('No connection data!')
-    const instance = this.set(connection)
+    const instance = await this.set(connection)
     if (!instance) return
     await this.assignPort(instance)
     await instance.start()
@@ -102,7 +110,7 @@ export default class ConnectionPool {
     const connection = this.find(id)
     if (connection) {
       const index = this.pool.indexOf(connection)
-      await connection.stop()
+      await connection.forget()
       this.pool.splice(index, 1)
       this.updated()
     }

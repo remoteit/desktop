@@ -25,9 +25,10 @@ export default class Connection extends EventEmitter {
     this.set(connection)
   }
 
-  set({ host = IP_PRIVATE, restriction = IP_OPEN, ...connection }: IConnection) {
+  async set({ host = IP_PRIVATE, restriction = IP_OPEN, ...connection }: IConnection, setCLI?: boolean) {
     this.params = { host, restriction, ...connection }
     Logger.info('SET CONNECTION', { params: this.params })
+    if (setCLI) await cli.setConnection(this.params)
   }
 
   async start() {
@@ -46,23 +47,27 @@ export default class Connection extends EventEmitter {
 
     EventBus.emit(Connection.EVENTS.started, { connection: this.params, raw: 'Connection started' })
 
-    await cli.addConnection(this.params)
-
     this.params.active = true
     this.params.connecting = false
+    await cli.addConnection(this.params)
+
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
   async stop(autoStart?: boolean) {
-    // If the user manually stops a connection, we assume they
-    // don't want it to automatically start on future connections.
+    // manually stopped don't auto start future connections
     if (autoStart !== undefined) this.params.autoStart = autoStart
 
     d('Stopping service:', this.params.id)
 
-    await cli.removeConnection(this.params)
     this.params.active = false
     this.params.endTime = Date.now()
+
+    await cli.setConnection(this.params)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
+  }
+
+  async forget() {
+    await cli.removeConnection(this.params)
   }
 }
