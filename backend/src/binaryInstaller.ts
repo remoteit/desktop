@@ -1,6 +1,7 @@
 import tmp from 'tmp'
 import cli from './cliInterface'
 import rimraf from 'rimraf'
+import strings from './cliStrings'
 import EventBus from './EventBus'
 import environment from './environment'
 import preferences from './preferences'
@@ -59,9 +60,10 @@ class BinaryInstaller {
         commands.push(`chmod 755 ${installer.binaryPath()}`) // @TODO if this is going in the user folder must have user permissions
       }
 
-      commands.push(`"${installer.binaryPath()}" -j tools install --update`)
-      commands.push(`"${installer.binaryPath()}" -j service uninstall`)
-      commands.push(`"${installer.binaryPath()}" -j service install`)
+      commands.push(`"${installer.binaryPath()}" ${strings.toolsInstall()}`)
+      commands.push(`"${installer.binaryPath()}" ${strings.serviceUninstall()}`)
+      commands.push(`"${installer.binaryPath()}" ${strings.serviceInstall()}`)
+      commands.push(`"${installer.binaryPath()}" ${strings.signIn()}`)
 
       await commands.exec()
       tmpDir.removeCallback()
@@ -84,8 +86,8 @@ class BinaryInstaller {
       // Too small to be the desktop app -> must be cli
       if (existsSync(file) && lstatSync(file).size < 30000000) {
         Logger.info('MIGRATING DEPRECATED BINARY', { file })
-        commands.push(`"${file}" -j service uninstall`)
-        commands.push(`"${file}" -j tools uninstall`)
+        commands.push(`"${file}" ${strings.serviceUninstall()}`)
+        commands.push(`"${file}" ${strings.toolsUninstall()}`)
         toDelete.push(file)
       } else {
         Logger.info('DEPRECATED BINARY DOES NOT EXIST', { file })
