@@ -16,7 +16,7 @@ const consoleFormat = printf(p => {
   delete p.timestamp
   delete p.level
   delete p.message
-  return `[${level}] ${timestamp} ${message} ${JSON.stringify(p, null, 4)}`
+  return `${message} ${level} ${timestamp} ${JSON.stringify(p, null, 4)}`
 })
 
 const transports = [
