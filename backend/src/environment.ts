@@ -75,6 +75,10 @@ export class Environment {
     }
   }
 
+  get appCode() {
+    return this.manufacturerDetails.product.appCode
+  }
+
   recapitate() {
     this.isHeadless = false
     this.manufacturerDetails.product.appCode = MANUFACTURE_ID_STANDARD
