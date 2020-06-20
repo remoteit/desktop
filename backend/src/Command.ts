@@ -1,4 +1,5 @@
 import AirBrake from './AirBrake'
+import user from './User'
 import Logger from './Logger'
 import environment from './environment'
 import { promisify } from 'util'
@@ -8,7 +9,6 @@ import { sudoPromise } from './sudoPromise'
 const execPromise = promisify(exec)
 
 export default class Command {
-  name: string = 'remoteit'
   commands: string[] = []
   admin: boolean = false
   quiet: boolean = false
@@ -48,7 +48,7 @@ export default class Command {
     let result = ''
     this.log('EXEC', {
       quiet: !this.onError,
-      exec: this.toString(),
+      exec: this.toString().replace(user.authHash, 'CLEANED'),
       admin: this.admin,
       headless: environment.isHeadless,
       elevated: environment.isElevated,
@@ -57,13 +57,13 @@ export default class Command {
     try {
       const { stdout, stderr } =
         this.admin && !environment.isHeadless && !environment.isElevated
-          ? await sudoPromise(this.toString(), { name: this.name })
+          ? await sudoPromise(this.toString())
           : await execPromise(this.toString())
 
       if (stderr) {
-        this.log(`EXEC *** ERROR *** ${this.toString()}`, { stderr: stderr.toString().trim() }, 'error')
+        this.log(`EXEC *** ERROR ***`, { stderr: stderr.toString().trim() }, 'error')
         AirBrake.notify({
-          params: { type: 'COMMAND STDERR', command: this.toString() },
+          params: { type: 'COMMAND STDERR', exec: this.toString() },
           error: stderr.toString(),
         })
         result = this.parseCliErrors(stderr)
@@ -71,15 +71,15 @@ export default class Command {
       }
 
       if (stdout) {
-        this.log(`EXEC SUCCESS ${this.toString()}`, { stdout: stdout.toString().trim() })
+        this.log(`EXEC SUCCESS`, { stdout: stdout.toString().trim() })
         result = stdout.toString()
       }
     } catch (error) {
       AirBrake.notify({
-        params: { type: 'COMMAND ERROR', command: this.toString().trim() },
+        params: { type: 'COMMAND ERROR', exec: this.toString() },
         error,
       })
-      this.log(`EXEC ERROR CAUGHT ${this.toString().trim()}`, { error, errorMessage: error.message }, 'error')
+      this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorMessage: error.message }, 'error')
       this.onError(error)
       result = error.toString()
     }

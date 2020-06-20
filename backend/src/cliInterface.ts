@@ -15,7 +15,7 @@ class CLIInterface extends CLI {
           await this.register(value)
           Logger.info('REGISTER ' + value.name)
         } else if (value === 'DELETE') {
-          await this.delete()
+          await this.unregister()
           Logger.info('DELETE ' + this.data.device.name)
         }
         break

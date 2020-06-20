@@ -1,4 +1,5 @@
 import app from '.'
+import cli from './cliInterface'
 import debug from 'debug'
 import EventBus from './EventBus'
 import express, { Express } from 'express'
@@ -94,7 +95,7 @@ class Server {
 
     // Signed in
     if (user.is(credentials)) {
-      d('User authenticated.')
+      d('User authenticated')
       user.authenticated()
       return callback(null, true)
     }
@@ -105,15 +106,24 @@ class Server {
     }
     // Sign in
     else if (credentials.username && credentials.authHash) {
+      const { admin } = cli.data
       d('User signing in!')
-      if (user.signedIn) {
-        // Allow device owner to kick out others
-        if (user.isDeviceOwner(credentials)) user.signOut()
-        else return callback(new Error(`${user.username} is already logged in.`), false)
+
+      // Not registered or signed in matches cli user
+      if (!admin || !admin.username || credentials.username === admin.username) {
+        return callback(null, await !!user.checkSignIn(credentials))
       }
-      return callback(null, await !!user.checkSignIn(credentials))
+      // User not allowed
+      else {
+        return callback(
+          new Error(
+            `This device is registered to ${admin.username}. They must unregister this device and sign out to grant access.`
+          ),
+          false
+        )
+      }
     }
-    // Deny
+    // No user
     else {
       d('Authentication failed')
       return callback(new Error('Server authentication failed.'), false)

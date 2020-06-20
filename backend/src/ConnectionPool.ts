@@ -1,4 +1,5 @@
 import debug from 'debug'
+import cli from './cliInterface'
 import electronInterface from './electronInterface'
 import Connection from './Connection'
 import EventBus from './EventBus'
@@ -8,7 +9,7 @@ import environment from './environment'
 import PortScanner from './PortScanner'
 import JSONFile from './JSONFile'
 
-const d = debug('r3:backend:ConnectionPool')
+const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
@@ -29,7 +30,7 @@ export default class ConnectionPool {
     Logger.info('Initializing connections pool', { length: connections.length })
 
     // load connection data
-    connections.map(c => this.set(c))
+    connections.map(async c => await this.set(c))
 
     // init freeport
     this.nextFreePort()
@@ -42,18 +43,35 @@ export default class ConnectionPool {
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
   }
 
-  // maintain auto start connections
-  check = () => {
-    this.toJSON().map(connection => {
-      // start if auto start set, not running, has been started before and is online
-      if (connection.autoStart && !connection.pid && connection.startTime && connection.online) this.start(connection)
+  syncCLI = () => {
+    // move connections: cli -> desktop
+    cli.data.connections.forEach(async c => {
+      const connection = this.find(c.id)?.params
+      d('SYNC CLI CONNECTION', connection, c)
+      if (
+        !connection ||
+        connection.startTime !== c.startTime ||
+        connection.active !== c.active ||
+        connection.failover !== c.failover ||
+        connection.autoStart !== c.autoStart
+      ) {
+        await this.set({ ...connection, ...c })
+      }
+    })
+    // start any connections: desktop -> cli
+    this.pool.forEach(connection => {
+      const cliConnection = cli.data.connections.find(c => c.id === connection.params.id)
+      if (!cliConnection && connection.params.active) connection.start()
     })
   }
 
-  set = (connection: IConnection) => {
+  check = this.syncCLI
+
+  // update single connection
+  set = async (connection: IConnection, setCLI?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
-    if (instance) instance.set(connection)
+    if (instance) await instance.set(connection, setCLI)
     else instance = this.add(connection)
     this.updated()
     return instance
@@ -74,7 +92,7 @@ export default class ConnectionPool {
   start = async (connection: IConnection) => {
     d('CONNECTING:', connection)
     if (!connection) return new Error('No connection data!')
-    const instance = this.set(connection)
+    const instance = await this.set(connection)
     if (!instance) return
     await this.assignPort(instance)
     await instance.start()
@@ -92,7 +110,7 @@ export default class ConnectionPool {
     const connection = this.find(id)
     if (connection) {
       const index = this.pool.indexOf(connection)
-      await connection.stop()
+      await connection.forget()
       this.pool.splice(index, 1)
       this.updated()
     }
@@ -102,7 +120,7 @@ export default class ConnectionPool {
   stopAll = async () => {
     d('STOPPING ALL CONNECTIONS')
     if (this.pool.length) {
-      await this.pool.map(async c => await c.stop())
+      await this.pool.forEach(async c => await c.stop())
       this.updated()
     }
   }
@@ -121,7 +139,7 @@ export default class ConnectionPool {
 
   toJSON = (): IConnection[] => {
     return this.pool
-      .map(c => c.toJSON())
+      .map(c => c.params)
       .sort((a, b) => {
         return this.sort(a.active, b.active) || this.sort(a.startTime, b.startTime)
       })
@@ -135,20 +153,12 @@ export default class ConnectionPool {
     let lastPort = usedPorts.sort((a, b) => b - a)[0] || PEER_PORT_RANGE[0]
     if (lastPort >= PEER_PORT_RANGE[1]) lastPort = PEER_PORT_RANGE[0]
     this.freePort = await PortScanner.findFreePortInRange(lastPort, PEER_PORT_RANGE[1], usedPorts)
-    Logger.info('nextFreePort', { freePort: this.freePort, lastPort, usedPorts })
+    Logger.info('NEXT_FREE_PORT', { freePort: this.freePort, lastPort, usedPorts })
     return this.freePort
   }
 
   private assignPort = async (connection: Connection) => {
-    const { port } = connection.params
-    if (port) {
-      if (!(await PortScanner.isPortFree(port))) {
-        connection.params.error = { message: `Port ${port} is in use.` }
-      }
-    } else {
-      connection.params.port = await this.nextFreePort()
-    }
-
+    if (!connection.params.port) connection.params.port = await this.nextFreePort()
     if (!connection.params.port) throw new Error('No port could be assigned to connection!')
   }
 

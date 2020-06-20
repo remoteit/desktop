@@ -110,14 +110,14 @@ declare global {
     name: string
     owner: string
     deviceID: string
-    online: boolean
-    pid?: number
+    online: boolean // online if service is online
     port?: number
-    active?: boolean
+    active?: boolean // active if connected
     host?: ipAddress // Bind address
     typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address
     autoStart?: boolean
+    failover?: boolean // allow proxy failover
     connecting?: boolean
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template

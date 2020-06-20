@@ -12,6 +12,5 @@ export const Duration: React.FC<{ startTime?: number; ago?: boolean }> = ({ star
 
   if (!startTime) return null
   const duration = Math.round((now - startTime) / 1000) * 1000
-
-  return <>{duration > aDay ? new Date(startTime).toLocaleString() : humanize(duration) + (ago ? ' ago' : '')}</>
+  return <>{(duration > aDay ? new Date(startTime).toLocaleString() : humanize(duration)) + (ago ? ' ago' : '')}</>
 }

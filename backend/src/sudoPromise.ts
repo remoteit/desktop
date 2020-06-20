@@ -1,10 +1,9 @@
-import * as sudo from 'sudo-prompt'
+import { exec } from 'sudo-prompt'
 
-export const sudoPromise = async (command: string, options: any): Promise<{ stdout: string; stderr: string }> => {
-  return new Promise(async (resolve, reject) => {
-    sudo.exec(command, options, (error, stdout, stderr) => {
+export const sudoPromise = async (command: string): Promise<{ stdout: string; stderr: string }> =>
+  new Promise(async (resolve, reject) =>
+    exec(command, { name: 'remoteit' }, (error, stdout, stderr) => {
       if (error) reject(error)
       resolve({ stdout, stderr })
     })
-  })
-}
+  )

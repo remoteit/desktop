@@ -198,16 +198,7 @@ function getEventHandlers() {
       }
       analytics.track('connectionFailed', context)
     },
-    'service/status': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
-    'service/uptime': (msg: ConnectionMessage) => console.log('service/uptime', msg),
-    'service/request': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
-    'service/tunnel/opened': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
-    'service/tunnel/closed': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
-    'service/version': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
-    'service/unknown-event': (msg: ConnectionMessage) => logs.add({ id: msg.connection.id, log: msg.raw }),
-    // 'service/throughput': (msg: ConnectionMessage) => console.log('service/throughput', msg),
 
-    // muxer binary
     'binary/install/error': (error: string) => binaries.installError(error),
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),

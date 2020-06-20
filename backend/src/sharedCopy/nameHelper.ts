@@ -5,7 +5,7 @@
   ONLY EDIT THE SOURCE FILE IN frontend
 */
 
-import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, IP_PRIVATE, IP_OPEN } from './constants'
+import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, REGEX_NOT_FILE_SAFE, IP_PRIVATE, IP_OPEN } from './constants'
 import { getEnvironment } from '../sharedAdaptor'
 
 const separator = ' - '
@@ -65,4 +65,8 @@ export function osName(os?: Ios) {
     rpi: 'Raspberry Pi',
   }
   return os ? name[os] : 'system'
+}
+
+export function safeFilename(name: string) {
+  return name.replace(REGEX_NOT_FILE_SAFE, '-')
 }

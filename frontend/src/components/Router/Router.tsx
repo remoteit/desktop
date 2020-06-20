@@ -37,7 +37,7 @@ export const Router: React.FC = () => {
 
   useEffect(() => {
     if (dataReady) {
-      if (!device.name && !isElectron()) history.push('/settings/setupDevice')
+      if (!isElectron()) history.push('/settings/setupDevice')
       else history.push('/')
     }
   }, [dataReady])

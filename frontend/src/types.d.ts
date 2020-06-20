@@ -66,11 +66,10 @@ declare global {
 }
 
 declare module 'remote.it' {
-  export interface IService {
-    connecting?: boolean
-    port?: number
-    pid?: number
-  }
+  // export interface IService {
+  //   connecting?: boolean
+  //   port?: number
+  // }
 }
 
 export {}

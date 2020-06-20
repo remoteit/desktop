@@ -30,7 +30,7 @@ export function ConnectionStateIcon({
   state = state || service?.state
 
   if (connection) {
-    if (connection.pid && !connection.active) state = 'connecting'
+    if (connection.connecting && !connection.active) state = 'connecting'
     if (connection.active) state = 'connected'
   }
 

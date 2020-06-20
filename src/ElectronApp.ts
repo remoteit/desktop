@@ -74,6 +74,8 @@ export default class ElectronApp {
       width: 800,
       height: 600,
       maxWidth: 1000,
+      minWidth: 525,
+      minHeight: 325,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
       titleBarStyle: 'hiddenInset',
       frame: !environment.isMac,

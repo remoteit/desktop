@@ -32,7 +32,7 @@ export const SettingsPage = () => {
     window.confirm('Are you sure? Quitting will close all active connections.') && emit('user/quit')
   const signOutWarning = () => {
     window.confirm(
-      'Are you sure? Signing out will close all active connections, but leave the hosted services running.'
+      'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
     ) && emit('user/sign-out')
     analytics.track('signOut')
     analytics.clearIdentity()

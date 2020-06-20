@@ -19,10 +19,12 @@ export class User {
   username: string
   authHash: string
   signedIn: boolean = false
+  // configFile: JSONFile<ConfigFile>
   private userFile: JSONFile<UserCredentials>
 
   constructor() {
     this.userFile = new JSONFile<UserCredentials>(path.join(environment.userPath, 'user.json'))
+    // this.configFile = new JSONFile<UserCredentials>(path.join(environment.userPath, 'user.json'))
     const user = this.userFile.read()
 
     d('Reading user credentials:', { user })
@@ -45,11 +47,6 @@ export class User {
     return user.username === this.username && user.authHash === this.authHash
   }
 
-  isDeviceOwner(user: UserCredentials) {
-    const { admin } = cli.data
-    return admin && user.username === admin.username
-  }
-
   authenticated() {
     this.signedIn = true
     EventBus.emit(User.EVENTS.signedIn, this.credentials)
@@ -68,7 +65,7 @@ export class User {
     const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
     Logger.info('User', { username: user.username })
-    d('User signed in: %O', user)
+    d('User signed in', user)
 
     if (!user) return false
 
@@ -86,11 +83,10 @@ export class User {
     return user
   }
 
-  signOut = () => {
+  signOut = async () => {
     Logger.info('SIGN OUT USER')
 
     this.userFile.remove()
-
     this.username = ''
     this.authHash = ''
     this.signedIn = false
@@ -98,9 +94,9 @@ export class User {
     EventBus.emit(User.EVENTS.signedOut)
   }
 
-  clearAll = () => {
+  clearAll = async () => {
     this.signOut()
-    cli.signOut(true)
+    await cli.signOut()
   }
 }
 

@@ -20,7 +20,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   color = 'success',
 }) => {
   const hidden = connection?.active || !service || service.state !== 'active'
-  const connecting = !!connection?.pid
+  const connecting = !!connection?.connecting
   const connect = () => {
     let theConnection = connection || newConnection(service)
     let context = {

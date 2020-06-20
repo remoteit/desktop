@@ -8,7 +8,7 @@ export type RestartButtonProps = {
 }
 
 export const RestartButton: React.FC<RestartButtonProps> = ({ disabled = false, connection }) => {
-  if (!connection || connection.connecting || connection.pid) return null
+  if (!connection || connection.connecting || connection.connecting) return null
   return (
     <Tooltip title="Re-connect">
       <span>

@@ -25,7 +25,6 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
           data={[
             { label: 'Connection URL', value: connection && hostName(connection) },
             { label: 'Duration', value: connection && <Duration startTime={connection.startTime} /> },
-            // { label: 'Throughput', value: connection && <Throughput connection={connection} /> },
           ]}
         />
         <div>

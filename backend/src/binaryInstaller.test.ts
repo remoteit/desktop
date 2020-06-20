@@ -2,6 +2,7 @@ import binaryInstaller from './binaryInstaller'
 import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import environment from './environment'
+import user from './User'
 import Command from './Command'
 import rimraf from 'rimraf'
 import tmp from 'tmp'
@@ -41,8 +42,11 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j tools install --update')
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j service uninstall')
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j service install')
+      expect(commandSpy).toBeCalledWith(
+        `"../jest/bin/remoteit" -j signin --user ${user.username} --authhash ${user.authHash}`
+      )
 
-      expect(commandSpy).toBeCalledTimes(6)
+      expect(commandSpy).toBeCalledTimes(7)
       expect(downloadSpy).toBeCalledTimes(1)
     })
 
@@ -56,9 +60,11 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toBeCalledWith('icacls "../jest/bin/remoteit.exe" /T /C /Q /grant "*S-1-5-32-545:RX"')
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j tools install --update')
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j service uninstall')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j service install')
+      expect(commandSpy).toBeCalledWith(
+        `"../jest/bin/remoteit.exe" -j signin --user ${user.username} --authhash ${user.authHash}`
+      )
 
-      expect(commandSpy).toBeCalledTimes(6)
+      expect(commandSpy).toBeCalledTimes(7)
       expect(downloadSpy).toBeCalledTimes(1)
     })
   })
