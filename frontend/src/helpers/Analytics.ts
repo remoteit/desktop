@@ -2,6 +2,8 @@ import { version } from '../../package.json'
 
 ///  <reference types="@types/google.analytics" />
 
+export const CONNECTION_TYPE_FAILOVER = 'failover'
+
 export class Analytics {
   private context: SegmentContext
   private gaAppSet: boolean

@@ -3,7 +3,7 @@ import { emit } from '../../services/Controller'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
-import analytics from '../../helpers/Analytics'
+import analytics, { CONNECTION_TYPE_FAILOVER } from '../../helpers/Analytics'
 
 type Props = {
   disabled?: boolean
@@ -31,13 +31,12 @@ export const DisconnectButton: React.FC<Props> = ({
           disabled={disabled}
           size={size}
           onClick={() => {
-            let context = {
-              connectionType: 'peer',
+            analytics.track('connectionClosed', {
+              connectionType: CONNECTION_TYPE_FAILOVER,
               serviceId: service?.id,
               serviceName: service?.name,
               serviceType: service?.typeID,
-            }
-            analytics.track('connectionClosed', context)
+            })
             emit('service/disconnect', connection)
           }}
         />

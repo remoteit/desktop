@@ -4,7 +4,7 @@ import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
-import analytics from '../../helpers/Analytics'
+import analytics, { CONNECTION_TYPE_FAILOVER } from '../../helpers/Analytics'
 
 export type ConnectButtonProps = {
   connection?: IConnection
@@ -23,13 +23,12 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const connecting = !!connection?.pid
   const connect = () => {
     let theConnection = connection || newConnection(service)
-    let context = {
-      connectionType: 'peer',
+    analytics.track('connectionInitiated', {
+      connectionType: CONNECTION_TYPE_FAILOVER,
       serviceId: service?.id,
       serviceName: service?.name,
       serviceType: service?.typeID,
-    }
-    analytics.track('connectionInitiated', context)
+    })
     emit('service/connect', theConnection)
   }
 
