@@ -49,11 +49,11 @@ export default class ConnectionPool {
       const connection = this.find(c.id)?.params
       d('SYNC CLI CONNECTION', connection, c)
       if (
-        connection &&
-        (connection.startTime !== c.startTime ||
-          connection.active !== c.active ||
-          connection.failover !== c.failover ||
-          connection.autoStart !== c.autoStart)
+        !connection ||
+        connection.startTime !== c.startTime ||
+        connection.active !== c.active ||
+        connection.failover !== c.failover ||
+        connection.autoStart !== c.autoStart
       ) {
         await this.set({ ...connection, ...c })
       }
@@ -153,20 +153,12 @@ export default class ConnectionPool {
     let lastPort = usedPorts.sort((a, b) => b - a)[0] || PEER_PORT_RANGE[0]
     if (lastPort >= PEER_PORT_RANGE[1]) lastPort = PEER_PORT_RANGE[0]
     this.freePort = await PortScanner.findFreePortInRange(lastPort, PEER_PORT_RANGE[1], usedPorts)
-    Logger.info('nextFreePort', { freePort: this.freePort, lastPort, usedPorts })
+    Logger.info('NEXT_FREE_PORT', { freePort: this.freePort, lastPort, usedPorts })
     return this.freePort
   }
 
   private assignPort = async (connection: Connection) => {
-    const { port } = connection.params
-    if (port) {
-      if (!(await PortScanner.isPortFree(port))) {
-        connection.params.error = { message: `Port ${port} is in use.` }
-      }
-    } else {
-      connection.params.port = await this.nextFreePort()
-    }
-
+    if (!connection.params.port) connection.params.port = await this.nextFreePort()
     if (!connection.params.port) throw new Error('No port could be assigned to connection!')
   }
 
