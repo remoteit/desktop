@@ -1,11 +1,17 @@
 import React, { useEffect } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
+import { useSelector } from 'react-redux'
 import { Tooltip, Link } from '@material-ui/core'
+import { ApplicationState } from '../../store'
 import { colors, spacing, fontSizes } from '../../styling'
 import { emit } from '../../services/Controller'
 
-export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
+export const OutOfBand: React.FC = () => {
   const css = useStyles()
+  const { available, active } = useSelector((state: ApplicationState) => ({
+    available: state.backend.lan.oobAvailable,
+    active: state.backend.lan.oobActive,
+  }))
 
   useEffect(() => {
     emit('oobCheck')
@@ -16,19 +22,28 @@ export const OutOfBand: React.FC<{ active: boolean }> = ({ active }) => {
     }
   }, [])
 
+  if (!available) return null
+
   return (
-    <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
-      <Link href="https://docs.remote.it/guides/out-of-band" target="_blank">
-        <div className={css.oob + (active ? ' ' + css.active : '')}>
-          <span />
-          <small>Out of Band</small>
-        </div>
-      </Link>
-    </Tooltip>
+    <span className={css.container}>
+      <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
+        <Link href="https://docs.remote.it/guides/out-of-band" target="_blank">
+          <div className={css.oob + (active ? ' ' + css.active : '')}>
+            <span />
+            <small>Out of Band</small>
+          </div>
+        </Link>
+      </Tooltip>
+    </span>
   )
 }
 
 const useStyles = makeStyles({
+  container: {
+    top: spacing.xs,
+    right: spacing.lg,
+    position: 'absolute',
+  },
   oob: {
     border: `1px solid ${colors.grayLight}`,
     padding: `${spacing.xxs}px ${spacing.sm}px`,
