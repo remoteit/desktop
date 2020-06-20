@@ -5,6 +5,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { CircularProgress, Tooltip, IconButton, Typography, Divider } from '@material-ui/core'
 import { NetworkScanLocation } from '../../components/NetworkScanLocation'
 import { useHistory, useRouteMatch } from 'react-router-dom'
+import { OutOfBand } from '../../components/OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { Targets } from '../../components/Targets'
@@ -60,6 +61,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
     <Container
       header={
         <>
+          <OutOfBand />
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="hdd" size="lg" type="light" color="grayDarker" fixedWidth />

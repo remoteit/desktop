@@ -9,6 +9,7 @@ import { UninstallSetting } from '../../components/UninstallSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/core/styles'
+import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
@@ -52,6 +53,7 @@ export const SettingsPage = () => {
     <Container
       header={
         <>
+          <OutOfBand />
           <Typography className={css.header} variant="h1">
             <Tooltip title="Visit remote.it on the web">
               <ButtonBase onClick={() => window.open('https://remote.it')}>
