@@ -1,5 +1,4 @@
 import cli from './cliInterface'
-import user from './User'
 import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
@@ -32,16 +31,6 @@ export default class Connection extends EventEmitter {
   }
 
   async start() {
-    if (!user.signedIn || user.username !== this.params.owner) {
-      let message = `Cannot start connection. Connection owner (${this.params.owner}) is not signed in or does not match user (${user.username}).`
-      Logger.warn(message, { params: this.params })
-      EventBus.emit(Connection.EVENTS.error, {
-        connection: this.params,
-        error: message,
-      } as ConnectionErrorMessage)
-      return
-    }
-
     this.params.connecting = true
     this.params.startTime = Date.now()
 
