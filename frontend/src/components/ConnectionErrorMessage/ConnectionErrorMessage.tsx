@@ -2,15 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router'
 import { makeStyles } from '@material-ui/core/styles'
 import { clearConnectionError } from '../../helpers/connectionHelper'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Tooltip,
-  Button,
-  Collapse,
-} from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText, Tooltip, Collapse } from '@material-ui/core'
 import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
@@ -45,11 +37,6 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
         >
           Connection Error
         </ListItemText>
-        <ListItemSecondaryAction>
-          <Button onClick={viewLog} size="small">
-            View Log
-          </Button>
-        </ListItemSecondaryAction>
       </ListItem>
     </Collapse>
   )
