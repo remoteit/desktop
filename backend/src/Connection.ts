@@ -24,8 +24,11 @@ export default class Connection extends EventEmitter {
     this.set(connection)
   }
 
-  async set({ host = IP_PRIVATE, restriction = IP_OPEN, ...connection }: IConnection, setCLI?: boolean) {
-    this.params = { host, restriction, ...connection }
+  async set(
+    { host = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection,
+    setCLI?: boolean
+  ) {
+    this.params = { host, restriction, failover, ...connection }
     Logger.info('SET CONNECTION', { params: this.params })
     if (setCLI) await cli.setConnection(this.params)
   }
