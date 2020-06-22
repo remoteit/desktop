@@ -43,10 +43,7 @@ export default class Connection extends EventEmitter {
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
-  async stop(autoStart?: boolean) {
-    // manually stopped don't auto start future connections
-    if (autoStart !== undefined) this.params.autoStart = autoStart
-
+  async stop() {
     d('Stopping service:', this.params.id)
 
     this.params.active = false

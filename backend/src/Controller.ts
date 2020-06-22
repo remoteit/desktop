@@ -152,7 +152,7 @@ class Controller {
 
   disconnect = async (connection: IConnection) => {
     Logger.info('DISCONNECT', { id: connection.id })
-    await this.pool.stop(connection, false)
+    await this.pool.stop(connection)
   }
 
   forget = async (connection: IConnection) => {
@@ -166,7 +166,7 @@ class Controller {
   }
 
   restart = () => {
-    Logger.info('WEB UI AUTOUPDATE RESTART')
+    Logger.info('WEB UI AUTO UPDATE RESTART')
     app.restart()
   }
 
