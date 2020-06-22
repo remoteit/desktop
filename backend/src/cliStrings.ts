@@ -45,10 +45,10 @@ export default {
   },
 
   serviceInstall() {
-    return '-j service uninstall'
+    return '-j service install'
   },
   serviceUninstall() {
-    return '-j service install'
+    return '-j service uninstall'
   },
 
   toolsInstall() {
