@@ -116,7 +116,6 @@ export const ServicePage: React.FC = () => {
         <LanShareSelect connection={connection} service={service} />
         <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
-        <ConnectionLog connection={connection} />
       </List>
       <Divider />
       <Columns inset>

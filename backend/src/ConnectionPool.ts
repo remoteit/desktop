@@ -102,10 +102,10 @@ export default class ConnectionPool {
     this.updated()
   }
 
-  stop = async ({ id }: IConnection, autoStart?: boolean) => {
+  stop = async ({ id }: IConnection) => {
     d('STOPPING CONNECTION:', id)
     const instance = this.find(id)
-    instance && instance.stop(autoStart)
+    instance && instance.stop()
   }
 
   forget = async ({ id }: IConnection) => {
@@ -144,7 +144,10 @@ export default class ConnectionPool {
     return this.pool
       .map(c => c.params)
       .sort((a, b) => {
-        return this.sort(a.active, b.active) || this.sort(a.startTime, b.startTime)
+        return (
+          this.sort(a.active, b.active) ||
+          (a.active ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime))
+        )
       })
   }
 

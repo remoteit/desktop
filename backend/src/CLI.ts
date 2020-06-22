@@ -109,6 +109,7 @@ export default class CLI {
       createdTime: Math.round(c.createdtimestamp / 1000000),
       startTime: Math.round((c.startedtimestamp || c.createdtimestamp) / 1000000),
       endTime: Math.round(c.stoppedtimestamp / 1000000),
+      connecting: false,
       restriction: c.restrict,
       autoStart: c.retry,
       failover: c.failover,
