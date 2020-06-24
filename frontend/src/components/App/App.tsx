@@ -17,11 +17,7 @@ import styles from '../../styling'
 
 export const App: React.FC = () => {
   const { installed, signedOut, uninstalling } = useSelector((state: ApplicationState) => ({
-    installed:
-      state.binaries.connectdInstalled &&
-      state.binaries.muxerInstalled &&
-      state.binaries.demuxerInstalled &&
-      state.binaries.remoteitInstalled,
+    installed: state.binaries.installed,
     signedOut: (!state.auth.user || !state.auth.authenticated) && !state.auth.loadingInitialState,
     uninstalling: state.ui.uninstalling,
   }))

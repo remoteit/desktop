@@ -27,6 +27,7 @@ export default class Installer {
   name: string
   repoName: string
   version: string
+  installedVersion?: string
   dependencies: string[]
   tempFile?: string
 
@@ -73,6 +74,7 @@ export default class Installer {
       path: this.binaryPath(),
       version: this.version,
       name: this.name,
+      installedVersion: this.installedVersion,
     } as InstallationInfo
   }
 
@@ -94,6 +96,7 @@ export default class Installer {
 
     if (this.isInstalled()) {
       cliVersion = await cli.version()
+      this.installedVersion = cliVersion
       try {
         current = semverCompare(cliVersion, this.version) >= 0
       } catch (error) {
