@@ -25,7 +25,7 @@ export default {
   },
 
   remove(t: ITarget) {
-    return `remove --id ${t.uid} --authhash ${user.authHash}`
+    return `-j remove --id ${t.uid} --authhash ${user.authHash}`
   },
 
   teardown() {
