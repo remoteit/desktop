@@ -36,7 +36,7 @@ const InterfaceIcon: IInterfaceIcon = {
   FireWire: <Icon name="fire" type="regular" />,
   Thunderbolt: <Icon name="bolt" type="regular" />,
   Bluetooth: <Icon name="bluetooth-b" type="regular" />,
-  Other: <Icon name="usb" type="regular" />,
+  Other: <Icon name="usb" type="brands" />,
 }
 
 export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, privateIP }) => {
