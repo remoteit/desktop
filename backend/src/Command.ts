@@ -33,13 +33,13 @@ export default class Command {
     if (!this.quiet) Logger[type](message, params)
   }
 
-  parseCliErrors(stderr: string) {
-    const jsonError = stderr.substring(0, stderr.indexOf('}') + 1)
+  parseCliErrors(error: string) {
+    const jsonError = error.match(/{.*}/)
     if (jsonError) {
-      const { details }: CliStderr = JSON.parse(jsonError)
+      const { details }: CliStderr = JSON.parse(jsonError[0])
       return details.join('\n')
     }
-    return stderr
+    return error
   }
 
   async exec() {
@@ -80,8 +80,8 @@ export default class Command {
         error,
       })
       this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorMessage: error.message }, 'error')
-      this.onError(error)
-      result = error.toString()
+      result = this.parseCliErrors(error.message)
+      this.onError(new Error(result))
     }
 
     return result
