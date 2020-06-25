@@ -23,12 +23,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const connecting = !!connection?.connecting
   const connect = () => {
     let theConnection = connection || newConnection(service)
-    analytics.track('connectionInitiated', {
-      connectionType: CONNECTION_TYPE_FAILOVER,
-      serviceId: service?.id,
-      serviceName: service?.name,
-      serviceType: service?.typeID,
-    })
+    analytics.trackConnect('connectionInitiated', service)
     emit('service/connect', theConnection)
   }
 

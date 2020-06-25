@@ -31,12 +31,7 @@ export const DisconnectButton: React.FC<Props> = ({
           disabled={disabled}
           size={size}
           onClick={() => {
-            analytics.track('connectionClosed', {
-              connectionType: CONNECTION_TYPE_FAILOVER,
-              serviceId: service?.id,
-              serviceName: service?.name,
-              serviceType: service?.typeID,
-            })
+            analytics.trackConnect('connectionClosed', service)
             emit('service/disconnect', connection)
           }}
         />

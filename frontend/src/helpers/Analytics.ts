@@ -126,13 +126,29 @@ export class Analytics {
     window.analytics.page(pageName, localContext)
   }
 
-  public track(trackName: string, additionalContext?: any) {
-    this.setGAAppVersion()
-    let localContext = this.context
-    if (additionalContext) {
-      localContext = { ...additionalContext, ...localContext }
+  public track(
+    name: string,
+    data?: { id: string; name: string; typeID?: number; connectionType?: string; error?: ISimpleError }
+  ) {
+    let context: any = this.context
+
+    if (data) {
+      context.serviceId = data.id
+      context.serviceName = data.name
+      if (data.connectionType) context.connectionType = data.connectionType
+      if (data.typeID) context.serviceType = data.typeID
+      if (data.error) {
+        context.errorCode = data.error.code
+        context.errorMessage = data.error.message
+      }
     }
-    window.analytics.track(trackName, localContext)
+
+    this.setGAAppVersion()
+    window.analytics.track(name, context)
+  }
+
+  public trackConnect(name: string, data?: { id: string; name: string; typeID?: number }, error?: ISimpleError) {
+    if (data) this.track(name, { ...data, error, connectionType: CONNECTION_TYPE_FAILOVER })
   }
 }
 

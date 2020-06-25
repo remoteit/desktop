@@ -172,12 +172,7 @@ function getEventHandlers() {
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
-      analytics.track('connectionSucceeded', {
-        connectionType: CONNECTION_TYPE_FAILOVER,
-        serviceId: msg.connection?.id,
-        serviceName: msg.connection?.name,
-        serviceType: msg.connection?.typeID,
-      })
+      analytics.trackConnect('connectionSucceeded', msg.connection)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
@@ -185,16 +180,9 @@ function getEventHandlers() {
     },
     'service/forgotten': (id: string) => console.log(id),
     'service/error': (msg: ConnectionErrorMessage) => {
-      logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.error}\n` })
+      logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
       backend.setConnection(msg.connection)
-      analytics.track('connectionFailed', {
-        connectionType: CONNECTION_TYPE_FAILOVER,
-        serviceId: msg.connection?.id,
-        serviceName: msg.connection?.name,
-        serviceType: msg.connection?.typeID,
-        errorCode: msg.code,
-        errorMessage: msg.error,
-      })
+      analytics.trackConnect('connectionFailed', msg.connection, msg)
     },
 
     'binary/install/error': (error: string) => binaries.installError(error),
