@@ -66,3 +66,20 @@ export function osName(os?: Ios) {
   }
   return os ? name[os] : 'system'
 }
+
+export function deviceNameValidation(name: string) {
+  const value = name.replace(REGEX_NAME_SAFE, '')
+  if (value !== name) {
+    return  { 
+      error: 'Device names can only contain alpha numeric characters.',
+      value
+    }
+  }
+  if (value.length > 100) {
+    return  { 
+      error: 'Device names has limit off 100 characters.',
+      value: value.substring(0, 100)
+    }
+  }
+  return {value}
+} 

@@ -13,6 +13,7 @@ import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
+import { deviceNameValidation } from '../../shared/nameHelper'
 
 type Props = {
   value?: string | number
@@ -40,6 +41,7 @@ export const InlineSetting: React.FC<Props> = ({
 }) => {
   const [edit, setEdit] = useState<boolean>(false)
   const [editValue, setEditValue] = useState<string | number>('')
+  const [nameError, setNameError] = useState<string>()
 
   const css = useStyles()
   const showEdit = () => {
@@ -73,7 +75,14 @@ export const InlineSetting: React.FC<Props> = ({
             label={label}
             value={editValue}
             variant="filled"
-            onChange={event => setEditValue(filter ? event.target.value.replace(filter, '') : event.target.value)}
+            helperText={nameError || ''}
+            error={!!nameError}
+            onChange={event => {
+              const validation = deviceNameValidation(event.target.value)
+              setEditValue(validation.value)
+              validation.error && setNameError(validation.error)
+              !validation.error && setNameError('')
+            }}
           />
           {resetValue && <ResetButton onClick={() => setEditValue(resetValue)} />}
           <ListItemSecondaryAction>
