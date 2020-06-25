@@ -136,7 +136,7 @@ export default class TrayMenu {
   }
 
   private disconnect(connection: IConnection) {
-    headless.pool.stop(connection, false)
+    headless.pool.stop(connection)
   }
 
   private copy(connection: IConnection) {
