@@ -255,6 +255,8 @@ declare global {
 
   type ISimpleError = { code?: number; message: string }
 
+  type ErrorCallback = (error: Error) => void
+
   type ILog = { [id: string]: string[] }
 
   type IInterface = { [key: string]: any }
