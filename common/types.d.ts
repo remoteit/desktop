@@ -146,9 +146,7 @@ declare global {
     extra?: any
   }
 
-  interface ConnectionErrorMessage {
-    code?: number
-    error: string
+  interface ConnectionErrorMessage extends ISimpleError {
     connection: IConnection
   }
 

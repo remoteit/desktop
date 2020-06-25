@@ -36,14 +36,8 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   const [selected, setSelected] = useState<ITarget[]>([])
 
   const onRegistration = () => {
-    analytics.track('deviceCreated', { deviceId: device.uid, deviceName: name })
-    selected.forEach(target => {
-      analytics.track('serviceCreated', {
-        serviceId: target.uid,
-        serviceName: target.name,
-        serviceType: target.type,
-      })
-    })
+    analytics.track('deviceCreated', { ...device, id: device.uid })
+    selected.forEach(t => analytics.track('serviceCreated', { ...t, id: t.uid }))
     emit('registration', { device: { ...device, name }, targets: selected })
     history.push('/settings/setupWaiting')
   }
@@ -53,8 +47,8 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   }, [loading])
 
   useEffect(() => {
-    analytics.track('networkScan')
     // Refresh device data
+    analytics.track('networkScan')
     emit('device')
     emit('scan', 'localhost')
   }, [])

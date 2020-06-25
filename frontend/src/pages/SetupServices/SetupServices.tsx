@@ -34,14 +34,8 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   const onCancel = () => ui.set({ setupAdded: undefined })
   const onDelete = () => {
     ui.set({ setupDeletingDevice: true, setupBusy: true })
-    analytics.track('deviceRemoved', { deviceId: device.uid, deviceName: device.name })
-    targets.forEach(target => {
-      analytics.track('serviceRemoved', {
-        serviceId: target.uid,
-        serviceName: target.name,
-        serviceType: target.type,
-      })
-    })
+    analytics.track('deviceRemoved', { ...device, id: device.uid })
+    targets.forEach(t => analytics.track('serviceRemoved', { ...t, id: t.uid }))
     emit('device', 'DELETE')
   }
 

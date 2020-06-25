@@ -24,22 +24,14 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
 
   function add(target: ITarget) {
-    analytics.track('serviceCreated', {
-      serviceId: target.uid,
-      serviceName: target.name,
-      serviceType: target.type,
-    })
+    analytics.track('serviceCreated', { ...target, id: target.uid })
     ui.set({ setupBusy: true, setupAddingService: true })
     onUpdate([...targets, target])
   }
 
   function remove(key: number) {
     const target = targets[key]
-    analytics.track('serviceRemoved', {
-      serviceId: target.uid,
-      serviceName: target.name,
-      serviceType: target.type,
-    })
+    analytics.track('serviceRemoved', { ...target, id: target.uid })
     let copy = [...targets]
     copy.splice(key, 1)
     ui.set({ setupBusy: true, setupDeletingService: key })
