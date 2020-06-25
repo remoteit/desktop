@@ -26,6 +26,7 @@ type IExec = {
   checkSignIn?: boolean
   admin?: boolean
   quiet?: boolean
+  onError?: ErrorCallback
 }
 
 export default class CLI {
@@ -151,18 +152,18 @@ export default class CLI {
     this.read()
   }
 
-  async addConnection(c: IConnection) {
-    await this.exec({ cmds: [strings.connect(c)], checkSignIn: true })
+  async addConnection(c: IConnection, onError: ErrorCallback) {
+    await this.exec({ cmds: [strings.connect(c)], checkSignIn: true, onError })
     this.readConnections()
   }
 
-  async removeConnection(c: IConnection) {
-    await this.exec({ cmds: [strings.disconnect(c)], checkSignIn: true })
+  async removeConnection(c: IConnection, onError: ErrorCallback) {
+    await this.exec({ cmds: [strings.disconnect(c)], checkSignIn: true, onError })
     this.readConnections()
   }
 
-  async setConnection(c: IConnection) {
-    await this.exec({ cmds: [strings.setConnect(c)], checkSignIn: true })
+  async setConnection(c: IConnection, onError: ErrorCallback) {
+    await this.exec({ cmds: [strings.setConnect(c)], checkSignIn: true, onError })
     this.readConnections()
   }
 
@@ -209,7 +210,7 @@ export default class CLI {
     return !installed
   }
 
-  async exec({ cmds, checkSignIn = false, admin = false, quiet = false }: IExec) {
+  async exec({ cmds, checkSignIn = false, admin = false, quiet = false, onError }: IExec) {
     if (await this.isNotInstalled()) {
       remoteitInstaller.check()
       return ''
@@ -225,7 +226,11 @@ export default class CLI {
     }
 
     cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPath()}" ${cmd}`))
-    if (!quiet) commands.onError = (e: Error) => EventBus.emit(this.EVENTS.error, e.toString())
+    if (!quiet)
+      commands.onError = (e: Error) => {
+        if (typeof onError === 'function') onError(e)
+        EventBus.emit(this.EVENTS.error, e.toString())
+      }
 
     result = await commands.exec()
     if (readUser) this.readUser()

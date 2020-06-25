@@ -13,9 +13,9 @@ export default class Command {
   admin: boolean = false
   quiet: boolean = false
 
-  onError: (error: Error) => void = () => {}
+  onError: ErrorCallback = () => {}
 
-  constructor(options: { command?: string; admin?: boolean; onError?: (error: Error) => void; quiet?: boolean }) {
+  constructor(options: { command?: string; admin?: boolean; onError?: ErrorCallback; quiet?: boolean }) {
     if (options.command) this.commands = [options.command]
     options.command = undefined
     Object.assign(this, options)

@@ -51,9 +51,8 @@ export default class ConnectionPool {
       if (
         !connection ||
         connection.startTime !== c.startTime ||
-        connection.active !== c.active ||
-        connection.failover !== c.failover ||
-        connection.autoStart !== c.autoStart
+        connection.endTime !== c.endTime ||
+        connection.active !== c.active
       ) {
         await this.set({ ...connection, ...c })
       }

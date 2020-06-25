@@ -30,7 +30,7 @@ export default class Connection extends EventEmitter {
   ) {
     this.params = { host, restriction, failover, ...connection }
     Logger.info('SET CONNECTION', { params: this.params })
-    if (setCLI) await cli.setConnection(this.params)
+    if (setCLI) await cli.setConnection(this.params, this.error)
   }
 
   async start() {
@@ -41,7 +41,7 @@ export default class Connection extends EventEmitter {
 
     this.params.active = true
     this.params.connecting = false
-    await cli.addConnection(this.params)
+    await cli.addConnection(this.params, this.error)
 
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
@@ -52,11 +52,16 @@ export default class Connection extends EventEmitter {
     this.params.active = false
     this.params.endTime = Date.now()
 
-    await cli.setConnection(this.params)
+    await cli.setConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
   }
 
   async forget() {
-    await cli.removeConnection(this.params)
+    await cli.removeConnection(this.params, this.error)
+  }
+
+  error = (e: Error) => {
+    this.params.error = { message: e.message }
+    this.stop()
   }
 }
