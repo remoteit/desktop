@@ -6,8 +6,6 @@ export const ENVIRONMENT = process.env.NODE_ENV || 'production'
 export const PRODUCT_NAME = 'Desktop'
 export const MANUFACTURER_NAME = 'remote.it'
 export const REMOTEIT_PI_WIFI = 'remote.itPi'
-
-// Google Analytics usage tracking
 export const HEARTBEAT_INTERVAL = 1000 * 60 // 1 bmp
 
 // Airbrake error reporting
@@ -15,7 +13,7 @@ export const AIRBRAKE_PROJECT_ID = 223457
 export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e1376551dbe5b1326f98edd78b6247ba'
 
 // CLI
-export const CLI_VERSION = '1.2.30'
+export const CLI_VERSION = '1.3.0'
 export const CLI_DOWNLOAD: 'AWS' | 'GitHub' = 'AWS' // AWS or GitHub
 
 // CLI product tracking codes
