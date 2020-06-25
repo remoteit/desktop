@@ -48,7 +48,21 @@ describe('backend/Installer', () => {
 
       expect(installSpy).toBeCalledTimes(0)
       expect(eventSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/installed', { path, version, name })
+      expect(eventSpy).toBeCalledWith('binary/installed', { path, version, name, installedVersion: version })
+      expect(versionSpy).toBeCalledTimes(1)
+    })
+
+    test('should notify with different installed version', async () => {
+      const installedVersion = '0.40.0'
+
+      jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
+      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(installedVersion))
+
+      await installer.check()
+
+      expect(installSpy).toBeCalledTimes(0)
+      expect(eventSpy).toBeCalledTimes(1)
+      expect(eventSpy).toBeCalledWith('binary/installed', { path, version, name, installedVersion })
       expect(versionSpy).toBeCalledTimes(1)
     })
 

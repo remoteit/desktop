@@ -5,37 +5,19 @@ import analytics from '../helpers/Analytics'
 export interface BinariesState {
   error?: any
   installing: boolean
-  connectdInstalled: boolean
-  connectdPath?: string
-  connectdVersion?: string
-  muxerInstalled: boolean
-  muxerPath?: string
-  muxerVersion?: string
-  demuxerInstalled: boolean
-  demuxerPath?: string
-  demuxerVersion?: string
-  demuxerErrork?: string
-  remoteitInstalled: boolean
-  remoteitPath?: string
-  remoteitVersion?: string
-  remoteitErrork?: string
+  installed: boolean
+  path?: string
+  version?: string
+  installedVersion?: string
 }
 
 const state: BinariesState = {
   error: undefined,
   installing: false,
-  connectdInstalled: true,
-  connectdPath: undefined,
-  connectdVersion: undefined,
-  muxerInstalled: true,
-  muxerPath: undefined,
-  muxerVersion: undefined,
-  demuxerInstalled: true,
-  demuxerPath: undefined,
-  demuxerVersion: undefined,
-  remoteitInstalled: true,
-  remoteitPath: undefined,
-  remoteitVersion: undefined,
+  installed: true,
+  path: undefined,
+  version: undefined,
+  installedVersion: undefined,
 }
 
 export default createModel({
@@ -57,23 +39,16 @@ export default createModel({
 
       // Clear errors
       state.error = undefined
-
-      // @ts-ignore
-      state[info.name + 'Installed'] = true
-      // @ts-ignore
-      state[info.name + 'Path'] = info.path
-      // @ts-ignore
-      state[info.name + 'Version'] = info.version
+      state.installed = true
+      state.path = info.path
+      state.version = info.version
+      state.installedVersion = info.installedVersion
     },
     notInstalled(state: BinariesState, name: BinaryName) {
       state.installing = false
-
-      // @ts-ignore
-      state[name + 'Installed'] = false
-      // @ts-ignore
-      state[name + 'Path'] = undefined
-      // @ts-ignore
-      state[name + 'Version'] = undefined
+      state.installed = false
+      state.path = undefined
+      state.version = undefined
     },
     installError(state: BinariesState, error: string) {
       state.error = error

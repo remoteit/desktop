@@ -98,6 +98,7 @@ declare global {
     name: string
     path: string
     version: string
+    installedVersion?: string
   }
 
   interface UserCredentials {

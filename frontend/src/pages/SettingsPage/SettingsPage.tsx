@@ -16,11 +16,11 @@ import { Logo } from '../../components/Logo'
 import analytics from '../../helpers/Analytics'
 
 export const SettingsPage = () => {
-  const { os, user, installing, remoteitVersion, preferences } = useSelector((state: ApplicationState) => ({
+  const { os, user, installing, version, preferences } = useSelector((state: ApplicationState) => ({
     os: state.backend.environment.os,
     user: state.auth.user,
     installing: state.binaries.installing,
-    remoteitVersion: state.binaries.remoteitVersion,
+    version: state.binaries.installedVersion || state.binaries.version,
     preferences: state.backend.preferences,
   }))
 
@@ -116,7 +116,7 @@ export const SettingsPage = () => {
           <List>
             <SettingsListItem
               label={installing ? 'Installing...' : 'Re-install command line tools'}
-              subLabel={`Version ${remoteitVersion}`}
+              subLabel={`Version ${version}`}
               disabled={installing}
               icon="terminal"
               onClick={installWarning}
