@@ -29,8 +29,15 @@ export default class Command {
     return this.commands.join(' && ')
   }
 
-  log(message: string, params: object, type: 'info' | 'warn' | 'error' = 'info') {
-    if (!this.quiet) Logger[type](message, params)
+  log(message: string, params: ILookup, type: 'info' | 'warn' | 'error' = 'info') {
+    if (this.quiet) return
+    if (user.authHash) {
+      Object.keys(params).forEach(key => {
+        if (typeof params[key] === 'string' && params[key].includes(user.authHash))
+          params[key] = params[key].replace(user.authHash, '[CLEARED]')
+      })
+    }
+    Logger[type](message, params)
   }
 
   parseCliErrors(error: string) {
@@ -48,7 +55,7 @@ export default class Command {
     let result = ''
     this.log('EXEC', {
       quiet: !this.onError,
-      exec: this.toString().replace(user.authHash, 'CLEANED'),
+      exec: this.toString(),
       admin: this.admin,
       headless: environment.isHeadless,
       elevated: environment.isElevated,

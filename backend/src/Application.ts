@@ -23,16 +23,13 @@ export default class Application {
 
   async constructorSync() {
     await lan.checkOob()
-    this.bindExitHandlers()
     await environment.setElevatedState()
-    remoteitInstaller.check(true)
     server.start()
     this.startHeartbeat()
 
     if (server.io) new Controller(server.io, this.pool)
 
-    EventBus.on(User.EVENTS.signedIn, this.check)
-    EventBus.on(User.EVENTS.signedOut, this.handleSignedOut)
+    EventBus.on(User.EVENTS.signedIn, () => this.check(true))
   }
 
   quit() {
@@ -53,44 +50,13 @@ export default class Application {
     setInterval(this.check, HEARTBEAT_INTERVAL)
   }
 
-  private check = () => {
+  private check = (log?: boolean) => {
     if (!user.signedIn) return
 
     this.electron && this.electron.check()
-    remoteitInstaller.check()
+    remoteitInstaller.check(log)
     this.pool.check()
     cli.check()
     lan.check()
-  }
-
-  private bindExitHandlers = () => {
-    // Do something when app is closing
-    process.on('exit', this.handleException)
-
-    // Catches ctrl+c event
-    process.on('SIGINT', this.handleException)
-    process.on('SIGUSR1', this.handleException)
-    process.on('SIGUSR2', this.handleException)
-  }
-
-  private handleExit = async () => {
-    this.pool && (await this.pool.stopAll())
-    process.exit()
-  }
-
-  private handleException = async (code: any) => {
-    if (code !== 0) Logger.warn('PROCESS EXCEPTION', { errorCode: code })
-    this.pool && (await this.pool.stopAll())
-  }
-
-  /**
-   * When a user logs out, remove their credentials from the
-   * saved connections file.
-   */
-  private handleSignedOut = async () => {
-    Logger.info('Signing out user')
-
-    // Stop all connections cleanly
-    this.pool && (await this.pool.stopAll())
   }
 }

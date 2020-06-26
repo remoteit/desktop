@@ -9,12 +9,15 @@ export const UninstallSetting: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
 
   const warning = () => {
-    window.confirm(
-      'Are you sure? \nYou will remove this system as a host, your connections and command line utilities.'
-    ) &&
-      emit('uninstall') &&
+    if (
+      window.confirm(
+        'Are you sure?\n\nYou will remove this system as a host, your connections and command line utilities.'
+      )
+    ) {
+      emit('uninstall')
       ui.set({ uninstalling: true })
-    analytics.track('uninstall')
+      analytics.track('uninstall')
+    }
   }
 
   return (

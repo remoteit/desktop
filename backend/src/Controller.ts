@@ -173,10 +173,10 @@ class Controller {
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
     this.uninstallInitiated = true
-    await this.pool.reset()
-    await user.signOut()
+    await this.pool.clearAll()
     await cli.unInstall()
     await binaryInstaller.uninstall()
+    await user.signOut()
     //frontend will emit user/sign-out-complete and then we will call exit
   }
 

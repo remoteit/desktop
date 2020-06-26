@@ -119,16 +119,12 @@ export default class ConnectionPool {
     EventBus.emit(Connection.EVENTS.forgotten, id)
   }
 
-  stopAll = async () => {
-    d('STOPPING ALL CONNECTIONS')
+  clearAll = async () => {
+    Logger.info('CLEARING ALL CONNECTIONS')
     if (this.pool.length) {
-      await this.pool.forEach(async c => await c.stop())
+      await this.pool.forEach(async c => await c.forget())
       this.updated()
     }
-  }
-
-  reset = async () => {
-    await this.stopAll()
     this.pool = []
     this.connectionsFile.remove()
   }
