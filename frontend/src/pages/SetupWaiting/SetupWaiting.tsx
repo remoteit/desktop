@@ -17,12 +17,13 @@ type Props = { os?: Ios; device: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
   const { globalError: globalError } = useSelector((state: ApplicationState) => state.backend)
-  const { devices } = useDispatch<Dispatch>()
+  const { devices, ui } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
 
   if (device.uid) {
-    history.push('/settings/setupSuccess')
+    history.push('/settings/setupServices')
+    ui.set({ successMessage: `${device.name} registered successfully!` })
     devices.fetch()
   }
 

@@ -28,10 +28,6 @@ export default {
     return `-j remove --id ${t.uid} --authhash ${user.authHash}`
   },
 
-  teardown() {
-    return `-j teardown --yes`
-  },
-
   connect(c: IConnection) {
     return `-j connection add --id ${c.id} --name "${c.name}" --port ${c.port} --hostname ${c.host} --restrict ${
       c.restriction
@@ -65,6 +61,10 @@ export default {
 
   toolsUninstall() {
     return '-j tools uninstall --yes'
+  },
+
+  uninstall() {
+    return `-j uninstall --yes`
   },
 
   scan(ipMask?: string) {

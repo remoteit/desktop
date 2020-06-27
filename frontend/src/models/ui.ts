@@ -16,6 +16,7 @@ type UIState = UIParams & {
   setupDeletingService?: number
   setupServicesCount: number
   setupServicesNew: boolean
+  successMessage: string
 }
 
 const state: UIState = {
@@ -31,6 +32,7 @@ const state: UIState = {
   setupAddingService: false,
   setupServicesCount: 0,
   setupServicesNew: true,
+  successMessage: '',
 }
 
 export default createModel({

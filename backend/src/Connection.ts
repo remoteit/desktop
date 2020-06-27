@@ -36,13 +36,11 @@ export default class Connection extends EventEmitter {
   async start() {
     this.params.connecting = true
     this.params.startTime = Date.now()
-
     EventBus.emit(Connection.EVENTS.started, { connection: this.params, raw: 'Connection started' })
 
     this.params.active = true
     this.params.connecting = false
     await cli.addConnection(this.params, this.error)
-
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
