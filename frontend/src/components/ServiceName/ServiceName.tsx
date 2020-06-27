@@ -1,9 +1,9 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
-import { makeStyles } from '@material-ui/core/styles'
-import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { Icon } from '../Icon'
-import { colors, spacing } from '../../styling'
+import { Title } from '../Title'
+import { useLocation } from 'react-router-dom'
+import { REGEX_FIRST_PATH } from '../../shared/constants'
+import { colors } from '../../styling'
 
 type Props = {
   connection?: IConnection
@@ -14,7 +14,6 @@ type Props = {
 
 export const ServiceName: React.FC<Props> = ({ connection, service, shared }) => {
   const location = useLocation()
-  const css = useStyles()
 
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const name = menu && menu[0] === '/connections' ? connection && connection.name : service && service.name
@@ -25,20 +24,13 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared }) =>
   if (connection && connection.active) color = undefined
 
   return (
-    <span className={css.title} style={{ color }}>
+    <Title color={color}>
       {!service && !connection ? 'No device found' : name}
       {shared && (
         <sup>
           <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
         </sup>
       )}
-    </span>
+    </Title>
   )
 }
-
-const useStyles = makeStyles({
-  title: {
-    flexGrow: 1,
-    '& sup': { marginLeft: spacing.xs },
-  },
-})

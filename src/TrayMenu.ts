@@ -13,6 +13,8 @@ import headless, {
 import electron from 'electron'
 import path from 'path'
 
+const MAX_MENU_SIZE = 10
+
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
 const iconOffline = path.join(__dirname, 'images', 'iconOfflineTemplate.png')
 const iconOnline = path.join(__dirname, 'images', 'iconOnlineTemplate.png')
@@ -55,7 +57,7 @@ export default class TrayMenu {
       {
         label: 'Open remote.it...',
         type: 'normal',
-        click: this.handleOpen,
+        click: () => this.handleOpen(),
       },
       {
         label: user.username,
@@ -78,13 +80,33 @@ export default class TrayMenu {
   }
 
   private connectionsMenu() {
-    return this.pool.length
-      ? [{ label: 'Connections', enabled: false }, ...this.connectionsList()]
-      : [{ label: 'No recent connections', enabled: false }]
+    let menu = []
+    const active = this.pool.filter(c => c.active)
+    const recent = this.pool.filter(c => !c.active)
+    if (active.length) menu.push({ label: 'Active connections', enabled: false }, ...this.connectionsList(active))
+    if (active.length && recent.length) menu.push({ type: 'separator' })
+    if (recent.length)
+      menu.push(
+        { label: 'Recent connections', enabled: false },
+        ...this.connectionsList(recent),
+        { type: 'separator' },
+        {
+          label: 'Clear recent',
+          type: 'normal',
+          click: () => EventBus.emit(EVENTS.clearRecent),
+        }
+      )
+
+    return menu.length ? menu : [{ label: 'No recent connections', enabled: false }]
   }
 
-  private connectionsList() {
-    return this.pool.reduce((result: any[], connection) => {
+  private connectionsList(list: IConnection[]) {
+    let more = 0
+    if (list.length > MAX_MENU_SIZE) {
+      more = list.length - MAX_MENU_SIZE
+      list = list.slice(0, MAX_MENU_SIZE)
+    }
+    let menu = list.reduce((result: any[], connection) => {
       if (connection.startTime && connection.owner === user.username) {
         result.push({
           label: connection.name,
@@ -106,6 +128,8 @@ export default class TrayMenu {
       }
       return result
     }, [])
+    if (more) menu.push({ label: `and ${more} more...`, click: () => this.handleOpen('connections') })
+    return menu
   }
 
   private signInMenu() {
@@ -114,7 +138,7 @@ export default class TrayMenu {
       {
         label: 'Sign in...',
         type: 'normal',
-        click: this.handleOpen,
+        click: () => this.handleOpen(),
       },
       {
         label: 'Quit',
@@ -124,12 +148,9 @@ export default class TrayMenu {
     ]
   }
 
-  private handleOpen = (menuItem: any, browserWindow: any, event: any) =>
-    EventBus.emit(
-      EVENTS.open,
-      // Open dev tools when command+option clicked
-      process.defaultApp && event.metaKey
-    )
+  private handleOpen(url?: string) {
+    EventBus.emit(EVENTS.open, url)
+  }
 
   private connect(connection: IConnection) {
     headless.pool.start(connection)

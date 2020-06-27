@@ -39,8 +39,9 @@ export default class ConnectionPool {
     EventBus.on(Connection.EVENTS.disconnected, this.updated)
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(Connection.EVENTS.started, this.updated)
-    EventBus.on(electronInterface.EVENTS.forget, this.forget)
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
+    EventBus.on(electronInterface.EVENTS.forget, this.forget)
+    EventBus.on(electronInterface.EVENTS.clearRecent, this.forgetRecent)
   }
 
   syncCLI = () => {
@@ -92,7 +93,7 @@ export default class ConnectionPool {
   }
 
   start = async (connection: IConnection) => {
-    d('CONNECTING:', connection)
+    Logger.info('CONNECT', { id: connection.id })
     if (!connection) return new Error('No connection data!')
     const instance = await this.set(connection)
     if (!instance) return
@@ -102,13 +103,13 @@ export default class ConnectionPool {
   }
 
   stop = async ({ id }: IConnection) => {
-    d('STOPPING CONNECTION:', id)
+    Logger.info('DISCONNECT', { id })
     const instance = this.find(id)
     instance && instance.stop()
   }
 
   forget = async ({ id }: IConnection) => {
-    d('FORGETTING CONNECTION:', id)
+    Logger.info('FORGET', { id })
     const connection = this.find(id)
     if (connection) {
       const index = this.pool.indexOf(connection)
@@ -117,6 +118,17 @@ export default class ConnectionPool {
       this.updated()
     }
     EventBus.emit(Connection.EVENTS.forgotten, id)
+  }
+
+  forgetRecent = () => {
+    const before = this.pool.length
+    this.pool = this.pool.filter(connection => {
+      if (connection.params.active) return true
+      connection.forget()
+      return false
+    })
+    Logger.info('FORGET RECENT CONNECTIONS', { count: before - this.pool.length })
+    this.updated()
   }
 
   clearAll = async () => {
@@ -131,6 +143,7 @@ export default class ConnectionPool {
 
   updated = () => {
     const json = this.toJSON()
+    console.log('UPDATED', json)
     this.connectionsFile.write(json)
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }

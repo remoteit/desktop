@@ -2,6 +2,7 @@ import { colors, spacing, fontSizes } from './'
 import { createMuiTheme } from '@material-ui/core'
 
 const gutters = 32
+const titlePadding = `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`
 export default createMuiTheme({
   palette: {
     primary: { main: colors.primary },
@@ -90,7 +91,7 @@ export default createMuiTheme({
         fontWeight: 400,
         display: 'flex',
         alignItems: 'center',
-        padding: `${spacing.xxs}px ${gutters}px`,
+        padding: titlePadding,
         borderBottom: `1px solid ${colors.grayLighter}`,
         minHeight: 50,
         '& span + span': { marginLeft: spacing.lg },
@@ -109,9 +110,11 @@ export default createMuiTheme({
       subtitle1: {
         fontSize: fontSizes.sm,
         fontFamily: 'Roboto Mono',
-        color: colors.gray,
-        padding: `${spacing.lg}px ${spacing.sm}px 0 ${gutters}px`,
-        marginLeft: spacing.xxs,
+        color: colors.grayDark,
+        display: 'flex',
+        alignItems: 'flex-end',
+        minHeight: 50,
+        padding: titlePadding,
         textTransform: 'uppercase',
         letterSpacing: 3,
         fontWeight: 500,

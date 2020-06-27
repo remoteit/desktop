@@ -1,7 +1,9 @@
 import React from 'react'
-import { Body } from '../../components/Body'
+import { Body } from '../Body'
+import { Title } from '../Title'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
+import { ForgetButton } from '../../buttons/ForgetButton'
 import { ServiceListItem } from '../ServiceListItem'
 import { Typography, Link, List, Divider } from '@material-ui/core'
 import styles from '../../styling'
@@ -41,7 +43,12 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
         <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
       {!!recent.length && !!connected.length && <Divider />}
-      {!!recent.length && <Typography variant="subtitle1">Recent</Typography>}
+      {!!recent.length && (
+        <Typography variant="subtitle1">
+          <Title>Recent</Title>
+          <ForgetButton all />
+        </Typography>
+      )}
       {recent.map(c => (
         <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
