@@ -16,15 +16,17 @@ export interface Props {
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
-  const { backend } = useDispatch<Dispatch>()
-  const { connected, globalError, authenticated, os } = useSelector((state: ApplicationState) => ({
+  const { backend, ui } = useDispatch<Dispatch>()
+  const { connected, successMessage, globalError, authenticated, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
+    successMessage: state.ui.successMessage,
     globalError: state.backend.globalError,
     authenticated: state.auth.authenticated,
     os: state.backend.environment.os,
   }))
 
   const css = useStyles()
+  const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearCliError = () => backend.set({ globalError: undefined })
   const reconnect = () => Controller.open(false, true)
 
@@ -41,35 +43,49 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <RemoteHeader os={os} />
       <div className={pageCss}>
         <Sidebar />
-        <div className={css.pageBody}>
-          {children}
-          <Snackbar
-            open={authenticated && !connected}
-            message="Webserver connection lost. Retrying..."
-            action={
-              <IconButton onClick={reconnect}>
-                <Icon name="sync" size="md" color="white" fixedWidth />
-              </IconButton>
-            }
-          />
-          <Snackbar
-            key={globalError}
-            open={!!globalError}
-            message={
-              <>
-                <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
-                {globalError}
-              </>
-            }
-            action={
-              <IconButton onClick={clearCliError}>
-                <Icon name="times" size="md" color="white" fixedWidth />
-              </IconButton>
-            }
-            onClose={clearCliError}
-          />
-          <UpdateNotice />
-        </div>
+        <div className={css.pageBody}>{children}</div>
+        <Snackbar
+          open={authenticated && !connected}
+          message="Webserver connection lost. Retrying..."
+          action={
+            <IconButton onClick={reconnect}>
+              <Icon name="sync" size="md" color="white" fixedWidth />
+            </IconButton>
+          }
+        />
+        <Snackbar
+          key={globalError}
+          open={!!globalError}
+          message={
+            <>
+              <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
+              {globalError}
+            </>
+          }
+          action={
+            <IconButton onClick={clearCliError}>
+              <Icon name="times" size="md" color="white" fixedWidth />
+            </IconButton>
+          }
+          onClose={clearCliError}
+        />
+        <Snackbar
+          key={successMessage}
+          open={!!successMessage}
+          message={
+            <>
+              <Icon name="check" size="md" color="success" type="regular" fixedWidth inlineLeft />
+              {successMessage}
+            </>
+          }
+          action={
+            <IconButton onClick={clearSuccessMessage}>
+              <Icon name="times" size="md" color="white" fixedWidth />
+            </IconButton>
+          }
+          onClose={clearSuccessMessage}
+        />
+        <UpdateNotice />
       </div>
     </div>
   )

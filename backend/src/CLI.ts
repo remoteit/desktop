@@ -52,7 +52,7 @@ export default class CLI {
 
   check = () => {
     this.read()
-    if (this.isSignedOut()) {
+    if (this.isSignedOut() && (this.data.device.uid || this.data.connections.length)) {
       this.signIn()
     }
   }
@@ -167,12 +167,6 @@ export default class CLI {
     this.readConnections()
   }
 
-  async teardown() {
-    if (!this.data.device.uid) return
-    await this.exec({ cmds: [strings.teardown()], admin: true, checkSignIn: true })
-    this.read()
-  }
-
   async restartService() {
     await this.exec({ cmds: [strings.serviceUninstall(), strings.serviceInstall()], admin: true })
   }
@@ -182,7 +176,8 @@ export default class CLI {
   }
 
   async unInstall() {
-    await this.exec({ cmds: [strings.toolsUninstall()], admin: true })
+    await this.exec({ cmds: [strings.uninstall()], admin: true })
+    this.read()
   }
 
   async signIn() {
@@ -222,6 +217,7 @@ export default class CLI {
 
     if (checkSignIn && this.isSignedOut()) {
       readUser = true
+      commands.admin = true
       cmds.unshift(strings.signIn())
     }
 

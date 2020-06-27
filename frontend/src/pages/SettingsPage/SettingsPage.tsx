@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
+import { version } from '../../../package.json'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
@@ -16,11 +17,11 @@ import { Logo } from '../../components/Logo'
 import analytics from '../../helpers/Analytics'
 
 export const SettingsPage = () => {
-  const { os, user, installing, version, preferences } = useSelector((state: ApplicationState) => ({
+  const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
     os: state.backend.environment.os,
     user: state.auth.user,
     installing: state.binaries.installing,
-    version: state.binaries.installedVersion || state.binaries.version,
+    cliVersion: state.binaries.installedVersion || 'getting version...',
     preferences: state.backend.preferences,
   }))
 
@@ -79,7 +80,7 @@ export const SettingsPage = () => {
           label="Send feedback"
           icon="envelope"
           onClick={() =>
-            (window.location.href = encodeURI('mailto:support@remote.it?subject=Desktop Application Feedback'))
+            (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
           }
         />
         <SettingsListItem
@@ -116,7 +117,7 @@ export const SettingsPage = () => {
           <List>
             <SettingsListItem
               label={installing ? 'Installing...' : 'Re-install command line tools'}
-              subLabel={`Version ${version}`}
+              subLabel={`Version ${cliVersion}`}
               disabled={installing}
               icon="terminal"
               onClick={installWarning}
