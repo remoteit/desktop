@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
 
   return (
     <div className={css.header}>
-      <Typography>
+      <Typography variant="h4">
         {device.name ? device.name : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
       </Typography>
     </div>
@@ -34,17 +34,17 @@ const useStyles = makeStyles({
     minHeight: 40,
     '-webkit-user-select': 'none',
     '-webkit-app-region': 'drag',
-    '& img': {
-      width: 120,
-    },
+    '& img': { width: 120 },
     '& .MuiButtonBase-root': {
       position: 'absolute',
       left: styles.spacing.xs,
     },
     '& .MuiTypography-root': {
-      color: styles.colors.grayDarker,
+      color: styles.colors.grayDark,
       textAlign: 'center',
+      fontWeight: 100,
       width: '100%',
+      margin: 0,
     },
   },
   guest: {
