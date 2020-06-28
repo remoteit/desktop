@@ -171,7 +171,7 @@ export default class CLI {
     await this.exec({ cmds: [strings.serviceUninstall(), strings.serviceInstall()], admin: true })
   }
 
-  async install() {
+  async toolsInstall() {
     await this.exec({ cmds: [strings.toolsInstall()], admin: true })
   }
 

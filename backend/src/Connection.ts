@@ -40,6 +40,7 @@ export default class Connection extends EventEmitter {
 
     this.params.active = true
     this.params.connecting = false
+    this.params.error = undefined
     await cli.addConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
