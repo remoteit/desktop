@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
 
   return (
     <div className={css.header}>
-      <Typography variant="h4">
+      <Typography variant="body2">
         {device.name ? device.name : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
       </Typography>
     </div>
@@ -42,7 +42,6 @@ const useStyles = makeStyles({
     '& .MuiTypography-root': {
       color: styles.colors.grayDark,
       textAlign: 'center',
-      fontWeight: 100,
       width: '100%',
       margin: 0,
     },
