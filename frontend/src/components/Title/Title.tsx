@@ -1,11 +1,16 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
+import { spacing } from '../../styling'
 
-export const Title: React.FC<{ primary: string }> = ({ primary }) => {
+export const Title: React.FC<{ color?: string }> = ({ children, color }) => {
   const css = useStyles()
-  return <span className={css.title}>{primary}</span>
+  return (
+    <span className={css.title} style={{ color }}>
+      {children}
+    </span>
+  )
 }
 
 const useStyles = makeStyles({
-  title: { flexGrow: 1 },
+  title: { flexGrow: 1, '& sup': { marginLeft: spacing.xs } },
 })

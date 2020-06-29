@@ -25,6 +25,7 @@ declare global {
     | 'service/disconnect'
     | 'service/forget'
     | 'service/restart'
+    | 'service/clear-recent'
 
     // App/settings
     | 'app/open-on-login'

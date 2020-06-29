@@ -132,7 +132,7 @@ export default class ElectronApp {
     new TrayMenu(this.tray)
   }
 
-  private openWindow = (openDevTools?: boolean) => {
+  private openWindow = (location?: string, openDevTools?: boolean) => {
     if (!this.window || !this.tray) return
     d('Showing window')
 
@@ -143,6 +143,7 @@ export default class ElectronApp {
 
     this.window.show()
 
+    if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
   }
 

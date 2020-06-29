@@ -28,7 +28,7 @@ export const UsersPage: React.FC = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="user-friends" size="lg" />
-            <Title primary="Users" />
+            <Title>Users</Title>
           </Typography>
         </>
       }

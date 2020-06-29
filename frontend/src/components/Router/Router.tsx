@@ -27,13 +27,13 @@ export const Router: React.FC = () => {
     uninstalling: state.ui.uninstalling,
     os: state.backend.environment.os,
   }))
-  const { guest, notElevated } = usePermissions()
+  const { guest } = usePermissions()
   const history = useHistory()
   const registered = !!device.uid
 
   let setupLocation = 'setupDevice'
   if (registered) setupLocation = 'setupServices'
-  if (guest || notElevated) setupLocation = 'setupView'
+  if (guest) setupLocation = 'setupView'
 
   useEffect(() => {
     if (dataReady) {

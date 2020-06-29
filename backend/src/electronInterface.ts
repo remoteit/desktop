@@ -1,4 +1,5 @@
 export const EVENTS = {
+  clearRecent: 'service/clear-recent',
   forget: 'tray/forget',
   ready: 'app/ready',
   open: 'app/open',

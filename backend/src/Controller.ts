@@ -56,9 +56,10 @@ class Controller {
     socket.on('user/sign-out-complete', this.signOutComplete)
     socket.on('user/clear-all', user.clearAll)
     socket.on('user/quit', this.quit)
-    socket.on('service/connect', this.connect)
-    socket.on('service/disconnect', this.disconnect)
-    socket.on('service/forget', this.forget)
+    socket.on('service/connect', this.pool.start)
+    socket.on('service/disconnect', this.pool.stop)
+    socket.on('service/clear-recent', this.pool.forgetRecent)
+    socket.on('service/forget', this.pool.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('init', this.syncBackend)
     socket.on('connection', this.connection)
@@ -69,7 +70,7 @@ class Controller {
     socket.on('oobCheck', this.oobCheck)
     socket.on('interfaces', this.interfaces)
     socket.on('freePort', this.freePort)
-    socket.on('preferences', this.preferences)
+    socket.on('preferences', preferences.set)
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
 
@@ -126,8 +127,6 @@ class Controller {
     this.io.emit('nextFreePort', this.pool.freePort)
   }
 
-  preferences = preferences.set
-
   syncBackend = async () => {
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
@@ -143,21 +142,6 @@ class Controller {
 
   connection = async (connection: IConnection) => {
     await this.pool.set(connection, true)
-  }
-
-  connect = async (connection: IConnection) => {
-    Logger.info('CONNECT', { id: connection.id })
-    await this.pool.start(connection)
-  }
-
-  disconnect = async (connection: IConnection) => {
-    Logger.info('DISCONNECT', { id: connection.id })
-    await this.pool.stop(connection)
-  }
-
-  forget = async (connection: IConnection) => {
-    Logger.info('FORGET', { id: connection.id })
-    await this.pool.forget(connection)
   }
 
   quit = () => {
