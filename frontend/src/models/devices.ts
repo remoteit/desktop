@@ -117,6 +117,27 @@ export default createModel({
           console.warn(error)
         })
     },
+    async unShare(device: IDevice, globalState: any) {
+      dispatch.devices.set({ destroying: true })
+      const { auth } = globalState
+      await r3.post(
+        `/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email)}`,
+        {
+          devices: device.id,
+          emails: auth.user?.email,
+          state: 'off',
+          scripting: false,
+        }
+      ).then(async () => {
+          await dispatch.devices.fetch()
+          dispatch.devices.set({ destroying: false })
+        })
+        .catch(error => {
+          dispatch.devices.set({ destroying: false })
+          dispatch.backend.set({ globalError: error.message })
+          console.warn(error)
+        })
+    },
   }),
   reducers: {
     set(state: IDeviceState, params: DeviceParams) {
