@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
-import { REGEX_NAME_SAFE } from '../../shared/constants'
 import { serviceTypes, findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
+import { serviceNameValidation } from '../../shared/nameHelper'
 
 type Props = {
   init?: boolean
@@ -30,6 +30,7 @@ export const Target: React.FC<Props> = ({
   onCancel,
 }) => {
   const [state, setState] = useState<ITarget>(data)
+  const [nameError, setNameError] = useState<string>()
   const css = useStyles()
   const type = findType(data.type)
   const disabled = disable || deleting
@@ -67,12 +68,14 @@ export const Target: React.FC<Props> = ({
           margin="dense"
           value={state.name}
           disabled={disabled}
+          error={!!nameError}
           variant="filled"
           onChange={event => {
-            const value = event.target.value.replace(REGEX_NAME_SAFE, '')
-            update('name', value)
+            const validation = serviceNameValidation(event.target.value)
+            update('name', validation.value)
+            validation.error ? setNameError( validation.error ) :  setNameError(undefined)
           }}
-          // helperText={addDeviceName(device.name, state.name)}
+          helperText={nameError || ''}
         />
       </td>
       <td className={css.cell}>

@@ -5,8 +5,7 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
 import { TextField, Button, Typography } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { safeHostname, osName } from '../../shared/nameHelper'
-import { REGEX_NAME_SAFE, MAX_NAME_LENGTH } from '../../shared/constants'
+import { safeHostname, osName, serviceNameValidation} from '../../shared/nameHelper'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { emit } from '../../services/Controller'
@@ -75,20 +74,19 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
               error={!!nameError}
               disabled={loading}
               onChange={event => {
-                let value = event.target.value.replace(REGEX_NAME_SAFE, '')
-                if (value !== event.target.value) {
-                  setNameError('Device names can only contain alpha numeric characters.')
-                } else if (nameBlacklist.includes(value.toLowerCase().trim())) {
+                const validation = serviceNameValidation(event.target.value, true)
+                setName(validation.value)
+                if ( validation.error ) {
+                  setNameError( validation.error )
+                  return
+                }
+                if (nameBlacklist.includes(validation.value.toLowerCase().trim())) {
                   setNameError('That device name is already in use.')
                   setDisableRegister(true)
-                } else if (value.length > MAX_NAME_LENGTH) {
-                  setNameError(`Device names cannot exceed ${MAX_NAME_LENGTH} characters.`)
-                  value = value.substring(0, MAX_NAME_LENGTH)
                 } else {
                   setNameError(undefined)
                   setDisableRegister(false)
                 }
-                setName(value)
               }}
               onFocus={event => event.target.select()}
               helperText={nameError || '*Must be unique'}

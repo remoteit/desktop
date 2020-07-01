@@ -5,7 +5,7 @@
   ONLY EDIT THE SOURCE FILE IN frontend
 */
 
-import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, REGEX_NOT_FILE_SAFE, IP_PRIVATE, IP_OPEN } from './constants'
+import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, REGEX_NOT_FILE_SAFE, IP_PRIVATE, IP_OPEN, MAX_NAME_LENGTH } from './constants'
 import { getEnvironment } from '../sharedAdaptor'
 
 const separator = ' - '
@@ -70,3 +70,20 @@ export function osName(os?: Ios) {
 export function safeFilename(name: string) {
   return name.replace(REGEX_NOT_FILE_SAFE, '-')
 }
+
+export function serviceNameValidation(name: string, validateLength?: boolean) {
+  const value = name.replace(REGEX_NAME_SAFE, '')
+  if (value !== name) {
+    return  { 
+      error: 'Can only contain alpha numeric characters.',
+      value
+    }
+  }
+  if (validateLength && value.length > MAX_NAME_LENGTH) {
+    return  { 
+      error: `Cannot exceed ${MAX_NAME_LENGTH} characters.`,
+      value: value.substring(0, MAX_NAME_LENGTH)
+    }
+  }
+  return { value }
+} 
