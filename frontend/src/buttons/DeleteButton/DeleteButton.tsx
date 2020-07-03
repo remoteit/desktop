@@ -14,7 +14,7 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
   const { destroying } = useSelector((state: ApplicationState) => state.devices)
   const css = useStyles()
-  const warning =
+  let warning =
     "Are you sure?\nDeleting devices can't be undone so may require you to physically access the device if you wish to recover it."
 
   let disabled: boolean = false
@@ -27,13 +27,14 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
     tooltip = 'Device must be offline'
   }
   if (device.shared) {
-    disabled = true
-    tooltip = 'You must be the device owner'
+    disabled = false
+    tooltip = 'Leave Device'
+    warning = "Are you sure?\nThis device will have to be re-shared to you if you wish to access it again."
   }
 
   const onDelete = () => {
     if (window.confirm(warning)) {
-      devices.destroy(device)
+      device.shared ? devices.unShare(device) : devices.destroy(device)
     }
   }
 
