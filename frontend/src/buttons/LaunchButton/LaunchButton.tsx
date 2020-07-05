@@ -55,7 +55,6 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
             <Typography variant="h4">{app.launch({ ...connection, username })}</Typography>
             <TextField
               autoFocus
-              margin="dense"
               variant="filled"
               label="Username"
               onChange={event => setUsername(event.target.value)}
