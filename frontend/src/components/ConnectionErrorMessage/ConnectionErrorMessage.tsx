@@ -1,5 +1,4 @@
 import React from 'react'
-import { useHistory } from 'react-router'
 import { makeStyles } from '@material-ui/core/styles'
 import { clearConnectionError } from '../../helpers/connectionHelper'
 import { ListItem, ListItemSecondaryAction, ListItemText, Tooltip, Collapse } from '@material-ui/core'
@@ -11,13 +10,6 @@ type Props = { connection?: IConnection; service?: IService; visible?: boolean }
 
 export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, visible }) => {
   const css = useStyles()
-  const history = useHistory()
-
-  const viewLog = () => {
-    const deviceID = (service && service.deviceID) || (connection && connection.deviceID)
-    const serviceID = (service && service.id) || (connection && connection.id)
-    history.push(`/devices/${deviceID}/${serviceID}/log`)
-  }
 
   if (!connection || !connection.error) return null
 

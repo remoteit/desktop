@@ -16,7 +16,6 @@ export interface Props {
 export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   const history = useHistory()
   const css = useStyles()
-  let lastActive: boolean
 
   if (!connections || !connections.length) {
     return (

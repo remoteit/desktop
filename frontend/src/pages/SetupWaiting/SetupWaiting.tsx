@@ -16,7 +16,7 @@ import styles from '../../styling'
 type Props = { os?: Ios; device: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
-  const { globalError: globalError } = useSelector((state: ApplicationState) => state.backend)
+  const { globalError } = useSelector((state: ApplicationState) => state.backend)
   const { devices, ui } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()

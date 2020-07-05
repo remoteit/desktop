@@ -2,7 +2,7 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
-import analytics, { CONNECTION_TYPE_FAILOVER } from '../helpers/Analytics'
+import analytics from '../helpers/Analytics'
 
 class Controller extends EventEmitter {
   private socket: SocketIOClient.Socket

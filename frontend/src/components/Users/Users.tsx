@@ -2,14 +2,11 @@ import React from 'react'
 import { List, ListItem, ListItemIcon, ListItemText, Divider } from '@material-ui/core'
 import { Duration } from '../Duration'
 import { Platform } from '../Platform'
-import { Icon } from '../Icon'
 
 interface Props {
   service?: IService | null
   connected?: boolean
 }
-
-const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
 
 export const Users: React.FC<Props> = ({ service, connected }) => {
   if (!service?.access.length) return null
