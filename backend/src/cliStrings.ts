@@ -51,6 +51,7 @@ export default {
   serviceInstall() {
     return '-j service install'
   },
+
   serviceUninstall() {
     return '-j service uninstall'
   },

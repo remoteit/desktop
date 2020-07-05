@@ -49,12 +49,12 @@ export default class ConnectionPool {
     cli.data.connections.forEach(async c => {
       const connection = this.find(c.id)?.params
       d('SYNC CLI CONNECTION', connection, c)
-      if (
-        !connection ||
-        connection.startTime !== c.startTime ||
-        connection.endTime !== c.endTime ||
-        connection.active !== c.active
-      ) {
+      if (!connection || connection.startTime !== c.startTime || connection.active !== c.active) {
+        Logger.info('CONNECTION DIFF', {
+          connection: !connection,
+          startTime: connection?.startTime !== c.startTime,
+          active: connection?.active !== c.active,
+        })
         await this.set({ ...connection, ...c })
       }
     })
@@ -143,7 +143,6 @@ export default class ConnectionPool {
 
   updated = () => {
     const json = this.toJSON()
-    console.log('UPDATED', json)
     this.connectionsFile.write(json)
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
