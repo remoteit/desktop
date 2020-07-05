@@ -104,39 +104,24 @@ export default createModel({
       dispatch.backend.set({ connections: [] })
       dispatch.devices.set({ all: [], query: '', filter: 'all' })
     },
-    async destroy(device: IDevice) {
-      dispatch.devices.set({ destroying: true })
-      r3.post(`/developer/device/delete/registered/${device.id}`)
-        .then(async () => {
-          await dispatch.devices.fetch()
-          dispatch.devices.set({ destroying: false })
-        })
-        .catch(error => {
-          dispatch.devices.set({ destroying: false })
-          dispatch.backend.set({ globalError: error.message })
-          console.warn(error)
-        })
-    },
-    async unShare(device: IDevice, globalState: any) {
-      dispatch.devices.set({ destroying: true })
+    async destroy(device: IDevice, globalState: any) {
       const { auth } = globalState
-      await r3.post(
-        `/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email)}`,
-        {
-          devices: device.id,
-          emails: auth.user?.email,
-          state: 'off',
-          scripting: false,
-        }
-      ).then(async () => {
-          await dispatch.devices.fetch()
-          dispatch.devices.set({ destroying: false })
-        })
-        .catch(error => {
-          dispatch.devices.set({ destroying: false })
-          dispatch.backend.set({ globalError: error.message })
-          console.warn(error)
-        })
+      dispatch.devices.set({ destroying: true })
+      try {
+        device.shared
+          ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email)}`, {
+              devices: device.id,
+              emails: auth.user?.email,
+              state: 'off',
+              scripting: false,
+            })
+          : await r3.post(`/developer/device/delete/registered/${device.id}`)
+        await dispatch.devices.fetch()
+      } catch (error) {
+        dispatch.backend.set({ globalError: error.message })
+        console.warn(error)
+      }
+      dispatch.devices.set({ destroying: false })
     },
   }),
   reducers: {
