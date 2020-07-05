@@ -12,3 +12,9 @@ export function clearUserCredentials() {
 }
 
 export const r3 = setup({ apiURL: API_URL, developerKey: DEVELOPER_KEY })
+
+export function hasCredentials() {
+  if (r3.token && r3.authHash) return true
+  console.warn('Missing api token or authHash. Token:', r3.token, 'AuthHash:', r3.authHash)
+  return false
+}
