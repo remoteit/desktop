@@ -26,12 +26,9 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
 
   useEffect(() => {
-    if(connection && connection.username) {
-      setUsername(connection.username)
-    } else {
-      setUsername('');
-    }
+      setUsername((connection && connection.username) || '')
   },[connection?.username])
+  
 
   if (!connection || !connection.active || !app) return null
 
