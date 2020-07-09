@@ -73,11 +73,12 @@
       "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": true,
       "deleteAppDataOnUninstall": true,
       "shortcutName": "remote.it",
-      "include": "build/uninstaller.nsh"
+      "include": "build/uninstaller.nsh",
+      "allowToChangeInstallationDirectory": true
     },
     "linux": {
       "category": "Network",
