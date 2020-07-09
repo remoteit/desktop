@@ -88,7 +88,7 @@ export default createModel({
     /*
       Fetches a single device and merges in the state
     */
-    async get(device: IDevice) {
+    async get(id: string) {
       const { graphQLMetadata, graphQLError, setDevice, set } = dispatch.devices
       let result
 
@@ -97,7 +97,7 @@ export default createModel({
       set({ getting: true })
 
       try {
-        const gqlResponse = await graphQLGet(device.id)
+        const gqlResponse = await graphQLGet(id)
         const [gqlData] = await graphQLMetadata(gqlResponse)
         result = graphQLAdaptor(gqlData.devices, gqlData.id)[0]
       } catch (error) {
@@ -106,7 +106,7 @@ export default createModel({
 
       console.log('GET DEVICE', result)
       set({ getting: false })
-      setDevice({ id: device.id, device: result })
+      setDevice({ id, device: result })
     },
 
     async graphQLError(error) {
