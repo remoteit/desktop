@@ -15,6 +15,10 @@ import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
 import analytics from '../../helpers/Analytics'
+import Button from '@material-ui/core/Button'
+import Snackbar from '@material-ui/core/Snackbar'
+import IconButton from '@material-ui/core/IconButton'
+import { Icon } from '../../components/Icon'
 
 export const SettingsPage = () => {
   const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
@@ -24,7 +28,7 @@ export const SettingsPage = () => {
     cliVersion: state.binaries.installedVersion || 'getting version...',
     preferences: state.backend.preferences,
   }))
-
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false)
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
   const css = useStyles()
@@ -49,6 +53,20 @@ export const SettingsPage = () => {
   useEffect(() => {
     analytics.page('SettingsPage')
   }, [])
+
+  const handleClick = () => {
+    emit('preferences', { ...preferences, disableLocalNetwork: !preferences.disableLocalNetwork })
+    setSnackbarOpen(true)
+  }
+
+  const handleClose = () => {
+    setSnackbarOpen(false)
+  }
+
+  const handleUndo = () => {
+    emit('preferences', { ...preferences, disableLocalNetwork: !preferences.disableLocalNetwork })
+    setSnackbarOpen(false)
+  }
 
   return (
     <Container
@@ -102,6 +120,7 @@ export const SettingsPage = () => {
             onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
           />
         )}
+
         <SettingsListItem
           label="Open at login"
           icon="power-off"
@@ -133,6 +152,40 @@ export const SettingsPage = () => {
               icon="user-slash"
               onClick={clearWarning}
             />
+            <SettingsListItem
+              label="Disable local network discovery"
+              icon="power-off"
+              toggle={preferences.disableLocalNetwork}
+              onClick={() => {
+                handleClick()
+              }}
+            />
+            <Snackbar
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              open={snackbarOpen}
+              autoHideDuration={15000}
+              onClose={handleClose}
+              message="Restart manually"
+              action={
+                <React.Fragment>
+                  <Button color="secondary" size="small" onClick={handleUndo}>
+                    UNDO
+                  </Button>
+                  <IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={handleClose}
+                    className={css.iconButton}
+                  >
+                    <Icon name="times" size="sm" />
+                  </IconButton>
+                </React.Fragment>
+              }
+            />
           </List>
         </>
       )}
@@ -142,4 +195,5 @@ export const SettingsPage = () => {
 
 const useStyles = makeStyles({
   header: { '& img': { marginBottom: spacing.sm } },
+  iconButton: { paddingLeft: 10 },
 })

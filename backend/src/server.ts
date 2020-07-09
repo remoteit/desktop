@@ -14,7 +14,7 @@ import systemInfo from './systemInfo'
 import socketioAuth from 'socketio-auth'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
-
+import Preferences from './preferences'
 const d = debug('r3:backend:Server')
 
 class Server {
@@ -50,12 +50,14 @@ class Server {
   }
 
   async start() {
+    const preferences = Preferences.get()
+    const HOST = preferences.disableLocalNetwork ? 'localhost' : '0.0.0.0'
     const server = createServer(this.app)
       .on('error', error => {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
         app.quit()
       })
-      .listen(WEB_PORT, () => {
+      .listen(WEB_PORT, HOST, () => {
         d(`Listening on port ${WEB_PORT}`)
         Logger.info('SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
       })
