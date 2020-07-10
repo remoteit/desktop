@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
 import {
@@ -24,6 +24,11 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   const app = useApplication(service && service.typeID)
   const [open, setOpen] = useState<boolean>(false)
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
+
+  useEffect(() => {
+      setUsername((connection && connection.username) || '')
+  },[connection?.username])
+  
 
   if (!connection || !connection.active || !app) return null
 
