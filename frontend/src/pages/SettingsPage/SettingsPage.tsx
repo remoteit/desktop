@@ -149,7 +149,7 @@ export const SettingsPage = () => {
             <SettingsListItem
               label="Disable local network discovery"
               subLabel={sublevelText}
-              icon={wifiConnectionLabel}
+              icon={preferences.disabledLocalNetwork ? 'wifi-slash' : 'wifi'}
               toggle={preferences.disabledLocalNetwork}
               onClick={() => {
                 handleClick()
