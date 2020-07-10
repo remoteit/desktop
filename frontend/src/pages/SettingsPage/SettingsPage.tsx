@@ -181,5 +181,5 @@ export const SettingsPage = () => {
 
 const useStyles = makeStyles({
   header: { '& img': { marginBottom: spacing.sm } },
-  span: { color: 'red' },
+  span: { color: colors.warning },
 })
