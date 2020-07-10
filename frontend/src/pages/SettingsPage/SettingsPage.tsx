@@ -151,9 +151,7 @@ export const SettingsPage = () => {
               subLabel={sublevelText}
               icon={preferences.disabledLocalNetwork ? 'wifi-slash' : 'wifi'}
               toggle={preferences.disabledLocalNetwork}
-              onClick={() => {
-                handleClick()
-              }}
+              onClick={handleClick}
             />
 
             <SettingsListItem
