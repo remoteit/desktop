@@ -51,7 +51,7 @@ class Server {
 
   async start() {
     const preferences = Preferences.get()
-    const HOST = preferences.disableLocalNetwork ? 'localhost' : '0.0.0.0'
+    const HOST = preferences.disabledLocalNetwork ? 'localhost' : '0.0.0.0'
     const server = createServer(this.app)
       .on('error', error => {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })

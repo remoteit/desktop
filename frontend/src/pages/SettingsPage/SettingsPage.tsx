@@ -15,10 +15,6 @@ import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
 import analytics from '../../helpers/Analytics'
-import Button from '@material-ui/core/Button'
-import Snackbar from '@material-ui/core/Snackbar'
-import IconButton from '@material-ui/core/IconButton'
-import { Icon } from '../../components/Icon'
 
 export const SettingsPage = () => {
   const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
@@ -28,10 +24,21 @@ export const SettingsPage = () => {
     cliVersion: state.binaries.installedVersion || 'getting version...',
     preferences: state.backend.preferences,
   }))
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false)
+
+  const css = useStyles()
+
+  const [disabledLocalNetwork, setDisabledLocalNetwork] = React.useState(preferences.disabledLocalNetwork)
+
+  const subLevelTextValue = (
+    <span>
+      This will bind the desktop UI to localhost so that it will only be available through sharing with remote.it
+    </span>
+  )
+
+  const [sublevelText, setSubLevelText] = React.useState(subLevelTextValue)
+  const [wifiConnectionLabel, setWifiConnectionLabel] = React.useState('wifi')
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
-  const css = useStyles()
 
   const quitWarning = () =>
     window.confirm('Are you sure? Quitting will close all active connections.') && emit('user/quit')
@@ -51,21 +58,26 @@ export const SettingsPage = () => {
     binaries.install()
 
   useEffect(() => {
+    const icon = preferences.disabledLocalNetwork ? 'wifi-slash' : 'wifi'
+    setWifiConnectionLabel(icon)
+
+    if (disabledLocalNetwork == preferences.disabledLocalNetwork) {
+      setSubLevelText(
+        <span>
+          This will bind the desktop UI to localhost so that it will only be available through sharing with remote.it
+        </span>
+      )
+    } else {
+      setSubLevelText(<span className={css.span}>Please restart for changes to take effect.</span>)
+    }
+  }, [preferences.disabledLocalNetwork])
+
+  useEffect(() => {
     analytics.page('SettingsPage')
   }, [])
 
   const handleClick = () => {
-    emit('preferences', { ...preferences, disableLocalNetwork: !preferences.disableLocalNetwork })
-    setSnackbarOpen(true)
-  }
-
-  const handleClose = () => {
-    setSnackbarOpen(false)
-  }
-
-  const handleUndo = () => {
-    emit('preferences', { ...preferences, disableLocalNetwork: !preferences.disableLocalNetwork })
-    setSnackbarOpen(false)
+    emit('preferences', { ...preferences, disabledLocalNetwork: !preferences.disabledLocalNetwork })
   }
 
   return (
@@ -135,6 +147,16 @@ export const SettingsPage = () => {
           <Typography variant="subtitle1">Advanced</Typography>
           <List>
             <SettingsListItem
+              label="Disable local network discovery"
+              subLabel={sublevelText}
+              icon={wifiConnectionLabel}
+              toggle={preferences.disabledLocalNetwork}
+              onClick={() => {
+                handleClick()
+              }}
+            />
+
+            <SettingsListItem
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}
@@ -152,40 +174,6 @@ export const SettingsPage = () => {
               icon="user-slash"
               onClick={clearWarning}
             />
-            <SettingsListItem
-              label="Disable local network discovery"
-              icon="power-off"
-              toggle={preferences.disableLocalNetwork}
-              onClick={() => {
-                handleClick()
-              }}
-            />
-            <Snackbar
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              open={snackbarOpen}
-              autoHideDuration={15000}
-              onClose={handleClose}
-              message="Restart manually"
-              action={
-                <React.Fragment>
-                  <Button color="secondary" size="small" onClick={handleUndo}>
-                    UNDO
-                  </Button>
-                  <IconButton
-                    size="small"
-                    aria-label="close"
-                    color="inherit"
-                    onClick={handleClose}
-                    className={css.iconButton}
-                  >
-                    <Icon name="times" size="sm" />
-                  </IconButton>
-                </React.Fragment>
-              }
-            />
           </List>
         </>
       )}
@@ -195,5 +183,5 @@ export const SettingsPage = () => {
 
 const useStyles = makeStyles({
   header: { '& img': { marginBottom: spacing.sm } },
-  iconButton: { paddingLeft: 10 },
+  span: { color: 'red' },
 })

@@ -6,7 +6,7 @@ import { Icon } from '../Icon'
 type Props = {
   icon?: string
   label: string
-  subLabel?: string
+  subLabel?: string | React.ReactNode
   button?: string
   toggle?: boolean
   disabled?: boolean
