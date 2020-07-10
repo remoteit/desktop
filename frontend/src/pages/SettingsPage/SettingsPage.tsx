@@ -15,6 +15,7 @@ import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
 import analytics from '../../helpers/Analytics'
+import { colors } from '../../styling'
 
 export const SettingsPage = () => {
   const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({

@@ -15,6 +15,7 @@ import socketioAuth from 'socketio-auth'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 import Preferences from './preferences'
+import { IP_PRIVATE, IP_OPEN } from './sharedCopy/constants'
 const d = debug('r3:backend:Server')
 
 class Server {
