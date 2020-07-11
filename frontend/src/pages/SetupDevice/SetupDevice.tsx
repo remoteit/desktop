@@ -5,7 +5,7 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
 import { TextField, Button, Typography } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { safeHostname, osName, serviceNameValidation} from '../../shared/nameHelper'
+import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { emit } from '../../services/Controller'
@@ -22,7 +22,7 @@ type Props = {
 export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
-    loading: !state.backend.scanData.localhost || state.devices.fetching,
+    loading: !state.backend.scanData.localhost,
     nameBlacklist: state.devices.all
       .filter((device: IDevice) => !device.shared)
       .map((d: IDevice) => d.name.toLowerCase()),
@@ -42,14 +42,17 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   }
 
   useEffect(() => {
-    if (!loading) setName(safeHostname(hostname, nameBlacklist))
+    if (loading) {
+      emit('scan', 'localhost')
+      analytics.track('networkScan')
+    } else {
+      setName(safeHostname(hostname, nameBlacklist))
+    }
   }, [loading])
 
   useEffect(() => {
     // Refresh device data
-    analytics.track('networkScan')
     emit('device')
-    emit('scan', 'localhost')
   }, [])
 
   return (
@@ -72,12 +75,11 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
               value={name}
               variant="filled"
               error={!!nameError}
-              disabled={loading}
               onChange={event => {
                 const validation = serviceNameValidation(event.target.value, true)
                 setName(validation.value)
-                if ( validation.error ) {
-                  setNameError( validation.error )
+                if (validation.error) {
+                  setNameError(validation.error)
                   return
                 }
                 if (nameBlacklist.includes(validation.value.toLowerCase().trim())) {
@@ -97,23 +99,14 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
               color="primary"
               variant="contained"
               size="medium"
-              disabled={!name || disableRegister || loading}
+              disabled={!name || disableRegister}
               type="submit"
             >
-              {loading ? (
-                <>
-                  Loading
-                  <Icon name="spinner-third" spin={true} type="regular" inline />
-                </>
-              ) : (
-                <>
-                  Register
-                  <Icon name="check" type="regular" inline />
-                </>
-              )}
+              Register
+              <Icon name="check" type="regular" inline />
             </Button>
           </section>
-          <LocalhostScanForm setSelected={setSelected} />
+          <LocalhostScanForm setSelected={setSelected} loading={loading} />
         </form>
       </Body>
     </Container>
