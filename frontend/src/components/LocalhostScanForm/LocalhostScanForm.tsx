@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../shared/constants'
 import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox, Typography } from '@material-ui/core'
 import { getTypeId, findType, serviceTypes } from '../../services/serviceTypes'
+import { LoadingMessage } from '../LoadingMessage'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
@@ -9,10 +10,10 @@ import { spacing } from '../../styling'
 
 type Props = {
   setSelected: (targets: ITarget[]) => void
-  disabled?: boolean
+  loading?: boolean
 }
 
-export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) => {
+export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => {
   const [state, setState] = useState<boolean[]>([])
   const css = useStyles()
   const scanData = useSelector((state: ApplicationState) =>
@@ -38,6 +39,8 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) =>
     updateTargets(checked)
   }
 
+  if (loading) return <LoadingMessage message="Scanning local services" />
+
   if (!scanData) return null
 
   return (
@@ -55,7 +58,6 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, disabled }) =>
               setState([...state])
               updateTargets([...state])
             }}
-            disabled={disabled}
             className={css.item}
           >
             <ListItemIcon>
