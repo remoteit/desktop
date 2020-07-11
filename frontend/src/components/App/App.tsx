@@ -2,17 +2,19 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { useHistory, useLocation } from 'react-router-dom'
+import { REGEX_FIRST_PATH, HEARTBEAT_INTERVAL } from '../../shared/constants'
 import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
+import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
+import { useInterval } from '../../hooks/useInterval'
 import { makeStyles } from '@material-ui/core/styles'
+import { SignInPage } from '../../pages/SignInPage'
 import { Header } from '../Header/Header'
 import { Router } from '../Router'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { Page } from '../../pages/Page'
-import { SignInPage } from '../../pages/SignInPage'
-import { InstallationNotice } from '../InstallationNotice'
-import { REGEX_FIRST_PATH } from '../../shared/constants'
+import { emit } from '../../services/Controller'
 import styles from '../../styling'
 
 export const App: React.FC = () => {
@@ -35,6 +37,10 @@ export const App: React.FC = () => {
     if (!stored || stored === location.pathname) history.push(selected)
     else history.push(stored)
   }
+
+  useInterval(() => {
+    document.hasFocus() && emit('heartbeat')
+  }, HEARTBEAT_INTERVAL)
 
   useEffect(() => {
     if (navigation[menu] !== location.pathname) {

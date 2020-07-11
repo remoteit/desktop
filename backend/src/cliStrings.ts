@@ -10,6 +10,10 @@ export default {
     return `-j signout --authhash ${user.authHash}`
   },
 
+  status() {
+    return `-j status --authhash ${user.authHash}`
+  },
+
   setup(device: ITargetDevice) {
     return `-j --manufacture-id ${environment.appCode} setup --name "${device.name}" --authhash ${user.authHash}`
   },
@@ -51,6 +55,7 @@ export default {
   serviceInstall() {
     return '-j service install'
   },
+
   serviceUninstall() {
     return '-j service uninstall'
   },

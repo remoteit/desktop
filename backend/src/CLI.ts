@@ -29,6 +29,8 @@ type IExec = {
   onError?: ErrorCallback
 }
 
+type IConnectionStatus = { id: string; connectionState: 'offline' | 'connecting' | 'connected' }
+
 export default class CLI {
   data: IData = {
     user: undefined,
@@ -55,6 +57,7 @@ export default class CLI {
     if (this.isSignedOut() && (this.data.device.uid || this.data.connections.length)) {
       this.signIn()
     }
+    this.updateConnectionStatus()
   }
 
   isSignedOut() {
@@ -116,10 +119,30 @@ export default class CLI {
       failover: c.failover,
       active: !c.disabled,
     }))
+    this.updateConnectionStatus()
   }
 
   private readFile() {
     return this.configFile.read() || {}
+  }
+
+  async updateConnectionStatus() {
+    if (!this.data.connections.length) return
+    const json = await this.status()
+    this.data.connections.map(c => {
+      const status: IConnectionStatus = json.connections.find((s: IConnectionStatus) => s.id === c.id)
+      return {
+        ...c,
+        active: status.connectionState === 'connected',
+        connecting: status.connectionState === 'connecting',
+        // online: status.connectionState !== 'offline',
+      }
+    })
+  }
+
+  async status() {
+    const result = await this.exec({ cmds: [strings.status()], checkSignIn: true, quiet: true })
+    return JSON.parse(result)
   }
 
   async addTarget(t: ITarget) {

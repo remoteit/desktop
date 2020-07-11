@@ -1,5 +1,4 @@
 import React from 'react'
-import { IUser } from 'remote.it'
 import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'

@@ -1,5 +1,4 @@
 import React from 'react'
-import { IUser } from 'remote.it'
 import { Tooltip, Divider } from '@material-ui/core'
 
 const MAX_SESSIONS_DISPLAY = 3

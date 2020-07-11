@@ -27,7 +27,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
             thisDevice={true}
           />
         ) : (
-          <DeviceSetupItem thisDevice={true} />
+          <DeviceSetupItem />
         )}
         <Divider />
         {devices.map(

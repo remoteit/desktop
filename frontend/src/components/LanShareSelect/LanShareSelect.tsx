@@ -1,7 +1,6 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
 import { useLocation } from 'react-router-dom'
-import { ListItemIcon, ListItemText, Typography } from '@material-ui/core'
+import { ListItemIcon, ListItemText } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'

@@ -3,7 +3,6 @@ import { hostName } from '../../shared/nameHelper'
 import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { Typography, Divider, Collapse } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'
-import { Throughput } from '../Throughput'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
 

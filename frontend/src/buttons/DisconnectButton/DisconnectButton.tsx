@@ -3,7 +3,7 @@ import { emit } from '../../services/Controller'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
-import analytics, { CONNECTION_TYPE_FAILOVER } from '../../helpers/Analytics'
+import analytics from '../../helpers/Analytics'
 
 type Props = {
   disabled?: boolean
