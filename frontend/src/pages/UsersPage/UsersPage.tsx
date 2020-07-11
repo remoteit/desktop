@@ -13,7 +13,7 @@ import analytics from '../../helpers/Analytics'
 
 export const UsersPage: React.FC = () => {
   const { serviceID = '' } = useParams()
-  const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const connected = !!service?.sessions.length
 
   useEffect(() => {

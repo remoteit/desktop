@@ -1,6 +1,6 @@
-import { graphQLFetch, graphQLAdaptor } from '../services/graphQL'
+import { graphQLFetch, graphQLAdaptor, graphQLGet } from '../services/graphQL'
 import { createModel } from '@rematch/core'
-import { r3 } from '../services/remote.it'
+import { r3, hasCredentials } from '../services/remote.it'
 
 type DeviceParams = { [key: string]: any }
 
@@ -10,6 +10,7 @@ type IDeviceState = DeviceParams & {
   results: number
   searched: boolean
   fetching: boolean
+  getting: boolean
   destroying: boolean
   query: string
   append: boolean
@@ -24,6 +25,7 @@ const state: IDeviceState = {
   results: 0,
   searched: false,
   fetching: true,
+  getting: false,
   destroying: false,
   query: '',
   append: false,
@@ -35,9 +37,12 @@ const state: IDeviceState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
+    /* 
+      GraphQL search query for all device data
+    */
     async fetch(_, globalState: any) {
-      const { set, graphQLProcessor } = dispatch.devices
-      const { query, filter, size, from, append } = globalState.devices
+      const { set, graphQLFetchProcessor } = dispatch.devices
+      const { all, query, filter, size, from, append, searched } = globalState.devices
       const { connections, device, targets } = globalState.backend
       const options: gqlOptions = {
         size,
@@ -52,40 +57,68 @@ export default createModel({
             ),
       }
 
-      if (!r3.token || !r3.authHash) {
-        console.warn('Fetch missing api token or authHash. Fetch aborted. Token:', r3.token, 'AuthHash:', r3.authHash)
-        return
-      }
+      if (!hasCredentials()) return
 
       set({ fetching: true })
+      const { devices, total } = await graphQLFetchProcessor(options)
 
-      try {
-        const gqlData = await graphQLFetch(options)
-        await graphQLProcessor(gqlData)
-      } catch (error) {
-        console.error('Fetch error:', error, error.response)
-        if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
-          dispatch.auth.checkSession()
-        } else {
-          dispatch.backend.set({ globalError: error.message })
-        }
-      }
+      if (searched) set({ results: total })
+      else set({ total })
+
+      if (append) set({ all: [...all, ...devices] })
+      else set({ all: devices })
 
       set({ fetching: false, append: false })
     },
-    async graphQLProcessor(gqlData: any, globalState: any) {
-      const { set, graphQLExtractor } = dispatch.devices
-      const { all, append } = globalState.devices
 
-      const gqlLoginData = await graphQLExtractor(gqlData)
-      const connections = graphQLAdaptor(gqlLoginData.connections, gqlLoginData.id, true)
-      const devices = graphQLAdaptor(gqlLoginData.devices, gqlLoginData.id)
-
-      if (append) set({ all: [...all, ...devices] })
-      else set({ all: [...connections, ...devices] })
+    async graphQLFetchProcessor(options: any, globalState: any) {
+      const { graphQLMetadata, graphQLError } = dispatch.devices
+      try {
+        const gqlResponse = await graphQLFetch(options)
+        const [gqlData, total] = await graphQLMetadata(gqlResponse)
+        const connections = graphQLAdaptor(gqlData.connections, gqlData.id, true)
+        const devices = graphQLAdaptor(gqlData.devices, gqlData.id)
+        return { devices: [...connections, ...devices], total }
+      } catch (error) {
+        await graphQLError(error)
+        return { devices: [], total: 0 }
+      }
     },
-    async graphQLExtractor(gqlData: any, globalState: any) {
-      const { searched } = globalState.devices
+
+    /*
+      Fetches a single device and merges in the state
+    */
+    async get(id: string) {
+      const { graphQLMetadata, graphQLError, setDevice, set } = dispatch.devices
+      let result
+
+      if (!hasCredentials()) return
+
+      set({ getting: true })
+
+      try {
+        const gqlResponse = await graphQLGet(id)
+        const [gqlData] = await graphQLMetadata(gqlResponse)
+        result = graphQLAdaptor(gqlData.devices, gqlData.id)[0]
+      } catch (error) {
+        await graphQLError(error)
+      }
+
+      console.log('GET DEVICE', result)
+      set({ getting: false })
+      setDevice({ id, device: result })
+    },
+
+    async graphQLError(error) {
+      console.error('Fetch error:', error, error.response)
+      if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
+        dispatch.auth.checkSession()
+      } else {
+        dispatch.backend.set({ globalError: error.message })
+      }
+    },
+
+    async graphQLMetadata(gqlData: any) {
       const { errors } = gqlData?.data
 
       if (errors) {
@@ -93,55 +126,54 @@ export default createModel({
         dispatch.backend.set({ globalError: 'GraphQL: ' + errors[0].message })
       }
 
-      const login = gqlData?.data?.data?.login
-      const total = login?.devices?.total || 0
-      if (searched) dispatch.devices.set({ results: total })
-      else dispatch.devices.set({ total })
+      const data = gqlData?.data?.data?.login
+      const total = data?.devices?.total || 0
 
-      return login
+      return [data, total]
     },
+
     async reset() {
       dispatch.backend.set({ connections: [] })
       dispatch.devices.set({ all: [], query: '', filter: 'all' })
     },
-    async destroy(device: IDevice) {
-      dispatch.devices.set({ destroying: true })
-      r3.post(`/developer/device/delete/registered/${device.id}`)
-        .then(async () => {
-          await dispatch.devices.fetch()
-          dispatch.devices.set({ destroying: false })
-        })
-        .catch(error => {
-          dispatch.devices.set({ destroying: false })
-          dispatch.backend.set({ globalError: error.message })
-          console.warn(error)
-        })
-    },
-    async unShare(device: IDevice, globalState: any) {
-      dispatch.devices.set({ destroying: true })
+
+    async destroy(device: IDevice, globalState: any) {
       const { auth } = globalState
-      await r3.post(
-        `/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email)}`,
-        {
-          devices: device.id,
-          emails: auth.user?.email,
-          state: 'off',
-          scripting: false,
-        }
-      ).then(async () => {
-          await dispatch.devices.fetch()
-          dispatch.devices.set({ destroying: false })
-        })
-        .catch(error => {
-          dispatch.devices.set({ destroying: false })
-          dispatch.backend.set({ globalError: error.message })
-          console.warn(error)
-        })
+      dispatch.devices.set({ destroying: true })
+      try {
+        device.shared
+          ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email)}`, {
+              devices: device.id,
+              emails: auth.user?.email,
+              state: 'off',
+              scripting: false,
+            })
+          : await r3.post(`/developer/device/delete/registered/${device.id}`)
+        await dispatch.devices.fetch()
+      } catch (error) {
+        dispatch.backend.set({ globalError: error.message })
+        console.warn(error)
+      }
+      dispatch.devices.set({ destroying: false })
     },
   }),
+
   reducers: {
     set(state: IDeviceState, params: DeviceParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+    },
+    setDevice(state: IDeviceState, { id, device }: { id: string; device: IDevice }) {
+      let exists = false
+      state.all.forEach((d, index) => {
+        if (d.id === id) {
+          if (device) state.all[index] = { ...device, hidden: d.hidden }
+          else state.all.splice(index, 1)
+          exists = true
+        }
+      })
+
+      // Add if new
+      if (!exists && device) state.all.push(device)
     },
   },
 })

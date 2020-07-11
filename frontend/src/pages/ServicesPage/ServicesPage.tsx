@@ -6,6 +6,7 @@ import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
+import { RefreshButton } from '../../buttons/RefreshButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
@@ -46,6 +47,7 @@ export const ServicesPage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
             <ServiceName service={device} connection={activeConnection} shared={device.shared} inline />
+            <RefreshButton device={device} />
             <DeleteButton device={device} />
           </Typography>
         </>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip } from '@material-ui/core'
-import { Color, spacing, FontSize } from '../../styling'
+import { Color, FontSize } from '../../styling'
 import { Icon } from '../Icon'
 
 export const PLATFORMS = [

@@ -59,11 +59,20 @@ const DEVICE_SELECT = `{
   }
 }`
 
-export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
-  return await axios.request({
+/* 
+  GraphQL common request parameters
+*/
+function requestParams() {
+  return {
     url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
-    method: 'post',
+    method: 'post' as 'post',
     headers: { token: r3.token },
+  }
+}
+
+export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
+  const request = {
+    ...requestParams(),
     data: {
       query: `
         query($ids: [String!], $idSize: Int, $size: Int, $from: Int, $name: String, $state: String) {
@@ -83,7 +92,31 @@ export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOpt
         state,
       },
     },
-  })
+  }
+  console.log('GRAPHQL ALL REQUEST', request)
+  return await axios.request(request)
+}
+
+export async function graphQLGet(id: string) {
+  const request = {
+    ...requestParams(),
+    data: {
+      query: `
+        query($ids: [String!], $idSize: Int) {
+          login {
+            id
+            devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
+          }
+        }
+      `,
+      variables: {
+        idSize: 1,
+        ids: [id],
+      },
+    },
+  }
+  console.log('GRAPHQL SINGLE REQUEST', request)
+  return await axios.request(request)
 }
 
 export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolean): IDevice[] {

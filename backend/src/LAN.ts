@@ -43,7 +43,6 @@ class LAN {
     EventBus.emit(environment.EVENTS.send, environment.frontend)
   }
 
-  //Called from electron on heartbeat
   async check() {
     if (this.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
       let prevOobActive = this.oobActive

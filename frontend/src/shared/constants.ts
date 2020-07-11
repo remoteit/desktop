@@ -11,6 +11,7 @@ export const GRAPHQL_BETA_API = process.env.GRAPHQL_BETA_API || 'https://api.rem
 export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PORT = process.env.REACT_APP_PORT || 29999
+export const HEARTBEAT_INTERVAL = 1000 * 15
 
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'

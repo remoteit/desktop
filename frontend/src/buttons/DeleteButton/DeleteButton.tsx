@@ -26,16 +26,15 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
     disabled = true
     tooltip = 'Device must be offline'
   }
+
   if (device.shared) {
     disabled = false
     tooltip = 'Leave Device'
-    warning = "Are you sure?\nThis device will have to be re-shared to you if you wish to access it again."
+    warning = 'Are you sure?\nThis device will have to be re-shared to you if you wish to access it again.'
   }
 
   const onDelete = () => {
-    if (window.confirm(warning)) {
-      device.shared ? devices.unShare(device) : devices.destroy(device)
-    }
+    if (window.confirm(warning)) devices.destroy(device)
   }
 
   if (disabled) return null
