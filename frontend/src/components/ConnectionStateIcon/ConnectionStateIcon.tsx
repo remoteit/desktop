@@ -23,11 +23,12 @@ export function ConnectionStateIcon({
 }: ConnectionStateIconProps) {
   const css = useStyles()
 
+  state = state || service?.state
+
   let icon = 'question-circle'
   let colorName: Color = 'warning'
+  let name: string = state || 'unknown'
   let element: any
-
-  state = state || service?.state
 
   if (connection) {
     if (connection.connecting && !connection.active) state = 'connecting'
@@ -38,10 +39,12 @@ export function ConnectionStateIcon({
     case 'active':
       icon = 'check-circle'
       colorName = 'success'
+      name = 'online'
       break
     case 'inactive':
       icon = 'minus-circle'
       colorName = 'grayLight'
+      name = 'offline'
       break
     case 'connected':
       icon = 'scrubber'
@@ -77,7 +80,7 @@ export function ConnectionStateIcon({
     )
   else element = <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
 
-  return <Tooltip title={mini && service ? `${service.name} - ${state}` : state || 'unknown'}>{element}</Tooltip>
+  return <Tooltip title={name}>{element}</Tooltip>
 }
 
 const useStyles = makeStyles({
