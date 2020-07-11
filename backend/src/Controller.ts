@@ -8,15 +8,13 @@ import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
+import remoteitInstaller from './remoteitInstaller'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import debug from 'debug'
-
-const d = debug('r3:backend:Server')
 
 class Controller {
   private io: SocketIO.Server
@@ -28,6 +26,7 @@ class Controller {
     this.pool = pool
     EventBus.on(server.EVENTS.authenticated, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
+    // EventBus.on(User.EVENTS.signedIn, () => this.check(true))
 
     let eventNames = [
       ...Object.values(User.EVENTS),
@@ -73,14 +72,23 @@ class Controller {
     socket.on('preferences', preferences.set)
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
+    socket.on('heartbeat', this.check)
 
-    // things are ready - send the secure data
-    this.syncBackend()
+    this.syncBackend() // things are ready, send the init data
+    this.check(true) // check and log
   }
 
   recapitate = () => {
     // environment changes after recapitation
     this.io.emit(environment.EVENTS.send, environment.frontend)
+  }
+
+  check = (log?: boolean) => {
+    remoteitInstaller.check(log)
+    this.pool.check()
+    cli.check()
+    lan.check()
+    app.check()
   }
 
   signOutComplete = () => {

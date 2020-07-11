@@ -44,7 +44,8 @@ export default class ConnectionPool {
     EventBus.on(electronInterface.EVENTS.clearRecent, this.forgetRecent)
   }
 
-  syncCLI = () => {
+  // Sync with CLI
+  check = () => {
     // move connections: cli -> desktop
     cli.data.connections.forEach(async c => {
       const connection = this.find(c.id)?.params
@@ -67,8 +68,6 @@ export default class ConnectionPool {
       }
     })
   }
-
-  check = this.syncCLI
 
   // update single connection
   set = async (connection: IConnection, setCLI?: boolean) => {

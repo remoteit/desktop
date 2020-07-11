@@ -2,6 +2,7 @@ declare global {
   type SocketAction =
     //socket auth
     | 'authentication'
+    | 'heartbeat'
 
     // user/auth
     | 'user/check-sign-in'
