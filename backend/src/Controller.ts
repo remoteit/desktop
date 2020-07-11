@@ -173,7 +173,7 @@ class Controller {
   }
 
   installBinaries = async () => {
-    await binaryInstaller.install()
+    await binaryInstaller.install(true)
   }
 }
 
