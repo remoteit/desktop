@@ -17,10 +17,10 @@ class BinaryInstaller {
   options = { name: 'remoteit' }
   inProgress = false
 
-  async install() {
+  async install(force?: boolean) {
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
-    const updateCli = !(await remoteitInstaller.isCliCurrent(true))
+    const updateCli = !(await remoteitInstaller.isCliCurrent(true)) || force
     const updateDesktop = !remoteitInstaller.isDesktopCurrent(true)
 
     Logger.info('INSTALLING BINARIES', { updateCli, updateDesktop })
