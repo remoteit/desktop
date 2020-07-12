@@ -44,7 +44,7 @@ export const SettingsPage = () => {
     emit('user/clear-all')
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
-    binaries.install()
+    binaries.install(true)
 
   useEffect(() => {
     analytics.page('SettingsPage')

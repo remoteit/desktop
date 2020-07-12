@@ -46,6 +46,8 @@ export default class Installer {
   }
 
   async check(log?: boolean) {
+    if (binaryInstaller.inProgress) return
+
     d('CHECK INSTALLATION', { name: this.name, version: this.version })
     const cliCurrent = await this.isCliCurrent(log)
     const desktopCurrent = this.isDesktopCurrent(log)

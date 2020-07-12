@@ -38,7 +38,12 @@ process
       params: { type: 'UNHANDLED PROMISE REJECTION', promise },
       error: reason,
     })
-    Logger.warn('UNHANDLED PROMISE REJECTION', { reason, details: reason.toString(), promise })
+    Logger.warn('UNHANDLED PROMISE REJECTION', {
+      reason,
+      details: reason.message,
+      stack: reason.stack,
+      promise,
+    })
   })
 
 export default new Application()

@@ -29,7 +29,7 @@ type IExec = {
   onError?: ErrorCallback
 }
 
-type IConnectionStatus = { id: string; connectionState: 'offline' | 'connecting' | 'connected' }
+type IConnectionStatus = { id?: string; connectionState?: 'offline' | 'connecting' | 'connected' }
 
 export default class CLI {
   data: IData = {
@@ -57,7 +57,8 @@ export default class CLI {
     if (this.isSignedOut() && (this.data.device.uid || this.data.connections.length)) {
       this.signIn()
     }
-    this.updateConnectionStatus()
+
+    if (this.isInstalled()) this.updateConnectionStatus()
   }
 
   isSignedOut() {
@@ -129,20 +130,23 @@ export default class CLI {
   async updateConnectionStatus() {
     if (!this.data.connections.length) return
     const json = await this.status()
+    if (!json?.connections?.length) return
     this.data.connections.map(c => {
-      const status: IConnectionStatus = json.connections.find((s: IConnectionStatus) => s.id === c.id)
-      return {
-        ...c,
-        active: status.connectionState === 'connected',
-        connecting: status.connectionState === 'connecting',
-        // online: status.connectionState !== 'offline',
+      const status = json?.connections?.find(s => s.id === c.id)
+      if (status) {
+        c.active = status.connectionState === 'connected' //      connected | disconnected
+        c.connecting = status.connectionState === 'connecting' // connecting
+        // c.online = status.connectionState !== 'offline' //     service online | offline
       }
+      return c
     })
   }
 
   async status() {
     const result = await this.exec({ cmds: [strings.status()], checkSignIn: true, quiet: true })
-    return JSON.parse(result)
+    let data: { connections?: IConnectionStatus[] } = {}
+    if (result) data = JSON.parse(result)
+    return data
   }
 
   async addTarget(t: ITarget) {
@@ -223,13 +227,13 @@ export default class CLI {
     return result.toString().trim()
   }
 
-  async isNotInstalled() {
+  async isInstalled() {
     const installed = remoteitInstaller.fileExists(remoteitInstaller.binaryName)
-    return !installed
+    return installed
   }
 
   async exec({ cmds, checkSignIn = false, admin = false, quiet = false, onError }: IExec) {
-    if (await this.isNotInstalled()) {
+    if (await !this.isInstalled()) {
       remoteitInstaller.check()
       return ''
     }
