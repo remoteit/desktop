@@ -172,8 +172,9 @@ class Controller {
     //frontend will emit user/sign-out-complete and then we will call exit
   }
 
-  installBinaries = async () => {
-    await binaryInstaller.install(true)
+  installBinaries = async (force?: boolean) => {
+    await binaryInstaller.install(force)
+    remoteitInstaller.check()
   }
 }
 
