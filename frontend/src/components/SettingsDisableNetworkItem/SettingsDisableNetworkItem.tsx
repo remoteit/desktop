@@ -6,15 +6,7 @@ import { SettingsListItem } from '../SettingsListItem'
 import { colors } from '../../styling'
 import { emit } from '../../services/Controller'
 
-type Props = {
-  icon?: string
-  button?: string
-  toggle?: boolean
-  disabled?: boolean
-  onClick?: () => void
-}
-
-export const SettingsDisableNetworkItem: React.FC<Props> = ({ icon, button, toggle, onClick, disabled }) => {
+export const SettingsDisableNetworkItem: React.FC = () => {
   const css = useStyles()
   const { preferences } = useSelector((state: ApplicationState) => ({
     preferences: state.backend.preferences,
