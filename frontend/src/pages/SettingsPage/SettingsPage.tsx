@@ -48,6 +48,10 @@ export const SettingsPage = () => {
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install()
 
+  useEffect(() => {
+    analytics.page('SettingsPage')
+  }, [])
+
   return (
     <Container
       header={
