@@ -12,36 +12,25 @@ export const SettingsDisableNetworkItem: React.FC = () => {
     preferences: state.backend.preferences,
   }))
 
-  const subLevelTextValue = (
+  const [toggleChange, settoggleChange] = React.useState(false)
+
+  const handleClick = () => {
+    settoggleChange(!toggleChange)
+    emit('preferences', { ...preferences, disabledLocalNetwork: !preferences.disabledLocalNetwork })
+  }
+
+  const subLevelTextValue = toggleChange ? (
+    <span className={css.span}>Please restart for changes to take effect.</span>
+  ) : (
     <span>
       This will bind the desktop UI to localhost so that it will only be available through sharing with remote.it
     </span>
   )
-  const [disabledLocalNetwork, setDisabledLocalNetwork] = React.useState(preferences.disabledLocalNetwork)
-  const [sublevelText, setSubLevelText] = React.useState(subLevelTextValue)
-
-  const handleClick = () => {
-    emit('preferences', { ...preferences, disabledLocalNetwork: !preferences.disabledLocalNetwork })
-  }
-
-  useEffect(() => {
-    const icon = preferences.disabledLocalNetwork ? 'wifi-slash' : 'wifi'
-
-    if (disabledLocalNetwork == preferences.disabledLocalNetwork) {
-      setSubLevelText(
-        <span>
-          This will bind the desktop UI to localhost so that it will only be available through sharing with remote.it
-        </span>
-      )
-    } else {
-      setSubLevelText(<span className={css.span}>Please restart for changes to take effect.</span>)
-    }
-  }, [preferences.disabledLocalNetwork])
 
   return (
     <SettingsListItem
       label="Disable local network discovery"
-      subLabel={sublevelText}
+      subLabel={subLevelTextValue}
       icon={preferences.disabledLocalNetwork ? 'wifi-slash' : 'wifi'}
       toggle={preferences.disabledLocalNetwork}
       onClick={handleClick}

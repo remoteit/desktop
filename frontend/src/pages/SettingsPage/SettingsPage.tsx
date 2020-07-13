@@ -16,7 +16,6 @@ import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
 import analytics from '../../helpers/Analytics'
-import { colors } from '../../styling'
 
 export const SettingsPage = () => {
   const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
@@ -29,15 +28,6 @@ export const SettingsPage = () => {
 
   const css = useStyles()
 
-  const [disabledLocalNetwork, setDisabledLocalNetwork] = React.useState(preferences.disabledLocalNetwork)
-
-  const subLevelTextValue = (
-    <span>
-      This will bind the desktop UI to localhost so that it will only be available through sharing with remote.it
-    </span>
-  )
-
-  const [sublevelText, setSubLevelText] = React.useState(subLevelTextValue)
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
 
