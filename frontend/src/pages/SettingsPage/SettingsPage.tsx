@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
+import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
@@ -25,9 +26,10 @@ export const SettingsPage = () => {
     preferences: state.backend.preferences,
   }))
 
+  const css = useStyles()
+
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
-  const css = useStyles()
 
   const quitWarning = () =>
     window.confirm('Are you sure? Quitting will close all active connections.') && emit('user/quit')
@@ -102,6 +104,7 @@ export const SettingsPage = () => {
             onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
           />
         )}
+
         <SettingsListItem
           label="Open at login"
           icon="power-off"
@@ -115,6 +118,7 @@ export const SettingsPage = () => {
           <Divider />
           <Typography variant="subtitle1">Advanced</Typography>
           <List>
+            <SettingsDisableNetworkItem />
             <SettingsListItem
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
