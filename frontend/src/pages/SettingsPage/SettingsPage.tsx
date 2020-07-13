@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsListItem } from '../../components/SettingsListItem'
+import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
@@ -37,7 +38,6 @@ export const SettingsPage = () => {
   )
 
   const [sublevelText, setSubLevelText] = React.useState(subLevelTextValue)
-  const [wifiConnectionLabel, setWifiConnectionLabel] = React.useState('wifi')
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
 
@@ -57,29 +57,6 @@ export const SettingsPage = () => {
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install()
-
-  useEffect(() => {
-    const icon = preferences.disabledLocalNetwork ? 'wifi-slash' : 'wifi'
-    setWifiConnectionLabel(icon)
-
-    if (disabledLocalNetwork == preferences.disabledLocalNetwork) {
-      setSubLevelText(
-        <span>
-          This will bind the desktop UI to localhost so that it will only be available through sharing with remote.it
-        </span>
-      )
-    } else {
-      setSubLevelText(<span className={css.span}>Please restart for changes to take effect.</span>)
-    }
-  }, [preferences.disabledLocalNetwork])
-
-  useEffect(() => {
-    analytics.page('SettingsPage')
-  }, [])
-
-  const handleClick = () => {
-    emit('preferences', { ...preferences, disabledLocalNetwork: !preferences.disabledLocalNetwork })
-  }
 
   return (
     <Container
@@ -147,14 +124,7 @@ export const SettingsPage = () => {
           <Divider />
           <Typography variant="subtitle1">Advanced</Typography>
           <List>
-            <SettingsListItem
-              label="Disable local network discovery"
-              subLabel={sublevelText}
-              icon={preferences.disabledLocalNetwork ? 'wifi-slash' : 'wifi'}
-              toggle={preferences.disabledLocalNetwork}
-              onClick={handleClick}
-            />
-
+            <SettingsDisableNetworkItem />
             <SettingsListItem
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
@@ -182,5 +152,4 @@ export const SettingsPage = () => {
 
 const useStyles = makeStyles({
   header: { '& img': { marginBottom: spacing.sm } },
-  span: { color: colors.warning },
 })
