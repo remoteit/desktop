@@ -24,12 +24,6 @@ const state: AuthState = {
   user: undefined,
 }
 
-// @ts-ignore
-window.setAuth = (credentials: UserCredentials) => {
-  store.dispatch.auth.setUser(credentials)
-  Controller.open()
-}
-
 export default createModel({
   state,
   effects: (dispatch: any) => ({

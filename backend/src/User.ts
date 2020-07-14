@@ -2,9 +2,6 @@ import cli from './cliInterface'
 import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
-import JSONFile from './JSONFile'
-import environment from './environment'
-import path from 'path'
 import { r3 } from './remote.it'
 
 const d = debug('r3:backend:User')
@@ -16,24 +13,9 @@ export class User {
     signedIn: 'signed-in',
   }
 
-  username: string
-  authHash: string
+  username: string = ''
+  authHash: string = ''
   signedIn: boolean = false
-  // configFile: JSONFile<ConfigFile>
-  private userFile: JSONFile<UserCredentials>
-
-  constructor() {
-    this.userFile = new JSONFile<UserCredentials>(path.join(environment.userPath, 'user.json'))
-    // this.configFile = new JSONFile<UserCredentials>(path.join(environment.userPath, 'user.json'))
-    const user = this.userFile.read()
-
-    d('Reading user credentials:', { user })
-    Logger.info('Setting user:', { username: user && user.username })
-
-    this.username = user?.username || ''
-    this.authHash = user?.authHash || ''
-    if (this.hasCredentials) this.signedIn = true
-  }
 
   get hasCredentials() {
     return this.authHash && this.username
@@ -69,11 +51,6 @@ export class User {
 
     if (!user) return false
 
-    this.userFile.write({
-      username: user.username,
-      authHash: user.authHash,
-    })
-
     this.signedIn = true
     this.username = user.username
     this.authHash = user.authHash
@@ -86,7 +63,6 @@ export class User {
   signOut = async () => {
     Logger.info('SIGN OUT USER')
 
-    this.userFile.remove()
     this.username = ''
     this.authHash = ''
     this.signedIn = false
