@@ -1,4 +1,4 @@
-import { WEB_DIR, EVENTS, environment, preferences, EventBus, user } from 'remoteit-headless'
+import { WEB_DIR, EVENTS, environment, preferences, EventBus } from 'remoteit-headless'
 import electron from 'electron'
 import TrayMenu from './TrayMenu'
 import AutoUpdater from './AutoUpdater'
@@ -106,10 +106,6 @@ export default class ElectronApp {
         this.closeWindow()
       }
     })
-
-    if (user.signedIn) {
-      this.window.webContents.executeJavaScript(`setAuth(${JSON.stringify(user.credentials)})`)
-    }
 
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()
