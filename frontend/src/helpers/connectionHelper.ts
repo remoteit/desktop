@@ -47,7 +47,7 @@ export function clearConnectionError(connection: IConnection) {
 
 export function updateConnections(devices: IDevice[]) {
   const { connections } = store.getState().backend
-  const lookup = connections.reduce((result: ConnectionLookup, c: IConnection) => {
+  let lookup = connections.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
   }, {})
@@ -55,12 +55,19 @@ export function updateConnections(devices: IDevice[]) {
   devices.forEach(d => {
     d.services.forEach(s => {
       const connection = lookup[s.id]
+      if(connection) {
+        delete lookup[s.id];
+      }
+
       const online = s.state === 'active'
       if (connection && connection.online !== online) {
         setConnection({ ...connection, deviceID: d.id, online })
       }
     })
   })
+
+  // deleting all connections that has no linked device.
+  Object.keys(lookup).map((key) => emit('service/forget', lookup[key]));
 
   return devices
 }
