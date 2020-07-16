@@ -34,7 +34,7 @@ export default class Command {
     if (user.authHash) {
       Object.keys(params).forEach(key => {
         if (typeof params[key] === 'string' && params[key].includes(user.authHash))
-          params[key] = params[key].replace(user.authHash, '[CLEARED]')
+          params[key] = params[key].replace(new RegExp(user.authHash, 'g'), '[CLEARED]')
       })
     }
     Logger[type](message, params)

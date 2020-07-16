@@ -7,7 +7,7 @@ import { App } from './components/App'
 import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store } from './store'
-import Heartbeat from './services/Heartbeat'
+import heartbeat from './services/Heartbeat'
 import analytics from './helpers/Analytics'
 import * as serviceWorker from './serviceWorker'
 import './services/Controller'
@@ -34,4 +34,4 @@ ReactDOM.render(
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister()
 Controller.init()
-new Heartbeat()
+heartbeat.init()

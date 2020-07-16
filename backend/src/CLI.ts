@@ -102,7 +102,7 @@ export default class CLI {
     }))
   }
 
-  readConnections() {
+  async readConnections() {
     const config = this.readFile()
     const connections = config.connections || []
     this.data.connections = connections.map((c: any) => ({
@@ -116,9 +116,8 @@ export default class CLI {
       restriction: c.restrict,
       autoStart: c.retry,
       failover: c.failover,
-      // active: !c.disabled,
     }))
-    this.updateConnectionStatus()
+    await this.updateConnectionStatus()
   }
 
   private readFile() {
@@ -129,20 +128,19 @@ export default class CLI {
     if (!this.isInstalled() || !this.data.connections.length) return
     const json = await this.status()
     if (!json?.connections?.length) return
-    this.data.connections.map(c => {
+    this.data.connections = this.data.connections.map(c => {
       const status = json?.connections?.find(s => s.id === c.id)
       if (status) {
-        d('UPDATE STATUS', { name: c.name, status: status.connectionState })
-        c.active = status.connectionState === 'connected' //      connected | disconnected
-        c.connecting = status.connectionState === 'connecting' // connecting
-        // c.online = status.connectionState !== 'offline' //     service online | offline
+        c.active = status.connectionState === 'connected' || status.connectionState === 'connecting'
+        c.connecting = status.connectionState === 'connecting'
+        d('UPDATE STATUS', { c, status: status.connectionState })
       }
       return c
     })
   }
 
   async status() {
-    const result = await this.exec({ cmds: [strings.status()], checkAuthHash: true, checkSignIn: true, quiet: true })
+    const result = await this.exec({ cmds: [strings.status()], checkAuthHash: true, quiet: true })
     let data: { connections?: IConnectionStatus[] } = {}
     try {
       if (result) data = JSON.parse(result)
@@ -184,17 +182,17 @@ export default class CLI {
 
   async addConnection(c: IConnection, onError: ErrorCallback) {
     await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, checkSignIn: true, onError })
-    this.readConnections()
+    await this.readConnections()
   }
 
   async removeConnection(c: IConnection, onError: ErrorCallback) {
     await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, checkSignIn: true, onError })
-    this.readConnections()
+    await this.readConnections()
   }
 
   async setConnection(c: IConnection, onError: ErrorCallback) {
     await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, checkSignIn: true, onError })
-    this.readConnections()
+    await this.readConnections()
   }
 
   async restartService() {
