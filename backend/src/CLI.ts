@@ -9,9 +9,9 @@ import Command from './Command'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
-import user, { User } from './User'
+import user from './User'
 
-const d = debug('r3:backend:CLI')
+const d = debug('CLI')
 
 type IData = {
   user?: UserCredentials
@@ -24,6 +24,7 @@ type IData = {
 type IExec = {
   cmds: string[]
   checkSignIn?: boolean
+  checkAuthHash?: boolean
   admin?: boolean
   quiet?: boolean
   onError?: ErrorCallback
@@ -52,13 +53,11 @@ export default class CLI {
     this.read()
   }
 
-  check = () => {
+  check = async () => {
     this.read()
     if (this.isSignedOut() && (this.data.device.uid || this.data.connections.length)) {
       this.signIn()
     }
-
-    if (this.isInstalled()) this.updateConnectionStatus()
   }
 
   isSignedOut() {
@@ -114,11 +113,10 @@ export default class CLI {
       createdTime: Math.round(c.createdtimestamp / 1000000),
       startTime: Math.round((c.startedtimestamp || c.createdtimestamp) / 1000000),
       endTime: Math.round(c.stoppedtimestamp / 1000000),
-      connecting: false,
       restriction: c.restrict,
       autoStart: c.retry,
       failover: c.failover,
-      active: !c.disabled,
+      // active: !c.disabled,
     }))
     this.updateConnectionStatus()
   }
@@ -128,12 +126,13 @@ export default class CLI {
   }
 
   async updateConnectionStatus() {
-    if (!this.data.connections.length) return
+    if (!this.isInstalled() || !this.data.connections.length) return
     const json = await this.status()
     if (!json?.connections?.length) return
     this.data.connections.map(c => {
       const status = json?.connections?.find(s => s.id === c.id)
       if (status) {
+        d('UPDATE STATUS', { name: c.name, status: status.connectionState })
         c.active = status.connectionState === 'connected' //      connected | disconnected
         c.connecting = status.connectionState === 'connecting' // connecting
         // c.online = status.connectionState !== 'offline' //     service online | offline
@@ -143,24 +142,28 @@ export default class CLI {
   }
 
   async status() {
-    const result = await this.exec({ cmds: [strings.status()], checkSignIn: true, quiet: true })
+    const result = await this.exec({ cmds: [strings.status()], checkAuthHash: true, checkSignIn: true, quiet: true })
     let data: { connections?: IConnectionStatus[] } = {}
-    if (result) data = JSON.parse(result)
+    try {
+      if (result) data = JSON.parse(result)
+    } catch (error) {
+      Logger.warn('CLI STATUS PARSE ERROR', { result, errorMessage: error.message })
+    }
     return data
   }
 
   async addTarget(t: ITarget) {
-    await this.exec({ cmds: [strings.add(t)], checkSignIn: true })
+    await this.exec({ cmds: [strings.add(t)], checkAuthHash: true, checkSignIn: true })
     this.readTargets()
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec({ cmds: [strings.remove(t)], checkSignIn: true })
+    await this.exec({ cmds: [strings.remove(t)], checkAuthHash: true, checkSignIn: true })
     this.readTargets()
   }
 
   async register(device: ITargetDevice) {
-    await this.exec({ cmds: [strings.setup(device)], checkSignIn: true })
+    await this.exec({ cmds: [strings.setup(device)], checkAuthHash: true, checkSignIn: true })
     this.read()
   }
 
@@ -169,28 +172,28 @@ export default class CLI {
     registration.targets.forEach((t: ITarget) => {
       cmds.push(strings.add(t))
     })
-    await this.exec({ cmds, checkSignIn: true })
+    await this.exec({ cmds, checkAuthHash: true, checkSignIn: true })
     this.read()
   }
 
   async unregister() {
     if (!this.data.device.uid) return
-    await this.exec({ cmds: [strings.unregister()], checkSignIn: true })
+    await this.exec({ cmds: [strings.unregister()], checkAuthHash: true, checkSignIn: true })
     this.read()
   }
 
   async addConnection(c: IConnection, onError: ErrorCallback) {
-    await this.exec({ cmds: [strings.connect(c)], checkSignIn: true, onError })
+    await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, checkSignIn: true, onError })
     this.readConnections()
   }
 
   async removeConnection(c: IConnection, onError: ErrorCallback) {
-    await this.exec({ cmds: [strings.disconnect(c)], checkSignIn: true, onError })
+    await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, checkSignIn: true, onError })
     this.readConnections()
   }
 
   async setConnection(c: IConnection, onError: ErrorCallback) {
-    await this.exec({ cmds: [strings.setConnect(c)], checkSignIn: true, onError })
+    await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, checkSignIn: true, onError })
     this.readConnections()
   }
 
@@ -213,7 +216,7 @@ export default class CLI {
   }
 
   async signOut() {
-    if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], admin: true })
+    if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], checkAuthHash: true, admin: true })
     this.read()
   }
 
@@ -232,7 +235,9 @@ export default class CLI {
     return installed
   }
 
-  async exec({ cmds, checkSignIn = false, admin = false, quiet = false, onError }: IExec) {
+  async exec({ cmds, checkAuthHash = false, checkSignIn = false, admin = false, quiet = false, onError }: IExec) {
+    if (checkAuthHash && !user.signedIn) return ''
+
     if (await !this.isInstalled()) {
       remoteitInstaller.check()
       return ''
