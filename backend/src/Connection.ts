@@ -39,9 +39,9 @@ export default class Connection extends EventEmitter {
     EventBus.emit(Connection.EVENTS.started, { connection: this.params, raw: 'Connection started' })
 
     this.params.active = true
-    this.params.connecting = false
     this.params.error = undefined
     await cli.addConnection(this.params, this.error)
+
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
@@ -50,8 +50,8 @@ export default class Connection extends EventEmitter {
 
     this.params.active = false
     this.params.endTime = Date.now()
-
     await cli.setConnection(this.params, this.error)
+
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
   }
 

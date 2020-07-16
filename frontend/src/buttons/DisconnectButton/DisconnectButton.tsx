@@ -6,29 +6,23 @@ import { Fade } from '@material-ui/core'
 import analytics from '../../helpers/Analytics'
 
 type Props = {
-  disabled?: boolean
   service?: IService
   connection?: IConnection
   color?: Color
   size?: 'icon' | 'medium' | 'small'
 }
 
-export const DisconnectButton: React.FC<Props> = ({
-  disabled = false,
-  service,
-  size = 'icon',
-  color = 'primary',
-  connection,
-}) => {
-  const hidden = !connection || connection.connecting || !connection.active
+export const DisconnectButton: React.FC<Props> = ({ service, size = 'medium', color = 'primary', connection }) => {
+  const hidden = !connection || !connection.active
+  const connecting = !!connection?.connecting
   return (
     <Fade in={!hidden} timeout={600}>
       <div>
         <DynamicButton
-          title="Disconnect"
+          title={connecting ? 'Connecting' : 'Disconnect'}
           icon="ban"
-          color={color}
-          disabled={disabled}
+          loading={connecting}
+          color={connecting ? 'grayDark' : color}
           size={size}
           onClick={() => {
             analytics.trackConnect('connectionClosed', service)

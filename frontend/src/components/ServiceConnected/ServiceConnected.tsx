@@ -27,7 +27,7 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
           ]}
         />
         <div>
-          <DisconnectButton connection={connection} service={service} size="medium" />
+          <DisconnectButton connection={connection} service={service} />
         </div>
       </Columns>
       <Divider />

@@ -33,7 +33,8 @@ export function newConnection(service?: IService | null, data = {}) {
 
 export function setConnection(connection: IConnection) {
   if (!connection.id || !connection.name || !connection.deviceID) {
-    console.warn('Connection missing data. Set failed', connection)
+    var error = new Error()
+    console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
   emit('connection', connection)
@@ -56,7 +57,7 @@ export function updateConnections(devices: IDevice[]) {
       const connection = lookup[s.id]
       const online = s.state === 'active'
       if (connection && connection.online !== online) {
-        setConnection({ ...connection, online })
+        setConnection({ ...connection, deviceID: d.id, online })
       }
     })
   })
