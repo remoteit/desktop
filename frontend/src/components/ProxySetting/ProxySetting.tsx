@@ -6,7 +6,7 @@ export const ProxySetting: React.FC<{ service: IService; connection?: IConnectio
   if (!service) return null
   if (!connection) connection = newConnection(service)
 
-  const disabled = connection?.active || service.state !== 'active'
+  const disabled = connection?.active || connection?.connecting || service.state !== 'active'
 
   return (
     <SettingsListItem

@@ -12,12 +12,12 @@ type Props = {
 }
 
 export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
-  const visible = connection && connection.active
+  const visible = connection?.active
 
   return (
     <Collapse in={visible} timeout={800}>
-      <Typography color="primary" variant="subtitle1">
-        Connected
+      <Typography color={connection?.connecting ? undefined : 'primary'} variant="subtitle1">
+        {connection?.connecting ? 'Connecting' : 'Connected'}
       </Typography>
       <Columns inset>
         <DataDisplay

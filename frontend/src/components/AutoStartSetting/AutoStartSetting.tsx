@@ -8,7 +8,7 @@ export const AutoStartSetting: React.FC<{ service: IService; connection?: IConne
 }) => {
   if (!service) return null
   if (!connection) connection = newConnection(service)
-  const disabled = connection?.active || service.state !== 'active'
+  const disabled = connection?.active || connection?.connecting || service.state !== 'active'
 
   return (
     <SettingsListItem
