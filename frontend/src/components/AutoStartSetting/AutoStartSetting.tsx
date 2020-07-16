@@ -8,10 +8,12 @@ export const AutoStartSetting: React.FC<{ service: IService; connection?: IConne
 }) => {
   if (!service) return null
   if (!connection) connection = newConnection(service)
+  const disabled = connection?.active || service.state !== 'active'
 
   return (
     <SettingsListItem
       label="Reconnect on disconnect"
+      disabled={disabled}
       icon="redo"
       toggle={!!connection.autoStart}
       onClick={() =>
