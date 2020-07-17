@@ -46,7 +46,7 @@ export class User {
 
     const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
-    Logger.info('User', { username: user.username })
+    Logger.info('CHECK SIGN IN', { username: user.username })
     d('User signed in', user)
 
     if (!user) return false
@@ -56,6 +56,7 @@ export class User {
     this.authHash = user.authHash
 
     EventBus.emit(User.EVENTS.signedIn, user)
+    cli.checkSignIn()
 
     return user
   }
@@ -71,8 +72,8 @@ export class User {
   }
 
   clearAll = async () => {
-    this.signOut()
     await cli.signOut()
+    this.signOut()
   }
 }
 

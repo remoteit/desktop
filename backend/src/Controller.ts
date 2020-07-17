@@ -86,7 +86,6 @@ class Controller {
   check = (log?: boolean) => {
     remoteitInstaller.check(log)
     this.pool.check()
-    cli.check()
     lan.check()
     app.check()
   }
