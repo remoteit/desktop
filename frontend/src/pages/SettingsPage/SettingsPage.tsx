@@ -22,7 +22,7 @@ export const SettingsPage = () => {
     os: state.backend.environment.os,
     user: state.auth.user,
     installing: state.binaries.installing,
-    cliVersion: state.binaries.installedVersion || 'getting version...',
+    cliVersion: state.binaries.installedVersion || '(loading...)',
     preferences: state.backend.preferences,
   }))
 

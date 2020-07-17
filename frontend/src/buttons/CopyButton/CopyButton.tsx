@@ -17,7 +17,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, ...
 
   return (
     <span {...props}>
-      <Tooltip title={`Copy ${app.title}`}>
+      <Tooltip title={clipboard.copied ? 'Copied!' : `Copy ${app.title}`}>
         <IconButton onClick={clipboard.copy}>
           <Icon name="clipboard" color={clipboard.copied ? 'success' : undefined} size="md" fixedWidth />
         </IconButton>

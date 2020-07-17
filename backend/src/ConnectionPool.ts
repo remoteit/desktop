@@ -45,16 +45,24 @@ export default class ConnectionPool {
   }
 
   // Sync with CLI
-  check = () => {
+  check = async () => {
+    await cli.updateConnectionStatus()
+
     // move connections: cli -> desktop
     cli.data.connections.forEach(async c => {
       const connection = this.find(c.id)?.params
-      d('SYNC CLI CONNECTION', connection, c)
-      if (!connection || connection.startTime !== c.startTime || connection.active !== c.active) {
+      d('SYNC CLI CONNECTION', { connection, c })
+      if (
+        !connection ||
+        connection.startTime !== c.startTime ||
+        connection.active !== c.active ||
+        connection?.connecting !== c.connecting
+      ) {
         Logger.info('CONNECTION DIFF', {
           connection: !connection,
           startTime: connection?.startTime !== c.startTime,
           active: connection?.active !== c.active,
+          connecting: connection?.connecting !== c.connecting,
         })
         await this.set({ ...connection, ...c })
       }

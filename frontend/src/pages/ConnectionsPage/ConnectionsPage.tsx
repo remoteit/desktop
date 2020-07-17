@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
+import heartbeat from '../../services/Heartbeat'
 import analytics from '../../helpers/Analytics'
 
 export const ConnectionsPage: React.FC = () => {
@@ -13,6 +14,7 @@ export const ConnectionsPage: React.FC = () => {
     )
   )
   useEffect(() => {
+    heartbeat.beat()
     analytics.page('ConnectionsPage')
   }, [])
 

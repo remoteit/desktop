@@ -27,13 +27,14 @@ export function ConnectionStateIcon({
 
   let icon = 'question-circle'
   let colorName: Color = 'warning'
-  let name: string = state || 'unknown'
   let element: any
 
   if (connection) {
-    if (connection.connecting && !connection.active) state = 'connecting'
     if (connection.active) state = 'connected'
+    if (connection.connecting) state = 'connecting'
   }
+
+  let name: string = state || 'unknown'
 
   switch (state) {
     case 'active':
