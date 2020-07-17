@@ -9,7 +9,10 @@ import { Icon } from '../Icon'
 export const SearchField: React.FC = () => {
   const { total, results, query, searched, fetching, filter } = useSelector((state: ApplicationState) => state.devices)
   const { devices } = useDispatch<Dispatch>()
+
+  // not compatible with DESK-648
   const disabled = Boolean(fetching || query.length < 2)
+
   const css = useStyles()
 
   const totalTitle = filter ? 'Filtered' : 'Total'
@@ -28,6 +31,12 @@ export const SearchField: React.FC = () => {
         autoFocus
         value={query}
         className={css.input}
+        onKeyPress= {(e) => {
+          if (e.key === 'Enter' && query.trim().length < 2) {
+            devices.set({ query: '', searched: false, from: 0 })
+            devices.fetch()
+          }
+        }}
         onChange={e => devices.set({ query: e.target.value })}
         placeholder="Search devices and services..."
       />
