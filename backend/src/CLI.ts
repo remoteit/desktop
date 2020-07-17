@@ -23,7 +23,6 @@ type IData = {
 
 type IExec = {
   cmds: string[]
-  checkSignIn?: boolean
   checkAuthHash?: boolean
   admin?: boolean
   quiet?: boolean
@@ -53,7 +52,7 @@ export default class CLI {
     this.read()
   }
 
-  check = async () => {
+  checkSignIn() {
     this.read()
     if (this.isSignedOut() && (this.data.device.uid || this.data.connections.length)) {
       this.signIn()
@@ -151,17 +150,17 @@ export default class CLI {
   }
 
   async addTarget(t: ITarget) {
-    await this.exec({ cmds: [strings.add(t)], checkAuthHash: true, checkSignIn: true })
+    await this.exec({ cmds: [strings.add(t)], checkAuthHash: true })
     this.readTargets()
   }
 
   async removeTarget(t: ITarget) {
-    await this.exec({ cmds: [strings.remove(t)], checkAuthHash: true, checkSignIn: true })
+    await this.exec({ cmds: [strings.remove(t)], checkAuthHash: true })
     this.readTargets()
   }
 
   async register(device: ITargetDevice) {
-    await this.exec({ cmds: [strings.setup(device)], checkAuthHash: true, checkSignIn: true })
+    await this.exec({ cmds: [strings.setup(device)], checkAuthHash: true })
     this.read()
   }
 
@@ -170,28 +169,28 @@ export default class CLI {
     registration.targets.forEach((t: ITarget) => {
       cmds.push(strings.add(t))
     })
-    await this.exec({ cmds, checkAuthHash: true, checkSignIn: true })
+    await this.exec({ cmds, checkAuthHash: true })
     this.read()
   }
 
   async unregister() {
     if (!this.data.device.uid) return
-    await this.exec({ cmds: [strings.unregister()], checkAuthHash: true, checkSignIn: true })
+    await this.exec({ cmds: [strings.unregister()], checkAuthHash: true })
     this.read()
   }
 
   async addConnection(c: IConnection, onError: ErrorCallback) {
-    await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, checkSignIn: true, onError })
+    await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
   async removeConnection(c: IConnection, onError: ErrorCallback) {
-    await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, checkSignIn: true, onError })
+    await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
   async setConnection(c: IConnection, onError: ErrorCallback) {
-    await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, checkSignIn: true, onError })
+    await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
@@ -214,7 +213,7 @@ export default class CLI {
   }
 
   async signOut() {
-    if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], checkAuthHash: true, admin: true })
+    if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], checkAuthHash: true })
     this.read()
   }
 
@@ -233,7 +232,7 @@ export default class CLI {
     return installed
   }
 
-  async exec({ cmds, checkAuthHash = false, checkSignIn = false, admin = false, quiet = false, onError }: IExec) {
+  async exec({ cmds, checkAuthHash = false, admin = false, quiet = false, onError }: IExec) {
     if (checkAuthHash && !user.signedIn) return ''
 
     if (await !this.isInstalled()) {
@@ -242,14 +241,7 @@ export default class CLI {
     }
 
     let result
-    let readUser = false
     let commands = new Command({ admin, quiet })
-
-    if (checkSignIn && this.isSignedOut()) {
-      readUser = true
-      commands.admin = true
-      cmds.unshift(strings.signIn())
-    }
 
     cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPath()}" ${cmd}`))
     if (!quiet)
@@ -259,7 +251,6 @@ export default class CLI {
       }
 
     result = await commands.exec()
-    if (readUser) this.readUser()
 
     return result
   }
