@@ -1,6 +1,7 @@
 import { graphQLFetch, graphQLAdaptor, graphQLGet } from '../services/graphQL'
 import { createModel } from '@rematch/core'
 import { r3, hasCredentials } from '../services/remote.it'
+import { cleanConnections } from '../helpers/connectionHelper'
 
 type DeviceParams = { [key: string]: any }
 
@@ -41,7 +42,7 @@ export default createModel({
       GraphQL search query for all device data
     */
     async fetch(_, globalState: any) {
-      const { set, graphQLFetchProcessor } = dispatch.devices
+      const { set, graphQLFetchProcessor, cleanConnections } = dispatch.devices
       const { all, query, filter, size, from, append, searched } = globalState.devices
       const { connections, device, targets } = globalState.backend
       const options: gqlOptions = {
@@ -69,6 +70,14 @@ export default createModel({
       else set({ all: devices })
 
       set({ fetching: false, append: false })
+
+      // cleans the connections belonging to erased devices
+      cleanConnections(devices)
+    },
+
+    // calls the connectionHelper
+    async cleanConnections(devices:[]) {
+      cleanConnections(devices)
     },
 
     async graphQLFetchProcessor(options: any, globalState: any) {
