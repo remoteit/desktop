@@ -2,7 +2,14 @@ import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { CircularProgress, Tooltip, IconButton, Typography, Divider } from '@material-ui/core'
+import { 
+  CircularProgress, 
+  Tooltip, 
+  IconButton, 
+  Typography, 
+  Divider
+} from '@material-ui/core'
+import { List, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { NetworkScanLocation } from '../../components/NetworkScanLocation'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -13,6 +20,7 @@ import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
 import analytics from '../../helpers/Analytics'
+import { ListItemLocation } from '../../components/ListItemLocation'
 
 type Props = {
   os?: Ios
@@ -83,7 +91,53 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
       <section>
         <Targets device={device} targets={targets} onUpdate={onUpdate} onCancel={onCancel} {...props} />
       </section>
+      <Divider />
+      <section>
+        <DeviceActionsList deviceUID={device.uid} />
+      </section>
     </Container>
+  )
+}
+
+type ActionType = {
+  title: string,
+  icon: string,
+  pathname: string
+}
+
+const DeviceActionsList:React.FC<{deviceUID: string}> = ({deviceUID}) => {
+  const actions: ActionType[] = [
+    {title: 'Shared Users', icon:'user-friends', pathname:'/devices/setup'},
+    {title: 'Edit Device', icon: 'pen', pathname:'/devices/setup'},
+    {title: 'Device Details', icon:'info-circle', pathname:`/deviceDetail/${deviceUID}`}
+  ];
+
+  return (
+    <List>
+        {actions.map(
+          action => {
+            return (
+              <DeviceActionListItem 
+                title={action.title} 
+                icon={action.icon} 
+                pathname={action.pathname}
+              />
+            )
+          }
+        )}
+    </List>
+
+  )
+}
+
+const DeviceActionListItem: React.FC<ActionType> = (action) => {
+  return (
+    <ListItemLocation pathname={action.pathname }>
+      <ListItemIcon>
+        <Icon name={action.icon} size="md" fixedWidth />
+      </ListItemIcon>
+      <ListItemText primary={action.title} />
+    </ListItemLocation>
   )
 }
 

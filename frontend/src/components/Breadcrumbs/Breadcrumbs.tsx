@@ -43,6 +43,8 @@ export const Breadcrumbs: React.FC = () => {
     return path
   }
 
+  console.log(crumbs)
+  
   let breadcrumb: string = ''
 
   return (

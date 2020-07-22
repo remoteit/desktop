@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { ServiceName } from '../../components/ServiceName'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
