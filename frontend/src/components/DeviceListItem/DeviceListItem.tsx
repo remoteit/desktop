@@ -29,7 +29,6 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevi
 
 export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice }) => {
   const activeConnection = connections && connections.find(c => c.active)
-
   return (
     <ListItemLocation pathname={thisDevice ? '/devices/setup' : `/devices/${device?.id}`}>
       <ListItemIcon>

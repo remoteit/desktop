@@ -26,6 +26,7 @@ export const Breadcrumbs: React.FC = () => {
   const parentPath = location.pathname.replace(REGEX_LAST_PATH, '')
   const crumbs = parentPath.substr(1).split('/')
 
+
   const findDevice = (id: string) => devices.find((d: IDevice) => d.id === id)
   const pageName = (path: string) => {
     const name: string | undefined = pageNameMap[path]
@@ -43,7 +44,9 @@ export const Breadcrumbs: React.FC = () => {
     return path
   }
 
-  console.log(crumbs)
+  // console.log('history: ',history)
+  // console.log('location: ',location)
+  console.log('crumbs: ',crumbs)
   
   let breadcrumb: string = ''
 
@@ -58,7 +61,10 @@ export const Breadcrumbs: React.FC = () => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
         result.push(
-          <Link key={crumbPath} onClick={() => history.push(crumbPath)}>
+          <Link key={crumbPath} onClick={() => {
+            console.log('crumbpath: ',crumbPath)
+            history.push(crumbPath)
+          }}>
             {pageName(crumb)}
           </Link>
         )

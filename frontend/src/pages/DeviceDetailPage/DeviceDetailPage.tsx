@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { Typography, Divider } from '@material-ui/core'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
+import { makeStyles } from '@material-ui/core/styles'
 import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
 import { Body } from '../../components/Body'
@@ -9,8 +10,12 @@ import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { spacing, colors, fontSizes } from '../../styling'
+import { Icon } from '../../components/Icon'
 
 export const DeviceDetailPage = () => {
+  const css = useStyles()
+
   const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections,
     devices: state.devices.all,
@@ -28,10 +33,15 @@ export const DeviceDetailPage = () => {
   if(device) {
     return (
       <Container
-      header={
+        header={
         <>
           <OutOfBand />
           <Breadcrumbs />
+          <div className={css.header}>
+            <Icon className={css.iconStyle} name={'info-circle'} size="md" fixedWidth />
+            <Typography className={css.title} variant="h2">Device details</Typography>
+          </div>
+          <Divider />
           {/* <Typography variant="h1">
             <Icon name="hdd" size="lg" type="light" color="grayDarker" fixedWidth />
             <span className={css.title}>{device.name}</span>
@@ -86,3 +96,25 @@ export const DeviceDetailPage = () => {
     )
   }
 }
+
+
+const useStyles = makeStyles({
+  iconStyle: {
+    padding:12,
+    // marginLeft: 0.3,
+    // marginRight: 0.3
+  },
+  title: {
+    paddingLeft:22,
+    paddingTop: 12,
+    paddingBottom: 12
+  },
+  header: {
+    display:'flex',
+    flexDirection: 'row',
+    paddingLeft: 30,
+    paddingBottom: 10
+    // marginLeft: 20,
+    // marginBottom: 10,
+  },
+})
