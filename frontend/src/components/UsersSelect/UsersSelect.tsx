@@ -4,25 +4,28 @@ import { ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { colors } from '../../styling'
 import { Icon } from '../Icon'
+import { getUsersConnectedDevice } from '../../models/devices'
 
 type Props = {
-  service: IService
+  device: IDevice
+  service?: IService
 }
 
-export const UsersSelect: React.FC<Props> = ({ service }) => {
+export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   const location = useLocation()
-  const connected = service.sessions.length
+
+  const connected = service ? service.sessions.length : getUsersConnectedDevice(device).length
 
   return (
-    <ListItemLocation disabled={!service.access.length} pathname={location.pathname + '/users'}>
+    <ListItemLocation pathname={location.pathname + '/users'}>
       <ListItemIcon>
         <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
       </ListItemIcon>
       <ListItemText
-        primary="Users"
+        primary="Shared users"
         secondary={
           <>
-            {service.access.length ? service.access.length + ' total' : 'None'}
+            {device.access ? device.access.length  + ' total' : 'None'}
             &nbsp; &nbsp;
             {!!connected && <span style={{ color: colors.primary }}>{connected} connected</span>}
           </>

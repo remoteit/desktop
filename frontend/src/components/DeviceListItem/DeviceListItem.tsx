@@ -12,7 +12,7 @@ type Props = {
 }
 
 const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevice }) => {
-  if (!device) return null
+  if (!device?.services) return null
   return (
     <>
       {device.services.map(service => (

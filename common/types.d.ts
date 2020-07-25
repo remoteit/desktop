@@ -190,6 +190,7 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
+    access: IUser[]
   }
 
   interface IService {
@@ -213,6 +214,7 @@ declare global {
     timestamp?: Date
     created?: Date
     platform?: number
+    scripting?: boolean
   }
 
   type gqlOptions = {

@@ -18,6 +18,7 @@ import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
 import { UsersPage } from '../../pages/UsersPage'
 import { LogPage } from '../../pages/LogPage'
+import { SharePage } from '../../pages/SharePage/SharePage'
 
 export const Router: React.FC = () => {
   const { device, targets, dataReady, os } = useSelector((state: ApplicationState) => ({
@@ -91,6 +92,15 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices/:deviceID/:serviceID/users">
         <UsersPage />
+      </Route>
+      <Route path="/devices/:deviceID/users/:userName">
+        <SharePage />
+      </Route>
+      <Route path="/devices/:deviceID/users">
+        <UsersPage />
+      </Route>
+      <Route path="/devices/:deviceID/share">
+        <SharePage />
       </Route>
       <Route path="/devices/:deviceID/:serviceID">
         <ServicePage />
