@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
+import { Typography, Divider, List, ListItemIcon, ListItemText } from '@material-ui/core'
 import { useSelector } from 'react-redux'
+import { Icon } from '../../components/Icon'
 import { PortSetting } from '../../components/PortSetting'
 import { HostSetting } from '../../components/HostSetting'
 import { NameSetting } from '../../components/NameSetting'
@@ -13,7 +15,6 @@ import { UsernameSetting } from '../../components/UsernameSetting'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { ApplicationState } from '../../store'
-import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { LanShareSelect } from '../../components/LanShareSelect'
@@ -29,6 +30,7 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
+import { ListItemLocation } from '../../components/ListItemLocation'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -104,22 +106,30 @@ export const ServicePage: React.FC = () => {
           <NameSetting connection={connection} service={service} />
           <UsernameSetting connection={connection} service={service} />
           <LaunchSetting connection={connection} service={service} />
+          <div>
+            ADVANCE SETTINGS
+          </div>
         </List>
         <div className={css.actions}>
           <ConnectButton connection={connection} service={service} size="medium" />
         </div>
       </Columns>
       <Divider />
-      <List>
+      {/* <List>
         <UsersSelect service={service} />
         <LanShareSelect connection={connection} service={service} />
         <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
-      </List>
+      </List> */}
       <Divider />
-      <Columns inset>
+      <section>
+        <DeviceActionsList deviceUID={device.id} />
+      </section>
+
+
+      {/* <Columns inset>
         <DataDisplay data={data} />
-      </Columns>
+      </Columns> */}
     </Container>
   )
 }
@@ -133,3 +143,45 @@ const useStyles = makeStyles({
   },
   errorMessage: { padding: 0 },
 })
+
+type ActionType = {
+  title: string,
+  icon: string,
+  pathname: string
+}
+
+const DeviceActionsList:React.FC<{deviceUID: string}> = ({deviceUID}) => {
+  const actions: ActionType[] = [
+    {title: 'Shared Users', icon:'user-friends', pathname:'/devices/setup'},
+    {title: 'Edit Service', icon: 'pen', pathname:'/devices/setup'},
+    {title: 'Service Details', icon:'info-circle', pathname:`/deviceDetail/${deviceUID}`}
+  ];
+
+  return (
+    <List>
+        {actions.map(
+          action => {
+            return (
+              <DeviceActionListItem 
+                title={action.title} 
+                icon={action.icon} 
+                pathname={action.pathname}
+              />
+            )
+          }
+        )}
+    </List>
+
+  )
+}
+
+const DeviceActionListItem: React.FC<ActionType> = (action) => {
+  return (
+    <ListItemLocation pathname={action.pathname }>
+      <ListItemIcon>
+        <Icon name={action.icon} size="md" fixedWidth />
+      </ListItemIcon>
+      <ListItemText primary={action.title} />
+    </ListItemLocation>
+  )
+}
