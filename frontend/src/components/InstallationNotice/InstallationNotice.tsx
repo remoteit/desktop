@@ -31,13 +31,16 @@ export const InstallationNotice = connect(
 
   if (!connected) return null
   if (error) console.error(error)
+
+  const isError = error && JSON.stringify(error) !== JSON.stringify({})
+
   return (
     <Body center>
       <Typography className={css.welcome} variant="caption" align="center">
         Welcome to
       </Typography>
       <Logo className={css.space} />
-      {error && (
+      {isError && (
         <Alert onClose={() => clearError()}>
           {error === 'User did not grant permission.'
             ? 'Please grant permissions to install CLI tools'
