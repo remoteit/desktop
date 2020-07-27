@@ -92,9 +92,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
         <Targets device={device} targets={targets} onUpdate={onUpdate} onCancel={onCancel} {...props} />
       </section>
       <Divider />
-      <section>
-        <DeviceActionsList deviceUID={device.uid} />
-      </section>
+      <DeviceActionsList deviceUID={device.uid} />
     </Container>
   )
 }
