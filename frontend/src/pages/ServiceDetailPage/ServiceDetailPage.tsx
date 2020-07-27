@@ -13,7 +13,7 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { spacing, colors, fontSizes } from '../../styling'
 import { Icon } from '../../components/Icon'
 
-export const DeviceDetailPage = () => {
+export const ServiceDetailPage = () => {
   const css = useStyles()
 
   const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
@@ -27,7 +27,7 @@ export const DeviceDetailPage = () => {
   const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
 
   useEffect(() => {
-    analytics.page('DevicesDetailPage')
+    analytics.page('ServiceDetailPage')
   }, [])
 
   if(device) {
@@ -39,27 +39,13 @@ export const DeviceDetailPage = () => {
           <Breadcrumbs />
           <div className={css.header}>
             <Icon className={css.iconStyle} name={'info-circle'} size="md" fixedWidth />
-            <Typography className={css.title} variant="h2">Device details</Typography>
+            <Typography className={css.title} variant="h2">Service details</Typography>
           </div>
-          <Divider />
-          {/* <Typography variant="h1">
-            <Icon name="hdd" size="lg" type="light" color="grayDarker" fixedWidth />
-            <span className={css.title}>{device.name}</span>
-            {setupDeletingDevice ? (
-              <CircularProgress className={css.loading} size={styles.fontSizes.md} />
-            ) : (
-              <Tooltip title="Delete">
-                <IconButton onClick={() => window.confirm(confirmMessage) && onDelete()} disabled={setupBusy}>
-                  <Icon name="trash-alt" size="md" />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Typography> */}
         </>
       }
       >
         <Body>
-          <Typography variant="subtitle1">Device details</Typography>
+          <Typography variant="subtitle1">Service details</Typography>
           <Columns count={1} inset>
             <DataDisplay
               data={[
@@ -101,8 +87,6 @@ export const DeviceDetailPage = () => {
 const useStyles = makeStyles({
   iconStyle: {
     padding:12,
-    // marginLeft: 0.3,
-    // marginRight: 0.3
   },
   title: {
     paddingLeft:22,
@@ -114,7 +98,5 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     paddingLeft: 30,
     paddingBottom: 10
-    // marginLeft: 20,
-    // marginBottom: 10,
   },
 })

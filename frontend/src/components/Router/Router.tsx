@@ -14,6 +14,7 @@ import { SetupView } from '../../pages/SetupView'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
 import { DeviceDetailPage } from '../../pages/DeviceDetailPage'
+import { ServiceDetailPage } from '../../pages/ServiceDetailPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
@@ -104,6 +105,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/deviceDetail/:deviceID">
         <DeviceDetailPage />
+      </Route>
+      <Route path="/serviceDetail/:deviceID">
+        <ServiceDetailPage />
       </Route>
       <Route path="/settings">
         <SettingsPage />

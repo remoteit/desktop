@@ -10,6 +10,7 @@ import {
   Divider
 } from '@material-ui/core'
 import { List, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { NetworkScanLocation } from '../../components/NetworkScanLocation'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -20,7 +21,6 @@ import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
 import analytics from '../../helpers/Analytics'
-import { ListItemLocation } from '../../components/ListItemLocation'
 
 type Props = {
   os?: Ios
