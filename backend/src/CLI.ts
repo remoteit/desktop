@@ -1,6 +1,7 @@
 import { removeDeviceName } from './sharedCopy/nameHelper'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
 import remoteitInstaller from './remoteitInstaller'
+import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import strings from './cliStrings'
 import JSONFile from './JSONFile'
@@ -233,18 +234,14 @@ export default class CLI {
     return result.toString().trim()
   }
 
-  async isInstalled() {
-    const installed = remoteitInstaller.fileExists(remoteitInstaller.binaryName)
-    return installed
+  isInstalled() {
+    return remoteitInstaller.fileExists(remoteitInstaller.binaryName) && !binaryInstaller.inProgress
   }
 
   async exec({ cmds, checkAuthHash = false, admin = false, quiet = false, onError }: IExec) {
     if (checkAuthHash && !user.signedIn) return ''
 
-    if (await !this.isInstalled()) {
-      remoteitInstaller.check()
-      return ''
-    }
+    if (!this.isInstalled()) return ''
 
     let result
     let commands = new Command({ admin, quiet })
