@@ -1,5 +1,5 @@
 !macro customUnInstall
-    MessageBox MB_YESNO "Would you like to unregistered your device?" IDYES true IDNO false
+    MessageBox MB_YESNO "Would you like to unregister your device?" IDNO false IDYES true
     true:
         ExecWait '"C:\Program Files\remoteit-bin\remoteit.exe" -j uninstall --yes'
         RMDir /r "$APPDATA\remoteit"
