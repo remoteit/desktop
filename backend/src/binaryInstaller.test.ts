@@ -40,13 +40,11 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toBeCalledWith('mv undefined ../jest/bin/remoteit')
       expect(commandSpy).toBeCalledWith('chmod 755 ../jest/bin/remoteit')
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j tools install --update')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j service uninstall')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j service install')
       expect(commandSpy).toBeCalledWith(
         `"../jest/bin/remoteit" -j signin --user ${user.username} --authhash ${user.authHash}`
       )
 
-      expect(commandSpy).toBeCalledTimes(7)
+      expect(commandSpy).toBeCalledTimes(5)
       expect(downloadSpy).toBeCalledTimes(1)
     })
 
@@ -59,12 +57,11 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toBeCalledWith('move /y "undefined" "../jest/bin/remoteit.exe"')
       expect(commandSpy).toBeCalledWith('icacls "../jest/bin/remoteit.exe" /T /C /Q /grant "*S-1-5-32-545:RX"')
       expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j tools install --update')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j service uninstall')
       expect(commandSpy).toBeCalledWith(
         `"../jest/bin/remoteit.exe" -j signin --user ${user.username} --authhash ${user.authHash}`
       )
 
-      expect(commandSpy).toBeCalledTimes(7)
+      expect(commandSpy).toBeCalledTimes(5)
       expect(downloadSpy).toBeCalledTimes(1)
     })
   })

@@ -61,8 +61,6 @@ class BinaryInstaller {
       }
 
       commands.push(`"${installer.binaryPath()}" ${strings.toolsInstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.serviceUninstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.serviceInstall()}`)
       commands.push(`"${installer.binaryPath()}" ${strings.signIn()}`)
 
       await commands.exec()
