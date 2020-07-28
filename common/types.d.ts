@@ -119,7 +119,8 @@ declare global {
     host?: ipAddress // Bind address
     typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address
-    autoStart?: boolean
+    autoStart?: boolean // auto retry connect if closed
+    isP2P?: boolean // if the connection was made with peer to peer vs failover
     failover?: boolean // allow proxy failover
     connecting?: boolean
     username?: string // support for launching where username could be saved

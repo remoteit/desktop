@@ -24,6 +24,15 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
           data={[
             { label: 'Connection URL', value: connection && hostName(connection) },
             { label: 'Duration', value: connection && <Duration startTime={connection.startTime} /> },
+            {
+              label: 'Type',
+              value:
+                connection?.isP2P === undefined
+                  ? 'None'
+                  : connection?.isP2P === true
+                  ? 'Peer to peer'
+                  : 'Proxy failover',
+            },
           ]}
         />
         <div>

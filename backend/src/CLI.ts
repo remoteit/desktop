@@ -29,7 +29,12 @@ type IExec = {
   onError?: ErrorCallback
 }
 
-type IConnectionStatus = { id?: string; connectionState?: 'offline' | 'connecting' | 'connected' }
+type IConnectionStatus = {
+  id?: string
+  connectionState?: 'offline' | 'connecting' | 'connected'
+  isFailover?: boolean
+  isP2P?: boolean
+}
 
 export default class CLI {
   data: IData = {
@@ -132,6 +137,7 @@ export default class CLI {
       if (status) {
         c.active = status.connectionState === 'connected' || status.connectionState === 'connecting'
         c.connecting = status.connectionState === 'connecting'
+        c.isP2P = status.isP2P
         d('UPDATE STATUS', { c, status: status.connectionState })
       }
       return c
