@@ -33,11 +33,11 @@ export default {
   },
 
   connect(c: IConnection) {
-    return `-j connection add --id ${c.id} --name "${c.name}" --port ${c.port} --hostname ${c.host} --restrict ${
-      c.restriction
-    } --retry ${!!c.autoStart} --failover ${!!c.failover} --servicetype ${c.typeID} --authhash ${
-      user.authHash
-    } --manufacture-id ${environment.appCode}`
+    return `-j connection add --id ${c.id} --connect true --name "${c.name}" --port ${c.port} --hostname ${
+      c.host
+    } --restrict ${c.restriction} --retry ${!!c.autoStart} --failover ${!!c.failover} --servicetype ${
+      c.typeID
+    } --authhash ${user.authHash} --manufacture-id ${environment.appCode}`
   },
 
   disconnect(c: IConnection) {

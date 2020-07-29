@@ -30,7 +30,7 @@ export default class ConnectionPool {
     Logger.info('Initializing connections pool', { length: connections.length })
 
     // load connection data
-    connections.map(async c => await this.set(c))
+    connections.map(c => this.set(c))
 
     // init freeport
     this.nextFreePort()
@@ -38,7 +38,6 @@ export default class ConnectionPool {
     // Listen to events to synchronize state
     EventBus.on(Connection.EVENTS.disconnected, this.updated)
     EventBus.on(Connection.EVENTS.connected, this.updated)
-    EventBus.on(Connection.EVENTS.started, this.updated)
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
     EventBus.on(electronInterface.EVENTS.forget, this.forget)
     EventBus.on(electronInterface.EVENTS.clearRecent, this.forgetRecent)
@@ -64,7 +63,7 @@ export default class ConnectionPool {
           active: connection?.active !== c.active,
           connecting: connection?.connecting !== c.connecting,
         })
-        await this.set({ ...connection, ...c })
+        this.set({ ...connection, ...c })
       }
     })
     // start any connections: desktop -> cli
@@ -78,10 +77,10 @@ export default class ConnectionPool {
   }
 
   // update single connection
-  set = async (connection: IConnection, setCLI?: boolean) => {
+  set = (connection: IConnection, setCLI?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
-    if (instance) await instance.set(connection, setCLI)
+    if (instance) instance.set(connection, setCLI)
     else instance = this.add(connection)
     this.updated()
     return instance
@@ -102,10 +101,10 @@ export default class ConnectionPool {
   start = async (connection: IConnection) => {
     Logger.info('CONNECT', { id: connection.id })
     if (!connection) return new Error('No connection data!')
-    const instance = await this.set(connection)
+    const instance = this.set(connection)
     if (!instance) return
     await this.assignPort(instance)
-    await instance.start()
+    instance.start()
     this.updated()
   }
 
