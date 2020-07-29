@@ -26,9 +26,8 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
 
   useEffect(() => {
-      setUsername((connection && connection.username) || '')
-  },[connection?.username])
-  
+    setUsername((connection && connection.username) || '')
+  }, [connection?.username])
 
   if (!connection || !connection.active || !app) return null
 
@@ -38,10 +37,11 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
     else setOpen(true)
   }
   const launch = () => {
-    setConnection({
-      ...connection,
-      username: username.toString() || connection.username,
-    })
+    if (username)
+      setConnection({
+        ...connection,
+        username: username.toString(),
+      })
     window.open(app.launch({ ...connection, username }))
     close()
   }
