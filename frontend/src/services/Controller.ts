@@ -165,10 +165,6 @@ function getEventHandlers() {
     },
 
     // Connections
-    'service/started': (msg: ConnectionMessage) => {
-      logs.add({ id: msg.connection.id, log: msg.raw })
-      backend.setConnection(msg.connection)
-    },
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
