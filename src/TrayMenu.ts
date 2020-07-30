@@ -9,6 +9,7 @@ import headless, {
   ConnectionPool,
   hostName,
   getApplication,
+  Logger,
 } from 'remoteit-headless'
 import electron from 'electron'
 import path from 'path'
@@ -107,7 +108,7 @@ export default class TrayMenu {
       list = list.slice(0, MAX_MENU_SIZE)
     }
     let menu = list.reduce((result: any[], connection) => {
-      if (connection.startTime && connection.owner === user.username) {
+      if (connection.startTime) {
         result.push({
           label: connection.name,
           icon: connection.active ? iconConnected : connection.online ? iconOnline : iconOffline,
@@ -129,6 +130,7 @@ export default class TrayMenu {
       return result
     }, [])
     if (more) menu.push({ label: `and ${more} more...`, click: () => this.handleOpen('connections') })
+    Logger.info('TRAY MENU', { menu })
     return menu
   }
 
