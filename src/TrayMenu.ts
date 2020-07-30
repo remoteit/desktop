@@ -107,7 +107,7 @@ export default class TrayMenu {
       list = list.slice(0, MAX_MENU_SIZE)
     }
     let menu = list.reduce((result: any[], connection) => {
-      if (connection.startTime && connection.owner === user.username) {
+      if (connection.startTime) {
         result.push({
           label: connection.name,
           icon: connection.active ? iconConnected : connection.online ? iconOnline : iconOffline,

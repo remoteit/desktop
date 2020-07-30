@@ -12,7 +12,7 @@ class Application {
   title: string = 'URL'
   icon: string = 'arrow-right'
   launchTemplate: string = 'http://[host]:[port]'
-  copyUrl: string = '[host]:[port]'
+  copyTemplate?: string
   prompt: boolean = false
   iconRotate: boolean = false
 
@@ -25,7 +25,7 @@ class Application {
   }
 
   copy(connection: IConnection) {
-    return this.parse(this.copyUrl, connection)
+    return this.copyTemplate ? this.parse(this.copyTemplate, connection) : this.launch(connection)
   }
 
   parse(url: string, connection: IConnection) {
@@ -54,7 +54,7 @@ const applications: Application[] = [
     icon: 'terminal',
     prompt: true,
     launchTemplate: 'ssh://[username]@[host]:[port]',
-    copyUrl: 'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
+    copyTemplate: 'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
   }),
   new Application({
     types: [8, 10, 33],
@@ -73,8 +73,7 @@ const applications: Application[] = [
   new Application({
     types: [34],
     title: 'Samba',
-    icon: 'folders',
-    iconRotate: true,
+    icon: 'folder',
     launchTemplate: 'smb://[host]:[port]',
   }),
 ]
@@ -85,6 +84,7 @@ const defaultApp = new Application({
   icon: 'arrow-right',
   iconRotate: true,
   launchTemplate: 'https://[host]:[port]',
+  copyTemplate: '[host]:[port]',
 })
 
 export default useApplication

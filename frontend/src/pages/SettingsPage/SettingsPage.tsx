@@ -32,7 +32,7 @@ export const SettingsPage = () => {
   const { binaries } = useDispatch<Dispatch>()
 
   const quitWarning = () =>
-    window.confirm('Are you sure? Quitting will close all active connections.') && emit('user/quit')
+    window.confirm('Are you sure? Quitting will not close your connections.') && emit('user/quit')
   const signOutWarning = () => {
     window.confirm(
       'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
