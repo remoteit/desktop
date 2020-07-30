@@ -17,7 +17,7 @@ export const UsersPage: React.FC = () => {
   const connected = !!service?.sessions.length
 
   useEffect(() => {
-    analytics.page('LogPage')
+    analytics.page('UsersPage')
   }, [])
 
   return (
