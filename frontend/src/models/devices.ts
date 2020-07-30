@@ -203,17 +203,37 @@ export function findService(devices: IDevice[], id: string) {
 }
 
 
-export function getUsersConnectedDevice(device?: IDevice) {
-  const userConnected: string[] = [];
+export function getUsersConnectedDeviceOrService(device?: IDevice, service?: IService | null) {
+  const userConnected: IUser[] = [];
 
-  device && device.services.forEach((service: IService) => {
-    const {sessions} = service
+  const getSessionService = (_ser: IService) => {
+    const {sessions} = _ser
     if (sessions) {
       sessions.forEach(session => {
-        !userConnected.includes(session.email) && userConnected.push(session.email)
+        !userConnected.includes(session) && userConnected.push(session)
       })
     }
-  });
+  }
+
+  if (service) {
+    getSessionService(service)
+    return userConnected
+  }
+
+  device && device.services.forEach(getSessionService);
 
   return userConnected
+}
+
+export function getServicesByEmail(device: IDevice, emailUser: string) {
+  return device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
+}
+
+export function getDetailUserPermission(device: IDevice, emailUser: string) {
+  const services = getServicesByEmail(device, emailUser)
+  return {
+    scripting: device?.access.find(_ac => _ac.email === emailUser)?.scripting || false,
+    numberServices: services.length,
+    services
+  };
 }

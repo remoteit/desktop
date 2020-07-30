@@ -1,5 +1,5 @@
 import React from 'react'
-import {  Button, Chip, IconButton, Tooltip } from '@material-ui/core'
+import {  Button, Chip, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 
@@ -15,16 +15,12 @@ export function ShareDetails({
     <div className={css.contentDetail}>
       {scripting && (
         <Tooltip enterDelay={500} title="Sharing ability to execute scripts">
-          <IconButton className={css.icon}>
-            <Icon name="scroll" size="base" type="regular" />
-          </IconButton>
+            <Icon name="scroll" size="base" type="regular" className={css.scripting}/>
         </Tooltip>
       )}
       {Boolean(shared) && (
         <Tooltip enterDelay={500} title="">
-          <IconButton className={css.icon}>
             <Chip label={shared} size="small" variant="outlined" className={css.chip} />
-          </IconButton>
         </Tooltip>
       )}
     </div>
@@ -64,9 +60,10 @@ const useStyles = makeStyles({
   },
   chip: {
     borderRadius: '50%',
+    marginRight: '30px',
   },
-  icon: {
-    marginRight: '10px',
+  scripting: {
+    marginRight: '20px'
   },
   contentDetail: {
     marginRight: '40px'

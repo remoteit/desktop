@@ -111,7 +111,7 @@ export const ServicePage: React.FC = () => {
       </Columns>
       <Divider />
       <List>
-        <UsersSelect device={device} service={service} />
+        <UsersSelect service={service} />
         <LanShareSelect connection={connection} service={service} />
         <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />

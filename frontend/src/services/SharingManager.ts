@@ -1,5 +1,4 @@
 
-import cookies from 'js-cookie'
 import { r3 } from './remote.it'
 
 export interface RawDeviceResponse {
@@ -9,19 +8,6 @@ export interface RawDeviceResponse {
 }
 
 export class SharingManager {
-  public static async fetch(
-    deviceID: string
-  ): Promise<{ deviceID: string; shares: ShareInfo[]; services: IService[] }> {
-    const data = await r3.get(
-      '/developer/device/share/list/' + deviceID + '?cached=false'
-    )
-    return {
-      deviceID,
-      shares: data.shares as ShareInfo[],
-      services: data.services as IService[],
-    }
-  }
-
   public static async share({
     allServices,
     contacts,
@@ -110,7 +96,7 @@ export class SharingManager {
   }
 
   private static get authHash(): string | undefined {
-    return cookies.get('remoteit.authHash')
+    return r3.authHash
   }
   private static get actionURL(): string {
     return window.location.origin + '/invite/accept?type=shareDevices&id='

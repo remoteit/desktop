@@ -9,12 +9,11 @@ import {
     ListItemIcon,
     ListItemSecondaryAction,
   } from '@material-ui/core'
-  import React, { useEffect } from 'react'
+  import React from 'react'
   import { Icon } from '../Icon'
   import { makeStyles } from '@material-ui/core/styles'
   import { ShareSaveActions } from './ContactCardActions'
   import { useHistory, useParams } from 'react-router-dom'
-import { SharingManager } from '../../services/SharingManager'
   
   export interface SharingDetails {
     access: SharingAccess
@@ -47,15 +46,6 @@ import { SharingManager } from '../../services/SharingManager'
   
     const history = useHistory()
     const { userName = '' } = useParams()
-
-    const fetchData = async () => {
-        const { shares } = await SharingManager.fetch(device.id)
-        onChange({ scripting: shares[0].scripting, services: selectedServices })
-    }
-
-    useEffect(() => {
-        userName && fetchData()
-    }, [device])
   
     const handleChangeServices = (services: string[]) => {
       onChange({ scripting, services })

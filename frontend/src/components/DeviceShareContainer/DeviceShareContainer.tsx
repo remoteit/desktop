@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { IService } from 'remote.it'
+import React from 'react'
 import { SharingDetails } from './SharingForm'
 import { useParams, useLocation, useHistory } from 'react-router-dom'
 import { SharingManager } from '../../services/SharingManager'
@@ -10,7 +9,7 @@ import { Dispatch, ApplicationState } from '../../store'
 
 export const DeviceShareContainer = ({ username = '' }) => {
   const { deviceID = '' } = useParams()
-  const { devices } = useDispatch<Dispatch>()
+  const { devices, shares } = useDispatch<Dispatch>()
   const { myDevice } = useSelector((state: ApplicationState) => ({
     myDevice: state.devices.all.find(device => device.id === deviceID),
   }))
@@ -25,7 +24,7 @@ export const DeviceShareContainer = ({ username = '' }) => {
     const contacts = share.contacts
     const {scripting, services} = share.access
 
-    await SharingManager.share({...shareData, contacts})
+    await shares.share({...shareData, contacts})
 
     updateStateDevice(contacts, scripting, services, true)
   }
@@ -36,7 +35,7 @@ export const DeviceShareContainer = ({ username = '' }) => {
     const email = share.contacts[0]
     const {scripting, services} = share.access
 
-    await SharingManager.update({...shareData, email})
+    await shares.update({...shareData, email})
 
     updateStateDevice([email], scripting, services)
   }
@@ -55,26 +54,31 @@ export const DeviceShareContainer = ({ username = '' }) => {
     }
   }
 
+  if (!myDevice) return null
+
   const updateStateDevice = (contacts: string[], scripting: boolean, services: string[], isNew?: boolean) => {
-    if (myDevice) {
-        const newUsers: IUser[] = contacts.map(email => ({email, scripting}))
-        myDevice.access = myDevice.access.concat(isNew ? newUsers : [])
-        services.length && myDevice.services.map(service => {
-            if (!service.access) {
-                service.access = []
-            }
-            service.access = (services.includes(service.id)) ? service.access.concat(newUsers) :
-                service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
-            return service
-        })
-        devices.updateShareDevice(myDevice)
+
+    const newUsers: IUser[] = contacts.map(email => ({email, scripting}))
+    if (isNew) {
+      myDevice.access = myDevice.access.concat(newUsers)
+    } else {
+      myDevice.access = myDevice.access.map(_ac => ({..._ac, scripting}))
     }
+
+    services.length && myDevice.services.map(service => {
+      if (!service.access) {
+        service.access = []
+      }
+      service.access = (services.includes(service.id)) ? service.access.concat(newUsers) :
+          service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
+      return service
+    })
+    devices.updateShareDevice(myDevice)
+  
     username === ''
       ? history.push(location.pathname.replace('/share', ''))
       : history.push(`/devices/${deviceID}/users`)
   }
-
-  if (!myDevice) return null
 
   return (
      <div className={css.shareContainer}>

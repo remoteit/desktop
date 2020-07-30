@@ -1,9 +1,10 @@
 import { Box } from '@material-ui/core'
 import React from 'react'
-import { DeviceShareDetails, SharingDetails } from './DeviceShareDetails'
+import { DeviceShareDetails } from './DeviceShareDetails'
 import { DeviceShareAdd } from './DeviceShareAdd'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { SharingDetails } from './SharingForm'
 
 interface DeviceShareContentProps {
   username: string
@@ -37,8 +38,9 @@ export function DeviceShareContent({
     await update(share)
   }
 
-  const notSharedYet = (c: { email: string }) => !device.access.find(s => s.email === c.email)
-  const unsharedContacts = contacts.filter(notSharedYet)
+  const notShared = (c: { email: string }) => !device.access.find(s => s.email === c.email)
+  const unsharedContacts = contacts.filter(notShared)
+
   return (
     <>
       {username === '' && (

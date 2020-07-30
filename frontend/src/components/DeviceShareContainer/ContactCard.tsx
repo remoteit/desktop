@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react'
 import { LoadingMessage } from '../LoadingMessage'
-import { SharingAccess, SharingDetails } from './DeviceShareDetails'
-import { SharingForm } from './SharingForm'
+import { SharingForm, SharingDetails, SharingAccess } from './SharingForm'
 
 export function ContactCard({
   device,
@@ -22,10 +21,10 @@ export function ContactCard({
   updateSharing: (access: SharingDetails) => void
   saving: boolean
 }): JSX.Element {
-  const [unshared, setUnshared] = React.useState<boolean>(false)
   const [scripts, setScripts] = React.useState<boolean>(scripting)
   const [selectedServices, setSelectedServices] = React.useState<string[]>(sharedServices)
-  function handleChange(access: SharingAccess): void {
+
+  const  handleChange = (access: SharingAccess) => {
     setScripts(access.scripting)
     setSelectedServices(access.services)
   }
@@ -50,23 +49,17 @@ export function ContactCard({
     })
   }
 
-  if (unshared) {
-    return <></>
-  }
-
   return (
     <Suspense fallback={<LoadingMessage />}>
-      <div className="ml-xxl mb-md">
-        <SharingForm
-          device={device}
-          saving={saving}
-          scripting={scripts}
-          onChange={handleChange}
-          selectedServices={selectedServices}
-          update={handleSharingUpdate}
-          share={handleShare}
-        />
-      </div>
+      <SharingForm
+        device={device}
+        saving={saving}
+        scripting={scripts}
+        onChange={handleChange}
+        selectedServices={selectedServices}
+        update={handleSharingUpdate}
+        share={handleShare}
+      />
     </Suspense>
   )
 }

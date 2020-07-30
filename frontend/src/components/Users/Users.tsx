@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
 import { ShareDetails } from '../DeviceShareContainer/ContactCardActions'
 import { SharingManager } from '../../services/SharingManager'
-import { getUsersConnectedDevice } from '../../models/devices'
+import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
 
 interface Props {
   deviceId: string
@@ -15,56 +15,51 @@ interface Props {
 }
 
 export const Users: React.FC<Props> = ({ deviceId, service }) => {
-  const [shares, setShares] = React.useState<ShareInfo[]>([])
   const devices = useSelector((state: ApplicationState) => state.devices.all)
   const findDevice = (id: string) => devices.find((d: IDevice) => d.id === id)
   const device = findDevice(deviceId)
   const shared = service ? service?.access.length : device?.access.length
-  const usersConnected = getUsersConnectedDevice(device)
+  const usersConnected = getUsersConnectedDeviceOrService(device, service)
 
-  async function handleFetch(): Promise<void> {
-    const { shares } = await SharingManager.fetch(deviceId)
-    setShares(shares)
-  }
-
-  useEffect(() => {
-    handleFetch()
-  }, [])
-
-  if (!shared) return null
+  if (!shared || !device) return null
 
   const users =  service ? service.access : device?.access
 
   if (!users?.length) return null
 
-  const details = (scripting: boolean, sharedLength: number, totalServices: number) => (
-    <ShareDetails
-      scripting={scripting}
-      shared={sharedLength}
-    />
-  )
+  const usersToRender = usersConnected.concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
 
   return (
     <>
       <List>
-        {users.map((user, index) => {
-            const isConneted = usersConnected.includes(user.email)
-            return (<>
-              <ListItemLocation key={index} pathname={`/devices/${deviceId}/users/${user.email}`}>
+        {usersToRender.map((user) => {
+          const isConneted = usersConnected.includes(user)
+          const permission = getDetailUserPermission(device, user.email)
+          return (
+            <ListItemLocation  pathname={`/devices/${deviceId}/users/${user.email}`}>
                 <ListItemIcon>
                   <Platform id={user.platform} connected={isConneted} />
                 </ListItemIcon>
-                <ListItemText primary={`${user.email}`} />
-                {shares.map(share => {
-                  if (share.email === user.email) {
-                    return details(share.scripting, share?.services?.length, device?.services?.length || 0)
-                  }
-                })}
-              </ListItemLocation>
-              {isConneted && <Divider />}
-            </>)
+                {isConneted ? (
+                  <ListItemText
+                    primaryTypographyProps={{ color: 'primary' }}
+                    primary={user.email}
+                    secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
+                  />
+                ) : (
+                  <ListItemText primary={`${user.email}`} />
+                )}
+
+                <ShareDetails
+                  scripting={permission.scripting}
+                  shared={permission.numberServices}
+                />
+                
+            </ListItemLocation>
+          )
         })}
       </List>
+      
     </>
   )
 }

@@ -2,18 +2,8 @@ import React from 'react'
 import { List } from '@material-ui/core'
 import { ContactCard } from './ContactCard'
 import { useParams } from 'react-router-dom'
-import { service } from '../../helpers/mockData'
-
-export interface SharingDetails {
-  access: SharingAccess
-  contacts: string[]
-  deviceID?: string
-}
-
-export interface SharingAccess {
-  scripting: boolean
-  services: string[]
-}
+import { getDetailUserPermission } from '../../models/devices'
+import { SharingDetails } from './SharingForm'
 
 export function DeviceShareDetails({
   device,
@@ -49,17 +39,16 @@ export function DeviceShareDetails({
     )
   }
 
+  const detailByEmail = (email: string) => {
+    const detail = getDetailUserPermission(device, email)
+    return formComponent(email, detail.services.map(s => s.id), detail.scripting)
+  }
+
   return (
     <List component="div">
       {userName === ''
         ? formComponent('', selectedServices, selectedScripting)
-        : device?.access.map((s) =>  { 
-            if (userName === s.email) {
-             const servicesUser = device.services.filter(service => service.access && service.access.find(_ac => _ac.email === userName))
-                .map(service => service.id)
-             return formComponent(s.email, servicesUser, s.scripting,)
-            }
-        })}
+        : detailByEmail(userName)}
     </List>
   )
 }
