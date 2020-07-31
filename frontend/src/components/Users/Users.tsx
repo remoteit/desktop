@@ -1,12 +1,11 @@
-import React, { useEffect } from 'react'
-import { List, ListItemIcon, ListItemText, Divider,  } from '@material-ui/core'
+import React from 'react'
+import { List, ListItemIcon, ListItemText, Divider  } from '@material-ui/core'
 import { Duration } from '../Duration'
 import { Platform } from '../Platform'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
 import { ShareDetails } from '../DeviceShareContainer/ContactCardActions'
-import { SharingManager } from '../../services/SharingManager'
 import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
 
 interface Props {
@@ -35,7 +34,7 @@ export const Users: React.FC<Props> = ({ deviceId, service }) => {
         {usersToRender.map((user) => {
           const isConneted = usersConnected.includes(user)
           const permission = getDetailUserPermission(device, user.email)
-          return (
+          return (<>
             <ListItemLocation  pathname={`/devices/${deviceId}/users/${user.email}`}>
                 <ListItemIcon>
                   <Platform id={user.platform} connected={isConneted} />
@@ -56,7 +55,8 @@ export const Users: React.FC<Props> = ({ deviceId, service }) => {
                 />
                 
             </ListItemLocation>
-          )
+            {(!!usersConnected.length &&  !isConneted) &&<Divider />}
+          </>)
         })}
       </List>
       

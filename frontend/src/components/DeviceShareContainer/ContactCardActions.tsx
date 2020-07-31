@@ -2,6 +2,9 @@ import React from 'react'
 import {  Button, Chip, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
+import { spacing } from '../../styling'
 
 export function ShareDetails({
   scripting,
@@ -30,12 +33,11 @@ export function ShareDetails({
 export function ShareSaveActions({
   onCancel,
   onSave,
-  saving,
 }: {
   onCancel: () => void
   onSave: () => void
-  saving: boolean
 }): JSX.Element {
+  const { saving } = useSelector((state: ApplicationState) => state.shares)
   const css = useStyles()
   return (
     <>
@@ -52,20 +54,20 @@ export function ShareSaveActions({
 
 const useStyles = makeStyles({
   button: {
-    marginTop: '40px',
-    marginRight: '10px',
-    padding: '5px 10px 5px 10px',
-    borderRadius: '3px',
-    minWidth: '45px',
+    marginTop: `${spacing.xxl}px`,
+    marginRight: `${spacing.sm}px`,
+    padding: `${spacing.xs}px ${spacing.sm}px`,
+    borderRadius: `${spacing.xxs}px`,
+    minWidth: `${spacing.xxl}px`,
   },
   chip: {
-    borderRadius: '50%',
-    marginRight: '30px',
+    borderRadius: `${spacing.xxl}%`,
+    marginRight: `${spacing.lg}px`,
   },
   scripting: {
-    marginRight: '20px'
+    marginRight: `${spacing.md}px`
   },
   contentDetail: {
-    marginRight: '40px'
+    marginRight: `${spacing.xxl}px`
   }
 })

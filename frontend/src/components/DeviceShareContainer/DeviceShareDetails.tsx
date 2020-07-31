@@ -8,23 +8,17 @@ import { SharingDetails } from './SharingForm'
 export function DeviceShareDetails({
   device,
   share,
-  selectedScripting,
-  selectedServices,
   selectedContacts,
   updateSharing,
-  saving
 }: {
   device: IDevice
-  share: (share: SharingDetails) => Promise<void>
-  selectedScripting: boolean
-  selectedServices: string[]
+  share: (share: SharingDetails, isNew: boolean) => Promise<void>
   selectedContacts: string[]
-  updateSharing: (share: SharingDetails) => Promise<void>,
-  saving: boolean
+  updateSharing: (share: SharingDetails, isNew: boolean) => Promise<void>,
 }): JSX.Element {
   const { userName = '' } = useParams()
 
-  const formComponent = (email: string, sharedService: string[], scripting?: boolean,) => {
+  const formComponent = (email: string, sharedService?: string[], scripting?: boolean,) => {
     return (
       <ContactCard
         device={device}
@@ -34,7 +28,6 @@ export function DeviceShareDetails({
         selectedContacts={selectedContacts}
         email={email}
         updateSharing={updateSharing}
-        saving={saving}
       />
     )
   }
@@ -47,7 +40,7 @@ export function DeviceShareDetails({
   return (
     <List component="div">
       {userName === ''
-        ? formComponent('', selectedServices, selectedScripting)
+        ? formComponent('')
         : detailByEmail(userName)}
     </List>
   )

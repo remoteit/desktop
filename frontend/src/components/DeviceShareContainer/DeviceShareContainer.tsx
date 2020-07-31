@@ -1,49 +1,55 @@
 import React from 'react'
 import { SharingDetails } from './SharingForm'
 import { useParams, useLocation, useHistory } from 'react-router-dom'
-import { SharingManager } from '../../services/SharingManager'
 import { makeStyles } from '@material-ui/core/styles'
-import { DeviceShareContent } from './DeviceShareContent'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
+import { Box } from '@material-ui/core'
+import { DeviceShareAdd } from './DeviceShareAdd'
+import { DeviceShareDetails } from './DeviceShareDetails'
+import { spacing } from '../../styling'
 
 export const DeviceShareContainer = ({ username = '' }) => {
   const { deviceID = '' } = useParams()
-  const { devices, shares } = useDispatch<Dispatch>()
+  const { shares } = useDispatch<Dispatch>()
   const { myDevice } = useSelector((state: ApplicationState) => ({
     myDevice: state.devices.all.find(device => device.id === deviceID),
   }))
+  const { contacts = [] } = useSelector((state: ApplicationState) => state.devices)
+  const [selectedContacts, setSelectedContacts] = React.useState<string[]>([])
 
   const history = useHistory()
   const location = useLocation()
   const css = useStyles()
 
-  const handleShare = async (share: SharingDetails) => {
+  if (!myDevice) return null
 
+  const notShared = (c: { email: string }) => !myDevice.access.find(s => s.email === c.email)
+  const unsharedContacts = contacts.filter(notShared)
+
+  const goToNext = () => username === ''
+    ? history.push(location.pathname.replace('/share', ''))
+    : history.push(location.pathname.replace(`/${username}`, '' ))
+
+  const handleShareUpdate = async (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share)
-    const contacts = share.contacts
-    const {scripting, services} = share.access
+    const contacts = (isNew)
+      ? share.contacts
+      : [share.contacts[0]]
+    const { scripting, services } = share.access
 
-    await shares.share({...shareData, contacts})
+    isNew 
+      ? await shares.share({ ...shareData, contacts }) 
+      : await shares.update({ ...shareData, email:contacts[0] })
 
-    updateStateDevice(contacts, scripting, services, true)
-  }
-
-  const handleUpdate = async (share: SharingDetails) => {
-
-    const shareData = mapShareData(share)
-    const email = share.contacts[0]
-    const {scripting, services} = share.access
-
-    await shares.update({...shareData, email})
-
-    updateStateDevice([email], scripting, services)
+    await shares.updateDeviceState({ device: myDevice, contacts, scripting, services, isNew })
+    goToNext()
   }
 
   const mapShareData = (share: SharingDetails) => {
     const { access } = share
     const scripting = access.scripting
-    const allServices = myDevice?.services.map(ser => ({...ser, id: ser.id.toLowerCase()})) || []
+    const allServices = myDevice?.services.map(ser => ({ ...ser, id: ser.id.toLowerCase() })) || []
     const sharedServices = access.services.map(ser => ser.toLowerCase())
 
     return {
@@ -54,40 +60,22 @@ export const DeviceShareContainer = ({ username = '' }) => {
     }
   }
 
-  if (!myDevice) return null
-
-  const updateStateDevice = (contacts: string[], scripting: boolean, services: string[], isNew?: boolean) => {
-
-    const newUsers: IUser[] = contacts.map(email => ({email, scripting}))
-    if (isNew) {
-      myDevice.access = myDevice.access.concat(newUsers)
-    } else {
-      myDevice.access = myDevice.access.map(_ac => ({..._ac, scripting}))
-    }
-
-    services.length && myDevice.services.map(service => {
-      if (!service.access) {
-        service.access = []
-      }
-      service.access = (services.includes(service.id)) ? service.access.concat(newUsers) :
-          service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
-      return service
-    })
-    devices.updateShareDevice(myDevice)
-  
-    username === ''
-      ? history.push(location.pathname.replace('/share', ''))
-      : history.push(`/devices/${deviceID}/users`)
-  }
-
   return (
-     <div className={css.shareContainer}>
-      <DeviceShareContent
-        username={username}
+    <div className={css.shareContainer}>
+      {username === '' && (
+        <Box mb={6}>
+          <DeviceShareAdd
+            contacts={unsharedContacts}
+            onChangeContacts={setSelectedContacts}
+            selectedContacts={selectedContacts}
+          />
+        </Box>
+      )}
+      <DeviceShareDetails
         device={myDevice}
-        share={handleShare}
-        update={handleUpdate}
-        saving={false}
+        share={handleShareUpdate}
+        selectedContacts={selectedContacts}
+        updateSharing={handleShareUpdate}
       />
     </div>
   )
@@ -95,9 +83,6 @@ export const DeviceShareContainer = ({ username = '' }) => {
 
 const useStyles = makeStyles({
   shareContainer: {
-    padding: '0px 10px 0px 20px',
-  },
-  shareContent: {
-    marginLeft: '10px',
-  },
+    padding: `${spacing.xxs}px ${spacing.sm}px ${spacing.xxs}px ${spacing.md}px`,
+  }
 })

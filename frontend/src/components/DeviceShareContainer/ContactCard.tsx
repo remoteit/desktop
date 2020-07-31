@@ -10,19 +10,17 @@ export function ContactCard({
   selectedContacts,
   email,
   updateSharing,
-  saving
 }: {
   device: IDevice
-  share: (access: SharingDetails) => Promise<void>
+  share: (access: SharingDetails, isNew: boolean) => Promise<void>
   scripting: boolean
-  sharedServices: string[]
+  sharedServices?: string[]
   selectedContacts: string[]
   email: string
-  updateSharing: (access: SharingDetails) => void
-  saving: boolean
+  updateSharing: (access: SharingDetails, isNew: boolean) => void
 }): JSX.Element {
   const [scripts, setScripts] = React.useState<boolean>(scripting)
-  const [selectedServices, setSelectedServices] = React.useState<string[]>(sharedServices)
+  const [selectedServices, setSelectedServices] = React.useState<string[]>(sharedServices || [])
 
   const  handleChange = (access: SharingAccess) => {
     setScripts(access.scripting)
@@ -36,7 +34,7 @@ export function ContactCard({
         services: selectedServices,
       },
       contacts: [email],
-    })
+    }, false)
   }
 
   const handleShare = () => {
@@ -46,14 +44,13 @@ export function ContactCard({
         services: selectedServices,
       },
       contacts: selectedContacts,
-    })
+    }, true)
   }
 
   return (
     <Suspense fallback={<LoadingMessage />}>
       <SharingForm
         device={device}
-        saving={saving}
         scripting={scripts}
         onChange={handleChange}
         selectedServices={selectedServices}

@@ -1,5 +1,4 @@
 import { createModel } from '@rematch/core'
-import analytics from '../helpers/Analytics'
 import { SharingManager } from '../services/SharingManager'
 
 
@@ -44,6 +43,27 @@ export default createModel({
       await SharingManager.share(newData)
       set({sharing: false})
     },
+
+    async updateDeviceState(infoUpdate: {device: IDevice, contacts: string[], scripting: boolean, services: string[], isNew?: boolean}) {
+      const {device, contacts, scripting, services, isNew} = infoUpdate
+
+      const newUsers: IUser[] = contacts.map(email => ({email, scripting}))
+      if (isNew) {
+        device.access = device.access.concat(newUsers)
+      } else {
+        device.access = device.access.map(_ac => ({..._ac, scripting}))
+      }
+
+      services.length && device.services.map(service => {
+      if (!service.access) {
+        service.access = []
+      }
+      service.access = (services.includes(service.id)) ? service.access.concat(newUsers) :
+            service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
+        return service
+      })
+      dispatch.devices.updateShareDevice(device)
+    }
   
   }),
   reducers: {

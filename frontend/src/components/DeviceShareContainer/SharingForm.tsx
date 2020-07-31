@@ -14,6 +14,9 @@ import {
   import { makeStyles } from '@material-ui/core/styles'
   import { ShareSaveActions } from './ContactCardActions'
   import { useHistory, useParams } from 'react-router-dom'
+import { useSelector } from '../../hooks/reactReduxHooks'
+import { ApplicationState } from '../../store'
+import { spacing } from '../../styling'
   
   export interface SharingDetails {
     access: SharingAccess
@@ -29,7 +32,6 @@ import {
   export function SharingForm({
     onChange,
     device,
-    saving,
     scripting,
     selectedServices,
     update,
@@ -37,7 +39,6 @@ import {
   }: {
     onChange: (access: SharingAccess) => void
     device: IDevice
-    saving: boolean
     scripting: boolean
     selectedServices: string[]
     update: () => void
@@ -46,6 +47,7 @@ import {
   
     const history = useHistory()
     const { userName = '' } = useParams()
+    const { saving } = useSelector((state: ApplicationState) => state.shares)
   
     const handleChangeServices = (services: string[]) => {
       onChange({ scripting, services })
@@ -100,7 +102,6 @@ import {
           <ShareSaveActions
             onCancel={() => history.push(`/devices/${device.id}/users`)}
             onSave={action}
-            saving={saving}
           />
         </div>
       </>
@@ -126,7 +127,7 @@ import {
     const css = useStyles()
   
     function update(checked: boolean, id: string): void {
-      const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v != id)
+      const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id)
       onChange(all)
     }
     return (
@@ -153,22 +154,22 @@ import {
   
   const useStyles = makeStyles({
     typogrpy: {
-      padding: '0px',
-      minHeight: '30px',
+      padding: `${spacing.xxs}px`,
+      minHeight: `${spacing.lg}px`,
     },
     checkService: {
-      height: '30px',
+      height: `${spacing.lg}px`,
     },
     button: {
-      marginTop: '40px',
-      marginRight: '10px',
-      padding: '5px 10px 5px 10px',
-      borderRadius: '3px',
-      minWidth: '45px',
+      marginTop: `${spacing.xl}px`,
+      marginRight: `${spacing.sm}px`,
+      padding: `${spacing.xs}px ${spacing.sm}px ${spacing.xs}px ${spacing.sm}px`,
+      borderRadius: `${spacing.xxs}px`,
+      minWidth: `${spacing.xxl}px`,
     },
     icon: {
-      minWidth: '20px',
-      marginRight: '20px',
+      minWidth: `${spacing.md}px`,
+      marginRight: `${spacing.md}px`,
     },
   })
   
