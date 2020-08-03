@@ -13,5 +13,4 @@
     RMDir /r "C:\Program Files\remoteit-bin"
     RMDir /r "$PROFILE\AppData\Local\remoteit"
     RMDir /r "$INSTDIR"
-    MessageBox MB_OK "remote.it was successfully uninstalled!"
 !macroend

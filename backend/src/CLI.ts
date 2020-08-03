@@ -60,9 +60,7 @@ export default class CLI {
 
   checkSignIn() {
     this.read()
-    if (this.isSignedOut() && (this.data.device.uid || this.data.connections.length)) {
-      this.signIn()
-    }
+    if (this.isSignedOut()) this.signIn()
   }
 
   isSignedOut() {

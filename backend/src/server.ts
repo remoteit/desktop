@@ -121,7 +121,7 @@ class Server {
       else {
         return callback(
           new Error(
-            `This device is registered to ${admin.username}. They must unregister this device and sign out to grant access.`
+            `This device is registered to ${admin.username}. They must clear their credentials to grant access.`
           ),
           false
         )
