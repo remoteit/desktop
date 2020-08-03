@@ -1,7 +1,5 @@
 import headless, {
-  IP_PRIVATE,
   EVENTS,
-  LAN,
   environment,
   EventBus,
   User,
@@ -9,25 +7,28 @@ import headless, {
   ConnectionPool,
   hostName,
   getApplication,
+  Logger,
 } from 'remoteit-headless'
 import electron from 'electron'
 import path from 'path'
 
 const MAX_MENU_SIZE = 10
+const MAX_UPDATE_CHECKS = 16
+const CHECK_INTERVAL = 800
 
 const iconConnected = path.join(__dirname, 'images', 'iconConnectedTemplate.png')
 const iconOffline = path.join(__dirname, 'images', 'iconOfflineTemplate.png')
 const iconOnline = path.join(__dirname, 'images', 'iconOnlineTemplate.png')
 
 export default class TrayMenu {
-  private tray: any
-  private privateIP: ipAddress
+  private tray: electron.Tray
+  private menu?: electron.Menu
   private pool: IConnection[]
+  private checks: number = 0
 
   constructor(tray: electron.Tray) {
     this.tray = tray
     this.pool = []
-    this.privateIP = IP_PRIVATE
 
     if (environment.isWindows) {
       this.tray.on('click', () => {
@@ -38,13 +39,13 @@ export default class TrayMenu {
     EventBus.on(User.EVENTS.signedIn, this.render)
     EventBus.on(User.EVENTS.signedOut, this.render)
     EventBus.on(ConnectionPool.EVENTS.updated, this.updatePool)
-    EventBus.on(LAN.EVENTS.privateIP, privateIP => (this.privateIP = privateIP))
   }
 
   private render = () => {
     const menuItems = user.signedIn ? this.remoteitMenu() : this.signInMenu()
-    const contextMenu = electron.Menu.buildFromTemplate(menuItems)
-    this.tray.setContextMenu(contextMenu)
+    this.menu = electron.Menu.buildFromTemplate(menuItems)
+    this.menu.on('menu-will-show', headless.pool.check)
+    this.tray.setContextMenu(this.menu)
   }
 
   private updatePool = (pool: IConnection[]) => {
@@ -154,6 +155,8 @@ export default class TrayMenu {
 
   private connect(connection: IConnection) {
     headless.pool.start(connection)
+    this.checks = 0
+    this.updateCheck()
   }
 
   private disconnect(connection: IConnection) {
@@ -168,5 +171,15 @@ export default class TrayMenu {
   private launch(connection: IConnection) {
     const app = getApplication(connection.typeID)
     electron.shell.openExternal(app.launch(connection))
+  }
+
+  private updateCheck() {
+    if (this.checks < MAX_UPDATE_CHECKS) {
+      setTimeout(() => {
+        this.checks++
+        headless.pool.check()
+        this.updateCheck()
+      }, CHECK_INTERVAL)
+    }
   }
 }
