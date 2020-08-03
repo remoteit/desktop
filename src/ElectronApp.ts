@@ -48,7 +48,7 @@ export default class ElectronApp {
    * Some APIs can only be used after this event occurs.
    */
   private handleAppReady = () => {
-    this.createTrayIcon()
+    this.createSystemTray()
     this.createMainWindow()
     this.handleOpenAtLogin(preferences.data || {})
     EventBus.emit(EVENTS.ready, this.tray)
@@ -113,8 +113,8 @@ export default class ElectronApp {
     })
   }
 
-  private createTrayIcon() {
-    d('Create tray icon')
+  private createSystemTray() {
+    d('Create system tray')
 
     const iconFile = environment.isMac
       ? 'iconTemplate.png'
