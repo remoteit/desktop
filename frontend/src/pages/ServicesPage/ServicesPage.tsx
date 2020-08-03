@@ -3,7 +3,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { ServiceName } from '../../components/ServiceName'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { Typography, List } from '@material-ui/core';
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
@@ -14,6 +14,7 @@ import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
 import { Columns } from '../../components/Columns'
 import analytics from '../../helpers/Analytics'
+import { DeviceActionListItem } from '../ServicePage/ServicePage';
 
 export const ServicesPage: React.FC = () => {
   const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
@@ -30,6 +31,12 @@ export const ServicesPage: React.FC = () => {
     result[c.id] = c
     return result
   }, {})
+
+  const actions: ActionType[] = [
+    { title: 'Shared Users', icon: 'user-friends', pathname: '/service/setup' },
+    { title: 'Edit Device', icon: 'pen', pathname: `/deviceEdit/${deviceID}` },
+    { title: 'Device Details', icon: 'info-circle', pathname: `/deviceDetail/${deviceID}` }
+  ];
 
   useEffect(() => {
     analytics.page('ServicesPage')
@@ -54,29 +61,19 @@ export const ServicesPage: React.FC = () => {
     >
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />
-      <Typography variant="subtitle1">Device details</Typography>
-      <Columns count={1} inset>
-        <DataDisplay
-          data={[
-            {
-              label: 'Availability',
-              value: device.availability,
-              format: 'percent',
-              help: 'Average time online per day',
-            },
-            { label: 'Instability', value: device.instability, format: 'round', help: 'Average disconnects per day' },
-            { label: 'Owner', value: device.owner },
-            { label: 'Last reported', value: device.lastReported, format: 'duration' },
-            { label: 'ISP', value: device.geo?.isp },
-            { label: 'Connection type', value: device.geo?.connectionType },
-            { label: 'Location', value: device.geo, format: 'location' },
-            { label: 'External IP address', value: device.externalAddress },
-            { label: 'Internal IP address', value: device.internalAddress },
-            { label: 'Device ID', value: device.id },
-            { label: 'Hardware ID', value: device.hardwareID },
-          ]}
-        />
-      </Columns>
+      <List>
+        {actions.map(
+          action => {
+            return (
+              <DeviceActionListItem
+                title={action.title}
+                icon={action.icon}
+                pathname={action.pathname}
+              />
+            )
+          }
+        )}
+      </List>
     </Container>
   )
 }

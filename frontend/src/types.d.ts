@@ -32,6 +32,12 @@ declare global {
 
   export type LogType = 'general' | 'connectd' | 'alert'
 
+  type ActionType = {
+    title: string,
+    icon: string,
+    pathname: string
+  }
+
   export interface Log {
     type: LogType
     message: string

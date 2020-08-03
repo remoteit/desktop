@@ -31,6 +31,7 @@ import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { Icon } from '../../components/Icon'
+import { AdvanceSetting } from '../../components/AdvanceSettings'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -106,6 +107,7 @@ export const ServicePage: React.FC = () => {
           <NameSetting connection={connection} service={service} />
           <UsernameSetting connection={connection} service={service} />
           <LaunchSetting connection={connection} service={service} />
+          <AdvanceSetting service={service} />
         </List>
         <div className={css.actions}>
           <ConnectButton connection={connection} service={service} size="medium" />
@@ -113,7 +115,7 @@ export const ServicePage: React.FC = () => {
       </Columns>
       <Divider />
       <section>
-        <ServiceActionsList deviceUID={device.id} />
+        <ServiceActionsList deviceUID={device.id} serviceID={service.id}/>
       </section>
     </Container>
   )
@@ -130,40 +132,36 @@ const useStyles = makeStyles({
 })
 
 
-type ActionType = {
-  title: string,
-  icon: string,
-  pathname: string
-}
 
-const ServiceActionsList:React.FC<{deviceUID: string}> = ({deviceUID}) => {
+
+const ServiceActionsList: React.FC<{ deviceUID: string, serviceID: string }> = ({ deviceUID, serviceID }) => {
   const actions: ActionType[] = [
-    {title: 'Shared Users', icon:'user-friends', pathname:'/service/setup'},
-    {title: 'Edit Service', icon: 'pen', pathname:'/service/setup'},
-    {title: 'Service Details', icon:'info-circle', pathname:`/serviceDetail/${deviceUID}`}
+    { title: 'Shared Users', icon: 'user-friends', pathname: '/service/setup' },
+    { title: 'Edit Service', icon: 'pen', pathname: `/serviceEdit/${deviceUID}/${serviceID}` },
+    { title: 'Service Details', icon: 'info-circle', pathname: `/serviceDetail/${deviceUID}` }
   ];
 
   return (
     <List>
-        {actions.map(
-          action => {
-            return (
-              <DeviceActionListItem 
-                title={action.title} 
-                icon={action.icon} 
-                pathname={action.pathname}
-              />
-            )
-          }
-        )}
+      {actions.map(
+        action => {
+          return (
+            <DeviceActionListItem
+              title={action.title}
+              icon={action.icon}
+              pathname={action.pathname}
+            />
+          )
+        }
+      )}
     </List>
 
   )
 }
 
-const DeviceActionListItem: React.FC<ActionType> = (action) => {
+export const DeviceActionListItem: React.FC<ActionType> = (action) => {
   return (
-    <ListItemLocation pathname={action.pathname }>
+    <ListItemLocation pathname={action.pathname}>
       <ListItemIcon>
         <Icon name={action.icon} size="md" fixedWidth />
       </ListItemIcon>
