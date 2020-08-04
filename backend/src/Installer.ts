@@ -166,9 +166,10 @@ export default class Installer {
   private download(progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
       const url =
-        CLI_DOWNLOAD === 'AWS'
+        CLI_DOWNLOAD === 'DEV'
           ? `https://dev-cli.s3-us-west-2.amazonaws.com/v${this.version}/${this.downloadFileName}`
-          : `https://github.com/${this.repoName}/releases/download/v${this.version}/${this.downloadFileName}`
+          : `https://downloads.remote.it/cli/v${this.version}/${this.downloadFileName}`
+      // : `https://github.com/${this.repoName}/releases/download/v${this.version}/${this.downloadFileName}` // old prod
 
       Logger.info('DOWNLOADING', { url })
       d(`Downloading ${this.name}:`, url)
