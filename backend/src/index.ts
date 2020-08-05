@@ -30,7 +30,7 @@ process
       params: { type: 'UNCAUGHT EXCEPTION' },
       error,
     })
-    Logger.warn('UNCAUGHT EXCEPTION', { error, details: error.toString() })
+    Logger.warn('UNCAUGHT EXCEPTION', { error, details: error.toString(), trace: error.stack })
   })
   .on('unhandledRejection', (reason: Error | any, promise: Promise<any>) => {
     d('Caught exception', reason, promise)

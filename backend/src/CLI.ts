@@ -29,7 +29,12 @@ type IExec = {
   onError?: ErrorCallback
 }
 
-type IConnectionStatus = { id?: string; connectionState?: 'offline' | 'connecting' | 'connected' }
+type IConnectionStatus = {
+  id?: string
+  connectionState?: 'offline' | 'connecting' | 'connected'
+  isFailover?: boolean
+  isP2P?: boolean
+}
 
 export default class CLI {
   data: IData = {
@@ -53,10 +58,7 @@ export default class CLI {
   }
 
   checkSignIn() {
-    this.read()
-    if (this.isSignedOut() && (this.data.device.uid || this.data.connections.length)) {
-      this.signIn()
-    }
+    if (this.isSignedOut()) this.signIn()
   }
 
   isSignedOut() {
@@ -124,14 +126,15 @@ export default class CLI {
   }
 
   async updateConnectionStatus() {
-    if (!this.isInstalled() || !this.data.connections.length) return
+    if (!this.data.connections.length) return
     const json = await this.status()
     if (!json?.connections?.length) return
     this.data.connections = this.data.connections.map(c => {
       const status = json?.connections?.find(s => s.id === c.id)
       if (status) {
-        c.active = status.connectionState === 'connected' || status.connectionState === 'connecting'
+        c.active = status.connectionState === 'connected'
         c.connecting = status.connectionState === 'connecting'
+        c.isP2P = status.isP2P
         d('UPDATE STATUS', { c, status: status.connectionState })
       }
       return c
@@ -227,18 +230,8 @@ export default class CLI {
     return result.toString().trim()
   }
 
-  async isInstalled() {
-    const installed = remoteitInstaller.fileExists(remoteitInstaller.binaryName)
-    return installed
-  }
-
   async exec({ cmds, checkAuthHash = false, admin = false, quiet = false, onError }: IExec) {
-    if (checkAuthHash && !user.signedIn) return ''
-
-    if (await !this.isInstalled()) {
-      remoteitInstaller.check()
-      return ''
-    }
+    if ((checkAuthHash && !user.signedIn) || !remoteitInstaller.isInstalled()) return ''
 
     let result
     let commands = new Command({ admin, quiet })

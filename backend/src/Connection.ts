@@ -11,11 +11,10 @@ export default class Connection extends EventEmitter {
   params!: IConnection
 
   static EVENTS: { [name: string]: SocketEvent } = {
-    started: 'service/started', // save log for 1yr
-    connected: 'service/connected', // save log for 1yr
-    disconnected: 'service/disconnected', // save log for 1yr
-    forgotten: 'service/forgotten', // save log for 1yr
-    error: 'service/error', // save log for 1yr
+    connected: 'service/connected',
+    disconnected: 'service/disconnected',
+    forgotten: 'service/forgotten',
+    error: 'service/error',
   }
 
   constructor(connection: IConnection) {
@@ -24,34 +23,26 @@ export default class Connection extends EventEmitter {
     this.set(connection)
   }
 
-  async set(
-    { host = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection,
-    setCLI?: boolean
-  ) {
+  set({ host = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
     this.params = { host, restriction, failover, ...connection }
     Logger.info('SET CONNECTION', { params: this.params })
-    if (setCLI) await cli.setConnection(this.params, this.error)
+    if (setCLI) cli.setConnection(this.params, this.error)
   }
 
-  async start() {
+  start() {
     this.params.connecting = true
     this.params.startTime = Date.now()
-    EventBus.emit(Connection.EVENTS.started, { connection: this.params, raw: 'Connection started' })
-
-    this.params.active = true
     this.params.error = undefined
-    await cli.addConnection(this.params, this.error)
-
+    // if (cli.data.connections.find(c => c.id === this.params.id)) cli.setConnection(this.params, this.error) else
+    cli.addConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
-  async stop() {
+  stop() {
     d('Stopping service:', this.params.id)
-
     this.params.active = false
     this.params.endTime = Date.now()
-    await cli.setConnection(this.params, this.error)
-
+    cli.setConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
   }
 

@@ -1,5 +1,6 @@
 import React from 'react'
 import { InlineSetting } from '../InlineSetting'
+import { REGEX_NAME_SAFE } from '../../shared/constants'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 export const NameSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
@@ -13,6 +14,7 @@ export const NameSetting: React.FC<{ service: IService; connection?: IConnection
       value={currentName}
       label="Connection Name"
       resetValue={service.name}
+      filter={REGEX_NAME_SAFE}
       onSave={name =>
         connection &&
         setConnection({

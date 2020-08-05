@@ -12,7 +12,7 @@ import fs from 'fs'
 import path from 'path'
 import { existsSync } from 'fs'
 
-const d = debug('r3:backend:Installer')
+const d = debug('installer')
 
 export type ProgressCallback = (percent: number) => void
 
@@ -65,6 +65,7 @@ export default class Installer {
    * to decide if we install connectd or not on startup.
    */
   isInstalled() {
+    if (binaryInstaller.inProgress) return false
     const check = this.dependencyNames.concat(this.binaryName)
     const missing = check.find(fileName => !this.fileExists(fileName))
     d('IS INSTALLED?', { installed: !missing })
@@ -166,33 +167,37 @@ export default class Installer {
   private download(progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
       const url =
-        CLI_DOWNLOAD === 'AWS'
+        CLI_DOWNLOAD === 'DEV'
           ? `https://dev-cli.s3-us-west-2.amazonaws.com/v${this.version}/${this.downloadFileName}`
-          : `https://github.com/${this.repoName}/releases/download/v${this.version}/${this.downloadFileName}`
+          : `https://downloads.remote.it/cli/v${this.version}/${this.downloadFileName}`
 
       Logger.info('DOWNLOADING', { url })
-      d(`Downloading ${this.name}:`, url)
-
       progress(0)
 
       https
         .get(url, res1 => {
           if (!res1 || !res1.headers) {
-            d('No response from download URL', res1, this)
+            Logger.warn('No response from download URL', { headers: res1.headers })
             return reject(new Error('No response from download URL!'))
           }
           if (res1.headers.location) {
-            https
-              .get(res1.headers.location, res2 => {
-                if (!res2 || !res2.headers || !res2.headers['content-length'])
-                  return reject(new Error('No response from location URL!'))
-                stream(res2)
-              })
-              .on('error', reject)
+            d('LOCATION FOUND', { location: res1.headers.location })
+            try {
+              https
+                .get(res1.headers.location, res2 => {
+                  if (!res2 || !res2.headers || !res2.headers['content-length'])
+                    return reject(new Error('No response from location URL!'))
+                  stream(res2)
+                })
+                .on('error', reject)
+            } catch (e) {
+              Logger.warn('Download file not found', { headers: res1.headers })
+              return reject(new Error('Download file not found'))
+            }
           } else if (res1.headers['content-length']) {
             stream(res1)
           } else {
-            d('No download header in download URL', res1)
+            Logger.warn('No download header in download URL', { headers: res1.headers })
             return reject(new Error('No download header in download URL!'))
           }
         })

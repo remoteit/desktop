@@ -31,13 +31,16 @@ export const InstallationNotice = connect(
 
   if (!connected) return null
   if (error) console.error(error)
+
+  const isError = error && JSON.stringify(error) !== JSON.stringify({})
+
   return (
     <Body center>
       <Typography className={css.welcome} variant="caption" align="center">
         Welcome to
       </Typography>
       <Logo className={css.space} />
-      {error && (
+      {isError && (
         <Alert onClose={() => clearError()}>
           {error === 'User did not grant permission.'
             ? 'Please grant permissions to install CLI tools'
@@ -57,14 +60,21 @@ export const InstallationNotice = connect(
         disabled={installing}
         onClick={() => install()}
       >
-        {installing ? 'Installing...' : 'Install Service'}
-        <Icon name="arrow-to-bottom" type="regular" inline />
+        {installing ? (
+          <>
+            Installing
+            <Icon name="spinner-third" type="regular" spin inline />
+          </>
+        ) : (
+          <>
+            Install Service
+            <Icon name="arrow-to-bottom" type="regular" inline />
+          </>
+        )}
       </Button>
       <Typography className={css.space} variant="caption" align="center">
         <Icon name="info-circle" type="regular" size="xs" inlineLeft />
         You will be prompted for permission to continue the installation.
-        <br />
-        Run remote.it {isWindows() ? 'as an administrator' : 'with sudo'} to avoid future prompting.
       </Typography>
     </Body>
   )

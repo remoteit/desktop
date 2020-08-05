@@ -16,14 +16,16 @@ type Props = {
 export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => {
   const [state, setState] = useState<boolean[]>([])
   const css = useStyles()
-  const scanData = useSelector((state: ApplicationState) =>
-    state.backend.scanData.localhost?.data[0][1].map(row => ({
-      ...DEFAULT_TARGET,
-      type: getTypeId(row[0]),
-      port: row[0],
-      name: row[1].replace(REGEX_NAME_SAFE, ''),
-    }))
-  )
+  const scanData = useSelector((state: ApplicationState) => {
+    const {localhost} =  state.backend.scanData
+
+    return localhost?.data[0] && localhost?.data[0][1].map(row => ({
+        ...DEFAULT_TARGET,
+        type: getTypeId(row[0]),
+        port: row[0],
+        name: row[1].replace(REGEX_NAME_SAFE, ''),
+      }))
+  })
 
   const updateTargets = useCallback(
     checked => {

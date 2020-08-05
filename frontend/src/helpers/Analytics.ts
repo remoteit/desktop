@@ -2,7 +2,9 @@ import { version } from '../../package.json'
 
 ///  <reference types="@types/google.analytics" />
 
-export const CONNECTION_TYPE_FAILOVER = 'failover'
+export const CONNECTION_TYPE_PROXY_FAILOVER = 'proxy_failover'
+export const CONNECTION_TYPE_PEER_TO_PEER = 'peer_to_peer'
+export const CONNECTION_TYPE_NONE = 'None'
 
 export class Analytics {
   private context: SegmentContext
@@ -147,9 +149,20 @@ export class Analytics {
     window.analytics.track(name, context)
   }
 
-  public trackConnect(name: string, data?: { id: string; name: string; typeID?: number }, error?: ISimpleError) {
-    if (data) this.track(name, { ...data, error, connectionType: CONNECTION_TYPE_FAILOVER })
+  public trackConnect(
+    name: string,
+    data?: { id: string; name: string; typeID?: number; isP2P?: boolean },
+    error?: ISimpleError
+  ) {
+    const connectionType =
+      data?.isP2P === undefined
+        ? CONNECTION_TYPE_NONE
+        : data?.isP2P === true
+        ? CONNECTION_TYPE_PEER_TO_PEER
+        : CONNECTION_TYPE_PROXY_FAILOVER
+    if (data) this.track(name, { ...data, error, connectionType })
   }
+  
 }
 
 export default new Analytics()

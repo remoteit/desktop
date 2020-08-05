@@ -12,8 +12,8 @@ export const AIRBRAKE_PROJECT_ID = 223457
 export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e1376551dbe5b1326f98edd78b6247ba'
 
 // CLI
-export const CLI_VERSION = '1.4.7'
-export const CLI_DOWNLOAD: 'AWS' | 'GitHub' = 'AWS' // AWS or GitHub
+export const CLI_VERSION = '1.5.3'
+export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
 
 // CLI product tracking codes
 export const MANUFACTURE_ID_STANDARD = 33280

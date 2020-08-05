@@ -91,7 +91,7 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
                 }
               }}
               onFocus={event => event.target.select()}
-              helperText={nameError || '*Must be unique'}
+              helperText={nameError}
               inputProps={{ 'data-lpignore': 'true' }}
             />
             <Button
