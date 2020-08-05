@@ -60,14 +60,21 @@ export const InstallationNotice = connect(
         disabled={installing}
         onClick={() => install()}
       >
-        {installing ? 'Installing...' : 'Install Service'}
-        <Icon name="arrow-to-bottom" type="regular" inline />
+        {installing ? (
+          <>
+            Installing
+            <Icon name="spinner-third" type="regular" spin inline />
+          </>
+        ) : (
+          <>
+            Install Service
+            <Icon name="arrow-to-bottom" type="regular" inline />
+          </>
+        )}
       </Button>
       <Typography className={css.space} variant="caption" align="center">
         <Icon name="info-circle" type="regular" size="xs" inlineLeft />
         You will be prompted for permission to continue the installation.
-        <br />
-        Run remote.it {isWindows() ? 'as an administrator' : 'with sudo'} to avoid future prompting.
       </Typography>
     </Body>
   )

@@ -126,13 +126,13 @@ export default class CLI {
   }
 
   async updateConnectionStatus() {
-    if (!remoteitInstaller.isInstalled() || !this.data.connections.length) return
+    if (!this.data.connections.length) return
     const json = await this.status()
     if (!json?.connections?.length) return
     this.data.connections = this.data.connections.map(c => {
       const status = json?.connections?.find(s => s.id === c.id)
       if (status) {
-        c.active = status.connectionState === 'connected' || status.connectionState === 'connecting'
+        c.active = status.connectionState === 'connected'
         c.connecting = status.connectionState === 'connecting'
         c.isP2P = status.isP2P
         d('UPDATE STATUS', { c, status: status.connectionState })
