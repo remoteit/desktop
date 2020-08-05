@@ -1,7 +1,6 @@
 import { removeDeviceName } from './sharedCopy/nameHelper'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
 import remoteitInstaller from './remoteitInstaller'
-import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import strings from './cliStrings'
 import JSONFile from './JSONFile'
@@ -59,7 +58,6 @@ export default class CLI {
   }
 
   checkSignIn() {
-    this.read()
     if (this.isSignedOut()) this.signIn()
   }
 
@@ -128,7 +126,7 @@ export default class CLI {
   }
 
   async updateConnectionStatus() {
-    if (!this.isInstalled() || !this.data.connections.length) return
+    if (!remoteitInstaller.isInstalled() || !this.data.connections.length) return
     const json = await this.status()
     if (!json?.connections?.length) return
     this.data.connections = this.data.connections.map(c => {
@@ -232,14 +230,8 @@ export default class CLI {
     return result.toString().trim()
   }
 
-  isInstalled() {
-    return remoteitInstaller.fileExists(remoteitInstaller.binaryName) && !binaryInstaller.inProgress
-  }
-
   async exec({ cmds, checkAuthHash = false, admin = false, quiet = false, onError }: IExec) {
-    if (checkAuthHash && !user.signedIn) return ''
-
-    if (!this.isInstalled()) return ''
+    if ((checkAuthHash && !user.signedIn) || !remoteitInstaller.isInstalled()) return ''
 
     let result
     let commands = new Command({ admin, quiet })

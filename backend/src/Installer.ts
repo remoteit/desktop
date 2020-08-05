@@ -65,6 +65,7 @@ export default class Installer {
    * to decide if we install connectd or not on startup.
    */
   isInstalled() {
+    if (binaryInstaller.inProgress) return false
     const check = this.dependencyNames.concat(this.binaryName)
     const missing = check.find(fileName => !this.fileExists(fileName))
     d('IS INSTALLED?', { installed: !missing })

@@ -26,7 +26,6 @@ class Controller {
     this.pool = pool
     EventBus.on(server.EVENTS.authenticated, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
-    // EventBus.on(User.EVENTS.signedIn, () => this.check(true))
 
     let eventNames = [
       ...Object.values(User.EVENTS),
