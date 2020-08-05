@@ -99,19 +99,19 @@ class Server {
 
     // Signed in
     if (user.is(credentials)) {
-      d('User authenticated')
+      Logger.info('USER AUTHENTICATED')
       user.authenticated()
       return callback(null, true)
     }
     // Update credentials
     else if (user.username === credentials.username) {
-      d('Update credentials', user.username)
+      Logger.info('UPDATE CREDENTIALS')
       return callback(null, await !!user.checkSignIn(credentials))
     }
     // Sign in
     else if (credentials.username && credentials.authHash) {
       const { admin } = cli.data
-      d('User signing in!')
+      Logger.info('USER SIGNING IN')
 
       // Not registered or signed in matches cli user
       if (!admin || !admin.username || credentials.username === admin.username) {
@@ -129,20 +129,20 @@ class Server {
     }
     // No user
     else {
-      d('Authentication failed')
+      Logger.info('AUTHENTICATION FAILED')
       return callback(new Error('Server authentication failed.'), false)
     }
   }
 
   postAuthenticate = (socket: SocketIO.Socket) => {
     this.socket = socket
-    Logger.info('POST AUTHENTICATE', { event: this.EVENTS.authenticated })
+    Logger.info('POST AUTHENTICATE')
     EventBus.emit(this.EVENTS.authenticated)
   }
 
   disconnect = (socket: SocketIO.Socket) => {
     socket.removeAllListeners()
-    d('server disconnect', socket.id)
+    Logger.info('SERVER DISCONNECT')
   }
 }
 
