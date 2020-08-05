@@ -1,6 +1,7 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import electronInterface from './electronInterface'
+import remoteitInstaller from './remoteitInstaller'
 import Connection from './Connection'
 import EventBus from './EventBus'
 import Logger from './Logger'
@@ -45,6 +46,8 @@ export default class ConnectionPool {
 
   // Sync with CLI
   check = async () => {
+    if (!remoteitInstaller.isInstalled()) return
+
     await cli.updateConnectionStatus()
 
     // move connections: cli -> desktop
