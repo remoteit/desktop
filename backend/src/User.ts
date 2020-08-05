@@ -10,6 +10,7 @@ export class User {
   static EVENTS = {
     signInError: 'user/sign-in/error',
     signedOut: 'signed-out',
+    signedIn: 'signed-in',
   }
 
   username: string = ''
@@ -30,6 +31,7 @@ export class User {
 
   authenticated() {
     this.signedIn = true
+    EventBus.emit(User.EVENTS.signedIn, this.credentials)
   }
 
   checkSignIn = async (credentials?: UserCredentials) => {
@@ -53,6 +55,7 @@ export class User {
     this.username = user.username
     this.authHash = user.authHash
 
+    EventBus.emit(User.EVENTS.signedIn, user)
     cli.checkSignIn()
 
     return user
