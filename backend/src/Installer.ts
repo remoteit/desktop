@@ -169,7 +169,7 @@ export default class Installer {
       const url =
         CLI_DOWNLOAD === 'DEV'
           ? `https://dev-cli.s3-us-west-2.amazonaws.com/v${this.version}/${this.downloadFileName}`
-          : `https://downloads.remote.it/cli/vxxxx${this.version}/${this.downloadFileName}`
+          : `https://downloads.remote.it/cli/v${this.version}/${this.downloadFileName}`
 
       Logger.info('DOWNLOADING', { url })
       progress(0)
