@@ -46,7 +46,7 @@ export default class ConnectionPool {
 
   // Sync with CLI
   check = async () => {
-    if (!remoteitInstaller.isInstalled()) return
+    if (!remoteitInstaller.isCliCurrent()) return
 
     await cli.updateConnectionStatus()
 
