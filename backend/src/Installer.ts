@@ -143,7 +143,8 @@ export default class Installer {
   get downloadFileName() {
     const name = `${this.name}_`
     let platform = 'linux_arm64'
-    if (environment.isWindows) platform = 'windows_x86_64.exe'
+    if (environment.isWindows32) platform = 'windows_x86.exe'
+    else if (environment.isWindows) platform = 'windows_x86_64.exe'
     else if (environment.isMac) platform = 'mac-osx_x86_64'
     else if (environment.isPiZero) platform = 'linux_armv6'
     else if (environment.isPi) platform = 'linux_armv7'

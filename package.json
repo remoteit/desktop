@@ -68,9 +68,17 @@
       "github"
     ],
     "win": {
-      "target": "nsis",
       "certificateSubjectName": "remot3.it, Inc.",
-      "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4"
+      "certificateSha1": "9E10BD8F0629D58681CFE5EB5522EA297565FFA4",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32",
+            "x64"
+          ]
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
