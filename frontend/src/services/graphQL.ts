@@ -15,6 +15,12 @@ const DEVICE_SELECT = `{
     created
     lastReported
     hardwareId
+    access {
+      user {
+        email
+      }
+      scripting
+    }
     endpoint {
       externalAddress
       internalAddress
@@ -59,6 +65,12 @@ const DEVICE_SELECT = `{
   }
 }`
 
+const CONTACT_SELECT = `
+  contacts {
+    id
+    email
+  }`
+
 /* 
   GraphQL common request parameters
 */
@@ -80,6 +92,7 @@ export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOpt
             id
             devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
             connections: devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
+            contacts: ${CONTACT_SELECT}
           }
         }
       `,
@@ -157,6 +170,10 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
         }
       ),
       hidden,
+      access: d.access.map((e: any) => ({ 
+        email: e.user?.email, 
+        scripting: e.scripting,
+      })),
     })
   )
   return updateConnections(renameServices(data))

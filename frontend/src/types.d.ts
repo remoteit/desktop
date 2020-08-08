@@ -45,6 +45,39 @@ declare global {
     createdAt?: Date
   }
 
+  export interface ContactFields {
+    accountCreated?: boolean
+    companyName?: string
+    createdAt?: Date
+    email: string
+    firstName?: string
+    id?: string
+    inviteSent?: boolean
+    lastName?: string
+    language?: AvailableLanguage | string
+    updatedAt?: Date
+  }
+
+  export interface IReactSelectOption {
+    value: string
+    label: string
+  }
+
+  export interface ShareInfo {
+    created: string
+    email: string
+    scripting: boolean
+    services: string[]
+    uid: string
+    updated: string
+    userid: string
+  }
+
+  export interface SimplifiedService {
+    id: string
+    name: string
+  }
+
   export type IconType = 'light' | 'regular' | 'solid' | 'brands'
 
   /**

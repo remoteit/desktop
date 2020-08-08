@@ -3,7 +3,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { ServiceName } from '../../components/ServiceName'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { Typography, List } from '@material-ui/core';
+import { Typography, List } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
@@ -14,7 +14,8 @@ import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
 import { Columns } from '../../components/Columns'
 import analytics from '../../helpers/Analytics'
-import { DeviceActionListItem } from '../ServicePage/ServicePage';
+import { DeviceActionListItem } from '../ServicePage/ServicePage'
+import { UsersSelect } from '../../components/UsersSelect/UsersSelect'
 
 export const ServicesPage: React.FC = () => {
   const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
@@ -35,8 +36,8 @@ export const ServicesPage: React.FC = () => {
   const actions: ActionType[] = [
     { title: 'Shared Users', icon: 'user-friends', pathname: '/service/setup' },
     { title: 'Edit Device', icon: 'pen', pathname: `/deviceEdit/${deviceID}` },
-    { title: 'Device Details', icon: 'info-circle', pathname: `/deviceDetail/${deviceID}` }
-  ];
+    { title: 'Device Details', icon: 'info-circle', pathname: `/deviceDetail/${deviceID}` },
+  ]
 
   useEffect(() => {
     analytics.page('ServicesPage')
@@ -62,18 +63,11 @@ export const ServicesPage: React.FC = () => {
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />
       <List>
-        {actions.map(
-          action => {
-            return (
-              <DeviceActionListItem
-                title={action.title}
-                icon={action.icon}
-                pathname={action.pathname}
-              />
-            )
-          }
-        )}
+        {actions.map(action => {
+          return <DeviceActionListItem title={action.title} icon={action.icon} pathname={action.pathname} />
+        })}
       </List>
+      <UsersSelect device={device} />
     </Container>
   )
 }
