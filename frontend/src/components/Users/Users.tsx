@@ -1,45 +1,65 @@
 import React from 'react'
-import { List, ListItem, ListItemIcon, ListItemText, Divider } from '@material-ui/core'
+import { List, ListItemIcon, ListItemText, Divider  } from '@material-ui/core'
 import { Duration } from '../Duration'
 import { Platform } from '../Platform'
+import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
+import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
+import { ShareDetails } from '../DeviceShareContainer/ContactCardActions'
+import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
 
 interface Props {
+  deviceId: string
   service?: IService | null
-  connected?: boolean
 }
 
-export const Users: React.FC<Props> = ({ service, connected }) => {
-  if (!service?.access.length) return null
+export const Users: React.FC<Props> = ({ deviceId, service }) => {
+  const devices = useSelector((state: ApplicationState) => state.devices.all)
+  const findDevice = (id: string) => devices.find((d: IDevice) => d.id === id)
+  const device = findDevice(deviceId)
+  const shared = service ? service?.access.length : device?.access.length
+  const usersConnected = getUsersConnectedDeviceOrService(device, service)
 
-  const users = connected
-    ? service.sessions
-    : service.access.filter(user => !service.sessions.some(session => user.email === session.email))
+  if (!shared || !device) return null
 
-  if (!users.length) return null
+  const users =  service ? service.access : device?.access
+
+  if (!users?.length) return null
+
+  const usersToRender = usersConnected.concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
 
   return (
     <>
       <List>
-        {users.map((user, index) => {
-          return (
-            <ListItem key={index}>
-              <ListItemIcon>
-                <Platform id={user.platform} connected={connected} />
-              </ListItemIcon>
-              {connected ? (
-                <ListItemText
-                  primaryTypographyProps={{ color: 'primary' }}
-                  primary={user.email}
-                  secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
+        {usersToRender.map((user) => {
+          const isConneted = usersConnected.includes(user)
+          const permission = getDetailUserPermission(device, user.email)
+          return (<>
+            <ListItemLocation  pathname={`/devices/${deviceId}/users/${user.email}`}>
+                <ListItemIcon>
+                  <Platform id={user.platform} connected={isConneted} />
+                </ListItemIcon>
+                {isConneted ? (
+                  <ListItemText
+                    primaryTypographyProps={{ color: 'primary' }}
+                    primary={user.email}
+                    secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
+                  />
+                ) : (
+                  <ListItemText primary={`${user.email}`} />
+                )}
+
+                <ShareDetails
+                  scripting={permission.scripting}
+                  shared={permission.numberServices}
                 />
-              ) : (
-                <ListItemText primary={`${user.email}`} />
-              )}
-            </ListItem>
-          )
+                
+            </ListItemLocation>
+            {(!!usersConnected.length &&  !isConneted) &&<Divider />}
+          </>)
         })}
       </List>
-      <Divider />
+      
     </>
   )
 }

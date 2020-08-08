@@ -15,6 +15,7 @@ import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
 import { Columns } from '../../components/Columns'
 import analytics from '../../helpers/Analytics'
+import { UsersSelect } from '../../components/UsersSelect/UsersSelect';
 
 export const ServicesPage: React.FC = () => {
   const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
@@ -55,6 +56,7 @@ export const ServicesPage: React.FC = () => {
     >
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />
+      <UsersSelect device={device} />
       <Typography variant="subtitle1">Device details</Typography>
       <Columns count={1} inset>
         <DataDisplay
