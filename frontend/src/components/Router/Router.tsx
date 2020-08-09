@@ -97,6 +97,12 @@ export const Router: React.FC = () => {
       <Route path="/devices/:deviceID/:serviceID/users">
         <UsersPage />
       </Route>
+      <Route path="/devices/:deviceID/:serviceID/details">
+        <ServiceDetailPage />
+      </Route>
+      <Route path="/devices/:deviceID/:serviceID/edit">
+        <ServiceEditPage />
+      </Route>
       <Route path="/devices/:deviceID/users/:userName">
         <SharePage />
       </Route>
@@ -106,6 +112,12 @@ export const Router: React.FC = () => {
       <Route path="/devices/:deviceID/share">
         <SharePage />
       </Route>
+      <Route path="/devices/:deviceID/details">
+        <DeviceDetailPage />
+      </Route>
+      <Route path="/devices/:deviceID/edit">
+        <DeviceEditPage os={os} device={device} targets={targets} />
+      </Route>
       <Route path="/devices/:deviceID/:serviceID">
         <ServicePage />
       </Route>
@@ -114,18 +126,6 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices">
         <DevicesPage />
-      </Route>
-      <Route path="/deviceDetail/:deviceID">
-        <DeviceDetailPage />
-      </Route>
-      <Route path="/deviceEdit/:deviceID">
-        <DeviceEditPage os={os} device={device} targets={targets} />
-      </Route>
-      <Route path="/serviceEdit/:deviceID/:serviceID">
-        <ServiceEditPage />
-      </Route>
-      <Route path="/serviceDetail/:deviceID">
-        <ServiceDetailPage />
       </Route>
       <Route path="/settings">
         <SettingsPage />

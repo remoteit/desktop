@@ -13,9 +13,7 @@ type Props = {
 
 export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   const location = useLocation()
-
   const connected = service ? service.sessions.length : getUsersConnectedDeviceOrService(device).length
-
   const total = service ? service.access.length : device?.access.length
 
   return (
@@ -24,10 +22,10 @@ export const UsersSelect: React.FC<Props> = ({ device, service }) => {
         <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
       </ListItemIcon>
       <ListItemText
-        primary="Shared users"
+        primary="Users"
         secondary={
           <>
-            {total ? total  + ' total' : 'None'}
+            {total ? total + ' total' : 'None'}
             &nbsp; &nbsp;
             {!!connected && <span style={{ color: colors.primary }}>{connected} connected</span>}
           </>

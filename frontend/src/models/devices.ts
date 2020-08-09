@@ -82,9 +82,9 @@ export default createModel({
       try {
         const gqlResponse = await graphQLFetch(options)
         const [gqlData, total] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData.connections, gqlData.id, true)
-        const devices = graphQLAdaptor(gqlData.devices, gqlData.id)
-        return { devices: [...connections, ...devices], total, contacts: gqlData.contacts }
+        const connections = graphQLAdaptor(gqlData?.connections, gqlData.id, true)
+        const devices = graphQLAdaptor(gqlData?.devices, gqlData.id)
+        return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts }
       } catch (error) {
         await graphQLError(error)
         return { devices: [], total: 0 }
@@ -115,7 +115,7 @@ export default createModel({
       setDevice({ id, device: result })
     },
     async updateShareDevice(device: IDevice, deviceState?: IDeviceState) {
-      const {  setDevice } = dispatch.devices
+      const { setDevice } = dispatch.devices
       setDevice({ id: device.id, device })
     },
 
@@ -202,12 +202,11 @@ export function findService(devices: IDevice[], id: string) {
   )
 }
 
-
 export function getUsersConnectedDeviceOrService(device?: IDevice, service?: IService | null) {
-  const userConnected: IUser[] = [];
+  const userConnected: IUser[] = []
 
   const getSessionService = (_ser: IService) => {
-    const {sessions} = _ser
+    const { sessions } = _ser
     if (sessions) {
       sessions.forEach(session => {
         !userConnected.includes(session) && userConnected.push(session)
@@ -220,7 +219,7 @@ export function getUsersConnectedDeviceOrService(device?: IDevice, service?: ISe
     return userConnected
   }
 
-  device && device.services.forEach(getSessionService);
+  device && device.services.forEach(getSessionService)
 
   return userConnected
 }
@@ -234,6 +233,6 @@ export function getDetailUserPermission(device: IDevice, emailUser: string) {
   return {
     scripting: device?.access.find(_ac => _ac.email === emailUser)?.scripting || false,
     numberServices: services.length,
-    services
-  };
+    services,
+  }
 }

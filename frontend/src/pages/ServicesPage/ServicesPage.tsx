@@ -1,21 +1,19 @@
 import React, { useEffect } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { ServiceName } from '../../components/ServiceName'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { Typography, List } from '@material-ui/core'
+import { Typography, List, Divider } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
-import { DataDisplay } from '../../components/DataDisplay'
+import { UsersSelect } from '../../components/UsersSelect/UsersSelect'
 import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
-import { Columns } from '../../components/Columns'
 import analytics from '../../helpers/Analytics'
-import { DeviceActionListItem } from '../ServicePage/ServicePage'
-import { UsersSelect } from '../../components/UsersSelect/UsersSelect'
 
 export const ServicesPage: React.FC = () => {
   const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
@@ -26,18 +24,13 @@ export const ServicesPage: React.FC = () => {
   }))
   const { deviceID } = useParams()
   const history = useHistory()
+  const location = useLocation()
   const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
   const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
   const serviceConnections = connections.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
   }, {})
-
-  const actions: ActionType[] = [
-    { title: 'Shared Users', icon: 'user-friends', pathname: '/service/setup' },
-    { title: 'Edit Device', icon: 'pen', pathname: `/deviceEdit/${deviceID}` },
-    { title: 'Device Details', icon: 'info-circle', pathname: `/deviceDetail/${deviceID}` },
-  ]
 
   useEffect(() => {
     analytics.page('ServicesPage')
@@ -63,11 +56,10 @@ export const ServicesPage: React.FC = () => {
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />
       <List>
-        {actions.map(action => {
-          return <DeviceActionListItem title={action.title} icon={action.icon} pathname={action.pathname} />
-        })}
+        <UsersSelect device={device} />
+        <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />
+        <ListItemLocation title="Details" icon="info-circle" pathname={location.pathname + '/details'} />
       </List>
-      <UsersSelect device={device} />
     </Container>
   )
 }

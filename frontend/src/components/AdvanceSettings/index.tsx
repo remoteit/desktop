@@ -1,1 +1,0 @@
-export { AdvanceSetting } from './AdvanceSetting'

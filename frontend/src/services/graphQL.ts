@@ -169,11 +169,11 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
           }
         }
       ),
-      hidden,
-      access: d.access.map((e: any) => ({ 
-        email: e.user?.email, 
+      access: d.access.map((e: any) => ({
+        email: e.user?.email,
         scripting: e.scripting,
       })),
+      hidden,
     })
   )
   return updateConnections(renameServices(data))
