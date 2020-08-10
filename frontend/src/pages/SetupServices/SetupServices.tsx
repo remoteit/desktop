@@ -97,14 +97,8 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   )
 }
 
-type ActionType = {
-  title: string,
-  icon: string,
-  pathname: string
-}
-
 const DeviceActionsList:React.FC<{deviceUID: string}> = ({deviceUID}) => {
-  const actions: ActionType[] = [
+  const actions = [
     {title: 'Shared Users', icon:'user-friends', pathname:'/devices/setup'},
     {title: 'Edit Device', icon: 'pen', pathname:'/devices/setup'},
     {title: 'Device Details', icon:'info-circle', pathname:`/deviceDetail/${deviceUID}`}
@@ -115,27 +109,16 @@ const DeviceActionsList:React.FC<{deviceUID: string}> = ({deviceUID}) => {
         {actions.map(
           action => {
             return (
-              <DeviceActionListItem 
-                title={action.title} 
-                icon={action.icon} 
-                pathname={action.pathname}
-              />
+              // <DeviceActionListItem 
+              //   title={action.title} 
+              //   icon={action.icon} 
+              //   pathname={action.pathname}
+              // />
             )
           }
         )}
     </List>
 
-  )
-}
-
-const DeviceActionListItem: React.FC<ActionType> = (action) => {
-  return (
-    <ListItemLocation pathname={action.pathname }>
-      <ListItemIcon>
-        <Icon name={action.icon} size="md" fixedWidth />
-      </ListItemIcon>
-      <ListItemText primary={action.title} />
-    </ListItemLocation>
   )
 }
 

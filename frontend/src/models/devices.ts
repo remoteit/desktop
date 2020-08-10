@@ -198,29 +198,18 @@ export function findService(devices: IDevice[], id: string) {
       }
       return all
     },
-    [null, null] as [IService | null, IDevice | null]
+    [undefined, undefined] as [IService | undefined, IDevice | undefined]
   )
 }
 
-export function getUsersConnectedDeviceOrService(device?: IDevice, service?: IService | null) {
+export function getUsersConnectedDeviceOrService(device?: IDevice, service?: IService) {
   const userConnected: IUser[] = []
 
-  const getSessionService = (_ser: IService) => {
-    const { sessions } = _ser
-    if (sessions) {
-      sessions.forEach(session => {
-        !userConnected.includes(session) && userConnected.push(session)
-      })
-    }
-  }
+  const getSessionService = (s: IService) =>
+    s?.sessions.forEach(session => !userConnected.includes(session) && userConnected.push(session))
 
-  if (service) {
-    getSessionService(service)
-    return userConnected
-  }
-
-  device && device.services.forEach(getSessionService)
-
+  if (service) getSessionService(service)
+  else if (device) device.services.forEach(getSessionService)
   return userConnected
 }
 

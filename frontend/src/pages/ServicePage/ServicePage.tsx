@@ -112,9 +112,9 @@ export const ServicePage: React.FC = () => {
       </Columns>
       <Divider />
       <List>
-        <UsersSelect service={service} />
-        <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />
+        <UsersSelect service={service} device={device} />
         <ListItemLocation title="Details" icon="info-circle" pathname={location.pathname + '/details'} />
+        <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />
       </List>
     </Container>
   )

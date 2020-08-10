@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItemIcon, ListItemText, Divider  } from '@material-ui/core'
+import { List, ListItemIcon, ListItemText, Divider } from '@material-ui/core'
 import { Duration } from '../Duration'
 import { Platform } from '../Platform'
 import { ApplicationState } from '../../store'
@@ -10,19 +10,18 @@ import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../..
 
 interface Props {
   deviceId: string
-  service?: IService | null
+  service?: IService
 }
 
 export const Users: React.FC<Props> = ({ deviceId, service }) => {
   const devices = useSelector((state: ApplicationState) => state.devices.all)
-  const findDevice = (id: string) => devices.find((d: IDevice) => d.id === id)
-  const device = findDevice(deviceId)
+  const device = devices.find((d: IDevice) => d.id === deviceId)
   const shared = service ? service?.access.length : device?.access.length
   const usersConnected = getUsersConnectedDeviceOrService(device, service)
 
   if (!shared || !device) return null
 
-  const users =  service ? service.access : device?.access
+  const users = service ? service.access : device?.access
 
   if (!users?.length) return null
 
@@ -31,15 +30,16 @@ export const Users: React.FC<Props> = ({ deviceId, service }) => {
   return (
     <>
       <List>
-        {usersToRender.map((user) => {
-          const isConneted = usersConnected.includes(user)
+        {usersToRender.map(user => {
+          const isConnected = usersConnected.includes(user)
           const permission = getDetailUserPermission(device, user.email)
-          return (<>
-            <ListItemLocation  pathname={`/devices/${deviceId}/users/${user.email}`}>
+          return (
+            <>
+              <ListItemLocation pathname={`/devices/${deviceId}/users/${user.email}`}>
                 <ListItemIcon>
-                  <Platform id={user.platform} connected={isConneted} />
+                  <Platform id={user.platform} connected={isConnected} />
                 </ListItemIcon>
-                {isConneted ? (
+                {isConnected ? (
                   <ListItemText
                     primaryTypographyProps={{ color: 'primary' }}
                     primary={user.email}
@@ -49,17 +49,13 @@ export const Users: React.FC<Props> = ({ deviceId, service }) => {
                   <ListItemText primary={`${user.email}`} />
                 )}
 
-                <ShareDetails
-                  scripting={permission.scripting}
-                  shared={permission.numberServices}
-                />
-                
-            </ListItemLocation>
-            {(!!usersConnected.length &&  !isConneted) &&<Divider />}
-          </>)
+                <ShareDetails scripting={permission.scripting} shared={permission.numberServices} />
+              </ListItemLocation>
+              {!!usersConnected.length && !isConnected && <Divider />}
+            </>
+          )
         })}
       </List>
-      
     </>
   )
 }

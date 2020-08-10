@@ -13,8 +13,10 @@ type Props = {
 
 export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   const location = useLocation()
-  const connected = service ? service.sessions.length : getUsersConnectedDeviceOrService(device).length
+  const connected = getUsersConnectedDeviceOrService(device, service).length
   const total = service ? service.access.length : device?.access.length
+
+  if (device?.shared) return null
 
   return (
     <ListItemLocation pathname={location.pathname + '/users'}>

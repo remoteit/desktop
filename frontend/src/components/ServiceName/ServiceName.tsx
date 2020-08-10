@@ -10,9 +10,10 @@ type Props = {
   service?: IService | IDevice
   shared?: boolean
   inline?: boolean
+  children?: any
 }
 
-export const ServiceName: React.FC<Props> = ({ connection, service, shared }) => {
+export const ServiceName: React.FC<Props> = ({ connection, service, shared, children }) => {
   const location = useLocation()
 
   const menu = location.pathname.match(REGEX_FIRST_PATH)
@@ -31,6 +32,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared }) =>
           <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
         </sup>
       )}
+      {children && <>{` ${children}`}</>}
     </Title>
   )
 }
