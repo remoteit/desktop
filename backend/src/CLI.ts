@@ -57,8 +57,8 @@ export default class CLI {
     this.read()
   }
 
-  checkSignIn() {
-    if (this.isSignedOut()) this.signIn()
+  async checkSignIn() {
+    if (this.isSignedOut()) await this.signIn()
   }
 
   isSignedOut() {
