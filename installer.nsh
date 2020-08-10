@@ -12,15 +12,15 @@
     !define DOWNLOAD_URL_CLI "https://downloads.remote.it/cli/v${CLI_VERSION}/$PLATFORM" 
     !define DOWNLOAD_PATH_CLI "${PATH_REMOTE_DIR}\$PLATFORM"
 
-
     CreateDirectory "${PATH_REMOTE_DIR}"
     nsExec::Exec 'powershell (new-object System.Net.WebClient).DownloadFile\
     ($\'"${DOWNLOAD_URL_CLI}"$\', $\'"${DOWNLOAD_PATH_CLI}"$\') '
     Rename "${DOWNLOAD_PATH_CLI}" "${REMOTE_CLI_EXE}"
     nsExec::Exec 'powershell  "& ""${REMOTE_CLI_EXE}""  "'
     nsExec::Exec 'powershell  "& " "icacls $\'"${REMOTE_CLI_EXE}$\'" /T /C /Q /grant "*S-1-5-32-545:RX" '
-    nsExec::Exec '"${REMOTE_CLI_EXE}" -j tools install --update'
- 
+    nsExec::Exec '"${REMOTE_CLI_EXE}" -j tools install --update' 
+    nsExec::Exec '"${REMOTE_CLI_EXE}" -j service uninstall'
+    nsExec::Exec '"${REMOTE_CLI_EXE}" -j service install'
 !macroend
 
 !macro customUnInstall

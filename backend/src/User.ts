@@ -55,8 +55,8 @@ export class User {
     this.username = user.username
     this.authHash = user.authHash
 
+    await cli.checkSignIn()
     EventBus.emit(User.EVENTS.signedIn, user)
-    cli.checkSignIn()
 
     return user
   }
