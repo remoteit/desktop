@@ -16,13 +16,15 @@ import { Subtitle } from '../../components/Subtitle'
 import analytics from '../../helpers/Analytics'
 
 export const ServicesPage: React.FC = () => {
-  const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
+  const { connections, devices, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections,
     devices: state.devices.all,
     searched: state.devices.searched,
     query: state.devices.query,
+    thisDeviceId: state.backend.device.uid,
   }))
   const { deviceID } = useParams()
+  const thisDevice = deviceID === thisDeviceId
   const history = useHistory()
   const location = useLocation()
   const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
@@ -45,7 +47,7 @@ export const ServicesPage: React.FC = () => {
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
+            <ConnectionStateIcon service={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
             <ServiceName service={device} connection={activeConnection} shared={device.shared} inline />
             <RefreshButton device={device} />
             <DeleteButton device={device} />
@@ -58,7 +60,7 @@ export const ServicesPage: React.FC = () => {
       <List>
         <UsersSelect device={device} />
         <ListItemLocation title="Details" icon="info-circle" pathname={location.pathname + '/details'} />
-        <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />
+        {thisDevice && <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />}
       </List>
     </Container>
   )

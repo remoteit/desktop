@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography, Divider, ListItemIcon, ListItemText, List } from '@material-ui/core';
-import {  useParams } from 'react-router-dom'
+import { Typography, Divider, ListItemIcon, ListItemText, List } from '@material-ui/core'
+import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { ApplicationState, Dispatch } from '../../store'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
-import { ListItemLocation } from '../../components/ListItemLocation/ListItemLocation';
-import { SettingsListItem } from '../../components/SettingsListItem/SettingsListItem';
-import { Targets } from '../../components/Targets/Targets';
+import { ListItemLocation } from '../../components/ListItemLocation/ListItemLocation'
+import { SettingsListItem } from '../../components/SettingsListItem/SettingsListItem'
+import { Targets } from '../../components/Targets/Targets'
 
 type Props = {
   os?: Ios
@@ -21,7 +22,7 @@ type Props = {
 export const DeviceEditPage: React.FC<Props> = ({ device, os, targets, ...props }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
-  
+
   const onUpdate = (t: ITarget[]) => emit('targets', t)
   const onCancel = () => ui.set({ setupAdded: undefined })
 
@@ -38,7 +39,7 @@ export const DeviceEditPage: React.FC<Props> = ({ device, os, targets, ...props 
             <Breadcrumbs />
             <div className={css.header}>
               <Icon className={css.iconStyle} name={'pen'} size="md" fixedWidth />
-              <Typography className={css.title} variant="h2">Edit device</Typography>
+              <Title>Edit device</Title>
             </div>
             <Divider />
           </>
@@ -55,7 +56,7 @@ export const DeviceEditPage: React.FC<Props> = ({ device, os, targets, ...props 
             subLabel="Allows users with shared access to connect to this service"
             icon="user-friends"
             toggle={true}
-            onClick={() => { }}
+            onClick={() => {}}
           />
         </List>
         <Divider />
@@ -66,14 +67,7 @@ export const DeviceEditPage: React.FC<Props> = ({ device, os, targets, ...props 
       </Container>
     )
   } else {
-    return (
-      <Container
-        header={<>
-        </>}
-      >
-      </Container>
-
-    )
+    return <Container header={<></>}></Container>
   }
 }
 
@@ -92,7 +86,6 @@ const DeviceEditItem: React.FC<ItemProps> = ({ device }) => {
   )
 }
 
-
 const useStyles = makeStyles({
   iconStyle: {
     padding: 12,
@@ -100,12 +93,12 @@ const useStyles = makeStyles({
   title: {
     paddingLeft: 22,
     paddingTop: 12,
-    paddingBottom: 12
+    paddingBottom: 12,
   },
   header: {
     display: 'flex',
     flexDirection: 'row',
     paddingLeft: 30,
-    paddingBottom: 10
+    paddingBottom: 10,
   },
 })

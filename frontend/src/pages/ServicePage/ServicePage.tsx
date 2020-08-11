@@ -13,7 +13,8 @@ import { UsernameSetting } from '../../components/UsernameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { ApplicationState } from '../../store'
-import { Typography, Divider, List, ListItemIcon, ListItemText } from '@material-ui/core'
+import { AutoStartSetting } from '../../components/AutoStartSetting'
+import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { LanShareSelect } from '../../components/LanShareSelect'
@@ -23,7 +24,6 @@ import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
 import { UsersSelect } from '../../components/UsersSelect'
 import { ErrorButton } from '../../buttons/ErrorButton'
-import { DataDisplay } from '../../components/DataDisplay'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
@@ -37,8 +37,7 @@ export const ServicePage: React.FC = () => {
   const [showError, setShowError] = useState<boolean>(false)
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
-
-  let data: IDataDisplay[] = []
+  const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
 
   useEffect(() => {
     analytics.page('ServicePage')
@@ -48,7 +47,7 @@ export const ServicePage: React.FC = () => {
     return (
       <>
         <Typography variant="h1">
-          <ConnectionStateIcon connection={connection} size="lg" />
+          <ConnectionStateIcon connection={connection} thisDevice={thisDevice} size="lg" />
           <ServiceName connection={connection} inline />
           <ForgetButton connection={connection} />
         </Typography>
@@ -60,31 +59,13 @@ export const ServicePage: React.FC = () => {
       </>
     )
 
-  if (connection && connection.active) {
-    data = data.concat([
-      { label: 'Host', value: connection.host },
-      { label: 'Port', value: connection.port },
-      { label: 'Restriction', value: connection.restriction },
-    ])
-  }
-
-  data = data.concat([
-    { label: 'Last reported', value: service.lastReported, format: 'duration' },
-    { label: 'Service Name', value: service.name },
-    { label: 'Remote Port', value: service.port },
-    { label: 'Service Type', value: service.type },
-    { label: 'Device Name', value: device.name },
-    { label: 'Owner', value: device.owner },
-    { label: 'Service ID', value: service.id },
-  ])
-
   return (
     <Container
       header={
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <ConnectionStateIcon connection={connection} service={service} size="lg" />
+            <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
@@ -112,9 +93,13 @@ export const ServicePage: React.FC = () => {
       </Columns>
       <Divider />
       <List>
+        <ProxySetting connection={connection} service={service} />
+        <AutoStartSetting connection={connection} service={service} />
+        <LanShareSelect connection={connection} service={service} />
+        <Divider />
         <UsersSelect service={service} device={device} />
         <ListItemLocation title="Details" icon="info-circle" pathname={location.pathname + '/details'} />
-        <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />
+        {thisDevice && <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />}
       </List>
     </Container>
   )

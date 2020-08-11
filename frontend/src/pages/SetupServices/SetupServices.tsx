@@ -2,13 +2,7 @@ import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { 
-  CircularProgress, 
-  Tooltip, 
-  IconButton, 
-  Typography, 
-  Divider
-} from '@material-ui/core'
+import { CircularProgress, Tooltip, IconButton, Typography, Divider } from '@material-ui/core'
 import { List, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { NetworkScanLocation } from '../../components/NetworkScanLocation'
@@ -17,6 +11,7 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { Targets } from '../../components/Targets'
+import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import styles from '../../styling'
@@ -67,7 +62,7 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="hdd" size="lg" type="light" color="grayDarker" fixedWidth />
-            <span className={css.title}>{device.name}</span>
+            <Title>{device.name}</Title>
             {setupDeletingDevice ? (
               <CircularProgress className={css.loading} size={styles.fontSizes.md} />
             ) : (
@@ -97,32 +92,30 @@ export const SetupServices: React.FC<Props> = ({ device, os, targets, ...props }
   )
 }
 
-const DeviceActionsList:React.FC<{deviceUID: string}> = ({deviceUID}) => {
+const DeviceActionsList: React.FC<{ deviceUID: string }> = ({ deviceUID }) => {
   const actions = [
-    {title: 'Shared Users', icon:'user-friends', pathname:'/devices/setup'},
-    {title: 'Edit Device', icon: 'pen', pathname:'/devices/setup'},
-    {title: 'Device Details', icon:'info-circle', pathname:`/deviceDetail/${deviceUID}`}
-  ];
+    { title: 'Shared Users', icon: 'user-friends', pathname: '/devices/setup' },
+    { title: 'Edit Device', icon: 'pen', pathname: '/devices/setup' },
+    { title: 'Device Details', icon: 'info-circle', pathname: `/deviceDetail/${deviceUID}` },
+  ]
 
   return (
     <List>
-        {actions.map(
-          action => {
-            return (
+      {/* {actions.map(
+          // action => {
+            // return (
               // <DeviceActionListItem 
               //   title={action.title} 
               //   icon={action.icon} 
               //   pathname={action.pathname}
               // />
-            )
-          }
-        )}
+            // )
+          // }
+         )} */}
     </List>
-
   )
 }
 
 const useStyles = makeStyles({
-  title: { flexGrow: 1 },
   loading: { color: styles.colors.danger, margin: styles.spacing.sm },
 })

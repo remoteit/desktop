@@ -11,17 +11,12 @@ type Props = {
   thisDevice?: boolean
 }
 
-const ServiceIndicators: React.FC<Props> = ({ device, connections = [], thisDevice }) => {
+const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
   if (!device?.services) return null
   return (
     <>
       {device.services.map(service => (
-        <ServiceMiniState
-          key={service.id}
-          service={service}
-          connection={connections.find(c => c.id === service.id)}
-          disabled={thisDevice}
-        />
+        <ServiceMiniState key={service.id} service={service} connection={connections.find(c => c.id === service.id)} />
       ))}
     </>
   )
@@ -31,7 +26,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
   const activeConnection = connections && connections.find(c => c.active)
 
   return (
-    <ListItemLocation pathname={thisDevice ? '/devices/setup' : `/devices/${device?.id}`}>
+    <ListItemLocation pathname={`/devices/${device?.id}`}>
       <ListItemIcon>
         <ConnectionStateIcon service={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
@@ -40,7 +35,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
         secondary={thisDevice && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>
-        <ServiceIndicators device={device} connections={connections} thisDevice={thisDevice} />
+        <ServiceIndicators device={device} connections={connections} />
       </ListItemSecondaryAction>
     </ListItemLocation>
   )

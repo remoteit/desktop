@@ -1,42 +1,30 @@
 import React from 'react'
-import {  Button, Chip, Tooltip } from '@material-ui/core'
+import { Button, Chip, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { spacing } from '../../styling'
 
-export function ShareDetails({
-  scripting,
-  shared,
-}: {
-  scripting: boolean
-  shared: number
-}): JSX.Element {
+export function ShareDetails({ scripting, shared }: { scripting: boolean; shared: number }): JSX.Element {
   const css = useStyles()
   return (
     <div className={css.contentDetail}>
       {scripting && (
         <Tooltip enterDelay={500} title="Sharing ability to execute scripts">
-            <Icon name="scroll" size="base" type="regular" className={css.scripting}/>
+          <Icon name="scroll" size="base" type="regular" className={css.scripting} />
         </Tooltip>
       )}
       {Boolean(shared) && (
         <Tooltip enterDelay={500} title="">
-            <Chip label={shared} size="small" variant="outlined" className={css.chip} />
+          <Chip label={shared} size="small" variant="outlined" className={css.chip} />
         </Tooltip>
       )}
     </div>
   )
 }
 
-export function ShareSaveActions({
-  onCancel,
-  onSave,
-}: {
-  onCancel: () => void
-  onSave: () => void
-}): JSX.Element {
+export function ShareSaveActions({ onCancel, onSave }: { onCancel: () => void; onSave: () => void }): JSX.Element {
   const { saving } = useSelector((state: ApplicationState) => state.shares)
   const css = useStyles()
   return (
@@ -54,20 +42,20 @@ export function ShareSaveActions({
 
 const useStyles = makeStyles({
   button: {
-    marginTop: `${spacing.xxl}px`,
-    marginRight: `${spacing.sm}px`,
+    marginTop: spacing.xxl,
+    marginRight: spacing.sm,
     padding: `${spacing.xs}px ${spacing.sm}px`,
-    borderRadius: `${spacing.xxs}px`,
-    minWidth: `${spacing.xxl}px`,
+    borderRadius: spacing.xxs,
+    minWidth: spacing.xxl,
   },
   chip: {
-    borderRadius: `${spacing.xxl}%`,
-    marginRight: `${spacing.lg}px`,
+    borderRadius: '50%',
+    marginRight: spacing.lg,
   },
   scripting: {
-    marginRight: `${spacing.md}px`
+    marginRight: spacing.md,
   },
   contentDetail: {
-    marginRight: `${spacing.xxl}px`
-  }
+    marginRight: spacing.xxl,
+  },
 })

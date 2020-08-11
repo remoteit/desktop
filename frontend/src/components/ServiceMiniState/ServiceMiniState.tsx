@@ -9,10 +9,9 @@ import { Icon } from '../Icon'
 interface Props {
   connection?: IConnection
   service?: IService
-  disabled?: boolean
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, disabled }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service }) => {
   const history = useHistory()
   const css = useStyles()
   const connected = !!service?.sessions.length
@@ -54,7 +53,6 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, disable
       <IconButton
         className={connected ? css.icon : css.button}
         onClick={() => history.push(`/devices/${service?.deviceID}/${service?.id}${connected ? '/users' : ''}`)}
-        disabled={disabled}
       >
         {connected ? (
           <Icon name="user" type="solid" size="xs" color={colorName} fixedWidth />

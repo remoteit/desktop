@@ -9,7 +9,6 @@ import { ConnectionsPage } from '../../pages/ConnectionsPage'
 import { SetupServices } from '../../pages/SetupServices'
 import { SetupDevice } from '../../pages/SetupDevice'
 import { SetupWaiting } from '../../pages/SetupWaiting'
-import { SetupSuccess } from '../../pages/SetupSuccess'
 import { SetupView } from '../../pages/SetupView'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
@@ -69,9 +68,6 @@ export const Router: React.FC = () => {
       </Route>
       <Route path={['/settings/setupServices', '/devices/setupServices']}>
         <SetupServices os={os} device={device} targets={targets} />
-      </Route>
-      <Route path={['/settings/setupSuccess', '/devices/setupSuccess']}>
-        <SetupSuccess os={os} device={device} />
       </Route>
       <Route path={['/settings/setupWaiting', '/devices/setupWaiting']}>
         <SetupWaiting os={os} device={device} />

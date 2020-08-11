@@ -7,96 +7,64 @@ import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
 import { Body } from '../../components/Body'
 import { Columns } from '../../components/Columns'
+import { Title } from '../../components/Title'
 import { DataDisplay } from '../../components/DataDisplay'
-import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { findService } from '../../models/devices'
 import { spacing, colors, fontSizes } from '../../styling'
 import { Icon } from '../../components/Icon'
 
 export const ServiceDetailPage = () => {
   const css = useStyles()
+  const { serviceID = '' } = useParams()
+  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
+  const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
 
-  const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
-    connections: state.backend.connections,
-    devices: state.devices.all,
-    searched: state.devices.searched,
-    query: state.devices.query,
-  }))
-  const { deviceID } = useParams()
-  const history = useHistory()
-  const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
+  let data: IDataDisplay[] = []
 
   useEffect(() => {
     analytics.page('ServiceDetailPage')
   }, [])
 
-  if(device) {
-    return (
-      <Container
-        header={
+  if (!service || !device) return null
+
+  if (connection && connection.active) {
+    data = data.concat([
+      { label: 'Host', value: connection.host },
+      { label: 'Port', value: connection.port },
+      { label: 'Restriction', value: connection.restriction },
+    ])
+  }
+
+  data = data.concat([
+    { label: 'Last reported', value: service.lastReported, format: 'duration' },
+    { label: 'Service Name', value: service.name },
+    { label: 'Remote Port', value: service.port },
+    { label: 'Service Type', value: service.type },
+    { label: 'Device Name', value: device.name },
+    { label: 'Owner', value: device.owner },
+    { label: 'Service ID', value: service.id },
+  ])
+
+  if (!device || !service) return null
+
+  return (
+    <Container
+      header={
         <>
-          <OutOfBand />
           <Breadcrumbs />
-          <div className={css.header}>
-            <Icon className={css.iconStyle} name={'info-circle'} size="md" fixedWidth />
-            <Typography className={css.title} variant="h2">Service details</Typography>
-          </div>
+          <Typography variant="h1">
+            <Icon name="info-circle" size="lg" />
+            <Title>Service details</Title>
+          </Typography>
         </>
       }
-      >
-        <Body>
-          <Typography variant="subtitle1">Service details</Typography>
-          <Columns count={1} inset>
-            <DataDisplay
-              data={[
-                {
-                  label: 'Availability',
-                  value: device.availability,
-                  format: 'percent',
-                  help: 'Average time online per day',
-                },
-                { label: 'Instability', value: device.instability, format: 'round', help: 'Average disconnects per day' },
-                { label: 'Owner', value: device.owner },
-                { label: 'Last reported', value: device.lastReported, format: 'duration' },
-                { label: 'ISP', value: device.geo?.isp },
-                { label: 'Connection type', value: device.geo?.connectionType },
-                { label: 'Location', value: device.geo, format: 'location' },
-                { label: 'External IP address', value: device.externalAddress },
-                { label: 'Internal IP address', value: device.internalAddress },
-                { label: 'Device ID', value: device.id },
-                { label: 'Hardware ID', value: device.hardwareID },
-              ]}
-            />
-          </Columns>
-        </Body>
-      </Container>
-    )
-  } else {
-    return (
-      <Container
-        header={<>
-        </>}
-      >
-      </Container>
-
-    )
-  }
+    >
+      <Columns count={1} inset>
+        <DataDisplay data={data} />
+      </Columns>
+    </Container>
+  )
 }
 
-
-const useStyles = makeStyles({
-  iconStyle: {
-    padding:12,
-  },
-  title: {
-    paddingLeft:22,
-    paddingTop: 12,
-    paddingBottom: 12
-  },
-  header: {
-    display:'flex',
-    flexDirection: 'row',
-    paddingLeft: 30,
-    paddingBottom: 10
-  },
-})
+const useStyles = makeStyles({})

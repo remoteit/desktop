@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItemIcon, ListItemText, Divider } from '@material-ui/core'
+import { List, ListItemIcon, ListItemText, Divider, Typography } from '@material-ui/core'
 import { Duration } from '../Duration'
 import { Platform } from '../Platform'
 import { ApplicationState } from '../../store'
@@ -29,8 +29,13 @@ export const Users: React.FC<Props> = ({ deviceId, service }) => {
 
   return (
     <>
+      {!!usersConnected.length && (
+        <Typography variant="subtitle1" color="primary">
+          Connected
+        </Typography>
+      )}
       <List>
-        {usersToRender.map(user => {
+        {usersToRender.map((user, index) => {
           const isConnected = usersConnected.includes(user)
           const permission = getDetailUserPermission(device, user.email)
           return (
@@ -48,10 +53,9 @@ export const Users: React.FC<Props> = ({ deviceId, service }) => {
                 ) : (
                   <ListItemText primary={`${user.email}`} />
                 )}
-
                 <ShareDetails scripting={permission.scripting} shared={permission.numberServices} />
               </ListItemLocation>
-              {!!usersConnected.length && !isConnected && <Divider />}
+              {usersConnected.length - 1 === index && <Divider />}
             </>
           )
         })}
