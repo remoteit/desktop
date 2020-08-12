@@ -59,8 +59,8 @@ export const ServicesPage: React.FC = () => {
       <ServiceList services={device.services} connections={serviceConnections} />
       <List>
         <UsersSelect device={device} />
-        <ListItemLocation title="Details" icon="info-circle" pathname={location.pathname + '/details'} />
-        {thisDevice && <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />}
+        <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} />
+        {thisDevice && <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} />}
       </List>
     </Container>
   )

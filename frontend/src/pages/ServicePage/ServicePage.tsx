@@ -98,8 +98,8 @@ export const ServicePage: React.FC = () => {
         <LanShareSelect connection={connection} service={service} />
         <Divider />
         <UsersSelect service={service} device={device} />
-        <ListItemLocation title="Details" icon="info-circle" pathname={location.pathname + '/details'} />
-        {thisDevice && <ListItemLocation title="Edit" icon="pen" pathname={location.pathname + '/edit'} />}
+        <ListItemLocation title="Service Details" icon="info-circle" pathname={location.pathname + '/details'} />
+        {thisDevice && <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} />}
       </List>
     </Container>
   )

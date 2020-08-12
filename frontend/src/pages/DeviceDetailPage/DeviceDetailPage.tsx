@@ -1,16 +1,15 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { Typography, Divider } from '@material-ui/core'
-import { useHistory, useParams, useLocation } from 'react-router-dom'
+import { Typography } from '@material-ui/core'
+import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
-import { Body } from '../../components/Body'
 import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
-import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { spacing, colors, fontSizes } from '../../styling'
+import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 
 export const DeviceDetailPage = () => {
@@ -32,9 +31,7 @@ export const DeviceDetailPage = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="info-circle" color="grayDarker" size="lg" />
-            <ServiceName service={device} shared={device.shared} inline>
-              Details
-            </ServiceName>
+            <Title>Details</Title>
           </Typography>
         </>
       }

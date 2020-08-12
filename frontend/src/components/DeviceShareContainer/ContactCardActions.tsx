@@ -1,23 +1,23 @@
 import React from 'react'
-import { Button, Chip, Tooltip } from '@material-ui/core'
+import { Button, Typography, Tooltip } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { spacing } from '../../styling'
 
-export function ShareDetails({ scripting, shared }: { scripting: boolean; shared: number }): JSX.Element {
+export function ShareDetails({ scripting, shared }: { scripting?: boolean; shared?: number }): JSX.Element {
   const css = useStyles()
   return (
     <div className={css.contentDetail}>
-      {scripting && (
-        <Tooltip enterDelay={500} title="Sharing ability to execute scripts">
-          <Icon name="scroll" size="base" type="regular" className={css.scripting} />
+      {!!shared && (
+        <Tooltip title="Shared services" className={css.indicator}>
+          <Typography variant="caption">{shared}</Typography>
         </Tooltip>
       )}
-      {Boolean(shared) && (
-        <Tooltip enterDelay={500} title="">
-          <Chip label={shared} size="small" variant="outlined" className={css.chip} />
+      {scripting || (
+        <Tooltip title="Allow scripting">
+          <Icon name="scroll" size="base" className={css.indicator} />
         </Tooltip>
       )}
     </div>
@@ -48,11 +48,7 @@ const useStyles = makeStyles({
     borderRadius: spacing.xxs,
     minWidth: spacing.xxl,
   },
-  chip: {
-    borderRadius: '50%',
-    marginRight: spacing.lg,
-  },
-  scripting: {
+  indicator: {
     marginRight: spacing.md,
   },
   contentDetail: {
