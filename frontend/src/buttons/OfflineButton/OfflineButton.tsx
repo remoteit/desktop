@@ -11,14 +11,7 @@ export const OfflineButton: React.FC<Props> = ({ service }) => {
   return (
     <Fade in={!hidden} timeout={600}>
       <div>
-        <DynamicButton
-          title="Offline"
-          disabledColor="grayLight"
-          disabled={true}
-          size="small"
-          icon="none"
-          onClick={() => {}}
-        />
+        <DynamicButton title="Offline" disabled={true} size="small" icon="none" onClick={() => {}} />
       </div>
     </Fade>
   )

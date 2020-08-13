@@ -18,7 +18,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'success',
+  color = 'secondary',
 }) => {
   const hidden = connection?.active || !service || service.state !== 'active'
   const connecting = !!connection?.connecting

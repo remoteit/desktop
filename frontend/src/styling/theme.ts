@@ -6,23 +6,28 @@ const titlePadding = `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutte
 export default createMuiTheme({
   palette: {
     primary: { main: colors.primary },
-    secondary: { main: colors.secondary },
+    secondary: { main: colors.secondary, contrastText: colors.white },
     error: { main: colors.danger },
   },
   typography: { fontFamily: 'Roboto, san-serif' },
   overrides: {
-    MuiListItemText: { secondary: { fontSize: fontSizes.xs } },
     MuiDivider: { root: { backgroundColor: colors.grayLighter } },
     MuiFormHelperText: { root: { fontSize: 10 } },
     MuiButton: {
       root: {
+        // transition: 'none',
         color: colors.grayDark,
         borderRadius: spacing.xs,
         backgroundColor: colors.grayLightest,
         padding: `${spacing.sm - spacing.xxs}px ${spacing.md}px`,
-        '& .MuiSvgIcon-root': { marginLeft: spacing.sm },
+        '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
-      contained: {},
+      contained: {
+        '&.Mui-disabled': {
+          color: colors.white,
+          background: colors.grayLight,
+        },
+      },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
     },
@@ -50,6 +55,7 @@ export default createMuiTheme({
     },
     MuiListItemSecondaryAction: { root: { right: gutters } },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
+    MuiListItemText: { secondary: { fontSize: fontSizes.xs } },
     MuiInput: {
       root: {
         '&.Mui-disabled': {

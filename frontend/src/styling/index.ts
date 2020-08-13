@@ -1,3 +1,5 @@
+import { PropTypes } from '@material-ui/core'
+
 export type FontSize = 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
 
 export const fontSizes: { [key in FontSize]: number } = {
@@ -40,7 +42,7 @@ export const colors: { [key in Color]: string } = {
   primary: '#0096e7',
   primaryLight: '#9ed3f0',
   primaryHighlight: '#edf8ff',
-  secondary: '#0d6dba',
+  secondary: '#75bd00',
   successLight: '#a4db4c',
   success: '#75bd00',
   successDark: '#436807',
@@ -58,6 +60,17 @@ export const colors: { [key in Color]: string } = {
   white: 'white',
   black: 'black',
   rpi: '#C51A4A',
+}
+
+export function muiColor(color?: Color): PropTypes.Color | undefined {
+  if (!color) return
+  switch (color) {
+    case 'primary':
+    case 'secondary':
+      return color
+    default:
+      return 'default'
+  }
 }
 
 export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
