@@ -101,8 +101,9 @@ export default createModel({
     /**
      * Gets called when the backend signs the user out
      */
-    signedOut() {
+    async signedOut() {
       analytics.clearIdentity()
+      await r3.user.logout()
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.devices.reset()
