@@ -30,7 +30,7 @@ export const SettingsListItem: React.FC<Props> = ({ icon, label, subLabel, butto
               {button}
             </Button>
           ) : (
-            <Switch edge="end" disabled={disabled} checked={toggle} onClick={onClick} />
+            <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={onClick} />
           )}
         </ListItemSecondaryAction>
       )}

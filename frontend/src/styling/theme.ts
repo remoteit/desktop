@@ -15,7 +15,6 @@ export default createMuiTheme({
     MuiFormHelperText: { root: { fontSize: 10 } },
     MuiButton: {
       root: {
-        // transition: 'none',
         color: colors.grayDark,
         borderRadius: spacing.xs,
         backgroundColor: colors.grayLightest,
@@ -23,10 +22,7 @@ export default createMuiTheme({
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
       contained: {
-        '&.Mui-disabled': {
-          color: colors.white,
-          background: colors.grayLight,
-        },
+        '&, &.Mui-disabled': { color: colors.white, background: colors.gray },
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
