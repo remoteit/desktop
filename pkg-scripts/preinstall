@@ -1,7 +1,8 @@
 #!/bin/sh
-cd ~/../../usr/local/bin/;
+cd /Applications/remoteit.app/Contents/Resources
 version=$(<cli-version.txt)
-curl -O -L https://downloads.remote.it/cli/$version/remoteit_mac-osx_x86_64;
+cd ~/../../usr/local/bin/;
+curl -O -L https://downloads.remote.it/cli/v$version/remoteit_mac-osx_x86_64;
 mv remoteit_mac-osx_x86_64 remoteit;
 chmod 755 remoteit;
 ./remoteit -j tools install --update;

@@ -12,7 +12,7 @@
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
     "copy-images": "cp -R ./src/images ./build/",
-    "copy-install": "cp installer.nsh build/ && cp cli-version.txt build/ && cp -R pkg-scripts build/  && cp cli-version.txt build/pkg-scripts",
+    "copy-install": "cp installer.nsh build/ && cp -R pkg-scripts build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
     "electron": "cross-env NODE_ENV=development electron ./",
     "install-backend": "cd backend && npm i",
@@ -120,6 +120,12 @@
       "isRelocatable": false,
       "overwriteAction": "upgrade"
     },
+    "extraResources": [
+      {
+        "from": "./backend/src/cli-version.txt",
+        "to": "./"
+      }
+    ],
     "files": [
       "build/**/*",
       "node_modules/**/*",
