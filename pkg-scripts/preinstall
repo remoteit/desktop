@@ -9,5 +9,5 @@ chmod 755 remoteit;
 ./remoteit -j service uninstall;
 ./remoteit -j service install;
 # message to console of osx
-syslog -s -l error "remot3it says: services installed successfully!"
+syslog -s -l error "remoteit says: services installed successfully!"
 exit 0
