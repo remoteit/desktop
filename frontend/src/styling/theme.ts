@@ -22,7 +22,8 @@ export default createMuiTheme({
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
       contained: {
-        '&, &.Mui-disabled': { color: colors.white, background: colors.gray },
+        '&:hover': { backgroundColor: colors.warning },
+        '&, &.Mui-disabled': { backgroundColor: colors.gray, color: colors.white },
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },

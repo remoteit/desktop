@@ -10,14 +10,14 @@ export function ShareDetails({ scripting, shared }: { scripting?: boolean; share
   const css = useStyles()
   return (
     <div className={css.contentDetail}>
+      {scripting && (
+        <Tooltip title="Allow scripting">
+          <Icon name="scroll" size="base" color="gray" className={css.indicator} />
+        </Tooltip>
+      )}
       {!!shared && (
         <Tooltip title="Shared services" className={css.indicator}>
           <Typography variant="caption">{shared}</Typography>
-        </Tooltip>
-      )}
-      {scripting || (
-        <Tooltip title="Allow scripting">
-          <Icon name="scroll" size="base" className={css.indicator} />
         </Tooltip>
       )}
     </div>

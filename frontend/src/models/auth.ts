@@ -93,6 +93,7 @@ export default createModel({
     async authenticated() {
       dispatch.auth.signedIn()
       dispatch.auth.setAuthenticated(true)
+      emit('init')
     },
     async signInError(error: string) {
       dispatch.auth.signedOut()
@@ -102,8 +103,8 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     async signedOut() {
-      analytics.clearIdentity()
-      await r3.user.logout()
+      await r3.post('/user/logout')
+      dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.devices.reset()
@@ -111,6 +112,7 @@ export default createModel({
       dispatch.auth.setAuthenticated(false)
       window.location.search = ''
       emit('user/sign-out-complete')
+      analytics.clearIdentity()
       Controller.close()
     },
   }),

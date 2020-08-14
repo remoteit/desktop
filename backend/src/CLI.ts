@@ -134,7 +134,7 @@ export default class CLI {
       if (status) {
         c.active = status.connectionState === 'connected'
         c.connecting = status.connectionState === 'connecting'
-        c.isP2P = status.isP2P
+        c.isP2P = status.connectionState === 'connected' ? status.isP2P : undefined
         d('UPDATE STATUS', { c, status: status.connectionState })
       }
       return c

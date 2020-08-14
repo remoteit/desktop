@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { Typography, List } from '@material-ui/core'
+import { Typography, List, Divider } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -54,14 +54,19 @@ export const ServicesPage: React.FC = () => {
           </Typography>
         </>
       }
+      footer={
+        <>
+          <Divider />
+          <List>
+            <UsersSelect device={device} />
+            <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} />
+            {thisDevice && <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} />}
+          </List>
+        </>
+      }
     >
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />
-      <List>
-        <UsersSelect device={device} />
-        <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} />
-        {thisDevice && <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} />}
-      </List>
     </Container>
   )
 }

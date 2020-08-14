@@ -120,6 +120,15 @@ export const SettingsPage = () => {
           <List>
             <SettingsDisableNetworkItem />
             <SettingsListItem
+              label={'Clear all credentials'}
+              subLabel={`This will remove all remote.it user credentials from this device, 
+                allowing the device to be transferred. The next user to sign in will claim 
+                this device. If another user does not sign in and claim the device,
+                the hosted services will only remain active until the next reboot.`}
+              icon="user-slash"
+              onClick={clearWarning}
+            />
+            <SettingsListItem
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}
@@ -127,16 +136,6 @@ export const SettingsPage = () => {
               onClick={installWarning}
             />
             <UninstallSetting />
-            <SettingsListItem
-              label={'Clear all credentials'}
-              subLabel={`This will remove all remote.it user credentials from this device. 
-                Credentials should be removed before transferring a device. 
-                The next user to sign in with elevated permissions will claim this device. 
-                The hosted services will only remain active until the next reboot 
-                if another user does not sign in and claim the device.`}
-              icon="user-slash"
-              onClick={clearWarning}
-            />
           </List>
         </>
       )}

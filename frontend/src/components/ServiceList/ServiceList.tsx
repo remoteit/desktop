@@ -13,14 +13,11 @@ export const ServiceList = ({ services = [], connections }: ServiceListProps) =>
   const css = useStyles()
   if (!services.length) return <Typography variant="h1">No services</Typography>
   return (
-    <>
-      <List className={css.list}>
-        {services.map((service, key) => (
-          <ServiceListItem connection={connections[service.id]} service={service} key={key} indent />
-        ))}
-      </List>
-      <Divider />
-    </>
+    <List className={css.list}>
+      {services.map((service, key) => (
+        <ServiceListItem connection={connections[service.id]} service={service} key={key} indent />
+      ))}
+    </List>
   )
 }
 
