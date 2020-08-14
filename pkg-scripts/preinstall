@@ -1,0 +1,13 @@
+#!/bin/sh
+cd /Applications/remoteit.app/Contents/Resources
+version=$(<cli-version.txt)
+cd ~/../../usr/local/bin/;
+curl -O -L https://downloads.remote.it/cli/v$version/remoteit_mac-osx_x86_64;
+mv remoteit_mac-osx_x86_64 remoteit;
+chmod 755 remoteit;
+./remoteit -j tools install --update;
+./remoteit -j service uninstall;
+./remoteit -j service install;
+# message to console of osx
+syslog -s -l error "remoteit says: services installed successfully!"
+exit 0

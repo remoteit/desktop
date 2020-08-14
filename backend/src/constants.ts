@@ -1,5 +1,6 @@
 import os from 'os'
 import path from 'path'
+import { readFileSync } from 'fs'
 
 //General
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
@@ -12,7 +13,7 @@ export const AIRBRAKE_PROJECT_ID = 223457
 export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e1376551dbe5b1326f98edd78b6247ba'
 
 // CLI
-export const CLI_VERSION = '1.5.5'
+export const CLI_VERSION = readFileSync(path.join(__dirname, 'cli-version.txt'), 'utf8')
 export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
 
 // CLI product tracking codes
