@@ -3,32 +3,35 @@ import { Icon } from '../Icon'
 import { Title } from '../Title'
 import { useLocation } from 'react-router-dom'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
+import { deviceName } from '../../shared/nameHelper'
 import { Tooltip } from '@material-ui/core'
 import { colors } from '../../styling'
 
 type Props = {
   connection?: IConnection
-  service?: IService | IDevice
+  service?: IService
+  device?: IDevice
   shared?: boolean
   inline?: boolean
   children?: any
 }
 
-export const ServiceName: React.FC<Props> = ({ connection, service, shared, children }) => {
+export const ServiceName: React.FC<Props> = ({ connection, service, device, shared, children }) => {
   const location = useLocation()
-
   const menu = location.pathname.match(REGEX_FIRST_PATH)
-  const name = menu && menu[0] === '/connections' ? connection && connection.name : service && service.name
+  const instance = service || device
 
+  let name = service ? service.name : deviceName(device)
   let color: string | undefined = colors.grayDark
   let failover = connection?.isP2P === false
 
-  if (service?.state === 'active') color = undefined
+  if (menu && menu[0] === '/connections') name = connection?.name
+  if (instance?.state === 'active') color = undefined
   if (connection?.active) color = undefined
 
   return (
     <Title color={color}>
-      {!service && !connection ? 'No device found' : name}
+      {!instance && !connection ? 'No device found' : name}
       {shared && (
         <sup>
           <Tooltip title="Shared to you">

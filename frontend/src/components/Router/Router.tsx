@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { isElectron } from '../../services/Browser'
+import { isElectron, isDev } from '../../services/Browser'
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { usePermissions } from '../../hooks/usePermissions'
 import { SettingsPage } from '../../pages/SettingsPage'
@@ -24,8 +24,8 @@ import { ServiceEditPage } from '../../pages/ServiceEditPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
 
 export const Router: React.FC = () => {
-  const { device, targets, dataReady, os } = useSelector((state: ApplicationState) => ({
-    device: state.backend.device,
+  const { targetDevice, targets, dataReady, os } = useSelector((state: ApplicationState) => ({
+    targetDevice: state.backend.device,
     targets: state.backend.targets,
     dataReady: state.backend.dataReady,
     uninstalling: state.ui.uninstalling,
@@ -33,14 +33,14 @@ export const Router: React.FC = () => {
   }))
   const { guest } = usePermissions()
   const history = useHistory()
-  const registered = !!device.uid
+  const registered = !!targetDevice.uid
 
   let setupLocation = 'setupDevice'
   if (registered) setupLocation = 'setupServices'
   if (guest) setupLocation = 'setupView'
 
   useEffect(() => {
-    if (dataReady) {
+    if (dataReady && !isDev()) {
       if (isElectron()) history.push('/')
       else history.push('/devices/setup')
     }
@@ -67,16 +67,16 @@ export const Router: React.FC = () => {
         <NetworkPage />
       </Route>
       <Route path={['/settings/setupServices', '/devices/setupServices']}>
-        <SetupServices os={os} device={device} targets={targets} />
+        <SetupServices os={os} targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path={['/settings/setupWaiting', '/devices/setupWaiting']}>
-        <SetupWaiting os={os} device={device} />
+        <SetupWaiting os={os} targetDevice={targetDevice} />
       </Route>
       <Route path={['/settings/setupDevice', '/devices/setupDevice']}>
-        <SetupDevice os={os} device={device} />
+        <SetupDevice os={os} targetDevice={targetDevice} />
       </Route>
       <Route path={['/settings/setupView', '/devices/setupView']}>
-        <SetupView device={device} targets={targets} />
+        <SetupView targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path="/devices/setup">
         <Redirect to={`/devices/${setupLocation}`} />
@@ -112,7 +112,7 @@ export const Router: React.FC = () => {
         <DeviceDetailPage />
       </Route>
       <Route path="/devices/:deviceID/edit">
-        <DeviceEditPage os={os} device={device} targets={targets} />
+        <DeviceEditPage targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path="/devices/:deviceID/:serviceID">
         <ServicePage />

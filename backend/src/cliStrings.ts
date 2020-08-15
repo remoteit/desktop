@@ -24,6 +24,14 @@ export default {
     } --hostname ${t.hostname || '127.0.0.1'} --authhash ${user.authHash}`
   },
 
+  setDevice(d: ITargetDevice) {
+    return `-j --manufacture-id ${environment.appCode} modify --id ${d.uid} --enable true --name "${d.name}" --authhash ${user.authHash}`
+  },
+
+  setTarget(t: ITarget) {
+    return `-j --manufacture-id ${environment.appCode} modify --id ${t.uid} --enable true --name "${t.name}" --port ${t.port} --type ${t.type} --hostname ${t.hostname} --authhash ${user.authHash}`
+  },
+
   unregister() {
     return `-j unregister --yes --authhash ${user.authHash}`
   },

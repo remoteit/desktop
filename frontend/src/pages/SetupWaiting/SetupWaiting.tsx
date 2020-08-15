@@ -13,17 +13,17 @@ import { osName } from '../../shared/nameHelper'
 import { Body } from '../../components/Body'
 import styles from '../../styling'
 
-type Props = { os?: Ios; device: ITargetDevice }
+type Props = { os?: Ios; targetDevice: ITargetDevice }
 
-export const SetupWaiting: React.FC<Props> = ({ device, os }) => {
+export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
   const { globalError } = useSelector((state: ApplicationState) => state.backend)
   const { devices, ui } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
 
-  if (device.uid) {
+  if (targetDevice.uid) {
     history.push('/settings/setupServices')
-    ui.set({ successMessage: `${device.name} registered successfully!` })
+    ui.set({ successMessage: `${targetDevice.name} registered successfully!` })
     devices.fetch()
   }
 

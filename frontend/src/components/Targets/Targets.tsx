@@ -12,12 +12,12 @@ import analytics from '../../helpers/Analytics'
 
 type Props = {
   targets: ITarget[]
-  device: ITargetDevice
+  targetDevice: ITargetDevice
   onUpdate: (targets: ITarget[]) => void
   onCancel: () => void
 }
 
-export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }) => {
+export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCancel }) => {
   const { setupBusy, setupDeletingService } = useSelector((state: ApplicationState) => state.ui)
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
@@ -89,7 +89,7 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
               </td>
             </tr>
           ) : (
-            <NewTarget device={device} onSave={(t: ITarget) => add(t)} onCancel={onCancel} />
+            <NewTarget targetDevice={targetDevice} onSave={(t: ITarget) => add(t)} onCancel={onCancel} />
           )}
         </tbody>
       </table>

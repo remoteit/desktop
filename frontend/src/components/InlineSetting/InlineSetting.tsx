@@ -1,13 +1,5 @@
 import React, { useState } from 'react'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  TextField,
-  Typography,
-  Tooltip,
-  IconButton,
-} from '@material-ui/core'
+import { ListItem, ListItemSecondaryAction, TextField, Typography, Tooltip, IconButton } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
@@ -17,9 +9,8 @@ import { Icon } from '../Icon'
 type Props = {
   value?: string | number
   label: string
-  icon?: string
+  icon?: JSX.Element
   displayValue?: string | number
-  iconTooltip?: string
   filter?: RegExp
   disabled?: boolean
   resetValue?: string | number
@@ -30,7 +21,6 @@ export const InlineSetting: React.FC<Props> = ({
   value = '',
   label,
   icon,
-  iconTooltip,
   displayValue,
   disabled,
   resetValue,
@@ -47,18 +37,10 @@ export const InlineSetting: React.FC<Props> = ({
     setEdit(true)
   }
 
-  const LeftIcon = (
-    <Tooltip open={iconTooltip ? undefined : false} title={iconTooltip || ''}>
-      <ListItemIcon>
-        <Icon name={icon} size="md" type="light" />
-      </ListItemIcon>
-    </Tooltip>
-  )
-
   if (edit)
     return (
       <ListItem className={css.active}>
-        {LeftIcon}
+        {icon}
         <form
           className={css.form}
           onSubmit={() => {
@@ -99,7 +81,7 @@ export const InlineSetting: React.FC<Props> = ({
 
   return (
     <ListItem button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
-      {LeftIcon}
+      {icon}
       <span className={css.text}>
         <Typography variant="caption">{label}</Typography>
         <Typography variant="h2">{displayValue || value || '–'}</Typography>

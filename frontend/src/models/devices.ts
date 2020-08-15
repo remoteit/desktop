@@ -1,4 +1,5 @@
 import { graphQLFetch, graphQLAdaptor, graphQLGet } from '../services/graphQL'
+import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { createModel } from '@rematch/core'
 import { r3, hasCredentials } from '../services/remote.it'
 import { cleanOrphanConnections } from '../helpers/connectionHelper'
@@ -114,6 +115,7 @@ export default createModel({
       set({ getting: false })
       setDevice({ id, device: result })
     },
+
     async updateShareDevice(device: IDevice, deviceState?: IDeviceState) {
       const { setDevice } = dispatch.devices
       setDevice({ id: device.id, device })
@@ -145,6 +147,11 @@ export default createModel({
     async reset() {
       dispatch.backend.set({ connections: [] })
       dispatch.devices.set({ all: [], query: '', filter: 'all' })
+    },
+
+    async setAttributes(device: IDevice) {
+      graphQLSetAttributes(device.attributes, device.id)
+      dispatch.devices.setDevice({ id: device.id, device })
     },
 
     async destroy(device: IDevice, globalState: any) {

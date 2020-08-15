@@ -1,4 +1,5 @@
 import React from 'react'
+import { DeviceLabel } from '../DeviceLabel'
 import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
@@ -25,13 +26,16 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
 export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice }) => {
   const activeConnection = connections && connections.find(c => c.active)
 
+  if (!device) return null
+
   return (
-    <ListItemLocation pathname={`/devices/${device?.id}`}>
+    <ListItemLocation pathname={`/devices/${device.id}`}>
+      <DeviceLabel device={device} />
       <ListItemIcon>
         <ConnectionStateIcon service={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
       <ListItemText
-        primary={<ServiceName service={device} shared={device?.shared} connection={activeConnection} />}
+        primary={<ServiceName device={device} shared={device.shared} connection={activeConnection} />}
         secondary={thisDevice && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>

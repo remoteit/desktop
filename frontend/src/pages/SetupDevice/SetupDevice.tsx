@@ -16,10 +16,10 @@ import analytics from '../../helpers/Analytics'
 
 type Props = {
   os?: Ios
-  device: ITargetDevice
+  targetDevice: ITargetDevice
 }
 
-export const SetupDevice: React.FC<Props> = ({ os, device }) => {
+export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
   const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost,
@@ -35,9 +35,9 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
   const [selected, setSelected] = useState<ITarget[]>([])
 
   const onRegistration = () => {
-    analytics.track('deviceCreated', { ...device, id: device.uid })
+    analytics.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
     selected.forEach(t => analytics.track('serviceCreated', { ...t, id: t.uid }))
-    emit('registration', { device: { ...device, name }, targets: selected })
+    emit('registration', { device: { ...targetDevice, name }, targets: selected })
     history.push('/settings/setupWaiting')
   }
 

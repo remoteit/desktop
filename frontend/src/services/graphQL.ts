@@ -15,6 +15,7 @@ const DEVICE_SELECT = `{
     created
     lastReported
     hardwareId
+    attributes
     access {
       user {
         email
@@ -82,11 +83,18 @@ function requestParams() {
   }
 }
 
-export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
+export async function graphQLRequest(query: String, variables: ILookup) {
   const request = {
     ...requestParams(),
-    data: {
-      query: `
+    data: { query, variables },
+  }
+  console.log('GRAPHQL REQUEST', request)
+  return await axios.request(request)
+}
+
+export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
+  return await graphQLRequest(
+    `
         query($ids: [String!], $idSize: Int, $size: Int, $from: Int, $name: String, $state: String) {
           login {
             id
@@ -96,18 +104,15 @@ export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOpt
           }
         }
       `,
-      variables: {
-        idSize: ids.length,
-        ids,
-        size,
-        from,
-        name,
-        state,
-      },
-    },
-  }
-  console.log('GRAPHQL ALL REQUEST', request)
-  return await axios.request(request)
+    {
+      idSize: ids.length,
+      ids,
+      size,
+      from,
+      name,
+      state,
+    }
+  )
 }
 
 export async function graphQLGet(id: string) {
@@ -150,6 +155,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
       geo: d.endpoint?.geo,
+      attributes: d.attributes,
       services: d.services.map(
         (s: any): IService => {
           const { typeID, type } = parseType(s.type)

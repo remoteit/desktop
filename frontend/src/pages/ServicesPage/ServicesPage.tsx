@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
-import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { Typography, List, Divider } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -16,18 +16,17 @@ import { Subtitle } from '../../components/Subtitle'
 import analytics from '../../helpers/Analytics'
 
 export const ServicesPage: React.FC = () => {
-  const { connections, devices, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
+  const { deviceID } = useParams()
+  const { connections, device, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections,
-    devices: state.devices.all,
+    device: state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden),
     searched: state.devices.searched,
     query: state.devices.query,
     thisDeviceId: state.backend.device.uid,
   }))
-  const { deviceID } = useParams()
   const thisDevice = deviceID === thisDeviceId
   const history = useHistory()
   const location = useLocation()
-  const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
   const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
   const serviceConnections = connections.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
@@ -48,25 +47,22 @@ export const ServicesPage: React.FC = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <ConnectionStateIcon service={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
-            <ServiceName service={device} connection={activeConnection} shared={device.shared} inline />
+            <ServiceName device={device} connection={activeConnection} shared={device.shared} inline />
             <RefreshButton device={device} />
             <DeleteButton device={device} />
           </Typography>
         </>
       }
-      footer={
-        <>
-          <Divider />
-          <List>
-            <UsersSelect device={device} />
-            <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} />
-            {thisDevice && <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} />}
-          </List>
-        </>
-      }
+      footer={<></>}
     >
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />
+      <Divider />
+      <List>
+        <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} />
+        <UsersSelect device={device} />
+        <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} />
+      </List>
     </Container>
   )
 }

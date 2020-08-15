@@ -1,8 +1,7 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../shared/constants'
 
-type BackendStateParams = { [key: string]: any }
-type IBackendState = BackendStateParams & {
+type IBackendState = ILookup & {
   connections: IConnection[]
   device: ITargetDevice
   targets: ITarget[]
@@ -61,7 +60,7 @@ const state: IBackendState = {
 export default createModel({
   state,
   reducers: {
-    set(state: IBackendState, params: BackendStateParams) {
+    set(state: IBackendState, params: ILookup) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },
 

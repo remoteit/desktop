@@ -10,9 +10,9 @@ import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 
 export const SetupView: React.FC<{
-  device: ITargetDevice
+  targetDevice: ITargetDevice
   targets: ITarget[]
-}> = ({ device, targets }) => {
+}> = ({ targetDevice, targets }) => {
   const { adminUsername, notElevated } = usePermissions()
   const css = useStyles()
 
@@ -25,7 +25,7 @@ export const SetupView: React.FC<{
             <Tooltip title={`Only ${adminUsername} can edit this device`}>
               <Icon name="lock-alt" type="light" color="primary" size="lg" fixedWidth />
             </Tooltip>
-            <span>{device.name}</span>
+            <span>{targetDevice.name}</span>
           </Typography>
         </>
       }

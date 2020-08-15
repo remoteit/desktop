@@ -28,3 +28,7 @@ export function isWindows() {
   const platform = navigator.platform.toLowerCase()
   return platform.includes('win')
 }
+
+export function isDev() {
+  return environment() === DEVELOPMENT
+}

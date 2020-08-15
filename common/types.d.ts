@@ -191,6 +191,10 @@ declare global {
     services: IService[]
     hidden?: boolean
     access: IUser[]
+    attributes: {
+      name?: string
+      labelId?: number
+    }
   }
 
   interface IService {

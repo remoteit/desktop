@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Divider, ListItemIcon, ListItemText, List } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
-import { ApplicationState, Dispatch } from '../../store'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
@@ -15,12 +16,20 @@ import { SettingsListItem } from '../../components/SettingsListItem/SettingsList
 import { Targets } from '../../components/Targets/Targets'
 
 type Props = {
-  os?: Ios
   targets: ITarget[]
-  device: ITargetDevice
+  targetDevice: ITargetDevice
 }
-export const DeviceEditPage: React.FC<Props> = ({ device, os, targets, ...props }) => {
+export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...props }) => {
   const css = useStyles()
+  const { deviceID } = useParams()
+  const { connections, device, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
+    connections: state.backend.connections,
+    device: state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden),
+    searched: state.devices.searched,
+    query: state.devices.query,
+    thisDeviceId: state.backend.device.uid,
+  }))
+
   const { ui } = useDispatch<Dispatch>()
 
   const onUpdate = (t: ITarget[]) => emit('targets', t)
@@ -30,75 +39,35 @@ export const DeviceEditPage: React.FC<Props> = ({ device, os, targets, ...props 
     analytics.page('DevicesDetailPage')
   }, [])
 
-  if (device) {
-    return (
-      <Container
-        header={
-          <>
-            <OutOfBand />
-            <Breadcrumbs />
-            <div className={css.header}>
-              <Icon className={css.iconStyle} name={'pen'} size="md" fixedWidth />
-              <Title>Edit device</Title>
-            </div>
-            <Divider />
-          </>
-        }
-      >
-        <Typography variant="subtitle1">Device Name</Typography>
-        <List>
-          <DeviceEditItem device={device} />
-        </List>
-        <Typography variant="subtitle1">Connection settings</Typography>
-        <List>
-          <SettingsListItem
-            label="Allow shared access"
-            subLabel="Allows users with shared access to connect to this service"
-            icon="user-friends"
-            toggle={true}
-            onClick={() => {}}
-          />
-        </List>
-        <Divider />
-        <Typography variant="subtitle1">Services</Typography>
-        <section>
-          <Targets device={device} targets={targets} onUpdate={onUpdate} onCancel={onCancel} {...props} />
-        </section>
-      </Container>
-    )
-  } else {
-    return <Container header={<></>}></Container>
-  }
-}
+  if (!device) return null
 
-type ItemProps = {
-  device: ITargetDevice
-}
-
-const DeviceEditItem: React.FC<ItemProps> = ({ device }) => {
   return (
-    <ListItemLocation pathname="">
-      <ListItemIcon>
-        <Icon name="hdd" size="md" type="light" />
-      </ListItemIcon>
-      <ListItemText secondary="Device name" primary={device.name} />
-    </ListItemLocation>
+    <Container
+      header={
+        <>
+          <OutOfBand />
+          <Breadcrumbs />
+          <Typography variant="h1">
+            <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
+            <Title>Edit device</Title>
+          </Typography>
+        </>
+      }
+    >
+      <List>
+        <DeviceNameSetting device={device} targetDevice={targetDevice} />
+      </List>
+      {device.id === targetDevice.uid && (
+        <>
+          <Divider />
+          <Typography variant="subtitle1">Services</Typography>
+          <section>
+            <Targets targetDevice={targetDevice} targets={targets} onUpdate={onUpdate} onCancel={onCancel} {...props} />
+          </section>
+        </>
+      )}
+    </Container>
   )
 }
 
-const useStyles = makeStyles({
-  iconStyle: {
-    padding: 12,
-  },
-  title: {
-    paddingLeft: 22,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  header: {
-    display: 'flex',
-    flexDirection: 'row',
-    paddingLeft: 30,
-    paddingBottom: 10,
-  },
-})
+const useStyles = makeStyles({})

@@ -2,6 +2,8 @@ import React from 'react'
 import { InlineSetting } from '../InlineSetting'
 import { useApplication } from '../../shared/applications'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { ListItemIcon, Tooltip } from '@material-ui/core'
+import { Icon } from '../Icon'
 
 const SSH_TYPE = 28
 
@@ -13,8 +15,13 @@ export const LaunchSetting: React.FC<{ service: IService; connection?: IConnecti
   let currentLaunchUrl = (connection && connection.launchTemplate) || app.launchTemplate
   return (
     <InlineSetting
-      icon="question-circle"
-      iconTooltip={`Replacement Tokens ${tokens}`}
+      icon={
+        <Tooltip title={`Replacement Tokens ${tokens}`}>
+          <ListItemIcon>
+            <Icon name="question-circle" size="md" type="light" />
+          </ListItemIcon>
+        </Tooltip>
+      }
       value={currentLaunchUrl}
       displayValue={app.parse(currentLaunchUrl, connection)}
       label="Launch URL"
