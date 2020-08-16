@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { LocalhostScanForm } from '../../components/LocalhostScanForm'
-import { TextField, Button, Typography } from '@material-ui/core'
-import { useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
+import { TextField, Button, Typography } from '@material-ui/core'
+import { LocalhostScanForm } from '../../components/LocalhostScanForm'
+import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { emit } from '../../services/Controller'
@@ -27,17 +27,19 @@ export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
       .filter((device: IDevice) => !device.shared)
       .map((d: IDevice) => d.name.toLowerCase()),
   }))
-  const history = useHistory()
   const css = useStyles()
+  const history = useHistory()
+  const { ui } = useDispatch<Dispatch>()
   const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist))
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
   const [selected, setSelected] = useState<ITarget[]>([])
 
   const onRegistration = () => {
+    emit('registration', { device: { ...targetDevice, name }, targets: selected })
+    ui.set({ setupRegisteringDevice: true })
     analytics.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
     selected.forEach(t => analytics.track('serviceCreated', { ...t, id: t.uid }))
-    emit('registration', { device: { ...targetDevice, name }, targets: selected })
     history.push('/settings/setupWaiting')
   }
 

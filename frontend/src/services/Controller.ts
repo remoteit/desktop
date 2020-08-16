@@ -110,7 +110,7 @@ function getEventHandlers() {
 
     device: (result: ITargetDevice) => {
       console.log('socket device', result)
-      if (result) backend.set({ device: result })
+      if (result) backend.updateTargetDevice(result)
     },
 
     scan: (result: IScanData) => {

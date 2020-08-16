@@ -6,7 +6,6 @@ import { Typography, List, Divider } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { RefreshButton } from '../../buttons/RefreshButton'
-import { DeleteButton } from '../../buttons/DeleteButton'
 import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
@@ -49,11 +48,9 @@ export const ServicesPage: React.FC = () => {
             <ConnectionStateIcon service={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
             <ServiceName device={device} connection={activeConnection} shared={device.shared} inline />
             <RefreshButton device={device} />
-            <DeleteButton device={device} />
           </Typography>
         </>
       }
-      footer={<></>}
     >
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />

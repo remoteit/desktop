@@ -3,12 +3,10 @@ import { Typography, CircularProgress, Divider } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector } from 'react-redux'
-import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { DocsLinks } from '../../components/DocsLinks'
-import { Dispatch } from '../../store'
 import { osName } from '../../shared/nameHelper'
 import { Body } from '../../components/Body'
 import styles from '../../styling'
@@ -17,14 +15,11 @@ type Props = { os?: Ios; targetDevice: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
   const { globalError } = useSelector((state: ApplicationState) => state.backend)
-  const { devices, ui } = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
 
   if (targetDevice.uid) {
     history.push('/settings/setupServices')
-    ui.set({ successMessage: `${targetDevice.name} registered successfully!` })
-    devices.fetch()
   }
 
   if (globalError) history.push('/settings')

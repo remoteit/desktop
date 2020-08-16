@@ -59,6 +59,30 @@ const state: IBackendState = {
 
 export default createModel({
   state,
+  effects: (dispatch: any) => ({
+    async updateTargetDevice(targetDevice: ITargetDevice, globalState: any) {
+      const { ui, backend, devices } = dispatch
+      const { device } = globalState.backend
+
+      if (targetDevice.uid !== device.uid) {
+        devices.fetch()
+        if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
+          ui.set({
+            setupRegisteringDevice: false,
+            successMessage: `${targetDevice.name} registered successfully!`,
+          })
+        } else if (globalState.ui.setupDeletingDevice) {
+          ui.set({
+            setupDeletingDevice: false,
+            successMessage: `${device.name} unregistered successfully!`,
+          })
+        }
+      }
+
+      backend.set({ device: targetDevice })
+    },
+  }),
+
   reducers: {
     set(state: IBackendState, params: ILookup) {
       Object.keys(params).forEach(key => (state[key] = params[key]))

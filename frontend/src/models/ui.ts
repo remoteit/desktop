@@ -11,6 +11,7 @@ type UIState = UIParams & {
   scanInterface: string
   setupBusy: boolean
   setupAdded?: ITarget
+  setupRegisteringDevice: boolean
   setupDeletingDevice: boolean
   setupAddingService: boolean
   setupDeletingService?: number
@@ -27,6 +28,7 @@ const state: UIState = {
   scanInterface: DEFAULT_INTERFACE,
   setupBusy: false,
   setupAdded: undefined,
+  setupRegisteringDevice: false,
   setupDeletingDevice: false,
   setupDeletingService: undefined,
   setupAddingService: false,
@@ -51,7 +53,6 @@ export default createModel({
     },
     reset(state: UIState) {
       state.setupBusy = false
-      state.setupDeletingDevice = false
       state.setupAddingService = false
       state.setupDeletingService = undefined
     },

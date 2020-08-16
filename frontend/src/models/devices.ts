@@ -116,7 +116,7 @@ export default createModel({
       setDevice({ id, device: result })
     },
 
-    async updateShareDevice(device: IDevice, deviceState?: IDeviceState) {
+    async updateShareDevice(device: IDevice) {
       const { setDevice } = dispatch.devices
       setDevice({ id: device.id, device })
     },
