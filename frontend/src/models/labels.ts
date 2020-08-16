@@ -10,27 +10,27 @@ const state: ILabel[] = [
   {
     id: 1,
     name: 'gray',
-    color: '#b4b4b9',
+    color: colors.grayDark,
   },
   {
     id: 2,
     name: 'red',
-    color: '#f07d71',
+    color: '#e65b4c',
   },
   {
     id: 3,
     name: 'orange',
-    color: '#f5bd67',
+    color: '#ed9332',
   },
   {
     id: 4,
     name: 'yellow',
-    color: '#fce872',
+    color: '#f5d33d',
   },
   {
     id: 5,
     name: 'green',
-    color: '#70d461',
+    color: '#61c951',
   },
   {
     id: 6,
@@ -40,7 +40,7 @@ const state: ILabel[] = [
   {
     id: 7,
     name: 'purple',
-    color: '#cb89f8',
+    color: '#8f4eba',
   },
 ]
 
