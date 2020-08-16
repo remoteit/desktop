@@ -1,5 +1,6 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
+import { deviceName } from '../shared/nameHelper'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
@@ -25,7 +26,7 @@ export function newConnection(service?: IService | null, data = {}) {
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
-    if (device) connection.name = `${device.name} - ${service.name}`
+    if (device) connection.name = `${deviceName(device)} - ${service.name}`
   }
 
   return { ...connection, ...data } as IConnection

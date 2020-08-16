@@ -1,5 +1,5 @@
 import React from 'react'
-import { SettingsListItem } from '../SettingsListItem'
+import { SettingsListItem } from '../ListItemSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 export const AutoStartSetting: React.FC<{ service: IService; connection?: IConnection }> = ({

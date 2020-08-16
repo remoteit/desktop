@@ -3,7 +3,7 @@ import { emit } from '../../services/Controller'
 import { environment } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { SettingsListItem } from '../SettingsListItem'
+import { SettingsListItem } from '../ListItemSetting'
 import { version } from '../../../package.json'
 import analytics from '../../helpers/Analytics'
 

@@ -119,7 +119,6 @@ function getEventHandlers() {
     },
 
     oob: (oob: IOob) => {
-      console.log('oob', oob)
       backend.set({ lan: oob })
       analytics.setOobAvailable(oob.oobAvailable)
       analytics.setOobActive(oob.oobActive)

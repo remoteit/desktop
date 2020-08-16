@@ -2,7 +2,7 @@ import React from 'react'
 import { emit } from '../../services/Controller'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
-import { SettingsListItem } from '../SettingsListItem'
+import { SettingsListItem } from '../ListItemSetting'
 import analytics from '../../helpers/Analytics'
 
 export const UninstallSetting: React.FC = () => {

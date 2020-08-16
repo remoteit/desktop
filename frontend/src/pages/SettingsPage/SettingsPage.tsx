@@ -5,7 +5,7 @@ import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/cor
 import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
-import { SettingsListItem } from '../../components/SettingsListItem'
+import { SettingsListItem } from '../../components/ListItemSetting'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
 import { usePermissions } from '../../hooks/usePermissions'

@@ -194,6 +194,7 @@ declare global {
     attributes: {
       name?: string
       labelId?: number
+      accessDisabled?: boolean
     }
   }
 

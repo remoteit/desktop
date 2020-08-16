@@ -20,6 +20,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, shar
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
+  const accessDisabled = !!device?.attributes.accessDisabled
 
   let name = service ? service.name : deviceName(device)
   let color: string | undefined = colors.grayDark
@@ -43,6 +44,13 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, shar
         <sup>
           <Tooltip title="Proxy failover connection">
             <Icon name="cloud" size="xxxs" type="solid" fixedWidth />
+          </Tooltip>
+        </sup>
+      )}
+      {accessDisabled && (
+        <sup>
+          <Tooltip title="Shared access disabled">
+            <Icon name="user-slash" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>
       )}

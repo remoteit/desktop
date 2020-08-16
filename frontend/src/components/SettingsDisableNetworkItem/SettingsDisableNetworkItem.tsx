@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import { ApplicationState, Dispatch } from '../../store'
-import { SettingsListItem } from '../SettingsListItem'
+import { SettingsListItem } from '../ListItemSetting'
 import { colors } from '../../styling'
 import { emit } from '../../services/Controller'
 

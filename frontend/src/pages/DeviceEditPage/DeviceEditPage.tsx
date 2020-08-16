@@ -8,11 +8,11 @@ import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
+import { SharedAccessSetting } from '../../components/SharedAccessSetting'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import { ListItemLocation } from '../../components/ListItemLocation/ListItemLocation'
-import { SettingsListItem } from '../../components/SettingsListItem/SettingsListItem'
 import { Targets } from '../../components/Targets/Targets'
 
 type Props = {
@@ -56,6 +56,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...prop
     >
       <List>
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
+        <SharedAccessSetting device={device} />
       </List>
       {device.id === targetDevice.uid && (
         <>
