@@ -39,6 +39,7 @@ export const DeviceDetailPage = () => {
       <Columns count={1} inset>
         <DataDisplay
           data={[
+            { label: 'Device Name', value: device.name },
             {
               label: 'Availability',
               value: device.availability,

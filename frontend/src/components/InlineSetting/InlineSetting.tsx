@@ -1,5 +1,13 @@
 import React, { useState } from 'react'
-import { ListItem, ListItemSecondaryAction, TextField, Typography, Tooltip, IconButton } from '@material-ui/core'
+import {
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  TextField,
+  Typography,
+  Tooltip,
+  IconButton,
+} from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
@@ -40,7 +48,7 @@ export const InlineSetting: React.FC<Props> = ({
   if (edit)
     return (
       <ListItem className={css.active}>
-        {icon}
+        <ListItemIcon>{icon}</ListItemIcon>
         <form
           className={css.form}
           onSubmit={() => {
@@ -81,7 +89,7 @@ export const InlineSetting: React.FC<Props> = ({
 
   return (
     <ListItem button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
-      {icon}
+      <ListItemIcon>{icon}</ListItemIcon>
       <span className={css.text}>
         <Typography variant="caption">{label}</Typography>
         <Typography variant="h2">{displayValue || value || '–'}</Typography>

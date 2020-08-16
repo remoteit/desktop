@@ -17,31 +17,29 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
   }
 
   return (
-    <ListItemIcon>
-      <Tooltip title={`Label ${label.name}`} open={tooltip}>
-        <Select
-          disableUnderline
-          onMouseEnter={() => setTooltip(true)}
-          onMouseLeave={() => setTooltip(false)}
-          style={{ backgroundColor: label.color }}
-          className={css.all}
-          classes={{ icon: css.icon, selectMenu: css.menu }}
-          value={label.id}
-          onOpen={() => setTooltip(false)}
-          onChange={event => handleUpdate(Number(event.target.value))}
-          onClick={event => {
-            event.preventDefault()
-            event.stopPropagation()
-          }}
-        >
-          {labels.map(l => (
-            <MenuItem key={l.id} value={l.id} className={css.item}>
-              <em style={{ backgroundColor: l.color }} />
-            </MenuItem>
-          ))}
-        </Select>
-      </Tooltip>
-    </ListItemIcon>
+    <Tooltip title={`Label ${label.name}`} open={tooltip}>
+      <Select
+        disableUnderline
+        onMouseEnter={() => setTooltip(true)}
+        onMouseLeave={() => setTooltip(false)}
+        style={{ backgroundColor: label.color }}
+        className={css.all}
+        classes={{ icon: css.icon, selectMenu: css.menu }}
+        value={label.id}
+        onOpen={() => setTooltip(false)}
+        onChange={event => handleUpdate(Number(event.target.value))}
+        onClick={event => {
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+      >
+        {labels.map(l => (
+          <MenuItem key={l.id} value={l.id} className={css.item}>
+            <em style={{ backgroundColor: l.color }} />
+          </MenuItem>
+        ))}
+      </Select>
+    </Tooltip>
   )
 }
 const useStyles = makeStyles({
