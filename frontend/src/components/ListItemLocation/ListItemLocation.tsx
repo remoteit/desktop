@@ -7,12 +7,21 @@ import { Icon } from '../Icon'
 export type Props = {
   pathname: string
   title?: string
+  subtitle?: string
   icon?: string
   disabled?: boolean
   className?: string
 }
 
-export const ListItemLocation: React.FC<Props> = ({ pathname, title, icon, disabled = false, children, ...props }) => {
+export const ListItemLocation: React.FC<Props> = ({
+  pathname,
+  title,
+  subtitle,
+  icon,
+  disabled = false,
+  children,
+  ...props
+}) => {
   const history = useHistory()
   const onClick = () => !disabled && history.push(pathname)
   return (
@@ -23,7 +32,7 @@ export const ListItemLocation: React.FC<Props> = ({ pathname, title, icon, disab
           <Icon name={icon} size="md" fixedWidth />
         </ListItemIcon>
       )}
-      {title && <ListItemText primary={title} />}
+      {title && <ListItemText primary={title} secondary={subtitle} />}
       {children}
     </ListItem>
   )

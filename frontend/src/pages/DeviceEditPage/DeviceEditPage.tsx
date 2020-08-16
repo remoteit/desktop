@@ -1,14 +1,17 @@
 import React, { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
+import { replaceHost } from '../../shared/nameHelper'
+import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Typography, Divider, List } from '@material-ui/core'
+import { Typography, Divider, List, ListItemIcon, ListItemText, ListItemSecondaryAction, Chip } from '@material-ui/core'
+import { findType } from '../../services/serviceTypes'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { SharedAccessSetting } from '../../components/SharedAccessSetting'
 import { UnregisterButton } from '../../buttons/UnregisterButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
@@ -69,13 +72,23 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...prop
         <>
           <Divider />
           <Typography variant="subtitle1">Services</Typography>
-          <section>
-            <Targets targetDevice={targetDevice} targets={targets} onUpdate={onUpdate} onCancel={onCancel} {...props} />
-          </section>
+          <List>
+            {targets.map(t => (
+              <ListItemLocation key={t.uid} pathname={`/devices/${deviceID}/${t.uid}/edit`}>
+                <ListItemIcon></ListItemIcon>
+                <ListItemText primary={t.name} secondary={`${replaceHost(t.hostname)}:${t.port}`} />
+                <ListItemSecondaryAction className={css.actions}>
+                  <Chip label={findType(t.type).name} size="small" />
+                </ListItemSecondaryAction>
+              </ListItemLocation>
+            ))}
+          </List>
         </>
       )}
     </Container>
   )
 }
 
-const useStyles = makeStyles({})
+const useStyles = makeStyles({
+  actions: { right: 90 },
+})

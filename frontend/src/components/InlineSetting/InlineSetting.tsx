@@ -12,6 +12,7 @@ import { colors, spacing } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
 import { makeStyles } from '@material-ui/core/styles'
+import { Title } from '../Title'
 import { Icon } from '../Icon'
 
 type Props = {
@@ -47,7 +48,7 @@ export const InlineSetting: React.FC<Props> = ({
 
   if (edit)
     return (
-      <ListItem className={css.active}>
+      <ListItem className={css.active + ' ' + css.root}>
         <ListItemIcon>{icon}</ListItemIcon>
         <form
           className={css.form}
@@ -88,12 +89,12 @@ export const InlineSetting: React.FC<Props> = ({
     )
 
   return (
-    <ListItem button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
+    <ListItem className={css.root} button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
       <ListItemIcon>{icon}</ListItemIcon>
-      <span className={css.text}>
+      <Title>
         <Typography variant="caption">{label}</Typography>
         <Typography variant="h2">{displayValue || value || '–'}</Typography>
-      </span>
+      </Title>
       {!disabled && (
         <ListItemSecondaryAction className={css.hidden}>
           <EditButton onClick={showEdit} />
@@ -106,8 +107,8 @@ export const InlineSetting: React.FC<Props> = ({
 const useStyles = makeStyles({
   form: { display: 'flex', width: '100%', marginRight: 120, alignItems: 'center' },
   input: { flexGrow: 1, margin: `0 ${spacing.md}px -1px 0` },
-  text: { flexGrow: 1 },
   hidden: { display: 'none' },
+  root: { height: 63 },
   active: {
     backgroundColor: colors.primaryHighlight,
     padding: 0,

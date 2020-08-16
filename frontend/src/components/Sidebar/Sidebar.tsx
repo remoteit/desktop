@@ -26,10 +26,10 @@ export const Sidebar: React.FC = () => {
   const [shown, setShown] = useState<boolean>(true)
   const { hostname, port } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
-  const { name, color } = useSelector((state: ApplicationState) => {
+  const { name, label } = useSelector((state: ApplicationState) => {
     const device = state.devices.all.find(d => d.id === state.backend.device.uid)
     return {
-      color: state.labels.find(l => l.id === device?.attributes.labelId)?.color,
+      label: state.labels.find(l => l.id === device?.attributes.labelId),
       name: deviceName(device),
     }
   })
@@ -51,7 +51,10 @@ export const Sidebar: React.FC = () => {
   }
 
   return (
-    <Box style={{ backgroundColor: color }} className={(shown ? css.open : css.closed) + ' ' + css.drawer}>
+    <Box
+      style={{ backgroundColor: label?.id ? label.color : colors.primary }}
+      className={(shown ? css.open : css.closed) + ' ' + css.drawer}
+    >
       <Box className={css.sideBar}>
         <Tooltip className={css.button} title={shown ? 'Hide sidebar' : 'Show sidebar'}>
           <IconButton onClick={() => setShown(!shown)}>

@@ -40,6 +40,8 @@ export default createMuiTheme({
       button: {
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
+        paddingTop: spacing.xs,
+        paddingBottom: spacing.xs,
         '&:hover, &:focus': { backgroundColor: colors.grayLightest },
       },
       container: {
