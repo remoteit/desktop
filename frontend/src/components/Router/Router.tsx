@@ -17,7 +17,8 @@ import { ServiceDetailPage } from '../../pages/ServiceDetailPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
-import { UsersPage } from '../../pages/UsersPage'
+import { UsersPageService } from '../../pages/UsersPageServices'
+import { UsersPageDevice } from '../../pages/UsersPageDevice'
 import { LogPage } from '../../pages/LogPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage/DeviceEditPage'
 import { ServiceEditPage } from '../../pages/ServiceEditPage'
@@ -55,7 +56,7 @@ export const Router: React.FC = () => {
         <LogPage />
       </Route>
       <Route path="/connections/:serviceID/users">
-        <UsersPage />
+        <UsersPageDevice />
       </Route>
       <Route path="/connections/:serviceID">
         <ServicePage />
@@ -91,7 +92,7 @@ export const Router: React.FC = () => {
         <LogPage />
       </Route>
       <Route path="/devices/:deviceID/:serviceID/users">
-        <UsersPage />
+        <UsersPageService />
       </Route>
       <Route path="/devices/:deviceID/:serviceID/details">
         <ServiceDetailPage />
@@ -103,7 +104,7 @@ export const Router: React.FC = () => {
         <SharePage />
       </Route>
       <Route path="/devices/:deviceID/users">
-        <UsersPage />
+        <UsersPageDevice />
       </Route>
       <Route path="/devices/:deviceID/share">
         <SharePage />

@@ -220,12 +220,8 @@ export function getUsersConnectedDeviceOrService(device?: IDevice, service?: ISe
   return userConnected
 }
 
-export function getServicesByEmail(device: IDevice, emailUser: string) {
-  return device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
-}
-
 export function getDetailUserPermission(device: IDevice, emailUser: string) {
-  const services = getServicesByEmail(device, emailUser)
+  const services = device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
   return {
     scripting: device?.access.find(_ac => _ac.email === emailUser)?.scripting || false,
     numberServices: services.length,
