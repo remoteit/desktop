@@ -5,6 +5,7 @@ import { Platform } from '../Platform'
 import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
 import { ShareDetails } from '../DeviceShareContainer/ContactCardActions'
 import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
+import { useLocation } from 'react-router-dom'
 
 interface Props {
   device: IDevice
@@ -15,6 +16,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
   const usersConnected = getUsersConnectedDeviceOrService(device, service)
   const users = service ? service.access : device?.access
   const usersToRender = usersConnected.concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
+  const location = useLocation()
 
   return (
     <>
@@ -29,7 +31,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
           const permission = getDetailUserPermission(device, user.email)
           return (
             <>
-              <ListItemLocation pathname={`/devices/${device.id}/users/${user.email}`}>
+              <ListItemLocation pathname={`${location.pathname}/${user.email}`}>
                 <ListItemIcon>
                   <Platform id={user.platform} connected={isConnected} />
                 </ListItemIcon>

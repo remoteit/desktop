@@ -13,7 +13,7 @@ import {
   import { Icon } from '../Icon'
   import { makeStyles } from '@material-ui/core/styles'
   import { ShareSaveActions } from './ContactCardActions'
-  import { useHistory, useParams } from 'react-router-dom'
+  import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { useSelector } from '../../hooks/reactReduxHooks'
 import { ApplicationState } from '../../store'
 import { spacing } from '../../styling'
@@ -46,6 +46,7 @@ import { spacing } from '../../styling'
   }): JSX.Element {
   
     const history = useHistory()
+    const location = useLocation()
     const { userName = '' } = useParams()
     const { saving } = useSelector((state: ApplicationState) => state.shares)
   
@@ -100,7 +101,9 @@ import { spacing } from '../../styling'
         </ListItem>
         <div className="left">
           <ShareSaveActions
-            onCancel={() => history.push(`/devices/${device.id}/users`)}
+            onCancel={() => 
+              history.push(location.pathname.replace(userName ? `/${userName}` : '/share', ''))
+            }
             onSave={action}
           />
         </div>

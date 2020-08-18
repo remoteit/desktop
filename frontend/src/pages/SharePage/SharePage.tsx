@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Typography, IconButton } from '@material-ui/core'
@@ -17,6 +17,7 @@ export const SharePage  = () => {
   const { deleting } = useSelector((state: ApplicationState) => state.shares)
   const { userName = '' } = useParams()
   const { deviceID = '' } = useParams()
+  const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export const SharePage  = () => {
 
   const handleUnshare = async () => {
     await shares.delete({deviceID, email: userName})
-    history.push(`/devices/${deviceID}/users`)
+    history.push(location.pathname.replace(userName ? `/${userName}` : '/share', ''))
   }
 
   return (
