@@ -47,7 +47,7 @@ import { spacing } from '../../styling'
   
     const history = useHistory()
     const location = useLocation()
-    const { userName = '' } = useParams()
+    const { email = '' } = useParams()
     const { saving } = useSelector((state: ApplicationState) => state.shares)
   
     const handleChangeServices = (services: string[]) => {
@@ -60,7 +60,7 @@ import { spacing } from '../../styling'
         services: selectedServices,
       })
     }
-    const action = () => {userName === '' ? share() :  update() }
+    const action = () => {email === '' ? share() :  update() }
     const css = useStyles()
   
     return (
@@ -102,7 +102,7 @@ import { spacing } from '../../styling'
         <div className="left">
           <ShareSaveActions
             onCancel={() => 
-              history.push(location.pathname.replace(userName ? `/${userName}` : '/share', ''))
+              history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
             }
             onSave={action}
           />

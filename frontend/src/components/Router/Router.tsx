@@ -93,9 +93,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path={[
         "/devices/:deviceID/:serviceID/users/share",
-        "/devices/:deviceID/:serviceID/users/:userName",
+        "/devices/:deviceID/:serviceID/users/:email",
         "/devices/:deviceID/users/share",
-        "/devices/:deviceID/users/:userName"
+        "/devices/:deviceID/users/:email"
       ]}>
         <SharePage />
       </Route>

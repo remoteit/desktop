@@ -16,7 +16,7 @@ export function DeviceShareDetails({
   selectedContacts: string[]
   updateSharing: (share: SharingDetails, isNew: boolean) => Promise<void>,
 }): JSX.Element {
-  const { userName = '' } = useParams()
+  const { email = '' } = useParams()
 
   const formComponent = (email: string, sharedService?: string[], scripting?: boolean,) => {
     return (
@@ -39,9 +39,9 @@ export function DeviceShareDetails({
 
   return (
     <List component="div">
-      {userName === ''
+      {email === ''
         ? formComponent('')
-        : detailByEmail(userName)}
+        : detailByEmail(email)}
     </List>
   )
 }
