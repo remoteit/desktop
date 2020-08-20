@@ -134,12 +134,27 @@ import { spacing } from '../../styling'
   }): JSX.Element {
     const css = useStyles()
   
-    function update(checked: boolean, id: string): void {
+    const update = (checked: boolean, id: string): void => {
       const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id)
       onChange(all)
     }
+
+    const selectAll = (checked: boolean, services: CheckboxItem[]): void => {
+      const ids = services.map(service =>  service.value ).filter( id => [...selectedServices, id] )
+      const all = checked ? ids : selectedServices.filter(v => '')
+      onChange(all)
+    }
+
     return (
       <>
+       <FormControlLabel
+          control= {<Checkbox
+              onChange={e => selectAll(e.currentTarget.checked, services)}
+              color="primary"
+          />
+          }
+          label={'Select all'}
+        />
         {services.map((service, key) => (
           <div key={key} className={css.checkService}>
             <FormControlLabel
