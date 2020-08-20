@@ -25,7 +25,7 @@ export const UsersPageDevice: React.FC = () => {
         <SharedUsersHeader />
       }
     >
-      {(shared && device?.access) && <SharedUsersList device={device} />}
+      {!!(shared && device?.access) && <SharedUsersList device={device} />}
     </Container>
   )
 }

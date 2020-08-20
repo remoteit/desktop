@@ -9,7 +9,7 @@ import {
     ListItemIcon,
     ListItemSecondaryAction,
   } from '@material-ui/core'
-  import React from 'react'
+  import React, { useEffect } from 'react'
   import { Icon } from '../Icon'
   import { makeStyles } from '@material-ui/core/styles'
   import { ShareSaveActions } from './ContactCardActions'
@@ -53,6 +53,11 @@ import { spacing } from '../../styling'
     const handleChangeServices = (services: string[]) => {
       onChange({ scripting, services })
     }
+
+    useEffect(() => {
+      const crumbs = location.pathname.substr(1).split('/')
+      crumbs[2] !== 'users' && handleChangeServices([crumbs[2]])
+    }, [])
   
     const handleChangeScripting = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange({
