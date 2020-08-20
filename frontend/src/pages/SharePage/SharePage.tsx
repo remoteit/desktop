@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Typography, IconButton } from '@material-ui/core'
@@ -15,8 +15,9 @@ import { useHistory } from 'react-router-dom'
 export const SharePage  = () => {
   const { shares } = useDispatch<Dispatch>()
   const { deleting } = useSelector((state: ApplicationState) => state.shares)
-  const { userName = '' } = useParams()
+  const { email = '' } = useParams()
   const { deviceID = '' } = useParams()
+  const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
@@ -24,8 +25,8 @@ export const SharePage  = () => {
   }, [])
 
   const handleUnshare = async () => {
-    await shares.delete({deviceID, email: userName})
-    history.push(`/devices/${deviceID}/users`)
+    await shares.delete({deviceID, email})
+    history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
   }
 
   return (
@@ -35,9 +36,9 @@ export const SharePage  = () => {
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <Icon name={userName === '' ? 'user-plus' : 'user'} size="lg" />
-            <Title>{userName || 'Share'}</Title>
-          {userName && (
+            <Icon name={email === '' ? 'user-plus' : 'user'} size="lg" />
+            <Title>{email || 'Share'}</Title>
+          {email && (
             <div className="right">
               <IconButton
                 onClick={handleUnshare}
@@ -51,7 +52,7 @@ export const SharePage  = () => {
         </>
       }
     >
-      <DeviceShareContainer username={userName} />
+      <DeviceShareContainer username={email} />
     </Container>
   )
 }

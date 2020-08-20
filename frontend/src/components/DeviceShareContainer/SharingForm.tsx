@@ -9,11 +9,11 @@ import {
     ListItemIcon,
     ListItemSecondaryAction,
   } from '@material-ui/core'
-  import React from 'react'
+  import React, { useEffect } from 'react'
   import { Icon } from '../Icon'
   import { makeStyles } from '@material-ui/core/styles'
   import { ShareSaveActions } from './ContactCardActions'
-  import { useHistory, useParams } from 'react-router-dom'
+  import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { useSelector } from '../../hooks/reactReduxHooks'
 import { ApplicationState } from '../../store'
 import { spacing } from '../../styling'
@@ -46,12 +46,18 @@ import { spacing } from '../../styling'
   }): JSX.Element {
   
     const history = useHistory()
-    const { userName = '' } = useParams()
+    const location = useLocation()
+    const { email = '' } = useParams()
     const { saving } = useSelector((state: ApplicationState) => state.shares)
   
     const handleChangeServices = (services: string[]) => {
       onChange({ scripting, services })
     }
+
+    useEffect(() => {
+      const crumbs = location.pathname.substr(1).split('/')
+      crumbs[2] !== 'users' && handleChangeServices([crumbs[2]])
+    }, [])
   
     const handleChangeScripting = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange({
@@ -59,7 +65,7 @@ import { spacing } from '../../styling'
         services: selectedServices,
       })
     }
-    const action = () => {userName === '' ? share() :  update() }
+    const action = () => {email === '' ? share() :  update() }
     const css = useStyles()
   
     return (
@@ -100,7 +106,9 @@ import { spacing } from '../../styling'
         </ListItem>
         <div className="left">
           <ShareSaveActions
-            onCancel={() => history.push(`/devices/${device.id}/users`)}
+            onCancel={() => 
+              history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
+            }
             onSave={action}
           />
         </div>
@@ -126,12 +134,27 @@ import { spacing } from '../../styling'
   }): JSX.Element {
     const css = useStyles()
   
-    function update(checked: boolean, id: string): void {
+    const update = (checked: boolean, id: string): void => {
       const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id)
       onChange(all)
     }
+
+    const selectAll = (checked: boolean, services: CheckboxItem[]): void => {
+      const ids = services.map(service =>  service.value ).filter( id => [...selectedServices, id] )
+      const all = checked ? ids : selectedServices.filter(v => '')
+      onChange(all)
+    }
+
     return (
       <>
+       <FormControlLabel
+          control= {<Checkbox
+              onChange={e => selectAll(e.currentTarget.checked, services)}
+              color="primary"
+          />
+          }
+          label={'Select all'}
+        />
         {services.map((service, key) => (
           <div key={key} className={css.checkService}>
             <FormControlLabel

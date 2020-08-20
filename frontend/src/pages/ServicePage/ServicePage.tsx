@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useLocation } from 'react-router-dom'
+import { useParams, useLocation, useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector } from 'react-redux'
 import { PortSetting } from '../../components/PortSetting'
@@ -29,6 +29,7 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
 import analytics from '../../helpers/Analytics'
+import { AddUserButton } from '../../buttons/AddUserButton'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -38,6 +39,7 @@ export const ServicePage: React.FC = () => {
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
+  const history = useHistory()
 
   useEffect(() => {
     analytics.page('ServicePage')
@@ -59,6 +61,8 @@ export const ServicePage: React.FC = () => {
       </>
     )
 
+  const onAddUserClick = () => history.push(`${location.pathname}/users/share`)
+
   return (
     <Container
       header={
@@ -67,6 +71,7 @@ export const ServicePage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
+            <AddUserButton onAddUserClick={onAddUserClick} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />

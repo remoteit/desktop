@@ -17,7 +17,8 @@ import { ServiceDetailPage } from '../../pages/ServiceDetailPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
-import { UsersPage } from '../../pages/UsersPage'
+import { UsersPageService } from '../../pages/UsersPageService'
+import { UsersPageDevice } from '../../pages/UsersPageDevice'
 import { LogPage } from '../../pages/LogPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage/DeviceEditPage'
 import { ServiceEditPage } from '../../pages/ServiceEditPage'
@@ -55,7 +56,7 @@ export const Router: React.FC = () => {
         <LogPage />
       </Route>
       <Route path="/connections/:serviceID/users">
-        <UsersPage />
+        <UsersPageService />
       </Route>
       <Route path="/connections/:serviceID">
         <ServicePage />
@@ -90,8 +91,16 @@ export const Router: React.FC = () => {
       <Route path="/devices/:deviceID/:serviceID/log">
         <LogPage />
       </Route>
+      <Route path={[
+        "/devices/:deviceID/:serviceID/users/share",
+        "/devices/:deviceID/:serviceID/users/:email",
+        "/devices/:deviceID/users/share",
+        "/devices/:deviceID/users/:email"
+      ]}>
+        <SharePage />
+      </Route>
       <Route path="/devices/:deviceID/:serviceID/users">
-        <UsersPage />
+        <UsersPageService />
       </Route>
       <Route path="/devices/:deviceID/:serviceID/details">
         <ServiceDetailPage />
@@ -99,14 +108,8 @@ export const Router: React.FC = () => {
       <Route path="/devices/:deviceID/:serviceID/edit">
         <ServiceEditPage />
       </Route>
-      <Route path="/devices/:deviceID/users/:userName">
-        <SharePage />
-      </Route>
       <Route path="/devices/:deviceID/users">
-        <UsersPage />
-      </Route>
-      <Route path="/devices/:deviceID/share">
-        <SharePage />
+        <UsersPageDevice />
       </Route>
       <Route path="/devices/:deviceID/details">
         <DeviceDetailPage />

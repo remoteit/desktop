@@ -2,30 +2,21 @@ import React from 'react'
 import { List, ListItemIcon, ListItemText, Divider, Typography } from '@material-ui/core'
 import { Duration } from '../Duration'
 import { Platform } from '../Platform'
-import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
 import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
 import { ShareDetails } from '../DeviceShareContainer/ContactCardActions'
 import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
+import { useLocation } from 'react-router-dom'
 
 interface Props {
-  deviceId: string
+  device: IDevice
   service?: IService
 }
 
-export const Users: React.FC<Props> = ({ deviceId, service }) => {
-  const devices = useSelector((state: ApplicationState) => state.devices.all)
-  const device = devices.find((d: IDevice) => d.id === deviceId)
-  const shared = service ? service?.access.length : device?.access.length
+export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
   const usersConnected = getUsersConnectedDeviceOrService(device, service)
-
-  if (!shared || !device) return null
-
   const users = service ? service.access : device?.access
-
-  if (!users?.length) return null
-
   const usersToRender = usersConnected.concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
+  const location = useLocation()
 
   return (
     <>
@@ -40,7 +31,7 @@ export const Users: React.FC<Props> = ({ deviceId, service }) => {
           const permission = getDetailUserPermission(device, user.email)
           return (
             <>
-              <ListItemLocation pathname={`/devices/${deviceId}/users/${user.email}`}>
+              <ListItemLocation pathname={`${location.pathname}/${user.email}`}>
                 <ListItemIcon>
                   <Platform id={user.platform} connected={isConnected} />
                 </ListItemIcon>
