@@ -33,7 +33,6 @@ export const SessionsTooltip: React.FC<Props> = ({ service, label, children }) =
                   <br />
                 </span>
               ))}
-              connected
             </>
           )}
         </>
