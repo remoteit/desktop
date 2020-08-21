@@ -20,6 +20,7 @@ export default createMuiTheme({
         backgroundColor: colors.grayLightest,
         padding: `${spacing.sm - spacing.xxs}px ${spacing.md}px`,
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
+        '&+.MuiButton-root': { marginLeft: spacing.sm },
       },
       contained: {
         '&:hover': { backgroundColor: colors.grayDark },
@@ -51,6 +52,10 @@ export default createMuiTheme({
           '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
           '& .hoverHide': { display: 'none' },
         },
+      },
+      dense: {
+        paddingTop: '0 !important',
+        paddingBottom: '0 !important',
       },
     },
     MuiListItemSecondaryAction: { root: { right: gutters } },

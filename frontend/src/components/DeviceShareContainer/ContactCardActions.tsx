@@ -1,57 +1,52 @@
 import React from 'react'
-import { Button, Typography, Tooltip } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
-import { Icon } from '../Icon'
-import { useSelector } from 'react-redux'
+import { Button, ListItemSecondaryAction, Tooltip, Chip, makeStyles } from '@material-ui/core'
 import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
 import { spacing } from '../../styling'
+import { Icon } from '../Icon'
 
 export function ShareDetails({ scripting, shared }: { scripting?: boolean; shared?: number }): JSX.Element {
   const css = useStyles()
   return (
-    <div className={css.contentDetail}>
+    <ListItemSecondaryAction className={css.indicators}>
       {scripting && (
         <Tooltip title="Allow scripting">
-          <Icon name="scroll" size="base" color="gray" className={css.indicator} />
+          <Icon name="scroll" size="md" color="grayDark" />
         </Tooltip>
       )}
       {!!shared && (
-        <Tooltip title="Shared services" className={css.indicator}>
-          <Typography variant="caption">{shared}</Typography>
+        <Tooltip title="Shared services">
+          <Chip label={shared} size="small" />
         </Tooltip>
       )}
-    </div>
+    </ListItemSecondaryAction>
   )
 }
 
 export function ShareSaveActions({ onCancel, onSave }: { onCancel: () => void; onSave: () => void }): JSX.Element {
   const { saving } = useSelector((state: ApplicationState) => state.shares)
-  const css = useStyles()
   return (
-    <>
-      <Button color="primary" onClick={onSave} disabled={saving} variant="contained" className={css.button}>
-        <span className="mr-md">SHARE</span>
-        {saving ? <Icon name="spinner-third" spin fixedWidth /> : <Icon name="check" fixedWidth />}
+    <section>
+      <Button color="primary" onClick={onSave} disabled={saving} variant="contained">
+        SHARE
+        {saving ? (
+          <Icon name="spinner-third" spin type="regular" inline fixedWidth />
+        ) : (
+          <Icon name="check" type="regular" inline fixedWidth />
+        )}
       </Button>
-      <Button disabled={saving} onClick={onCancel} variant="outlined" className={css.button}>
+      <Button disabled={saving} onClick={onCancel} variant="contained">
         CANCEL
       </Button>
-    </>
+    </section>
   )
 }
 
 const useStyles = makeStyles({
-  button: {
-    marginTop: spacing.xxl,
-    marginRight: spacing.sm,
-    padding: `${spacing.xs}px ${spacing.sm}px`,
-    borderRadius: spacing.xxs,
-    minWidth: spacing.xxl,
-  },
-  indicator: {
-    marginRight: spacing.md,
-  },
-  contentDetail: {
+  indicators: {
     marginRight: spacing.xxl,
+    display: 'flex',
+    alignItems: 'center',
+    '& > *': { marginLeft: spacing.lg },
   },
 })

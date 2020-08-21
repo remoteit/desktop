@@ -1,5 +1,5 @@
 import React from 'react'
-import { SettingsListItem } from '../ListItemSetting'
+import { ListItemSetting } from '../ListItemSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 export const ProxySetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
@@ -9,7 +9,7 @@ export const ProxySetting: React.FC<{ service: IService; connection?: IConnectio
   const disabled = connection?.active || connection?.connecting || service.state !== 'active'
 
   return (
-    <SettingsListItem
+    <ListItemSetting
       label="Proxy failover"
       subLabel="If a peer-to-peer connection cannot be established, connect through proxy servers."
       disabled={disabled}

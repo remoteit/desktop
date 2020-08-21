@@ -5,9 +5,9 @@ import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/cor
 import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
-import { SettingsListItem } from '../../components/ListItemSetting'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/core/styles'
@@ -73,31 +73,31 @@ export const SettingsPage = () => {
       <Divider />
       <Typography variant="subtitle1">User</Typography>
       <List>
-        <SettingsListItem
+        <ListItemSetting
           label="Help documentation"
           icon="books"
           onClick={() => window.open('https://docs.remote.it/desktop-help')}
         />
-        <SettingsListItem
+        <ListItemSetting
           label="Send feedback"
           icon="envelope"
           onClick={() =>
             (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
           }
         />
-        <SettingsListItem
+        <ListItemSetting
           label="Sign out"
           subLabel={`Signed in as ${user && user.username}`}
           icon="sign-out"
           onClick={signOutWarning}
         />
-        {!guest && <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />}
+        {!guest && <ListItemSetting label="Quit" icon="times" onClick={quitWarning} />}
       </List>
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
       <List>
         {(os === 'mac' || os === 'windows') && (
-          <SettingsListItem
+          <ListItemSetting
             label="Auto Update"
             icon="chevron-double-up"
             toggle={preferences.autoUpdate}
@@ -105,7 +105,7 @@ export const SettingsPage = () => {
           />
         )}
 
-        <SettingsListItem
+        <ListItemSetting
           label="Open at login"
           icon="power-off"
           toggle={preferences.openAtLogin}
@@ -119,7 +119,7 @@ export const SettingsPage = () => {
           <Typography variant="subtitle1">Advanced</Typography>
           <List>
             <SettingsDisableNetworkItem />
-            <SettingsListItem
+            <ListItemSetting
               label={'Clear all credentials'}
               subLabel={`This will remove all remote.it user credentials from this device, 
                 allowing the device to be transferred. The next user to sign in will claim 
@@ -128,7 +128,7 @@ export const SettingsPage = () => {
               icon="user-slash"
               onClick={clearWarning}
             />
-            <SettingsListItem
+            <ListItemSetting
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}

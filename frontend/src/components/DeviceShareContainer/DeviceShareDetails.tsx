@@ -14,11 +14,11 @@ export function DeviceShareDetails({
   device: IDevice
   share: (share: SharingDetails, isNew: boolean) => Promise<void>
   selectedContacts: string[]
-  updateSharing: (share: SharingDetails, isNew: boolean) => Promise<void>,
+  updateSharing: (share: SharingDetails, isNew: boolean) => Promise<void>
 }): JSX.Element {
   const { email = '' } = useParams()
 
-  const formComponent = (email: string, sharedService?: string[], scripting?: boolean,) => {
+  const formComponent = (email: string, sharedService?: string[], scripting?: boolean) => {
     return (
       <ContactCard
         device={device}
@@ -34,14 +34,12 @@ export function DeviceShareDetails({
 
   const detailByEmail = (email: string) => {
     const detail = getDetailUserPermission(device, email)
-    return formComponent(email, detail.services.map(s => s.id), detail.scripting)
+    return formComponent(
+      email,
+      detail.services.map(s => s.id),
+      detail.scripting
+    )
   }
 
-  return (
-    <List component="div">
-      {email === ''
-        ? formComponent('')
-        : detailByEmail(email)}
-    </List>
-  )
+  return <List>{email === '' ? formComponent('') : detailByEmail(email)}</List>
 }

@@ -40,8 +40,6 @@ export const ServicesPage: React.FC = () => {
 
   if (!device) return <Typography variant="h1">No device found</Typography>
 
-  const onAddUserClick = () => history.push(`${location.pathname}/users/share`)
-
   return (
     <Container
       header={
@@ -50,7 +48,7 @@ export const ServicesPage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon service={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
             <ServiceName device={device} connection={activeConnection} inline />
-            <AddUserButton onAddUserClick={onAddUserClick} />
+            <AddUserButton />
             <RefreshButton device={device} />
           </Typography>
         </>

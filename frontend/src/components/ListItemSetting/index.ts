@@ -1,1 +1,1 @@
-export { ListItemSetting as SettingsListItem } from './ListItemSetting'
+export { ListItemSetting } from './ListItemSetting'

@@ -1,32 +1,25 @@
 import React from 'react'
-import { IContact } from 'remote.it'
+import Select, { Theme } from 'react-select'
+import { makeStyles } from '@material-ui/core'
 import { generateContactOptions } from '../../models/contacts'
-import Select from 'react-select'
-import { useSelector } from '../../hooks/reactReduxHooks'
 import { ApplicationState } from '../../store'
+import { useSelector } from '../../hooks/reactReduxHooks'
+import { IContact } from 'remote.it'
+import { colors, spacing, fontSizes } from '../../styling'
 
 export function DeviceShareAdd({
   contacts,
   onChangeContacts,
-  selectedContacts
+  selectedContacts,
 }: {
   contacts: IContact[]
   onChangeContacts: (contacts: string[]) => void
   selectedContacts: string[]
 }): JSX.Element {
-
   function handleContactChange(contacts: string[]): void {
     onChangeContacts(contacts)
   }
-  return (
-    <>
-      <ContactSelector 
-        contacts={contacts} 
-        onChange={handleContactChange} 
-        selectedContacts={selectedContacts} 
-      />
-    </>
-  )
+  return <ContactSelector contacts={contacts} onChange={handleContactChange} selectedContacts={selectedContacts} />
 }
 
 function ContactSelector({
@@ -40,6 +33,7 @@ function ContactSelector({
 }): JSX.Element {
   const [devices] = useSelector((state: ApplicationState) => state.devices.all)
   const options = generateContactOptions(contacts.filter(o => o.email !== devices.owner))
+  const css = useStyles()
 
   function handleChange(opts: any, actionMeta: any): void {
     opts = opts && opts.length ? opts : []
@@ -47,51 +41,45 @@ function ContactSelector({
   }
 
   return (
-    <Select
-      options={options}
-      value={options.filter(o => selectedContacts.includes(o.value))}
-      placeholder="Search user to share with..."
-      isMulti
-      isClearable
-      maxMenuHeight={200}
-      noOptionsMessage={e => e.inputValue ? `${e.inputValue} does not currently have a remote.it account. Please have them sign up first so that you can share to them.` : 'You do not have contacts'}
-      onChange={handleChange}
-      styles={{
-        control: (styles: any) => ({
-          ...styles,
-          margin: '20px 0 0 0',
-          padding: '0 10px 0 0px',
-          ':hover': {
-            borderColor: '#0096e7',
-          },
-        }),
-        option: (styles: any, { isFocused, isSelected }: { isFocused: boolean; isSelected: boolean }) => ({
-          ...styles,
-          backgroundColor: isFocused || isSelected ? '#ccedff' : 'white',
-          ':hover': {
-            backgroundColor: '#ccedff',
-          },
-        }),
-        multiValue: (styles: any) => ({
-          ...styles,
-          backgroundColor: '#ccedff',
-          borderRadius: '0.3em',
-        }),
-        multiValueLabel: (styles: any) => ({
-          ...styles,
-          paddingTop: '6px',
-          paddingBottom: '6px',
-        }),
-        multiValueRemove: (styles: any) => ({
-          ...styles,
-          paddingTop: '6px',
-          paddingBottom: '6px',
-        }),
-        placeholder: (styles: any) => ({
-          ...styles,
-          color: '#777',
-        }),
-      }}
-    />
+    <section>
+      <Select
+        isMulti
+        isClearable
+        options={options}
+        theme={selectTheme}
+        className={css.select}
+        classNamePrefix="select"
+        value={options.filter(o => selectedContacts.includes(o.value))}
+        placeholder="Search user to share with..."
+        onChange={handleChange}
+        noOptionsMessage={e =>
+          e.inputValue
+            ? `${e.inputValue} does not currently have a remote.it account. Please have them sign up first so that you can share to them.`
+            : 'You do not have contacts'
+        }
+      />
+    </section>
   )
+}
+
+const useStyles = makeStyles({
+  select: {
+    fontSize: fontSizes.md,
+    '& .select__multi-value': { backgroundColor: colors.primary, padding: `${spacing.xxs}px ${spacing.xs}px` },
+    '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: colors.white },
+    '& .select__multi-value__remove': { color: colors.white },
+  },
+})
+
+const selectTheme = (theme: Theme) => {
+  console.log('THEME', theme)
+  return {
+    ...theme,
+    borderRadius: spacing.xs,
+    colors: {
+      ...theme.colors,
+      primary25: colors.primaryHighlight,
+      primary: colors.primary,
+    },
+  }
 }

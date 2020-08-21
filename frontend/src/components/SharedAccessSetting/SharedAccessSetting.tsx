@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
-import { SettingsListItem } from '../ListItemSetting'
+import { ListItemSetting } from '../ListItemSetting'
 
 export const SharedAccessSetting: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
@@ -9,7 +9,7 @@ export const SharedAccessSetting: React.FC<{ device?: IDevice }> = ({ device }) 
   if (!device || device.shared) return null
 
   return (
-    <SettingsListItem
+    <ListItemSetting
       label="Disable shared access"
       subLabel="While active, no other users will be able to connect to this device."
       icon="user-shield"

@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Button,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Typography,
-  Switch,
-  TextField,
-  MenuItem,
-} from '@material-ui/core'
+import { Button, List, Typography, TextField, MenuItem } from '@material-ui/core'
 import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../shared/constants'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
-import { Icon } from '../../components/Icon'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { colors, spacing, fontSizes } from '../../styling'
 import { ApplicationState } from '../../store'
@@ -86,18 +75,12 @@ export const LanSharePage: React.FC = () => {
       }
     >
       <List>
-        <ListItem button onClick={() => setEnabled(!enabled)}>
-          <ListItemIcon>
-            <Icon name="network-wired" color={enabled ? 'primary' : 'gray'} size="lg" />
-          </ListItemIcon>
-          <ListItemText
-            primary="Enable local sharing"
-            primaryTypographyProps={{ style: { color: enabled ? colors.primary : colors.grayDarker } }}
-          />
-          <ListItemSecondaryAction>
-            <Switch checked={enabled} onChange={() => setEnabled(!enabled)} />
-          </ListItemSecondaryAction>
-        </ListItem>
+        <ListItemSetting
+          icon="network-wired"
+          toggle={enabled}
+          onClick={() => setEnabled(!enabled)}
+          label="Enable local sharing"
+        />
       </List>
 
       <div className={css.indent}>

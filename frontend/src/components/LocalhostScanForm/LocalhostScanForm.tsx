@@ -3,6 +3,7 @@ import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../shared/constants'
 import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox, Typography } from '@material-ui/core'
 import { getTypeId, findType, serviceTypes } from '../../services/serviceTypes'
 import { LoadingMessage } from '../LoadingMessage'
+import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
@@ -17,14 +18,17 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
   const [state, setState] = useState<boolean[]>([])
   const css = useStyles()
   const scanData = useSelector((state: ApplicationState) => {
-    const {localhost} =  state.backend.scanData
+    const { localhost } = state.backend.scanData
 
-    return localhost?.data[0] && localhost?.data[0][1].map(row => ({
+    return (
+      localhost?.data[0] &&
+      localhost?.data[0][1].map(row => ({
         ...DEFAULT_TARGET,
         type: getTypeId(row[0]),
         port: row[0],
         name: row[1].replace(REGEX_NAME_SAFE, ''),
       }))
+    )
   })
 
   const updateTargets = useCallback(
@@ -52,22 +56,18 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
       </Typography>
       <List>
         {scanData.map((row, key) => (
-          <ListItem
-            key={key}
-            button
+          <ListItemCheckbox
+            keyProp={key}
+            label={row.name}
+            checked={state[key]}
             onClick={() => {
               state[key] = !state[key]
               setState([...state])
               updateTargets([...state])
             }}
-            className={css.item}
           >
-            <ListItemIcon>
-              <Checkbox checked={state[key]} color="primary" />
-            </ListItemIcon>
-            <ListItemText className={css.name} primary={row.name} />
-            <Chip label={findType(row.type).name + ' - ' + row.port} size="small" />
-          </ListItem>
+            <Chip className={css.chip} label={findType(row.type).name + ' - ' + row.port} size="small" />
+          </ListItemCheckbox>
         ))}
       </List>
     </>
@@ -75,6 +75,5 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
 }
 
 const useStyles = makeStyles({
-  item: { padding: 0, paddingRight: spacing.md },
-  name: { width: '60%', flex: 'none' },
+  chip: { marginRight: spacing.md },
 })

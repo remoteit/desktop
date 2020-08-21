@@ -61,8 +61,6 @@ export const ServicePage: React.FC = () => {
       </>
     )
 
-  const onAddUserClick = () => history.push(`${location.pathname}/users/share`)
-
   return (
     <Container
       header={
@@ -71,7 +69,7 @@ export const ServicePage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
-            <AddUserButton onAddUserClick={onAddUserClick} />
+            <AddUserButton />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />

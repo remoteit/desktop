@@ -1,11 +1,18 @@
 import React from 'react'
-import { IconButton } from '@material-ui/core'
+import { useLocation, useHistory } from 'react-router-dom'
+import { IconButton, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 
-export const AddUserButton: React.FC<{ onAddUserClick: () => void }> = ({ onAddUserClick }) => {
+export const AddUserButton: React.FC = () => {
+  const location = useLocation()
+  const history = useHistory()
+  const onClick = () => history.push(`${location.pathname.replace('/users', '')}/users/share`)
+
   return (
-      <IconButton onClick={onAddUserClick}>
+    <Tooltip title="Share">
+      <IconButton onClick={onClick}>
         <Icon name="user-plus" size="md" type="light" />
       </IconButton>
+    </Tooltip>
   )
 }
