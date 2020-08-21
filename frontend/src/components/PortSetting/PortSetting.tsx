@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
 import { useSelector } from 'react-redux'
-import { InlineSetting } from '../InlineSetting'
+import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { REGEX_PORT_SAFE } from '../../shared/constants'
 import { ApplicationState } from '../../store'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
@@ -26,8 +26,8 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
     })
 
   return (
-    <InlineSetting
-      value={currentPort}
+    <InlineTextFieldSetting
+      value={currentPort || freePort}
       label="Port"
       disabled={disabled}
       filter={REGEX_PORT_SAFE}

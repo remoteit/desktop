@@ -1,5 +1,5 @@
 import React from 'react'
-import { InlineSetting } from '../InlineSetting'
+import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { REGEX_NAME_SAFE } from '../../shared/constants'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
@@ -13,7 +13,7 @@ export const UsernameSetting: React.FC<{ service: IService; connection?: IConnec
   const disabled = service.state !== 'active'
 
   return (
-    <InlineSetting
+    <InlineTextFieldSetting
       value={currentUsername}
       label="SSH Username"
       disabled={disabled}

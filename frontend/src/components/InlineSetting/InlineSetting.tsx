@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import {
   ListItem,
   ListItemIcon,
@@ -20,31 +20,54 @@ type Props = {
   label: string
   icon?: JSX.Element
   displayValue?: string | number
-  filter?: RegExp
   disabled?: boolean
   resetValue?: string | number
-  onSave: (value: string | number) => void
+  fieldRef: React.RefObject<HTMLInputElement>
+  onSubmit: () => void
+  onResetClick: () => void
+  onCancel: () => void
+  onShowEdit: () => void
 }
 
 export const InlineSetting: React.FC<Props> = ({
-  value = '',
   label,
   icon,
+  value = '',
   displayValue,
   disabled,
   resetValue,
-  onSave,
-  filter,
+  onSubmit,
+  fieldRef,
+  onResetClick,
+  onCancel,
+  onShowEdit,
   children,
 }) => {
-  const [edit, setEdit] = useState<boolean>(false)
-  const [editValue, setEditValue] = useState<string | number>('')
-
   const css = useStyles()
-  const showEdit = () => {
-    setEditValue(value)
+  const [focusTimeout, setFocusTimeout] = useState<NodeJS.Timeout>()
+  const [edit, setEdit] = useState<boolean>(false)
+
+  function triggerEdit() {
     setEdit(true)
+    onShowEdit()
   }
+
+  function cancelBlur() {
+    if (focusTimeout) {
+      clearTimeout(focusTimeout)
+      setFocusTimeout(undefined)
+    }
+  }
+
+  useEffect(() => {
+    if (!fieldRef?.current) return
+    if (edit) {
+      fieldRef.current.focus()
+      fieldRef.current.onblur = () => {
+        setFocusTimeout(setTimeout(() => setEdit(false), 200))
+      }
+    }
+  }, [edit])
 
   if (edit)
     return (
@@ -52,29 +75,25 @@ export const InlineSetting: React.FC<Props> = ({
         <ListItemIcon>{icon}</ListItemIcon>
         <form
           className={css.form}
-          onSubmit={() => {
-            setEdit(false)
-            onSave(editValue)
+          onSubmit={e => {
+            e.preventDefault()
+            onSubmit()
+            fieldRef.current?.blur()
           }}
         >
           {children}
-          <TextField
-            autoFocus
-            className={css.input}
-            label={label}
-            value={editValue}
-            variant="filled"
-            onChange={event => setEditValue(filter ? event.target.value.replace(filter, '') : event.target.value)}
-          />
-          {resetValue && <ResetButton onClick={() => setEditValue(resetValue)} />}
+          {resetValue && (
+            <ResetButton
+              onClick={() => {
+                cancelBlur()
+                onResetClick()
+                fieldRef.current?.focus()
+              }}
+            />
+          )}
           <ListItemSecondaryAction>
             <Tooltip title="Cancel">
-              <IconButton
-                onClick={() => {
-                  setEdit(false)
-                  setEditValue(value)
-                }}
-              >
+              <IconButton onClick={onCancel}>
                 <Icon name="times" size="md" fixedWidth />
               </IconButton>
             </Tooltip>
@@ -89,15 +108,15 @@ export const InlineSetting: React.FC<Props> = ({
     )
 
   return (
-    <ListItem className={css.root} button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
+    <ListItem className={css.root} button onClick={triggerEdit} disabled={disabled} style={{ opacity: 1 }}>
       <ListItemIcon>{icon}</ListItemIcon>
       <Title>
         <Typography variant="caption">{label}</Typography>
         <Typography variant="h2">{displayValue || value || '–'}</Typography>
       </Title>
       {!disabled && (
-        <ListItemSecondaryAction className={css.hidden}>
-          <EditButton onClick={showEdit} />
+        <ListItemSecondaryAction className="hidden">
+          <EditButton onClick={triggerEdit} />
         </ListItemSecondaryAction>
       )}
     </ListItem>
@@ -105,13 +124,18 @@ export const InlineSetting: React.FC<Props> = ({
 }
 
 const useStyles = makeStyles({
-  form: { display: 'flex', width: '100%', marginRight: 120, alignItems: 'center' },
-  input: { flexGrow: 1, margin: `0 ${spacing.md}px -1px 0` },
-  hidden: { display: 'none' },
+  form: {
+    display: 'flex',
+    width: '100%',
+    marginRight: 120,
+    alignItems: 'center',
+    '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
+    '& .MuiTextField-root': { marginLeft: 0 },
+  },
   root: { height: 63 },
   active: {
     backgroundColor: colors.primaryHighlight,
     padding: 0,
-    '& > .MuiListItemIcon-root': { paddingLeft: 23 },
+    '& > .MuiListItemIcon-root': { paddingLeft: spacing.lg },
   },
 })

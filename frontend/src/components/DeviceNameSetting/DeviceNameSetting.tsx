@@ -2,11 +2,11 @@ import React from 'react'
 import { emit } from '../../services/Controller'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { InlineSetting } from '../InlineSetting'
+import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { REGEX_NAME_SAFE } from '../../shared/constants'
 import { safeHostname } from '../../shared/nameHelper'
 import { LabelButton } from '../../buttons/LabelButton'
-import { deviceName } from '../../shared/nameHelper'
+import { attributeName } from '../../shared/nameHelper'
 
 export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITargetDevice }> = ({
   device,
@@ -22,11 +22,11 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
 
   if (!device) return null
 
-  const name = deviceName(device)
+  const name = attributeName(device)
   const defaultValue = device.id === targetDevice.uid ? safeHostname(hostname, nameBlacklist) : device.name
 
   return (
-    <InlineSetting
+    <InlineTextFieldSetting
       value={name}
       label="Device Name"
       resetValue={defaultValue}
