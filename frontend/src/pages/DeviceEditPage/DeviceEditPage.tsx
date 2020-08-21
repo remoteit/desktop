@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { replaceHost } from '../../shared/nameHelper'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { Typography, Divider, List, ListItemIcon, ListItemText, ListItemSecondaryAction, Chip } from '@material-ui/core'
 import { findType } from '../../services/serviceTypes'
 import { useParams } from 'react-router-dom'
@@ -15,10 +15,8 @@ import { ListItemLocation } from '../../components/ListItemLocation'
 import { SharedAccessSetting } from '../../components/SharedAccessSetting'
 import { UnregisterButton } from '../../buttons/UnregisterButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
-import { Targets } from '../../components/Targets/Targets'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
-import { emit } from '../../services/Controller'
 
 type Props = {
   targets: ITarget[]
@@ -28,14 +26,9 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...prop
   const css = useStyles()
   const history = useHistory()
   const { deviceID } = useParams()
-  const { ui } = useDispatch<Dispatch>()
-  const { connections, device, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
-    connections: state.backend.connections,
-    device: state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden),
-    searched: state.devices.searched,
-    query: state.devices.query,
-    thisDeviceId: state.backend.device.uid,
-  }))
+  const device = useSelector((state: ApplicationState) =>
+    state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
+  )
 
   useEffect(() => {
     analytics.page('DevicesDetailPage')
@@ -45,9 +38,13 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...prop
     history.push(`/devices`)
     return null
   }
+  /* 
 
-  const onUpdate = (t: ITarget[]) => emit('targets', t)
-  const onCancel = () => ui.set({ setupAdded: undefined })
+add arbitrary meta data here!!!!
+
+add category info display in desktop details
+
+*/
   const thisDevice = device.id === targetDevice.uid
 
   return (

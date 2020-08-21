@@ -47,6 +47,7 @@ const DEVICE_SELECT = `{
       lastReported
       port
       type
+      attributes
       access {
         user {
           email
@@ -168,6 +169,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
             createdAt: new Date(s.created),
             lastReported: s.lastReported && new Date(s.lastReported),
             contactedAt: new Date(s.endpoint?.timestamp),
+            attributes: s.attributes,
             name: s.name,
             port: s.port,
             access: s.access.map((e: any) => ({ email: e.user?.email })),

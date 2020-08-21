@@ -35,7 +35,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
         <ConnectionStateIcon service={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
       <ListItemText
-        primary={<ServiceName device={device} shared={device.shared} connection={activeConnection} />}
+        primary={<ServiceName device={device} connection={activeConnection} />}
         secondary={thisDevice && 'This system'}
       />
       <ListItemSecondaryAction style={{ right: 90 }}>

@@ -6,7 +6,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton, Link } from '@material-ui/core'
 import { removeDeviceName } from '../../shared/nameHelper'
 import { makeStyles } from '@material-ui/core/styles'
-import { deviceName } from '../../shared/nameHelper'
+import { attributeName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { spacing, colors, fontSizes } from '../../styling'
@@ -33,10 +33,10 @@ export const Breadcrumbs: React.FC = () => {
     if (name) return name
 
     const device: IDevice | undefined = findDevice(path)
-    if (device) return deviceName(device)
+    if (device) return attributeName(device)
 
     const [service, d] = findService(devices, path)
-    if (service && d) return removeDeviceName(d.name, service.name)
+    if (service && d) return attributeName(service)
 
     const match = path.match(REGEX_LAST_PATH)
     if (match) return match[0]

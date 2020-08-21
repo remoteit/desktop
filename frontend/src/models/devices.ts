@@ -138,7 +138,7 @@ export default createModel({
         dispatch.backend.set({ globalError: 'GraphQL: ' + errors[0].message })
       }
 
-      const data = gqlData?.data?.data?.login
+      const data = gqlData?.data?.data?.login || {}
       const total = data?.devices?.total || 0
 
       return [data, total]
@@ -151,6 +151,14 @@ export default createModel({
 
     async setAttributes(device: IDevice) {
       graphQLSetAttributes(device.attributes, device.id)
+      dispatch.devices.setDevice({ id: device.id, device })
+    },
+
+    async setServiceAttributes(service: IService, globalState: any) {
+      let device = globalState.devices.all.find((d: IDevice) => d.id === service.deviceID)
+      const index = device.services.findIndex((s: IService) => s.id === service.id)
+      device.services[index].attributes = service.attributes
+      graphQLSetAttributes(service.attributes, service.id)
       dispatch.devices.setDevice({ id: device.id, device })
     },
 

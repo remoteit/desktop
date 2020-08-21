@@ -86,10 +86,10 @@ export const ServicePage: React.FC = () => {
       <ServiceConnected connection={connection} service={service} />
       <Columns center>
         <List>
-          <PortSetting connection={connection} service={service} />
-          <HostSetting connection={connection} service={service} />
           <NameSetting connection={connection} service={service} />
           <UsernameSetting connection={connection} service={service} />
+          <PortSetting connection={connection} service={service} />
+          <HostSetting connection={connection} service={service} />
           <LaunchSetting connection={connection} service={service} />
         </List>
         <div className={css.actions}>
@@ -101,10 +101,12 @@ export const ServicePage: React.FC = () => {
         <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
         <LanShareSelect connection={connection} service={service} />
-        <Divider />
+      </List>
+      <Divider />
+      <List>
+        <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} />
         <UsersSelect service={service} device={device} />
         <ListItemLocation title="Service Details" icon="info-circle" pathname={location.pathname + '/details'} />
-        {thisDevice && <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} />}
       </List>
     </Container>
   )

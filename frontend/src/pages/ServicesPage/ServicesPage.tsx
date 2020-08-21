@@ -49,7 +49,7 @@ export const ServicesPage: React.FC = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <ConnectionStateIcon service={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
-            <ServiceName device={device} connection={activeConnection} shared={device.shared} inline />
+            <ServiceName device={device} connection={activeConnection} inline />
             <AddUserButton onAddUserClick={onAddUserClick} />
             <RefreshButton device={device} />
           </Typography>

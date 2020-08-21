@@ -17,9 +17,9 @@ import { getEnvironment } from '../sharedAdaptor'
 
 const separator = ' - '
 
-export function deviceName(device?: IDevice) {
-  if (!device) return
-  return device.attributes.name || device.name
+export function attributeName(instance?: IDevice | IService) {
+  if (!instance) return ''
+  return instance.attributes.name || instance.name
 }
 
 export function replaceHost(url: string) {

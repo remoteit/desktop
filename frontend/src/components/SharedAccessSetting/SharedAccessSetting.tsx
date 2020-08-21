@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { SettingsListItem } from '../ListItemSetting'
 
-export const SharedAccessSetting: React.FC<{ device: IDevice }> = ({ device }) => {
+export const SharedAccessSetting: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
 
   if (!device || device.shared) return null

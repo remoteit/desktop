@@ -18,7 +18,7 @@ type Props = {
 }
 
 export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCancel }) => {
-  const { setupBusy, setupDeletingService } = useSelector((state: ApplicationState) => state.ui)
+  const { setupBusy, setupServiceBusy: setupServiceBusy } = useSelector((state: ApplicationState) => state.ui)
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
@@ -34,7 +34,7 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCa
     analytics.track('serviceRemoved', { ...target, id: target.uid })
     let copy = [...targets]
     copy.splice(key, 1)
-    ui.set({ setupBusy: true, setupDeletingService: key })
+    ui.set({ setupBusy: true, setupServiceBusy: target.uid })
     onUpdate(copy)
   }
 
@@ -75,7 +75,7 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCa
               data={target}
               disable={true}
               busy={setupBusy}
-              deleting={setupDeletingService === index}
+              deleting={setupServiceBusy === target.uid}
               onSave={(t: ITarget) => add(t)}
               onDelete={() => remove(index)}
             />

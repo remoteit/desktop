@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
-import { deviceName } from '../shared/nameHelper'
+import { attributeName } from '../shared/nameHelper'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
@@ -21,12 +21,12 @@ export function newConnection(service?: IService | null, data = {}) {
   if (service) {
     const device = devices.all.find((d: IDevice) => d.id === service.deviceID)
     // @TODO The whole service obj should be in the connection
-    connection.name = service.name
+    connection.name = attributeName(service)
     connection.id = service.id
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
-    if (device) connection.name = `${deviceName(device)} - ${service.name}`
+    if (device) connection.name = `${attributeName(device)} - ${attributeName(service)}`
   }
 
   return { ...connection, ...data } as IConnection

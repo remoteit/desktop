@@ -15,7 +15,7 @@ import { spacing, colors, fontSizes } from '../../styling'
 import { useSelector } from 'react-redux'
 import { isElectron } from '../../services/Browser'
 import { ApplicationState } from '../../store'
-import { deviceName } from '../../shared/nameHelper'
+import { attributeName } from '../../shared/nameHelper'
 import { Icon } from '../../components/Icon'
 import onLanGraphic from '../../assets/remote-on-lan.svg'
 import onRemoteGraphic from '../../assets/remote-on-remote.svg'
@@ -30,7 +30,7 @@ export const Sidebar: React.FC = () => {
     const device = state.devices.all.find(d => d.id === state.backend.device.uid)
     return {
       label: state.labels.find(l => l.id === device?.attributes.labelId),
-      name: deviceName(device),
+      name: attributeName(device),
     }
   })
   const css = useStyles()
@@ -71,8 +71,8 @@ export const Sidebar: React.FC = () => {
           <Box className={css.graphic}>
             <img src={graphic} alt="From remote network graphic" />
             <List>
-              {diagram.map((i: NetworkType) => (
-                <ListItem>
+              {diagram.map((i: NetworkType, key) => (
+                <ListItem key={key}>
                   <ListItemText primary={i.primary} secondary={i.secondary} />
                 </ListItem>
               ))}

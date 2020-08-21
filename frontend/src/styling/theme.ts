@@ -22,7 +22,7 @@ export default createMuiTheme({
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
       },
       contained: {
-        '&:hover': { backgroundColor: colors.warning },
+        '&:hover': { backgroundColor: colors.grayDark },
         '&, &.Mui-disabled': { backgroundColor: colors.gray, color: colors.white },
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
@@ -46,6 +46,7 @@ export default createMuiTheme({
       },
       container: {
         '& .MuiListItemSecondaryAction-root': {},
+        '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
         '&:hover, &:focus': {
           '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
           '& .hoverHide': { display: 'none' },

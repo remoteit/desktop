@@ -5,7 +5,7 @@ import { ApplicationState } from '../../store'
 import { usePermissions } from '../../hooks/usePermissions'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
-import { deviceName } from '../../shared/nameHelper'
+import { attributeName } from '../../shared/nameHelper'
 import styles from '../../styling'
 
 export const Header: React.FC = () => {
@@ -20,7 +20,7 @@ export const Header: React.FC = () => {
   return (
     <div className={css.header}>
       <Typography variant="body2">
-        {device ? deviceName(device) : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
+        {device ? attributeName(device) : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
       </Typography>
     </div>
   )

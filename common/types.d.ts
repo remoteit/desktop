@@ -212,6 +212,9 @@ declare global {
     port?: number
     sessions: IUser[]
     access: IUser[]
+    attributes: {
+      name?: string
+    }
   }
 
   type IUser = {
@@ -278,6 +281,8 @@ declare global {
   type IEvents = { [event: string]: string }
 
   type ILookup = { [key: string]: any }
+
+  type ISelect = { [key: string]: string | number }
 
   type IPreferences = ILookup
 
