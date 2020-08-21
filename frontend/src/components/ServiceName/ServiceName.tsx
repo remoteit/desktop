@@ -50,7 +50,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
       {accessDisabled && (
         <sup>
           <Tooltip title="Shared access disabled">
-            <Icon name="user-slash" size="xxxs" type="solid" fixedWidth />
+            <Icon name="do-not-enter" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>
       )}
