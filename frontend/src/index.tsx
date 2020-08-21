@@ -12,7 +12,6 @@ import analytics from './helpers/Analytics'
 import * as serviceWorker from './serviceWorker'
 import './services/Controller'
 import './styling/index.css'
-import './styling/euphoria.css'
 import './styling/fonts.css'
 
 analytics.setup()
