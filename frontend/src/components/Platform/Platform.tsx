@@ -39,7 +39,7 @@ export const Platform: React.FC<{ id?: number; connected?: boolean }> = ({ id, c
       break
     case 3:
     case 4:
-      name = 'mac'
+      name = 'apple'
       type = 'brands'
       break
     case 5:
