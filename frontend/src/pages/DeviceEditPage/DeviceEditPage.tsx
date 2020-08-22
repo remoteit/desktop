@@ -47,6 +47,11 @@ add category info display in desktop details
 */
   const thisDevice = device.id === targetDevice.uid
 
+  function host(service: IService) {
+    const target = targets.find(t => t.uid === service.id)
+    if (target) return `${replaceHost(target.hostname)}:${target.port}`
+  }
+
   return (
     <Container
       header={
@@ -65,23 +70,19 @@ add category info display in desktop details
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
         <SharedAccessSetting device={device} />
       </List>
-      {thisDevice && (
-        <>
-          <Divider />
-          <Typography variant="subtitle1">Services</Typography>
-          <List>
-            {targets.map(t => (
-              <ListItemLocation key={t.uid} pathname={`/devices/${deviceID}/${t.uid}/edit`}>
-                <ListItemIcon></ListItemIcon>
-                <ListItemText primary={t.name} secondary={`${replaceHost(t.hostname)}:${t.port}`} />
-                <ListItemSecondaryAction className={css.actions}>
-                  <Chip label={findType(t.type).name} size="small" />
-                </ListItemSecondaryAction>
-              </ListItemLocation>
-            ))}
-          </List>
-        </>
-      )}
+      <Divider />
+      <Typography variant="subtitle1">Services</Typography>
+      <List>
+        {device.services.map(s => (
+          <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/${s.id}/edit`}>
+            <ListItemIcon></ListItemIcon>
+            <ListItemText primary={s.name} secondary={host(s)} />
+            <ListItemSecondaryAction className={css.actions}>
+              <Chip label={findType(s.typeID).name} size="small" />
+            </ListItemSecondaryAction>
+          </ListItemLocation>
+        ))}
+      </List>
     </Container>
   )
 }

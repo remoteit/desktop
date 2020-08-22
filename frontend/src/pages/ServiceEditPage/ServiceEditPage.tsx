@@ -13,8 +13,10 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { SharedAccessSetting } from '../../components/SharedAccessSetting'
+import { InlineTextFieldSetting } from '../../components/InlineTextFieldSetting'
 import { ServiceSetting } from '../../components/ServiceSetting'
 import { UnregisterButton } from '../../buttons/UnregisterButton'
+import { attributeName } from '../../shared/nameHelper'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Targets } from '../../components/Targets/Targets'
 import { Title } from '../../components/Title'
@@ -24,12 +26,12 @@ import { emit } from '../../services/Controller'
 type Props = {
   targets: ITarget[]
 }
-export const ServiceEditPage: React.FC<Props> = ({ targets, ...props }) => {
+export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
   const css = useStyles()
   const history = useHistory()
+  const { devices } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams()
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
-  const target = targets.find(t => t.uid === serviceID)
   const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
 
   useEffect(() => {
@@ -57,9 +59,21 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, ...props }) => {
         </>
       }
     >
-      <ServiceSetting service={service} target={target} />
+      <List>
+        <InlineTextFieldSetting
+          value={attributeName(service)}
+          label="Service Name"
+          resetValue={service.name}
+          onSave={name => {
+            service.attributes.name = name.toString()
+            devices.setServiceAttributes(service)
+          }}
+        />
+      </List>
       <Divider />
-      <List>{/* <SharedAccessSetting device={device} /> */}</List>
+      <List>
+        <ServiceSetting service={service} targets={targets} />
+      </List>
     </Container>
   )
 }

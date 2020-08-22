@@ -33,6 +33,7 @@ export const MAX_NAME_LENGTH = 100
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',
   hostname: IP_PRIVATE,
+  disabled: false,
   name: '',
   port: 0,
   secret: '',

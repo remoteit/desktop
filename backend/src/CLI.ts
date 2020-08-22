@@ -178,10 +178,12 @@ export default class CLI {
 
   async setDevice(d: ITargetDevice) {
     await this.exec({ cmds: [strings.setDevice(d)], checkAuthHash: true })
+    this.readDevice()
   }
 
   async setTarget(d: ITarget) {
     await this.exec({ cmds: [strings.setTarget(d)], checkAuthHash: true })
+    this.readTargets()
   }
 
   async unregister() {

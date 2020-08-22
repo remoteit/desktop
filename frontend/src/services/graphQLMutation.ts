@@ -12,6 +12,8 @@ mutation query($name: String, $labelId: Int, $accessDisabled: Boolean, $serviceI
   )
 }`
 
+//@TODO change labelId to color
+
 export async function graphQLSetAttributes(attributes: ILookup, id: String) {
   return await graphQLRequest(SET_ATTRIBUTES, { ...attributes, serviceId: id })
 }

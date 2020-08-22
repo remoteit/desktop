@@ -32,7 +32,6 @@ class CLIInterface extends CLI {
 
   async handle(targets: ITarget[]) {
     const { length } = this.data.targets
-
     if (targets.length === length) {
       const target = this.modified(targets, this.data.targets)
       if (target) {
@@ -58,7 +57,11 @@ class CLIInterface extends CLI {
     return updated.find((target, index) => {
       const c = current[index]
       return (
-        target.port !== c.port || target.hostname !== c.hostname || target.name !== c.name || target.type !== c.type
+        target.disabled !== c.disabled ||
+        target.port !== c.port ||
+        target.hostname !== c.hostname ||
+        target.name !== c.name ||
+        target.type !== c.type
       )
     })
   }

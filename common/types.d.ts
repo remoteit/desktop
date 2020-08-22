@@ -163,6 +163,7 @@ declare global {
     secret?: string //      password
     port: number //         proxy_dest_port    service port
     type: number //         application_type   service type
+    disabled: boolean //    service enabled / disabled
   }
 
   interface ITargetDevice extends ITarget {}
