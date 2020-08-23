@@ -7,7 +7,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s clean build-backend compile copy-* build-electron",
     "build-backend": "cd backend && npm run build",
-    "build-electron": "cross-env electron-builder -$PLATFORMS",
+    "build-electron": "cross-env electron-builder",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
