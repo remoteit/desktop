@@ -8,7 +8,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
@@ -24,14 +24,14 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCa
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
 
   function add(target: ITarget) {
-    analytics.track('serviceCreated', { ...target, id: target.uid })
+    analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
     ui.set({ setupBusy: true, setupAddingService: true })
     onUpdate([...targets, target])
   }
 
   function remove(key: number) {
     const target = targets[key]
-    analytics.track('serviceRemoved', { ...target, id: target.uid })
+    analyticsHelper.track('serviceRemoved', { ...target, id: target.uid })
     let copy = [...targets]
     copy.splice(key, 1)
     ui.set({ setupBusy: true, setupServiceBusy: target.uid })

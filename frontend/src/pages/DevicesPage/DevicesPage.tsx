@@ -11,7 +11,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DevicesPage = () => {
   const { allDevices, connections, fetching } = useSelector((state: ApplicationState) => ({
@@ -27,7 +27,7 @@ export const DevicesPage = () => {
   const css = useStyles()
 
   useEffect(() => {
-    analytics.page('DevicesPage')
+    analyticsHelper.page('DevicesPage')
   }, [])
 
   return (

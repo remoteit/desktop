@@ -2,7 +2,7 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
-import analytics from '../helpers/Analytics'
+import analyticsHelper from '../helpers/analyticsHelper'
 
 class Controller extends EventEmitter {
   private socket: SocketIOClient.Socket
@@ -120,8 +120,8 @@ function getEventHandlers() {
 
     oob: (oob: IOob) => {
       backend.set({ lan: oob })
-      analytics.setOobAvailable(oob.oobAvailable)
-      analytics.setOobActive(oob.oobActive)
+      analyticsHelper.setOobAvailable(oob.oobAvailable)
+      analyticsHelper.setOobActive(oob.oobActive)
     },
 
     interfaces: (result: IInterface[]) => {
@@ -135,19 +135,19 @@ function getEventHandlers() {
 
     environment: (result: ILookup) => {
       backend.set({ environment: result })
-      analytics.setOS(result.os)
-      analytics.setOsVersion(result.osVersion)
-      analytics.setArch(result.arch)
-      analytics.setManufacturerDetails(result.manufacturerDetails)
+      analyticsHelper.setOS(result.os)
+      analyticsHelper.setOsVersion(result.osVersion)
+      analyticsHelper.setArch(result.arch)
+      analyticsHelper.setManufacturerDetails(result.manufacturerDetails)
     },
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
     //Analytics
     setOSInfo: (osInfo: IosInfo) => {
-      analytics.setOS(osInfo.os)
-      analytics.setOsVersion(osInfo.version)
-      analytics.setArch(osInfo.arch)
+      analyticsHelper.setOS(osInfo.os)
+      analyticsHelper.setOsVersion(osInfo.version)
+      analyticsHelper.setArch(osInfo.arch)
     },
 
     // User
@@ -167,7 +167,7 @@ function getEventHandlers() {
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
-      analytics.trackConnect('connectionSucceeded', msg.connection)
+      analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
@@ -177,7 +177,7 @@ function getEventHandlers() {
     'service/error': (msg: ConnectionErrorMessage) => {
       logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
       backend.setConnection(msg.connection)
-      analytics.trackConnect('connectionFailed', msg.connection, msg)
+      analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
     },
 
     'binary/install/error': (error: string) => binaries.installError(error),

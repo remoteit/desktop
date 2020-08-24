@@ -8,9 +8,9 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { spacing, colors, fontSizes } from '../../styling'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DeviceDetailPage = () => {
   const css = useStyles()
@@ -19,7 +19,7 @@ export const DeviceDetailPage = () => {
   const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
 
   useEffect(() => {
-    analytics.page('DevicesDetailPage')
+    analyticsHelper.page('DevicesDetailPage')
   }, [])
 
   if (!device) return null

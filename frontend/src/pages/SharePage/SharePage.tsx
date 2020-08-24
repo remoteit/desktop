@@ -9,7 +9,7 @@ import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { useHistory } from 'react-router-dom'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SharePage = () => {
   const { shares } = useDispatch<Dispatch>()
@@ -20,7 +20,7 @@ export const SharePage = () => {
   const history = useHistory()
 
   useEffect(() => {
-    analytics.page('SharePage')
+    analyticsHelper.page('SharePage')
   }, [])
 
   const handleUnshare = async () => {

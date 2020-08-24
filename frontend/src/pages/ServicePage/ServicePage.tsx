@@ -28,7 +28,7 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 import { AddUserButton } from '../../buttons/AddUserButton'
 
 export const ServicePage: React.FC = () => {
@@ -42,7 +42,7 @@ export const ServicePage: React.FC = () => {
   const history = useHistory()
 
   useEffect(() => {
-    analytics.page('ServicePage')
+    analyticsHelper.page('ServicePage')
   }, [])
 
   if (!service || !device)

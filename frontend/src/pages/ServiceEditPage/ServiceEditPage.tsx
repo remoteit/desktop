@@ -22,6 +22,7 @@ import { Targets } from '../../components/Targets/Targets'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
@@ -35,7 +36,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
   const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
 
   useEffect(() => {
-    analytics.page('ServiceDetailPage')
+    analyticsHelper.page('ServiceEditPage')
   }, [])
 
   //@FIXME move this type of routing to the router

@@ -4,27 +4,22 @@ import { findService } from '../../models/devices'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
-import analytics from '../../helpers/Analytics'
 import { SharedUsersList } from '../../components/SharedUsersList'
 import { SharedUsersHeader } from '../../components/SharedUsersHeader'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const UsersPageService: React.FC = () => {
   const { serviceID = '' } = useParams()
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
-  const shared =  service?.access.length
+  const shared = service?.access.length
 
   useEffect(() => {
-    analytics.page('UsersPageService')
+    analyticsHelper.page('UsersPageService')
   }, [])
 
   return (
-    <Container
-      scrollbars
-      header={
-        <SharedUsersHeader />
-      }
-    >
-     {!!(service && device && shared) && <SharedUsersList device={device} service={service} />}
+    <Container scrollbars header={<SharedUsersHeader />}>
+      {!!(service && device && shared) && <SharedUsersList device={device} service={service} />}
     </Container>
   )
 }

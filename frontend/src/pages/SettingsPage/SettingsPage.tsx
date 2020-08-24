@@ -15,7 +15,7 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
 import { Logo } from '../../components/Logo'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage = () => {
   const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
@@ -37,8 +37,8 @@ export const SettingsPage = () => {
     window.confirm(
       'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
     ) && emit('user/sign-out')
-    analytics.track('signOut')
-    analytics.clearIdentity()
+    analyticsHelper.track('signOut')
+    analyticsHelper.clearIdentity()
   }
 
   const clearWarning = () =>
@@ -49,7 +49,7 @@ export const SettingsPage = () => {
     binaries.install(true)
 
   useEffect(() => {
-    analytics.page('SettingsPage')
+    analyticsHelper.page('SettingsPage')
   }, [])
 
   return (

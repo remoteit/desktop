@@ -12,8 +12,8 @@ import { ServiceList } from '../../components/ServiceList'
 import { UsersSelect } from '../../components/UsersSelect/UsersSelect'
 import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
-import analytics from '../../helpers/Analytics'
 import { AddUserButton } from '../../buttons/AddUserButton'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServicesPage: React.FC = () => {
   const { deviceID } = useParams()
@@ -34,7 +34,7 @@ export const ServicesPage: React.FC = () => {
   }, {})
 
   useEffect(() => {
-    analytics.page('ServicesPage')
+    analyticsHelper.page('ServicesPage')
     if (!device) history.push('/devices')
   }, [device, history])
 

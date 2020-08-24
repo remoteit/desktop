@@ -12,7 +12,7 @@ import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Selections = { value: string | Function; name: string; note: string }
 
@@ -37,7 +37,7 @@ export const LanSharePage: React.FC = () => {
   ]
 
   useEffect(() => {
-    analytics.page('LanSharePage')
+    analyticsHelper.page('LanSharePage')
   }, [])
 
   const [enabled, setEnabled] = useState<boolean>(connection.host === IP_OPEN)

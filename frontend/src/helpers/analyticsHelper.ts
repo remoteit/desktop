@@ -6,7 +6,7 @@ export const CONNECTION_TYPE_PROXY_FAILOVER = 'proxy_failover'
 export const CONNECTION_TYPE_PEER_TO_PEER = 'peer_to_peer'
 export const CONNECTION_TYPE_NONE = 'None'
 
-export class Analytics {
+export class AnalyticsHelper {
   private context: SegmentContext
   private gaAppSet: boolean
 
@@ -162,7 +162,6 @@ export class Analytics {
         : CONNECTION_TYPE_PROXY_FAILOVER
     if (data) this.track(name, { ...data, error, connectionType })
   }
-  
 }
 
-export default new Analytics()
+export default new AnalyticsHelper()

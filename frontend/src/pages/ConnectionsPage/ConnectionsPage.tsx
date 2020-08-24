@@ -3,7 +3,7 @@ import { ConnectionsList } from '../../components/ConnectionsList'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import heartbeat from '../../services/Heartbeat'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ConnectionsPage: React.FC = () => {
   const connections = useSelector((state: ApplicationState) => state.backend.connections.filter(c => !!c.startTime))
@@ -15,7 +15,7 @@ export const ConnectionsPage: React.FC = () => {
   )
   useEffect(() => {
     heartbeat.beat()
-    analytics.page('ConnectionsPage')
+    analyticsHelper.page('ConnectionsPage')
   }, [])
 
   return <ConnectionsList connections={connections} services={services} />

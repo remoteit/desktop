@@ -1,18 +1,17 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { Typography, Divider } from '@material-ui/core'
-import { useHistory, useParams, useLocation } from 'react-router-dom'
+import { Typography } from '@material-ui/core'
+import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
-import { Body } from '../../components/Body'
 import { Columns } from '../../components/Columns'
 import { Title } from '../../components/Title'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { findService } from '../../models/devices'
-import { spacing, colors, fontSizes } from '../../styling'
 import { Icon } from '../../components/Icon'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServiceDetailPage = () => {
   const css = useStyles()
@@ -23,7 +22,7 @@ export const ServiceDetailPage = () => {
   let data: IDataDisplay[] = []
 
   useEffect(() => {
-    analytics.page('ServiceDetailPage')
+    analyticsHelper.page('ServiceDetailPage')
   }, [])
 
   if (!service || !device) return null

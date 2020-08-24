@@ -5,7 +5,7 @@ import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import heartbeat from '../../services/Heartbeat'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {
   connection?: IConnection
@@ -26,10 +26,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     heartbeat.caffeinate()
 
     if (connecting) {
-      analytics.trackConnect('connectionClosed', service)
+      analyticsHelper.trackConnect('connectionClosed', service)
       emit('service/disconnect', connection)
     } else {
-      analytics.trackConnect('connectionInitiated', service)
+      analyticsHelper.trackConnect('connectionInitiated', service)
       emit('service/connect', connection || newConnection(service))
     }
   }

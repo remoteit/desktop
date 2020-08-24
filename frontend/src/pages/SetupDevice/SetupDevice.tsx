@@ -12,7 +12,7 @@ import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   os?: Ios
@@ -38,15 +38,15 @@ export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
   const onRegistration = () => {
     emit('registration', { device: { ...targetDevice, name }, targets: selected })
     ui.set({ setupRegisteringDevice: true })
-    analytics.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
-    selected.forEach(t => analytics.track('serviceCreated', { ...t, id: t.uid }))
+    analyticsHelper.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
+    selected.forEach(t => analyticsHelper.track('serviceCreated', { ...t, id: t.uid }))
     history.push('/settings/setupWaiting')
   }
 
   useEffect(() => {
     if (loading) {
       emit('scan', 'localhost')
-      analytics.track('networkScan')
+      analyticsHelper.track('networkScan')
     } else {
       setName(safeHostname(hostname, nameBlacklist))
     }

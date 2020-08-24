@@ -1,10 +1,9 @@
 import Controller from '../services/Controller'
-import { store } from '../store'
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
 import { emit } from '../services/Controller'
-import analytics from '../helpers/Analytics'
+import analyticsHelper from '../helpers/analyticsHelper'
 
 const USER_KEY = 'user'
 
@@ -70,7 +69,7 @@ export default createModel({
           r3.user.updateCredentials(user)
           dispatch.auth.setUser(user)
           Controller.open()
-          analytics.track('signIn')
+          analyticsHelper.track('signIn')
         })
         .catch(error => {
           const e = error.response.data
@@ -112,7 +111,7 @@ export default createModel({
       dispatch.auth.setAuthenticated(false)
       window.location.search = ''
       emit('user/sign-out-complete')
-      analytics.clearIdentity()
+      analyticsHelper.clearIdentity()
       Controller.close()
     },
   }),
@@ -140,7 +139,7 @@ export default createModel({
       state.user = user
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
-      analytics.identify(user.id)
+      analyticsHelper.identify(user.id)
       Controller.emit('authentication', { username: user.username, authHash: user.authHash })
       updateUserCredentials(user)
     },

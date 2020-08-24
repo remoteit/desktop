@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Tooltip, IconButton, CircularProgress } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
+import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
 
 type Props = {
@@ -23,7 +24,7 @@ export const UnregisterButton: React.FC<Props> = ({ targetDevice }) => {
   if (!targetDevice) return null
 
   const onDelete = () => {
-    analytics.track('deviceRemoved', { ...targetDevice, id: targetDevice.uid })
+    analyticsHelper.track('deviceRemoved', { ...targetDevice, id: targetDevice.uid })
     ui.set({ setupDeletingDevice: true, setupBusy: true })
     emit('device', 'DELETE')
   }

@@ -17,6 +17,7 @@ import { UnregisterButton } from '../../buttons/UnregisterButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
@@ -31,7 +32,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...prop
   )
 
   useEffect(() => {
-    analytics.page('DevicesDetailPage')
+    analyticsHelper.page('DevicesDetailPage')
   }, [])
 
   if (!device) {
