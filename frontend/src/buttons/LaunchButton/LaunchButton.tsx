@@ -13,6 +13,8 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/core/styles'
+import { isWindows } from '../../services/Browser'
+import { emit } from '../../services/Controller'
 
 type Props = {
   connection?: IConnection
@@ -42,7 +44,10 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
         ...connection,
         username: username.toString(),
       })
-    window.open(app.launch({ ...connection, username }))
+    const launchApp = app.launch({ ...connection, username })
+    console.log({app, launchApp})
+    isWindows() && app.title === 'SSH' ?
+      emit('service/cmd/open', launchApp) : window.open(launchApp)
     close()
   }
 
