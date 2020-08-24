@@ -8,11 +8,11 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
   const [tooltip, setTooltip] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
   const { labels } = useSelector((state: ApplicationState) => state)
-  const label = labels.find(l => l.id === device.attributes.labelId) || labels[0]
+  const label = labels.find(l => l.id === device.attributes.color) || labels[0]
   const css = useStyles()
 
-  function handleUpdate(labelId: number) {
-    device.attributes = { ...device.attributes, labelId }
+  function handleUpdate(color: number) {
+    device.attributes = { ...device.attributes, color }
     devices.setAttributes(device)
   }
 

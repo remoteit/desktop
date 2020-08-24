@@ -194,7 +194,7 @@ declare global {
     access: IUser[]
     attributes: {
       name?: string
-      labelId?: number
+      color?: number
       accessDisabled?: boolean
     }
   }

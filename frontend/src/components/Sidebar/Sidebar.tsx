@@ -29,7 +29,7 @@ export const Sidebar: React.FC = () => {
   const { name, label } = useSelector((state: ApplicationState) => {
     const device = state.devices.all.find(d => d.id === state.backend.device.uid)
     return {
-      label: state.labels.find(l => l.id === device?.attributes.labelId),
+      label: state.labels.find(l => l.id === device?.attributes.color),
       name: attributeName(device),
     }
   })
