@@ -40,12 +40,8 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...prop
     return null
   }
   /* 
-
-add arbitrary meta data here!!!!
-
-add category info display in desktop details
-
-*/
+    @TODO: add arbitrary meta data here!!!!
+  */
   const thisDevice = device.id === targetDevice.uid
 
   function host(service: IService) {
@@ -69,7 +65,7 @@ add category info display in desktop details
     >
       <List>
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
-        <SharedAccessSetting device={device} />
+        {/* <SharedAccessSetting device={device} /> */}
       </List>
       <Divider />
       <Typography variant="subtitle1">Services</Typography>

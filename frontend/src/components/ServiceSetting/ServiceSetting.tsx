@@ -30,7 +30,7 @@ export const ServiceSetting: React.FC<Props> = ({ service, targets }) => {
   return (
     <>
       <ListItemSetting
-        label="Service Enabled"
+        label="Enable service"
         subLabel="Disabling your service will take it offline."
         icon="circle-check"
         toggle={!target.disabled}

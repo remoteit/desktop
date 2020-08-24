@@ -192,7 +192,7 @@ declare global {
     services: IService[]
     hidden?: boolean
     access: IUser[]
-    attributes: {
+    attributes: ILookup & {
       name?: string
       color?: number
       accessDisabled?: boolean

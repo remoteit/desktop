@@ -3,7 +3,7 @@ import { r3 } from '../services/remote.it'
 import { version } from '../../package.json'
 import { parseType } from '../services/serviceTypes'
 import { renameServices } from '../shared/nameHelper'
-import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
+import { GRAPHQL_API, GRAPHQL_BETA_API, LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
 const DEVICE_SELECT = `{
@@ -16,6 +16,7 @@ const DEVICE_SELECT = `{
     lastReported
     hardwareId
     attributes
+    ${LEGACY_ATTRIBUTES.join('\n')}
     access {
       user {
         email
@@ -156,7 +157,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
       geo: d.endpoint?.geo,
-      attributes: d.attributes,
+      attributes: processAttributes(d),
       services: d.services.map(
         (s: any): IService => {
           const { typeID, type } = parseType(s.type)
@@ -209,4 +210,12 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
     }, [])
     return result
   }
+}
+
+function processAttributes(response: any): IDevice['attributes'] {
+  let result = response.attributes
+  LEGACY_ATTRIBUTES.forEach(attribute => {
+    if (response[attribute]) result[attribute] = response[attribute]
+  })
+  return result
 }

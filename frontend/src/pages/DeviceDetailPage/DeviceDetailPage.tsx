@@ -1,8 +1,8 @@
+import { LEGACY_ATTRIBUTES } from '../../shared/constants'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
-import { makeStyles } from '@material-ui/core/styles'
 import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
@@ -13,7 +13,6 @@ import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DeviceDetailPage = () => {
-  const css = useStyles()
   const { deviceID } = useParams()
   const devices = useSelector((state: ApplicationState) => state.devices.all)
   const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
@@ -61,11 +60,10 @@ export const DeviceDetailPage = () => {
             { label: 'Internal IP address', value: device.internalAddress },
             { label: 'Device ID', value: device.id },
             { label: 'Hardware ID', value: device.hardwareID },
+            ...LEGACY_ATTRIBUTES.map(label => ({ label, value: device.attributes[label] })),
           ]}
         />
       </Columns>
     </Container>
   )
 }
-
-const useStyles = makeStyles({})

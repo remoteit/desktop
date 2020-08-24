@@ -56,7 +56,7 @@ const formats = {
 
 const useStyles = makeStyles({
   item: {
-    padding: `${spacing.xxs}px 0`,
+    padding: `4px 0`,
     fontSize: fontSizes.sm,
     fontFamily: 'Roboto Mono',
     color: colors.grayDarker,
@@ -64,7 +64,8 @@ const useStyles = makeStyles({
     '& > span': {
       fontFamily: 'Roboto',
       color: colors.grayDark,
-      width: 142,
+      minWidth: 142,
+      textTransform: 'capitalize',
     },
     '& .fal': {
       color: colors.grayDarker,
