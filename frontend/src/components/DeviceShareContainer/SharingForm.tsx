@@ -120,7 +120,7 @@ function ServiceCheckboxes({
       <List>
         {services.map((service, key) => (
           <ListItemCheckbox
-            keyProp={key}
+            key={key}
             disabled={saving}
             label={service.label}
             checked={selectedServices.includes(service.value)}
