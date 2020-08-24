@@ -68,12 +68,6 @@ const DEVICE_SELECT = `{
   }
 }`
 
-const CONTACT_SELECT = `
-  contacts {
-    id
-    email
-  }`
-
 /* 
   GraphQL common request parameters
 */
@@ -96,15 +90,17 @@ export async function graphQLRequest(query: String, variables: ILookup) {
 
 export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
   return await graphQLRequest(
-    `
-        query($ids: [String!], $idSize: Int, $size: Int, $from: Int, $name: String, $state: String) {
-          login {
+    ` query($ids: [String!], $idSize: Int, $size: Int, $from: Int, $name: String, $state: String) {
+        login {
+          id
+          devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
+          connections: devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
+          contacts {
             id
-            devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
-            connections: devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
-            contacts: ${CONTACT_SELECT}
+            email
           }
         }
+      }
       `,
     {
       idSize: ids.length,
