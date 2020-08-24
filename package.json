@@ -7,13 +7,13 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s clean build-backend compile copy-* build-electron",
     "build-backend": "cd backend && npm run build",
-    "build-electron": "cross-env electron-builder -$PLATFORMS",
+    "build-electron": "cross-env electron-builder",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
     "copy-images": "cp -R ./src/images ./build/",
+    "copy-install": "cp installer.nsh build/ && cp -R pkg-scripts build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
-    "copy-uninstall": "cp uninstaller.nsh build/",
     "electron": "cross-env NODE_ENV=development electron ./",
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
@@ -85,7 +85,7 @@
       "perMachine": true,
       "deleteAppDataOnUninstall": true,
       "shortcutName": "remote.it",
-      "include": "build/uninstaller.nsh",
+      "include": "build/installer.nsh",
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
@@ -105,8 +105,27 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist"
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "target": [
+        "pkg"
+      ]
     },
+    "pkg": {
+      "scripts": "../build/pkg-scripts",
+      "installLocation": "/Applications",
+      "allowAnywhere": true,
+      "allowCurrentUserHome": true,
+      "allowRootDirectory": true,
+      "isVersionChecked": true,
+      "isRelocatable": false,
+      "overwriteAction": "upgrade"
+    },
+    "extraResources": [
+      {
+        "from": "./backend/src/cli-version.txt",
+        "to": "./"
+      }
+    ],
     "files": [
       "build/**/*",
       "node_modules/**/*",
