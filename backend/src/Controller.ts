@@ -15,6 +15,7 @@ import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
+import { openCMDforWindows } from './launch'
 
 class Controller {
   private io: SocketIO.Server
@@ -57,7 +58,7 @@ class Controller {
     socket.on('service/connect', this.pool.start)
     socket.on('service/disconnect', this.pool.stop)
     socket.on('service/clear-recent', this.pool.forgetRecent)
-    socket.on('service/cmd/open', this.pool.openCMDforWindows)
+    socket.on('service/launch', openCMDforWindows)
     socket.on('service/forget', this.pool.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('init', this.syncBackend)

@@ -9,7 +9,6 @@ import path from 'path'
 import environment from './environment'
 import PortScanner from './PortScanner'
 import JSONFile from './JSONFile'
-const child_process = require('child_process')
 
 const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
@@ -192,8 +191,4 @@ export default class ConnectionPool {
     }, [])
   }
 
-  openCMDforWindows(launchApp: string) {
-    Logger.error(launchApp)
-    child_process.exec(`start cmd.exe /K ${launchApp}`)
-  }
 }

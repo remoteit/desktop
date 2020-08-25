@@ -45,9 +45,8 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
         username: username.toString(),
       })
     const launchApp = app.launch({ ...connection, username })
-    console.log({app, launchApp})
-    isWindows() && app.title === 'SSH' ?
-      emit('service/cmd/open', launchApp) : window.open(launchApp)
+
+    app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', launchApp)
     close()
   }
 

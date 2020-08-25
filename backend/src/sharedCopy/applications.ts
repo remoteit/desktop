@@ -6,6 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
+import { isWindows } from '../services/Browser'
 
 class Application {
   types: number[] = []
@@ -38,6 +39,10 @@ class Application {
     const result = this.parse(url, connection)
     const matches: string[] = result.match(/\[[^\]]*\]/g) || []
     return matches.map(m => m.slice(1, -1))
+  }
+
+  launchBrowser(type: string) {
+    return !(isWindows() && type === 'SSH')
   }
 }
 
