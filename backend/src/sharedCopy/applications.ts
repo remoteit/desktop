@@ -6,7 +6,6 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { isWindows } from '../services/Browser'
 
 class Application {
   types: number[] = []
@@ -42,7 +41,8 @@ class Application {
   }
 
   launchBrowser(type: string) {
-    return !(isWindows() && type === 'SSH')
+    const platform = navigator.platform.toLowerCase()
+    return !(type === 'SSH' && platform.includes('win'))
   }
 }
 
