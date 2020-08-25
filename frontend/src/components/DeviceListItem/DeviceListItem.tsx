@@ -4,7 +4,9 @@ import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { ListItemIcon, ListItemText, ListItemSecondaryAction, Tooltip, Chip, makeStyles } from '@material-ui/core'
+
+const MAX_INDICATORS = 10
 
 type Props = {
   device?: IDevice
@@ -13,12 +15,20 @@ type Props = {
 }
 
 const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
+  const css = useStyles()
   if (!device?.services) return null
+  const extra = Math.max(device.services.length - MAX_INDICATORS, 0)
+  const display = device.services.slice(0, MAX_INDICATORS)
   return (
     <>
-      {device.services.map(service => (
+      {display.map(service => (
         <ServiceMiniState key={service.id} service={service} connection={connections.find(c => c.id === service.id)} />
       ))}
+      {!!extra && (
+        <Tooltip className={css.chip} title={`${device.services.length} services total`}>
+          <Chip label={`+${extra}`} size="small" />
+        </Tooltip>
+      )}
     </>
   )
 }
@@ -44,3 +54,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
     </ListItemLocation>
   )
 }
+
+const useStyles = makeStyles({
+  chip: { marginLeft: 6 },
+})
