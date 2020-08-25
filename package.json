@@ -13,7 +13,7 @@
     "copy-icons": "cp -R ./src/icons ./build/",
     "copy-images": "cp -R ./src/images ./build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
-    "copy-uninstall": "cp uninstaller.nsh build/",
+    "copy-uninstall": "cp installer.nsh build/",
     "electron": "cross-env NODE_ENV=development electron ./",
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
@@ -85,7 +85,7 @@
       "perMachine": true,
       "deleteAppDataOnUninstall": true,
       "shortcutName": "remote.it",
-      "include": "build/uninstaller.nsh",
+      "include": "build/installer.nsh",
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
