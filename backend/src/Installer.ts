@@ -36,6 +36,7 @@ export default class Installer {
     error: 'binary/install/error',
     installed: 'binary/installed',
     notInstalled: 'binary/not-installed',
+    notInstalledPutty: 'service/putty/required',
   }
 
   constructor(args: InstallerArgs) {

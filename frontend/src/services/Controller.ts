@@ -184,6 +184,9 @@ function getEventHandlers() {
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: string) => binaries.notInstalled(binary),
+
+    'service/putty/required': () => console.log('service/putty/required'),
+
   } as EventHandlers
 }
 

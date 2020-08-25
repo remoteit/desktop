@@ -77,6 +77,7 @@ declare global {
     | 'service/throughput'
     | 'service/version'
     | 'service/unknown-event'
+    | 'service/putty/required'
 
     // binary
     | 'binary/install/start'
