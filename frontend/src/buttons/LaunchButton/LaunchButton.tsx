@@ -13,7 +13,6 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/core/styles'
-import { isWindows } from '../../services/Browser'
 import { emit } from '../../services/Controller'
 
 type Props = {
