@@ -3,9 +3,15 @@ import classnames from 'classnames'
 import { spacing } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 
-type Props = { inset?: boolean; center?: boolean; scrollbars?: boolean; className?: string }
+type Props = {
+  inset?: boolean
+  center?: boolean
+  scrollbars?: boolean
+  className?: string
+  maxHeight?: number
+}
 
-export const Body: React.FC<Props> = ({ inset, center, scrollbars, className = '', children }) => {
+export const Body: React.FC<Props> = ({ inset, center, scrollbars, maxHeight, className = '', children }) => {
   const css = useStyles()
   className = classnames(
     className,
@@ -14,7 +20,12 @@ export const Body: React.FC<Props> = ({ inset, center, scrollbars, className = '
     inset && css.inset,
     scrollbars ? css.showScroll : css.hideScroll
   )
-  return <div className={className}>{children}</div>
+  let style = maxHeight ? { maxHeight: `${maxHeight}px` } : {}
+  return (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  )
 }
 
 const useStyles = makeStyles({

@@ -1,7 +1,7 @@
 import React from 'react'
 import { IconButton, Tooltip, Button } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
-import { Color, colors } from '../../styling'
+import { Color, muiColor } from '../../styling'
 
 type Props = {
   icon: string
@@ -9,21 +9,11 @@ type Props = {
   color?: Color
   size?: 'icon' | 'medium' | 'small'
   disabled?: boolean
-  disabledColor?: Color
   loading?: boolean
   onClick: () => void
 }
 
-export const DynamicButton: React.FC<Props> = ({
-  title,
-  icon,
-  onClick,
-  color,
-  size = 'icon',
-  disabled,
-  disabledColor = 'grayDark',
-  loading,
-}) => {
+export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, size = 'icon', disabled, loading }) => {
   let styles = {}
 
   const clickHandler = (event: React.MouseEvent) => {
@@ -33,7 +23,6 @@ export const DynamicButton: React.FC<Props> = ({
   }
 
   if (loading) icon = 'spinner-third'
-  if (disabled) color = disabledColor
 
   const IconComponent = (
     <Icon
@@ -48,16 +37,21 @@ export const DynamicButton: React.FC<Props> = ({
   )
 
   if (size === 'small') {
-    if (color)
-      styles = {
-        backgroundColor: colors[color],
-        color: colors.white,
-        fontSize: 11,
-        fontWeight: 500,
-        letterSpacing: 1,
-      }
+    styles = {
+      fontSize: 11,
+      fontWeight: 500,
+      letterSpacing: 1,
+    }
     return (
-      <Button style={styles} variant="contained" onClick={clickHandler} disabled={disabled} size={size} fullWidth>
+      <Button
+        style={styles}
+        variant="contained"
+        onClick={clickHandler}
+        disabled={disabled}
+        size={size}
+        color={muiColor(color)}
+        fullWidth
+      >
         {title}
         {loading && IconComponent}
       </Button>
@@ -65,13 +59,15 @@ export const DynamicButton: React.FC<Props> = ({
   }
 
   if (size === 'medium') {
-    if (color)
-      styles = {
-        backgroundColor: colors[color],
-        color: colors.white,
-      }
     return (
-      <Button style={styles} variant="contained" onClick={clickHandler} disabled={disabled} size={size}>
+      <Button
+        style={styles}
+        variant="contained"
+        onClick={clickHandler}
+        disabled={disabled}
+        size={size}
+        color={muiColor(color)}
+      >
         {title}
         {IconComponent}
       </Button>

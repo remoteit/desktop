@@ -1,8 +1,9 @@
 import React from 'react'
-import { List, Typography, Divider } from '@material-ui/core'
+import { List, Typography } from '@material-ui/core'
 import { ServiceListItem } from '../ServiceListItem'
-import { spacing } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
+import { spacing } from '../../styling'
+// import { Body } from '../Body'
 
 export interface ServiceListProps {
   services: IService[]
@@ -13,14 +14,13 @@ export const ServiceList = ({ services = [], connections }: ServiceListProps) =>
   const css = useStyles()
   if (!services.length) return <Typography variant="h1">No services</Typography>
   return (
-    <>
-      <List className={css.list}>
-        {services.map((service, key) => (
-          <ServiceListItem connection={connections[service.id]} service={service} key={key} indent />
-        ))}
-      </List>
-      <Divider />
-    </>
+    // <Body maxHeight={300}>
+    <List className={css.list}>
+      {services.map((service, key) => (
+        <ServiceListItem connection={connections[service.id]} service={service} key={key} indent />
+      ))}
+    </List>
+    // </Body>
   )
 }
 

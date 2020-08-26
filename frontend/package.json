@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "2.7.3",
+  "version": "2.8.0-alpha.0",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
@@ -26,7 +26,6 @@
     "axios": "^0.19.2",
     "classnames": "2.2.6",
     "debug": "4.1.1",
-    "euphoria": "3.5.0",
     "filesize": "^6.0.1",
     "humanize-duration": "^3.21.0",
     "react": "^16.11.0",

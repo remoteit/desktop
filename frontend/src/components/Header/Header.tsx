@@ -5,10 +5,13 @@ import { ApplicationState } from '../../store'
 import { usePermissions } from '../../hooks/usePermissions'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
+import { attributeName } from '../../shared/nameHelper'
 import styles from '../../styling'
 
 export const Header: React.FC = () => {
-  const { device } = useSelector((state: ApplicationState) => state.backend)
+  const device = useSelector((state: ApplicationState) =>
+    state.devices.all.find(d => d.id === state.backend.device.uid)
+  )
   const { guest } = usePermissions()
   const css = useStyles()
 
@@ -17,7 +20,7 @@ export const Header: React.FC = () => {
   return (
     <div className={css.header}>
       <Typography variant="body2">
-        {device.name ? device.name : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
+        {device ? attributeName(device) : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
       </Typography>
     </div>
   )

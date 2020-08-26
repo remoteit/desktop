@@ -37,7 +37,11 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
 
   return (
     <List>
-      {!!connected.length && <Typography variant="subtitle1">Connected</Typography>}
+      {!!connected.length && (
+        <Typography variant="subtitle1">
+          <Title>Connected</Title>
+        </Typography>
+      )}
       {connected.map(c => (
         <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}

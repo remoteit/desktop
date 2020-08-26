@@ -8,33 +8,33 @@ import { ApplicationState, Dispatch } from '../../store'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
-  device: ITargetDevice
+  targetDevice: ITargetDevice
   onUpdate: (targets: ITarget[]) => void
   onCancel: () => void
 }
 
-export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }) => {
-  const { setupBusy, setupDeletingService } = useSelector((state: ApplicationState) => state.ui)
+export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCancel }) => {
+  const { setupBusy, setupServiceBusy } = useSelector((state: ApplicationState) => state.ui)
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
 
   function add(target: ITarget) {
-    analytics.track('serviceCreated', { ...target, id: target.uid })
+    analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
     ui.set({ setupBusy: true, setupAddingService: true })
     onUpdate([...targets, target])
   }
 
   function remove(key: number) {
     const target = targets[key]
-    analytics.track('serviceRemoved', { ...target, id: target.uid })
+    analyticsHelper.track('serviceRemoved', { ...target, id: target.uid })
     let copy = [...targets]
     copy.splice(key, 1)
-    ui.set({ setupBusy: true, setupDeletingService: key })
+    ui.set({ setupBusy: true, setupServiceBusy: target.uid })
     onUpdate(copy)
   }
 
@@ -75,7 +75,7 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
               data={target}
               disable={true}
               busy={setupBusy}
-              deleting={setupDeletingService === index}
+              deleting={setupServiceBusy === target.uid}
               onSave={(t: ITarget) => add(t)}
               onDelete={() => remove(index)}
             />
@@ -89,7 +89,7 @@ export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }
               </td>
             </tr>
           ) : (
-            <NewTarget device={device} onSave={(t: ITarget) => add(t)} onCancel={onCancel} />
+            <NewTarget targetDevice={targetDevice} onSave={(t: ITarget) => add(t)} onCancel={onCancel} />
           )}
         </tbody>
       </table>

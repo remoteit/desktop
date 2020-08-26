@@ -5,10 +5,22 @@
   ONLY EDIT THE SOURCE FILE IN frontend
 */
 
-import { REGEX_LAST_NUMBER, REGEX_NAME_SAFE, REGEX_NOT_FILE_SAFE, IP_PRIVATE, IP_OPEN, MAX_NAME_LENGTH } from './constants'
+import {
+  REGEX_LAST_NUMBER,
+  REGEX_NAME_SAFE,
+  REGEX_NOT_FILE_SAFE,
+  IP_PRIVATE,
+  IP_OPEN,
+  MAX_NAME_LENGTH,
+} from './constants'
 import { getEnvironment } from '../sharedAdaptor'
 
 const separator = ' - '
+
+export function attributeName(instance?: IDevice | IService) {
+  if (!instance) return ''
+  return instance.attributes.name || instance.name
+}
 
 export function replaceHost(url: string) {
   if (url.includes(IP_PRIVATE)) {
@@ -74,16 +86,16 @@ export function safeFilename(name: string) {
 export function serviceNameValidation(name: string, validateLength?: boolean) {
   const value = name.replace(REGEX_NAME_SAFE, '')
   if (value !== name) {
-    return  { 
+    return {
       error: 'Can only contain alpha numeric characters.',
-      value
+      value,
     }
   }
   if (validateLength && value.length > MAX_NAME_LENGTH) {
-    return  { 
+    return {
       error: `Cannot exceed ${MAX_NAME_LENGTH} characters.`,
-      value: value.substring(0, MAX_NAME_LENGTH)
+      value: value.substring(0, MAX_NAME_LENGTH),
     }
   }
   return { value }
-} 
+}

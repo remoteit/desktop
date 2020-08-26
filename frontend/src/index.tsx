@@ -8,14 +8,13 @@ import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store } from './store'
 import heartbeat from './services/Heartbeat'
-import analytics from './helpers/Analytics'
+import analyticsHelper from './helpers/analyticsHelper'
 import * as serviceWorker from './serviceWorker'
 import './services/Controller'
 import './styling/index.css'
-import './styling/euphoria.css'
 import './styling/fonts.css'
 
-analytics.setup()
+analyticsHelper.setup()
 
 ReactDOM.render(
   <Provider store={store}>

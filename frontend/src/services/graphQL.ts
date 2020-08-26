@@ -3,7 +3,7 @@ import { r3 } from '../services/remote.it'
 import { version } from '../../package.json'
 import { parseType } from '../services/serviceTypes'
 import { renameServices } from '../shared/nameHelper'
-import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
+import { GRAPHQL_API, GRAPHQL_BETA_API, LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
 const DEVICE_SELECT = `{
@@ -15,6 +15,8 @@ const DEVICE_SELECT = `{
     created
     lastReported
     hardwareId
+    attributes
+    ${LEGACY_ATTRIBUTES.join('\n')}
     access {
       user {
         email
@@ -46,6 +48,7 @@ const DEVICE_SELECT = `{
       lastReported
       port
       type
+      attributes
       access {
         user {
           email
@@ -65,12 +68,6 @@ const DEVICE_SELECT = `{
   }
 }`
 
-const CONTACT_SELECT = `
-  contacts {
-    id
-    email
-  }`
-
 /* 
   GraphQL common request parameters
 */
@@ -82,32 +79,38 @@ function requestParams() {
   }
 }
 
-export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
+export async function graphQLRequest(query: String, variables: ILookup) {
   const request = {
     ...requestParams(),
-    data: {
-      query: `
-        query($ids: [String!], $idSize: Int, $size: Int, $from: Int, $name: String, $state: String) {
-          login {
+    data: { query, variables },
+  }
+  console.log('GRAPHQL REQUEST', request)
+  return await axios.request(request)
+}
+
+export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
+  return await graphQLRequest(
+    ` query($ids: [String!], $idSize: Int, $size: Int, $from: Int, $name: String, $state: String) {
+        login {
+          id
+          devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
+          connections: devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
+          contacts {
             id
-            devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
-            connections: devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
-            contacts: ${CONTACT_SELECT}
+            email
           }
         }
+      }
       `,
-      variables: {
-        idSize: ids.length,
-        ids,
-        size,
-        from,
-        name,
-        state,
-      },
-    },
-  }
-  console.log('GRAPHQL ALL REQUEST', request)
-  return await axios.request(request)
+    {
+      idSize: ids.length,
+      ids,
+      size,
+      from,
+      name,
+      state,
+    }
+  )
 }
 
 export async function graphQLGet(id: string) {
@@ -150,6 +153,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
       geo: d.endpoint?.geo,
+      attributes: processAttributes(d),
       services: d.services.map(
         (s: any): IService => {
           const { typeID, type } = parseType(s.type)
@@ -162,6 +166,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
             createdAt: new Date(s.created),
             lastReported: s.lastReported && new Date(s.lastReported),
             contactedAt: new Date(s.endpoint?.timestamp),
+            attributes: s.attributes,
             name: s.name,
             port: s.port,
             access: s.access.map((e: any) => ({ email: e.user?.email })),
@@ -169,11 +174,11 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
           }
         }
       ),
-      hidden,
-      access: d.access.map((e: any) => ({ 
-        email: e.user?.email, 
+      access: d.access.map((e: any) => ({
+        email: e.user?.email,
         scripting: e.scripting,
       })),
+      hidden,
     })
   )
   return updateConnections(renameServices(data))
@@ -201,4 +206,12 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
     }, [])
     return result
   }
+}
+
+function processAttributes(response: any): IDevice['attributes'] {
+  let result = response.attributes
+  LEGACY_ATTRIBUTES.forEach(attribute => {
+    if (response[attribute]) result[attribute] = response[attribute]
+  })
+  return result
 }

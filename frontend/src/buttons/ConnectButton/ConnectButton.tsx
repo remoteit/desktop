@@ -5,7 +5,7 @@ import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import heartbeat from '../../services/Heartbeat'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {
   connection?: IConnection
@@ -18,15 +18,20 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'success',
+  color = 'secondary',
 }) => {
   const hidden = connection?.active || !service || service.state !== 'active'
   const connecting = !!connection?.connecting
-  const connect = () => {
-    let theConnection = connection || newConnection(service)
+  const clickHandler = () => {
     heartbeat.caffeinate()
-    analytics.trackConnect('connectionInitiated', service)
-    emit('service/connect', theConnection)
+
+    if (connecting) {
+      analyticsHelper.trackConnect('connectionClosed', service)
+      emit('service/disconnect', connection)
+    } else {
+      analyticsHelper.trackConnect('connectionInitiated', service)
+      emit('service/connect', connection || newConnection(service))
+    }
   }
 
   return (
@@ -36,10 +41,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
           title={connecting ? 'Connecting' : 'Connect'}
           icon="exchange"
           loading={connecting}
-          color={color}
-          disabled={connecting}
+          color={connecting ? undefined : color}
           size={size}
-          onClick={connect}
+          onClick={clickHandler}
         />
       </div>
     </Fade>

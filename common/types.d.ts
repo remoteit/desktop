@@ -163,6 +163,7 @@ declare global {
     secret?: string //      password
     port: number //         proxy_dest_port    service port
     type: number //         application_type   service type
+    disabled: boolean //    service enabled / disabled
   }
 
   interface ITargetDevice extends ITarget {}
@@ -191,6 +192,11 @@ declare global {
     services: IService[]
     hidden?: boolean
     access: IUser[]
+    attributes: ILookup & {
+      name?: string
+      color?: number
+      accessDisabled?: boolean
+    }
   }
 
   interface IService {
@@ -207,6 +213,9 @@ declare global {
     port?: number
     sessions: IUser[]
     access: IUser[]
+    attributes: {
+      name?: string
+    }
   }
 
   type IUser = {
@@ -273,6 +282,8 @@ declare global {
   type IEvents = { [event: string]: string }
 
   type ILookup = { [key: string]: any }
+
+  type ISelect = { [key: string]: string | number }
 
   type IPreferences = ILookup
 

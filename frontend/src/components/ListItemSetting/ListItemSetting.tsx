@@ -13,7 +13,7 @@ type Props = {
   onClick?: () => void
 }
 
-export const SettingsListItem: React.FC<Props> = ({ icon, label, subLabel, button, toggle, onClick, disabled }) => {
+export const ListItemSetting: React.FC<Props> = ({ icon, label, subLabel, button, toggle, onClick, disabled }) => {
   const showToggle = toggle !== undefined
   const showButton = button !== undefined
   if (!onClick) disabled = true
@@ -30,7 +30,7 @@ export const SettingsListItem: React.FC<Props> = ({ icon, label, subLabel, butto
               {button}
             </Button>
           ) : (
-            <Switch edge="end" disabled={disabled} checked={toggle} onClick={onClick} />
+            <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={onClick} />
           )}
         </ListItemSecondaryAction>
       )}

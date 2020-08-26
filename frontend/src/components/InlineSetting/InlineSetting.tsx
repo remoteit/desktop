@@ -1,89 +1,91 @@
-import React, { useState } from 'react'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  TextField,
-  Typography,
-  Tooltip,
-  IconButton,
-} from '@material-ui/core'
+import React, { useEffect, useState } from 'react'
+import { ListItem, ListItemIcon, ListItemSecondaryAction, Typography, Tooltip, IconButton } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
 import { makeStyles } from '@material-ui/core/styles'
+import { Title } from '../Title'
 import { Icon } from '../Icon'
 
 type Props = {
   value?: string | number
   label: string
-  icon?: string
+  icon?: JSX.Element
   displayValue?: string | number
-  iconTooltip?: string
-  filter?: RegExp
   disabled?: boolean
   resetValue?: string | number
-  onSave: (value: string | number) => void
+  fieldRef: React.RefObject<HTMLInputElement>
+  onSubmit: () => void
+  onResetClick: () => void
+  onCancel: () => void
+  onShowEdit: () => void
 }
 
 export const InlineSetting: React.FC<Props> = ({
-  value = '',
   label,
   icon,
-  iconTooltip,
+  value = '',
   displayValue,
   disabled,
   resetValue,
-  onSave,
-  filter,
+  onSubmit,
+  fieldRef,
+  onResetClick,
+  onCancel,
+  onShowEdit,
   children,
 }) => {
-  const [edit, setEdit] = useState<boolean>(false)
-  const [editValue, setEditValue] = useState<string | number>('')
-
   const css = useStyles()
-  const showEdit = () => {
-    setEditValue(value)
+  const [focusTimeout, setFocusTimeout] = useState<NodeJS.Timeout>()
+  const [edit, setEdit] = useState<boolean>(false)
+
+  function triggerEdit() {
     setEdit(true)
+    onShowEdit()
   }
 
-  const LeftIcon = (
-    <Tooltip open={iconTooltip ? undefined : false} title={iconTooltip || ''}>
-      <ListItemIcon>
-        <Icon name={icon} size="md" type="light" />
-      </ListItemIcon>
-    </Tooltip>
-  )
+  function cancelBlur() {
+    if (focusTimeout) {
+      clearTimeout(focusTimeout)
+      setFocusTimeout(undefined)
+    }
+  }
+
+  useEffect(() => {
+    if (!fieldRef?.current) return
+    if (edit) {
+      fieldRef.current.focus()
+      fieldRef.current.onblur = () => {
+        setFocusTimeout(setTimeout(() => setEdit(false), 200))
+      }
+    }
+  }, [edit])
 
   if (edit)
     return (
-      <ListItem className={css.active}>
-        {LeftIcon}
+      <ListItem className={css.active + ' ' + css.root}>
+        <ListItemIcon>{icon}</ListItemIcon>
         <form
           className={css.form}
-          onSubmit={() => {
-            setEdit(false)
-            onSave(editValue)
+          onSubmit={e => {
+            e.preventDefault()
+            onSubmit()
+            fieldRef.current?.blur()
           }}
         >
           {children}
-          <TextField
-            autoFocus
-            className={css.input}
-            label={label}
-            value={editValue}
-            variant="filled"
-            onChange={event => setEditValue(filter ? event.target.value.replace(filter, '') : event.target.value)}
-          />
-          {resetValue && <ResetButton onClick={() => setEditValue(resetValue)} />}
+          {resetValue && (
+            <ResetButton
+              onClick={() => {
+                cancelBlur()
+                onResetClick()
+                fieldRef.current?.focus()
+              }}
+            />
+          )}
           <ListItemSecondaryAction>
             <Tooltip title="Cancel">
-              <IconButton
-                onClick={() => {
-                  setEdit(false)
-                  setEditValue(value)
-                }}
-              >
+              <IconButton onClick={onCancel}>
                 <Icon name="times" size="md" fixedWidth />
               </IconButton>
             </Tooltip>
@@ -98,15 +100,15 @@ export const InlineSetting: React.FC<Props> = ({
     )
 
   return (
-    <ListItem button onClick={showEdit} disabled={disabled} style={{ opacity: 1 }}>
-      {LeftIcon}
-      <span className={css.text}>
+    <ListItem className={css.root} button onClick={triggerEdit} disabled={disabled} style={{ opacity: 1 }}>
+      <ListItemIcon>{icon}</ListItemIcon>
+      <Title>
         <Typography variant="caption">{label}</Typography>
         <Typography variant="h2">{displayValue || value || '–'}</Typography>
-      </span>
+      </Title>
       {!disabled && (
-        <ListItemSecondaryAction className={css.hidden}>
-          <EditButton onClick={showEdit} />
+        <ListItemSecondaryAction className="hidden">
+          <EditButton onClick={triggerEdit} />
         </ListItemSecondaryAction>
       )}
     </ListItem>
@@ -114,13 +116,18 @@ export const InlineSetting: React.FC<Props> = ({
 }
 
 const useStyles = makeStyles({
-  form: { display: 'flex', width: '100%', marginRight: 120, alignItems: 'center' },
-  input: { flexGrow: 1, margin: `0 ${spacing.md}px -1px 0` },
-  text: { flexGrow: 1 },
-  hidden: { display: 'none' },
+  form: {
+    display: 'flex',
+    width: '100%',
+    marginRight: 120,
+    alignItems: 'center',
+    '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
+    '& .MuiTextField-root': { marginLeft: 0 },
+  },
+  root: { height: 63 },
   active: {
     backgroundColor: colors.primaryHighlight,
     padding: 0,
-    '& > .MuiListItemIcon-root': { paddingLeft: 23 },
+    '& > .MuiListItemIcon-root': { paddingLeft: spacing.lg },
   },
 })

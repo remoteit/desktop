@@ -134,7 +134,7 @@ export default class CLI {
       if (status) {
         c.active = status.connectionState === 'connected'
         c.connecting = status.connectionState === 'connecting'
-        c.isP2P = status.isP2P
+        c.isP2P = status.connectionState === 'connected' ? status.isP2P : undefined
         d('UPDATE STATUS', { c, status: status.connectionState })
       }
       return c
@@ -174,6 +174,16 @@ export default class CLI {
     })
     await this.exec({ cmds, checkAuthHash: true })
     this.read()
+  }
+
+  async setDevice(d: ITargetDevice) {
+    await this.exec({ cmds: [strings.setDevice(d)], checkAuthHash: true })
+    this.readDevice()
+  }
+
+  async setTarget(d: ITarget) {
+    await this.exec({ cmds: [strings.setTarget(d)], checkAuthHash: true })
+    this.readTargets()
   }
 
   async unregister() {

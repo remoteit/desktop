@@ -13,21 +13,23 @@ type Props = {
 
 export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   const location = useLocation()
-
-  const connected = service ? service.sessions.length : getUsersConnectedDeviceOrService(device).length
-
+  const connected = getUsersConnectedDeviceOrService(device, service).length
   const total = service ? service.access.length : device?.access.length
 
+  if (device?.shared) return null
+
+  let pathnameLocation = `${location.pathname}/users${total ?  '' : '/share'}`
+
   return (
-    <ListItemLocation pathname={location.pathname + '/users'}>
+    <ListItemLocation pathname={pathnameLocation}>
       <ListItemIcon>
         <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
       </ListItemIcon>
       <ListItemText
-        primary="Shared users"
+        primary="Shared Users"
         secondary={
           <>
-            {total ? total  + ' total' : 'None'}
+            {total ? total + ' total' : 'None'}
             &nbsp; &nbsp;
             {!!connected && <span style={{ color: colors.primary }}>{connected} connected</span>}
           </>

@@ -30,9 +30,23 @@ export const FRONTEND_RETRY_DELAY = 20000
 export const TARGET_SERVICES_LIMIT = 10
 export const MAX_NAME_LENGTH = 100
 
+export const LEGACY_ATTRIBUTES = [
+  'categoryA',
+  'categoryB',
+  'categoryC',
+  'categoryD',
+  'categoryE',
+  'statusA',
+  'statusB',
+  'statusC',
+  'statusD',
+  'statusE',
+]
+
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',
   hostname: IP_PRIVATE,
+  disabled: false,
   name: '',
   port: 0,
   secret: '',

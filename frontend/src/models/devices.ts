@@ -1,4 +1,5 @@
 import { graphQLFetch, graphQLAdaptor, graphQLGet } from '../services/graphQL'
+import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { createModel } from '@rematch/core'
 import { r3, hasCredentials } from '../services/remote.it'
 import { cleanOrphanConnections } from '../helpers/connectionHelper'
@@ -82,9 +83,9 @@ export default createModel({
       try {
         const gqlResponse = await graphQLFetch(options)
         const [gqlData, total] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData.connections, gqlData.id, true)
-        const devices = graphQLAdaptor(gqlData.devices, gqlData.id)
-        return { devices: [...connections, ...devices], total, contacts: gqlData.contacts }
+        const connections = graphQLAdaptor(gqlData?.connections, gqlData.id, true)
+        const devices = graphQLAdaptor(gqlData?.devices, gqlData.id)
+        return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts }
       } catch (error) {
         await graphQLError(error)
         return { devices: [], total: 0 }
@@ -114,8 +115,9 @@ export default createModel({
       set({ getting: false })
       setDevice({ id, device: result })
     },
-    async updateShareDevice(device: IDevice, deviceState?: IDeviceState) {
-      const {  setDevice } = dispatch.devices
+
+    async updateShareDevice(device: IDevice) {
+      const { setDevice } = dispatch.devices
       setDevice({ id: device.id, device })
     },
 
@@ -136,7 +138,7 @@ export default createModel({
         dispatch.backend.set({ globalError: 'GraphQL: ' + errors[0].message })
       }
 
-      const data = gqlData?.data?.data?.login
+      const data = gqlData?.data?.data?.login || {}
       const total = data?.devices?.total || 0
 
       return [data, total]
@@ -145,6 +147,19 @@ export default createModel({
     async reset() {
       dispatch.backend.set({ connections: [] })
       dispatch.devices.set({ all: [], query: '', filter: 'all' })
+    },
+
+    async setAttributes(device: IDevice) {
+      graphQLSetAttributes(device.attributes, device.id)
+      dispatch.devices.setDevice({ id: device.id, device })
+    },
+
+    async setServiceAttributes(service: IService, globalState: any) {
+      let device = globalState.devices.all.find((d: IDevice) => d.id === service.deviceID)
+      const index = device.services.findIndex((s: IService) => s.id === service.id)
+      device.services[index].attributes = service.attributes
+      graphQLSetAttributes(service.attributes, service.id)
+      dispatch.devices.setDevice({ id: device.id, device })
     },
 
     async destroy(device: IDevice, globalState: any) {
@@ -198,42 +213,26 @@ export function findService(devices: IDevice[], id: string) {
       }
       return all
     },
-    [null, null] as [IService | null, IDevice | null]
+    [undefined, undefined] as [IService | undefined, IDevice | undefined]
   )
 }
 
+export function getUsersConnectedDeviceOrService(device?: IDevice, service?: IService) {
+  const userConnected: IUser[] = []
 
-export function getUsersConnectedDeviceOrService(device?: IDevice, service?: IService | null) {
-  const userConnected: IUser[] = [];
+  const getSessionService = (s: IService) =>
+    s?.sessions.forEach(session => !userConnected.includes(session) && userConnected.push(session))
 
-  const getSessionService = (_ser: IService) => {
-    const {sessions} = _ser
-    if (sessions) {
-      sessions.forEach(session => {
-        !userConnected.includes(session) && userConnected.push(session)
-      })
-    }
-  }
-
-  if (service) {
-    getSessionService(service)
-    return userConnected
-  }
-
-  device && device.services.forEach(getSessionService);
-
+  if (service) getSessionService(service)
+  else if (device) device.services.forEach(getSessionService)
   return userConnected
 }
 
-export function getServicesByEmail(device: IDevice, emailUser: string) {
-  return device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
-}
-
 export function getDetailUserPermission(device: IDevice, emailUser: string) {
-  const services = getServicesByEmail(device, emailUser)
+  const services = device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
   return {
     scripting: device?.access.find(_ac => _ac.email === emailUser)?.scripting || false,
     numberServices: services.length,
-    services
-  };
+    services,
+  }
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { attributeName } from '../../shared/nameHelper'
 import { Tooltip, Divider } from '@material-ui/core'
 
 const MAX_SESSIONS_DISPLAY = 3
@@ -22,7 +23,7 @@ export const SessionsTooltip: React.FC<Props> = ({ service, label, children }) =
     <Tooltip
       title={
         <>
-          {label && service.name}
+          {label && attributeName(service)}
           {!!list?.length && (
             <>
               {label && <Divider />}
@@ -32,7 +33,6 @@ export const SessionsTooltip: React.FC<Props> = ({ service, label, children }) =
                   <br />
                 </span>
               ))}
-              connected
             </>
           )}
         </>

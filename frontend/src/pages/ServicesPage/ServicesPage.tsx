@@ -1,32 +1,32 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useParams } from 'react-router-dom'
-import { ServiceName } from '../../components/ServiceName'
-import { ApplicationState } from '../../store'
+import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { ApplicationState } from '../../store'
+import { Typography, List, Divider } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { RefreshButton } from '../../buttons/RefreshButton'
-import { DeleteButton } from '../../buttons/DeleteButton'
+import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
-import { DataDisplay } from '../../components/DataDisplay'
+import { UsersSelect } from '../../components/UsersSelect/UsersSelect'
 import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
-import { Columns } from '../../components/Columns'
-import analytics from '../../helpers/Analytics'
-import { UsersSelect } from '../../components/UsersSelect/UsersSelect';
+import { AddUserButton } from '../../buttons/AddUserButton'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServicesPage: React.FC = () => {
-  const { connections, devices, searched, query } = useSelector((state: ApplicationState) => ({
+  const { deviceID } = useParams()
+  const { connections, device, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections,
-    devices: state.devices.all,
+    device: state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden),
     searched: state.devices.searched,
     query: state.devices.query,
+    thisDeviceId: state.backend.device.uid,
   }))
-  const { deviceID } = useParams()
+  const thisDevice = deviceID === thisDeviceId
   const history = useHistory()
-  const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
+  const location = useLocation()
   const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
   const serviceConnections = connections.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
@@ -34,7 +34,7 @@ export const ServicesPage: React.FC = () => {
   }, {})
 
   useEffect(() => {
-    analytics.page('ServicesPage')
+    analyticsHelper.page('ServicesPage')
     if (!device) history.push('/devices')
   }, [device, history])
 
@@ -46,40 +46,22 @@ export const ServicesPage: React.FC = () => {
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <ConnectionStateIcon service={device} connection={activeConnection} size="lg" />
-            <ServiceName service={device} connection={activeConnection} shared={device.shared} inline />
+            <ConnectionStateIcon service={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
+            <ServiceName device={device} connection={activeConnection} inline />
+            <AddUserButton />
             <RefreshButton device={device} />
-            <DeleteButton device={device} />
           </Typography>
         </>
       }
     >
       {searched && <Subtitle primary="Services" secondary={`Searched for “${query}”`} />}
       <ServiceList services={device.services} connections={serviceConnections} />
-      <UsersSelect device={device} />
-      <Typography variant="subtitle1">Device details</Typography>
-      <Columns count={1} inset>
-        <DataDisplay
-          data={[
-            {
-              label: 'Availability',
-              value: device.availability,
-              format: 'percent',
-              help: 'Average time online per day',
-            },
-            { label: 'Instability', value: device.instability, format: 'round', help: 'Average disconnects per day' },
-            { label: 'Owner', value: device.owner },
-            { label: 'Last reported', value: device.lastReported, format: 'duration' },
-            { label: 'ISP', value: device.geo?.isp },
-            { label: 'Connection type', value: device.geo?.connectionType },
-            { label: 'Location', value: device.geo, format: 'location' },
-            { label: 'External IP address', value: device.externalAddress },
-            { label: 'Internal IP address', value: device.internalAddress },
-            { label: 'Device ID', value: device.id },
-            { label: 'Hardware ID', value: device.hardwareID },
-          ]}
-        />
-      </Columns>
+      <Divider />
+      <List>
+        <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} />
+        <UsersSelect device={device} />
+        <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} />
+      </List>
     </Container>
   )
 }

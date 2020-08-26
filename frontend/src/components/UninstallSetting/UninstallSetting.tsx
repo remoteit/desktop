@@ -2,8 +2,8 @@ import React from 'react'
 import { emit } from '../../services/Controller'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
-import { SettingsListItem } from '../SettingsListItem'
-import analytics from '../../helpers/Analytics'
+import { ListItemSetting } from '../ListItemSetting'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const UninstallSetting: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
@@ -16,12 +16,12 @@ export const UninstallSetting: React.FC = () => {
     ) {
       emit('uninstall')
       ui.set({ uninstalling: true })
-      analytics.track('uninstall')
+      analyticsHelper.track('uninstall')
     }
   }
 
   return (
-    <SettingsListItem
+    <ListItemSetting
       label="Uninstall command line tools"
       subLabel={`De-register this device, completely remove all saved data, and uninstall the command line tools. 
         Do this before removing, or uninstalling the application from your system.`}

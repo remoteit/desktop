@@ -11,9 +11,9 @@ import { Body } from '../Body'
 export const DeviceListEmpty: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
-  const { noResults, device, os } = useSelector((state: ApplicationState) => ({
+  const { noResults, targetDevice, os } = useSelector((state: ApplicationState) => ({
     noResults: state.devices.searched && !state.devices.results,
-    device: state.backend.device,
+    targetDevice: state.backend.device,
     os: state.backend.environment.os,
   }))
 
@@ -24,7 +24,7 @@ export const DeviceListEmpty: React.FC = () => {
           Your search returned no results
         </Typography>
       ) : (
-        !device.name && (
+        !targetDevice.uid && (
           <>
             <Button
               onClick={() => history.push('/settings/setupDevice')}
