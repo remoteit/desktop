@@ -136,8 +136,8 @@ export default class CLI {
         c.active = status.state === 'connected'
         c.connecting = status.state === 'connecting'
         c.isP2P = status.isP2P
-        // c.error = status.error  // Can add back when CLI is more careful about creating errors
-        d('UPDATE STATUS', { c, status: status.state })
+        c.error = status.error // Can add back when CLI is more careful about creating errors
+        Logger.info('UPDATE STATUS', { c, status: status.state })
       }
       return c
     })

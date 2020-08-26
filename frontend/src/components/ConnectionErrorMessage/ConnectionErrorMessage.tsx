@@ -11,7 +11,7 @@ type Props = { connection?: IConnection; service?: IService; visible?: boolean }
 export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, visible }) => {
   const css = useStyles()
 
-  if (!connection || !connection.error) return null
+  if (!connection || !connection.error?.message) return null
 
   return (
     <Collapse in={visible}>
