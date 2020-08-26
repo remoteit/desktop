@@ -185,7 +185,9 @@ function getEventHandlers() {
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: string) => binaries.notInstalled(binary),
 
-    'service/putty/required': () => console.log('service/putty/required'),
+    'service/putty/required': (install: boolean) => {
+      ui.set({ installPutty: install })
+    },
 
   } as EventHandlers
 }

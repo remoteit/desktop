@@ -8,9 +8,9 @@ export const openCMDforWindows = (launchApp: string) => {
     child_process.exec(`wmic product where "Name like '%PuTTy%'" get Name, Version`, (error: any, stdout: any, stderr: any) => {
         error && Logger.error(`error: ${error}`)
         if(stdout === '\r\r\n\r\r\n'){
-            EventBus.emit(Installer.EVENTS.notInstalledPutty)
+            EventBus.emit(Installer.EVENTS.notInstalledPutty, true)
         } else {
-            Logger.info(`stdout: ${stdout}`)
+            EventBus.emit(Installer.EVENTS.notInstalledPutty, false)
             child_process.exec(`cd "c:\\Program Files\\PuTTY" && start putty.exe ${launchApp}`,((error: any) =>{
                 error && Logger.error(`error: ${error}`)
             }))

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
+import { useSelector } from 'react-redux'
 import {
   IconButton,
   Tooltip,
@@ -14,6 +15,7 @@ import {
 import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { emit } from '../../services/Controller'
+import { ApplicationState } from '../../store'
 
 type Props = {
   connection?: IConnection
@@ -21,10 +23,14 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
+  const { requireInstallPutty } = useSelector((state: ApplicationState) => ({
+    requireInstallPutty: state.ui.requireInstallPutty
+  }))
   const css = useStyles()
   const app = useApplication(service && service.typeID)
   const [open, setOpen] = useState<boolean>(false)
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
+  const [openModalRequierePutty, setOpenModalRequierePutty] = useState<boolean>(false)
 
   useEffect(() => {
     setUsername(connection?.username || '')
@@ -33,6 +39,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   if (!connection || !connection.active || !app) return null
 
   const close = () => setOpen(false)
+  const closeModal = () => setOpenModalRequierePutty(false)
   const check = () => {
     if (!app.prompt || connection.username) launch()
     else setOpen(true)
@@ -46,6 +53,13 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
     const launchApp = app.launch({ ...connection, username })
 
     app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', launchApp)
+    requireInstallPutty ? setOpenModalRequierePutty(true) : close()
+    close()
+  }
+
+  const getPutty = () => {
+    window.open('https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html')
+    closeModal()
     close()
   }
 
@@ -78,6 +92,25 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      <Dialog open={openModalRequierePutty} onClose={closeModal} maxWidth="xs" fullWidth>
+          <Typography variant="h1">you should install Putty for open SSH</Typography>
+          <DialogContent>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeModal} color="primary" size="small" type="button">
+              Cancel
+            </Button>
+            <Button 
+              onClick={getPutty}
+              variant="contained" 
+              color="primary" 
+              size="small" 
+              type="button">
+              Get to download Putty
+            </Button>
+          </DialogActions>
       </Dialog>
     </>
   )
