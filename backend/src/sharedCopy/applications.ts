@@ -41,7 +41,7 @@ class Application {
   }
 
   launchBrowser(type: string) {
-    const platform = navigator.platform.toLowerCase()
+    const platform = navigator ? navigator.platform.toLowerCase() : ''
     return !(type === 'SSH' && platform.includes('win'))
   }
 }
