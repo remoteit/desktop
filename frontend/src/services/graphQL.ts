@@ -15,6 +15,10 @@ const DEVICE_SELECT = `{
     created
     lastReported
     hardwareId
+    
+    version ${/* connectd version */}
+    platform ${/* platform_code -  */}
+
     endpoint {
       externalAddress
       internalAddress
@@ -36,6 +40,9 @@ const DEVICE_SELECT = `{
       id
       name
       state
+
+      title ${/* service type */}
+      
       created
       lastReported
       port

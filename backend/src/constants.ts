@@ -18,19 +18,28 @@ export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production 
 // CLI product tracking codes
 export const MANUFACTURE_ID_STANDARD = 33280
 export const MANUFACTURE_ID_HEADLESS = 33536
+// connectd Package = 32768
+// remote.it CLI = 33024
+// remote.it Desktop = 33280
+// remote.it Headless Desktop = 33536
+// remote.it Mobile = 33792
+// remote.it Proxy Server = 34048
 
-// CONNECTD platform tracking codes
+// CONNECTD (initiator) platform tracking codes
 export const PLATFORM_CODES = {
-  REMOTEIT_PI: 1075, // This will come in out of the manufacture.json
-  RASPBERRY_PI: 1072,
-  LINUX_DEBIAN: 1120, // Might not be able to detect
+  AWS: 1185, // AWS linux ubuntu
   LINUX_ARM: 1200,
+  LINUX_DEBIAN: 1120, // Might not be able to detect
   LINUX: 769,
-  WINDOWS_DESKTOP: 5,
-  WINDOWS_SERVER: 10, // Might not be able to detect
   MAC: 256,
+  RASPBERRY_PI: 1072,
+  REMOTEIT_PI_LITE: 1076,
+  REMOTEIT_PI: 1075, // This will come in out of the manufacture.json
   UNIX: 768, // Might not be able to detect
   UNKNOWN: 65535,
+  WINDOWS_DESKTOP: 5,
+  WINDOWS_SERVER: 10, // Might not be able to detect
+  WINDOWS: 0,
 }
 
 // Web directory
