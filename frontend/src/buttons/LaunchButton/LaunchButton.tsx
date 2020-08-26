@@ -23,8 +23,9 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
-  const { requireInstallPutty } = useSelector((state: ApplicationState) => ({
-    requireInstallPutty: state.ui.requireInstallPutty
+  const { requireInstallPutty, loading} = useSelector((state: ApplicationState) => ({
+    requireInstallPutty: state.ui.requireInstallPutty,
+    loading: state.ui.loading
   }))
   const css = useStyles()
   const app = useApplication(service && service.typeID)
@@ -52,9 +53,8 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
       })
     const launchApp = app.launch({ ...connection, username })
 
-    app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', launchApp)
+    app.launchBrowser(app.title) && false ? window.open(launchApp) : emit('service/launch', launchApp)
     requireInstallPutty ? setOpenModalRequierePutty(true) : close()
-    close()
   }
 
   const getPutty = () => {
@@ -66,9 +66,14 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   return (
     <>
       <Tooltip title={`Launch ${app.title}`}>
-        <IconButton onClick={check}>
-          <Icon className={app.iconRotate ? css.rotate : ''} name={app.icon} size="md" fixedWidth />
-        </IconButton>
+        <IconButton onClick={check} disabled={loading}>
+          <Icon 
+            className={app.iconRotate ? css.rotate : ''} 
+            name={loading ? 'spinner-third' : app.icon}
+            spin={loading}
+            size="md" 
+            fixedWidth />
+         </IconButton>
       </Tooltip>
       <Dialog open={open} onClose={close} maxWidth="xs" fullWidth>
         <form onSubmit={launch}>
@@ -88,7 +93,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
               Cancel
             </Button>
             <Button variant="contained" color="primary" size="small" type="submit">
-              Launch
+              {loading ? 'Loading putty...' : 'Launch'}
             </Button>
           </DialogActions>
         </form>

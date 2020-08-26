@@ -246,6 +246,11 @@ declare global {
     oobActive: boolean
   }
 
+  interface IPuttyValidation {
+    install: boolean,
+    loading: boolean
+  }
+
   interface ILan {
     oobAvailable: boolean
     oobActive: boolean
