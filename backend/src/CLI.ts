@@ -213,7 +213,7 @@ export default class CLI {
   }
 
   async signIn() {
-    await this.exec({ cmds: [strings.signIn()], admin: true })
+    await this.exec({ cmds: [strings.signIn()], checkAuthHash: true })
     this.read()
   }
 
