@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
-import { makeStyles } from '@material-ui/core/styles'
 import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
@@ -14,7 +13,6 @@ import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServiceDetailPage = () => {
-  const css = useStyles()
   const { serviceID = '' } = useParams()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
@@ -65,5 +63,3 @@ export const ServiceDetailPage = () => {
     </Container>
   )
 }
-
-const useStyles = makeStyles({})

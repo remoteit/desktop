@@ -18,7 +18,7 @@ type Props = {
 }
 
 export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCancel }) => {
-  const { setupBusy, setupServiceBusy: setupServiceBusy } = useSelector((state: ApplicationState) => state.ui)
+  const { setupBusy, setupServiceBusy } = useSelector((state: ApplicationState) => state.ui)
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
   const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT

@@ -1,6 +1,6 @@
 import React from 'react'
 import { List, ListItem, Tooltip } from '@material-ui/core'
-import { colors, fontSizes, spacing } from '../../styling'
+import { colors, fontSizes } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { Duration } from '../../components/Duration'
 import { Icon } from '../Icon'

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
+import React, { useState, useRef } from 'react'
+import { FormControl, InputLabel, Select } from '@material-ui/core'
 import { InlineSetting } from '../InlineSetting'
 
 type Props = {

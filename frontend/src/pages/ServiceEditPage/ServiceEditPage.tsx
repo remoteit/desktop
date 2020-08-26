@@ -3,37 +3,26 @@ import { useHistory } from 'react-router-dom'
 import { findService } from '../../models/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Typography, Divider, List, ListItemIcon, ListItemText, ListItemSecondaryAction, Chip } from '@material-ui/core'
-import { findType } from '../../services/serviceTypes'
+import { Typography, Divider, List } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
-import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { DeviceNameSetting } from '../../components/DeviceNameSetting'
-import { ListItemLocation } from '../../components/ListItemLocation'
-import { SharedAccessSetting } from '../../components/SharedAccessSetting'
 import { InlineTextFieldSetting } from '../../components/InlineTextFieldSetting'
 import { ServiceSetting } from '../../components/ServiceSetting'
-import { UnregisterButton } from '../../buttons/UnregisterButton'
 import { attributeName } from '../../shared/nameHelper'
-import { DeleteButton } from '../../buttons/DeleteButton'
-import { Targets } from '../../components/Targets/Targets'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
-import { emit } from '../../services/Controller'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
 }
 export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
-  const css = useStyles()
   const history = useHistory()
   const { devices } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams()
-  const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
-  const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
+  const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
 
   useEffect(() => {
     analyticsHelper.page('ServiceEditPage')
@@ -78,5 +67,3 @@ export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
     </Container>
   )
 }
-
-const useStyles = makeStyles({})

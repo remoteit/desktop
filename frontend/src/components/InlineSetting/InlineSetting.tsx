@@ -1,13 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  TextField,
-  Typography,
-  Tooltip,
-  IconButton,
-} from '@material-ui/core'
+import React, { useEffect, useState } from 'react'
+import { ListItem, ListItemIcon, ListItemSecondaryAction, Typography, Tooltip, IconButton } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useLocation, useHistory } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector } from 'react-redux'
 import { PortSetting } from '../../components/PortSetting'
@@ -19,6 +19,7 @@ import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { LaunchSetting } from '../../components/LaunchSetting'
+import { AddUserButton } from '../../buttons/AddUserButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
@@ -29,7 +30,6 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
-import { AddUserButton } from '../../buttons/AddUserButton'
 
 export const ServicePage: React.FC = () => {
   const css = useStyles()
@@ -39,7 +39,6 @@ export const ServicePage: React.FC = () => {
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
-  const history = useHistory()
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')

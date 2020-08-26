@@ -12,7 +12,6 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
-import { SharedAccessSetting } from '../../components/SharedAccessSetting'
 import { UnregisterButton } from '../../buttons/UnregisterButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Title } from '../../components/Title'
@@ -23,7 +22,7 @@ type Props = {
   targets: ITarget[]
   targetDevice: ITargetDevice
 }
-export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, ...props }) => {
+export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const css = useStyles()
   const history = useHistory()
   const { deviceID } = useParams()

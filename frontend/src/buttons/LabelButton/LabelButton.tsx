@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { ListItemIcon, Tooltip, Select, MenuItem, makeStyles } from '@material-ui/core'
+import { Tooltip, Select, MenuItem, makeStyles } from '@material-ui/core'
 import { colors } from '../../styling'
 
 export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
