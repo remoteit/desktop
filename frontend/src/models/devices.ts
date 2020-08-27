@@ -72,6 +72,7 @@ export default createModel({
       set({ fetching: false, append: false })
 
       cleanOrphanConnections()
+      dispatch.ui.devicesUpdated()
     },
 
     async graphQLFetchProcessor(options: any, globalState: any) {

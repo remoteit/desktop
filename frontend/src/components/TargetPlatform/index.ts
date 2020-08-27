@@ -1,1 +1,1 @@
-export { TargetPlatform } from './TargetPlatform'
+export { TargetPlatform, TARGET_PLATFORMS } from './TargetPlatform'

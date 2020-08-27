@@ -28,6 +28,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared }) =>
   return (
     <Title color={color}>
       {!service && !connection ? 'No device found' : name}
+      <TargetPlatform id={service?.targetPlatform} />
       {shared && (
         <sup>
           <Tooltip title={`Shared by ${service?.owner}`}>
@@ -35,7 +36,6 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared }) =>
           </Tooltip>
         </sup>
       )}
-      <TargetPlatform id={service?.targetPlatform} />
     </Title>
   )
 }

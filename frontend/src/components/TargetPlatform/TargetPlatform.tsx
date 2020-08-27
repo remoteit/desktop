@@ -23,8 +23,8 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
 
 export const TargetPlatform: React.FC<{ id?: number }> = ({ id }) => {
   let size: FontSize = 'xxs'
-  let name: string = ''
   let type: IconType = 'brands'
+  let name: string = ''
 
   switch (id) {
     case 0:
