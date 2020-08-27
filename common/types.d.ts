@@ -176,8 +176,10 @@ declare global {
     lastReported: Date
     externalAddress: ipAddress
     internalAddress: ipAddress
+    targetPlatform: number
     availability: number
     instability: number
+    version: number // daemon version
     geo: {
       connectionType?: string
       countryName?: string
@@ -206,6 +208,9 @@ declare global {
     port?: number
     sessions: IUser[]
     access: IUser[]
+    // @TODO remove owner and targetPlatform after serviceName is refactored to separate device from service
+    owner?: string
+    targetPlatform?: number
   }
 
   type IUser = {

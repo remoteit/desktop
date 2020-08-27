@@ -18,10 +18,10 @@ type Props = {
 }
 
 export const Targets: React.FC<Props> = ({ targets, device, onUpdate, onCancel }) => {
-  const { setupBusy, setupDeletingService } = useSelector((state: ApplicationState) => state.ui)
+  const { setupBusy, setupDeletingService, setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
-  const maxReached = targets.length + 1 > TARGET_SERVICES_LIMIT
+  const maxReached = targets.length + 1 > setupServicesLimit
 
   function add(target: ITarget) {
     analytics.track('serviceCreated', { ...target, id: target.uid })

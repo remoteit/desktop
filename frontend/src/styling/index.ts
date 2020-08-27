@@ -53,7 +53,7 @@ export const colors: { [key in Color]: string } = {
   grayLight: '#dbdbdb',
   gray: '#bbb',
   grayDark: '#999',
-  grayDarker: '#595959',
+  grayDarker: '#666',
   grayDarkest: '#333',
   white: 'white',
   black: 'black',

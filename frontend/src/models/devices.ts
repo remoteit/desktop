@@ -72,6 +72,7 @@ export default createModel({
       set({ fetching: false, append: false })
 
       cleanOrphanConnections()
+      dispatch.ui.devicesUpdated()
     },
 
     async graphQLFetchProcessor(options: any, globalState: any) {
@@ -79,8 +80,8 @@ export default createModel({
       try {
         const gqlResponse = await graphQLFetch(options)
         const [gqlData, total] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData.connections, gqlData.id, true)
-        const devices = graphQLAdaptor(gqlData.devices, gqlData.id)
+        const connections = graphQLAdaptor(gqlData?.connections, gqlData?.id, true)
+        const devices = graphQLAdaptor(gqlData?.devices, gqlData?.id)
         return { devices: [...connections, ...devices], total }
       } catch (error) {
         await graphQLError(error)
