@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { r3 } from '../services/remote.it'
 import { version } from '../../package.json'
-import { parseType } from '../services/serviceTypes'
 import { renameServices } from '../shared/nameHelper'
 import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
@@ -15,10 +14,8 @@ const DEVICE_SELECT = `{
     created
     lastReported
     hardwareId
-    
-    version ${/* connectd version */}
-    platform ${/* platform_code -  */}
-
+    platform
+    version
     endpoint {
       externalAddress
       internalAddress
@@ -40,13 +37,11 @@ const DEVICE_SELECT = `{
       id
       name
       state
-
-      title ${/* service type */}
-      
+      title
+      application
       created
       lastReported
       port
-      type
       access {
         user {
           email
@@ -71,7 +66,7 @@ const DEVICE_SELECT = `{
 */
 function requestParams() {
   return {
-    url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
+    url: true || version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
     method: 'post' as 'post',
     headers: { token: r3.token },
   }
@@ -141,27 +136,26 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
       lastReported: d.lastReported && new Date(d.lastReported),
       externalAddress: d.endpoint?.externalAddress,
       internalAddress: d.endpoint?.internalAddress,
+      targetPlatform: d.platform,
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
+      version: d.version,
       geo: d.endpoint?.geo,
       services: d.services.map(
-        (s: any): IService => {
-          const { typeID, type } = parseType(s.type)
-          return {
-            type,
-            typeID,
-            id: s.id,
-            state: s.state,
-            deviceID: d.id,
-            createdAt: new Date(s.created),
-            lastReported: s.lastReported && new Date(s.lastReported),
-            contactedAt: new Date(s.endpoint?.timestamp),
-            name: s.name,
-            port: s.port,
-            access: s.access.map((e: any) => ({ email: e.user?.email })),
-            sessions: processSessions(s.sessions, loginId),
-          }
-        }
+        (s: any): IService => ({
+          id: s.id,
+          type: s.title,
+          typeID: s.application,
+          state: s.state,
+          deviceID: d.id,
+          createdAt: new Date(s.created),
+          lastReported: s.lastReported && new Date(s.lastReported),
+          contactedAt: new Date(s.endpoint?.timestamp),
+          name: s.name,
+          port: s.port,
+          access: s.access.map((e: any) => ({ email: e.user?.email })),
+          sessions: processSessions(s.sessions, loginId),
+        })
       ),
       hidden,
     })
