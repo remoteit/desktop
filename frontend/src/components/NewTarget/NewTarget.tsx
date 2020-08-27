@@ -29,12 +29,12 @@ export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
     return (
       <tr>
         <td colSpan={6} className={css.button}>
-          <Button color="primary" variant="contained" onClick={() => history.push(`${match.path}/network`)}>
+          <Button color="primary" variant="contained" onClick={() => ui.set({ setupServicesNew: false })}>
             Add
             <Icon name="plus" inline />
           </Button>
           {scanEnabled && (
-            <Link onClick={() => ui.set({ setupServicesNew: false })}>
+            <Link onClick={() => history.push(`${match.path}/network`)}>
               Add from Network
               <Icon name="chevron-right" inline />
             </Link>
