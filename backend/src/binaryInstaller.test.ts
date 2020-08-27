@@ -44,7 +44,7 @@ describe('backend/binaryInstaller', () => {
         `"../jest/bin/remoteit" -j signin --user ${user.username} --authhash ${user.authHash}`
       )
 
-      expect(commandSpy).toBeCalledTimes(5)
+      expect(commandSpy).toBeCalledTimes(7)
       expect(downloadSpy).toBeCalledTimes(1)
     })
 
@@ -61,7 +61,7 @@ describe('backend/binaryInstaller', () => {
         `"../jest/bin/remoteit.exe" -j signin --user ${user.username} --authhash ${user.authHash}`
       )
 
-      expect(commandSpy).toBeCalledTimes(5)
+      expect(commandSpy).toBeCalledTimes(7)
       expect(downloadSpy).toBeCalledTimes(1)
     })
   })

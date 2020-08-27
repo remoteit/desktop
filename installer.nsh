@@ -1,4 +1,4 @@
-!define CLI_VERSION "1.5.9"
+!define CLI_VERSION "1.6.1"
 !define PATH_REMOTE_DIR "C:\Program Files\remoteit-bin"
 !define REMOTE_CLI_EXE "${PATH_REMOTE_DIR}\remoteit.exe" 
 
@@ -32,6 +32,7 @@
         Goto next
     false:
         nsExec::Exec '"${REMOTE_CLI_EXE}" -j service uninstall'
+        nsExec::Exec '"${REMOTE_CLI_EXE}" -j status' ; waits for processes to stop so can cleanly remove files
         RMDir /r "$APPDATA\remoteit\log"
         Goto next
     next:

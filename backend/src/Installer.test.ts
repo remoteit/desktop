@@ -66,19 +66,6 @@ describe('backend/Installer', () => {
       expect(versionSpy).toBeCalledTimes(1)
     })
 
-    test('should notify if desktop outdated', async () => {
-      jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
-      prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: '0.0.1' }))
-
-      await installer.check()
-
-      expect(installSpy).toBeCalledTimes(0)
-      expect(eventSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
-      expect(versionSpy).toBeCalledTimes(1)
-    })
-
     test('should notify if cli outdated', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))

@@ -50,9 +50,8 @@ export default class Installer {
 
     d('CHECK INSTALLATION', { name: this.name, version: this.version })
     const cliCurrent = await this.isCliCurrent(log)
-    const desktopCurrent = this.isDesktopCurrent(log)
 
-    if (cliCurrent && desktopCurrent) {
+    if (cliCurrent) {
       return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
     } else {
       if (environment.isElevated) await binaryInstaller.install()
