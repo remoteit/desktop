@@ -31,9 +31,10 @@ type IExec = {
 
 type IConnectionStatus = {
   id?: string
-  connectionState?: 'offline' | 'connecting' | 'connected'
+  state?: 'offline' | 'connecting' | 'connected'
   isFailover?: boolean
   isP2P?: boolean
+  error?: ISimpleError
 }
 
 export default class CLI {
@@ -132,10 +133,11 @@ export default class CLI {
     this.data.connections = this.data.connections.map(c => {
       const status = json?.connections?.find(s => s.id === c.id)
       if (status) {
-        c.active = status.connectionState === 'connected'
-        c.connecting = status.connectionState === 'connecting'
-        c.isP2P = status.connectionState === 'connected' ? status.isP2P : undefined
-        d('UPDATE STATUS', { c, status: status.connectionState })
+        c.active = status.state === 'connected'
+        c.connecting = status.state === 'connecting'
+        c.isP2P = status.state === 'connected' ? status.isP2P : undefined
+        c.error = status.error // Can add back when CLI is more careful about creating errors
+        d('UPDATE STATUS', { c, status: status.state })
       }
       return c
     })
@@ -221,7 +223,7 @@ export default class CLI {
   }
 
   async signIn() {
-    await this.exec({ cmds: [strings.signIn()], admin: true })
+    await this.exec({ cmds: [strings.signIn()], checkAuthHash: true })
     this.read()
   }
 

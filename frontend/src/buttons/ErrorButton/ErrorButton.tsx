@@ -5,7 +5,7 @@ import { Icon } from '../../components/Icon'
 type Props = { connection?: IConnection; onClick?: () => void; visible: boolean; className?: string }
 
 export const ErrorButton: React.FC<Props> = ({ connection, onClick, visible, className }) => {
-  if (!connection || !connection.error) return null
+  if (!connection || !connection.error?.message) return null
 
   return (
     <Tooltip title={visible ? 'Hide error' : 'Show error'} className={className}>

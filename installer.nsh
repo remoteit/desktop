@@ -34,6 +34,7 @@
         Goto next
     false:
         nsExec::Exec '"${REMOTE_CLI_EXE}" -j service uninstall'
+        nsExec::Exec '"${REMOTE_CLI_EXE}" -j status' ; waits for processes to stop so can cleanly remove files
         RMDir /r "$APPDATA\remoteit\log"
         Goto next
     next:
