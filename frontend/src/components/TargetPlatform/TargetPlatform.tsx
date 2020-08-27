@@ -46,14 +46,14 @@ export const TargetPlatform: React.FC<{ id?: number }> = ({ id }) => {
     case 1075:
     case 1076:
       name = 'raspberry-pi'
-      size = 'sm'
+      size = 'xs'
       break
     case 1120:
       name = 'ubuntu'
       break
     case 1185:
       name = 'aws'
-      size = 'sm'
+      size = 'xs'
       break
     case 1200:
       name = 'linux'
