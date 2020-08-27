@@ -53,7 +53,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
       })
     const launchApp = app.launch({ ...connection, username })
 
-    app.launchBrowser(app.title) && false ? window.open(launchApp) : emit('service/launch', launchApp)
+    app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', launchApp)
     requireInstallPutty ? setOpenModalRequierePutty(true) : close()
   }
 
