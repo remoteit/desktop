@@ -27,27 +27,26 @@ export const DeviceShareContainer = ({ username = '' }) => {
       : history.push(location.pathname.replace(`/${username}`, ''))
 
   const handleShareUpdate = async (share: SharingDetails, isNew: boolean) => {
-    const shareData = mapShareData(share)
-    const contacts = isNew ? share.contacts : [share.contacts[0]]
+    const shareData = mapShareData(share, isNew)
     const { scripting, services } = share.access
 
-    isNew ? await shares.share({ ...shareData, contacts }) : await shares.update({ ...shareData, email: contacts[0] })
+    await shares.share(shareData)
 
-    await shares.updateDeviceState({ device: myDevice, contacts, scripting, services, isNew })
+    await shares.updateDeviceState({ device: myDevice, contacts: shareData.email, scripting, services, isNew })
     goToNext()
   }
 
-  const mapShareData = (share: SharingDetails) => {
+  const mapShareData = (share: SharingDetails, isNew: boolean) => {
     const { access } = share
     const scripting = access.scripting
-    const allServices = myDevice?.services.map(ser => ({ ...ser, id: ser.id.toLowerCase() })) || []
-    const sharedServices = access.services.map(ser => ser.toLowerCase())
+    const services =  myDevice?.services.map(ser => ({ serviceId: ser.id, action: access.services.includes(ser.id) ? 'ADD' : 'REMOVE' })) || []
+    const email = isNew ? share.contacts : [share.contacts[0]]
 
     return {
-      allServices,
-      deviceID,
+      deviceId: deviceID,
       scripting,
-      sharedServices,
+      services,
+      email
     }
   }
 

@@ -317,6 +317,13 @@ declare global {
       appCode?: number //called manufacturerId in connectd
     }
   }
+
+  type IShareProps = {
+    deviceId: String,
+    email: String[]!,
+    scripting?: boolean,
+    services?: IService[]
+  }
 }
 
 export {}

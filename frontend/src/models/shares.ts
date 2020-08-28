@@ -1,6 +1,5 @@
 import { createModel } from '@rematch/core'
-import { SharingManager } from '../services/SharingManager'
-
+import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
 
 type ShareParams = { [key: string]: any }
 
@@ -25,22 +24,15 @@ export default createModel({
       console.log({deviceID, email})
       const { set } = dispatch.shares
       set({deleting: true})
-      await SharingManager.unshare({ deviceID, email })
+      await graphQLUnShareDevice({deviceId: deviceID, email: [email]})
       await dispatch.devices.get(deviceID)
       set({deleting: false})
-    },
-
-    async update(updateData?: any) {
-      const { set } = dispatch.devices
-      set({updating: true})
-      await SharingManager.update(updateData)
-      set({updating: false})
     },
 
     async share(newData?: any) {
       const { set } = dispatch.devices
       set({sharing: true})
-      await SharingManager.share(newData)
+      await graphQLShareDevice(newData)
       set({sharing: false})
     },
 
