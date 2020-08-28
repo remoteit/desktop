@@ -66,7 +66,7 @@ const DEVICE_SELECT = `{
 */
 function requestParams() {
   return {
-    url: true || version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
+    url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
     method: 'post' as 'post',
     headers: { token: r3.token },
   }
