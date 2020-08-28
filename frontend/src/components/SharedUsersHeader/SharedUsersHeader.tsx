@@ -5,17 +5,15 @@ import { AddUserButton } from '../../buttons/AddUserButton'
 import { Icon } from '../Icon'
 import { Title } from '../Title'
 
-export const SharedUsersHeader = () => {
+export const SharedUsersHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   return (
     <>
       <Breadcrumbs />
       <Typography variant="h1">
         <Icon name="user-friends" size="lg" />
         <Title>Shared users</Title>
-        <AddUserButton />
+        <AddUserButton device={device} />
       </Typography>
     </>
   )
 }
-
-export default SharedUsersHeader
