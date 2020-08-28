@@ -22,7 +22,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service }) => {
   if (connection) {
     if (connection.connecting && !connection.active) state = 'connecting'
     if (connection.active) state = 'connected'
-    if (connection.error) state = 'error'
+    if (connection.error?.message) state = 'error'
   }
 
   switch (state) {
