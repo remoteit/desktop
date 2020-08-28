@@ -6,7 +6,6 @@ import { useLocation } from 'react-router-dom'
 import { TargetPlatform } from '../TargetPlatform'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { attributeName } from '../../shared/nameHelper'
-import { Tooltip } from '@material-ui/core'
 
 type Props = {
   connection?: IConnection
