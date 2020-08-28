@@ -179,8 +179,10 @@ declare global {
     lastReported: Date
     externalAddress: ipAddress
     internalAddress: ipAddress
+    targetPlatform: number
     availability: number
     instability: number
+    version: number // daemon version
     geo: {
       connectionType?: string
       countryName?: string

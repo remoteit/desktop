@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { TARGET_PLATFORMS } from '../components/TargetPlatform'
 
 export const DEFAULT_INTERFACE = 'searching'
 
@@ -6,6 +7,7 @@ type UIParams = { [key: string]: any }
 type UIState = UIParams & {
   connected: boolean
   uninstalling: boolean
+  scanEnabled: boolean
   scanLoading: { [interfaceName: string]: boolean }
   scanTimestamp: { [interfaceName: string]: number }
   scanInterface: string
@@ -17,12 +19,14 @@ type UIState = UIParams & {
   setupServiceBusy?: string
   setupServicesCount: number
   setupServicesNew: boolean
+  setupServicesLimit: number
   successMessage: string
 }
 
 const state: UIState = {
   connected: false,
   uninstalling: false,
+  scanEnabled: true,
   scanLoading: {},
   scanTimestamp: {},
   scanInterface: DEFAULT_INTERFACE,
@@ -34,12 +38,23 @@ const state: UIState = {
   setupAddingService: false,
   setupServicesCount: 0,
   setupServicesNew: true,
+  setupServicesLimit: 10,
   successMessage: '',
 }
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
+    devicesUpdated(_, globalState: any) {
+      const all: IDevice[] = globalState.devices.all
+      const targetDevice: ITargetDevice = globalState.backend.device
+      const thisDevice = all.find(d => d.id === targetDevice.uid)
+      const targetPlatform = TARGET_PLATFORMS[thisDevice?.targetPlatform || -1]
+      if (targetPlatform === 'AWS') {
+        dispatch.ui.set({ setupServicesLimit: 100, scanEnabled: false })
+        console.log('TARGET PLATFORM', targetPlatform, 'settings applied')
+      }
+    },
     setupUpdated(count: number, globalState: any) {
       if (count !== globalState.ui.setupServicesCount) {
         dispatch.ui.reset()

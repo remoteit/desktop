@@ -1,11 +1,11 @@
 import React from 'react'
 import { List, ListItemIcon, ListItemText, Divider, Typography } from '@material-ui/core'
-import { Duration } from '../Duration'
-import { Platform } from '../Platform'
+import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
+import { InitiatorPlatform } from '../InitiatorPlatform'
 import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
 import { ShareDetails } from '../DeviceShareContainer/ContactCardActions'
-import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
 import { useLocation } from 'react-router-dom'
+import { Duration } from '../Duration'
 
 interface Props {
   device: IDevice
@@ -33,7 +33,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
             <>
               <ListItemLocation pathname={`${location.pathname}/${user.email}`}>
                 <ListItemIcon>
-                  <Platform id={user.platform} connected={isConnected} />
+                  <InitiatorPlatform id={user.platform} connected={isConnected} />
                 </ListItemIcon>
                 {isConnected ? (
                   <ListItemText
