@@ -15,7 +15,7 @@ import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import { openCMDforWindows } from './launch'
+import launch, { openCMDforWindows } from './launch'
 
 class Controller {
   private io: SocketIO.Server
@@ -39,6 +39,7 @@ class Controller {
       ...Object.values(environment.EVENTS),
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
+      ...Object.values(launch.EVENTS),
     ]
 
     new EventRelay(eventNames, EventBus, this.io.sockets)
