@@ -17,7 +17,9 @@ type Props = {
 }
 
 export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
-  const { setupServicesNew, setupAddingService, setupAdded } = useSelector((state: ApplicationState) => state.ui)
+  const { setupServicesNew, setupAddingService, setupAdded, scanEnabled } = useSelector(
+    (state: ApplicationState) => state.ui
+  )
   const { ui } = useDispatch<Dispatch>()
   const match = useRouteMatch()
   const history = useHistory()
@@ -27,13 +29,16 @@ export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
     return (
       <tr>
         <td colSpan={6} className={css.button}>
-          <Button color="primary" variant="contained" onClick={() => history.push(`${match.path}/network`)}>
-            Add from Network
-          </Button>
-          <Link onClick={() => ui.set({ setupServicesNew: false })}>
-            Add manually
+          <Button color="primary" variant="contained" onClick={() => ui.set({ setupServicesNew: false })}>
+            Add
             <Icon name="plus" inline />
-          </Link>
+          </Button>
+          {scanEnabled && (
+            <Link onClick={() => history.push(`${match.path}/network`)}>
+              Add from Network
+              <Icon name="chevron-right" inline />
+            </Link>
+          )}
         </td>
       </tr>
     )

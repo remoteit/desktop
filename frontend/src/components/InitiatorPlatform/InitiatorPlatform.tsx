@@ -3,7 +3,7 @@ import { Tooltip } from '@material-ui/core'
 import { Color, FontSize } from '../../styling'
 import { Icon } from '../Icon'
 
-export const PLATFORMS = [
+export const INITIATOR_PLATFORMS = [
   'Generic',
   'Windows Desktop',
   'Windows Proxy',
@@ -25,7 +25,7 @@ export const PLATFORMS = [
   'BSD',
 ]
 
-export const Platform: React.FC<{ id?: number; connected?: boolean }> = ({ id, connected }) => {
+export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean }> = ({ id, connected }) => {
   let name: string
   let type: IconType = 'light'
   let color: Color | undefined = connected ? 'primary' : undefined
@@ -84,7 +84,7 @@ export const Platform: React.FC<{ id?: number; connected?: boolean }> = ({ id, c
   }
 
   return connected && id ? (
-    <Tooltip title={`Connected by ${PLATFORMS[id]}`}>
+    <Tooltip title={`Connected by ${INITIATOR_PLATFORMS[id]}`}>
       <Icon {...{ name, type, size, color }} />
     </Tooltip>
   ) : (
