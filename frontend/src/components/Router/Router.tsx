@@ -23,6 +23,7 @@ import { LogPage } from '../../pages/LogPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage'
 import { ServiceEditPage } from '../../pages/ServiceEditPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
+import { REGEX_LAST_PATH } from '../../shared/constants'
 
 export const Router: React.FC = () => {
   const { targetDevice, targets, dataReady, os } = useSelector((state: ApplicationState) => ({
@@ -51,6 +52,13 @@ export const Router: React.FC = () => {
 
   return (
     <Switch>
+      <Redirect
+        from={'/connect/:serviceID'}
+        to={{
+          pathname: '/connections/:serviceID',
+          state: { autoConnect: true },
+        }}
+      />
       <Route path={['/settings/setupServices/network', '/devices/setupServices/network']}>
         <NetworkPage />
       </Route>

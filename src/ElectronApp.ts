@@ -1,4 +1,4 @@
-import { WEB_DIR, EVENTS, environment, preferences, EventBus } from 'remoteit-headless'
+import { WEB_DIR, EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import electron from 'electron'
 import TrayMenu from './TrayMenu'
 import AutoUpdater from './AutoUpdater'
@@ -20,9 +20,7 @@ export default class ElectronApp {
     this.app = electron.app
     this.quitSelected = false
     this.autoUpdater = new AutoUpdater()
-
-    // Not primary instance of app
-    if (!this.app.requestSingleInstanceLock()) this.app.quit()
+    this.setupDeepLink()
 
     this.app.on('ready', this.handleAppReady)
     this.app.on('activate', this.handleActivate)
@@ -126,6 +124,29 @@ export default class ElectronApp {
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
     new TrayMenu(this.tray)
+  }
+
+  private setupDeepLink() {
+    const isSingleInstance = this.app.requestSingleInstanceLock()
+
+    // Deep link protocol
+    this.app.setAsDefaultProtocolClient('remoteit')
+
+    if (isSingleInstance) {
+      // Windows event
+      this.app.on('second-instance', (event, args) => {
+        console.log('ARGS', args)
+        this.openWindow()
+      })
+      // Mac event
+      this.app.on('open-url', (event, url) => {
+        event.preventDefault()
+        Logger.info('DEEP LINK', { url })
+        this.openWindow(url.substr(11))
+      })
+    } else {
+      this.app.quit()
+    }
   }
 
   private openWindow = (location?: string, openDevTools?: boolean) => {
