@@ -149,7 +149,7 @@ export default createModel({
 
     async reset() {
       dispatch.backend.set({ connections: [] })
-      dispatch.devices.set({ all: [], query: '', filter: 'all' })
+      dispatch.devices.set({ all: [], query: '', filter: 'all', initialized: false })
     },
 
     async setAttributes(device: IDevice) {
