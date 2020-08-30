@@ -1,12 +1,15 @@
 import { WEB_DIR, EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
+import AutoUpdater from './AutoUpdater'
 import electron from 'electron'
 import TrayMenu from './TrayMenu'
-import AutoUpdater from './AutoUpdater'
 import debug from 'debug'
 import path from 'path'
 import url from 'url'
 
 const d = debug('r3:headless:ElectronApp')
+
+const DEEP_LINK_PROTOCOL = 'remoteit'
+const DEEP_LINK_PROTOCOL_DEV = 'remoteitdev'
 
 export default class ElectronApp {
   public app: electron.App
@@ -15,25 +18,32 @@ export default class ElectronApp {
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private openAtLogin?: boolean
+  private deepLinkUrl?: string
+  private protocol: string
 
   constructor() {
     this.app = electron.app
     this.quitSelected = false
     this.autoUpdater = new AutoUpdater()
-    this.setupDeepLink()
+    this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
+    if (!this.app.requestSingleInstanceLock()) this.app.quit()
+
+    // ref: https://github.com/oikonomopo/electron-deep-linking-mac-win/blob/master/main.js
+    this.app.setAsDefaultProtocolClient(this.protocol)
+
+    // Windows event
     this.app.on('ready', this.handleAppReady)
     this.app.on('activate', this.handleActivate)
     this.app.on('before-quit', () => (this.quitSelected = true))
-    this.app.on('second-instance', () => this.openWindow())
+    this.app.on('second-instance', this.handleSecondInstance)
+    this.app.on('will-finish-launching', this.handleFinishedLaunching)
 
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
-  check = () => {
-    this.autoUpdater.check()
-  }
+  check = () => this.autoUpdater.check()
 
   get url() {
     if (!this.window) return
@@ -49,7 +59,24 @@ export default class ElectronApp {
     this.createSystemTray()
     this.createMainWindow()
     this.handleOpenAtLogin(preferences.data || {})
+    this.openWindow()
     EventBus.emit(EVENTS.ready, this.tray)
+  }
+
+  private handleFinishedLaunching = () => {
+    // Mac protocol handler event
+    this.app.on('open-url', (event, url) => {
+      event.preventDefault()
+      Logger.info('DEEP LINK', { url })
+      this.deepLinkUrl = url.substr(this.protocol.length + 3)
+    })
+  }
+
+  private handleSecondInstance = (_: electron.Event, argv: string[]) => {
+    const link = argv.pop()
+    Logger.info('SECOND INSTANCE ARGS', { argv })
+    if (link) this.deepLinkUrl = link.substr(this.protocol.length + 3)
+    this.openWindow()
   }
 
   private handleActivate = () => {
@@ -126,29 +153,6 @@ export default class ElectronApp {
     new TrayMenu(this.tray)
   }
 
-  private setupDeepLink() {
-    const isSingleInstance = this.app.requestSingleInstanceLock()
-
-    // Deep link protocol
-    this.app.setAsDefaultProtocolClient('remoteit')
-
-    if (isSingleInstance) {
-      // Windows event
-      this.app.on('second-instance', (event, args) => {
-        console.log('ARGS', args)
-        this.openWindow()
-      })
-      // Mac event
-      this.app.on('open-url', (event, url) => {
-        event.preventDefault()
-        Logger.info('DEEP LINK', { url })
-        this.openWindow(url.substr(11))
-      })
-    } else {
-      this.app.quit()
-    }
-  }
-
   private openWindow = (location?: string, openDevTools?: boolean) => {
     if (!this.window || !this.tray) return
     d('Showing window')
@@ -159,6 +163,11 @@ export default class ElectronApp {
     }
 
     this.window.show()
+
+    if (this.deepLinkUrl) {
+      location = this.deepLinkUrl
+      this.deepLinkUrl = undefined
+    }
 
     if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
