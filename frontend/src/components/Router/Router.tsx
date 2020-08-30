@@ -23,7 +23,6 @@ import { LogPage } from '../../pages/LogPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage'
 import { ServiceEditPage } from '../../pages/ServiceEditPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
-import { REGEX_LAST_PATH } from '../../shared/constants'
 
 export const Router: React.FC = () => {
   const { targetDevice, targets, dataReady, os } = useSelector((state: ApplicationState) => ({
@@ -42,9 +41,8 @@ export const Router: React.FC = () => {
   if (guest) setupLocation = 'setupView'
 
   useEffect(() => {
-    if (dataReady && !isDev()) {
-      if (isElectron()) history.push('/')
-      else history.push('/devices/setup')
+    if (dataReady && history.location.pathname === '/') {
+      if (!isElectron()) history.push('/settings/setup')
     }
   }, [dataReady])
 
