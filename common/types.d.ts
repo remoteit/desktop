@@ -206,6 +206,7 @@ declare global {
       label?: string
       accessDisabled?: boolean
     }
+    events: IEventList
   }
 
   interface IService {
@@ -288,6 +289,7 @@ declare global {
     state?: string
     name?: string
     ids?: string[]
+    fromLogs?: number
   }
 
   interface IRegistration {

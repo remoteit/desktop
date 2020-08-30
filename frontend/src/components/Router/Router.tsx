@@ -11,6 +11,7 @@ import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
 import { ServiceAddPage } from '../../pages/ServiceAddPage'
 import { DeviceDetailPage } from '../../pages/DeviceDetailPage'
+import { DeviceLogPage } from '../../pages/DeviceLogPage'
 import { ServiceDetailPage } from '../../pages/ServiceDetailPage'
 import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
@@ -111,6 +112,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices/:deviceID/details">
         <DeviceDetailPage />
+      </Route>
+      <Route path="/devices/:deviceID/logs">
+        <DeviceLogPage />
       </Route>
       <Route path="/devices/:deviceID/edit">
         <DeviceEditPage targetDevice={targetDevice} targets={targets} />

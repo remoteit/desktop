@@ -65,6 +65,30 @@ const DEVICE_SELECT = `
         id
         email
       }
+      events {
+        hasMore
+        total
+        items {
+          id
+          state
+          timestamp
+        }
+      }
+    }
+  }
+}`
+
+const LOG_SELECT_FOR_DEVICE = `{
+  items {
+    id
+    events(from: $from) {
+      hasMore
+      total
+      items {
+        id
+        state
+        timestamp
+      }
     }
   }`
 
@@ -136,6 +160,23 @@ export async function graphQLFetchDevice(id: string) {
   )
 }
 
+export async function graphQLGetMoreLogs(id: string, from: number) {
+  return await graphQLRequest(
+    `
+        query($ids: [String!], $from: Int) {
+          login {
+            id
+            devices(id: $ids) ${LOG_SELECT_FOR_DEVICE}
+          }
+        }
+      `,
+    {
+      from,
+      ids: [id],
+    }
+  )
+}
+
 export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   let data: IDevice[] = gqlDevices?.map(
@@ -181,6 +222,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
         scripting: e.scripting,
       })),
       hidden,
+      events: d.events,
     })
   )
   return updateConnections(renameServices(data))

@@ -1,4 +1,4 @@
-import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
+import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor, graphQLGetMoreLogs } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
@@ -128,6 +128,27 @@ export default createModel({
         await graphQLHandleError(error)
         return { devices: [], total: 0, error }
       }
+    },
+    async fetchLogs({id, from}: any, globalState: any) {
+      const { graphQLMetadata, graphQLError, setDevice, set } = dispatch.devices
+      const { all } = globalState.devices
+
+      if (!hasCredentials()) return
+
+      set({ getting: true })
+
+      try {
+        const gqlResponse = await graphQLGetMoreLogs(id, from)
+        const [gqlData] = await graphQLMetadata(gqlResponse)
+        const {events} = gqlData.devices.items[0]
+        const devices: IDevice[] = all.filter((d: IDevice) => d.id === id)
+          .map((_d: IDevice) => ({..._d, events: {...events, items: _d.events.items.concat(events.items)}}))
+        setDevice({ id, device: devices[0] })
+      } catch (error) {
+        await graphQLError(error)
+      }
+
+      set({ getting: false })
     },
 
     async updateShareDevice(device: IDevice) {
