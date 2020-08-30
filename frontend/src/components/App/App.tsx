@@ -51,14 +51,6 @@ export const App: React.FC = () => {
       </Page>
     )
 
-  if (!initialized)
-    return (
-      <Page>
-        <Header />
-        <LoadingMessage message="Starting up..." />
-      </Page>
-    )
-
   if (signedOut)
     return (
       <Page>
@@ -72,6 +64,14 @@ export const App: React.FC = () => {
       <Page>
         <Header />
         <InstallationNotice />
+      </Page>
+    )
+
+  if (!initialized)
+    return (
+      <Page>
+        <Header />
+        <LoadingMessage message="Starting up..." />
       </Page>
     )
 
