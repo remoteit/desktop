@@ -2,7 +2,8 @@ import React from 'react'
 import useFormal from '@kevinwolf/formal-web'
 import { makeStyles } from '@material-ui/core/styles'
 import { Button, TextField, Link } from '@material-ui/core'
-import { SignInFormControllerProps } from '../../controllers/SignInFormController/SignInFormController'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import styles from '../../styling'
 import * as yup from 'yup'
 
@@ -19,12 +20,14 @@ const initialValues = {
   username: '',
 }
 
-export function SignInForm({ signInError, signInStarted, signIn }: SignInFormControllerProps) {
+export function SignInForm() {
   const css = useStyles()
+  const { signInError, signInStarted } = useSelector((state: ApplicationState) => state.auth)
+  const { auth } = useDispatch<Dispatch>()
   const formal = useFormal(initialValues, {
     schema,
     onSubmit: ({ password, username }: { password: string; username: string }) => {
-      signIn({ username: username.toLowerCase(), password })
+      auth.signIn({ username: username.toLowerCase(), password })
     },
   })
 

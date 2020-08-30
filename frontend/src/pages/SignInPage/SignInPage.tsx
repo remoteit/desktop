@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { SignInFormController } from '../../controllers/SignInFormController/SignInFormController'
+import { SignInForm } from '../../components/SignInForm'
 import { Link, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { isElectron } from '../../services/Browser'
@@ -24,7 +24,7 @@ export function SignInPage() {
       <div className={css.logo}>
         <Logo />
       </div>
-      <SignInFormController />
+      <SignInForm />
       {allowSwitch && (
         <div className={css.link}>
           {secure ? (
