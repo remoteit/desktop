@@ -73,7 +73,7 @@ class Server {
         app.quit()
       })
       .listen(SSL_PORT, () => {
-        Logger.info('HTTPS SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
+        Logger.info('HTTPS SERVER STARTED', { port: SSL_PORT, directory: WEB_DIR })
       })
 
     this.io = SocketIO()
