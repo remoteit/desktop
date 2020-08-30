@@ -16,7 +16,8 @@ import { Page } from '../../pages/Page'
 import styles from '../../styling'
 
 export const App: React.FC = () => {
-  const { installed, signedOut, uninstalling } = useSelector((state: ApplicationState) => ({
+  const { initialized, installed, signedOut, uninstalling } = useSelector((state: ApplicationState) => ({
+    initialized: state.devices.initialized,
     installed: state.binaries.installed,
     signedOut: !state.auth.user || !state.auth.authenticated,
     uninstalling: state.ui.uninstalling,
@@ -47,6 +48,14 @@ export const App: React.FC = () => {
       <Page>
         <Header />
         <LoadingMessage message="Please wait, uninstalling..." />
+      </Page>
+    )
+
+  if (!initialized)
+    return (
+      <Page>
+        <Header />
+        <LoadingMessage message="Starting up..." />
       </Page>
     )
 
