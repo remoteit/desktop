@@ -28,8 +28,6 @@ export default class ElectronApp {
     this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
     if (!this.app.requestSingleInstanceLock()) this.app.quit()
-
-    // ref: https://github.com/oikonomopo/electron-deep-linking-mac-win/blob/master/main.js
     this.app.setAsDefaultProtocolClient(this.protocol)
 
     // Windows event
@@ -37,7 +35,7 @@ export default class ElectronApp {
     this.app.on('activate', this.handleActivate)
     this.app.on('before-quit', () => (this.quitSelected = true))
     this.app.on('second-instance', this.handleSecondInstance)
-    this.app.on('will-finish-launching', this.handleFinishedLaunching)
+    this.app.on('open-url', this.handleOpenUrl)
 
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
     EventBus.on(EVENTS.open, this.openWindow)
@@ -56,6 +54,7 @@ export default class ElectronApp {
    * Some APIs can only be used after this event occurs.
    */
   private handleAppReady = () => {
+    this.setDeepLink(process.argv.pop())
     this.createSystemTray()
     this.createMainWindow()
     this.handleOpenAtLogin(preferences.data || {})
@@ -63,20 +62,26 @@ export default class ElectronApp {
     EventBus.emit(EVENTS.ready, this.tray)
   }
 
-  private handleFinishedLaunching = () => {
-    // Mac protocol handler event
-    this.app.on('open-url', (event, url) => {
-      event.preventDefault()
-      Logger.info('DEEP LINK', { url })
-      this.deepLinkUrl = url.substr(this.protocol.length + 3)
-    })
+  private handleSecondInstance = (_: electron.Event, argv: string[]) => {
+    // Windows deep link support
+    Logger.info('SECOND INSTANCE ARGS', { argv })
+    this.setDeepLink(argv.pop())
+    this.openWindow()
   }
 
-  private handleSecondInstance = (_: electron.Event, argv: string[]) => {
-    const link = argv.pop()
-    Logger.info('SECOND INSTANCE ARGS', { argv })
-    if (link) this.deepLinkUrl = link.substr(this.protocol.length + 3)
+  private handleOpenUrl = (event: electron.Event, url: string) => {
+    // Mac deep link support
+    event.preventDefault()
+    this.setDeepLink(url)
     this.openWindow()
+  }
+
+  private setDeepLink(link?: string) {
+    const scheme = this.protocol + '://'
+    if (link?.includes(scheme)) {
+      this.deepLinkUrl = link.substr(scheme.length)
+      Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
+    }
   }
 
   private handleActivate = () => {
