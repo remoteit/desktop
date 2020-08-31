@@ -20,6 +20,7 @@ export const ListItemCheckbox: React.FC<Props> = ({ label, subLabel, disabled, c
           checked={checked}
           inputRef={inputRef}
           onChange={event => onClick(event.target.checked)}
+          onClick={event => event.stopPropagation()}
           checkedIcon={<Icon name="check-square" size="lg" type="solid" />}
           icon={<Icon name="square" size="lg" type="light" />}
           color="primary"

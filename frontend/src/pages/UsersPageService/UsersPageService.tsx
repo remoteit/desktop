@@ -18,7 +18,7 @@ export const UsersPageService: React.FC = () => {
   }, [])
 
   return (
-    <Container scrollbars header={<SharedUsersHeader />}>
+    <Container scrollbars header={<SharedUsersHeader device={device} />}>
       {!!(service && device && shared) && <SharedUsersList device={device} service={service} />}
     </Container>
   )

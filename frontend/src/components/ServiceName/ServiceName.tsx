@@ -21,7 +21,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
   const accessDisabled = !!device?.attributes.accessDisabled
-  const online = instance?.state === 'active' || connection?.active
+  const offline = instance?.state !== 'active' && !connection?.active
 
   let name = service ? attributeName(service) : attributeName(device)
   let failover = connection?.isP2P === false
@@ -29,7 +29,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   if (menu && menu[0] === '/connections') name = connection?.name || name
 
   return (
-    <Title online={online}>
+    <Title offline={offline}>
       {!instance && !connection ? 'No device found' : name}
       <TargetPlatform id={device?.targetPlatform} />
       {device?.shared && (
