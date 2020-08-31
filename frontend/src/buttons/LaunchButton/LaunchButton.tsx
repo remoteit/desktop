@@ -84,7 +84,10 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
               autoFocus
               variant="filled"
               label="Username"
-              onChange={event => setUsername(event.target.value)}
+              onChange={event => {
+                setUsername(event.target.value)
+                event.stopPropagation()
+              }}
               fullWidth
             />
           </DialogContent>
