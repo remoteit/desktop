@@ -41,9 +41,8 @@ export const Router: React.FC = () => {
   if (guest) setupLocation = 'setupView'
 
   useEffect(() => {
-    if (dataReady && !isDev()) {
-      if (isElectron()) history.push('/')
-      else history.push('/devices/setup')
+    if (dataReady && history.location.pathname === '/') {
+      if (!isElectron()) history.push('/settings/setup')
     }
   }, [dataReady])
 
@@ -51,6 +50,13 @@ export const Router: React.FC = () => {
 
   return (
     <Switch>
+      <Redirect
+        from={'/connect/:serviceID'}
+        to={{
+          pathname: '/connections/:serviceID',
+          state: { autoConnect: true },
+        }}
+      />
       <Route path={['/settings/setupServices/network', '/devices/setupServices/network']}>
         <NetworkPage />
       </Route>

@@ -25,20 +25,21 @@ export const SettingsPage = () => {
     cliVersion: state.binaries.installedVersion || '(loading...)',
     preferences: state.backend.preferences,
   }))
-
   const css = useStyles()
-
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
 
   const quitWarning = () =>
     window.confirm('Are you sure? Quitting will not close your connections.') && emit('user/quit')
   const signOutWarning = () => {
-    window.confirm(
-      'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
-    ) && emit('user/sign-out')
-    analyticsHelper.track('signOut')
-    analyticsHelper.clearIdentity()
+    if (
+      window.confirm(
+        'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
+      )
+    ) {
+      emit('user/sign-out')
+      analyticsHelper.track('signOut')
+    }
   }
 
   const clearWarning = () =>

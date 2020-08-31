@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { emit } from '../../services/Controller'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
@@ -12,6 +12,7 @@ export type ConnectButtonProps = {
   service?: IService
   size?: 'icon' | 'medium' | 'small'
   color?: Color
+  autoConnect?: boolean
 }
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
@@ -19,7 +20,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   service,
   size = 'medium',
   color = 'secondary',
+  autoConnect,
 }) => {
+  const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
   const hidden = connection?.active || !service || service.state !== 'active'
   const connecting = !!connection?.connecting
   const clickHandler = () => {
@@ -33,6 +36,13 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       emit('service/connect', connection || newConnection(service))
     }
   }
+
+  useEffect(() => {
+    if (autoStart && service) {
+      setAutoStart(false)
+      clickHandler()
+    }
+  })
 
   return (
     <Fade in={!hidden} timeout={600}>

@@ -90,7 +90,12 @@ export const ServicePage: React.FC = () => {
           <LaunchSetting connection={connection} service={service} />
         </List>
         <div className={css.actions}>
-          <ConnectButton connection={connection} service={service} size="medium" />
+          <ConnectButton
+            connection={connection}
+            service={service}
+            autoConnect={location.state?.autoConnect}
+            size="medium"
+          />
         </div>
       </Columns>
       <Divider />

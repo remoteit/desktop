@@ -1,6 +1,5 @@
 import cli from './cliInterface'
 import debug from 'debug'
-import Logger from './Logger'
 import EventBus from './EventBus'
 import { EventEmitter } from 'events'
 import { IP_OPEN, IP_PRIVATE } from './sharedCopy/constants'
@@ -25,7 +24,7 @@ export default class Connection extends EventEmitter {
 
   set({ host = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
     this.params = { host, restriction, failover, ...connection }
-    Logger.info('SET CONNECTION', { params: this.params })
+    d('SET CONNECTION', { params: this.params })
     if (setCLI) cli.setConnection(this.params, this.error)
   }
 

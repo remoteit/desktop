@@ -1,14 +1,14 @@
-import Controller from '../services/Controller'
+import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
-import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
 import { emit } from '../services/Controller'
+import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 const USER_KEY = 'user'
 
 export interface AuthState {
-  loadingInitialState: boolean
+  initialized: boolean
   signInStarted: boolean
   authenticated: boolean
   signInError?: string
@@ -16,7 +16,7 @@ export interface AuthState {
 }
 
 const state: AuthState = {
-  loadingInitialState: true,
+  initialized: false,
   authenticated: false,
   signInStarted: false,
   signInError: undefined,
@@ -35,12 +35,12 @@ export default createModel({
       }
 
       if (user?.username) {
-        dispatch.auth.setUser(user)
+        await dispatch.auth.setUser(user)
       } else {
-        dispatch.auth.signedOut()
+        dispatch.auth.setInitialized()
       }
     },
-    handleDisconnect(_: void, rootState: any) {
+    async handleDisconnect(_: void, rootState: any) {
       const { authenticated } = rootState.auth
       // re-open if disconnected unintentionally
       if (authenticated) Controller.open(true)
@@ -92,30 +92,35 @@ export default createModel({
     async authenticated() {
       dispatch.auth.signedIn()
       dispatch.auth.setAuthenticated(true)
+      dispatch.auth.setInitialized()
       emit('init')
     },
     async signInError(error: string) {
-      dispatch.auth.signedOut()
+      dispatch.auth.signInFinished()
       dispatch.auth.setError(error)
+      dispatch.auth.setInitialized()
     },
     /**
      * Gets called when the backend signs the user out
      */
     async signedOut() {
-      await r3.post('/user/logout')
+      if (r3.token) await r3.post('/user/logout')
       dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
-      window.location.search = ''
+      window.location.hash = ''
       emit('user/sign-out-complete')
       analyticsHelper.clearIdentity()
       Controller.close()
     },
   }),
   reducers: {
+    setInitialized(state: AuthState) {
+      state.initialized = true
+    },
     signInStarted(state: AuthState) {
       state.signInStarted = true
     },
@@ -130,7 +135,6 @@ export default createModel({
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {
       state.authenticated = authenticated
-      state.loadingInitialState = false
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
@@ -140,7 +144,7 @@ export default createModel({
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
       analyticsHelper.identify(user.id)
-      Controller.emit('authentication', { username: user.username, authHash: user.authHash })
+      emit('authentication', { username: user.username, authHash: user.authHash })
       updateUserCredentials(user)
     },
   },

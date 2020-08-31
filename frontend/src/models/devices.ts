@@ -8,6 +8,7 @@ import { IContact } from 'remote.it'
 type DeviceParams = { [key: string]: any }
 
 type IDeviceState = DeviceParams & {
+  initialized: boolean
   all: IDevice[]
   total: number
   results: number
@@ -24,6 +25,7 @@ type IDeviceState = DeviceParams & {
 }
 
 const state: IDeviceState = {
+  initialized: false,
   all: [],
   total: 0,
   results: 0,
@@ -73,7 +75,7 @@ export default createModel({
       if (append) set({ all: [...all, ...devices], contacts })
       else set({ all: devices })
 
-      set({ fetching: false, append: false, contacts })
+      set({ initialized: true, fetching: false, append: false, contacts })
 
       cleanOrphanConnections()
       dispatch.ui.devicesUpdated()
@@ -147,7 +149,7 @@ export default createModel({
 
     async reset() {
       dispatch.backend.set({ connections: [] })
-      dispatch.devices.set({ all: [], query: '', filter: 'all' })
+      dispatch.devices.set({ all: [], query: '', filter: 'all', initialized: false })
     },
 
     async setAttributes(device: IDevice) {
@@ -230,7 +232,8 @@ export function getUsersConnectedDeviceOrService(device?: IDevice, service?: ISe
 }
 
 export function getDetailUserPermission(device: IDevice, emailUser: string) {
-  const services = device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
+  const services =
+    device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
   return {
     scripting: device?.access.find(_ac => _ac.email === emailUser)?.scripting || false,
     numberServices: services.length,
