@@ -68,7 +68,7 @@ export const ServicePage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
-            <AddUserButton />
+            <AddUserButton device={device} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />

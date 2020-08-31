@@ -8,15 +8,17 @@ import { useLocation } from 'react-router-dom'
 import { Duration } from '../Duration'
 
 interface Props {
-  device: IDevice
+  device?: IDevice
   service?: IService
 }
 
 export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
   const usersConnected = getUsersConnectedDeviceOrService(device, service)
-  const users = service ? service.access : device?.access
+  const users = service ? service.access : device?.access || []
   const usersToRender = usersConnected.concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
   const location = useLocation()
+
+  if (!device?.access?.length) return null
 
   return (
     <>
