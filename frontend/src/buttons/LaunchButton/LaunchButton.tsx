@@ -32,14 +32,18 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
   const [open, setOpen] = useState<boolean>(false)
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
   const [openModalRequierePutty, setOpenModalRequierePutty] = useState<boolean>(false)
+  const close = () => setOpen(false)
 
   useEffect(() => {
     setUsername(connection?.username || '')
   }, [connection?.username])
 
+  useEffect(() => {
+    requireInstallPutty ? setOpenModalRequierePutty(true) : close()
+  }, [requireInstallPutty])
+
   if (!connection || !connection.active || !app) return null
 
-  const close = () => setOpen(false)
   const closeModal = () => setOpenModalRequierePutty(false)
   const check = () => {
     if (!app.prompt || connection.username) launch()
@@ -54,7 +58,6 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
     const launchApp = app.launch({ ...connection, username })
 
     app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', launchApp)
-    requireInstallPutty ? setOpenModalRequierePutty(true) : close()
   }
 
   const getPutty = () => {
