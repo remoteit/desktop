@@ -64,7 +64,7 @@ export const TargetPlatform: React.FC<{ id?: number }> = ({ id }) => {
 
   return (
     <sup>
-      <Tooltip title={TARGET_PLATFORMS[id]}>
+      <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
         <Icon {...{ name, type, size }} />
       </Tooltip>
     </sup>

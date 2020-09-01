@@ -54,7 +54,12 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
         </IconButton>
       </Tooltip>
       <Dialog open={open} onClose={close} maxWidth="xs" fullWidth>
-        <form onSubmit={launch}>
+        <form
+          onSubmit={event => {
+            event.preventDefault()
+            launch()
+          }}
+        >
           <Typography variant="h1">Enter a username to launch</Typography>
           <DialogContent>
             <Typography variant="h4">{app.launch({ ...connection, username })}</Typography>

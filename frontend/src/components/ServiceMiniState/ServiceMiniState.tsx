@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@material-ui/core/styles'
-import { IconButton } from '@material-ui/core'
+import { makeStyles, ButtonBase, Typography, Menu, MenuItem } from '@material-ui/core'
+import { ConnectButton } from '../../buttons/ConnectButton'
 import { colors, spacing, Color } from '../../styling'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
@@ -9,9 +9,11 @@ import { Icon } from '../Icon'
 interface Props {
   connection?: IConnection
   service?: IService
+  setContextMenu: React.Dispatch<React.SetStateAction<IContextMenu>>
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu }) => {
+  const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
   const history = useHistory()
   const css = useStyles()
   const connected = !!service?.sessions.length
@@ -24,6 +26,8 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service }) => {
     if (connection.active) state = 'connected'
     if (connection.error?.message) state = 'error'
   }
+
+  if (!service) return null
 
   switch (state) {
     case 'error':
@@ -48,19 +52,46 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service }) => {
       colorName = 'grayLight'
   }
 
+  // const handleClose = () => setContextMenu(undefined)
+  const color = colors[colorName]
+
   return (
-    <SessionsTooltip service={service} label>
-      <IconButton
-        className={connected ? css.icon : css.button}
-        onClick={() => history.push(`/devices/${service?.deviceID}/${service?.id}${connected ? '/users' : ''}`)}
-      >
-        {connected ? (
-          <Icon name="user" type="solid" size="xs" color={colorName} fixedWidth />
-        ) : (
-          <span className={css.indicator} style={{ backgroundColor: colors[colorName] }} />
-        )}
-      </IconButton>
-    </SessionsTooltip>
+    <>
+      <SessionsTooltip service={service} open={openTooltip} placement="top" arrow label>
+        {/* <ButtonBase
+          
+          className={connected ? css.icon : css.button}
+          onMouseEnter={() => setOpenTooltip(true)}
+          onMouseLeave={() => setOpenTooltip(false)}
+          onClick={event => {
+            setContextMenu({
+              el: event.currentTarget,
+              connection,
+              service,
+            })
+            setOpenTooltip(false)
+          }}
+          // onClick={() => history.push(`/devices/${service?.deviceID}/${service?.id}${connected ? '/users' : ''}`)}
+        > */}
+        {connected && <Icon name="user" type="solid" size="xs" color={colorName} fixedWidth />}
+        <span
+          className={css.indicator}
+          style={{ color, borderColor: color }}
+          onMouseEnter={() => setOpenTooltip(true)}
+          onMouseLeave={() => setOpenTooltip(false)}
+          onMouseDown={event => {
+            setContextMenu({
+              el: event.currentTarget,
+              serviceID: service.id,
+            })
+            setOpenTooltip(false)
+          }}
+        >
+          {service.type}
+        </span>
+        {/* </ButtonBase> */}
+      </SessionsTooltip>
+    </>
   )
 }
 
@@ -68,11 +99,20 @@ const useStyles = makeStyles({
   button: { padding: '8px 0' },
   icon: { padding: '0 0 8px' },
   indicator: {
-    height: 2,
-    borderRadius: 2,
-    width: spacing.sm,
-    display: 'inline-block',
+    opacity: 0.6,
+    borderRadius: 3,
+    fontSize: 8,
+    fontWeight: 600,
+    padding: 1,
+    paddingLeft: 3,
+    paddingRight: 3,
     marginLeft: 2,
     marginRight: 2,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    '&:hover': {
+      cursor: 'pointer',
+      opacity: 1,
+    },
   },
 })
