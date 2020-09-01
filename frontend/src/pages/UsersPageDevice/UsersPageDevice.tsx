@@ -18,7 +18,7 @@ export const UsersPageDevice: React.FC = () => {
   }, [])
 
   return (
-    <Container scrollbars header={<SharedUsersHeader device={device} />}>
+    <Container header={<SharedUsersHeader device={device} />}>
       <SharedUsersList device={device} />
     </Container>
   )

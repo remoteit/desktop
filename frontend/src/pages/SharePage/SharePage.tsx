@@ -30,7 +30,6 @@ export const SharePage = () => {
 
   return (
     <Container
-      scrollbars
       header={
         <>
           <Breadcrumbs />
