@@ -18,6 +18,7 @@ export const fontSizes: { [key in FontSize]: number } = {
 export type Color =
   | 'primary'
   | 'primaryLight'
+  | 'primaryLighter'
   | 'primaryHighlight'
   | 'secondary'
   | 'successLight'
@@ -43,6 +44,7 @@ export type Color =
 export const colors: { [key in Color]: string } = {
   primary: '#0096e7',
   primaryLight: '#9ed3f0',
+  primaryLighter: '#e7f2f9',
   primaryHighlight: '#edf8ff',
   secondary: '#75bd00',
   successLight: '#a4db4c',

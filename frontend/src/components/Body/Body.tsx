@@ -12,7 +12,7 @@ type Props = {
 
 export const Body: React.FC<Props> = ({ inset, center, maxHeight, className = '', children }) => {
   const css = useStyles()
-  const [hover, setHover] = useState<boolean>()
+  const [hover, setHover] = useState<boolean>(true)
   className = classnames(className, css.body, center && css.center, inset && css.inset, hover && css.showScroll)
   let style = maxHeight ? { maxHeight: `${maxHeight}px` } : {}
   return (

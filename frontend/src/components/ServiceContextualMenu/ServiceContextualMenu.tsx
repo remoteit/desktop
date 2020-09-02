@@ -18,8 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
-import { colors, spacing, Color } from '../../styling'
-import { SessionsTooltip } from '../SessionsTooltip'
+import { colors, spacing } from '../../styling'
 import { Icon } from '../Icon'
 
 interface Props {
@@ -32,20 +31,8 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-
-  const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
   const history = useHistory()
   const css = useStyles()
-  const connected = !!service?.sessions.length
-
-  let colorName: Color = 'warning'
-  let state = service ? service.state : 'unknown'
-
-  if (connection) {
-    if (connection.connecting && !connection.active) state = 'connecting'
-    if (connection.active) state = 'connected'
-    if (connection.error?.message) state = 'error'
-  }
 
   if (!el) return null
 

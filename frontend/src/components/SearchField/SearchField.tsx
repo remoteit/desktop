@@ -28,10 +28,10 @@ export const SearchField: React.FC = () => {
       }}
     >
       <InputBase
-        autoFocus
         value={query}
         className={css.input}
-        onKeyPress= {(e) => {
+        classes={{ focused: css.focused }}
+        onKeyPress={e => {
           if (e.key === 'Enter' && query.trim().length < 2) {
             devices.set({ query: '', searched: false, from: 0 })
             devices.fetch()
@@ -84,10 +84,10 @@ const useStyles = makeStyles({
     marginRight: spacing.sm,
     padding: `${spacing.sm}px ${spacing.md}px`,
     transition: 'background-color 300ms',
-    borderWidth: '1px 1px 0 1px',
-    borderStyle: 'solid',
-    borderColor: colors.grayLighter,
-    '&:focus,&:hover': { borderColor: colors.grayLight },
+    '&:focus, &:hover': { backgroundColor: colors.primaryLighter },
+  },
+  focused: {
+    backgroundColor: colors.primaryLighter,
   },
   total: {
     marginRight: spacing.sm,

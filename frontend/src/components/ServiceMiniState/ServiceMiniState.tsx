@@ -1,8 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { makeStyles, ButtonBase, Typography, Menu, MenuItem } from '@material-ui/core'
-import { ConnectButton } from '../../buttons/ConnectButton'
-import { colors, spacing, Color } from '../../styling'
+import { makeStyles } from '@material-ui/core'
+import { colors, Color } from '../../styling'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
 
@@ -14,7 +13,6 @@ interface Props {
 
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu }) => {
   const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
-  const history = useHistory()
   const css = useStyles()
   const connected = !!service?.sessions.length
 
@@ -52,27 +50,11 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       colorName = 'grayLight'
   }
 
-  // const handleClose = () => setContextMenu(undefined)
   const color = colors[colorName]
 
   return (
     <>
       <SessionsTooltip service={service} open={openTooltip} placement="top" arrow label>
-        {/* <ButtonBase
-          
-          className={connected ? css.icon : css.button}
-          onMouseEnter={() => setOpenTooltip(true)}
-          onMouseLeave={() => setOpenTooltip(false)}
-          onClick={event => {
-            setContextMenu({
-              el: event.currentTarget,
-              connection,
-              service,
-            })
-            setOpenTooltip(false)
-          }}
-          // onClick={() => history.push(`/devices/${service?.deviceID}/${service?.id}${connected ? '/users' : ''}`)}
-        > */}
         {connected && <Icon name="user" type="solid" size="xs" color={colorName} fixedWidth />}
         <span
           className={css.indicator}
@@ -89,7 +71,6 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
         >
           {service.type}
         </span>
-        {/* </ButtonBase> */}
       </SessionsTooltip>
     </>
   )
