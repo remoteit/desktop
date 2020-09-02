@@ -46,7 +46,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
       <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner}>
         <ComboButton connection={connection} service={service} />
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
-        <ListItemSecondaryAction className={css.actions}>
+        <ListItemSecondaryAction>
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
           <SessionsButton service={service} />
@@ -60,7 +60,6 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 
 const useStyles = makeStyles({
   indent: { paddingLeft: spacing.xxl },
-  actions: { right: 70 },
   details: { '& > span': { marginLeft: spacing.xs } },
   restriction: { color: colors.grayDarker },
 })

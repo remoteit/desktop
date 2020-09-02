@@ -5,6 +5,7 @@ import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ListItemIcon, ListItemText, ListItemSecondaryAction, Tooltip, Chip, makeStyles } from '@material-ui/core'
+import { spacing } from '../../styling'
 
 const MAX_INDICATORS = 10
 
@@ -54,7 +55,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
         primary={<ServiceName device={device} connection={activeConnection} />}
         secondary={thisDevice && 'This system'}
       />
-      <ListItemSecondaryAction style={{ right: 90 }}>
+      <ListItemSecondaryAction>
         <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} />
       </ListItemSecondaryAction>
     </ListItemLocation>
