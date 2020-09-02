@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
 import { useSelector } from 'react-redux'
@@ -23,11 +25,12 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
-  const { requireInstallPutty, loading} = useSelector((state: ApplicationState) => ({
+  const { requireInstallPutty, loading } = useSelector((state: ApplicationState) => ({
     requireInstallPutty: state.ui.requireInstallPutty,
-    loading: state.ui.loading
+    loading: state.ui.loading,
   }))
   const css = useStyles()
+  const { ui } = useDispatch<Dispatch>()
   const app = useApplication(service && service.typeID)
   const [open, setOpen] = useState<boolean>(false)
   const [username, setUsername] = useState<string>((connection && connection.username) || '')
@@ -44,7 +47,10 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
 
   if (!connection || !connection.active || !app) return null
 
-  const closeModal = () => setOpenModalRequierePutty(false)
+  const closeModal = () => {
+    setOpenModalRequierePutty(false)
+    ui.set({ requireInstallPutty: false })
+  }
   const check = () => {
     if (!app.prompt || connection.username) launch()
     else setOpen(true)
@@ -71,19 +77,22 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
     <>
       <Tooltip title={`Launch ${app.title}`}>
         <IconButton onClick={check} disabled={loading}>
-          <Icon 
-            className={app.iconRotate ? css.rotate : ''} 
+          <Icon
+            className={app.iconRotate ? css.rotate : ''}
             name={loading ? 'spinner-third' : app.icon}
             spin={loading}
-            size="md" 
-            fixedWidth />
-         </IconButton>
+            size="md"
+            fixedWidth
+          />
+        </IconButton>
       </Tooltip>
       <Dialog open={open} onClose={close} maxWidth="xs" fullWidth>
-        <form onSubmit={event => {
+        <form
+          onSubmit={event => {
             event.preventDefault()
             launch()
-          }}>
+          }}
+        >
           <Typography variant="h1">Enter a username to launch</Typography>
           <DialogContent>
             <Typography variant="h4">{app.launch({ ...connection, username })}</Typography>
@@ -110,22 +119,15 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
       </Dialog>
 
       <Dialog open={openModalRequierePutty} onClose={closeModal} maxWidth="xs" fullWidth>
-          <Typography variant="h1">you should install Putty for open SSH</Typography>
-          <DialogContent>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={closeModal} color="primary" size="small" type="button">
-              Cancel
-            </Button>
-            <Button 
-              onClick={getPutty}
-              variant="contained" 
-              color="primary" 
-              size="small" 
-              type="button">
-              Get to download Putty
-            </Button>
-          </DialogActions>
+        <Typography variant="h1">Please install Putty to launch SSH connections.</Typography>
+        <DialogActions>
+          <Button onClick={closeModal} color="primary" size="small" type="button">
+            Cancel
+          </Button>
+          <Button onClick={getPutty} variant="contained" color="primary" size="small" type="button">
+            Download Putty
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   )
