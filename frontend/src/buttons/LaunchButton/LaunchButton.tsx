@@ -18,6 +18,7 @@ import { Icon } from '../../components/Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { emit } from '../../services/Controller'
 import { ApplicationState } from '../../store'
+import { launchBrowser } from '../../services/Browser'
 
 type Props = {
   connection?: IConnection
@@ -65,7 +66,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
       })
     const launchApp = app.launch({ ...connection, username })
 
-    app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', {coomand: launchApp, pathPutty})
+    launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', {command: launchApp, pathPutty})
   }
 
   const getPutty = () => {

@@ -39,11 +39,6 @@ class Application {
     const matches: string[] = result.match(/\[[^\]]*\]/g) || []
     return matches.map(m => m.slice(1, -1))
   }
-
-  launchBrowser(type: string) {
-    const platform = navigator ? navigator.platform.toLowerCase() : ''
-    return !(type === 'SSH' && platform.includes('win'))
-  }
 }
 
 const applications: Application[] = [
