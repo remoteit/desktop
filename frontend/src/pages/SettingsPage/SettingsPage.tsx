@@ -14,6 +14,8 @@ import { makeStyles } from '@material-ui/core/styles'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
+import { Avatar } from '../../components/Avatar'
+import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -58,12 +60,15 @@ export const SettingsPage = () => {
       header={
         <>
           <OutOfBand />
-          <Typography className={css.header} variant="h1">
-            <Tooltip title="Visit remote.it on the web">
-              <ButtonBase onClick={() => window.open('https://remote.it')}>
-                <Logo width={110} />
-              </ButtonBase>
-            </Tooltip>
+          <Typography variant="h1">
+            <Title>
+              <Tooltip title="Visit remote.it on the web">
+                <ButtonBase onClick={() => window.open('https://remote.it')}>
+                  <Logo className={css.logo} width={110} />
+                </ButtonBase>
+              </Tooltip>
+            </Title>
+            <Avatar email={user?.email} />
           </Typography>
         </>
       }
@@ -145,5 +150,5 @@ export const SettingsPage = () => {
 }
 
 const useStyles = makeStyles({
-  header: { '& img': { marginBottom: spacing.sm } },
+  logo: { marginBottom: spacing.xs },
 })
