@@ -37,6 +37,7 @@ export type Color =
   | 'white'
   | 'black'
   | 'darken'
+  | 'screen'
   | 'rpi'
 
 export const colors: { [key in Color]: string } = {
@@ -61,6 +62,7 @@ export const colors: { [key in Color]: string } = {
   white: '#fff',
   black: '#000',
   darken: 'rgba(0,0,0,0.2)',
+  screen: 'rgba(0,0,0,0.03)',
   rpi: '#C51A4A',
 }
 

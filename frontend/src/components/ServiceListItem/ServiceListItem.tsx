@@ -60,7 +60,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 
 const useStyles = makeStyles({
   indent: { paddingLeft: spacing.xxl },
-  actions: { right: 60 },
+  actions: { right: 70 },
   details: { '& > span': { marginLeft: spacing.xs } },
   restriction: { color: colors.grayDarker },
 })
