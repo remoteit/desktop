@@ -250,7 +250,8 @@ declare global {
 
   interface IPuttyValidation {
     install: boolean,
-    loading: boolean
+    loading: boolean,
+    pathPutty: string
   }
 
   interface ILan {

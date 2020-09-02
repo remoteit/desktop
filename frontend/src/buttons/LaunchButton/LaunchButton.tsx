@@ -25,9 +25,10 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
-  const { requireInstallPutty, loading } = useSelector((state: ApplicationState) => ({
+  const { requireInstallPutty, loading, pathPutty } = useSelector((state: ApplicationState) => ({
     requireInstallPutty: state.ui.requireInstallPutty,
     loading: state.ui.loading,
+    pathPutty: state.ui.pathPutty,
   }))
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
@@ -64,7 +65,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service }) => {
       })
     const launchApp = app.launch({ ...connection, username })
 
-    app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', launchApp)
+    app.launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', {coomand: launchApp, pathPutty})
   }
 
   const getPutty = () => {

@@ -189,7 +189,8 @@ function getEventHandlers() {
       console.log({result});
       ui.set({ 
        requireInstallPutty: result.install,
-       loading: result.loading
+       loading: result.loading,
+       pathPutty: result.pathPutty,
       })
     },
 
