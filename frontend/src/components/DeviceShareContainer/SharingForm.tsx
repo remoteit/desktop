@@ -59,6 +59,13 @@ export function SharingForm({
 
   return (
     <>
+      <Typography variant="subtitle1">Services</Typography>
+      <ServiceCheckboxes
+        onChange={handleChangeServices}
+        services={device.services.map(s => ({ label: s.name, value: s.id }))}
+        saving={saving}
+        selectedServices={selectedServices}
+      />
       <List>
         <ListItemSetting
           label="Allow script execution"
@@ -69,13 +76,6 @@ export function SharingForm({
           onClick={handleChangeScripting}
         />
       </List>
-      <Typography variant="subtitle1">Services</Typography>
-      <ServiceCheckboxes
-        onChange={handleChangeServices}
-        services={device.services.map(s => ({ label: s.name, value: s.id }))}
-        saving={saving}
-        selectedServices={selectedServices}
-      />
       <ShareSaveActions
         onCancel={() => history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))}
         onSave={action}
@@ -115,8 +115,8 @@ function ServiceCheckboxes({
     <>
       <List>
         <ListItemCheckbox disabled={saving} label="Select all" onClick={checked => selectAll(checked, services)} />
-        <Divider />
       </List>
+      <Divider />
       <List>
         {services.map((service, key) => (
           <ListItemCheckbox

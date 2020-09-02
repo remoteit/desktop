@@ -28,9 +28,7 @@ const useStyles = makeStyles({
     flexGrow: 1,
     position: 'relative',
     '-webkit-overflow-scrolling': 'touch',
-    '& section': {
-      padding: `${spacing.xl}px`,
-    },
+    '& section': { padding: spacing.xl },
     '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
     '&::-webkit-scrollbar:vertical': { width: 11 },
     '&::-webkit-scrollbar-thumb': {
