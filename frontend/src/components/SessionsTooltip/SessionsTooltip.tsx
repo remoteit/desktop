@@ -42,7 +42,7 @@ export const SessionsTooltip: React.FC<Props> = ({ service, label, children, ...
         </>
       }
     >
-      <span>{children}</span>
+      <>{children}</>
     </Tooltip>
   )
 }

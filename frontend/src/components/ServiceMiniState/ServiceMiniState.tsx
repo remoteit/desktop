@@ -1,7 +1,6 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@material-ui/core'
-import { colors, Color } from '../../styling'
+import { makeStyles, Box } from '@material-ui/core'
+import { spacing, colors, Color } from '../../styling'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
 
@@ -55,10 +54,9 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
   return (
     <>
       <SessionsTooltip service={service} open={openTooltip} placement="top" arrow label>
-        {connected && <Icon name="user" type="solid" size="xs" color={colorName} fixedWidth />}
-        <span
+        <Box
+          component="span"
           className={css.indicator}
-          style={{ color, borderColor: color }}
           onMouseEnter={() => setOpenTooltip(true)}
           onMouseLeave={() => setOpenTooltip(false)}
           onMouseDown={event => {
@@ -69,8 +67,11 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
             setOpenTooltip(false)
           }}
         >
-          {service.type}
-        </span>
+          <span style={{ color, borderColor: color }}>
+            {connected && <Icon name="user" type="solid" size="xxxs" color={colorName} fixedWidth />}
+            {service.type}
+          </span>
+        </Box>
       </SessionsTooltip>
     </>
   )
@@ -80,20 +81,28 @@ const useStyles = makeStyles({
   button: { padding: '8px 0' },
   icon: { padding: '0 0 8px' },
   indicator: {
-    opacity: 0.6,
-    borderRadius: 3,
-    fontSize: 8,
-    fontWeight: 600,
-    padding: 1,
-    paddingLeft: 3,
-    paddingRight: 3,
-    marginLeft: 2,
-    marginRight: 2,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    '&:hover': {
-      cursor: 'pointer',
-      opacity: 1,
+    height: spacing.xl,
+    display: 'inline-flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    '& > span': {
+      borderRadius: 3,
+      fontSize: 9,
+      fontWeight: 500,
+      padding: 1,
+      paddingLeft: 3,
+      paddingRight: 3,
+      marginLeft: 2,
+      marginRight: 2,
+      borderWidth: 1,
+      borderStyle: 'solid',
+      '& .fas': { marginRight: 2 },
+    },
+    '&:hover > span': {
+      boxShadow: `1px 1px 1px 0 ${colors.darken}`,
+      borderColor: `${colors.grayDarkest} !important`,
+      color: `${colors.grayDarkest} !important`,
+      '& .fas': { color: `${colors.grayDarkest} !important` },
     },
   },
 })
