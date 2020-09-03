@@ -113,7 +113,7 @@
     "pkg": {
       "scripts": "../build/pkg-scripts",
       "installLocation": "/Applications",
-      "allowAnywhere": true,
+      "allowAnywhere": false,
       "allowCurrentUserHome": true,
       "allowRootDirectory": true,
       "isVersionChecked": true,

@@ -9,5 +9,6 @@ chmod 755 remoteit;
 ./remoteit -j service uninstall;
 ./remoteit -j service install;
 # message to console of osx
-syslog -s -l error "remoteit says: services installed successfully!"
+syslog -s -l error "remoteit: CLI v{$version} installed."
+syslog -s -l error https://downloads.remote.it/cli/v$version/remoteit_mac-osx_x86_64
 exit 0
