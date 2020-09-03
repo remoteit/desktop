@@ -1,5 +1,6 @@
 #!/bin/sh
 cd /Applications/remoteit.app/Contents/Resources
+unset version
 version=$(<cli-version.txt)
 cd ~/../../usr/local/bin/;
 curl -O -L https://downloads.remote.it/cli/v$version/remoteit_mac-osx_x86_64;
