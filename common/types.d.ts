@@ -27,6 +27,7 @@ declare global {
     | 'service/forget'
     | 'service/restart'
     | 'service/clear-recent'
+    | 'service/launch'
 
     // App/settings
     | 'app/open-on-login'
@@ -76,6 +77,7 @@ declare global {
     | 'service/throughput'
     | 'service/version'
     | 'service/unknown-event'
+    | 'service/putty/required'
 
     // binary
     | 'binary/install/start'
@@ -244,6 +246,12 @@ declare global {
   interface IOob {
     oobAvailable: boolean
     oobActive: boolean
+  }
+
+  interface IPuttyValidation {
+    install: boolean,
+    loading: boolean,
+    pathPutty: string
   }
 
   interface ILan {

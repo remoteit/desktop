@@ -184,6 +184,16 @@ function getEventHandlers() {
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: string) => binaries.notInstalled(binary),
+
+    'service/putty/required': (result: IPuttyValidation) => {
+      console.log({result});
+      ui.set({ 
+       requireInstallPutty: result.install,
+       loading: result.loading,
+       pathPutty: result.pathPutty,
+      })
+    },
+
   } as EventHandlers
 }
 
