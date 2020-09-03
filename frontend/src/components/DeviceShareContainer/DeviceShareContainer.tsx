@@ -39,28 +39,29 @@ export const DeviceShareContainer = ({ username = '' }) => {
   const mapShareData = (share: SharingDetails, isNew: boolean) => {
     const { access } = share
     const scripting = access.scripting
-    const services =  myDevice?.services.map(ser => ({ serviceId: ser.id, action: access.services.includes(ser.id) ? 'ADD' : 'REMOVE' })) || []
+    const services =
+      myDevice?.services.map(ser => ({
+        serviceId: ser.id,
+        action: access.services.includes(ser.id) ? 'ADD' : 'REMOVE',
+      })) || []
     const email = isNew ? share.contacts : [share.contacts[0]]
 
     return {
       deviceId: deviceID,
       scripting,
       services,
-      email
+      email,
     }
   }
 
   return (
     <>
       {!username && (
-        <>
-          <DeviceShareAdd
-            contacts={unsharedContacts}
-            onChangeContacts={setSelectedContacts}
-            selectedContacts={selectedContacts}
-          />
-          <Divider />
-        </>
+        <DeviceShareAdd
+          contacts={unsharedContacts}
+          onChangeContacts={setSelectedContacts}
+          selectedContacts={selectedContacts}
+        />
       )}
       <DeviceShareDetails
         device={myDevice}

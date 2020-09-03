@@ -41,29 +41,28 @@ function ContactSelector({
   }
 
   return (
-    <section>
-      <Select
-        isMulti
-        isClearable
-        options={options}
-        theme={selectTheme}
-        className={css.select}
-        classNamePrefix="select"
-        value={options.filter(o => selectedContacts.includes(o.value))}
-        placeholder="Search user to share with..."
-        onChange={handleChange}
-        noOptionsMessage={e =>
-          e.inputValue
-            ? `${e.inputValue} does not currently have a remote.it account. Please have them sign up first so that you can share to them.`
-            : 'You do not have contacts'
-        }
-      />
-    </section>
+    <Select
+      isMulti
+      isClearable
+      options={options}
+      theme={selectTheme}
+      className={css.select}
+      classNamePrefix="select"
+      value={options.filter(o => selectedContacts.includes(o.value))}
+      placeholder="Search user to share with..."
+      onChange={handleChange}
+      noOptionsMessage={e =>
+        e.inputValue
+          ? `${e.inputValue} does not currently have a remote.it account. Please have them sign up first so that you can share to them.`
+          : 'You do not have contacts'
+      }
+    />
   )
 }
 
 const useStyles = makeStyles({
   select: {
+    margin: `${spacing.xl}px ${spacing.xl}px 0`,
     fontSize: fontSizes.md,
     '& .select__multi-value': { backgroundColor: colors.primary, padding: `${spacing.xxs}px ${spacing.xs}px` },
     '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: colors.white },

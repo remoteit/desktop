@@ -23,7 +23,6 @@ export const LogPage: React.FC = () => {
 
   return (
     <Container
-      scrollbars
       header={
         <>
           <Breadcrumbs />

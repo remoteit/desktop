@@ -61,6 +61,14 @@ export default createMuiTheme({
     MuiListItemSecondaryAction: { root: { right: gutters } },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
     MuiListItemText: { secondary: { fontSize: fontSizes.xs } },
+    MuiMenuItem: {
+      root: {
+        paddingLeft: 0,
+        paddingRight: spacing.lg,
+        '& .MuiListItemIcon-root': { minWidth: 50 },
+        '&:hover, &:focus': { backgroundColor: colors.grayLighter },
+      },
+    },
     MuiInput: {
       root: {
         '&.Mui-disabled': {

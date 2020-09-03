@@ -34,21 +34,21 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
       <TargetPlatform id={device?.targetPlatform} />
       {device?.shared && (
         <sup>
-          <Tooltip title={`Shared by ${device?.owner}`}>
+          <Tooltip title={`Shared by ${device?.owner}`} placement="top" arrow>
             <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>
       )}
       {failover && (
         <sup>
-          <Tooltip title="Proxy failover connection">
+          <Tooltip title="Proxy failover connection" placement="top" arrow>
             <Icon name="cloud" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>
       )}
       {accessDisabled && (
         <sup>
-          <Tooltip title="Shared access disabled">
+          <Tooltip title="Shared access disabled" placement="top" arrow>
             <Icon name="do-not-enter" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>
