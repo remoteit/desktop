@@ -1,11 +1,13 @@
 import React from 'react'
-import Select, { Theme } from 'react-select'
+import { Theme } from 'react-select'
+import CreatableSelect from 'react-select/creatable'
 import { makeStyles } from '@material-ui/core'
 import { generateContactOptions } from '../../models/contacts'
 import { ApplicationState } from '../../store'
 import { useSelector } from '../../hooks/reactReduxHooks'
 import { IContact } from 'remote.it'
 import { colors, spacing, fontSizes } from '../../styling'
+import { Typography, Link } from '@material-ui/core'
 
 export function DeviceShareAdd({
   contacts,
@@ -35,27 +37,32 @@ function ContactSelector({
   const options = generateContactOptions(contacts.filter(o => o.email !== devices.owner))
   const css = useStyles()
 
-  function handleChange(opts: any, actionMeta: any): void {
+  const mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+
+  const handleChange = (opts: any, actionMeta: any): void => {
     opts = opts && opts.length ? opts : []
     onChange(opts.map((o: any) => o.value))
   }
 
+  const validateEmail = (inputValue: any) => {
+    return mailformat.test(inputValue) && 
+    <Typography variant="body2" color="textSecondary">
+      share to <Link>{inputValue}</Link>
+    </Typography>
+  }
+
   return (
-    <Select
+    <CreatableSelect
       isMulti
       isClearable
       options={options}
       theme={selectTheme}
       className={css.select}
       classNamePrefix="select"
-      value={options.filter(o => selectedContacts.includes(o.value))}
       placeholder="Search user to share with..."
       onChange={handleChange}
-      noOptionsMessage={e =>
-        e.inputValue
-          ? `${e.inputValue} does not currently have a remote.it account. Please have them sign up first so that you can share to them.`
-          : 'You do not have contacts'
-      }
+      isValidNewOption={(v) => mailformat.test(v)}
+      formatCreateLabel={validateEmail}
     />
   )
 }
@@ -71,7 +78,6 @@ const useStyles = makeStyles({
 })
 
 const selectTheme = (theme: Theme) => {
-  console.log('THEME', theme)
   return {
     ...theme,
     borderRadius: spacing.xs,
