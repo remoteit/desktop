@@ -5,7 +5,6 @@ import { Tooltip } from '@material-ui/core'
 import { useLocation } from 'react-router-dom'
 import { TargetPlatform } from '../TargetPlatform'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
-import { colors } from '../../styling'
 
 type Props = {
   connection?: IConnection
@@ -24,7 +23,9 @@ export const ServiceName: React.FC<Props> = ({ connection, service, shared }) =>
   return (
     <Title online={online}>
       {!service && !connection ? 'No device found' : name}
-      <TargetPlatform id={service?.targetPlatform} />
+      <sup>
+        <TargetPlatform id={service?.targetPlatform} />
+      </sup>
       {shared && (
         <sup>
           <Tooltip title={`Shared by ${service?.owner}`}>
