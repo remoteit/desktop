@@ -24,7 +24,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const offline = instance?.state !== 'active' && !connection?.active
 
   let name = service ? attributeName(service) : attributeName(device)
-  let failover = connection?.isP2P === false
+  let failover = service && connection?.isP2P === false
 
   if (menu && menu[0] === '/connections') name = connection?.name || name
 

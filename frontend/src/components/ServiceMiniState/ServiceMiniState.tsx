@@ -17,8 +17,10 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'
+  let failover: boolean = false
 
   if (connection) {
+    failover = connection.isP2P === false
     if (connection.connecting && !connection.active) state = 'connecting'
     if (connection.active) state = 'connected'
     if (connection.error?.message) state = 'error'
@@ -69,6 +71,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
         >
           <span style={{ color, backgroundColor: lighten(color, 0.9) }}>
             {connected && <Icon name="user" type="solid" size="xxxs" color={colorName} fixedWidth />}
+            {failover && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}
           </span>
         </Box>
