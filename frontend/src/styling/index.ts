@@ -1,6 +1,6 @@
 import { PropTypes } from '@material-ui/core'
 
-export type FontSize = 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
+export type FontSize = 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'max'
 
 export const fontSizes: { [key in FontSize]: number } = {
   xxxs: 8,
@@ -13,6 +13,7 @@ export const fontSizes: { [key in FontSize]: number } = {
   xl: 24,
   xxl: 36,
   xxxl: 48,
+  max: 64,
 }
 
 export type Color =

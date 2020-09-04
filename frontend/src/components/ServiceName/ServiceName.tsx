@@ -31,7 +31,9 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   return (
     <Title offline={offline}>
       {!instance && !connection ? 'No device found' : name}
-      <TargetPlatform id={device?.targetPlatform} />
+      <sup>
+        <TargetPlatform id={device?.targetPlatform} />
+      </sup>
       {device?.shared && (
         <sup>
           <Tooltip title={`Shared by ${device?.owner}`} placement="top" arrow>

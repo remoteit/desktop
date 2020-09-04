@@ -62,7 +62,7 @@ class Controller {
     socket.on('service/launch', openCMDforWindows)
     socket.on('service/forget', this.pool.forget)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('init', this.syncBackend)
+    socket.on('init', this.initBackend)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -76,7 +76,8 @@ class Controller {
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
 
-    this.check(true)
+    this.initBackend() // things are ready, send the init data
+    this.check(true) // check and log
   }
 
   recapitate = () => {
@@ -128,7 +129,8 @@ class Controller {
     this.io.emit('nextFreePort', this.pool.freePort)
   }
 
-  syncBackend = async () => {
+  initBackend = async () => {
+    cli.read()
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)

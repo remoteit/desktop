@@ -21,8 +21,7 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   65535: 'Unknown',
 }
 
-export const TargetPlatform: React.FC<{ id?: number }> = ({ id }) => {
-  let size: FontSize = 'xxs'
+export const TargetPlatform: React.FC<{ id?: number; size?: FontSize }> = ({ id, size = 'xxs' }) => {
   let type: IconType = 'brands'
   let name: string = ''
 
@@ -46,14 +45,14 @@ export const TargetPlatform: React.FC<{ id?: number }> = ({ id }) => {
     case 1075:
     case 1076:
       name = 'raspberry-pi'
-      size = 'xs'
+      if (size === 'xxs') size = 'xs'
       break
     case 1120:
       name = 'ubuntu'
       break
     case 1185:
       name = 'aws'
-      size = 'xs'
+      if (size === 'xxs') size = 'xs'
       break
     case 1200:
       name = 'linux'
@@ -63,10 +62,8 @@ export const TargetPlatform: React.FC<{ id?: number }> = ({ id }) => {
   if (!name || !id) return null
 
   return (
-    <sup>
-      <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
-        <Icon {...{ name, type, size }} />
-      </Tooltip>
-    </sup>
+    <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
+      <Icon {...{ name, type, size }} />
+    </Tooltip>
   )
 }
