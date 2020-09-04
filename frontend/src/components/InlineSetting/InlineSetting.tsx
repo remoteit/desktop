@@ -124,7 +124,7 @@ const useStyles = makeStyles({
     '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
     '& .MuiTextField-root': { marginLeft: 0 },
   },
-  root: { height: 63 },
+  root: { height: 59 },
   active: {
     backgroundColor: colors.primaryHighlight,
     padding: 0,

@@ -26,7 +26,7 @@ export const ServiceList = ({ services = [], connections }: ServiceListProps) =>
 
 const useStyles = makeStyles({
   list: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
     marginTop: spacing.sm,
   },
 })

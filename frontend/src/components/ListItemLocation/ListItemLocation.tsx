@@ -9,6 +9,7 @@ export type Props = {
   subtitle?: string
   icon?: string
   disabled?: boolean
+  dense?: boolean
   className?: string
 }
 
