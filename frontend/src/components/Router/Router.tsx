@@ -46,8 +46,6 @@ export const Router: React.FC = () => {
     }
   }, [dataReady])
 
-  console.log('ROUTER', history.location.pathname)
-
   return (
     <Switch>
       <Redirect

@@ -48,7 +48,12 @@ export const Breadcrumbs: React.FC = () => {
   return (
     <div className={css.header}>
       <Tooltip title="back">
-        <IconButton onClick={() => history.push(parentPath)}>
+        <IconButton
+          onClick={() => {
+            if (history.length > 1) history.goBack()
+            else history.push(parentPath)
+          }}
+        >
           <Icon name="chevron-left" size="md" fixedWidth />
         </IconButton>
       </Tooltip>
