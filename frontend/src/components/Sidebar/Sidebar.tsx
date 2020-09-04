@@ -15,6 +15,7 @@ import { spacing, colors, fontSizes } from '../../styling'
 import { useSelector } from 'react-redux'
 import { isElectron } from '../../services/Browser'
 import { ApplicationState } from '../../store'
+import { TargetPlatform } from '../../components/TargetPlatform'
 import { Icon } from '../../components/Icon'
 import onLanGraphic from '../../assets/remote-on-lan.svg'
 import onRemoteGraphic from '../../assets/remote-on-remote.svg'
@@ -25,14 +26,16 @@ export const Sidebar: React.FC = () => {
   const [shown, setShown] = useState<boolean>(true)
   const { hostname, port } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
-  const { device } = useSelector((state: ApplicationState) => state.backend)
+  const device = useSelector((state: ApplicationState) =>
+    state.devices.all.find(d => d.id === state.backend.device.uid)
+  )
   const css = useStyles()
 
   let graphic = onLanGraphic
   let diagram: NetworkType[] = [
     { primary: 'You' },
     { primary: 'Local network' },
-    { primary: 'This system', secondary: device.name },
+    { primary: 'This system', secondary: device?.name },
     { primary: 'Remote devices' },
   ]
 
@@ -52,6 +55,7 @@ export const Sidebar: React.FC = () => {
           </IconButton>
         </Tooltip>
         <section>
+          <TargetPlatform id={device?.targetPlatform} size="max" />
           <Typography variant="h2">
             You are managing <br />a remote device
           </Typography>
@@ -97,6 +101,7 @@ const useStyles = makeStyles({
     height: '100%',
     position: 'relative',
     '& section': { padding: `${spacing.xl}px ${spacing.lg}px ${spacing.xl}px ${spacing.xl}px` },
+    '& .fab': { marginBottom: spacing.lg },
     '& hr': { opacity: 0.3 },
     '& span': { color: colors.white },
     '& h2': { fontSize: fontSizes.lg },
