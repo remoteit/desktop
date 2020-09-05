@@ -21,7 +21,11 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   65535: 'Unknown',
 }
 
-export const TargetPlatform: React.FC<{ id?: number; size?: FontSize }> = ({ id, size = 'xxs' }) => {
+export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: boolean }> = ({
+  id,
+  size = 'xxs',
+  tooltip,
+}) => {
   let type: IconType = 'brands'
   let name: string = ''
 
@@ -61,5 +65,11 @@ export const TargetPlatform: React.FC<{ id?: number; size?: FontSize }> = ({ id,
 
   if (!name || !id) return null
 
-  return <Icon {...{ name, type, size }} />
+  return tooltip ? (
+    <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
+      <Icon {...{ name, type, size }} />
+    </Tooltip>
+  ) : (
+    <Icon {...{ name, type, size }} />
+  )
 }

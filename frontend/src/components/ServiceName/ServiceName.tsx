@@ -34,9 +34,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
       {!instance && !connection ? 'No device found' : name}
       {!!targetPlatformId && (
         <sup>
-          <Tooltip title={TARGET_PLATFORMS[targetPlatformId]} placement="top" arrow>
-            <TargetPlatform id={targetPlatformId} />
-          </Tooltip>
+          <TargetPlatform id={targetPlatformId} tooltip />
         </sup>
       )}
       {device?.shared && (

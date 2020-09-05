@@ -38,6 +38,12 @@ export default createMuiTheme({
       anchorOriginBottomCenter: { bottom: '80px !important' },
     },
     MuiList: {
+      root: {
+        '&.collapseList .MuiListItem-dense': {
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+      },
       padding: {
         paddingTop: spacing.sm,
         paddingBottom: spacing.sm,
@@ -132,7 +138,7 @@ export default createMuiTheme({
     MuiTypography: {
       gutterBottom: { marginBottom: spacing.md },
       h1: {
-        fontSize: 20,
+        fontSize: 19,
         fontWeight: 400,
         display: 'flex',
         alignItems: 'center',

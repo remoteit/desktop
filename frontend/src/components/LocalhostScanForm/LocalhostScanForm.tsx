@@ -54,10 +54,10 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
       <Typography variant="body2" color="textSecondary">
         Services
       </Typography>
-      <List>
+      <List className="collapseList">
         {scanData.map((row, key) => (
           <ListItemCheckbox
-            keyProp={key}
+            key={key}
             label={row.name}
             checked={state[key]}
             onClick={() => {
