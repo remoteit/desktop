@@ -42,8 +42,8 @@ export default createMuiTheme({
       button: {
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
-        paddingTop: spacing.xxs,
-        paddingBottom: spacing.xxs,
+        paddingTop: 5,
+        paddingBottom: 5,
         '&:hover, &:focus': { backgroundColor: colors.grayLightest },
       },
       container: {
@@ -55,13 +55,16 @@ export default createMuiTheme({
         },
       },
       dense: {
-        paddingTop: '0 !important',
-        paddingBottom: '0 !important',
+        // paddingTop: '2px !important',
+        // paddingBottom: '2px !important',
       },
     },
     MuiListItemSecondaryAction: { root: { right: gutters } },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
-    MuiListItemText: { secondary: { fontSize: fontSizes.xs } },
+    MuiListItemText: {
+      primary: { lineHeight: 1.4 },
+      secondary: { fontSize: fontSizes.xs },
+    },
     MuiMenuItem: {
       root: {
         paddingLeft: 0,
@@ -78,6 +81,15 @@ export default createMuiTheme({
         },
       },
       underline: { '&.Mui-disabled:before': { borderColor: colors.grayLight } },
+    },
+    MuiInputLabel: {
+      shrink: {
+        fontSize: fontSizes.sm,
+        color: colors.grayDark,
+        letterSpacing: 0.5,
+        fontWeight: 500,
+        textTransform: 'uppercase',
+      },
     },
     MuiFilledInput: {
       root: {
@@ -107,23 +119,26 @@ export default createMuiTheme({
     MuiTypography: {
       gutterBottom: { marginBottom: spacing.md },
       h1: {
-        fontSize: '1rem',
-        fontWeight: 400,
+        fontSize: 18,
+        fontWeight: 500,
         display: 'flex',
         alignItems: 'center',
         padding: titlePadding,
-        borderBottom: `1px solid ${colors.grayLighter}`,
         minHeight: 50,
+        color: colors.grayDarkest,
+        letterSpacing: -0.2,
+        backgroundColor: colors.white,
+        boxShadow: 'rgba(0,0,0,0.15) 0px 1px 2px',
         '& span + span': { marginLeft: spacing.lg },
       },
       h2: {
-        fontSize: '1rem',
+        fontSize: 16,
         fontWeight: 400,
       },
       h4: {
         fontSize: fontSizes.sm,
         fontFamily: 'Roboto Mono',
-        color: colors.grayDarker,
+        color: colors.grayDark,
         marginTop: spacing.xs,
         marginBottom: spacing.sm,
       },

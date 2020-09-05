@@ -3,7 +3,7 @@ import { Icon } from '../Icon'
 import { Title } from '../Title'
 import { Tooltip } from '@material-ui/core'
 import { useLocation } from 'react-router-dom'
-import { TargetPlatform } from '../TargetPlatform'
+import { TargetPlatform, TARGET_PLATFORMS } from '../TargetPlatform'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { attributeName } from '../../shared/nameHelper'
 
@@ -22,6 +22,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const instance = service || device
   const accessDisabled = !!device?.attributes.accessDisabled
   const offline = instance?.state !== 'active' && !connection?.active
+  const targetPlatformId = device?.targetPlatform
 
   let name = service ? attributeName(service) : attributeName(device)
   let failover = service && connection?.isP2P === false
@@ -31,9 +32,13 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   return (
     <Title offline={offline}>
       {!instance && !connection ? 'No device found' : name}
-      <sup>
-        <TargetPlatform id={device?.targetPlatform} />
-      </sup>
+      {!!targetPlatformId && (
+        <sup>
+          <Tooltip title={TARGET_PLATFORMS[targetPlatformId]} placement="top" arrow>
+            <TargetPlatform id={targetPlatformId} />
+          </Tooltip>
+        </sup>
+      )}
       {device?.shared && (
         <sup>
           <Tooltip title={`Shared by ${device?.owner}`} placement="top" arrow>

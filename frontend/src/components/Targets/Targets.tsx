@@ -44,16 +44,16 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCa
         <tbody>
           <tr>
             <th>
-              <InputLabel>Name</InputLabel>
+              <InputLabel shrink>Name</InputLabel>
             </th>
             <th>
-              <InputLabel>Type</InputLabel>
+              <InputLabel shrink>Type</InputLabel>
             </th>
             <th>
-              <InputLabel>Port</InputLabel>
+              <InputLabel shrink>Port</InputLabel>
             </th>
             <th colSpan={3}>
-              <InputLabel>
+              <InputLabel shrink>
                 Host Address <em>Optional</em>
                 <Tooltip
                   title={
@@ -103,7 +103,6 @@ const useStyles = makeStyles({
     '& th:nth-child(3)': { width: 80 },
     '& td:nth-child(5),& td:nth-child(6)': { width: 50 },
     '& th': { textAlign: 'left' },
-    '& .MuiInputLabel-root': { fontSize: 12 },
   },
   note: { paddingTop: styles.spacing.xl },
 })

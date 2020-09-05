@@ -61,9 +61,5 @@ export const TargetPlatform: React.FC<{ id?: number; size?: FontSize }> = ({ id,
 
   if (!name || !id) return null
 
-  return (
-    <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
-      <Icon {...{ name, type, size }} />
-    </Tooltip>
-  )
+  return <Icon {...{ name, type, size }} />
 }

@@ -110,6 +110,9 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
 }
 
 const useStyles = makeStyles({
-  menu: { backgroundColor: colors.grayLightest },
+  menu: {
+    backgroundColor: colors.grayLightest,
+    '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
+  },
   button: { margin: `${spacing.xs}px 0`, width: '100%' },
 })

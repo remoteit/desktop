@@ -50,7 +50,7 @@ export const Breadcrumbs: React.FC = () => {
       <Tooltip title="back">
         <IconButton
           onClick={() => {
-            if (history.length > 1) history.goBack()
+            if (history.length > 2) history.goBack()
             else history.push(parentPath)
           }}
         >
@@ -78,7 +78,7 @@ const useStyles = makeStyles({
     '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
-      color: colors.grayDarker,
+      color: colors.grayDark,
       fontSize: fontSizes.xs,
       padding: `${spacing.xxs}px ${spacing.xs}px`,
       marginLeft: spacing.xs,

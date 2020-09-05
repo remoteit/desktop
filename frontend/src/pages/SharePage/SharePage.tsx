@@ -36,18 +36,21 @@ export const SharePage = () => {
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name={email === '' ? 'user-plus' : 'user'} size="lg" />
-            <Title>{email || 'Share'}</Title>
-            {email && (deleting ? (
-              <CircularProgress className={css.loading} size={styles.fontSizes.md} />
-              ) : (<Tooltip title={`Remove ${email}`}>
+          {email && (
+            <Typography variant="h1">
+              <Icon name={email === '' ? 'user-plus' : 'user'} size="lg" />
+              <Title>{email || 'Share'}</Title>
+              {deleting ? (
+                <CircularProgress className={css.loading} size={styles.fontSizes.md} />
+              ) : (
+                <Tooltip title={`Remove ${email}`}>
                   <IconButton onClick={handleUnshare} disabled={deleting}>
                     <Icon name="trash-alt" size="md" fixedWidth />
                   </IconButton>
-              </Tooltip>))
-            }
-          </Typography>
+                </Tooltip>
+              )}
+            </Typography>
+          )}
         </>
       }
     >

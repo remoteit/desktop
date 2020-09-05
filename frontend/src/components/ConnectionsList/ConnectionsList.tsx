@@ -45,7 +45,7 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
       {connected.map(c => (
         <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
-      {!!recent.length && !!connected.length && <Divider />}
+      {!!recent.length && !!connected.length && <Divider className={css.divider} />}
       {!!recent.length && (
         <Typography variant="subtitle1">
           <Title>Recent</Title>
@@ -53,10 +53,13 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
         </Typography>
       )}
       {recent.map(c => (
-        <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
+        <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} dense />
       ))}
     </List>
   )
 }
 
-const useStyles = makeStyles({ message: { marginBottom: styles.spacing.xl } })
+const useStyles = makeStyles({
+  divider: { marginTop: styles.spacing.lg },
+  message: { marginBottom: styles.spacing.xl },
+})
