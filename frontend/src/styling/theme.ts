@@ -37,6 +37,12 @@ export default createMuiTheme({
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
       anchorOriginBottomCenter: { bottom: '80px !important' },
     },
+    MuiList: {
+      padding: {
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.sm,
+      },
+    },
     MuiListItem: {
       root: { opacity: 1 },
       button: {
