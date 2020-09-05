@@ -71,6 +71,13 @@ export default createMuiTheme({
       primary: { lineHeight: 1.4 },
       secondary: { fontSize: fontSizes.xs },
     },
+    MuiMenu: {
+      list: {
+        backgroundColor: colors.grayLightest,
+        '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
+        '& > .MuiList-padding': { padding: 0 },
+      },
+    },
     MuiMenuItem: {
       root: {
         paddingLeft: 0,

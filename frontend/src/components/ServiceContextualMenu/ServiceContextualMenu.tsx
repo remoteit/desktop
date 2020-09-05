@@ -43,13 +43,12 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
       anchorEl={el}
       open={Boolean(el)}
       onClose={handleClose}
-      classes={{ paper: css.menu }}
       anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
       disableScrollLock
       elevation={2}
     >
       <List>
-        <ListItem dense>
+        <ListItem className={css.name} dense>
           <Typography variant="caption" align="center" display="block">
             {service?.name}
           </Typography>
@@ -110,9 +109,6 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
 }
 
 const useStyles = makeStyles({
-  menu: {
-    backgroundColor: colors.grayLightest,
-    '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
-  },
+  name: { paddingTop: 0, paddingBottom: 0 },
   button: { margin: `${spacing.xs}px 0`, width: '100%' },
 })
