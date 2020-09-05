@@ -142,6 +142,12 @@ export const SettingsPage = () => {
               onClick={installWarning}
             />
             <UninstallSetting />
+            <ListItemSetting
+              label="Show application logs"
+              subLabel="Will show the folders that contain the application logs and config file."
+              icon="folder"
+              onClick={() => emit('showFolder')}
+            />
           </List>
         </>
       )}
