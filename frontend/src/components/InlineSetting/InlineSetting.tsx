@@ -18,7 +18,7 @@ import { Icon } from '../Icon'
 
 type Props = {
   value?: string | number
-  label: string
+  label: JSX.Element | string
   icon?: JSX.Element
   displayValue?: string | number
   disabled?: boolean
@@ -133,7 +133,8 @@ const useStyles = makeStyles({
     marginRight: 120,
     alignItems: 'center',
     '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
-    '& .MuiTextField-root': { marginLeft: 0, fontSize: 14 },
+    '& .MuiFilledInput-input': { paddingTop: 22, paddingBottom: 10, fontSize: 14 },
+    '& .MuiTextField-root': { marginLeft: 0 },
   },
   active: {
     backgroundColor: colors.primaryHighlight,

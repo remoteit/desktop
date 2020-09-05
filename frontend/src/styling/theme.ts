@@ -125,8 +125,8 @@ export default createMuiTheme({
     MuiTypography: {
       gutterBottom: { marginBottom: spacing.md },
       h1: {
-        fontSize: 18,
-        fontWeight: 500,
+        fontSize: 20,
+        fontWeight: 400,
         display: 'flex',
         alignItems: 'center',
         padding: titlePadding,

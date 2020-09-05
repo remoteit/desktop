@@ -101,7 +101,6 @@ const useStyles = makeStyles({
     },
     '&:hover > span': {
       boxShadow: `1px 1px 1px 0 ${colors.darken}`,
-      '& .fas': { color: `${colors.grayDarkest} !important` },
     },
   },
 })
