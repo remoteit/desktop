@@ -86,8 +86,6 @@ export default createMuiTheme({
     },
     MuiMenuItem: {
       root: {
-        paddingLeft: 0,
-        paddingRight: spacing.lg,
         '& .MuiListItemIcon-root': { minWidth: 50 },
         '&:hover, &:focus': { backgroundColor: colors.grayLighter },
       },

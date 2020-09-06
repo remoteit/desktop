@@ -83,7 +83,7 @@ export const InlineSetting: React.FC<Props> = ({
           }}
         >
           {children}
-          {resetValue && (
+          {resetValue != null && (
             <ResetButton
               onClick={() => {
                 cancelBlur()

@@ -1,31 +1,22 @@
 import React from 'react'
-import { emit } from '../../services/Controller'
-import { ApplicationState, Dispatch } from '../../store'
-import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
 import { serviceTypes } from '../../services/serviceTypes'
 import { InlineSelectSetting } from '../InlineSelectSetting'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { ListItemSetting } from '../ListItemSetting'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
-type Props = { service: IService; targets?: ITarget[] }
+type Props = {
+  disabled?: boolean
+  target?: ITarget
+  onUpdate: (target: ITarget) => void
+}
 
-export const ServiceSetting: React.FC<Props> = ({ service, targets }) => {
-  const { ui } = useDispatch<Dispatch>()
-  const tIndex = targets?.findIndex(t => t.uid === service.id)
-  const { disabled } = useSelector((state: ApplicationState) => ({
-    disabled: state.ui.setupServiceBusy === service.id,
-  }))
+export const ServiceSetting: React.FC<Props> = ({ disabled, target, onUpdate }) => {
+  const busy = useSelector((state: ApplicationState) => state.ui.setupServiceBusy === target?.uid)
+  disabled = disabled || busy
 
-  if (tIndex === -1 || tIndex === undefined || !targets) return null
-
-  const target = targets[tIndex]
-  const update = () => {
-    analyticsHelper.track('serviceUpdated', { ...target, id: target.uid })
-    ui.set({ setupBusy: true, setupServiceBusy: true })
-    targets[tIndex] = target
-    emit('targets', targets)
-  }
+  if (!target) return null
 
   return (
     <>
@@ -37,7 +28,7 @@ export const ServiceSetting: React.FC<Props> = ({ service, targets }) => {
         disabled={disabled}
         onClick={() => {
           target.disabled = !target.disabled
-          update()
+          onUpdate(target)
         }}
       />
       <InlineSelectSetting
@@ -48,7 +39,7 @@ export const ServiceSetting: React.FC<Props> = ({ service, targets }) => {
         disabled={disabled}
         onSave={type => {
           target.type = Number(type)
-          update()
+          onUpdate(target)
         }}
       />
       <InlineTextFieldSetting
@@ -58,7 +49,7 @@ export const ServiceSetting: React.FC<Props> = ({ service, targets }) => {
         disabled={disabled}
         onSave={port => {
           target.port = Number(port)
-          update()
+          onUpdate(target)
         }}
       />
       <InlineTextFieldSetting
@@ -68,7 +59,7 @@ export const ServiceSetting: React.FC<Props> = ({ service, targets }) => {
         disabled={disabled}
         onSave={hostname => {
           target.hostname = hostname.toString()
-          update()
+          onUpdate(target)
         }}
       />
     </>

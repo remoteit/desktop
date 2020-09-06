@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { isElectron, isDev } from '../../services/Browser'
+import { isElectron } from '../../services/Browser'
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { usePermissions } from '../../hooks/usePermissions'
 import { SettingsPage } from '../../pages/SettingsPage'
@@ -12,6 +12,7 @@ import { SetupWaiting } from '../../pages/SetupWaiting'
 import { SetupView } from '../../pages/SetupView'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
+import { ServiceAddPage } from '../../pages/ServiceAddPage'
 import { DeviceDetailPage } from '../../pages/DeviceDetailPage'
 import { ServiceDetailPage } from '../../pages/ServiceDetailPage'
 import { ServicesPage } from '../../pages/ServicesPage'
@@ -111,6 +112,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices/:deviceID/edit">
         <DeviceEditPage targetDevice={targetDevice} targets={targets} />
+      </Route>
+      <Route path="/devices/:deviceID/serviceAdd">
+        <ServiceAddPage targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path={['/devices/:deviceID/:serviceID', '/connections/:serviceID']}>
         <ServicePage />

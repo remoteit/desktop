@@ -20,9 +20,10 @@ type Props = {
 }
 export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
   const history = useHistory()
-  const { devices } = useDispatch<Dispatch>()
+  const { devices, backend } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams()
   const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const target = targets?.find(t => t.uid === serviceID)
 
   useEffect(() => {
     analyticsHelper.page('ServiceEditPage')
@@ -62,7 +63,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
       </List>
       <Divider />
       <List>
-        <ServiceSetting service={service} targets={targets} />
+        <ServiceSetting target={target} onUpdate={t => backend.updateTargetService(t)} />
       </List>
     </Container>
   )

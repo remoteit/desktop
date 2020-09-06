@@ -22,9 +22,6 @@ export const SetupServices: React.FC<Props> = ({ targetDevice, os, targets, ...p
   const { ui } = useDispatch<Dispatch>()
   const history = useHistory()
 
-  const onUpdate = (t: ITarget[]) => emit('targets', t)
-  const onCancel = () => ui.set({ setupAdded: undefined })
-
   useEffect(() => {
     emit('device') // Refresh device data
   }, [])
@@ -55,7 +52,7 @@ export const SetupServices: React.FC<Props> = ({ targetDevice, os, targets, ...p
     >
       <Typography variant="subtitle1">Services</Typography>
       <section>
-        <Targets targetDevice={targetDevice} targets={targets} onUpdate={onUpdate} onCancel={onCancel} {...props} />
+        <Targets targetDevice={targetDevice} targets={targets} {...props} />
       </section>
     </Container>
   )

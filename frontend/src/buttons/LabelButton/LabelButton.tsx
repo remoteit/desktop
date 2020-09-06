@@ -54,6 +54,7 @@ const useStyles = makeStyles({
   item: {
     width: spacing.xxl,
     paddingRight: 0,
+    paddingLeft: 0,
     justifyContent: 'center',
     '& > em': {
       borderRadius: '50%',

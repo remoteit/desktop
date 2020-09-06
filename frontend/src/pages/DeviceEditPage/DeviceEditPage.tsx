@@ -10,6 +10,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { AddServiceButton } from '../../buttons/AddServiceButton'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { UnregisterButton } from '../../buttons/UnregisterButton'
@@ -67,7 +68,10 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         {/* <SharedAccessSetting device={device} /> */}
       </List>
       <Divider />
-      <Typography variant="subtitle1">Services</Typography>
+      <Typography variant="subtitle1">
+        <Title>Services</Title>
+        <AddServiceButton device={device} />
+      </Typography>
       <List>
         {device.services.map(s => (
           <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/${s.id}/edit`}>

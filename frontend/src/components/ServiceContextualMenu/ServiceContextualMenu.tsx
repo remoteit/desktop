@@ -42,73 +42,71 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
     <Menu
       anchorEl={el}
       open={Boolean(el)}
+      // classes={{ paper: css.menu }}
+      className={css.menu}
       onClose={handleClose}
       anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
       disableScrollLock
       elevation={2}
     >
-      <List>
-        <ListItem className={css.name} dense>
-          <Typography variant="caption" align="center" display="block">
-            {service?.name}
-          </Typography>
-        </ListItem>
-        <ListItem dense>
-          <ComboButton className={css.button} connection={connection} service={service} />
-        </ListItem>
-      </List>
+      <ListItem className={css.name} dense>
+        <Typography variant="caption" align="center" display="block">
+          {service?.name}
+        </Typography>
+      </ListItem>
+      <ListItem dense>
+        <ComboButton className={css.button} connection={connection} service={service} />
+      </ListItem>
       <Divider />
-      <List>
-        <MenuItem dense onClick={clipboard.copy}>
+      <MenuItem dense onClick={clipboard.copy}>
+        <ListItemIcon>
+          <Icon name={clipboard.copied ? 'check' : 'link'} color={clipboard.copied ? 'success' : undefined} size="md" />
+        </ListItemIcon>
+        <ListItemText primary={clipboard.copied ? 'Copied!' : `Copy Link`} />
+        <input
+          type="hidden"
+          ref={clipboard.target}
+          value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
+        />
+      </MenuItem>
+      {!device?.shared && (
+        <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/users/share`)}>
           <ListItemIcon>
-            <Icon
-              name={clipboard.copied ? 'check' : 'link'}
-              color={clipboard.copied ? 'success' : undefined}
-              size="md"
-            />
+            <Icon name="user-plus" size="md" />
           </ListItemIcon>
-          <ListItemText primary={clipboard.copied ? 'Copied!' : `Copy Link`} />
-          <input
-            type="hidden"
-            ref={clipboard.target}
-            value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
-          />
+          <ListItemText primary="Share" />
         </MenuItem>
-        {!device?.shared && (
-          <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/users/share`)}>
-            <ListItemIcon>
-              <Icon name="user-plus" size="md" />
-            </ListItemIcon>
-            <ListItemText primary="Share" />
-          </MenuItem>
-        )}
-      </List>
+      )}
       <Divider />
-      <List>
-        <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}`)}>
-          <ListItemIcon>
-            <ConnectionStateIcon connection={connection} service={service} size="md" />
-          </ListItemIcon>
-          <ListItemText primary="View Service" />
-        </MenuItem>
-        <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
-          <ListItemIcon>
-            <Icon name="pen" size="md" />
-          </ListItemIcon>
-          <ListItemText primary="Edit Service" />
-        </MenuItem>
-        <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/details`)}>
-          <ListItemIcon>
-            <Icon name="info-circle" size="md" />
-          </ListItemIcon>
-          <ListItemText primary="Service Details" />
-        </MenuItem>
-      </List>
+      <MenuItem dense disableGutters onClick={() => history.push(`/devices/${device?.id}/${service?.id}`)}>
+        <ListItemIcon>
+          <ConnectionStateIcon connection={connection} service={service} size="md" />
+        </ListItemIcon>
+        <ListItemText primary="View Service" />
+      </MenuItem>
+      <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
+        <ListItemIcon>
+          <Icon name="pen" size="md" />
+        </ListItemIcon>
+        <ListItemText primary="Edit Service" />
+      </MenuItem>
+      <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/details`)}>
+        <ListItemIcon>
+          <Icon name="info-circle" size="md" />
+        </ListItemIcon>
+        <ListItemText primary="Service Details" />
+      </MenuItem>
     </Menu>
   )
 }
 
 const useStyles = makeStyles({
+  menu: {
+    '& .MuiMenuItem-root': {
+      paddingLeft: 0,
+      paddingRight: spacing.lg,
+    },
+  },
   name: { paddingTop: 0, paddingBottom: 0 },
   button: { margin: `${spacing.xs}px 0`, width: '100%' },
 })
