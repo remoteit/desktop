@@ -200,6 +200,7 @@ declare global {
     attributes: ILookup & {
       name?: string
       color?: number
+      label?: string
       accessDisabled?: boolean
     }
   }

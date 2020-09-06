@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { safeHostname } from '../../shared/nameHelper'
-import { LabelButton } from '../../buttons/LabelButton'
 import { attributeName } from '../../shared/nameHelper'
 
 export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITargetDevice }> = ({
@@ -27,8 +26,8 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
     <InlineTextFieldSetting
       value={name}
       label="Device Name"
+      disabled={true} // disabled until we can support device renaming fully
       resetValue={defaultValue}
-      icon={<LabelButton device={device} />}
       onSave={name => {
         device.attributes = { ...device.attributes, name: name.toString() }
         devices.setAttributes(device)

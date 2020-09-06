@@ -22,6 +22,7 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { AddServiceButton } from '../../buttons/AddServiceButton'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
+import { DeviceLabelSetting } from '../../components/DeviceLabelSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
@@ -88,32 +89,37 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
     >
       <List>
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
+        <DeviceLabelSetting device={device} />
         {/* <SharedAccessSetting device={device} /> */}
       </List>
       <Divider />
-      <Typography variant="subtitle1">
-        <Title>Services</Title>
-        <AddServiceButton device={device} thisDevice={thisDevice} />
-      </Typography>
-      <List>
-        {thisDevice && setupBusy && (
-          <ListItem disabled button dense>
-            <ListItemIcon>
-              <CircularProgress color="inherit" size={fontSizes.md} />
-            </ListItemIcon>
-            <ListItemText primary="Registering..." />
-          </ListItem>
-        )}
-        {serviceList.map(s => (
-          <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/${s.id}/edit`} dense>
-            <ListItemIcon></ListItemIcon>
-            <ListItemText primary={s.name} secondary={host(s)} />
-            <ListItemSecondaryAction className={css.actions}>
-              <Chip label={findType(s.typeID).name} size="small" />
-            </ListItemSecondaryAction>
-          </ListItemLocation>
-        ))}
-      </List>
+      {thisDevice && (
+        <>
+          <Typography variant="subtitle1">
+            <Title>Services</Title>
+            <AddServiceButton device={device} thisDevice={thisDevice} />
+          </Typography>
+          <List>
+            {thisDevice && setupBusy && (
+              <ListItem disabled button dense>
+                <ListItemIcon>
+                  <CircularProgress color="inherit" size={fontSizes.md} />
+                </ListItemIcon>
+                <ListItemText primary="Registering..." />
+              </ListItem>
+            )}
+            {serviceList.map(s => (
+              <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/${s.id}/edit`} dense>
+                <ListItemIcon></ListItemIcon>
+                <ListItemText primary={s.name} secondary={host(s)} />
+                <ListItemSecondaryAction className={css.actions}>
+                  <Chip label={findType(s.typeID).name} size="small" />
+                </ListItemSecondaryAction>
+              </ListItemLocation>
+            ))}
+          </List>
+        </>
+      )}
     </Container>
   )
 }

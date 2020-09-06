@@ -1,12 +1,12 @@
 import { graphQLRequest } from './graphQL'
 
 const SET_ATTRIBUTES = `
-mutation query($name: String, $color: Int, $accessDisabled: Boolean, $serviceId: String) {
+mutation query($name: String, $color: Int, $label: String, $serviceId: String) {
   setAttributes(
     attributes: {
       name: $name
       color: $color
-      accessDisabled: $accessDisabled
+      label: $label
     }
     serviceId: $serviceId
   )
@@ -38,5 +38,5 @@ export async function graphQLUnShareDevice(params: IShareProps) {
 }
 
 export async function graphQLShareDevice(params: IShareProps) {
-  return await graphQLRequest(SHARE_DEVICE, {...params})
+  return await graphQLRequest(SHARE_DEVICE, { ...params })
 }
