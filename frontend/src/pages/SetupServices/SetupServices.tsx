@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
 import { Typography } from '@material-ui/core'
 import { UnregisterButton } from '../../buttons/UnregisterButton'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -19,7 +17,6 @@ type Props = {
 }
 
 export const SetupServices: React.FC<Props> = ({ targetDevice, os, targets, ...props }) => {
-  const { ui } = useDispatch<Dispatch>()
   const history = useHistory()
 
   useEffect(() => {

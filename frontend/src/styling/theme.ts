@@ -50,8 +50,8 @@ export default createMuiTheme({
       },
     },
     MuiListItem: {
-      root: { opacity: 1 },
-      button: {
+      root: {
+        opacity: 1,
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
         paddingTop: 5,

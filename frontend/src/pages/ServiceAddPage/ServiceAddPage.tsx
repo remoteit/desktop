@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { MAX_NAME_LENGTH, REGEX_NAME_SAFE } from '../../shared/constants'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { findService } from '../../models/devices'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { useSelector, useDispatch } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
 import { ApplicationState, Dispatch } from '../../store'
-import { Typography, Divider, List, ListItem, Button } from '@material-ui/core'
-import { useParams } from 'react-router-dom'
+import { Typography, Divider, List, TextField, Button } from '@material-ui/core'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { InlineTextFieldSetting } from '../../components/InlineTextFieldSetting'
+import { serviceNameValidation } from '../../shared/nameHelper'
 import { ServiceSetting } from '../../components/ServiceSetting'
 import { attributeName } from '../../shared/nameHelper'
 import { Title } from '../../components/Title'
@@ -28,13 +29,16 @@ export const ServiceAddPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const [error, setError] = useState<string>()
   const [target, setTarget] = useState<ITarget>(DEFAULT_TARGET)
   const { backend } = useDispatch<Dispatch>()
+  const { deviceID } = useParams()
+  const history = useHistory()
 
   useEffect(() => {
     analyticsHelper.page('ServiceAddPage')
   }, [])
 
+  useEffect(() => {}, [setupBusy])
+
   const maxReached = targets.length + 1 > setupServicesLimit
-  const disabled = setupBusy || !!error
 
   return (
     <Container
@@ -53,18 +57,21 @@ export const ServiceAddPage: React.FC<Props> = ({ targetDevice, targets }) => {
           Desktop currently supports a maximum of {setupServicesLimit} services.
         </Typography>
       ) : (
-        <>
+        <form
+          onSubmit={() => {
+            backend.addTargetService(target)
+            history.push(`/devices/${deviceID}/edit`)
+          }}
+        >
           <List>
-            <InlineTextFieldSetting
-              value={target.name}
-              label="Service Name"
-              disabled={disabled}
-              resetValue={DEFAULT_TARGET.name}
-              maxLength={MAX_NAME_LENGTH}
-              filter={REGEX_NAME_SAFE}
-              onError={setError}
-              onSave={name => {
-                setTarget({ ...target, name: name.toString() })
+            <ListItemSetting
+              label="Enable service"
+              subLabel="Disabling your service will take it offline."
+              icon="circle-check"
+              toggle={!target.disabled}
+              disabled={setupBusy}
+              onClick={() => {
+                setTarget({ ...target, disabled: !target.disabled })
               }}
             />
           </List>
@@ -72,26 +79,20 @@ export const ServiceAddPage: React.FC<Props> = ({ targetDevice, targets }) => {
           <List>
             <ServiceSetting
               target={target}
-              disabled={disabled}
-              onUpdate={t => {
-                console.log('UPDATE TARGET', t)
-                setTarget({ ...t })
-              }}
+              error={error}
+              disabled={setupBusy}
+              onUpdate={setTarget}
+              onError={setError}
             />
           </List>
           <Columns inset count={1}>
             <span>
-              <Button
-                onClick={() => backend.addTargetService(target)}
-                variant="contained"
-                color="primary"
-                disabled={disabled}
-              >
+              <Button type="submit" variant="contained" color="primary" disabled={setupBusy || !!error}>
                 Save
               </Button>
             </span>
           </Columns>
-        </>
+        </form>
       )}
     </Container>
   )

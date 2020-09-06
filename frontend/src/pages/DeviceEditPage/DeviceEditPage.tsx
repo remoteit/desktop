@@ -3,7 +3,17 @@ import { useHistory } from 'react-router-dom'
 import { replaceHost } from '../../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { Typography, Divider, List, ListItemIcon, ListItemText, ListItemSecondaryAction, Chip } from '@material-ui/core'
+import {
+  Typography,
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Chip,
+  CircularProgress,
+} from '@material-ui/core'
 import { findType } from '../../services/serviceTypes'
 import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
@@ -17,16 +27,25 @@ import { UnregisterButton } from '../../buttons/UnregisterButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
+import { fontSizes } from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
   targetDevice: ITargetDevice
 }
+
+type IServiceList = {
+  typeID?: number
+  name: string
+  id: string
+}
+
 export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const css = useStyles()
   const history = useHistory()
   const { deviceID } = useParams()
+  const { setupBusy } = useSelector((state: ApplicationState) => state.ui)
   const device = useSelector((state: ApplicationState) =>
     state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
   )
@@ -42,9 +61,13 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   /* 
     @TODO: add arbitrary meta data here!!!!
   */
-  const thisDevice = device.id === targetDevice.uid
 
-  function host(service: IService) {
+  const thisDevice = device.id === targetDevice.uid
+  let serviceList: IServiceList[] = thisDevice
+    ? targets.map(t => ({ id: t.uid, typeID: t.type, name: t.name })).reverse()
+    : device.services
+
+  function host(service: IServiceList) {
     const target = targets.find(t => t.uid === service.id)
     if (target) return `${replaceHost(target.hostname)}:${target.port}`
   }
@@ -70,11 +93,19 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
       <Divider />
       <Typography variant="subtitle1">
         <Title>Services</Title>
-        <AddServiceButton device={device} />
+        <AddServiceButton device={device} thisDevice={thisDevice} />
       </Typography>
       <List>
-        {device.services.map(s => (
-          <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/${s.id}/edit`}>
+        {thisDevice && setupBusy && (
+          <ListItem disabled button dense>
+            <ListItemIcon>
+              <CircularProgress color="inherit" size={fontSizes.md} />
+            </ListItemIcon>
+            <ListItemText primary="Registering..." />
+          </ListItem>
+        )}
+        {serviceList.map(s => (
+          <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/${s.id}/edit`} dense>
             <ListItemIcon></ListItemIcon>
             <ListItemText primary={s.name} secondary={host(s)} />
             <ListItemSecondaryAction className={css.actions}>
