@@ -56,6 +56,8 @@ export default createMuiTheme({
         paddingRight: spacing.sm,
         paddingTop: 5,
         paddingBottom: 5,
+      },
+      button: {
         '&:hover, &:focus': { backgroundColor: colors.grayLightest },
       },
       container: {

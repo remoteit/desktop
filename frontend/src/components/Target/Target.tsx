@@ -73,7 +73,7 @@ export const Target: React.FC<Props> = ({
           onChange={event => {
             const validation = serviceNameValidation(event.target.value)
             update('name', validation.value)
-            validation.error ? setNameError( validation.error ) :  setNameError(undefined)
+            validation.error ? setNameError(validation.error) : setNameError(undefined)
           }}
           helperText={nameError || ''}
         />

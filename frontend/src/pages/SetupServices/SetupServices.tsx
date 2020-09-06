@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useHistory } from 'react-router-dom'
 import { Typography } from '@material-ui/core'
-import { UnregisterButton } from '../../buttons/UnregisterButton'
+import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { Targets } from '../../components/Targets'
@@ -36,7 +36,7 @@ export const SetupServices: React.FC<Props> = ({ targetDevice, os, targets, ...p
           <Typography variant="h1">
             <Icon name="hdd" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>{targetDevice.name}</Title>
-            <UnregisterButton targetDevice={targetDevice} />
+            <UnregisterDeviceButton targetDevice={targetDevice} />
           </Typography>
         </>
       }

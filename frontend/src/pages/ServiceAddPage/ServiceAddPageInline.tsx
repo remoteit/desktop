@@ -12,7 +12,6 @@ import { Columns } from '../../components/Columns'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { InlineTextFieldSetting } from '../../components/InlineTextFieldSetting'
-import { ServiceSetting } from '../../components/ServiceSetting'
 import { attributeName } from '../../shared/nameHelper'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -70,14 +69,14 @@ export const ServiceAddPage: React.FC<Props> = ({ targetDevice, targets }) => {
           </List>
           <Divider />
           <List>
-            <ServiceSetting
+            {/*  replaced with ServiceForm <ServiceSetting
               target={target}
               disabled={disabled}
               onUpdate={t => {
                 console.log('UPDATE TARGET', t)
                 setTarget({ ...t })
               }}
-            />
+            /> */}
           </List>
           <Columns inset count={1}>
             <span>

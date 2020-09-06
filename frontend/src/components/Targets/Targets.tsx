@@ -59,7 +59,7 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice }) => {
               busy={setupBusy}
               deleting={setupServiceBusy === target.uid}
               onSave={(t: ITarget) => backend.addTargetService(t)}
-              onDelete={() => backend.removeTargetService(index)}
+              onDelete={() => backend.removeTargetService(target)}
             />
           ))}
           {maxReached ? (

@@ -88,18 +88,19 @@ export default createModel({
       dispatch.ui.set({ setupBusy: true, setupAddingService: true })
       emit('targets', [...globalState.backend.targets, target])
     },
-    async removeTargetService(key: number, globalState: any) {
-      const target = globalState.backend.targets[key]
+    async removeTargetService(target: ITarget, globalState: any) {
+      const targets: ITarget[] = globalState.backend.targets
+      const index = targets?.findIndex(t => t.uid === target.uid)
       analyticsHelper.track('serviceRemoved', { ...target, id: target.uid })
       let copy = [...globalState.backend.targets]
-      copy.splice(key, 1)
+      copy.splice(index, 1)
       dispatch.ui.set({ setupBusy: true, setupServiceBusy: target.uid })
       emit('targets', copy)
     },
     async updateTargetService(target: ITarget, globalState: any) {
       const targets: ITarget[] = globalState.backend.targets
       analyticsHelper.track('serviceUpdated', { ...target, id: target.uid })
-      dispatch.ui.set({ setupBusy: true, setupServiceBusy: true })
+      dispatch.ui.set({ setupServiceBusy: true })
       const tIndex = targets?.findIndex(t => t.uid === target.uid)
       targets[tIndex] = target
       emit('targets', targets)

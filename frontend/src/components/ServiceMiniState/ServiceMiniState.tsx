@@ -100,7 +100,7 @@ const useStyles = makeStyles({
       '& .fas': { marginRight: 2 },
     },
     '&:hover > span': {
-      boxShadow: `1px 1px 1px 0 ${colors.darken}`,
+      boxShadow: `0px 1px 2px ${colors.grayDark}`,
     },
   },
 })

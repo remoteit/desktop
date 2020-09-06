@@ -23,7 +23,7 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { AddServiceButton } from '../../buttons/AddServiceButton'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
-import { UnregisterButton } from '../../buttons/UnregisterButton'
+import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -81,7 +81,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Edit device</Title>
-            {thisDevice ? <UnregisterButton targetDevice={targetDevice} /> : <DeleteButton device={device} />}
+            {thisDevice ? <UnregisterDeviceButton targetDevice={targetDevice} /> : <DeleteButton device={device} />}
           </Typography>
         </>
       }

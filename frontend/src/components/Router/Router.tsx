@@ -102,7 +102,7 @@ export const Router: React.FC = () => {
         <ServiceDetailPage />
       </Route>
       <Route path={['/devices/:deviceID/:serviceID/edit', '/connections/:serviceID/edit']}>
-        <ServiceEditPage targets={targets} />
+        <ServiceEditPage targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path="/devices/:deviceID/users">
         <UsersPageDevice />
@@ -114,7 +114,7 @@ export const Router: React.FC = () => {
         <DeviceEditPage targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path="/devices/:deviceID/serviceAdd">
-        <ServiceAddPage targetDevice={targetDevice} targets={targets} />
+        <ServiceAddPage targets={targets} />
       </Route>
       <Route path={['/devices/:deviceID/:serviceID', '/connections/:serviceID']}>
         <ServicePage />
