@@ -84,12 +84,14 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
         </ListItemIcon>
         <ListItemText primary="View Service" />
       </MenuItem>
-      <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
-        <ListItemIcon>
-          <Icon name="pen" size="md" />
-        </ListItemIcon>
-        <ListItemText primary="Edit Service" />
-      </MenuItem>
+      {!device?.shared && (
+        <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
+          <ListItemIcon>
+            <Icon name="pen" size="md" />
+          </ListItemIcon>
+          <ListItemText primary="Edit Service" />
+        </MenuItem>
+      )}
       <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/details`)}>
         <ListItemIcon>
           <Icon name="info-circle" size="md" />
