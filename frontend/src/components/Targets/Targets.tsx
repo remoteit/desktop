@@ -1,7 +1,6 @@
 import React from 'react'
 import { Target } from '../Target'
 import { NewTarget } from '../NewTarget'
-import { TARGET_SERVICES_LIMIT } from '../../shared/constants'
 import { InputLabel, Tooltip, Typography } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'

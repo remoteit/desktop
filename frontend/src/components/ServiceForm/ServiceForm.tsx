@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { ListItemSetting } from '../ListItemSetting'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
-import { ApplicationState, Dispatch } from '../../store'
+import { ApplicationState } from '../../store'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { serviceTypes, findType } from '../../services/serviceTypes'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
@@ -14,9 +14,16 @@ type Props = {
   target?: ITarget
   thisDevice: boolean
   onSubmit: (form: ITarget) => void
+  onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({ name = '', target = DEFAULT_TARGET, thisDevice, onSubmit }) => {
+export const ServiceForm: React.FC<Props> = ({
+  name = '',
+  target = DEFAULT_TARGET,
+  thisDevice,
+  onSubmit,
+  onCancel,
+}) => {
   const { setupBusy, deleting } = useSelector((state: ApplicationState) => ({
     setupBusy: state.ui.setupBusy,
     deleting: state.ui.setupServiceBusy === target?.uid,
@@ -111,6 +118,7 @@ export const ServiceForm: React.FC<Props> = ({ name = '', target = DEFAULT_TARGE
           <Button type="submit" variant="contained" color="primary" disabled={setupBusy || !!error}>
             Save
           </Button>
+          <Button onClick={onCancel}>Cancel</Button>
         </span>
       </Columns>
     </form>

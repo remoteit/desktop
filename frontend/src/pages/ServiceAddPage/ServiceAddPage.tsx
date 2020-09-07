@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { REGEX_LAST_PATH } from '../../shared/constants'
 import { Typography } from '@material-ui/core'
 import { Container } from '../../components/Container'
 import { ServiceForm } from '../../components/ServiceForm'
@@ -16,9 +17,10 @@ type Props = {
 }
 
 export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
-  const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
-  const { backend } = useDispatch<Dispatch>()
+  const { setupServicesLimit, setupAdded } = useSelector((state: ApplicationState) => state.ui)
+  const { backend, ui } = useDispatch<Dispatch>()
   const { deviceID } = useParams()
+  const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
@@ -48,10 +50,14 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
       ) : (
         <ServiceForm
           thisDevice={true}
+          name={setupAdded?.name}
+          target={setupAdded}
           onSubmit={form => {
+            ui.set({ setupAdded: undefined })
             backend.addTargetService(form)
             history.push(`/devices/${deviceID}/edit`)
           }}
+          onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
         />
       )}
     </Container>

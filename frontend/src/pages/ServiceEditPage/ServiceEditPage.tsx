@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { findService } from '../../models/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Typography, Divider, List } from '@material-ui/core'
+import { UnregisterServiceButton } from '../../buttons/UnregisterServiceButton'
+import { REGEX_LAST_PATH } from '../../shared/constants'
+import { Typography } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { UnregisterServiceButton } from '../../buttons/UnregisterServiceButton'
 import { ServiceForm } from '../../components/ServiceForm'
-import { attributeName } from '../../shared/nameHelper'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -25,6 +25,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const target = targets?.find(t => t.uid === serviceID)
   const thisDevice = service?.deviceID === targetDevice.uid
+  const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
         target={target}
         name={service.name}
         thisDevice={thisDevice}
+        onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
         onSubmit={form => {
           // for local cli config update
           backend.updateTargetService(form)
