@@ -20,9 +20,10 @@ export interface ServiceListItemProps {
   connection?: IConnection
   service?: IService
   indent?: boolean
+  dense?: boolean
 }
 
-export function ServiceListItem({ connection, service, indent }: ServiceListItemProps) {
+export function ServiceListItem({ connection, service, indent, dense }: ServiceListItemProps) {
   const location = useLocation()
   const user = useSelector((state: ApplicationState) => state.auth.user)
   const css = useStyles()
@@ -43,7 +44,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 
   return (
     <>
-      <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner}>
+      <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner} dense={dense}>
         <ComboButton connection={connection} service={service} />
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         <ListItemSecondaryAction>
@@ -59,7 +60,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 }
 
 const useStyles = makeStyles({
-  indent: { paddingLeft: spacing.xxl },
+  indent: { paddingLeft: 57 },
   details: { '& > span': { marginLeft: spacing.xs } },
   restriction: { color: colors.grayDarker },
 })

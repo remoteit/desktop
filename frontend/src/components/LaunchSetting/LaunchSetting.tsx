@@ -4,7 +4,7 @@ import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { ApplicationState } from '../../store'
 import { useApplication } from '../../shared/applications'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { ListItemIcon, Tooltip } from '@material-ui/core'
+import { Tooltip } from '@material-ui/core'
 import { Icon } from '../Icon'
 
 const SSH_TYPE = 28
@@ -19,16 +19,16 @@ export const LaunchSetting: React.FC<{ service: IService; connection?: IConnecti
 
   return (
     <InlineTextFieldSetting
-      icon={
-        <Tooltip title={`Replacement Tokens ${tokens}`}>
-          <ListItemIcon>
-            <Icon name="question-circle" size="md" type="light" />
-          </ListItemIcon>
-        </Tooltip>
-      }
       value={currentLaunchUrl}
       displayValue={app.parse(currentLaunchUrl, { ...connection, port: connection.port || freePort })}
-      label="Launch URL"
+      label={
+        <>
+          Launch URL
+          <Tooltip title={`Replacement Tokens ${tokens}`} placement="top" arrow>
+            <Icon name="question-circle" size="sm" type="regular" inline />
+          </Tooltip>
+        </>
+      }
       resetValue={app.launchTemplate}
       onSave={launchTemplate =>
         connection &&

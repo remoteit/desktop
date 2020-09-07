@@ -4,6 +4,7 @@ import lan from './LAN'
 import cli from './cliInterface'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
+import showFolder from './showFolder'
 import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
@@ -75,6 +76,7 @@ class Controller {
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
+    socket.on('showFolder', showFolder.openLogs)
 
     this.initBackend() // things are ready, send the init data
     this.check(true) // check and log

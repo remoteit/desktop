@@ -18,7 +18,7 @@ export const ListItemSetting: React.FC<Props> = ({ icon, label, subLabel, button
   const showButton = button !== undefined
   if (!onClick) disabled = true
   return (
-    <ListItem button onClick={onClick} disabled={disabled} style={{ opacity: 1 }}>
+    <ListItem button onClick={onClick} disabled={disabled} style={{ opacity: 1 }} dense>
       <ListItemIcon>
         <Icon name={icon} size="md" type="light" />
       </ListItemIcon>

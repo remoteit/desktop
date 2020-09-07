@@ -44,7 +44,6 @@ export function ShareSaveActions({ onCancel, onSave }: { onCancel: () => void; o
 
 const useStyles = makeStyles({
   indicators: {
-    marginRight: spacing.xxl,
     display: 'flex',
     alignItems: 'center',
     '& > *': { marginLeft: spacing.lg },

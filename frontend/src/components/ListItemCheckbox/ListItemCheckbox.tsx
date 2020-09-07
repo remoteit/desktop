@@ -14,7 +14,7 @@ type Props = {
 export const ListItemCheckbox: React.FC<Props> = ({ label, subLabel, disabled, checked, onClick, children }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   return (
-    <ListItem disabled={disabled} button dense disableGutters onClick={() => inputRef.current?.click()}>
+    <ListItem disabled={disabled} button dense onClick={() => inputRef.current?.click()}>
       <ListItemIcon>
         <Checkbox
           checked={checked}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, Box } from '@material-ui/core'
+import { makeStyles, Box, lighten } from '@material-ui/core'
 import { spacing, colors, Color } from '../../styling'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
@@ -17,8 +17,10 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'
+  let failover: boolean = false
 
   if (connection) {
+    failover = connection.isP2P === false
     if (connection.connecting && !connection.active) state = 'connecting'
     if (connection.active) state = 'connected'
     if (connection.error?.message) state = 'error'
@@ -67,8 +69,9 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
             setOpenTooltip(false)
           }}
         >
-          <span style={{ color, borderColor: color }}>
+          <span style={{ color, backgroundColor: lighten(color, 0.9) }}>
             {connected && <Icon name="user" type="solid" size="xxxs" color={colorName} fixedWidth />}
+            {failover && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}
           </span>
         </Box>
@@ -94,15 +97,10 @@ const useStyles = makeStyles({
       paddingRight: 3,
       marginLeft: 2,
       marginRight: 2,
-      borderWidth: 1,
-      borderStyle: 'solid',
       '& .fas': { marginRight: 2 },
     },
     '&:hover > span': {
       boxShadow: `1px 1px 1px 0 ${colors.darken}`,
-      borderColor: `${colors.grayDarkest} !important`,
-      color: `${colors.grayDarkest} !important`,
-      '& .fas': { color: `${colors.grayDarkest} !important` },
     },
   },
 })

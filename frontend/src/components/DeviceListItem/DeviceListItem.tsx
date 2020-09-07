@@ -5,9 +5,8 @@ import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ListItemIcon, ListItemText, ListItemSecondaryAction, Tooltip, Chip, makeStyles } from '@material-ui/core'
-import { spacing } from '../../styling'
 
-const MAX_INDICATORS = 10
+const MAX_INDICATORS = 8
 
 type Props = {
   device?: IDevice
@@ -32,7 +31,7 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setConte
         />
       ))}
       {!!extra && (
-        <Tooltip className={css.chip} title={`${device.services.length} services total`}>
+        <Tooltip className={css.chip} title={`${device.services.length} services total`} arrow placement="top">
           <Chip label={`+${extra}`} size="small" />
         </Tooltip>
       )}

@@ -130,7 +130,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                         }}
                       >
                         Add
-                        <Icon name="plus" inline />
+                        <Icon name="plus" size="sm" type="regular" inline />
                       </Button>
                     )}
                   </ListItemSecondaryAction>

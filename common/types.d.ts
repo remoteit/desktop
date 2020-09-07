@@ -31,6 +31,7 @@ declare global {
 
     // App/settings
     | 'app/open-on-login'
+    | 'showFolder'
 
     // Backend
     | 'init'
@@ -249,8 +250,8 @@ declare global {
   }
 
   interface IPuttyValidation {
-    install: boolean,
-    loading: boolean,
+    install: boolean
+    loading: boolean
     pathPutty: string
   }
 
@@ -329,9 +330,9 @@ declare global {
   }
 
   type IShareProps = {
-    deviceId: String,
-    email: String[]!,
-    scripting?: boolean,
+    deviceId: String
+    email: !String[]
+    scripting?: boolean
     services?: IService[]
   }
 }

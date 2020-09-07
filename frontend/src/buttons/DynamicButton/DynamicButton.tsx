@@ -37,14 +37,8 @@ export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, si
   )
 
   if (size === 'small') {
-    styles = {
-      fontSize: 11,
-      fontWeight: 500,
-      letterSpacing: 1,
-    }
     return (
       <Button
-        style={styles}
         variant="contained"
         onClick={clickHandler}
         disabled={disabled}

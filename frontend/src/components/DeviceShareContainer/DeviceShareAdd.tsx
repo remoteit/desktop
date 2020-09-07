@@ -45,10 +45,13 @@ function ContactSelector({
   }
 
   const validateEmail = (inputValue: any) => {
-    return mailformat.test(inputValue) && 
-    <Typography variant="body2" color="textSecondary">
-      share to <Link>{inputValue}</Link>
-    </Typography>
+    return (
+      mailformat.test(inputValue) && (
+        <Typography variant="body2" color="textSecondary">
+          share to <Link>{inputValue}</Link>
+        </Typography>
+      )
+    )
   }
 
   return (
@@ -61,7 +64,7 @@ function ContactSelector({
       classNamePrefix="select"
       placeholder="Search user to share with..."
       onChange={handleChange}
-      isValidNewOption={(v) => mailformat.test(v)}
+      isValidNewOption={v => mailformat.test(v)}
       formatCreateLabel={validateEmail}
     />
   )
@@ -69,7 +72,7 @@ function ContactSelector({
 
 const useStyles = makeStyles({
   select: {
-    margin: `${spacing.xl}px ${spacing.xl}px 0`,
+    margin: `${spacing.md}px ${spacing.xl}px 0`,
     fontSize: fontSizes.md,
     '& .select__multi-value': { backgroundColor: colors.primary, padding: `${spacing.xxs}px ${spacing.xs}px` },
     '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: colors.white },
