@@ -8,35 +8,17 @@ import { ApplicationState, Dispatch } from '../../store'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
   targetDevice: ITargetDevice
-  onUpdate: (targets: ITarget[]) => void
-  onCancel: () => void
 }
 
-export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCancel }) => {
+export const Targets: React.FC<Props> = ({ targets, targetDevice }) => {
   const { setupBusy, setupServiceBusy, setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
-  const { ui } = useDispatch<Dispatch>()
+  const { backend } = useDispatch<Dispatch>()
   const css = useStyles()
   const maxReached = targets.length + 1 > setupServicesLimit
-
-  function add(target: ITarget) {
-    analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
-    ui.set({ setupBusy: true, setupAddingService: true })
-    onUpdate([...targets, target])
-  }
-
-  function remove(key: number) {
-    const target = targets[key]
-    analyticsHelper.track('serviceRemoved', { ...target, id: target.uid })
-    let copy = [...targets]
-    copy.splice(key, 1)
-    ui.set({ setupBusy: true, setupServiceBusy: target.uid })
-    onUpdate(copy)
-  }
 
   return (
     <form className={css.targets}>
@@ -76,20 +58,20 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice, onUpdate, onCa
               disable={true}
               busy={setupBusy}
               deleting={setupServiceBusy === target.uid}
-              onSave={(t: ITarget) => add(t)}
-              onDelete={() => remove(index)}
+              onSave={(t: ITarget) => backend.addTargetService(t)}
+              onDelete={() => backend.removeTargetService(target)}
             />
           ))}
           {maxReached ? (
             <tr>
               <td className={css.note} colSpan={4}>
                 <Typography variant="body2" color="textSecondary">
-                  Desktop currently supports a maximum of {TARGET_SERVICES_LIMIT} services.
+                  Desktop currently supports a maximum of {setupServicesLimit} services.
                 </Typography>
               </td>
             </tr>
           ) : (
-            <NewTarget targetDevice={targetDevice} onSave={(t: ITarget) => add(t)} onCancel={onCancel} />
+            <NewTarget targetDevice={targetDevice} onSave={(t: ITarget) => backend.addTargetService(t)} />
           )}
         </tbody>
       </table>

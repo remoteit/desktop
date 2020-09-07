@@ -13,10 +13,9 @@ import styles from '../../styling'
 type Props = {
   targetDevice: ITargetDevice
   onSave: (target: ITarget) => void
-  onCancel: () => void
 }
 
-export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
+export const NewTarget: React.FC<Props> = props => {
   const { setupServicesNew, setupAddingService, setupAdded, scanEnabled } = useSelector(
     (state: ApplicationState) => state.ui
   )
@@ -50,10 +49,7 @@ export const NewTarget: React.FC<Props> = ({ onCancel, ...props }) => {
       disable={false}
       data={setupAdded || DEFAULT_TARGET}
       adding={setupAddingService}
-      onCancel={() => {
-        ui.set({ setupServicesNew: true })
-        onCancel()
-      }}
+      onCancel={() => ui.set({ setupServicesNew: true, setupAdded: undefined })}
       onDelete={() => {}}
     />
   )

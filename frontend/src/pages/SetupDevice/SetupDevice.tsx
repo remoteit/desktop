@@ -78,7 +78,7 @@ export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
               variant="filled"
               error={!!nameError}
               onChange={event => {
-                const validation = serviceNameValidation(event.target.value, true)
+                const validation = serviceNameValidation(event.target.value)
                 setName(validation.value)
                 if (validation.error) {
                   setNameError(validation.error)

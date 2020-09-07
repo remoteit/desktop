@@ -8,8 +8,8 @@ import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { InlineTextFieldSetting } from '../../components/InlineTextFieldSetting'
-import { ServiceSetting } from '../../components/ServiceSetting'
+import { UnregisterServiceButton } from '../../buttons/UnregisterServiceButton'
+import { ServiceForm } from '../../components/ServiceForm'
 import { attributeName } from '../../shared/nameHelper'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -17,20 +17,22 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
+  targetDevice: ITargetDevice
 }
-export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
-  const history = useHistory()
-  const { devices } = useDispatch<Dispatch>()
+export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
+  const { devices, backend } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams()
   const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const target = targets?.find(t => t.uid === serviceID)
+  const thisDevice = service?.deviceID === targetDevice.uid
+  const history = useHistory()
 
   useEffect(() => {
     analyticsHelper.page('ServiceEditPage')
   }, [])
 
   //@FIXME move this type of routing to the router
-
-  if (!service) {
+  if (!service || (thisDevice && !target)) {
     history.push(`/devices/${deviceID}/edit`)
     return null
   }
@@ -44,26 +46,26 @@ export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Edit service</Title>
-            {/* {thisDevice ? <UnregisterButton targetDevice={} /> : <DeleteButton device={device} />} */}
+            <UnregisterServiceButton target={target} />
           </Typography>
         </>
       }
     >
-      <List>
-        <InlineTextFieldSetting
-          value={attributeName(service)}
-          label="Service Name"
-          resetValue={service.name}
-          onSave={name => {
-            service.attributes.name = name.toString()
-            devices.setServiceAttributes(service)
-          }}
-        />
-      </List>
-      <Divider />
-      <List>
-        <ServiceSetting service={service} targets={targets} />
-      </List>
+      <ServiceForm
+        target={target}
+        name={service.name}
+        thisDevice={thisDevice}
+        onSubmit={form => {
+          // for local cli config update
+          backend.updateTargetService(form)
+          // for cloud name as attribute change
+          // service.attributes.name = form.name
+          // devices.setServiceAttributes(service)
+          service.name = form.name
+          devices.rename(service)
+          history.push(`/devices/${deviceID}/edit`)
+        }}
+      />
     </Container>
   )
 }

@@ -12,7 +12,7 @@ type Props = {
   targetDevice?: ITargetDevice
 }
 
-export const UnregisterButton: React.FC<Props> = ({ targetDevice }) => {
+export const UnregisterDeviceButton: React.FC<Props> = ({ targetDevice }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const { setupBusy, setupDeletingDevice } = useSelector((state: ApplicationState) => ({

@@ -50,12 +50,14 @@ export default createMuiTheme({
       },
     },
     MuiListItem: {
-      root: { opacity: 1 },
-      button: {
+      root: {
+        opacity: 1,
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
         paddingTop: 5,
         paddingBottom: 5,
+      },
+      button: {
         '&:hover, &:focus': { backgroundColor: colors.grayLightest },
       },
       container: {
@@ -86,8 +88,6 @@ export default createMuiTheme({
     },
     MuiMenuItem: {
       root: {
-        paddingLeft: 0,
-        paddingRight: spacing.lg,
         '& .MuiListItemIcon-root': { minWidth: 50 },
         '&:hover, &:focus': { backgroundColor: colors.grayLighter },
       },
@@ -147,6 +147,8 @@ export default createMuiTheme({
         color: colors.grayDarkest,
         letterSpacing: -0.2,
         backgroundColor: colors.white,
+        position: 'relative',
+        zIndex: 1,
         boxShadow: 'rgba(0,0,0,0.15) 0px 1px 2px',
         '& span + span': { marginLeft: spacing.lg },
       },

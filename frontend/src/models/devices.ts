@@ -152,6 +152,33 @@ export default createModel({
       dispatch.devices.set({ all: [], query: '', filter: 'all', initialized: false })
     },
 
+    async renameService(service: IService, globalState: any) {
+      let device = globalState.devices.all.find((d: IDevice) => d.id === service.deviceID)
+      const index = device.services.findIndex((s: IService) => s.id === service.id)
+      device.services[index].name = service.name
+      dispatch.devices.setDevice({ id: device.id, device })
+      dispatch.devices.rename(service)
+    },
+
+    async renameDevice(device: IDevice) {
+      console.log('DEVICE RENAME', device.name)
+      dispatch.devices.setDevice({ id: device.id, device })
+      dispatch.devices.rename(device)
+    },
+
+    async rename({ id, name }: { id: string; name: string }) {
+      try {
+        await r3.post(`/device/name/`, {
+          deviceaddress: id,
+          devicealias: name,
+        })
+        await dispatch.devices.fetch()
+      } catch (error) {
+        dispatch.backend.set({ globalError: error.message })
+        console.warn(error)
+      }
+    },
+
     async setAttributes(device: IDevice) {
       graphQLSetAttributes(device.attributes, device.id)
       dispatch.devices.setDevice({ id: device.id, device })

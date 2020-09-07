@@ -55,7 +55,7 @@ export const colors: { [key in Color]: string } = {
   danger: '#d6290a',
   dangerDark: '#871a06',
   warning: '#ed9912',
-  grayLightest: '#fafafa',
+  grayLightest: '#f9f9f9',
   grayLighter: '#efefef',
   grayLight: '#dbdbdb',
   gray: '#bbb',
