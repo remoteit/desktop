@@ -16,9 +16,9 @@ import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { getTypeId } from '../../services/serviceTypes'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
-import { useHistory, useRouteMatch } from 'react-router-dom'
-import { Dispatch } from '../../store'
-import { useDispatch } from 'react-redux'
+import { useHistory, useLocation } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import styles, { spacing } from '../../styling'
 
 type Props = {
@@ -42,11 +42,12 @@ const InterfaceIcon: IInterfaceIcon = {
 export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, privateIP }) => {
   const css = useStyles()
   const history = useHistory()
+  const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
-  const match = useRouteMatch()
   const [open, setOpen] = useState<number[]>([])
+  const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
   const allClosed = open.length === 0
-  const disabled = targets.length > 9
+  const disabled = targets.length + 1 > setupServicesLimit
 
   function toggle(row: number) {
     const index = open.indexOf(row)
@@ -117,7 +118,6 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                         size="small"
                         disabled={disabled}
                         onClick={() => {
-                          history.push(`${match.path.replace(REGEX_LAST_PATH, '')}/setupServices`)
                           ui.set({
                             setupAdded: {
                               ...DEFAULT_TARGET,
@@ -127,6 +127,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                               name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
                             },
                           })
+                          history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
                         }}
                       >
                         Add

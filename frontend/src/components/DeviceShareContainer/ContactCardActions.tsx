@@ -28,15 +28,15 @@ export function ShareSaveActions({ onCancel, onSave }: { onCancel: () => void; o
   return (
     <section>
       <Button color="primary" onClick={onSave} disabled={saving} variant="contained">
-        SHARE
+        Share
         {saving ? (
           <Icon name="spinner-third" spin type="regular" inline fixedWidth />
         ) : (
           <Icon name="check" type="regular" inline fixedWidth />
         )}
       </Button>
-      <Button disabled={saving} onClick={onCancel} variant="contained">
-        CANCEL
+      <Button disabled={saving} onClick={onCancel}>
+        Cancel
       </Button>
     </section>
   )

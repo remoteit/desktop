@@ -56,7 +56,7 @@ export const Router: React.FC = () => {
           state: { autoConnect: true },
         }}
       />
-      <Route path={['/settings/setupServices/network', '/devices/setupServices/network']}>
+      <Route path={['/settings/setupServices/network', '/devices/:deviceID/edit/add-service/network']}>
         <NetworkPage />
       </Route>
       <Route path={['/settings/setupServices', '/devices/setupServices']}>
@@ -101,7 +101,16 @@ export const Router: React.FC = () => {
       <Route path={['/devices/:deviceID/:serviceID/details', '/connections/:serviceID/details']}>
         <ServiceDetailPage />
       </Route>
-      <Route path={['/devices/:deviceID/:serviceID/edit', '/connections/:serviceID/edit']}>
+      <Route path="/devices/:deviceID/edit/add-service">
+        <ServiceAddPage targets={targets} />
+      </Route>
+      <Route
+        path={[
+          '/devices/:deviceID/:serviceID/edit',
+          '/devices/:deviceID/edit/:serviceID',
+          '/connections/:serviceID/edit',
+        ]}
+      >
         <ServiceEditPage targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path="/devices/:deviceID/users">
@@ -112,9 +121,6 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices/:deviceID/edit">
         <DeviceEditPage targetDevice={targetDevice} targets={targets} />
-      </Route>
-      <Route path="/devices/:deviceID/serviceAdd">
-        <ServiceAddPage targets={targets} />
       </Route>
       <Route path={['/devices/:deviceID/:serviceID', '/connections/:serviceID']}>
         <ServicePage />

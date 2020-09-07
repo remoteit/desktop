@@ -24,6 +24,7 @@ import { AddServiceButton } from '../../buttons/AddServiceButton'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { DeviceLabelSetting } from '../../components/DeviceLabelSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
+import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Title } from '../../components/Title'
@@ -94,6 +95,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         <>
           <Typography variant="subtitle1">
             <Title>Services</Title>
+            <AddFromNetworkButton device={device} thisDevice={thisDevice} />
             <AddServiceButton device={device} thisDevice={thisDevice} />
           </Typography>
           <List>
@@ -106,7 +108,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
               </ListItem>
             )}
             {serviceList.map(s => (
-              <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/${s.id}/edit`} dense>
+              <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/edit/${s.id}`} dense>
                 <ListItemIcon></ListItemIcon>
                 <ListItemText primary={s.name} secondary={host(s)} />
                 <ListItemSecondaryAction className={css.actions}>

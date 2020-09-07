@@ -10,7 +10,7 @@ export const AddServiceButton: React.FC<{ device?: IDevice; thisDevice?: boolean
 
   return (
     <Tooltip title="Add Service">
-      <IconButton onClick={() => history.push(`/devices/${device.id}/serviceAdd`)}>
+      <IconButton onClick={() => history.push(`/devices/${device.id}/edit/add-service`)}>
         <Icon name="plus-circle" size="md" type="light" />
       </IconButton>
     </Tooltip>
