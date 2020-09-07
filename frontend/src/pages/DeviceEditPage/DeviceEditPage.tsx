@@ -46,7 +46,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const css = useStyles()
   const history = useHistory()
   const { deviceID } = useParams()
-  const { setupBusy } = useSelector((state: ApplicationState) => state.ui)
+  const { setupAddingService } = useSelector((state: ApplicationState) => state.ui)
   const device = useSelector((state: ApplicationState) =>
     state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
   )
@@ -59,9 +59,6 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
     history.push(`/devices`)
     return null
   }
-  /* 
-    @TODO: add arbitrary meta data here!!!!
-  */
 
   const thisDevice = device.id === targetDevice.uid
   let serviceList: IServiceList[] = thisDevice
@@ -100,7 +97,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
             <AddServiceButton device={device} thisDevice={thisDevice} />
           </Typography>
           <List>
-            {thisDevice && setupBusy && (
+            {thisDevice && setupAddingService && (
               <ListItem disabled button dense>
                 <ListItemIcon>
                   <CircularProgress color="inherit" size={fontSizes.md} />
