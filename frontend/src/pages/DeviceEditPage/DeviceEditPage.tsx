@@ -93,7 +93,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         {/* <SharedAccessSetting device={device} /> */}
       </List>
       <Divider />
-      {thisDevice && (
+      {!device.shared && (
         <>
           <Typography variant="subtitle1">
             <Title>Services</Title>

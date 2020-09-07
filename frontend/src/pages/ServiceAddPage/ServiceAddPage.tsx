@@ -47,6 +47,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
         </Body>
       ) : (
         <ServiceForm
+          thisDevice={true}
           onSubmit={form => {
             backend.addTargetService(form)
             history.push(`/devices/${deviceID}/edit`)

@@ -12,10 +12,11 @@ import { spacing } from '../../styling'
 type Props = {
   name?: string
   target?: ITarget
+  thisDevice: boolean
   onSubmit: (form: ITarget) => void
 }
 
-export const ServiceForm: React.FC<Props> = ({ name = '', target = DEFAULT_TARGET, onSubmit }) => {
+export const ServiceForm: React.FC<Props> = ({ name = '', target = DEFAULT_TARGET, thisDevice, onSubmit }) => {
   const { setupBusy, deleting } = useSelector((state: ApplicationState) => ({
     setupBusy: state.ui.setupBusy,
     deleting: state.ui.setupServiceBusy === target?.uid,
@@ -27,19 +28,6 @@ export const ServiceForm: React.FC<Props> = ({ name = '', target = DEFAULT_TARGE
 
   return (
     <form onSubmit={() => onSubmit(form)}>
-      <List>
-        <ListItemSetting
-          label="Enable service"
-          subLabel="Disabling your service will take it offline."
-          icon="circle-check"
-          toggle={!form.disabled}
-          disabled={setupBusy}
-          onClick={() => {
-            setForm({ ...form, disabled: !form.disabled })
-          }}
-        />
-      </List>
-      <Divider />
       <List>
         <ListItem className={css.fieldWide}>
           <TextField
@@ -57,50 +45,67 @@ export const ServiceForm: React.FC<Props> = ({ name = '', target = DEFAULT_TARGE
             }}
           />
         </ListItem>
-        <ListItem className={css.field}>
-          <TextField
-            select
-            label="Service Type"
-            value={form.type}
-            disabled={disabled}
-            variant="filled"
-            onChange={event => {
-              const type: number = Number(event.target.value)
-              setForm({ ...form, type, port: findType(type).defaultPort || form.port })
-            }}
-          >
-            {serviceTypes.map(type => (
-              <MenuItem value={type.id} key={type.id}>
-                {type.name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </ListItem>
-        <ListItem className={css.field}>
-          <TextField
-            size="small"
-            label="Service Port"
-            value={form.port}
-            disabled={disabled}
-            variant="filled"
-            onChange={event => setForm({ ...form, port: +event.target.value })}
-          />
-        </ListItem>
-        <ListItem className={css.fieldWide}>
-          <TextField
-            label="Service Host Address"
-            value={form.hostname || ''}
-            disabled={disabled}
-            variant="filled"
-            onChange={event => setForm({ ...form, hostname: event.target.value })}
-          />
-          <Typography variant="caption">
-            Local network IP address or FQDN to host this service.
-            <br />
-            Leave blank for this system to host.
-          </Typography>
-        </ListItem>
       </List>
+      {thisDevice && (
+        <>
+          <Divider />
+          <List>
+            <ListItemSetting
+              label="Enable service"
+              subLabel="Disabling your service will take it offline."
+              icon="circle-check"
+              toggle={!form.disabled}
+              disabled={setupBusy}
+              onClick={() => {
+                setForm({ ...form, disabled: !form.disabled })
+              }}
+            />
+            <ListItem className={css.field}>
+              <TextField
+                select
+                label="Service Type"
+                value={form.type}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => {
+                  const type: number = Number(event.target.value)
+                  setForm({ ...form, type, port: findType(type).defaultPort || form.port })
+                }}
+              >
+                {serviceTypes.map(type => (
+                  <MenuItem value={type.id} key={type.id}>
+                    {type.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </ListItem>
+            <ListItem className={css.field}>
+              <TextField
+                size="small"
+                label="Service Port"
+                value={form.port}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => setForm({ ...form, port: +event.target.value })}
+              />
+            </ListItem>
+            <ListItem className={css.fieldWide}>
+              <TextField
+                label="Service Host Address"
+                value={form.hostname || ''}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => setForm({ ...form, hostname: event.target.value })}
+              />
+              <Typography variant="caption">
+                Local network IP address or FQDN to host this service.
+                <br />
+                Leave blank for this system to host.
+              </Typography>
+            </ListItem>
+          </List>
+        </>
+      )}
       <Columns inset count={1}>
         <span>
           <Button type="submit" variant="contained" color="primary" disabled={setupBusy || !!error}>

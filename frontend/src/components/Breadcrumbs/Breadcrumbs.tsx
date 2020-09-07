@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { findService } from '../../models/devices'
 import { ApplicationState } from '../../store'
 import { useHistory, useLocation } from 'react-router-dom'
-import { Tooltip, IconButton, Link } from '@material-ui/core'
+import { IconButton, Link } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { attributeName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
@@ -47,16 +47,9 @@ export const Breadcrumbs: React.FC = () => {
 
   return (
     <div className={css.header}>
-      <Tooltip title="back">
-        <IconButton
-          onClick={() => {
-            if (history.length > 2) history.goBack()
-            else history.push(parentPath)
-          }}
-        >
-          <Icon name="chevron-left" size="md" fixedWidth />
-        </IconButton>
-      </Tooltip>
+      <IconButton onClick={() => history.push(parentPath)}>
+        <Icon name="chevron-left" size="md" fixedWidth />
+      </IconButton>
       {crumbs.reduce((result: any[], crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
@@ -75,11 +68,12 @@ const useStyles = makeStyles({
   header: {
     marginLeft: spacing.md,
     marginBottom: -spacing.xs,
+    color: colors.grayDark,
     '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
-      color: colors.grayDark,
       fontSize: fontSizes.xs,
+      color: colors.grayDark,
       padding: `${spacing.xxs}px ${spacing.xs}px`,
       marginLeft: spacing.xs,
       marginRight: spacing.xs,

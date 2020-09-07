@@ -147,6 +147,8 @@ export default createMuiTheme({
         color: colors.grayDarkest,
         letterSpacing: -0.2,
         backgroundColor: colors.white,
+        position: 'relative',
+        zIndex: 1,
         boxShadow: 'rgba(0,0,0,0.15) 0px 1px 2px',
         '& span + span': { marginLeft: spacing.lg },
       },

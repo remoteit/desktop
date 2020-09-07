@@ -1,4 +1,5 @@
 import React from 'react'
+import { MAX_NAME_LENGTH, REGEX_NAME_SAFE } from '../../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
@@ -26,13 +27,15 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
     <InlineTextFieldSetting
       value={name}
       label="Device Name"
-      disabled={true} // disabled until we can support device renaming fully
+      disabled={device.shared}
       resetValue={defaultValue}
+      maxLength={MAX_NAME_LENGTH}
+      filter={REGEX_NAME_SAFE}
       onSave={name => {
-        device.attributes = { ...device.attributes, name: name.toString() }
-        devices.setAttributes(device)
-        // if we use targetDevice instead of device attribute
-        // emit('device', { ...device, name })
+        devices.renameDevice({ ...device, name: name.toString() })
+        // if we use device attributes:
+        // device.attributes = { ...device.attributes, name: name.toString() }
+        // devices.setAttributes(device)
       }}
     />
   )

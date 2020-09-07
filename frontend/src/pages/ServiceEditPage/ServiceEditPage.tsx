@@ -24,7 +24,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const { serviceID = '', deviceID } = useParams()
   const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const target = targets?.find(t => t.uid === serviceID)
-  const thisDeviceTarget = service?.deviceID === targetDevice.uid
+  const thisDevice = service?.deviceID === targetDevice.uid
   const history = useHistory()
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   }, [])
 
   //@FIXME move this type of routing to the router
-  if (!service || (thisDeviceTarget && !target)) {
+  if (!service || (thisDevice && !target)) {
     history.push(`/devices/${deviceID}/edit`)
     return null
   }
@@ -54,12 +54,15 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
       <ServiceForm
         target={target}
         name={service.name}
+        thisDevice={thisDevice}
         onSubmit={form => {
           // for local cli config update
           backend.updateTargetService(form)
-          // for cloud name change
-          service.attributes.name = form.name
-          devices.setServiceAttributes(service)
+          // for cloud name as attribute change
+          // service.attributes.name = form.name
+          // devices.setServiceAttributes(service)
+          service.name = form.name
+          devices.rename(service)
           history.push(`/devices/${deviceID}/edit`)
         }}
       />

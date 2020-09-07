@@ -106,7 +106,7 @@ export const ServicePage: React.FC = () => {
       </List>
       <Divider />
       <List>
-        {thisDevice && (
+        {!device.shared && (
           <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} dense />
         )}
         <UsersSelect service={service} device={device} />
