@@ -55,6 +55,7 @@ declare global {
   interface IReactSelectOption {
     value: string
     label: string
+    isDisabled: boolean
   }
 
   interface ShareInfo {

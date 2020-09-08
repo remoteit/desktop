@@ -11,30 +11,39 @@ import { Typography, Link } from '@material-ui/core'
 
 export function DeviceShareAdd({
   contacts,
+  device,
   onChangeContacts,
   selectedContacts,
+  setChanging,
 }: {
   contacts: IContact[]
+  device: IDevice
   onChangeContacts: (contacts: string[]) => void
   selectedContacts: string[]
+  setChanging: React.Dispatch<React.SetStateAction<boolean>>
 }): JSX.Element {
   function handleContactChange(contacts: string[]): void {
     onChangeContacts(contacts)
   }
-  return <ContactSelector contacts={contacts} onChange={handleContactChange} selectedContacts={selectedContacts} />
+  return <ContactSelector device={device} contacts={contacts} onChange={handleContactChange} selectedContacts={selectedContacts} setChanging={setChanging} />
 }
 
 function ContactSelector({
+  device,
   contacts,
   onChange,
   selectedContacts = [],
+  setChanging,
 }: {
+  device: IDevice
   contacts: IContact[]
   onChange: (latest: any) => void
   selectedContacts?: string[]
+  setChanging: React.Dispatch<React.SetStateAction<boolean>>
 }): JSX.Element {
   const [devices] = useSelector((state: ApplicationState) => state.devices.all)
-  const options = generateContactOptions(contacts.filter(o => o.email !== devices.owner))
+  const notShared = (c: { email: string }) => !device.access.find(s => s.email === c.email)
+  const options = generateContactOptions(contacts.filter(o => o.email !== devices.owner), contacts.filter(notShared))
   const css = useStyles()
 
   const mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
@@ -42,6 +51,7 @@ function ContactSelector({
   const handleChange = (opts: any, actionMeta: any): void => {
     opts = opts && opts.length ? opts : []
     onChange(opts.map((o: any) => o.value))
+    setChanging(true)
   }
 
   const validateEmail = (inputValue: any) => {
@@ -58,7 +68,7 @@ function ContactSelector({
     <CreatableSelect
       isMulti
       isClearable
-      options={options}
+      options={options.sort((a: any, b: any) => (a.label > b.label) ? 1 : ((b.label > a.label) ? -1 : 0))}
       theme={selectTheme}
       className={css.select}
       classNamePrefix="select"
@@ -66,6 +76,7 @@ function ContactSelector({
       onChange={handleChange}
       isValidNewOption={v => mailformat.test(v)}
       formatCreateLabel={validateEmail}
+      styles={customStyles}
     />
   )
 }
@@ -90,4 +101,15 @@ const selectTheme = (theme: Theme) => {
       primary: colors.primary,
     },
   }
+}
+
+const customStyles = {
+  option: (styles: any) => ({
+    ...styles,
+    cursor: 'pointer',
+  }),
+  control: (styles: any) => ({
+    ...styles,
+    cursor: 'pointer',
+  }),
 }
