@@ -1,4 +1,4 @@
-!define CLI_VERSION "1.6.3"
+!define CLI_VERSION "1.6.5"
 !define PATH_REMOTE_DIR "C:\Program Files\remoteit-bin"
 !define REMOTE_CLI_EXE "${PATH_REMOTE_DIR}\remoteit.exe" 
 
