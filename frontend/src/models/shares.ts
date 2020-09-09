@@ -34,7 +34,8 @@ export default createModel({
     },
 
     async share(newData?: any) {
-      const { set, graphQLError, graphQLMetadata } = dispatch.devices
+      const { graphQLError, graphQLMetadata } = dispatch.devices
+      const { set } = dispatch.shares
       set({sharing: true})
       try {
         const response = await graphQLShareDevice(newData)

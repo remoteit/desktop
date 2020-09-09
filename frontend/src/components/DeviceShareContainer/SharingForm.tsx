@@ -25,6 +25,7 @@ export function SharingForm({
   selectedServices,
   update,
   share,
+  changing,
 }: {
   onChange: (access: SharingAccess) => void
   device: IDevice
@@ -32,11 +33,14 @@ export function SharingForm({
   selectedServices: string[]
   update: () => void
   share: () => void
+  changing: boolean
 }): JSX.Element {
   const history = useHistory()
   const location = useLocation()
   const { email = '' } = useParams()
-  const { saving } = useSelector((state: ApplicationState) => state.shares)
+  const  saving  = useSelector((state: ApplicationState) => state.shares.sharing)
+
+  let disabled = !(changing && saving === false)
 
   const handleChangeServices = (services: string[]) => {
     onChange({ scripting, services })
@@ -79,6 +83,7 @@ export function SharingForm({
       <ShareSaveActions
         onCancel={() => history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))}
         onSave={action}
+        disabled={disabled}
       />
     </>
   )

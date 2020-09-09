@@ -1,9 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { SharingDetails } from './SharingForm'
 import { useParams, useLocation, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { Divider } from '@material-ui/core'
 import { DeviceShareAdd } from './DeviceShareAdd'
 import { DeviceShareDetails } from './DeviceShareDetails'
 
@@ -15,24 +14,22 @@ export const DeviceShareContainer = ({ username = '' }) => {
   const [selectedContacts, setSelectedContacts] = React.useState<string[]>([])
   const history = useHistory()
   const location = useLocation()
+  const [changing, setChanging] = useState(false)
 
   if (!myDevice) return null
-
-  const notShared = (c: { email: string }) => !myDevice.access.find(s => s.email === c.email)
-  const unsharedContacts = contacts.filter(notShared)
 
   const goToNext = () =>
     username === ''
       ? history.push(location.pathname.replace('/share', ''))
       : history.push(location.pathname.replace(`/${username}`, ''))
 
-  const handleShareUpdate = async (share: SharingDetails, isNew: boolean) => {
+  const handleShareUpdate = (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
     const { scripting, services } = share.access
 
-    await shares.share(shareData)
+    shares.share(shareData)
 
-    await shares.updateDeviceState({ device: myDevice, contacts: shareData.email, scripting, services, isNew })
+    shares.updateDeviceState({ device: myDevice, contacts: shareData.email, scripting, services, isNew })
     goToNext()
   }
 
@@ -58,9 +55,11 @@ export const DeviceShareContainer = ({ username = '' }) => {
     <>
       {!username && (
         <DeviceShareAdd
-          contacts={unsharedContacts}
+          contacts={contacts}
+          device={myDevice}
           onChangeContacts={setSelectedContacts}
           selectedContacts={selectedContacts}
+          setChanging={setChanging}
         />
       )}
       <DeviceShareDetails
@@ -68,6 +67,8 @@ export const DeviceShareContainer = ({ username = '' }) => {
         share={handleShareUpdate}
         selectedContacts={selectedContacts}
         updateSharing={handleShareUpdate}
+        changing={changing}
+        setChanging={setChanging}
       />
     </>
   )
