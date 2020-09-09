@@ -93,10 +93,10 @@ export async function graphQLRequest(query: String, variables: ILookup) {
 
 export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!], $idSize: Int, $size: Int, $from: Int, $name: String, $state: String) {
+    ` query($ids: [String!], $idSize: Int, $size: Int, $from: Int, ${name ? '$name: String, ' : ''}$state: String) {
         login {
           id
-          devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
+          devices(size: $size, from: $from, ${name ? 'name: $name, ' : ''}state: $state) ${DEVICE_SELECT}
           connections: devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
           contacts {
             id
