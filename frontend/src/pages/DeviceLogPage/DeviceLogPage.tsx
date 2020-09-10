@@ -25,16 +25,14 @@ export const DeviceLogPage = () => {
   const dispatch = useDispatch<Dispatch>()
   const [logsToShow] = useState(device?.events.items)
   const [dateFilter, setDateFilter] = useState('')
-  const [selectedDate, setSelectedDate] = React.useState<Date | null>(
-    new Date(),
-  );
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   
   const css = useStyles()
   
   const handleChange = (date: any) => {
       setSelectedDate(date)
       // find the firts date before of filter
-      const item = device?.events.items.find(item => moment(item.timestamp).isSameOrBefore(date))?.timestamp || date
+      const item = device?.events.items.find(item => moment(item.timestamp).isSameOrBefore(date, 'day'))?.timestamp || date
       setDateFilter(moment(item).format('DDMMYYYY').toString())
   }
 
@@ -87,9 +85,7 @@ export const DeviceLogPage = () => {
               label="Jump to Date"
               value={selectedDate}
               onChange={handleChange}
-              KeyboardButtonProps={{
-                'aria-label': 'change date',
-              }}
+              inputVariant="standard"
             />
         </MuiPickersUtilsProvider>
 
