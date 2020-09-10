@@ -67,10 +67,6 @@ export const DeviceDetailPage = () => {
           ]}
         />
       </Columns>
-      <Divider />
-      <List>
-        <ListItemLocation title="Device Logs" icon="file-alt" pathname={location.pathname.replace('/details', '/logs')} />
-      </List>
     </Container>
   )
 }

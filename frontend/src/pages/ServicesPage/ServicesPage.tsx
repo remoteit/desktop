@@ -64,6 +64,7 @@ export const ServicesPage: React.FC = () => {
         <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} dense />
         <UsersSelect device={device} />
         <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} dense />
+        <ListItemLocation title="Device Logs" icon="file-alt" pathname={location.pathname + '/logs'} dense />
       </List>
     </Container>
   )
