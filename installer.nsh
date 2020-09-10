@@ -113,62 +113,86 @@
     FileWrite $uninstallLog "$\nUninstall (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $uninstallLog "-----------------------------$\r$\n"
 
-    MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
-    true:
-        FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
-
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j uninstall --yes'
-        Pop $0
-        Pop $1       
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j uninstall --yes     [$0]  $1$\r$\n"
-
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j status' ; waits for processes to stop so can cleanly remove files
+    IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
+    config_found:
+        nsExec::ExecToStack /OEM 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.createdtimestamp'
         Pop $0
         Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j status     [$0]  $1$\r$\n"
+        FileWrite $uninstallLog "- powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.createdtimestamp     [$0]  $1$\r$\n"
 
-        RMDir /r "$APPDATA\remoteit"
-        FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
+        IntCmp $1 0 notDevice thereIsDevice
+            notDevice:
+                ;MessageBox MB_OK "Not device installed"
+                Goto done
+            thereIsDevice:
+                MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
+                true:
+                    FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
 
-        MessageBox MB_OK "Your device was unregistered!" 
-        Goto next
-    false:
-        FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
+                    nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j uninstall --yes'
+                    Pop $0
+                    Pop $1       
+                    ${If} $0 == 0
+                        StrCpy $0 "OK"
+                    ${Else}
+                        StrCpy $0 "ERROR"
+                    ${EndIf}
+                    FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j uninstall --yes     [$0]  $1$\r$\n"
 
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j service uninstall'
-        Pop $0
-        Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j service uninstall     [$0]  $1$\r$\n"
+                    nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j status' ; waits for processes to stop so can cleanly remove files
+                    Pop $0
+                    Pop $1
+                    ${If} $0 == 0
+                        StrCpy $0 "OK"
+                    ${Else}
+                        StrCpy $0 "ERROR"
+                    ${EndIf}
+                    FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j status     [$0]  $1$\r$\n"
 
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j status' ; waits for processes to stop so can cleanly remove files
-        Pop $0
-        Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j status     [$0]  $1$\r$\n"
+                    RMDir /r "$APPDATA\remoteit"
+                    FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
 
-        RMDir /r "$APPDATA\remoteit\log"
-        FileWrite $uninstallLog "- RMDir $APPDATA\remoteit\log$\r$\n"
-        Goto next
-    next:
+                    MessageBox MB_OK "Your device was unregistered!" 
+                    Goto next
+                false:
+                    FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
+
+                    nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j service uninstall'
+                    Pop $0
+                    Pop $1
+                    ${If} $0 == 0
+                        StrCpy $0 "OK"
+                    ${Else}
+                        StrCpy $0 "ERROR"
+                    ${EndIf}
+                    FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j service uninstall     [$0]  $1$\r$\n"
+
+                    nsExec::ExecToStack /OEM 'powershell "& " "$\'${REMOTE_CLI_EXE}$\'" -j status' ; waits for processes to stop so can cleanly remove files
+                    Pop $0
+                    Pop $1
+                    ${If} $0 == 0
+                        StrCpy $0 "OK"
+                    ${Else}
+                        StrCpy $0 "ERROR"
+                    ${EndIf}
+                    FileWrite $uninstallLog "- ${REMOTE_CLI_EXE} -j status     [$0]  $1$\r$\n"
+
+                    RMDir /r "$APPDATA\remoteit\log"
+                    FileWrite $uninstallLog "- RMDir $APPDATA\remoteit\log$\r$\n"
+                    Goto next
+                next:
+                Goto done
+        done:
+        
+        goto end_of_config
+    config_not_found:
+        ;config.json not found
+        MessageBox MB_OK "not found" 
+    end_of_config:
+
+
+
+
     RMDir /r "${PATH_REMOTE_DIR}"
     FileWrite $uninstallLog "- RMDir ${PATH_REMOTE_DIR}$\r$\n"
 
