@@ -62,7 +62,7 @@ const state: IBackendState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async updateTargetDevice(targetDevice: ITargetDevice, globalState: any) {
+    async targetDeviceUpdated(targetDevice: ITargetDevice, globalState: any) {
       const { ui, backend, devices } = dispatch
       const { device } = globalState.backend
 
@@ -83,6 +83,12 @@ export default createModel({
 
       backend.set({ device: targetDevice })
     },
+    async targetUpdated(targets: ITarget[], globalState: any) {
+      if (globalState.ui.setupBusy) {
+        await dispatch.devices.fetch()
+        dispatch.ui.setupUpdated(targets.length)
+      }
+    },
     async addTargetService(target: ITarget, globalState: any) {
       analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
       dispatch.ui.set({ setupBusy: true, setupAddingService: true })
@@ -100,7 +106,7 @@ export default createModel({
     async updateTargetService(target: ITarget, globalState: any) {
       const targets: ITarget[] = globalState.backend.targets
       analyticsHelper.track('serviceUpdated', { ...target, id: target.uid })
-      dispatch.ui.set({ setupServiceBusy: true })
+      dispatch.ui.set({ setupBusy: true, setupServiceBusy: true })
       const tIndex = targets?.findIndex(t => t.uid === target.uid)
       targets[tIndex] = target
       emit('targets', targets)
