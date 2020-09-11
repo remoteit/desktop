@@ -3,7 +3,7 @@ import { List, ListItemIcon, ListItemText, Divider, Typography } from '@material
 import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
 import { InitiatorPlatform } from '../InitiatorPlatform'
 import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
-import { ShareDetails } from '../DeviceShareContainer/ContactCardActions'
+import { ShareDetails } from '../ShareDetails'
 import { useLocation } from 'react-router-dom'
 import { Duration } from '../Duration'
 import { useSelector } from 'react-redux'
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
-  const {  connections, registeredId } = useSelector((state: ApplicationState) => ({
+  const { connections, registeredId } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
     connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
@@ -24,11 +24,11 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
     }, {}),
   }))
   const activeConnections = connections[registeredId] && connections[registeredId].find(c => c.active)
-  const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
   const usersConnected = getUsersConnectedDeviceOrService(device, service)
   const users = service ? service.access : device?.access || []
-  const usersToRender = usersConnected.concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
-                          .sort((a,b) => (a.email > b.email) ? 1 : ((b.email > a.email) ? -1 : 0))
+  const usersToRender = usersConnected
+    .concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
+    .sort((a, b) => (a.email > b.email ? 1 : b.email > a.email ? -1 : 0))
   const location = useLocation()
 
   if (!device?.access?.length) return null
@@ -46,7 +46,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
           const permission = getDetailUserPermission(device, user.email)
           return (
             <>
-              <ListItemLocation pathname={`${location.pathname}/${user.email}`}>
+              <ListItemLocation pathname={`${location.pathname}/${user.email}`} dense>
                 <ListItemIcon>
                   <InitiatorPlatform id={user.platform} connected={isConnected} />
                 </ListItemIcon>
@@ -65,7 +65,6 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
                   services={permission.services}
                   service={service}
                   connections={activeConnections}
-                  setContextMenu={setContextMenu} 
                 />
               </ListItemLocation>
               {usersConnected.length - 1 === index && <Divider />}

@@ -18,21 +18,21 @@ export const UsersSelect: React.FC<Props> = ({ device, service }) => {
 
   if (device?.shared) return null
 
-  let pathnameLocation = `${location.pathname}/users${total ? '' : '/share'}`
-
   return (
-    <ListItemLocation pathname={pathnameLocation} dense>
+    <ListItemLocation pathname={`${location.pathname}/${total ? 'users' : 'share'}`} dense>
       <ListItemIcon>
         <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
       </ListItemIcon>
       <ListItemText
-        primary={total ? 'Shared Users' : 'Add Users'}
+        primary={total ? 'Shared Users' : 'Add Shared User'}
         secondary={
-          <>
-            {total ? total + ' total' : ''}
-            &nbsp; &nbsp;
-            {!!connected && <span style={{ color: colors.primary }}>{connected} connected</span>}
-          </>
+          !!total && (
+            <>
+              {total ? total + ' total' : ''}
+              &nbsp; &nbsp;
+              {!!connected && <span style={{ color: colors.primary }}>{connected} connected</span>}
+            </>
+          )
         }
       />
     </ListItemLocation>
