@@ -104,13 +104,13 @@ function getEventHandlers() {
       console.log('socket targets', result)
       if (result) {
         backend.set({ targets: result })
-        ui.setupUpdated(result.length)
+        backend.targetUpdated(result)
       }
     },
 
     device: (result: ITargetDevice) => {
       console.log('socket device', result)
-      if (result) backend.updateTargetDevice(result)
+      if (result) backend.targetDeviceUpdated(result)
     },
 
     scan: (result: IScanData) => {
@@ -186,14 +186,13 @@ function getEventHandlers() {
     'binary/not-installed': (binary: string) => binaries.notInstalled(binary),
 
     'service/putty/required': (result: IPuttyValidation) => {
-      console.log({result});
-      ui.set({ 
-       requireInstallPutty: result.install,
-       loading: result.loading,
-       pathPutty: result.pathPutty,
+      console.log({ result })
+      ui.set({
+        requireInstallPutty: result.install,
+        loading: result.loading,
+        pathPutty: result.pathPutty,
       })
     },
-
   } as EventHandlers
 }
 

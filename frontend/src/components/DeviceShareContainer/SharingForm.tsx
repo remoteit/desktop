@@ -2,7 +2,7 @@ import { Divider, List, Typography } from '@material-ui/core'
 import React, { useEffect } from 'react'
 import { ListItemSetting } from '../ListItemSetting'
 import { ListItemCheckbox } from '../ListItemCheckbox'
-import { ShareSaveActions } from './ContactCardActions'
+import { ShareSaveActions } from '../ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { useSelector } from '../../hooks/reactReduxHooks'
 import { ApplicationState } from '../../store'
@@ -38,7 +38,7 @@ export function SharingForm({
   const history = useHistory()
   const location = useLocation()
   const { email = '' } = useParams()
-  const  saving  = useSelector((state: ApplicationState) => state.shares.sharing)
+  const saving = useSelector((state: ApplicationState) => state.shares.sharing)
 
   let disabled = !(changing && saving === false)
 

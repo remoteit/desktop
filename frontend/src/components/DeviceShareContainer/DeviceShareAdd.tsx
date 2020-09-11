@@ -25,7 +25,15 @@ export function DeviceShareAdd({
   function handleContactChange(contacts: string[]): void {
     onChangeContacts(contacts)
   }
-  return <ContactSelector device={device} contacts={contacts} onChange={handleContactChange} selectedContacts={selectedContacts} setChanging={setChanging} />
+  return (
+    <ContactSelector
+      device={device}
+      contacts={contacts}
+      onChange={handleContactChange}
+      selectedContacts={selectedContacts}
+      setChanging={setChanging}
+    />
+  )
 }
 
 function ContactSelector({
@@ -43,7 +51,10 @@ function ContactSelector({
 }): JSX.Element {
   const [devices] = useSelector((state: ApplicationState) => state.devices.all)
   const notShared = (c: { email: string }) => !device.access.find(s => s.email === c.email)
-  const options = generateContactOptions(contacts.filter(o => o.email !== devices.owner), contacts.filter(notShared))
+  const options = generateContactOptions(
+    contacts.filter(o => o.email !== devices.owner),
+    contacts.filter(notShared)
+  )
   const css = useStyles()
 
   const mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
@@ -68,11 +79,11 @@ function ContactSelector({
     <CreatableSelect
       isMulti
       isClearable
-      options={options.sort((a: any, b: any) => (a.label > b.label) ? 1 : ((b.label > a.label) ? -1 : 0))}
+      options={options.sort((a: any, b: any) => (a.label > b.label ? 1 : b.label > a.label ? -1 : 0))}
       theme={selectTheme}
       className={css.select}
       classNamePrefix="select"
-      placeholder="Search user to share with..."
+      placeholder="Enter an email..."
       onChange={handleChange}
       isValidNewOption={v => mailformat.test(v)}
       formatCreateLabel={validateEmail}

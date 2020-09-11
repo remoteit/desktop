@@ -10,9 +10,10 @@ interface Props {
   label?: boolean
   open?: boolean
   arrow?: boolean
+  disabled?: boolean
 }
 
-export const SessionsTooltip: React.FC<Props> = ({ service, label, children, ...props }) => {
+export const SessionsTooltip: React.FC<Props> = ({ service, label, children, disabled, ...props }) => {
   if (!service) return null
 
   const list = service?.sessions?.reduce((list: string[], session, index, all) => {
@@ -21,6 +22,8 @@ export const SessionsTooltip: React.FC<Props> = ({ service, label, children, ...
     else list.push(session.email)
     return list
   }, [])
+
+  if (disabled) props.open = false
 
   return (
     <Tooltip

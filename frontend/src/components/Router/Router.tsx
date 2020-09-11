@@ -82,9 +82,11 @@ export const Router: React.FC = () => {
           '/connections/:serviceID/users/:email',
           '/connections/:serviceID/users/share',
           '/devices/:deviceID/:serviceID/users/share',
+          '/devices/:deviceID/:serviceID/share',
           '/devices/:deviceID/:serviceID/users/:email',
           '/devices/:deviceID/users/share',
           '/devices/:deviceID/users/:email',
+          '/devices/:deviceID/share',
         ]}
       >
         <SharePage />

@@ -37,12 +37,6 @@ type Props = {
   targetDevice: ITargetDevice
 }
 
-type IServiceList = {
-  typeID?: number
-  name: string
-  id: string
-}
-
 export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const css = useStyles()
   const history = useHistory()
@@ -62,11 +56,8 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   }
 
   const thisDevice = device.id === targetDevice.uid
-  let serviceList: IServiceList[] = thisDevice
-    ? targets.map(t => ({ id: t.uid, typeID: t.type, name: t.name })).reverse()
-    : device.services
 
-  function host(service: IServiceList) {
+  function host(service: IService) {
     const target = targets.find(t => t.uid === service.id)
     if (target) return `${replaceHost(target.hostname)}:${target.port}`
   }
@@ -107,7 +98,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
                 <ListItemText primary="Registering..." />
               </ListItem>
             )}
-            {serviceList.map(s => (
+            {device.services.map(s => (
               <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/edit/${s.id}`} dense>
                 <ListItemIcon></ListItemIcon>
                 <ListItemText primary={s.name} secondary={host(s)} />
@@ -124,5 +115,5 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
 }
 
 const useStyles = makeStyles({
-  actions: { right: 90 },
+  actions: { right: 70 },
 })

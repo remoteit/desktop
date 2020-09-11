@@ -51,6 +51,7 @@ const DEVICE_SELECT = `{
       lastReported
       port
       type
+      protocol
       attributes
       access {
         user {
@@ -171,6 +172,7 @@ export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolea
           attributes: s.attributes,
           name: s.name,
           port: s.port,
+          protocol: s.protocol,
           access: s.access.map((e: any) => ({ email: e.user?.email })),
           sessions: processSessions(s.sessions, loginId),
         })

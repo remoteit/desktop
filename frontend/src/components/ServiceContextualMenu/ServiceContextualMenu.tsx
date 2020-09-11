@@ -3,8 +3,11 @@ import { isDev } from '../../services/Browser'
 import { useHistory } from 'react-router-dom'
 import { useClipboard } from 'use-clipboard-copy'
 import { useSelector } from 'react-redux'
+import { CopyButton } from '../../buttons/CopyButton'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
+import { LaunchButton } from '../../buttons/LaunchButton'
+import { useApplication } from '../../shared/applications'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ApplicationState } from '../../store'
 import {
@@ -13,7 +16,6 @@ import {
   Typography,
   Menu,
   MenuItem,
-  List,
   ListItem,
   ListItemIcon,
   ListItemText,
@@ -31,6 +33,7 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const clipboard = useClipboard({ copiedTimeout: 1000 })
+  const app = useApplication(service && service.typeID)
   const history = useHistory()
   const css = useStyles()
 
@@ -54,21 +57,12 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
           {service?.name}
         </Typography>
       </ListItem>
-      <ListItem dense>
-        <ComboButton className={css.button} connection={connection} service={service} />
+      <ListItem className={css.connect} dense>
+        <ComboButton connection={connection} service={service} />
+        <CopyButton connection={connection} service={service} size="base" />
+        <LaunchButton connection={connection} service={service} size="base" />
       </ListItem>
       <Divider />
-      <MenuItem dense onClick={clipboard.copy}>
-        <ListItemIcon>
-          <Icon name={clipboard.copied ? 'check' : 'link'} color={clipboard.copied ? 'success' : undefined} size="md" />
-        </ListItemIcon>
-        <ListItemText primary={clipboard.copied ? 'Copied!' : `Copy Link`} />
-        <input
-          type="hidden"
-          ref={clipboard.target}
-          value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
-        />
-      </MenuItem>
       {!device?.shared && (
         <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/users/share`)}>
           <ListItemIcon>
@@ -77,6 +71,17 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
           <ListItemText primary="Share" />
         </MenuItem>
       )}
+      <MenuItem dense onClick={clipboard.copy}>
+        <ListItemIcon>
+          <Icon name={clipboard.copied ? 'check' : 'link'} color={clipboard.copied ? 'success' : undefined} size="md" />
+        </ListItemIcon>
+        <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy Desktop Link'} />
+        <input
+          type="hidden"
+          ref={clipboard.target}
+          value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
+        />
+      </MenuItem>
       <Divider />
       <MenuItem dense disableGutters onClick={() => history.push(`/devices/${device?.id}/${service?.id}`)}>
         <ListItemIcon>
@@ -110,5 +115,8 @@ const useStyles = makeStyles({
     },
   },
   name: { paddingTop: 0, paddingBottom: 0 },
-  button: { margin: `${spacing.xs}px 0`, width: '100%' },
+  connect: {
+    '& > button + button': { marginLeft: -spacing.sm, marginRight: -spacing.xs },
+    '& > div': { margin: `${spacing.xs}px 0`, width: '100%', minWidth: 120 },
+  },
 })

@@ -2,12 +2,13 @@ import React from 'react'
 import { makeStyles, Box, lighten } from '@material-ui/core'
 import { spacing, colors, Color } from '../../styling'
 import { SessionsTooltip } from '../SessionsTooltip'
+import classnames from 'classnames'
 import { Icon } from '../Icon'
 
 interface Props {
   connection?: IConnection
   service?: IService
-  setContextMenu: React.Dispatch<React.SetStateAction<IContextMenu>>
+  setContextMenu?: React.Dispatch<React.SetStateAction<IContextMenu>>
 }
 
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu }) => {
@@ -58,14 +59,15 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       <SessionsTooltip service={service} open={openTooltip} placement="top" arrow label>
         <Box
           component="span"
-          className={css.indicator}
+          className={classnames(setContextMenu && css.hasMenu, css.indicator)}
           onMouseEnter={() => setOpenTooltip(true)}
           onMouseLeave={() => setOpenTooltip(false)}
           onMouseDown={event => {
-            setContextMenu({
-              el: event.currentTarget,
-              serviceID: service.id,
-            })
+            setContextMenu &&
+              setContextMenu({
+                el: event.currentTarget,
+                serviceID: service.id,
+              })
             setOpenTooltip(false)
           }}
         >
@@ -87,7 +89,6 @@ const useStyles = makeStyles({
     height: spacing.xl,
     display: 'inline-flex',
     alignItems: 'center',
-    cursor: 'pointer',
     '& > span': {
       borderRadius: 3,
       fontSize: 9,
@@ -99,7 +100,10 @@ const useStyles = makeStyles({
       marginRight: 2,
       '& .fas': { marginRight: 2 },
     },
+  },
+  hasMenu: {
     '&:hover > span': {
+      cursor: 'pointer',
       boxShadow: `0px 1px 2px ${colors.grayDark}`,
     },
   },

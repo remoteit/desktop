@@ -26,7 +26,7 @@ export const ForgetButton: React.FC<Props> = ({ disabled = false, connection, al
   return (
     <Tooltip title={all ? 'Clear connections' : 'Clear this connection'}>
       <IconButton disabled={disabled} onClick={forget}>
-        <Icon name="trash" size="md" fixedWidth />
+        <Icon name="minus-circle" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

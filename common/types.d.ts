@@ -217,6 +217,7 @@ declare global {
     connection?: IConnection
     typeID?: number
     port?: number
+    protocol?: string
     sessions: IUser[]
     access: IUser[]
     attributes: {
