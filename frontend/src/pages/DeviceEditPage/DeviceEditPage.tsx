@@ -25,6 +25,7 @@ import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { DeviceLabelSetting } from '../../components/DeviceLabelSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
+import { ServiceMiniState } from '../../components/ServiceMiniState'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { Title } from '../../components/Title'
@@ -103,7 +104,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
                 <ListItemIcon></ListItemIcon>
                 <ListItemText primary={s.name} secondary={host(s)} />
                 <ListItemSecondaryAction className={css.actions}>
-                  <Chip label={findType(s.typeID).name} size="small" />
+                  <ServiceMiniState service={s} />
                 </ListItemSecondaryAction>
               </ListItemLocation>
             ))}
