@@ -2,22 +2,31 @@ import React, { useEffect } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { Typography, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
+import { makeStyles, Typography, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
 import { DeviceShareContainer } from '../../components/DeviceShareContainer'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { findService } from '../../models/devices'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { useHistory } from 'react-router-dom'
 import analyticsHelper from '../../helpers/analyticsHelper'
-import { makeStyles } from '@material-ui/core/styles'
 import styles from '../../styling'
 
 export const SharePage = () => {
+  const { email = '', deviceID = '', serviceID = '' } = useParams()
   const { shares } = useDispatch<Dispatch>()
-  const { deleting } = useSelector((state: ApplicationState) => state.shares)
-  const { email = '' } = useParams()
-  const { deviceID = '' } = useParams()
+  const { device, deleting } = useSelector((state: ApplicationState) => {
+    const deleting = state.shares.deleting
+    let device: IDevice | undefined
+    if (deviceID) {
+      device = state.devices.all.find(device => device.id === deviceID)
+    } else if (serviceID) {
+      const result = findService(state.devices.all, serviceID)
+      device = result[1]
+    }
+    return { deleting, device }
+  })
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
@@ -54,7 +63,7 @@ export const SharePage = () => {
         </>
       }
     >
-      <DeviceShareContainer username={email} />
+      <DeviceShareContainer device={device} email={email} />
     </Container>
   )
 }

@@ -32,11 +32,12 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
     analyticsHelper.page('ServiceEditPage')
   }, [])
 
-  //@FIXME move this type of routing to the router
   if (!service || (thisDevice && !target)) {
     history.push(`/devices/${deviceID}/edit`)
     return null
   }
+
+  const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
     <Container
@@ -56,7 +57,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
         target={target}
         name={service.name}
         thisDevice={thisDevice}
-        onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
+        onCancel={exit}
         onSubmit={form => {
           // for local cli config update
           backend.updateTargetService(form)
@@ -65,7 +66,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
           // devices.setServiceAttributes(service)
           service.name = form.name
           devices.rename(service)
-          history.push(`/devices/${deviceID}/edit`)
+          exit()
         }}
       />
     </Container>

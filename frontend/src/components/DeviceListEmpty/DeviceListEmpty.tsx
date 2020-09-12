@@ -27,7 +27,7 @@ export const DeviceListEmpty: React.FC = () => {
         !targetDevice.uid && (
           <>
             <Button
-              onClick={() => history.push('/settings/setupDevice')}
+              onClick={() => history.push('/devices/setupDevice')}
               variant="contained"
               color="primary"
               size="medium"

@@ -1,15 +1,15 @@
 import React from 'react'
 import { List, ListItemIcon, ListItemText } from '@material-ui/core'
-import { useRouteMatch } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { ListItemLocation } from '../ListItemLocation'
 import { Icon } from '../Icon'
 
 export const NetworkScanLocation: React.FC = () => {
-  const match = useRouteMatch()
+  const location = useLocation()
 
   return (
     <List>
-      <ListItemLocation pathname={`${match.path}/network`}>
+      <ListItemLocation pathname={`${location.pathname}/network`}>
         <ListItemIcon>
           <Icon name="wifi" size="md" type="light" />
         </ListItemIcon>

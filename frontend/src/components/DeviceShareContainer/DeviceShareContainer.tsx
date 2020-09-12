@@ -6,22 +6,20 @@ import { Dispatch, ApplicationState } from '../../store'
 import { DeviceShareAdd } from './DeviceShareAdd'
 import { DeviceShareDetails } from './DeviceShareDetails'
 
-export const DeviceShareContainer = ({ username = '' }) => {
-  const { deviceID = '' } = useParams()
+export const DeviceShareContainer: React.FC<{ device?: IDevice; email?: string }> = ({ device, email = '' }) => {
   const { shares } = useDispatch<Dispatch>()
-  const myDevice = useSelector((state: ApplicationState) => state.devices.all.find(device => device.id === deviceID))
   const { contacts = [] } = useSelector((state: ApplicationState) => state.devices)
   const [selectedContacts, setSelectedContacts] = React.useState<string[]>([])
+  const [changing, setChanging] = useState(false)
   const history = useHistory()
   const location = useLocation()
-  const [changing, setChanging] = useState(false)
 
-  if (!myDevice) return null
+  if (!device) return null
 
   const goToNext = () =>
-    username === ''
+    email === ''
       ? history.push(location.pathname.replace('/share', ''))
-      : history.push(location.pathname.replace(`/${username}`, ''))
+      : history.push(location.pathname.replace(`/${email}`, ''))
 
   const handleShareUpdate = (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
@@ -29,7 +27,7 @@ export const DeviceShareContainer = ({ username = '' }) => {
 
     shares.share(shareData)
 
-    shares.updateDeviceState({ device: myDevice, contacts: shareData.email, scripting, services, isNew })
+    shares.updateDeviceState({ device, contacts: shareData.email, scripting, services, isNew })
     goToNext()
   }
 
@@ -37,14 +35,14 @@ export const DeviceShareContainer = ({ username = '' }) => {
     const { access } = share
     const scripting = access.scripting
     const services =
-      myDevice?.services.map(ser => ({
+      device?.services.map(ser => ({
         serviceId: ser.id,
         action: access.services.includes(ser.id) ? 'ADD' : 'REMOVE',
       })) || []
     const email = isNew ? share.contacts : [share.contacts[0]]
 
     return {
-      deviceId: deviceID,
+      deviceId: device.id,
       scripting,
       services,
       email,
@@ -53,17 +51,17 @@ export const DeviceShareContainer = ({ username = '' }) => {
 
   return (
     <>
-      {!username && (
+      {!email && (
         <DeviceShareAdd
           contacts={contacts}
-          device={myDevice}
+          device={device}
           onChangeContacts={setSelectedContacts}
           selectedContacts={selectedContacts}
           setChanging={setChanging}
         />
       )}
       <DeviceShareDetails
-        device={myDevice}
+        device={device}
         share={handleShareUpdate}
         selectedContacts={selectedContacts}
         updateSharing={handleShareUpdate}
