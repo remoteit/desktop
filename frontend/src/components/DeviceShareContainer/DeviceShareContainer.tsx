@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { SharingDetails } from './SharingForm'
-import { useParams, useLocation, useHistory } from 'react-router-dom'
+import { useLocation, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { DeviceShareAdd } from './DeviceShareAdd'

@@ -1,7 +1,7 @@
 import md5 from 'md5'
 import React from 'react'
 import fallbackImage from './user.png'
-import { makeStyles, ButtonBase, Tooltip, Avatar as MuiAvatar, Divider } from '@material-ui/core'
+import { makeStyles, ButtonBase, Tooltip, Avatar as MuiAvatar } from '@material-ui/core'
 import { colors } from '../../styling'
 
 export interface Props {
@@ -18,7 +18,7 @@ export const Avatar: React.FC<Props> = ({ email }) => {
     <Tooltip title="Account options">
       <ButtonBase onClick={() => window.open('https://app.remote.it/#account')}>
         <MuiAvatar className={css.avatar} src={url}>
-          <img className={css.avatar} src={fallbackImage} />
+          <img className={css.avatar} src={fallbackImage} alt={email} />
         </MuiAvatar>
       </ButtonBase>
     </Tooltip>

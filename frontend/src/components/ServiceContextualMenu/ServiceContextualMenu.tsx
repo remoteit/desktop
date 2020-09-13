@@ -7,7 +7,6 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { useApplication } from '../../shared/applications'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ApplicationState } from '../../store'
 import {
@@ -20,7 +19,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
 interface Props {
@@ -33,7 +32,6 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const app = useApplication(service && service.typeID)
   const history = useHistory()
   const css = useStyles()
 

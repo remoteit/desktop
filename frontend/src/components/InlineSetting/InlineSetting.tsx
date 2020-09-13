@@ -4,7 +4,6 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-  Typography,
   InputLabel,
   Tooltip,
   IconButton,

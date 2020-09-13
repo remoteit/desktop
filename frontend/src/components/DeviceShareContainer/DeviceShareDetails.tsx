@@ -4,7 +4,6 @@ import { ContactCard } from './ContactCard'
 import { useParams } from 'react-router-dom'
 import { getDetailUserPermission } from '../../models/devices'
 import { SharingDetails } from './SharingForm'
-import { service } from '../../helpers/mockData'
 
 export function DeviceShareDetails({
   device,
@@ -12,7 +11,7 @@ export function DeviceShareDetails({
   selectedContacts,
   updateSharing,
   changing,
-  setChanging
+  setChanging,
 }: {
   device: IDevice
   share: (share: SharingDetails, isNew: boolean) => void
