@@ -14,20 +14,25 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     async fetch() {
-      const result = await graphQLRequest(
-        ` {
-            applicationTypes {
-              name
-              id
-              port
-              proxy
-              protocol
-              description
-            }
-          }`
-      )
-      console.log('APPLICATION TYPES', result)
-      dispatch.applicationTypes.set({ all: result.data.data.applicationTypes })
+      try {
+        const result = await graphQLRequest(
+          ` {
+              applicationTypes {
+                name
+                id
+                port
+                proxy
+                protocol
+                description
+              }
+            }`
+        )
+        graphQLGetErrors(result)
+        const all = result?.data?.data?.applicationTypes
+        dispatch.applicationTypes.set({ all })
+      } catch (error) {
+        await graphQLHandleError(error)
+      }
     },
   }),
   reducers: {
