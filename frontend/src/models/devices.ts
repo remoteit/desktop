@@ -1,4 +1,5 @@
-import { graphQLFetch, graphQLAdaptor, graphQLGet } from '../services/graphQL'
+import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
+import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { createModel } from '@rematch/core'
 import { r3, hasCredentials } from '../services/remote.it'
@@ -81,25 +82,11 @@ export default createModel({
       dispatch.ui.devicesUpdated()
     },
 
-    async graphQLFetchProcessor(options: any, globalState: any) {
-      const { graphQLMetadata, graphQLError } = dispatch.devices
-      try {
-        const gqlResponse = await graphQLFetch(options)
-        const [gqlData, total, error] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData?.connections, gqlData?.id, true)
-        const devices = graphQLAdaptor(gqlData?.devices, gqlData?.id)
-        return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts, error }
-      } catch (error) {
-        await graphQLError(error)
-        return { devices: [], total: 0, error }
-      }
-    },
-
     /*
       Fetches a single device and merges in the state
     */
     async get(id: string) {
-      const { graphQLMetadata, graphQLError, setDevice, set } = dispatch.devices
+      const { graphQLMetadata, setDevice, set } = dispatch.devices
       let result
 
       if (!hasCredentials()) return
@@ -107,16 +94,29 @@ export default createModel({
       set({ getting: true })
 
       try {
-        const gqlResponse = await graphQLGet(id)
+        const gqlResponse = await graphQLFetchDevice(id)
         const [gqlData] = await graphQLMetadata(gqlResponse)
         result = graphQLAdaptor(gqlData.devices, gqlData.id)[0]
       } catch (error) {
-        await graphQLError(error)
+        await graphQLHandleError(error)
       }
 
-      console.log('GET DEVICE', result)
       set({ getting: false })
       setDevice({ id, device: result })
+    },
+
+    async graphQLFetchProcessor(options: any, globalState: any) {
+      const { graphQLMetadata } = dispatch.devices
+      try {
+        const gqlResponse = await graphQLFetchDevices(options)
+        const [gqlData, total, error] = await graphQLMetadata(gqlResponse)
+        const connections = graphQLAdaptor(gqlData?.connections, gqlData?.id, true)
+        const devices = graphQLAdaptor(gqlData?.devices, gqlData?.id)
+        return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts, error }
+      } catch (error) {
+        await graphQLHandleError(error)
+        return { devices: [], total: 0, error }
+      }
     },
 
     async updateShareDevice(device: IDevice) {
@@ -124,26 +124,8 @@ export default createModel({
       setDevice({ id: device.id, device })
     },
 
-    async graphQLError(error) {
-      console.error('GraphQL fetch error:', error, error.response)
-      if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
-        dispatch.auth.checkSession()
-      } else if (error.response) {
-        dispatch.backend.set({ globalError: error.message })
-      }
-      // else no response, no network connection - so don't display error
-    },
-
     async graphQLMetadata(gqlData: any) {
-      const { errors } = gqlData?.data
-      let error
-
-      if (errors) {
-        error = errors[0]
-        errors.forEach((error: Error) => console.warn('graphQL error:', error))
-        dispatch.backend.set({ globalError: 'GraphQL: ' + error.message })
-      }
-
+      const error = graphQLGetErrors(gqlData)
       const data = gqlData?.data?.data?.login || {}
       const total = data?.devices?.total || 0
 

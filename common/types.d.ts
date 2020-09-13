@@ -233,6 +233,15 @@ declare global {
     scripting?: boolean
   }
 
+  type IApplicationType = {
+    id: number
+    name: string
+    port: number
+    proxy: boolean
+    protocol: 'TCP' | 'UDP'
+    description: string
+  }
+
   type gqlOptions = {
     size: number
     from: number

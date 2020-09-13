@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { TextField, MenuItem, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
-import { serviceTypes, findType } from '../../services/serviceTypes'
+import { findType } from '../../models/applicationTypes'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import styles from '../../styling'
@@ -13,6 +13,7 @@ type Props = {
   busy?: boolean
   adding?: boolean
   deleting?: boolean
+  applicationTypes: IApplicationType[]
   onSave: (target: ITarget) => void
   onDelete: () => void
   onCancel?: () => void
@@ -24,6 +25,7 @@ export const Target: React.FC<Props> = ({
   disable,
   busy,
   adding,
+  applicationTypes,
   deleting,
   onSave,
   onDelete,
@@ -32,7 +34,7 @@ export const Target: React.FC<Props> = ({
   const [state, setState] = useState<ITarget>(data)
   const [nameError, setNameError] = useState<string>()
   const css = useStyles()
-  const type = findType(data.type)
+  const type = findType(applicationTypes, data.type)
   const disabled = disable || deleting
   const same = useCallback(
     () =>
@@ -55,7 +57,7 @@ export const Target: React.FC<Props> = ({
 
   useEffect(() => {
     if (same()) {
-      if (!data.port) data.port = type.defaultPort || 1
+      if (!data.port) data.port = type.port || 1
       setState(data)
     }
   }, [same, data, type])
@@ -87,10 +89,10 @@ export const Target: React.FC<Props> = ({
           variant="filled"
           onChange={event => {
             const type: number = Number(event.target.value)
-            setState({ ...state, type, port: findType(type).defaultPort || state.port })
+            setState({ ...state, type, port: findType(applicationTypes, type).port || state.port })
           }}
         >
-          {serviceTypes.map(type => (
+          {applicationTypes.map(type => (
             <MenuItem value={type.id} key={type.id}>
               {type.name}
             </MenuItem>

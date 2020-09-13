@@ -84,19 +84,16 @@ export default createModel({
         })
       return user
     },
-    async signedIn() {
-      await dispatch.auth.checkSession()
-      dispatch.devices.fetch()
-      dispatch.auth.signInFinished()
-    },
     async authenticated() {
-      dispatch.auth.signedIn()
+      dispatch.auth.signInFinished()
+      await dispatch.auth.checkSession()
       dispatch.auth.setAuthenticated(true)
+      dispatch.devices.fetch()
+      dispatch.applicationTypes.fetch()
       dispatch.auth.setInitialized()
       emit('init')
     },
     async signInError(error: string) {
-      dispatch.auth.signInFinished()
       dispatch.auth.setError(error)
       dispatch.auth.setInitialized()
     },

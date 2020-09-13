@@ -12,6 +12,7 @@ import styles from '../../styling'
 
 type Props = {
   targetDevice: ITargetDevice
+  applicationTypes: IApplicationType[]
   onSave: (target: ITarget) => void
 }
 
