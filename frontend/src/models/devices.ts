@@ -125,11 +125,12 @@ export default createModel({
     },
 
     async graphQLError(error) {
-      console.error('Fetch error:', error, error.response)
+      console.error('GraphQL fetch error:', error, error.response)
       if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
         dispatch.auth.checkSession()
       } else {
-        dispatch.backend.set({ globalError: error.message })
+        if (error.response) dispatch.backend.set({ globalError: error.message })
+        // else no response, no network connection - so don't display error
       }
     },
 
