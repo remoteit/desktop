@@ -67,7 +67,7 @@ export default createModel({
       const { device } = globalState.backend
 
       if (targetDevice.uid !== device.uid) {
-        devices.fetch()
+        await devices.fetch()
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
           ui.set({
             setupRegisteringDevice: false,
@@ -86,8 +86,16 @@ export default createModel({
     async targetUpdated(targets: ITarget[], globalState: any) {
       if (globalState.ui.setupBusy) {
         await dispatch.devices.fetch()
-        dispatch.ui.setupUpdated(targets.length)
+        dispatch.ui.reset()
       }
+    },
+
+    async registerDevice({ targets, name }: { targets: ITarget[]; name: string }, globalState: any) {
+      const targetDevice = globalState.backend.device
+      emit('registration', { device: { ...targetDevice, name }, targets })
+      dispatch.ui.set({ setupRegisteringDevice: true })
+      analyticsHelper.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
+      targets.forEach(t => analyticsHelper.track('serviceCreated', { ...t, id: t.uid }))
     },
     async addTargetService(target: ITarget, globalState: any) {
       analyticsHelper.track('serviceCreated', { ...target, id: target.uid })

@@ -3,7 +3,7 @@ import { Icon } from '../Icon'
 import { Title } from '../Title'
 import { Tooltip } from '@material-ui/core'
 import { useLocation } from 'react-router-dom'
-import { TargetPlatform, TARGET_PLATFORMS } from '../TargetPlatform'
+import { TargetPlatform } from '../TargetPlatform'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { attributeName } from '../../shared/nameHelper'
 

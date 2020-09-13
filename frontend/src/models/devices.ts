@@ -67,7 +67,7 @@ export default createModel({
       if (!hasCredentials()) return
 
       set({ fetching: true })
-      const { devices, total, contacts } = await graphQLFetchProcessor(options)
+      const { devices, total, contacts, error } = await graphQLFetchProcessor(options)
 
       if (searched) set({ results: total })
       else set({ total })
@@ -77,7 +77,7 @@ export default createModel({
 
       set({ initialized: true, fetching: false, append: false, contacts })
 
-      cleanOrphanConnections()
+      if (!error) cleanOrphanConnections()
       dispatch.ui.devicesUpdated()
     },
 
@@ -85,13 +85,13 @@ export default createModel({
       const { graphQLMetadata, graphQLError } = dispatch.devices
       try {
         const gqlResponse = await graphQLFetch(options)
-        const [gqlData, total] = await graphQLMetadata(gqlResponse)
+        const [gqlData, total, error] = await graphQLMetadata(gqlResponse)
         const connections = graphQLAdaptor(gqlData?.connections, gqlData?.id, true)
         const devices = graphQLAdaptor(gqlData?.devices, gqlData?.id)
-        return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts }
+        return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts, error }
       } catch (error) {
         await graphQLError(error)
-        return { devices: [], total: 0 }
+        return { devices: [], total: 0, error }
       }
     },
 
@@ -125,26 +125,29 @@ export default createModel({
     },
 
     async graphQLError(error) {
-      console.error('Fetch error:', error, error.response)
+      console.error('GraphQL fetch error:', error, error.response)
       if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
         dispatch.auth.checkSession()
-      } else {
+      } else if (error.response) {
         dispatch.backend.set({ globalError: error.message })
       }
+      // else no response, no network connection - so don't display error
     },
 
     async graphQLMetadata(gqlData: any) {
       const { errors } = gqlData?.data
+      let error
 
       if (errors) {
+        error = errors[0]
         errors.forEach((error: Error) => console.warn('graphQL error:', error))
-        dispatch.backend.set({ globalError: 'GraphQL: ' + errors[0].message })
+        dispatch.backend.set({ globalError: 'GraphQL: ' + error.message })
       }
 
       const data = gqlData?.data?.data?.login || {}
       const total = data?.devices?.total || 0
 
-      return [data, total]
+      return [data, total, error]
     },
 
     async reset() {

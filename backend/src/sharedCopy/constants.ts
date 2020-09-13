@@ -4,10 +4,9 @@
   
   ONLY EDIT THE SOURCE FILE IN frontend
 */
-
-export const API_URL = process.env.API_URL || 'https://api.remot3.it/apv/v27'
-export const GRAPHQL_API = process.env.GRAPHQL_API || 'https://api.remote.it/v1/graphql'
-export const GRAPHQL_BETA_API = process.env.GRAPHQL_BETA_API || 'https://api.remote.it/beta/graphql'
+export const API_URL = process.env.REACT_APP_API_URL || 'https://api.remot3.it/apv/v27'
+export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.remote.it/v1/graphql'
+export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API || 'https://api.remote.it/beta/graphql'
 export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PORT = process.env.REACT_APP_PORT || 29999

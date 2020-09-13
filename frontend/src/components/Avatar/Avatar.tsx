@@ -15,10 +15,10 @@ export const Avatar: React.FC<Props> = ({ email }) => {
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${SIZE * 2}&d=force-fail`
 
   return (
-    <Tooltip title={`Account (${email})`} placement="left">
+    <Tooltip title="Account options">
       <ButtonBase onClick={() => window.open('https://app.remote.it/#account')}>
         <MuiAvatar className={css.avatar} src={url}>
-          <img className={css.avatar} src={fallbackImage} />
+          <img className={css.avatar} src={fallbackImage} alt={email} />
         </MuiAvatar>
       </ButtonBase>
     </Tooltip>

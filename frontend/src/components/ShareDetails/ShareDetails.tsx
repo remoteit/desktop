@@ -24,7 +24,7 @@ export function ShareDetails({
     <ListItemSecondaryAction className={css.indicators}>
       {scripting && (
         <Tooltip title="Allow scripting" arrow placement="top">
-          <Icon name="scroll" size="sm" color="grayDark" />
+          <Icon name="scroll" size="sm" type="regular" color="grayDark" />
         </Tooltip>
       )}
       {!!shared &&
@@ -43,6 +43,6 @@ const useStyles = makeStyles({
   indicators: {
     display: 'flex',
     alignItems: 'center',
-    '& > .fal': { marginRight: spacing.sm },
+    '& > .far': { marginRight: spacing.sm },
   },
 })
