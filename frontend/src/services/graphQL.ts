@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { r3 } from '../services/remote.it'
+import { r3, getToken } from '../services/remote.it'
 import { version } from '../../package.json'
 import { renameServices } from '../shared/nameHelper'
 import { GRAPHQL_API, GRAPHQL_BETA_API, LEGACY_ATTRIBUTES } from '../shared/constants'
@@ -74,17 +74,17 @@ const DEVICE_SELECT = `{
 /* 
   GraphQL common request parameters
 */
-function requestParams() {
+async function requestParams() {
   return {
     url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
     method: 'post' as 'post',
-    headers: { token: r3.token },
+    headers: { Authorization: await getToken() },
   }
 }
 
 export async function graphQLRequest(query: String, variables: ILookup) {
   const request = {
-    ...requestParams(),
+    ...await requestParams(),
     data: { query, variables },
   }
   console.log('GRAPHQL REQUEST', request)
@@ -118,7 +118,7 @@ export async function graphQLFetch({ size, from, state, name, ids = [] }: gqlOpt
 
 export async function graphQLGet(id: string) {
   const request = {
-    ...requestParams(),
+    ...await requestParams(),
     data: {
       query: `
         query($ids: [String!], $idSize: Int) {

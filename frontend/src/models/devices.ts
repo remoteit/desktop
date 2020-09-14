@@ -64,7 +64,7 @@ export default createModel({
             ),
       }
 
-      if (!hasCredentials()) return
+      if (!await hasCredentials()) return
 
       set({ fetching: true })
       const { devices, total, contacts } = await graphQLFetchProcessor(options)
@@ -102,7 +102,7 @@ export default createModel({
       const { graphQLMetadata, graphQLError, setDevice, set } = dispatch.devices
       let result
 
-      if (!hasCredentials()) return
+      if (!await hasCredentials()) return
 
       set({ getting: true })
 

@@ -1,9 +1,13 @@
-import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
+import { r3 } from '../services/remote.it'
+
 import { IUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { AuthUser } from '@remote.it/types'
+import { auth as cognitoAuth } from '@remote.it/components'
+
 
 const USER_KEY = 'user'
 
@@ -29,12 +33,23 @@ export default createModel({
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
 
+      console.error('USER INIT:')
+      console.error(user)
+
       if (!user) {
-        const storedUser = window.localStorage.getItem(USER_KEY)
-        if (storedUser) user = JSON.parse(storedUser)
+        // const storedUser = window.localStorage.getItem(USER_KEY)
+        // if (storedUser) user = JSON.parse(storedUser)
+        try {
+          const authUser = await cognitoAuth.checkSignIn()
+          if (authUser) {
+            user = authUser.remoteitUser
+          }
+        } catch (e) {
+          console.log("Not Authenticated")
+        }
       }
 
-      if (user?.username) {
+      if (user?.email) {
         await dispatch.auth.setUser(user)
       } else {
         dispatch.auth.setInitialized()
@@ -46,44 +61,62 @@ export default createModel({
       if (authenticated) Controller.open(true)
     },
     async checkSession(_: void, rootState: any) {
-      let { user } = rootState.auth
+      //TODO Check we reject login after expiring
 
-      if (await r3.user.sessionExpired(user.username)) {
-        try {
-          user = await r3.user.authHashLogin(user.username, user.authHash)
-          dispatch.auth.setUser(user)
-          return
-        } catch (error) {
-          dispatch.auth.signInError(error.message)
-          return
-        }
+      try {
+        return
+      } catch (e) {
+        dispatch.auth.signInError('Login Expired')
+        return
+      }
+      
+      // let { user } = rootState.auth
+
+      // if (await r3.user.sessionExpired(user.username)) {
+      //   try {
+      //     user = await r3.user.authHashLogin(user.username, user.authHash)
+          // dispatch.auth.setUser(user)
+          // return
+      //   } catch (error) {
+      //     dispatch.auth.signInError(error.message)
+      //     return
+      //   }
+      // }
+
+    },
+    async handleSignInSuccess(authUser: AuthUser): Promise<void> {
+      console.error(authUser.cognitoUser?.username)
+      if(authUser.cognitoUser?.username) {
+        const user = await r3.user.userData(authUser.cognitoUser?.username)
+        dispatch.auth.setUser(user)
+        Controller.open()
       }
     },
-    async signIn({ password, username }) {
-      dispatch.auth.signInStarted()
-      console.log('Logging in user', username)
-      let user
-      r3.post('/user/login', { username, password })
-        .then(resp => {
-          user = r3.user.process(resp, username)
-          r3.user.updateCredentials(user)
-          dispatch.auth.setUser(user)
-          Controller.open()
-          analyticsHelper.track('signIn')
-        })
-        .catch(error => {
-          const e = error.response.data
-          if (e.code && ['SMS_MFA', 'SOFTWARE_TOKEN_MFA', 'MFA_SETUP'].includes(e.code)) {
-            dispatch.auth.signInError(
-              "This version of remote.it desktop doesn't support two-factor authentication. Please upgrade to the latest version or disable two-factor authentication in the web portal."
-            )
-          } else {
-            dispatch.auth.signInError(e.reason)
-          }
-          return
-        })
-      return user
-    },
+    // async signIn({ password, username }) {
+    //   dispatch.auth.signInStarted()
+    //   console.log('Logging in user', username)
+    //   let user
+      // r3.post('/user/login', { username, password })
+      //   .then(resp => {
+      //     user = r3.user.process(resp, username)
+      //     r3.user.updateCredentials(user)
+      //     dispatch.auth.setUser(user)
+      //     Controller.open()
+      //     analyticsHelper.track('signIn')
+      //   })
+      //   .catch(error => {
+      //     const e = error.response.data
+      //     if (e.code && ['SMS_MFA', 'SOFTWARE_TOKEN_MFA', 'MFA_SETUP'].includes(e.code)) {
+      //       dispatch.auth.signInError(
+      //         "This version of remote.it desktop doesn't support two-factor authentication. Please upgrade to the latest version or disable two-factor authentication in the web portal."
+      //       )
+      //     } else {
+      //       dispatch.auth.signInError(e.reason)
+      //     }
+      //     return
+      //   })
+    //   return user
+    // },
     async signedIn() {
       await dispatch.auth.checkSession()
       dispatch.devices.fetch()
@@ -104,7 +137,8 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     async signedOut() {
-      if (r3.token) await r3.post('/user/logout')
+      cognitoAuth.signOut()
+      //if (r3.token) await r3.post('/user/logout')
       dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
@@ -129,7 +163,6 @@ export default createModel({
     },
     signOutFinished(state: AuthState) {
       state.user = undefined
-      clearUserCredentials()
       window.localStorage.removeItem('devices')
       window.localStorage.removeItem(USER_KEY)
     },
@@ -140,12 +173,14 @@ export default createModel({
       state.signInError = error
     },
     setUser(state: AuthState, user: IUser) {
+      user.username = user.email
       state.user = user
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
       analyticsHelper.identify(user.id)
+      console.error("USER:")
+      console.error(user)
       emit('authentication', { username: user.username, authHash: user.authHash })
-      updateUserCredentials(user)
     },
   },
 })
