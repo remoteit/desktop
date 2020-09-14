@@ -3,7 +3,6 @@ import { Container } from '../../components/Container'
 import { Typography, Tooltip, Divider } from '@material-ui/core'
 import { usePermissions } from '../../hooks/usePermissions'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/core/styles'
 import { spacing, colors, fontSizes } from '../../styling'
 import { Columns } from '../../components/Columns'
@@ -64,7 +63,7 @@ export const SetupView: React.FC<{
                   <Typography variant="h2">{target.name}</Typography>
                 </td>
                 <td>
-                  <Typography variant="h2">{findType(target.type).name}</Typography>
+                  <Typography variant="h2">{target.type}</Typography>
                 </td>
                 <td>
                   <Typography variant="h2">{target.port}</Typography>

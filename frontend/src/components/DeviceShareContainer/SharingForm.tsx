@@ -1,6 +1,5 @@
 import { Divider, List, Typography } from '@material-ui/core'
 import React, { useEffect } from 'react'
-import { ListItemSetting } from '../ListItemSetting'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ShareSaveActions } from '../ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
@@ -70,13 +69,13 @@ export function SharingForm({
         saving={saving}
         selectedServices={selectedServices}
       />
+      <Divider />
       <List>
-        <ListItemSetting
+        <ListItemCheckbox
           label="Allow script execution"
           subLabel="Give the user the ability to run scripts on this device."
-          icon="scroll"
           disabled={saving}
-          toggle={scripting}
+          checked={scripting}
           onClick={handleChangeScripting}
         />
       </List>

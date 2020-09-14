@@ -1,9 +1,9 @@
 import React from 'react'
 import { makeStyles, Box, lighten } from '@material-ui/core'
-import { spacing, colors, Color } from '../../styling'
+import { spacing, colors, fontSizes, Color } from '../../styling'
 import { SessionsTooltip } from '../SessionsTooltip'
-import classnames from 'classnames'
 import { Icon } from '../Icon'
+import classnames from 'classnames'
 
 interface Props {
   connection?: IConnection
@@ -91,7 +91,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     '& > span': {
       borderRadius: 3,
-      fontSize: 9,
+      fontSize: fontSizes.xxs,
       fontWeight: 500,
       padding: 1,
       paddingLeft: 3,

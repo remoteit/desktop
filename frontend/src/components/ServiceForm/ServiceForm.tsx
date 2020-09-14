@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
 import { ApplicationState } from '../../store'
 import { serviceNameValidation } from '../../shared/nameHelper'
-import { serviceTypes, findType } from '../../services/serviceTypes'
+import { findType } from '../../models/applicationTypes'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { Columns } from '../Columns'
 import { spacing } from '../../styling'
@@ -24,17 +24,19 @@ export const ServiceForm: React.FC<Props> = ({
   onSubmit,
   onCancel,
 }) => {
-  const { setupBusy, deleting } = useSelector((state: ApplicationState) => ({
+  const { applicationTypes, setupBusy, deleting } = useSelector((state: ApplicationState) => ({
+    applicationTypes: state.applicationTypes.all,
     setupBusy: state.ui.setupBusy,
     deleting: state.ui.setupServiceBusy === target?.uid,
   }))
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<ITarget>({ ...target, name })
+  const appType = findType(applicationTypes, form.type)
   const css = useStyles()
 
   return (
-    <form onSubmit={() => onSubmit(form)}>
+    <form onSubmit={() => onSubmit({ ...form, port: form.port || 1, name: form.name || appType.description })}>
       <List>
         <ListItem className={css.fieldWide}>
           <TextField
@@ -45,6 +47,7 @@ export const ServiceForm: React.FC<Props> = ({
             error={!!error}
             variant="filled"
             helperText={error || ''}
+            placeholder={appType.description}
             onChange={event => {
               const validation = serviceNameValidation(event.target.value)
               setForm({ ...form, name: validation.value })
@@ -76,15 +79,22 @@ export const ServiceForm: React.FC<Props> = ({
                 variant="filled"
                 onChange={event => {
                   const type: number = Number(event.target.value)
-                  setForm({ ...form, type, port: findType(type).defaultPort || form.port })
+                  setForm({ ...form, type, port: findType(applicationTypes, type).port || form.port })
                 }}
               >
-                {serviceTypes.map(type => (
+                {applicationTypes.map(type => (
                   <MenuItem value={type.id} key={type.id}>
                     {type.name}
                   </MenuItem>
                 ))}
               </TextField>
+              <Typography variant="caption">
+                {appType.description}
+                <br />
+                <em>
+                  {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
+                </em>
+              </Typography>
             </ListItem>
             <ListItem className={css.field}>
               <TextField
@@ -105,9 +115,9 @@ export const ServiceForm: React.FC<Props> = ({
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
               />
               <Typography variant="caption">
-                Local network IP address or FQDN to host this service.
+                Local network IP address or fully qualified domain name
                 <br />
-                Leave blank for this system to host.
+                to host this service. Leave blank for this system to host.
               </Typography>
             </ListItem>
           </List>
@@ -128,7 +138,7 @@ export const ServiceForm: React.FC<Props> = ({
 const useStyles = makeStyles({
   field: {
     paddingLeft: 75,
-    '& .MuiInputBase-root': { minWidth: 200 },
+    '& .MuiInputBase-root': { minWidth: 200, marginRight: 100 + spacing.lg },
   },
   fieldWide: {
     paddingLeft: 75,

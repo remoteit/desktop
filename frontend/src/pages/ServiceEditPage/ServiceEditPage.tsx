@@ -20,7 +20,7 @@ type Props = {
   targetDevice: ITargetDevice
 }
 export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
-  const { devices, backend } = useDispatch<Dispatch>()
+  const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams()
   const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const target = targets?.find(t => t.uid === serviceID)
@@ -29,6 +29,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const history = useHistory()
 
   useEffect(() => {
+    applicationTypes.fetch()
     analyticsHelper.page('ServiceEditPage')
   }, [])
 

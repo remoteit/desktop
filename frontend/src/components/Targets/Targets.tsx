@@ -14,7 +14,12 @@ type Props = {
 }
 
 export const Targets: React.FC<Props> = ({ targets, targetDevice }) => {
-  const { setupBusy, setupServiceBusy, setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
+  const { applicationTypes, setupBusy, setupServiceBusy, setupServicesLimit } = useSelector(
+    (state: ApplicationState) => ({
+      ...state.ui,
+      applicationTypes: state.applicationTypes.all,
+    })
+  )
   const { backend } = useDispatch<Dispatch>()
   const css = useStyles()
   const maxReached = targets.length + 1 > setupServicesLimit
@@ -56,6 +61,7 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice }) => {
               data={target}
               disable={true}
               busy={setupBusy}
+              applicationTypes={applicationTypes}
               deleting={setupServiceBusy === target.uid}
               onSave={(t: ITarget) => backend.addTargetService(t)}
               onDelete={() => backend.removeTargetService(target)}
@@ -70,7 +76,11 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice }) => {
               </td>
             </tr>
           ) : (
-            <NewTarget targetDevice={targetDevice} onSave={(t: ITarget) => backend.addTargetService(t)} />
+            <NewTarget
+              targetDevice={targetDevice}
+              onSave={(t: ITarget) => backend.addTargetService(t)}
+              applicationTypes={applicationTypes}
+            />
           )}
         </tbody>
       </table>

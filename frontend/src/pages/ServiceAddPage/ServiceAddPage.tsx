@@ -18,12 +18,13 @@ type Props = {
 
 export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
   const { setupServicesLimit, setupAdded } = useSelector((state: ApplicationState) => state.ui)
-  const { backend, ui } = useDispatch<Dispatch>()
+  const { backend, ui, applicationTypes } = useDispatch<Dispatch>()
   const { deviceID } = useParams()
   const location = useLocation()
   const history = useHistory()
 
   useEffect(() => {
+    applicationTypes.fetch()
     analyticsHelper.page('ServiceAddPage')
   }, [])
 

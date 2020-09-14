@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/core/styles'
-import { getTypeId } from '../../services/serviceTypes'
+import { getTypeId } from '../../models/applicationTypes'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -45,7 +45,10 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
   const [open, setOpen] = useState<number[]>([])
-  const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
+  const { applicationTypes, setupServicesLimit } = useSelector((state: ApplicationState) => ({
+    applicationTypes: state.applicationTypes.all,
+    setupServicesLimit: state.ui.setupServicesLimit,
+  }))
   const allClosed = open.length === 0
   const disabled = targets.length + 1 > setupServicesLimit
 
@@ -121,7 +124,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                           ui.set({
                             setupAdded: {
                               ...DEFAULT_TARGET,
-                              type: getTypeId(port[0]),
+                              type: getTypeId(applicationTypes, port[0]),
                               hostname: ip[0] === privateIP ? '' : ip[0],
                               port: port[0],
                               name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),

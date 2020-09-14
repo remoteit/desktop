@@ -67,13 +67,14 @@ export default createModel({
       const { device } = globalState.backend
 
       if (targetDevice.uid !== device.uid) {
-        await devices.fetch()
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
+          await devices.fetch()
           ui.set({
             setupRegisteringDevice: false,
             successMessage: `${targetDevice.name} registered successfully!`,
           })
         } else if (globalState.ui.setupDeletingDevice) {
+          await devices.fetch()
           ui.set({
             setupDeletingDevice: false,
             successMessage: `${device.name} unregistered successfully!`,
