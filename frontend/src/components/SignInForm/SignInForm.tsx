@@ -1,10 +1,11 @@
 import { CLIENT_ID, API_URL, DEVELOPER_KEY } from '../../shared/constants'
+import theme from '../../styling/theme'
 import React from 'react'
 // import useFormal from '@kevinwolf/formal-web'
 // import { makeStyles } from '@material-ui/core/styles'
 // import { Button, TextField, Link } from '@material-ui/core'
-import {useDispatch } from 'react-redux'
-import {Dispatch } from '../../store'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 // import styles from '../../styling'
 // import * as yup from 'yup'
 import { CognitoAuth } from '@remote.it/components'
@@ -17,9 +18,18 @@ export function SignInForm() {
   // const css = useStyles()
   // const { signInError, signInStarted } = useSelector((state: ApplicationState) => state.auth)
   const { auth } = useDispatch<Dispatch>()
-  return <CognitoAuth onSignInSuccess={auth.handleSignInSuccess} clientId={CLIENT_ID} apiURL={API_URL} developerKey={DEVELOPER_KEY} />
+  // return null
+  return (
+    <CognitoAuth
+      themeOverride={theme}
+      onSignInSuccess={auth.handleSignInSuccess}
+      showLogo={false}
+      clientId={CLIENT_ID}
+      apiURL={API_URL}
+      developerKey={DEVELOPER_KEY}
+    />
+  )
 }
-
 
 // const schema = yup.object().shape({
 //   username: yup

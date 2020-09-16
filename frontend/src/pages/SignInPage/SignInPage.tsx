@@ -21,9 +21,9 @@ export function SignInPage() {
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
   return (
     <Body center>
-      <div className={css.logo}>
+      {/* <div className={css.logo}>
         <Logo />
-      </div>
+      </div> */}
       <SignInForm />
       {allowSwitch && (
         <div className={css.link}>

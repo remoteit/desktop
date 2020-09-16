@@ -1,9 +1,9 @@
 import { colors, spacing, fontSizes } from './'
-import { createMuiTheme } from '@material-ui/core'
+import { createMuiTheme, ThemeOptions } from '@material-ui/core'
 
 const gutters = 32
 const titlePadding = `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`
-export default createMuiTheme({
+export const themeOptions: ThemeOptions = {
   palette: {
     primary: { main: colors.primary },
     secondary: { main: colors.secondary, contrastText: colors.white },
@@ -13,6 +13,7 @@ export default createMuiTheme({
   overrides: {
     MuiDivider: { root: { backgroundColor: colors.grayLighter } },
     MuiFormHelperText: { root: { fontSize: 10 } },
+    MuiIconButton: { root: { padding: `${spacing.sm}px !important` } },
     MuiButton: {
       root: {
         color: colors.grayDark,
@@ -194,4 +195,6 @@ export default createMuiTheme({
       },
     },
   },
-})
+}
+
+export default createMuiTheme(themeOptions)

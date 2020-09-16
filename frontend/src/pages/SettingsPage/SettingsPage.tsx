@@ -160,5 +160,5 @@ export const SettingsPage = () => {
 
 const useStyles = makeStyles({
   logo: { marginBottom: spacing.xs },
-  user: { marginRight: spacing.sm },
+  user: { marginRight: spacing.sm, fontFamily: 'Roboto Mono' },
 })
