@@ -55,6 +55,7 @@ declare global {
   interface IReactSelectOption {
     value: string
     label: string
+    isDisabled: boolean
   }
 
   interface ShareInfo {
@@ -102,6 +103,8 @@ declare global {
     name: string
     id: number
   }
+
+  type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 
 declare module 'remote.it' {

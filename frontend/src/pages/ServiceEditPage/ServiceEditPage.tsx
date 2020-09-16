@@ -1,39 +1,44 @@
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { findService } from '../../models/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Typography, Divider, List } from '@material-ui/core'
+import { UnregisterServiceButton } from '../../buttons/UnregisterServiceButton'
+import { REGEX_LAST_PATH } from '../../shared/constants'
+import { Typography } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { InlineTextFieldSetting } from '../../components/InlineTextFieldSetting'
-import { ServiceSetting } from '../../components/ServiceSetting'
-import { attributeName } from '../../shared/nameHelper'
+import { ServiceForm } from '../../components/ServiceForm'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
+  targetDevice: ITargetDevice
 }
-export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
-  const history = useHistory()
-  const { devices } = useDispatch<Dispatch>()
+export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
+  const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams()
   const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const target = targets?.find(t => t.uid === serviceID)
+  const thisDevice = service?.deviceID === targetDevice.uid
+  const location = useLocation()
+  const history = useHistory()
 
   useEffect(() => {
+    applicationTypes.fetch()
     analyticsHelper.page('ServiceEditPage')
   }, [])
 
-  //@FIXME move this type of routing to the router
-
-  if (!service) {
+  if (!service || (thisDevice && !target)) {
     history.push(`/devices/${deviceID}/edit`)
     return null
   }
+
+  const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
     <Container
@@ -44,26 +49,27 @@ export const ServiceEditPage: React.FC<Props> = ({ targets }) => {
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Edit service</Title>
-            {/* {thisDevice ? <UnregisterButton targetDevice={} /> : <DeleteButton device={device} />} */}
+            <UnregisterServiceButton target={target} />
           </Typography>
         </>
       }
     >
-      <List>
-        <InlineTextFieldSetting
-          value={attributeName(service)}
-          label="Service Name"
-          resetValue={service.name}
-          onSave={name => {
-            service.attributes.name = name.toString()
-            devices.setServiceAttributes(service)
-          }}
-        />
-      </List>
-      <Divider />
-      <List>
-        <ServiceSetting service={service} targets={targets} />
-      </List>
+      <ServiceForm
+        target={target}
+        name={service.name}
+        thisDevice={thisDevice}
+        onCancel={exit}
+        onSubmit={form => {
+          // for local cli config update
+          backend.updateTargetService(form)
+          // for cloud name as attribute change
+          // service.attributes.name = form.name
+          // devices.setServiceAttributes(service)
+          service.name = form.name
+          devices.rename(service)
+          exit()
+        }}
+      />
     </Container>
   )
 }

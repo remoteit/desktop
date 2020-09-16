@@ -19,7 +19,8 @@ const separator = ' - '
 
 export function attributeName(instance?: IDevice | IService) {
   if (!instance) return ''
-  return instance.attributes.name || instance.name
+  // return instance.attributes.name || instance.name // disable while we decide if we want to use attributes for names
+  return instance.name
 }
 
 export function replaceHost(url: string) {
@@ -83,7 +84,7 @@ export function safeFilename(name: string) {
   return name.replace(REGEX_NOT_FILE_SAFE, '-')
 }
 
-export function serviceNameValidation(name: string, validateLength?: boolean) {
+export function serviceNameValidation(name: string) {
   const value = name.replace(REGEX_NAME_SAFE, '')
   if (value !== name) {
     return {
@@ -91,7 +92,7 @@ export function serviceNameValidation(name: string, validateLength?: boolean) {
       value,
     }
   }
-  if (validateLength && value.length > MAX_NAME_LENGTH) {
+  if (value.length > MAX_NAME_LENGTH) {
     return {
       error: `Cannot exceed ${MAX_NAME_LENGTH} characters.`,
       value: value.substring(0, MAX_NAME_LENGTH),

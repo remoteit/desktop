@@ -27,9 +27,11 @@ declare global {
     | 'service/forget'
     | 'service/restart'
     | 'service/clear-recent'
+    | 'service/launch'
 
     // App/settings
     | 'app/open-on-login'
+    | 'showFolder'
 
     // Backend
     | 'init'
@@ -76,6 +78,7 @@ declare global {
     | 'service/throughput'
     | 'service/version'
     | 'service/unknown-event'
+    | 'service/putty/required'
 
     // binary
     | 'binary/install/start'
@@ -197,6 +200,7 @@ declare global {
     attributes: ILookup & {
       name?: string
       color?: number
+      label?: string
       accessDisabled?: boolean
     }
   }
@@ -213,6 +217,7 @@ declare global {
     connection?: IConnection
     typeID?: number
     port?: number
+    protocol?: string
     sessions: IUser[]
     access: IUser[]
     attributes: {
@@ -226,6 +231,15 @@ declare global {
     created?: Date
     platform?: number
     scripting?: boolean
+  }
+
+  type IApplicationType = {
+    id: number
+    name: string
+    port: number
+    proxy: boolean
+    protocol: 'TCP' | 'UDP'
+    description: string
   }
 
   type gqlOptions = {
@@ -244,6 +258,12 @@ declare global {
   interface IOob {
     oobAvailable: boolean
     oobActive: boolean
+  }
+
+  interface IPuttyValidation {
+    install: boolean
+    loading: boolean
+    pathPutty: string
   }
 
   interface ILan {
@@ -321,9 +341,9 @@ declare global {
   }
 
   type IShareProps = {
-    deviceId: String,
-    email: String[]!,
-    scripting?: boolean,
+    deviceId: String
+    email: !String[]
+    scripting?: boolean
     services?: IService[]
   }
 }

@@ -4,6 +4,7 @@ import lan from './LAN'
 import cli from './cliInterface'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
+import showFolder from './showFolder'
 import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
@@ -15,6 +16,7 @@ import Installer from './Installer'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
+import launch, { openCMDforWindows } from './launch'
 
 class Controller {
   private io: SocketIO.Server
@@ -38,6 +40,7 @@ class Controller {
       ...Object.values(environment.EVENTS),
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
+      ...Object.values(launch.EVENTS),
     ]
 
     new EventRelay(eventNames, EventBus, this.io.sockets)
@@ -57,9 +60,10 @@ class Controller {
     socket.on('service/connect', this.pool.start)
     socket.on('service/disconnect', this.pool.stop)
     socket.on('service/clear-recent', this.pool.forgetRecent)
+    socket.on('service/launch', openCMDforWindows)
     socket.on('service/forget', this.pool.forget)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('init', this.syncBackend)
+    socket.on('init', this.initBackend)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -72,8 +76,10 @@ class Controller {
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
+    socket.on('showFolder', showFolder.openLogs)
 
-    this.check(true)
+    this.initBackend() // things are ready, send the init data
+    this.check(true) // check and log
   }
 
   recapitate = () => {
@@ -125,7 +131,8 @@ class Controller {
     this.io.emit('nextFreePort', this.pool.freePort)
   }
 
-  syncBackend = async () => {
+  initBackend = async () => {
+    cli.read()
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)

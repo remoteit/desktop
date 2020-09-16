@@ -1,8 +1,7 @@
 import { Divider, List, Typography } from '@material-ui/core'
 import React, { useEffect } from 'react'
-import { ListItemSetting } from '../ListItemSetting'
 import { ListItemCheckbox } from '../ListItemCheckbox'
-import { ShareSaveActions } from './ContactCardActions'
+import { ShareSaveActions } from '../ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { useSelector } from '../../hooks/reactReduxHooks'
 import { ApplicationState } from '../../store'
@@ -25,6 +24,7 @@ export function SharingForm({
   selectedServices,
   update,
   share,
+  changing,
 }: {
   onChange: (access: SharingAccess) => void
   device: IDevice
@@ -32,11 +32,14 @@ export function SharingForm({
   selectedServices: string[]
   update: () => void
   share: () => void
+  changing: boolean
 }): JSX.Element {
   const history = useHistory()
   const location = useLocation()
   const { email = '' } = useParams()
-  const { saving } = useSelector((state: ApplicationState) => state.shares)
+  const saving = useSelector((state: ApplicationState) => state.shares.sharing)
+
+  let disabled = !(changing && saving === false)
 
   const handleChangeServices = (services: string[]) => {
     onChange({ scripting, services })
@@ -59,16 +62,6 @@ export function SharingForm({
 
   return (
     <>
-      <List>
-        <ListItemSetting
-          label="Allow script execution"
-          subLabel="Give the user the ability to run scripts on this device."
-          icon="scroll"
-          disabled={saving}
-          toggle={scripting}
-          onClick={handleChangeScripting}
-        />
-      </List>
       <Typography variant="subtitle1">Services</Typography>
       <ServiceCheckboxes
         onChange={handleChangeServices}
@@ -76,9 +69,20 @@ export function SharingForm({
         saving={saving}
         selectedServices={selectedServices}
       />
+      <Divider />
+      <List>
+        <ListItemCheckbox
+          label="Allow script execution"
+          subLabel="Give the user the ability to run scripts on this device."
+          disabled={saving}
+          checked={scripting}
+          onClick={handleChangeScripting}
+        />
+      </List>
       <ShareSaveActions
         onCancel={() => history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))}
         onSave={action}
+        disabled={disabled}
       />
     </>
   )
@@ -113,11 +117,11 @@ function ServiceCheckboxes({
 
   return (
     <>
-      <List>
+      <List className="collapseList">
         <ListItemCheckbox disabled={saving} label="Select all" onClick={checked => selectAll(checked, services)} />
-        <Divider />
       </List>
-      <List>
+      <Divider />
+      <List className="collapseList">
         {services.map((service, key) => (
           <ListItemCheckbox
             key={key}

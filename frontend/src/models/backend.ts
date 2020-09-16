@@ -1,5 +1,7 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../shared/constants'
+import analyticsHelper from '../helpers/analyticsHelper'
+import { emit } from '../services/Controller'
 
 type IBackendState = ILookup & {
   connections: IConnection[]
@@ -60,18 +62,19 @@ const state: IBackendState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async updateTargetDevice(targetDevice: ITargetDevice, globalState: any) {
+    async targetDeviceUpdated(targetDevice: ITargetDevice, globalState: any) {
       const { ui, backend, devices } = dispatch
       const { device } = globalState.backend
 
       if (targetDevice.uid !== device.uid) {
-        devices.fetch()
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
+          await devices.fetch()
           ui.set({
             setupRegisteringDevice: false,
             successMessage: `${targetDevice.name} registered successfully!`,
           })
         } else if (globalState.ui.setupDeletingDevice) {
+          await devices.fetch()
           ui.set({
             setupDeletingDevice: false,
             successMessage: `${device.name} unregistered successfully!`,
@@ -80,6 +83,42 @@ export default createModel({
       }
 
       backend.set({ device: targetDevice })
+    },
+    async targetUpdated(targets: ITarget[], globalState: any) {
+      if (globalState.ui.setupBusy) {
+        await dispatch.devices.fetch()
+        dispatch.ui.reset()
+      }
+    },
+
+    async registerDevice({ targets, name }: { targets: ITarget[]; name: string }, globalState: any) {
+      const targetDevice = globalState.backend.device
+      emit('registration', { device: { ...targetDevice, name }, targets })
+      dispatch.ui.set({ setupRegisteringDevice: true })
+      analyticsHelper.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
+      targets.forEach(t => analyticsHelper.track('serviceCreated', { ...t, id: t.uid }))
+    },
+    async addTargetService(target: ITarget, globalState: any) {
+      analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
+      dispatch.ui.set({ setupBusy: true, setupAddingService: true })
+      emit('targets', [...globalState.backend.targets, target])
+    },
+    async removeTargetService(target: ITarget, globalState: any) {
+      const targets: ITarget[] = globalState.backend.targets
+      const index = targets?.findIndex(t => t.uid === target.uid)
+      analyticsHelper.track('serviceRemoved', { ...target, id: target.uid })
+      let copy = [...globalState.backend.targets]
+      copy.splice(index, 1)
+      dispatch.ui.set({ setupBusy: true, setupServiceBusy: target.uid })
+      emit('targets', copy)
+    },
+    async updateTargetService(target: ITarget, globalState: any) {
+      const targets: ITarget[] = globalState.backend.targets
+      analyticsHelper.track('serviceUpdated', { ...target, id: target.uid })
+      dispatch.ui.set({ setupBusy: true, setupServiceBusy: true })
+      const tIndex = targets?.findIndex(t => t.uid === target.uid)
+      targets[tIndex] = target
+      emit('targets', targets)
     },
   }),
 

@@ -21,18 +21,28 @@ export default createModel({
 
     async delete(userDevice: {deviceID: string, email: string}) {
       const {deviceID, email} = userDevice
-      console.log({deviceID, email})
+      const { graphQLError } = dispatch.devices
       const { set } = dispatch.shares
       set({deleting: true})
-      await graphQLUnShareDevice({deviceId: deviceID, email: [email]})
-      await dispatch.devices.get(deviceID)
+      try {
+        await graphQLUnShareDevice({deviceId: deviceID, email: [email]})
+        await dispatch.devices.get(deviceID)
+      } catch (error) {
+        await graphQLError(error)
+      }
       set({deleting: false})
     },
 
     async share(newData?: any) {
-      const { set } = dispatch.devices
+      const { graphQLError, graphQLMetadata } = dispatch.devices
+      const { set } = dispatch.shares
       set({sharing: true})
-      await graphQLShareDevice(newData)
+      try {
+        const response = await graphQLShareDevice(newData)
+        await graphQLMetadata(response)
+      } catch (error) {
+        await graphQLError(error)
+      }
       set({sharing: false})
     },
 

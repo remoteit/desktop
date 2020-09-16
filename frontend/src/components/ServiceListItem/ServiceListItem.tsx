@@ -7,11 +7,10 @@ import { ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { ListItemLocation } from '../ListItemLocation'
-import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { SessionsButton } from '../../buttons/SessionsButton'
-import { OfflineButton } from '../../buttons/OfflineButton'
-import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
+import { ForgetButton } from '../../buttons/ForgetButton'
+import { ComboButton } from '../../buttons/ComboButton'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
@@ -22,9 +21,10 @@ export interface ServiceListItemProps {
   connection?: IConnection
   service?: IService
   indent?: boolean
+  dense?: boolean
 }
 
-export function ServiceListItem({ connection, service, indent }: ServiceListItemProps) {
+export function ServiceListItem({ connection, service, indent, dense }: ServiceListItemProps) {
   const location = useLocation()
   const user = useSelector((state: ApplicationState) => state.auth.user)
   const css = useStyles()
@@ -45,17 +45,14 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 
   return (
     <>
-      <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner}>
-        <div className={css.buttons}>
-          <ConnectButton connection={connection} service={service} size="small" />
-          <DisconnectButton connection={connection} service={service} size="small" />
-          <OfflineButton service={service} />
-        </div>
+      <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner} dense={dense}>
+        <ComboButton connection={connection} service={service} />
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
-        <ListItemSecondaryAction className={css.actions}>
+        <ListItemSecondaryAction>
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
           <SessionsButton service={service} />
+          <ForgetButton connection={connection} />
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
         </ListItemSecondaryAction>
       </ListItemLocation>
@@ -65,16 +62,7 @@ export function ServiceListItem({ connection, service, indent }: ServiceListItem
 }
 
 const useStyles = makeStyles({
-  indent: { paddingLeft: spacing.xxl },
-  actions: { right: 70 },
-  buttons: {
-    width: 121,
-    marginLeft: spacing.md,
-    marginRight: spacing.lg,
-    position: 'relative',
-    '& > div': { position: 'absolute', width: '100%' },
-    '& > div:last-child': { position: 'relative' },
-  },
+  indent: { paddingLeft: 57 },
   details: { '& > span': { marginLeft: spacing.xs } },
   restriction: { color: colors.grayDarker },
 })

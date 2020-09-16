@@ -16,6 +16,7 @@ import { useSelector } from 'react-redux'
 import { isElectron } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { attributeName } from '../../shared/nameHelper'
+import { TargetPlatform } from '../../components/TargetPlatform'
 import { Icon } from '../../components/Icon'
 import onLanGraphic from '../../assets/remote-on-lan.svg'
 import onRemoteGraphic from '../../assets/remote-on-remote.svg'
@@ -26,13 +27,16 @@ export const Sidebar: React.FC = () => {
   const [shown, setShown] = useState<boolean>(true)
   const { hostname, port } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
-  const { name, label } = useSelector((state: ApplicationState) => {
+
+  const { name, label, device } = useSelector((state: ApplicationState) => {
     const device = state.devices.all.find(d => d.id === state.backend.device.uid)
     return {
+      device,
       label: state.labels.find(l => l.id === device?.attributes.color),
       name: attributeName(device),
     }
   })
+
   const css = useStyles()
 
   let graphic = onLanGraphic
@@ -62,6 +66,7 @@ export const Sidebar: React.FC = () => {
           </IconButton>
         </Tooltip>
         <section>
+          <TargetPlatform id={device?.targetPlatform} size="max" />
           <Typography variant="h2">
             You are managing <br />a remote device
           </Typography>
@@ -107,6 +112,7 @@ const useStyles = makeStyles({
     height: '100%',
     position: 'relative',
     '& section': { padding: `${spacing.xl}px ${spacing.lg}px ${spacing.xl}px ${spacing.xl}px` },
+    '& .fab': { marginBottom: spacing.lg },
     '& hr': { opacity: 0.3 },
     '& span': { color: colors.white },
     '& h2': { fontSize: fontSizes.lg },

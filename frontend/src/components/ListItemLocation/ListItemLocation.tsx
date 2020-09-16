@@ -1,7 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { NextButton } from '../../buttons/NextButton'
 import { Icon } from '../Icon'
 
 export type Props = {
@@ -10,6 +9,7 @@ export type Props = {
   subtitle?: string
   icon?: string
   disabled?: boolean
+  dense?: boolean
   className?: string
 }
 
@@ -26,7 +26,6 @@ export const ListItemLocation: React.FC<Props> = ({
   const onClick = () => !disabled && history.push(pathname)
   return (
     <ListItem {...props} button onClick={onClick} disabled={disabled} style={{ opacity: 1 }}>
-      {!disabled && <NextButton />}
       {icon && (
         <ListItemIcon>
           <Icon name={icon} size="md" fixedWidth />

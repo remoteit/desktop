@@ -1,15 +1,19 @@
 import React from 'react'
 import { attributeName } from '../../shared/nameHelper'
-import { Tooltip, Divider } from '@material-ui/core'
+import { Tooltip, TooltipProps, Divider } from '@material-ui/core'
 
 const MAX_SESSIONS_DISPLAY = 3
 
 interface Props {
   service?: IService
+  placement?: TooltipProps['placement']
   label?: boolean
+  open?: boolean
+  arrow?: boolean
+  disabled?: boolean
 }
 
-export const SessionsTooltip: React.FC<Props> = ({ service, label, children }) => {
+export const SessionsTooltip: React.FC<Props> = ({ service, label, children, disabled, ...props }) => {
   if (!service) return null
 
   const list = service?.sessions?.reduce((list: string[], session, index, all) => {
@@ -19,8 +23,11 @@ export const SessionsTooltip: React.FC<Props> = ({ service, label, children }) =
     return list
   }, [])
 
+  if (disabled) props.open = false
+
   return (
     <Tooltip
+      {...props}
       title={
         <>
           {label && attributeName(service)}

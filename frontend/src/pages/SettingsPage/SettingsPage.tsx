@@ -14,6 +14,8 @@ import { makeStyles } from '@material-ui/core/styles'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
+import { Avatar } from '../../components/Avatar'
+import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -43,7 +45,7 @@ export const SettingsPage = () => {
   }
 
   const clearWarning = () =>
-    window.confirm('Are you sure? The next user that signs in will be able to claim this device as their own.') &&
+    window.confirm('Are you sure? The next user that signs in will be able to claim this device.') &&
     emit('user/clear-all')
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
@@ -58,12 +60,18 @@ export const SettingsPage = () => {
       header={
         <>
           <OutOfBand />
-          <Typography className={css.header} variant="h1">
-            <Tooltip title="Visit remote.it on the web">
-              <ButtonBase onClick={() => window.open('https://remote.it')}>
-                <Logo width={110} />
-              </ButtonBase>
-            </Tooltip>
+          <Typography variant="h1">
+            <Title>
+              <Tooltip title="Visit remote.it on the web">
+                <ButtonBase onClick={() => window.open('https://remote.it')}>
+                  <Logo className={css.logo} width={110} />
+                </ButtonBase>
+              </Tooltip>
+            </Title>
+            <Typography className={css.user} variant="caption">
+              {user?.email}
+            </Typography>
+            <Avatar email={user?.email} />
           </Typography>
         </>
       }
@@ -88,10 +96,19 @@ export const SettingsPage = () => {
         />
         <ListItemSetting
           label="Sign out"
-          subLabel={`Signed in as ${user && user.username}`}
+          subLabel="Sign out and lock this system installation."
           icon="sign-out"
           onClick={signOutWarning}
         />
+        <ListItemSetting
+          label={'Sign out and clear device credentials'}
+          subLabel={`This will remove all user credentials from this device, 
+                allowing the device to be transferred or another user to log in.
+                The next user to sign in will claim this device.`}
+          icon="user-slash"
+          onClick={clearWarning}
+        />
+
         {!guest && <ListItemSetting label="Quit" icon="times" onClick={quitWarning} />}
       </List>
       <Divider />
@@ -121,15 +138,6 @@ export const SettingsPage = () => {
           <List>
             <SettingsDisableNetworkItem />
             <ListItemSetting
-              label={'Clear all credentials'}
-              subLabel={`This will remove all remote.it user credentials from this device, 
-                allowing the device to be transferred. The next user to sign in will claim 
-                this device. If another user does not sign in and claim the device,
-                the hosted services will only remain active until the next reboot.`}
-              icon="user-slash"
-              onClick={clearWarning}
-            />
-            <ListItemSetting
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}
@@ -137,6 +145,12 @@ export const SettingsPage = () => {
               onClick={installWarning}
             />
             <UninstallSetting />
+            <ListItemSetting
+              label="Show application logs"
+              subLabel="Will show the folders that contain the application logs and config file."
+              icon="folder"
+              onClick={() => emit('showFolder')}
+            />
           </List>
         </>
       )}
@@ -145,5 +159,6 @@ export const SettingsPage = () => {
 }
 
 const useStyles = makeStyles({
-  header: { '& img': { marginBottom: spacing.sm } },
+  logo: { marginBottom: spacing.xs },
+  user: { marginRight: spacing.sm },
 })

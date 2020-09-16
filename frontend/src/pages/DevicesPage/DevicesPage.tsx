@@ -76,8 +76,10 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: styles.colors.white,
-    borderBottom: `1px solid ${styles.colors.grayLight}`,
+    boxShadow: 'rgba(0,0,0,0.15) 0px 1px 2px',
     padding: `0 ${styles.spacing.md}px`,
+    position: 'relative',
+    zIndex: 1,
   },
   fetching: {
     position: 'absolute',

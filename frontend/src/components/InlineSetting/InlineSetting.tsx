@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { ListItem, ListItemIcon, ListItemSecondaryAction, Typography, Tooltip, IconButton } from '@material-ui/core'
+import {
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  InputLabel,
+  Tooltip,
+  IconButton,
+} from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
@@ -9,7 +17,7 @@ import { Icon } from '../Icon'
 
 type Props = {
   value?: string | number
-  label: string
+  label: JSX.Element | string
   icon?: JSX.Element
   displayValue?: string | number
   disabled?: boolean
@@ -63,7 +71,7 @@ export const InlineSetting: React.FC<Props> = ({
 
   if (edit)
     return (
-      <ListItem className={css.active + ' ' + css.root}>
+      <ListItem className={css.active} dense>
         <ListItemIcon>{icon}</ListItemIcon>
         <form
           className={css.form}
@@ -74,7 +82,7 @@ export const InlineSetting: React.FC<Props> = ({
           }}
         >
           {children}
-          {resetValue && (
+          {resetValue != null && (
             <ResetButton
               onClick={() => {
                 cancelBlur()
@@ -100,11 +108,13 @@ export const InlineSetting: React.FC<Props> = ({
     )
 
   return (
-    <ListItem className={css.root} button onClick={triggerEdit} disabled={disabled} style={{ opacity: 1 }}>
+    <ListItem button onClick={triggerEdit} disabled={disabled} style={{ opacity: 1 }} dense>
       <ListItemIcon>{icon}</ListItemIcon>
       <Title>
-        <Typography variant="caption">{label}</Typography>
-        <Typography variant="h2">{displayValue || value || '–'}</Typography>
+        <ListItemText>
+          <InputLabel shrink>{label}</InputLabel>
+          {displayValue || value || '–'}
+        </ListItemText>
       </Title>
       {!disabled && (
         <ListItemSecondaryAction className="hidden">
@@ -122,9 +132,9 @@ const useStyles = makeStyles({
     marginRight: 120,
     alignItems: 'center',
     '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
+    '& .MuiFilledInput-input': { paddingTop: 22, paddingBottom: 10, fontSize: 14 },
     '& .MuiTextField-root': { marginLeft: 0 },
   },
-  root: { height: 63 },
   active: {
     backgroundColor: colors.primaryHighlight,
     padding: 0,

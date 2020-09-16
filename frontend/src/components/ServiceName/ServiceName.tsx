@@ -22,33 +22,38 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const instance = service || device
   const accessDisabled = !!device?.attributes.accessDisabled
   const offline = instance?.state !== 'active' && !connection?.active
+  const targetPlatformId = device?.targetPlatform
 
   let name = service ? attributeName(service) : attributeName(device)
-  let failover = connection?.isP2P === false
+  let failover = service && connection?.isP2P === false
 
   if (menu && menu[0] === '/connections') name = connection?.name || name
 
   return (
     <Title offline={offline}>
       {!instance && !connection ? 'No device found' : name}
-      <TargetPlatform id={device?.targetPlatform} />
+      {!!targetPlatformId && (
+        <sup>
+          <TargetPlatform id={targetPlatformId} tooltip />
+        </sup>
+      )}
       {device?.shared && (
         <sup>
-          <Tooltip title={`Shared by ${device?.owner}`}>
+          <Tooltip title={`Shared by ${device?.owner}`} placement="top" arrow>
             <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>
       )}
       {failover && (
         <sup>
-          <Tooltip title="Proxy failover connection">
+          <Tooltip title="Proxy failover connection" placement="top" arrow>
             <Icon name="cloud" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>
       )}
       {accessDisabled && (
         <sup>
-          <Tooltip title="Shared access disabled">
+          <Tooltip title="Shared access disabled" placement="top" arrow>
             <Icon name="do-not-enter" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>

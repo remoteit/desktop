@@ -14,12 +14,9 @@ import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-type Props = {
-  os?: Ios
-  targetDevice: ITargetDevice
-}
+type Props = { os?: Ios }
 
-export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
+export const SetupDevice: React.FC<Props> = ({ os }) => {
   const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost,
@@ -29,19 +26,11 @@ export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
   }))
   const css = useStyles()
   const history = useHistory()
-  const { ui } = useDispatch<Dispatch>()
+  const { backend } = useDispatch<Dispatch>()
   const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist))
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
   const [selected, setSelected] = useState<ITarget[]>([])
-
-  const onRegistration = () => {
-    emit('registration', { device: { ...targetDevice, name }, targets: selected })
-    ui.set({ setupRegisteringDevice: true })
-    analyticsHelper.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
-    selected.forEach(t => analyticsHelper.track('serviceCreated', { ...t, id: t.uid }))
-    history.push('/settings/setupWaiting')
-  }
 
   useEffect(() => {
     if (loading) {
@@ -67,7 +56,8 @@ export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
           onSubmit={event => {
             if (!name) return
             event.preventDefault()
-            onRegistration()
+            backend.registerDevice({ targets: selected, name })
+            history.push('./setupWaiting')
           }}
         >
           <section className={css.device}>
@@ -78,7 +68,7 @@ export const SetupDevice: React.FC<Props> = ({ os, targetDevice }) => {
               variant="filled"
               error={!!nameError}
               onChange={event => {
-                const validation = serviceNameValidation(event.target.value, true)
+                const validation = serviceNameValidation(event.target.value)
                 setName(validation.value)
                 if (validation.error) {
                   setNameError(validation.error)

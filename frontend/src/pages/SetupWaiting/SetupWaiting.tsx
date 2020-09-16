@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Typography, CircularProgress, Divider } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { DocsLinks } from '../../components/DocsLinks'
@@ -14,13 +14,23 @@ import styles from '../../styling'
 type Props = { os?: Ios; targetDevice: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
-  const { globalError } = useSelector((state: ApplicationState) => state.backend)
+  const { globalError, device } = useSelector((state: ApplicationState) => ({
+    globalError: state.backend.globalError,
+    device: state.devices.all.find(d => d.id === targetDevice.uid),
+  }))
+  const location = useLocation()
   const history = useHistory()
   const css = useStyles()
 
-  if (targetDevice.uid) {
-    history.push('/settings/setupServices')
-  }
+  useEffect(() => {
+    if (device) {
+      if (location.pathname.includes('/devices')) {
+        history.push(`/devices/${device.id}/edit`)
+      } else {
+        history.push('settings/setupServices')
+      }
+    }
+  }, [device])
 
   if (globalError) history.push('/settings')
 

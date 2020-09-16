@@ -1,6 +1,6 @@
 import { PropTypes } from '@material-ui/core'
 
-export type FontSize = 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
+export type FontSize = 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'max'
 
 export const fontSizes: { [key in FontSize]: number } = {
   xxxs: 8,
@@ -13,11 +13,13 @@ export const fontSizes: { [key in FontSize]: number } = {
   xl: 24,
   xxl: 36,
   xxxl: 48,
+  max: 64,
 }
 
 export type Color =
   | 'primary'
   | 'primaryLight'
+  | 'primaryLighter'
   | 'primaryHighlight'
   | 'secondary'
   | 'successLight'
@@ -36,11 +38,14 @@ export type Color =
   | 'grayDarkest'
   | 'white'
   | 'black'
+  | 'darken'
+  | 'screen'
   | 'rpi'
 
 export const colors: { [key in Color]: string } = {
   primary: '#0096e7',
   primaryLight: '#9ed3f0',
+  primaryLighter: '#e7f2f9',
   primaryHighlight: '#edf8ff',
   secondary: '#75bd00',
   successLight: '#a4db4c',
@@ -50,7 +55,7 @@ export const colors: { [key in Color]: string } = {
   danger: '#d6290a',
   dangerDark: '#871a06',
   warning: '#ed9912',
-  grayLightest: '#fafafa',
+  grayLightest: '#f9f9f9',
   grayLighter: '#efefef',
   grayLight: '#dbdbdb',
   gray: '#bbb',
@@ -59,6 +64,8 @@ export const colors: { [key in Color]: string } = {
   grayDarkest: '#333',
   white: '#fff',
   black: '#000',
+  darken: 'rgba(0,0,0,0.2)',
+  screen: 'rgba(0,0,0,0.03)',
   rpi: '#C51A4A',
 }
 

@@ -17,6 +17,7 @@ import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
+import { UnauthorizedPage } from '../UnauthorizedPage'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { LaunchSetting } from '../../components/LaunchSetting'
 import { AddUserButton } from '../../buttons/AddUserButton'
@@ -44,21 +45,7 @@ export const ServicePage: React.FC = () => {
     analyticsHelper.page('ServicePage')
   }, [])
 
-  if (!service || !device)
-    return (
-      <>
-        <Typography variant="h1">
-          <ConnectionStateIcon connection={connection} thisDevice={thisDevice} size="lg" />
-          <ServiceName connection={connection} inline />
-          <ForgetButton connection={connection} />
-        </Typography>
-        <section>
-          {connection && (
-            <Typography variant="caption">Device may have been removed ({connection.deviceID})</Typography>
-          )}
-        </section>
-      </>
-    )
+  if (!service || !device) return <UnauthorizedPage />
 
   return (
     <Container
@@ -106,9 +93,11 @@ export const ServicePage: React.FC = () => {
       </List>
       <Divider />
       <List>
-        <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} />
+        {!device.shared && (
+          <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} dense />
+        )}
         <UsersSelect service={service} device={device} />
-        <ListItemLocation title="Service Details" icon="info-circle" pathname={location.pathname + '/details'} />
+        <ListItemLocation title="Service Details" icon="info-circle" pathname={location.pathname + '/details'} dense />
       </List>
     </Container>
   )

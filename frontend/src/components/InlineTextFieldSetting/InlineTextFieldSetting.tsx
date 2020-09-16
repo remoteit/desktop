@@ -1,15 +1,17 @@
-import React, { useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { TextField } from '@material-ui/core'
 import { InlineSetting } from '../InlineSetting'
 
 type Props = {
   value?: string | number
-  label: string
+  label: string | JSX.Element
   icon?: JSX.Element
   displayValue?: string | number
   filter?: RegExp
   disabled?: boolean
   resetValue?: string | number
+  maxLength?: number
+  onError?: (value: string | undefined) => void
   onSave: (value: string | number) => void
 }
 
@@ -18,11 +20,18 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   filter,
   value = '',
   resetValue = '',
+  maxLength,
+  onError,
   onSave,
   ...props
 }) => {
   const fieldRef = useRef<HTMLInputElement>(null)
   const [editValue, setEditValue] = useState<string | number>('')
+  const [error, setError] = useState<string>()
+
+  useEffect(() => {
+    onError && onError(error)
+  }, [error])
 
   return (
     <InlineSetting
@@ -40,9 +49,21 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         autoFocus
         inputRef={fieldRef}
         label={label}
+        error={!!error}
         value={editValue}
         variant="filled"
-        onChange={event => setEditValue(filter ? event.target.value.replace(filter, '') : event.target.value)}
+        helperText={error}
+        onChange={event => {
+          let { value } = event.target
+          value = filter ? value.replace(filter, '') : value
+          if (maxLength && value.length > maxLength) {
+            setError(`Cannot exceed ${maxLength} characters.`)
+            value = value.substring(0, maxLength)
+          } else {
+            setError(undefined)
+          }
+          setEditValue(value)
+        }}
       />
     </InlineSetting>
   )

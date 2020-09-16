@@ -6,7 +6,7 @@ import { Icon } from '../../components/Icon'
 export const AddUserButton: React.FC<{ device?: IDevice }> = ({ device }) => {
   const location = useLocation()
   const history = useHistory()
-  const onClick = () => history.push(`${location.pathname.replace('/users', '')}/users/share`)
+  const onClick = () => history.push(`${location.pathname}/share`)
 
   if (device?.shared) return null
 

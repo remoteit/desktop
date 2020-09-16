@@ -10,15 +10,20 @@ export function DeviceShareDetails({
   share,
   selectedContacts,
   updateSharing,
+  changing,
+  setChanging,
 }: {
   device: IDevice
-  share: (share: SharingDetails, isNew: boolean) => Promise<void>
+  share: (share: SharingDetails, isNew: boolean) => void
   selectedContacts: string[]
-  updateSharing: (share: SharingDetails, isNew: boolean) => Promise<void>
+  updateSharing: (share: SharingDetails, isNew: boolean) => void
+  changing: boolean
+  setChanging: React.Dispatch<React.SetStateAction<boolean>>
 }): JSX.Element {
   const { email = '' } = useParams()
+  const { serviceID = '' } = useParams()
 
-  const formComponent = (email: string, sharedService?: string[], scripting?: boolean) => {
+  const formComponent = (email: string, sharedService: string[], scripting?: boolean) => {
     return (
       <ContactCard
         device={device}
@@ -28,6 +33,8 @@ export function DeviceShareDetails({
         selectedContacts={selectedContacts}
         email={email}
         updateSharing={updateSharing}
+        changing={changing}
+        setChanging={setChanging}
       />
     )
   }
@@ -41,5 +48,5 @@ export function DeviceShareDetails({
     )
   }
 
-  return <List>{email === '' ? formComponent('') : detailByEmail(email)}</List>
+  return <List>{email === '' ? formComponent('', [serviceID]) : detailByEmail(email)}</List>
 }

@@ -8,7 +8,7 @@ const ENV = process.env.NODE_ENV
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
 const MAX_LOG_FILES = 5
 
-const LOG_DIR = path.join(environment.userPath, 'log')
+export const LOG_DIR = path.join(environment.userPath, 'log')
 
 const { combine, timestamp, label, printf } = winston.format
 const consoleFormat = printf(p => {

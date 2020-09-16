@@ -37,6 +37,7 @@ export const ServiceDetailPage = () => {
     { label: 'Last reported', value: service.lastReported, format: 'duration' },
     { label: 'Service Name', value: service.name },
     { label: 'Remote Port', value: service.port },
+    { label: 'Remote Protocol', value: service.protocol },
     { label: 'Service Type', value: service.type },
     { label: 'Device Name', value: device.name },
     { label: 'Owner', value: device.owner },
