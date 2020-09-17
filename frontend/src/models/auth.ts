@@ -1,3 +1,4 @@
+import { CLIENT_ID, API_URL, DEVELOPER_KEY } from '../shared/constants'
 import { r3 } from '../services/remote.it'
 
 import { IUser } from 'remote.it'
@@ -6,7 +7,7 @@ import { emit } from '../services/Controller'
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { AuthUser } from '@remote.it/types'
-import { auth as cognitoAuth } from '@remote.it/components'
+import { AuthService } from '@remote.it/services'
 
 const USER_KEY = 'user'
 
@@ -14,16 +15,20 @@ export interface AuthState {
   initialized: boolean
   signInStarted: boolean
   authenticated: boolean
+  backendAuthenticated: boolean
   signInError?: string
   user?: IUser
+  authService?: AuthService
 }
 
 const state: AuthState = {
   initialized: false,
   authenticated: false,
+  backendAuthenticated: false,
   signInStarted: false,
   signInError: undefined,
   user: undefined,
+  authService: undefined,
 }
 
 export default createModel({
@@ -32,26 +37,18 @@ export default createModel({
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
 
-      console.error('USER INIT:')
-      console.error(user)
-
       if (!user) {
-        // const storedUser = window.localStorage.getItem(USER_KEY)
-        // if (storedUser) user = JSON.parse(storedUser)
+        const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY});
+        dispatch.auth.setAuthService(authService)
         try {
-          const authUser = await cognitoAuth.checkSignIn()
+          const authUser = await authService.checkSignIn()
           if (authUser) {
-            user = authUser.remoteitUser
+            await  dispatch.auth.handleSignInSuccess(authUser)
           }
         } catch (e) {
           console.log('Not Authenticated')
+          dispatch.auth.setInitialized()
         }
-      }
-
-      if (user?.email) {
-        await dispatch.auth.setUser(user)
-      } else {
-        dispatch.auth.setInitialized()
       }
     },
     async handleDisconnect(_: void, rootState: any) {
@@ -60,61 +57,47 @@ export default createModel({
       if (authenticated) Controller.open(true)
     },
     async checkSession(_: void, rootState: any) {
-      //TODO Check we reject login after expiring
-
       try {
+        await rootState.auth.authService.checkSignIn()
         return
       } catch (e) {
         dispatch.auth.signInError('Login Expired')
         return
       }
-
-      // let { user } = rootState.auth
-
-      // if (await r3.user.sessionExpired(user.username)) {
-      //   try {
-      //     user = await r3.user.authHashLogin(user.username, user.authHash)
-      // dispatch.auth.setUser(user)
-      // return
-      //   } catch (error) {
-      //     dispatch.auth.signInError(error.message)
-      //     return
-      //   }
-      // }
     },
     async handleSignInSuccess(authUser: AuthUser): Promise<void> {
-      console.error(authUser.cognitoUser?.username)
       if (authUser.cognitoUser?.username) {
+        dispatch.auth.setAuthenticated(true)
+        dispatch.auth.setInitialized()
         const user = await r3.user.userData(authUser.cognitoUser?.username)
+        Controller.open(false,true)
         dispatch.auth.setUser(user)
-        Controller.open()
       }
     },
-    async authenticated() {
-      dispatch.auth.signInFinished()
-      await dispatch.auth.checkSession()
-      dispatch.auth.setAuthenticated(true)
-      dispatch.devices.fetch()
-      dispatch.applicationTypes.fetch()
-      dispatch.auth.setInitialized()
-      emit('init')
+    async authenticated(_: void, rootState: any) {
+      if(rootState.auth.authenticated) {
+        dispatch.auth.setBackendAuthenticated(true)
+        dispatch.devices.fetch()
+        dispatch.applicationTypes.fetch()
+        emit('init')
+      }
     },
     async signInError(error: string) {
       dispatch.auth.setError(error)
-      dispatch.auth.setInitialized()
+      dispatch.auth.signedOut()
     },
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut() {
-      cognitoAuth.signOut()
-      //if (r3.token) await r3.post('/user/logout')
+    async signedOut(_: void, rootState: any) {
+      await rootState.auth.authService.signOut()
       dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.devices.reset()
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
+      dispatch.auth.setBackendAuthenticated(false)
       window.location.hash = ''
       emit('user/sign-out-complete')
       analyticsHelper.clearIdentity()
@@ -139,6 +122,9 @@ export default createModel({
     setAuthenticated(state: AuthState, authenticated: boolean) {
       state.authenticated = authenticated
     },
+    setBackendAuthenticated(state: AuthState, backendAuthenticated: boolean) {
+      state.backendAuthenticated = backendAuthenticated
+    },
     setError(state: AuthState, error: string) {
       state.signInError = error
     },
@@ -148,9 +134,10 @@ export default createModel({
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
       analyticsHelper.identify(user.id)
-      console.error('USER:')
-      console.error(user)
       emit('authentication', { username: user.username, authHash: user.authHash })
+    },
+    setAuthService(state: AuthState, authService: AuthService) {
+      state.authService = authService
     },
   },
 })

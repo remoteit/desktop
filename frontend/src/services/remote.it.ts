@@ -1,4 +1,4 @@
-import setup, { IUser } from 'remote.it'
+import setup from 'remote.it'
 import { API_URL, DEVELOPER_KEY } from '../shared/constants'
 import { Auth } from 'aws-amplify'
 
@@ -24,11 +24,14 @@ export async function getToken(): Promise<string> {
 
 export async function hasCredentials() {
   //TODO: try this
-
-  const currentSession = await Auth.currentSession()
-  if (currentSession !== undefined) {
-    return true
-  } else {
+  try {
+    const currentSession = await Auth.currentSession()
+    if (currentSession !== undefined) {
+      return true
+    } else {
+      return false
+    }
+  } catch {
     return false
   }
 }
