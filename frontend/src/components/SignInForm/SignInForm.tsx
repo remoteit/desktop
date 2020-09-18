@@ -14,7 +14,6 @@ export function SignInForm() {
 
   return (
     <React.Fragment>
-      {signInError && <div className={css.error}>{signInError}</div>}
       <CognitoAuth
         themeOverride={theme}
         onSignInSuccess={auth.handleSignInSuccess}
@@ -22,6 +21,7 @@ export function SignInForm() {
         clientId={CLIENT_ID}
         apiURL={API_URL}
         developerKey={DEVELOPER_KEY}
+        errorMessage={signInError}
       />
     </React.Fragment>
     
