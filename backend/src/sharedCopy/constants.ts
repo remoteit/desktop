@@ -4,9 +4,6 @@
   
   ONLY EDIT THE SOURCE FILE IN frontend
 */
-
-require('dotenv').config()
-
 export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID || '26g0ltne0gr8lk1vs51mihrmig'
 export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL || 'https://api.remot3.it/apv/v27'
 export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.remote.it/v1/graphql'

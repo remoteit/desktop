@@ -1,15 +1,15 @@
 import { CLIENT_ID, API_URL, DEVELOPER_KEY } from '../../shared/constants'
 import theme from '../../styling/theme'
 import React from 'react'
+import styles from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import styles from '../../styling'
 import { CognitoAuth } from '@remote.it/components'
 
 export function SignInForm() {
   const css = useStyles()
-  const { signInError} = useSelector((state: ApplicationState) => state.auth)
+  const { signInError } = useSelector((state: ApplicationState) => state.auth)
   const { auth } = useDispatch<Dispatch>()
 
   return (
@@ -24,7 +24,6 @@ export function SignInForm() {
         errorMessage={signInError}
       />
     </React.Fragment>
-    
   )
 }
 
