@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import { List, ListItemIcon, ListItemText, Divider, Typography } from '@material-ui/core'
 import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
 import { InitiatorPlatform } from '../InitiatorPlatform'
@@ -45,7 +45,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
           const isConnected = usersConnected.includes(user)
           const permission = getDetailUserPermission(device, user.email)
           return (
-            <>
+            <Fragment key={index}>
               <ListItemLocation pathname={`${location.pathname}/${user.email}`} dense>
                 <ListItemIcon>
                   <InitiatorPlatform id={user.platform} connected={isConnected} />
@@ -68,7 +68,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
                 />
               </ListItemLocation>
               {usersConnected.length - 1 === index && <Divider />}
-            </>
+            </Fragment>
           )
         })}
       </List>
