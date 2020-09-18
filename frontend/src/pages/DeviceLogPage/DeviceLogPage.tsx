@@ -60,15 +60,15 @@ export const DeviceLogPage = () => {
     // find the firts date before of filter
     const lastItem = logsToShow && logsToShow[logsToShow?.length - 1]
 
-    const item =
-      moment(date).format(DATE_FORMAT) < moment(lastItem?.timestamp).format(DATE_FORMAT)
-        ? lastItem?.timestamp
-        : device?.events?.items.find(item => moment(item.timestamp).isSameOrBefore(date))?.timestamp || date
+    if (moment(date).format(DATE_FORMAT) < moment(lastItem?.timestamp).format(DATE_FORMAT)) {
+      setDateFilter('loadMore')
+      return
+    }
+    const item = device?.events?.items.find(item => moment(item.timestamp).isSameOrBefore(date))?.timestamp || date
 
     setDateFilter(moment(item).format(DATE_FORMAT).toString())
   }
 
-  console.log(device?.events.items?.length)
   const fetchMore = () => {
     dispatch.devices.fetchLogs({ id: deviceID, from: device?.events.items.length })
 
@@ -133,7 +133,7 @@ export const DeviceLogPage = () => {
             {getting ? `Loading ...` : 'Load More'}
           </Button>
         ) : (
-          <Typography variant="body2" align="center" color="textSecondary">
+          <Typography variant="body2" align="center" color="textSecondary" className="loadMore">
             End of Logs
           </Typography>
         )}
