@@ -3,7 +3,7 @@ import { createMuiTheme, ThemeOptions } from '@material-ui/core'
 
 const gutters = 32
 const titlePadding = `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`
-export const themeOptions: ThemeOptions = {
+const jssTheme: ThemeOptions = {
   palette: {
     primary: { main: colors.primary },
     secondary: { main: colors.secondary, contrastText: colors.white },
@@ -13,7 +13,12 @@ export const themeOptions: ThemeOptions = {
   overrides: {
     MuiDivider: { root: { backgroundColor: colors.grayLighter } },
     MuiFormHelperText: { root: { fontSize: 10 } },
-    MuiIconButton: { root: { padding: `${spacing.sm}px !important` } },
+    MuiIconButton: {
+      root: {
+        padding: spacing.sm,
+        '&.MuiButtonBase-root': { padding: spacing.sm },
+      },
+    },
     MuiButton: {
       root: {
         color: colors.grayDark,
@@ -197,4 +202,4 @@ export const themeOptions: ThemeOptions = {
   },
 }
 
-export default createMuiTheme(themeOptions)
+export default createMuiTheme(jssTheme)
