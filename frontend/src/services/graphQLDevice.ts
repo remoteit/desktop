@@ -65,13 +65,28 @@ const DEVICE_SELECT = `
         id
         email
       }
-      events {
-        hasMore
-        total
-        items {
-          id
-          state
-          timestamp
+    }
+    events {
+      hasMore
+      total
+      items {
+        id
+        state
+        timestamp
+        type
+        action
+        actor {
+            email
+        }
+        services {
+            id
+            name
+        }
+        users {
+            email
+        }
+        ... on DeviceShareEvent {
+            scripting
         }
       }
     }
@@ -88,6 +103,21 @@ const LOG_SELECT_FOR_DEVICE = `{
         id
         state
         timestamp
+        type
+          action
+          actor {
+              email
+          }
+          services {
+              id
+              name
+          }
+          users {
+              email
+          }
+          ... on DeviceShareEvent {
+              scripting
+          }
       }
     }
   }`
