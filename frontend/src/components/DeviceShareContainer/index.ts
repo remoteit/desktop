@@ -1,1 +1,2 @@
-export { DeviceShareContainer } from './DeviceShareContainer'
+export { DeviceShareAdd } from './DeviceShareAdd'
+export { DeviceShareDetails } from './DeviceShareDetails'
