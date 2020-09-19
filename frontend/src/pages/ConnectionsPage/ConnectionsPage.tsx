@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { Body } from '../../components/Body'
-import { makeStyles, Typography, Divider } from '@material-ui/core'
+import { useHistory } from 'react-router-dom'
+import { makeStyles, Typography, Divider, Link } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { SessionsList } from '../../components/SessionsList'
@@ -12,6 +12,7 @@ import styles from '../../styling'
 
 export const ConnectionsPage: React.FC = () => {
   const css = useStyles()
+  const history = useHistory()
   const { connections, services, sessions } = useSelector((state: ApplicationState) => {
     const connections = state.backend.connections.filter(c => !!c.startTime)
     return {
@@ -49,7 +50,7 @@ export const ConnectionsPage: React.FC = () => {
         </Typography>
         <Typography variant="body2" align="center" color="textSecondary">
           Once you've made a connection to a service from the
-          <Link to="/devices" /* onClick={() => history.push('/devices') }*/>Devices</Link>tab, <br />
+          <Link onClick={() => history.push('/devices')}> Devices </Link> tab, <br />
           active and recent connections will appear here.
         </Typography>
       </Body>
@@ -59,7 +60,7 @@ export const ConnectionsPage: React.FC = () => {
   return (
     <>
       <ConnectionsList connections={connections} services={services} />
-      {connections.length && sessions.length && <Divider />}
+      {!!connections.length && !!sessions.length && <Divider />}
       <SessionsList sessions={sessions} />
     </>
   )

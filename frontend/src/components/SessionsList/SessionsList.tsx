@@ -14,6 +14,8 @@ export interface Props {
 export const SessionsList: React.FC<Props> = ({ sessions }) => {
   const css = useStyles()
 
+  if (!sessions.length) return null
+
   return (
     <List>
       {!!sessions.length && (
