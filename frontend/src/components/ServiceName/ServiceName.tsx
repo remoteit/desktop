@@ -23,15 +23,20 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const accessDisabled = !!device?.attributes.accessDisabled
   const offline = instance?.state !== 'active' && !connection?.active
   const targetPlatformId = device?.targetPlatform
+  const failover = service && connection?.isP2P === false
 
-  let name = service ? attributeName(service) : attributeName(device)
-  let failover = service && connection?.isP2P === false
+  let name = ''
 
-  if (menu && menu[0] === '/connections') name = connection?.name || name
+  if (device) name += attributeName(device)
+  if (service) {
+    if (device) name += ' - '
+    name += attributeName(service)
+  }
+  if (connection && menu && menu[0] === '/connections') name = connection.name
 
   return (
     <Title offline={offline}>
-      {!instance && !connection ? 'No device found' : name}
+      {name || 'No device found'}
       {!!targetPlatformId && (
         <sup>
           <TargetPlatform id={targetPlatformId} tooltip />

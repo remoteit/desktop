@@ -242,6 +242,26 @@ declare global {
     description: string
   }
 
+  type ISession = { device: IDevice; service: IService; user: IUser }
+
+  interface IEvent {
+    shared: any
+    scripting: boolean
+    id: string
+    state?: ConnectionState
+    timestamp: Date
+    type: string
+    actor?: IUser
+    services?: IService[]
+    users?: IUser[]
+  }
+
+  interface IEventList {
+    total: number
+    items: IEvent[]
+    hasMore: boolean
+  }
+
   type gqlOptions = {
     size: number
     from: number
