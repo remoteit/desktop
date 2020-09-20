@@ -15,7 +15,6 @@ type IDeviceState = DeviceParams & {
   results: number
   searched: boolean
   fetching: boolean
-  getting: boolean
   destroying: boolean
   query: string
   append: boolean
@@ -32,7 +31,6 @@ const state: IDeviceState = {
   results: 0,
   searched: false,
   fetching: true,
-  getting: false,
   destroying: false,
   query: '',
   append: false,
@@ -91,7 +89,7 @@ export default createModel({
 
       if (!hasCredentials()) return
 
-      set({ getting: true })
+      set({ fetching: true })
 
       try {
         const gqlResponse = await graphQLFetchDevice(id)
@@ -101,7 +99,7 @@ export default createModel({
         await graphQLHandleError(error)
       }
 
-      set({ getting: false })
+      set({ fetching: false })
       setDevice({ id, device: result })
     },
 

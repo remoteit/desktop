@@ -125,7 +125,7 @@ export const Router: React.FC = () => {
       <Route path="/devices">
         <DevicesPage />
       </Route>
-      <Route path="/">{isElectron() ? <Redirect to="/devices" /> : <Redirect to="/settings/setup" />}</Route>
+      <Route path="/">{isElectron() ? <Redirect to="/devices" /> : <Redirect to="/devices/setup" />}</Route>
     </Switch>
   )
 }
