@@ -10,6 +10,7 @@ import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { UsersSelect } from '../../components/UsersSelect/UsersSelect'
+import { EditButton } from '../../buttons/EditButton'
 import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
 import { AddUserButton } from '../../buttons/AddUserButton'
@@ -48,6 +49,7 @@ export const ServicesPage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon service={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
             <ServiceName device={device} connection={activeConnection} inline />
+            <EditButton device={device} />
             <AddUserButton device={device} />
             <RefreshButton device={device} />
           </Typography>

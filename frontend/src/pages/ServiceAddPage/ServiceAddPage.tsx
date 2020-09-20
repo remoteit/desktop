@@ -56,6 +56,13 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
           onSubmit={form => {
             ui.set({ setupAdded: undefined })
             backend.addTargetService(form)
+
+            // @FIXME be able to set attribute at time of registration
+
+            // set route attributes
+            // service.attributes.route = form.route
+            // devices.setServiceAttributes(service)
+
             history.push(`/devices/${deviceID}/edit`)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}

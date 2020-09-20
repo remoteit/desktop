@@ -31,6 +31,8 @@ export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
                   ? 'None'
                   : connection?.isP2P === true
                   ? 'Peer to peer'
+                  : service?.attributes.route === 'proxy'
+                  ? 'Proxy'
                   : 'Proxy failover',
             },
           ]}
