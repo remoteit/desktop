@@ -123,6 +123,9 @@ export const ServiceForm: React.FC<Props> = ({
                 to host this service. Leave blank for this system to host.
               </Typography>
             </ListItem>
+          </List>
+          <Divider />
+          <List>
             <ListItem className={css.fieldWide}>
               <TextField
                 select

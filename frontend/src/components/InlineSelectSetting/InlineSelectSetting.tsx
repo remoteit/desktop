@@ -29,7 +29,7 @@ export const InlineSelectSetting: React.FC<Props> = ({
     <InlineSetting
       {...props}
       label={label}
-      value={values.find(v => v.id === value)?.name}
+      value={values.find(v => v.key === value)?.name}
       fieldRef={fieldRef}
       resetValue={resetValue}
       onResetClick={() => setEditValue(resetValue)}
@@ -37,7 +37,7 @@ export const InlineSelectSetting: React.FC<Props> = ({
       onCancel={() => setEditValue(value)}
       onShowEdit={() => setEditValue(value)}
     >
-      <FormControl>
+      <FormControl className="select">
         <InputLabel>{label}</InputLabel>
         <Select
           native
@@ -54,7 +54,7 @@ export const InlineSelectSetting: React.FC<Props> = ({
           }}
         >
           {values.map(type => (
-            <option value={type.id} key={type.id}>
+            <option value={type.key} key={type.key}>
               {type.name}
             </option>
           ))}
