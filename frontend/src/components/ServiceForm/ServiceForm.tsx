@@ -124,30 +124,30 @@ export const ServiceForm: React.FC<Props> = ({
               </Typography>
             </ListItem>
           </List>
-          <Divider />
-          <List>
-            <ListItem className={css.fieldWide}>
-              <TextField
-                select
-                label="Routing"
-                value={form.route}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => {
-                  setForm({ ...form, route: event.target.value as IRouteType })
-                }}
-              >
-                {ROUTES.map(route => (
-                  <MenuItem value={route.key} key={route.key}>
-                    {route.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <Typography variant="caption">{ROUTES.find(route => route.key === form.route)?.description}</Typography>
-            </ListItem>
-          </List>
         </>
       )}
+      <Divider />
+      <List>
+        <ListItem className={css.fieldWide}>
+          <TextField
+            select
+            label="Routing"
+            value={form.route}
+            disabled={disabled}
+            variant="filled"
+            onChange={event => {
+              setForm({ ...form, route: event.target.value as IRouteType })
+            }}
+          >
+            {ROUTES.map(route => (
+              <MenuItem value={route.key} key={route.key}>
+                {route.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Typography variant="caption">{ROUTES.find(route => route.key === form.route)?.description}</Typography>
+        </ListItem>
+      </List>
       <Columns inset count={1}>
         <span>
           <Button type="submit" variant="contained" color="primary" disabled={setupBusy || !!error}>
