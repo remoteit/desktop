@@ -61,6 +61,9 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
     if (target) return `${replaceHost(target.hostname)}:${target.port}`
   }
 
+  // reverse sort services by creation date
+  device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
   return (
     <Container
       header={

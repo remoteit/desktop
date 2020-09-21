@@ -1,7 +1,9 @@
 import { createModel } from '@rematch/core'
+import { findService } from '../models/devices'
+import { ApplicationState } from '../store'
 import { DEFAULT_TARGET } from '../shared/constants'
-import analyticsHelper from '../helpers/analyticsHelper'
 import { emit } from '../services/Controller'
+import analyticsHelper from '../helpers/analyticsHelper'
 
 type IBackendState = ILookup & {
   connections: IConnection[]
@@ -29,6 +31,7 @@ type IBackendState = ILookup & {
     hostname: string
   }
   preferences: IPreferences
+  deferredAttributes?: IService['attributes']
 }
 
 const state: IBackendState = {
@@ -57,6 +60,7 @@ const state: IBackendState = {
     hostname: '',
   },
   preferences: {},
+  deferredAttributes: undefined,
 }
 
 export default createModel({
@@ -84,13 +88,25 @@ export default createModel({
 
       backend.set({ device: targetDevice })
     },
-    async targetUpdated(targets: ITarget[], globalState: any) {
+    async targetUpdated(_, globalState: ApplicationState) {
       if (globalState.ui.setupBusy) {
         await dispatch.devices.fetch()
+        await dispatch.backend.updateDeferredAttributes()
         dispatch.ui.reset()
       }
     },
-
+    async updateDeferredAttributes(_, globalState: ApplicationState) {
+      const { deferredAttributes, targets } = globalState.backend
+      if (deferredAttributes) {
+        const last = targets[targets.length - 1]
+        let [service] = findService(globalState.devices.all, last.uid)
+        if (service) {
+          service.attributes = { ...service.attributes, ...deferredAttributes }
+          dispatch.devices.setServiceAttributes(service)
+          dispatch.devices.set({ deferredAttributes: undefined })
+        }
+      }
+    },
     async registerDevice({ targets, name }: { targets: ITarget[]; name: string }, globalState: any) {
       const targetDevice = globalState.backend.device
       emit('registration', { device: { ...targetDevice, name }, targets })

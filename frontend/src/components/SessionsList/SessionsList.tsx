@@ -1,6 +1,7 @@
 import React from 'react'
 import { Icon } from '../Icon'
 import { Title } from '../Title'
+import { useHistory } from 'react-router-dom'
 import { Duration } from '../Duration'
 import { ServiceName } from '../ServiceName'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -13,6 +14,7 @@ export interface Props {
 
 export const SessionsList: React.FC<Props> = ({ sessions }) => {
   const css = useStyles()
+  const history = useHistory()
 
   if (!sessions.length) return null
 
@@ -25,7 +27,12 @@ export const SessionsList: React.FC<Props> = ({ sessions }) => {
         </Typography>
       )}
       {sessions.map(s => (
-        <ListItem key={s.service.id + s.user.email} dense>
+        <ListItem
+          key={s.service.id + s.user.email}
+          onClick={() => history.push(`/connections/${s.service.id}/users/${s.user.email}`)}
+          button
+          dense
+        >
           <ListItemIcon>
             <InitiatorPlatform id={s.user.platform} connected={true} />
           </ListItemIcon>
