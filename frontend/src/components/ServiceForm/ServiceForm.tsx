@@ -58,21 +58,8 @@ export const ServiceForm: React.FC<Props> = ({
             }}
           />
         </ListItem>
-      </List>
-      {thisDevice && (
-        <>
-          <Divider />
-          <List>
-            <ListItemSetting
-              label={form.disabled ? 'Service disabled' : 'Service enabled'}
-              subLabel="Disabling your service will take it offline."
-              icon="circle-check"
-              toggle={!form.disabled}
-              disabled={setupBusy}
-              onClick={() => {
-                setForm({ ...form, disabled: !form.disabled })
-              }}
-            />
+        {thisDevice && (
+          <>
             <ListItem className={css.field}>
               <TextField
                 select
@@ -123,11 +110,23 @@ export const ServiceForm: React.FC<Props> = ({
                 to host this service. Leave blank for this system to host.
               </Typography>
             </ListItem>
-          </List>
-        </>
-      )}
+          </>
+        )}
+      </List>
       <Divider />
       <List>
+        {thisDevice && (
+          <ListItemSetting
+            label={form.disabled ? 'Service disabled' : 'Service enabled'}
+            subLabel="Disabling your service will take it offline."
+            icon="circle-check"
+            toggle={!form.disabled}
+            disabled={setupBusy}
+            onClick={() => {
+              setForm({ ...form, disabled: !form.disabled })
+            }}
+          />
+        )}
         <ListItem className={css.fieldWide}>
           <TextField
             select
