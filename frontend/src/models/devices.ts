@@ -129,7 +129,7 @@ export default createModel({
         return { devices: [], total: 0, error }
       }
     },
-    async fetchLogs({id, from}: any, globalState: any) {
+    async fetchLogs({ id, from, maxDate }: any, globalState: any) {
       const { graphQLMetadata, graphQLError, setDevice, set } = dispatch.devices
       const { all } = globalState.devices
 
@@ -138,11 +138,15 @@ export default createModel({
       set({ getting: true })
 
       try {
-        const gqlResponse = await graphQLGetMoreLogs(id, from)
+        const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
         const [gqlData] = await graphQLMetadata(gqlResponse)
-        const {events} = gqlData.devices.items[0]
-        const devices: IDevice[] = all.filter((d: IDevice) => d.id === id)
-          .map((_d: IDevice) => ({..._d, events: {...events, items: _d.events.items.concat(events.items)}}))
+        const { events } = gqlData.devices.items[0]
+        const devices: IDevice[] = all
+          .filter((d: IDevice) => d.id === id)
+          .map((_d: IDevice) => {
+            const items = from === 0 ? events.items : _d.events.items.concat(events.items)
+            return { ..._d, events: { ...events, items } }
+          })
         setDevice({ id, device: devices[0] })
       } catch (error) {
         await graphQLError(error)

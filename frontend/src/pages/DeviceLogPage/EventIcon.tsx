@@ -49,5 +49,5 @@ export function EventIcon(item: IEvent): JSX.Element {
       break;
   }
 
-  return <Icon name={icon} fixedWidth title={title} color={color} />
+  return <Icon name={icon} size="md" title={title} color={color} />
 }

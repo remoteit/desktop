@@ -96,7 +96,7 @@ const DEVICE_SELECT = `
 const LOG_SELECT_FOR_DEVICE = `{
   items {
     id
-    events(from: $from) {
+    events(from: $from, maxDate: $maxDate) {
       hasMore
       total
       items {
@@ -190,10 +190,10 @@ export async function graphQLFetchDevice(id: string) {
   )
 }
 
-export async function graphQLGetMoreLogs(id: string, from: number) {
+export async function graphQLGetMoreLogs(id: string, from: number, maxDate: string) {
   return await graphQLRequest(
     `
-        query($ids: [String!], $from: Int) {
+        query($ids: [String!], $from: Int, $maxDate: DateTime ) {
           login {
             id
             devices(id: $ids) ${LOG_SELECT_FOR_DEVICE}
@@ -201,6 +201,7 @@ export async function graphQLGetMoreLogs(id: string, from: number) {
         }
       `,
     {
+      maxDate,
       from,
       ids: [id],
     }

@@ -25,7 +25,9 @@ export function EventMessage({
 
   switch (item.type) {
     case EventType.device_state:
-      message = `${(item.services && serviceName !== device?.name) ? serviceName : ''} ${item.state === EventState.active ? 'come online' : 'went offline'}`
+      message = `${item.services && serviceName !== device?.name ? serviceName : ''} ${
+        item.state === EventState.active ? 'come online' : 'went offline'
+      }`
       break
 
     case EventType.device_connect:
@@ -70,5 +72,5 @@ export function EventMessage({
       break
   }
 
-  return <div className="event-message">{message}</div>
+  return <div>{message}</div>
 }

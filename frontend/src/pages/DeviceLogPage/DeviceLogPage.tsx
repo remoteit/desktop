@@ -2,18 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 import { Dispatch, ApplicationState } from '../../store'
-import {
-  Typography,
-  Divider,
-  makeStyles,
-  List,
-  ListItem,
-  Box,
-  Button,
-  Link,
-  ListItemIcon,
-  ListItemText,
-} from '@material-ui/core'
+import { Typography, Divider, makeStyles, List, ListItem, Box, Button, Link, ListItemIcon } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
@@ -30,26 +19,28 @@ const DATE_NOW = moment().add(1, 'd').format(DATE_FORMAT)
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams()
-  const { device, getting, user } = useSelector((state: ApplicationState) => ({
-    device: state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden),
-    getting: state.devices.getting,
-    user: state.auth.user,
-  }))
+  const { device, getting, user, items: logsToShow } = useSelector((state: ApplicationState) => {
+    const device = state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
+    return {
+      device,
+      getting: state.devices.getting,
+      user: state.auth.user,
+      items: device?.events.items,
+    }
+  })
 
   const dispatch = useDispatch<Dispatch>()
-  const [logsToShow, setlogsToShow] = useState(device?.events.items)
   const [dateFilter, setDateFilter] = useState('')
   const [planUpgrade, setPlanUpgrade] = useState(false)
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
+  const { fetchLogs } = dispatch.devices
   const freePlan = 90
 
   const limitDays = () => {
     const createAt = moment(new Date()).diff(moment(device?.createdAt), 'days')
-    if (createAt < freePlan) {
-      return createAt
-    }
-    return user?.plan.name === 'free' ? freePlan : 0
+    return user?.plan.name === 'free' && createAt > freePlan ? freePlan : createAt
   }
+
   const minDay = new Date(moment().subtract(limitDays(), 'd').format(DATE_FORMAT))
   const maxDay = new Date(DATE_NOW)
 
@@ -57,38 +48,23 @@ export const DeviceLogPage = () => {
 
   const handleChange = (date: any) => {
     setSelectedDate(date)
-    // find the firts date before of filter
-    const lastItem = logsToShow && logsToShow[logsToShow?.length - 1]
-
-    if (moment(date).format(DATE_FORMAT) < moment(lastItem?.timestamp).format(DATE_FORMAT)) {
-      setDateFilter('loadMore')
-      return
-    }
-    const item = device?.events?.items.find(item => moment(item.timestamp).isSameOrBefore(date))?.timestamp || date
-
-    setDateFilter(moment(item).format(DATE_FORMAT).toString())
+    fetchLogs({ id: deviceID, from: 0, maxDate: moment(date).format(DATE_FORMAT) })
+    setDateFilter('top')
   }
 
   const fetchMore = () => {
-    dispatch.devices.fetchLogs({ id: deviceID, from: device?.events.items.length })
-
-    if (user?.plan.name === 'free' && device?.events.items) {
-      let lastAllowed = new Date(moment().subtract(freePlan, 'd').format())
-      setlogsToShow(device?.events.items.filter(item => moment(item.timestamp).isSameOrAfter(lastAllowed)))
-      logsToShow && logsToShow?.length < freePlan && setPlanUpgrade(true)
-    } else {
-      setlogsToShow(device?.events.items)
-    }
+    fetchLogs({ id: deviceID, from: device?.events.items.length, maxDate: selectedDate })
   }
 
   useEffect(() => {
-    const elements = document.getElementsByClassName(dateFilter)
-    if (elements.length) {
-      elements[0].scrollIntoView()
-      // if not has result -> check if we could get more items
+    if (dateFilter) {
+      const elements = document.getElementsByClassName(dateFilter)
+      if (elements.length) {
+        elements[0].scrollIntoView()
+      }
+      setDateFilter('')
     }
-    setlogsToShow(device?.events.items)
-  }, [device, selectedDate, dateFilter])
+  }, [dateFilter])
 
   if (!device) return null
 
@@ -115,6 +91,15 @@ export const DeviceLogPage = () => {
               inputVariant="standard"
               maxDate={maxDay}
               minDate={minDay}
+              keyboardIcon={
+                <Icon
+                  name={getting ? 'spinner-third' : 'calendar-day'}
+                  type="regular"
+                  size="md"
+                  spin={getting}
+                  fixedWidth
+                />
+              }
             />
           </MuiPickersUtilsProvider>
           <Divider />
@@ -122,6 +107,7 @@ export const DeviceLogPage = () => {
       }
     >
       <List>
+        <span className="top"></span>
         {logsToShow?.map(item => {
           return <EventCell item={item} device={device} user={user} key={item.id} />
         })}
@@ -129,11 +115,11 @@ export const DeviceLogPage = () => {
 
       <Box className={css.box}>
         {device.events.hasMore ? (
-          <Button color="primary" onClick={fetchMore} disabled={planUpgrade} className="loadMore">
+          <Button color="primary" onClick={fetchMore} disabled={planUpgrade}>
             {getting ? `Loading ...` : 'Load More'}
           </Button>
         ) : (
-          <Typography variant="body2" align="center" color="textSecondary" className="loadMore">
+          <Typography variant="body2" align="center" color="textSecondary">
             End of Logs
           </Typography>
         )}
@@ -169,16 +155,14 @@ export function EventCell({
 
   return (
     <>
-      <ListItem className={moment(item.timestamp).format(DATE_FORMAT).toString()}>
-        <span className={css.span}>{new Date(item.timestamp).toLocaleDateString('en-US', options)}</span>
-        <ListItemIcon>
-          <EventIcon {...item} />
-        </ListItemIcon>
-        <ListItemText>
-          <div className="df ai-center">
-            <EventMessage props={item} device={device} loggedinUser={user} />
-          </div>
-        </ListItemText>
+      <ListItem className={`${css.item} ${moment(item.timestamp).format(DATE_FORMAT).toString()}`}>
+        <span>
+          {new Date(item.timestamp).toLocaleDateString('en-US', options)}
+          <ListItemIcon>
+            <EventIcon {...item} />
+          </ListItemIcon>
+        </span>
+        <EventMessage props={item} device={device} loggedinUser={user} />
       </ListItem>
     </>
   )
@@ -191,10 +175,6 @@ const useStyles = makeStyles({
     marginBottom: spacing.sm,
     marginTop: spacing.xxs,
     width: 200,
-  },
-  span: {
-    marginRight: spacing.xl,
-    marginLeft: spacing.xl,
   },
   icon: {
     marginLeft: spacing.md,
@@ -219,6 +199,7 @@ const useStyles = makeStyles({
       color: colors.grayDark,
       minWidth: 142,
       textTransform: 'capitalize',
+      marginLeft: spacing.sm,
     },
     '& .fal': {
       color: colors.grayDarker,
