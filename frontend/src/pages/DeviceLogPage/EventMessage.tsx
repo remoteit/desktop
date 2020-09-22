@@ -1,4 +1,5 @@
 import React from 'react'
+import { makeStyles } from '@material-ui/core'
 
 export const EventType = {
   device_state: 'DEVICE_STATE',
@@ -22,6 +23,7 @@ export function EventMessage({
   const item = props
   const serviceName = (item.services?.map(service => service.name) || [])[0]
   let message = ''
+  const css = useStyles()
 
   switch (item.type) {
     case EventType.device_state:
@@ -72,5 +74,12 @@ export function EventMessage({
       break
   }
 
-  return <div>{message}</div>
+  return <div className={css.log}>{message}</div>
 }
+
+const useStyles = makeStyles({
+  log: {
+    minWidth: 150,
+    marginLeft: 10,
+  },
+})

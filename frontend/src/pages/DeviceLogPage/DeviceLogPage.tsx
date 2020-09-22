@@ -40,7 +40,6 @@ export const DeviceLogPage = () => {
     const createAt = moment(new Date()).diff(moment(device?.createdAt), 'days')
     return user?.plan.name === 'free' && createAt > freePlan ? freePlan : createAt
   }
-
   const minDay = new Date(moment().subtract(limitDays(), 'd').format(DATE_FORMAT))
   const maxDay = new Date(DATE_NOW)
 
@@ -156,12 +155,10 @@ export function EventCell({
   return (
     <>
       <ListItem className={`${css.item} ${moment(item.timestamp).format(DATE_FORMAT).toString()}`}>
-        <span>
-          {new Date(item.timestamp).toLocaleDateString('en-US', options)}
-          <ListItemIcon>
-            <EventIcon {...item} />
-          </ListItemIcon>
-        </span>
+        <span>{new Date(item.timestamp).toLocaleDateString('en-US', options)}</span>
+        <ListItemIcon className={css.icon}>
+          <EventIcon {...item} />
+        </ListItemIcon>
         <EventMessage props={item} device={device} loggedinUser={user} />
       </ListItem>
     </>
@@ -177,7 +174,7 @@ const useStyles = makeStyles({
     width: 200,
   },
   icon: {
-    marginLeft: spacing.md,
+    minWidth: 35,
   },
   box: {
     display: 'flex',
@@ -197,9 +194,9 @@ const useStyles = makeStyles({
     '& > span': {
       fontFamily: 'Roboto',
       color: colors.grayDark,
-      minWidth: 142,
+      minWidth: 130,
       textTransform: 'capitalize',
-      marginLeft: spacing.sm,
+      marginLeft: spacing.md,
     },
     '& .fal': {
       color: colors.grayDarker,

@@ -4,11 +4,10 @@ import { Color } from '../../styling'
 import { EventState, EventType } from './EventMessage'
 
 export function EventIcon(item: IEvent): JSX.Element {
-  let color: Color= 'grayLighter'
+  let color: Color = 'grayLighter'
   let icon = ''
   let title = ''
   switch (item.type) {
-    
     case EventType.device_state:
       if (item.state === EventState.active) {
         icon = 'check-circle'
@@ -19,7 +18,7 @@ export function EventIcon(item: IEvent): JSX.Element {
         color = 'gray'
         title = 'Device Offline'
       }
-      break;
+      break
 
     case EventType.device_connect:
       if (item.state === EventState.connected) {
@@ -31,7 +30,7 @@ export function EventIcon(item: IEvent): JSX.Element {
         color = 'gray'
         title = 'Device Disconnected'
       }
-      break;
+      break
 
     case EventType.device_share:
       if (item.shared) {
@@ -43,10 +42,10 @@ export function EventIcon(item: IEvent): JSX.Element {
         color = 'danger'
         title = 'Device Share Removed'
       }
-      break;
+      break
 
     default:
-      break;
+      break
   }
 
   return <Icon name={icon} size="md" title={title} color={color} />
