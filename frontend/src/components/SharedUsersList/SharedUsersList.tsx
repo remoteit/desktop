@@ -1,13 +1,7 @@
-import React, { Fragment } from 'react'
-import { List, ListItemIcon, ListItemText, Divider, Typography } from '@material-ui/core'
+import React from 'react'
+import { List, Divider, Typography } from '@material-ui/core'
 import { getUsersConnectedDeviceOrService, getDetailUserPermission } from '../../models/devices'
-import { InitiatorPlatform } from '../InitiatorPlatform'
-import { ListItemLocation } from '../ListItemLocation/ListItemLocation'
-import { ShareDetails } from '../ShareDetails'
-import { useLocation } from 'react-router-dom'
-import { Duration } from '../Duration'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { UserListItem } from '../UserListItem'
 
 interface Props {
   device?: IDevice
@@ -15,23 +9,27 @@ interface Props {
 }
 
 export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
-  const { connections, registeredId } = useSelector((state: ApplicationState) => ({
-    registeredId: state.backend.device.uid,
-    connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
-      if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
-      else lookup[c.deviceID] = [c]
-      return lookup
-    }, {}),
-  }))
-  const activeConnections = connections[registeredId] && connections[registeredId].find(c => c.active)
+  const sortUsers = (users: any) => users.sort((a: any, b: any) => (a.email > b.email ? 1 : b.email > a.email ? -1 : 0))
+
   const usersConnected = getUsersConnectedDeviceOrService(device, service)
   const users = service ? service.access : device?.access || []
-  const usersToRender = usersConnected
-    .concat(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
-    .sort((a, b) => (a.email > b.email ? 1 : b.email > a.email ? -1 : 0))
-  const location = useLocation()
+  const userToRenderConnected = sortUsers(usersConnected)
+  const userToRenderNotConnected = sortUsers(users.filter(user => !usersConnected.find(_u => _u.email === user.email)))
 
   if (!device?.access?.length) return null
+
+  const renderRowUser = (user: IUser, index: string, isConnected: boolean) => {
+    const permission = service ? null : getDetailUserPermission(device, user.email)
+    return (
+      <UserListItem
+        permission={permission}
+        user={user}
+        index={index}
+        isConnected={isConnected}
+        showDetails={!service}
+      />
+    )
+  }
 
   return (
     <>
@@ -41,36 +39,9 @@ export const SharedUsersList: React.FC<Props> = ({ device, service }) => {
         </Typography>
       )}
       <List>
-        {usersToRender.sort().map((user, index) => {
-          const isConnected = usersConnected.includes(user)
-          const permission = getDetailUserPermission(device, user.email)
-          return (
-            <Fragment key={index}>
-              <ListItemLocation pathname={`${location.pathname}/${user.email}`} dense>
-                <ListItemIcon>
-                  <InitiatorPlatform id={user.platform} connected={isConnected} />
-                </ListItemIcon>
-                {isConnected ? (
-                  <ListItemText
-                    primaryTypographyProps={{ color: 'primary' }}
-                    primary={user.email}
-                    secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
-                  />
-                ) : (
-                  <ListItemText primary={`${user.email}`} />
-                )}
-                <ShareDetails
-                  scripting={permission.scripting}
-                  shared={permission.numberServices}
-                  services={permission.services}
-                  service={service}
-                  connections={activeConnections}
-                />
-              </ListItemLocation>
-              {usersConnected.length - 1 === index && <Divider />}
-            </Fragment>
-          )
-        })}
+        {userToRenderConnected.sort().map((user: any, index: any) => renderRowUser(user, index, true))}
+        {!!usersConnected.length && <Divider />}
+        {userToRenderNotConnected.sort().map((user: any, index: any) => renderRowUser(user, index, false))}
       </List>
     </>
   )
