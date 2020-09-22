@@ -23,7 +23,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const accessDisabled = !!device?.attributes.accessDisabled
   const offline = instance?.state !== 'active' && !connection?.active
   const targetPlatformId = device?.targetPlatform
-  const failover = service && connection?.isP2P === false
+  const proxy = service && connection?.isP2P === false
 
   let name = ''
 
@@ -49,9 +49,9 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
           </Tooltip>
         </sup>
       )}
-      {failover && (
+      {proxy && (
         <sup>
-          <Tooltip title="Proxy failover connection" placement="top" arrow>
+          <Tooltip title="Proxy connection" placement="top" arrow>
             <Icon name="cloud" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>

@@ -26,6 +26,7 @@ import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
 import { UsersSelect } from '../../components/UsersSelect'
 import { ErrorButton } from '../../buttons/ErrorButton'
+import { EditButton } from '../../buttons/EditButton'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
@@ -55,6 +56,7 @@ export const ServicePage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
+            <EditButton device={device} service={service} />
             <AddUserButton device={device} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />

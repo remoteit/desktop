@@ -1,10 +1,11 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
-import { graphQLSetAttributes } from '../services/graphQLMutation'
-import { createModel } from '@rematch/core'
-import { r3, hasCredentials } from '../services/remote.it'
 import { cleanOrphanConnections } from '../helpers/connectionHelper'
+import { graphQLSetAttributes } from '../services/graphQLMutation'
+import { r3, hasCredentials } from '../services/remote.it'
+import { createModel } from '@rematch/core'
 import { IContact } from 'remote.it'
+import { emit } from '../services/Controller'
 
 type DeviceParams = { [key: string]: any }
 
@@ -151,10 +152,7 @@ export default createModel({
 
     async rename({ id, name }: { id: string; name: string }) {
       try {
-        await r3.post(`/device/name/`, {
-          deviceaddress: id,
-          devicealias: name,
-        })
+        await r3.post(`/device/name/`, { deviceaddress: id, devicealias: name })
         await dispatch.devices.fetch()
       } catch (error) {
         dispatch.backend.set({ globalError: error.message })
@@ -173,6 +171,7 @@ export default createModel({
       device.services[index].attributes = service.attributes
       graphQLSetAttributes(service.attributes, service.id)
       dispatch.devices.setDevice({ id: device.id, device })
+      emit('service/forget', service) // clear connection since state changed?
     },
 
     async destroy(device: IDevice, globalState: any) {

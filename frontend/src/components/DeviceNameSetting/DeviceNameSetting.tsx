@@ -3,8 +3,9 @@ import { MAX_NAME_LENGTH, REGEX_NAME_SAFE } from '../../shared/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { safeHostname } from '../../shared/nameHelper'
 import { attributeName } from '../../shared/nameHelper'
+import { safeHostname } from '../../shared/nameHelper'
+import { LabelButton } from '../../buttons/LabelButton'
 
 export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITargetDevice }> = ({
   device,
@@ -27,6 +28,7 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
     <InlineTextFieldSetting
       value={name}
       label="Device Name"
+      icon={<LabelButton device={device} />}
       disabled={device.shared}
       resetValue={defaultValue}
       maxLength={MAX_NAME_LENGTH}

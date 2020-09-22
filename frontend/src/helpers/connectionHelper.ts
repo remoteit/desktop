@@ -15,7 +15,8 @@ export function newConnection(service?: IService | null, data = {}) {
     deviceID: 'Unknown',
     autoStart: true,
     online: false,
-    failover: true,
+    failover: service?.attributes.route !== 'p2p',
+    proxyOnly: service?.attributes.route === 'proxy',
   }
 
   if (service) {
