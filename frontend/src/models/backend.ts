@@ -1,6 +1,5 @@
 import { createModel } from '@rematch/core'
 import { findService } from '../models/devices'
-import { ApplicationState } from '../store'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { emit } from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -88,14 +87,14 @@ export default createModel({
 
       backend.set({ device: targetDevice })
     },
-    async targetUpdated(_, globalState: ApplicationState) {
+    async targetUpdated(_, globalState: any) {
       if (globalState.ui.setupBusy) {
         await dispatch.devices.fetch()
         await dispatch.backend.updateDeferredAttributes()
         dispatch.ui.reset()
       }
     },
-    async updateDeferredAttributes(_, globalState: ApplicationState) {
+    async updateDeferredAttributes(_, globalState: any) {
       const { deferredAttributes, targets } = globalState.backend
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
