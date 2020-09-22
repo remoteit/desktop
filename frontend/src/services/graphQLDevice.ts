@@ -95,15 +95,14 @@ export async function graphQLFetchDevices({ size, from, state, name, ids = [] }:
 
 export async function graphQLFetchDevice(id: string) {
   return await graphQLRequest(
-    ` query($ids: [String!], $idSize: Int) {
+    ` query($id: [String!]) {
         login {
           id
-          devices(id: $ids, size: $idSize) ${DEVICE_SELECT}
+          devices(id: $id) ${DEVICE_SELECT}
         }
       }`,
     {
-      idSize: 1,
-      ids: [id],
+      id,
     }
   )
 }
