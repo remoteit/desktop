@@ -80,7 +80,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
     >
       <List>
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
-        <DeviceLabelSetting device={device} />
+        {/* <DeviceLabelSetting device={device} /> */}
         {/* <SharedAccessSetting device={device} /> */}
       </List>
       <Divider />
