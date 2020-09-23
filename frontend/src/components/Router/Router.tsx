@@ -19,10 +19,12 @@ import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
 import { UsersPageService } from '../../pages/UsersPageService'
 import { UsersPageDevice } from '../../pages/UsersPageDevice'
-import { LogPage } from '../../pages/LogPage'
+import { AccountAccessPage } from '../../pages/AccountAccessPage'
+import { AccountMembershipPage } from '../../pages/AccountMembershipPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage'
 import { ServiceEditPage } from '../../pages/ServiceEditPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
+import { LogPage } from '../../pages/LogPage'
 
 export const Router: React.FC = () => {
   const { targetDevice, targets, registered, os } = useSelector((state: ApplicationState) => ({
@@ -44,6 +46,12 @@ export const Router: React.FC = () => {
       />
       <Route path={['/settings/setupServices/network', '/devices/:deviceID/edit/add-service/network']}>
         <NetworkPage />
+      </Route>
+      <Route path="/settings/access">
+        <AccountAccessPage />
+      </Route>
+      <Route path="/settings/membership">
+        <AccountMembershipPage />
       </Route>
       <Route path="/settings/setupServices">
         <SetupServices os={os} targetDevice={targetDevice} targets={targets} />

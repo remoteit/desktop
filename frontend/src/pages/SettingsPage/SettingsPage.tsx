@@ -135,10 +135,11 @@ export const SettingsPage = () => {
       <Typography variant="subtitle1">Account Linking</Typography>
       <List>
         <ListItemLocation
-          icon="user-friends"
+          dense
+          icon="users"
           title="User Access"
           subtitle="Link users to your account to grant them access to the devices you own."
-          pathname="/access"
+          pathname="/settings/access"
         >
           <ListItemSecondaryAction>
             <Tooltip title="Users">
@@ -147,10 +148,11 @@ export const SettingsPage = () => {
           </ListItemSecondaryAction>
         </ListItemLocation>
         <ListItemLocation
+          dense
           icon="user-circle"
           title="Account Memberships"
           subtitle="Accounts that have granted you access to the devices they own."
-          pathname="/members"
+          pathname="/settings/membership"
         >
           <ListItemSecondaryAction>
             <Tooltip title="Accounts">
