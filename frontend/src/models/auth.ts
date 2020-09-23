@@ -8,6 +8,7 @@ import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { AuthUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
+import { getRedirectUrl } from '../services/Browser'
 
 const USER_KEY = 'user'
 
@@ -38,7 +39,7 @@ export default createModel({
       let { user } = rootState.auth
 
       if (!user) {
-        const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY});
+        const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL:getRedirectUrl()});
         dispatch.auth.setAuthService(authService)
         try {
           const authUser = await authService.checkSignIn()

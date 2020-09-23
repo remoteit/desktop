@@ -19,6 +19,7 @@ export default class ElectronApp {
   private quitSelected: boolean
   private openAtLogin?: boolean
   private deepLinkUrl?: string
+  private authCallback?: boolean
   private protocol: string
 
   constructor() {
@@ -78,9 +79,13 @@ export default class ElectronApp {
 
   private setDeepLink(link?: string) {
     const scheme = this.protocol + '://'
+    const authCallbackCode = 'authCallback'
     if (link?.includes(scheme)) {
       this.deepLinkUrl = link.substr(scheme.length)
       Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
+    }
+    if(link?.includes(authCallbackCode)) {
+      this.authCallback = true
     }
   }
 
@@ -114,18 +119,7 @@ export default class ElectronApp {
 
     this.window.setVisibleOnAllWorkspaces(true)
 
-    const startUrl =
-      process.env.NODE_ENV === 'development'
-        ? url.format({
-            protocol: 'http',
-            hostname: 'localhost',
-            port: '3000',
-          })
-        : url.format({
-            pathname: path.join(WEB_DIR, 'index.html'),
-            protocol: 'file',
-            slashes: true,
-          })
+    const startUrl = this.getStartUrl()
 
     this.window.loadURL(startUrl)
 
@@ -141,6 +135,20 @@ export default class ElectronApp {
       event.preventDefault()
       electron.shell.openExternal(url)
     })
+  }
+
+  private getStartUrl() : string {
+    return process.env.NODE_ENV === 'development'
+    ? url.format({
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+      })
+    : url.format({
+        pathname: path.join(WEB_DIR, 'index.html'),
+        protocol: 'file',
+        slashes: true,
+      })
   }
 
   private createSystemTray() {
@@ -174,7 +182,12 @@ export default class ElectronApp {
       this.deepLinkUrl = undefined
     }
 
-    if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
+    if (location && this.authCallback) {
+      this.authCallback = false
+      const fullUrl = this.getStartUrl() + '/' + location
+
+      this.window.loadURL(fullUrl)
+    } else if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
   }
 

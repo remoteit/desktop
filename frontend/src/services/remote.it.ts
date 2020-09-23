@@ -1,8 +1,9 @@
 import setup from 'remote.it'
 import { API_URL, CLIENT_ID, DEVELOPER_KEY } from '../shared/constants'
 import { AuthService } from '@remote.it/services'
+import { getRedirectUrl } from '../services/Browser'
 
-const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY});
+const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL: getRedirectUrl()});
 
 export const r3 = setup(
   {

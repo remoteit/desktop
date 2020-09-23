@@ -10,6 +10,8 @@ export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.rem
 export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API || 'https://api.remote.it/beta/graphql'
 export const DEVELOPER_KEY =
   process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
+export const REDIRECT_URL =
+  process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || 'remoteitdev://authCallback'
 
 export const PORT = process.env.REACT_APP_PORT || 29999
 export const HEARTBEAT_INTERVAL = 1000 * 15

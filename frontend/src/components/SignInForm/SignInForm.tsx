@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { CognitoAuth } from '@remote.it/components'
+import { getRedirectUrl } from '../../services/Browser'
 
 export function SignInForm() {
   const css = useStyles()
@@ -20,6 +21,7 @@ export function SignInForm() {
         showLogo={false}
         clientId={CLIENT_ID}
         apiURL={API_URL}
+        redirectURL={getRedirectUrl()}
         developerKey={DEVELOPER_KEY}
         errorMessage={signInError}
       />
