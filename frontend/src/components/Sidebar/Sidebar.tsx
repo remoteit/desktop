@@ -38,6 +38,7 @@ export const Sidebar: React.FC = () => {
   })
 
   const css = useStyles()
+  if (isElectron() || (isLocalhost && port === PORT.toString())) return null
 
   let graphic = onLanGraphic
   let diagram: NetworkType[] = [
@@ -46,8 +47,6 @@ export const Sidebar: React.FC = () => {
     { primary: 'This system', secondary: name },
     { primary: 'Remote devices' },
   ]
-
-  if (isElectron() || (isLocalhost && port === PORT.toString())) return null
 
   if (isLocalhost) {
     graphic = onRemoteGraphic
