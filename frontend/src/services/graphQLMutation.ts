@@ -1,12 +1,13 @@
 import { graphQLRequest } from './graphQL'
 
 const SET_ATTRIBUTES = `
-mutation query($name: String, $color: Int, $label: String, $serviceId: String) {
+mutation query($name: String, $color: Int, $label: String, $route: String, $serviceId: String) {
   setAttributes(
     attributes: {
       name: $name
       color: $color
       label: $label
+      route: $route
     }
     serviceId: $serviceId
   )

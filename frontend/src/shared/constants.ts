@@ -56,3 +56,25 @@ export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   type: 1,
   uid: '',
 }
+
+export const ROUTES: IRoute[] = [
+  {
+    key: 'failover',
+    icon: 'cloud',
+    name: 'Peer to peer with proxy failover',
+    description:
+      'Default is to prioritize peer to peer connections over proxy connections, but use proxy if peer to peer fails. Also allows overriding at time of connection.',
+  },
+  {
+    key: 'p2p',
+    icon: 'arrows-h',
+    name: 'Peer to peer only',
+    description: 'Only connect using peer to peer. Does not allow overriding.',
+  },
+  {
+    key: 'proxy',
+    icon: 'cloud',
+    name: 'Proxy only',
+    description: 'Only allow proxy connections. Does not allow overriding.',
+  },
+]

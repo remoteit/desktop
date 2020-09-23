@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { ROUTES } from '../../shared/constants'
 import { ListItemSetting } from '../ListItemSetting'
 import { useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
@@ -11,14 +12,16 @@ import { spacing } from '../../styling'
 
 type Props = {
   name?: string
+  route?: IRouteType
   target?: ITarget
   thisDevice: boolean
-  onSubmit: (form: ITarget) => void
+  onSubmit: (form: ITarget & IService['attributes']) => void
   onCancel: () => void
 }
 
 export const ServiceForm: React.FC<Props> = ({
   name = '',
+  route = ROUTES[0].key,
   target = DEFAULT_TARGET,
   thisDevice,
   onSubmit,
@@ -31,7 +34,7 @@ export const ServiceForm: React.FC<Props> = ({
   }))
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget>({ ...target, name })
+  const [form, setForm] = useState<ITarget & IService['attributes']>({ ...target, name, route })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
 
@@ -55,21 +58,8 @@ export const ServiceForm: React.FC<Props> = ({
             }}
           />
         </ListItem>
-      </List>
-      {thisDevice && (
-        <>
-          <Divider />
-          <List>
-            <ListItemSetting
-              label="Enable service"
-              subLabel="Disabling your service will take it offline."
-              icon="circle-check"
-              toggle={!form.disabled}
-              disabled={setupBusy}
-              onClick={() => {
-                setForm({ ...form, disabled: !form.disabled })
-              }}
-            />
+        {thisDevice && (
+          <>
             <ListItem className={css.field}>
               <TextField
                 select
@@ -120,9 +110,43 @@ export const ServiceForm: React.FC<Props> = ({
                 to host this service. Leave blank for this system to host.
               </Typography>
             </ListItem>
-          </List>
-        </>
-      )}
+          </>
+        )}
+      </List>
+      <Divider />
+      <List>
+        {thisDevice && (
+          <ListItemSetting
+            label={form.disabled ? 'Service disabled' : 'Service enabled'}
+            subLabel="Disabling your service will take it offline."
+            icon="circle-check"
+            toggle={!form.disabled}
+            disabled={setupBusy}
+            onClick={() => {
+              setForm({ ...form, disabled: !form.disabled })
+            }}
+          />
+        )}
+        <ListItem className={css.fieldWide}>
+          <TextField
+            select
+            label="Routing"
+            value={form.route}
+            disabled={disabled}
+            variant="filled"
+            onChange={event => {
+              setForm({ ...form, route: event.target.value as IRouteType })
+            }}
+          >
+            {ROUTES.map(route => (
+              <MenuItem value={route.key} key={route.key}>
+                {route.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Typography variant="caption">{ROUTES.find(route => route.key === form.route)?.description}</Typography>
+        </ListItem>
+      </List>
       <Columns inset count={1}>
         <span>
           <Button type="submit" variant="contained" color="primary" disabled={setupBusy || !!error}>
@@ -138,10 +162,10 @@ export const ServiceForm: React.FC<Props> = ({
 const useStyles = makeStyles({
   field: {
     paddingLeft: 75,
-    '& .MuiInputBase-root': { minWidth: 200, marginRight: 100 + spacing.lg },
+    '& .MuiFormControl-root': { minWidth: 200, marginRight: 100 + spacing.lg },
   },
   fieldWide: {
     paddingLeft: 75,
-    '& .MuiInputBase-root': { minWidth: 300, marginRight: spacing.lg },
+    '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
 })

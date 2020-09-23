@@ -18,7 +18,7 @@ type Props = {
 
 export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
   const { setupServicesLimit, setupAdded } = useSelector((state: ApplicationState) => state.ui)
-  const { backend, ui, applicationTypes } = useDispatch<Dispatch>()
+  const { backend, ui, devices, applicationTypes } = useDispatch<Dispatch>()
   const { deviceID } = useParams()
   const location = useLocation()
   const history = useHistory()
@@ -56,6 +56,9 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
           onSubmit={form => {
             ui.set({ setupAdded: undefined })
             backend.addTargetService(form)
+
+            // set route attributes via deferred update
+            backend.set({ deferredAttributes: { route: form.route } })
             history.push(`/devices/${deviceID}/edit`)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}

@@ -102,9 +102,9 @@ const useStyles = makeStyles({
     },
   },
   hasMenu: {
+    cursor: 'pointer',
     '&:hover > span': {
-      cursor: 'pointer',
-      boxShadow: `0px 1px 2px ${colors.grayDark}`,
+      boxShadow: `0px 1px 2px ${colors.darken}`,
     },
   },
 })

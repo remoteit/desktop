@@ -125,6 +125,7 @@ declare global {
     autoStart?: boolean // auto retry connect if closed
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     failover?: boolean // allow proxy failover
+    proxyOnly?: boolean // disabled p2p
     connecting?: boolean
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template
@@ -157,6 +158,8 @@ declare global {
   }
 
   type SocketEmit = (name: string, ...args: any[]) => any
+
+  type IStrategy = 'failover' | 'p2p' | 'proxy'
 
   interface ITarget {
     hostname: string //     proxy_dest_ip      service ip to forward
@@ -222,6 +225,7 @@ declare global {
     access: IUser[]
     attributes: {
       name?: string
+      route?: IRouteType // p2p with failover | p2p | proxy
     }
   }
 
@@ -240,6 +244,35 @@ declare global {
     proxy: boolean
     protocol: 'TCP' | 'UDP'
     description: string
+  }
+
+  interface IRoute {
+    key: IRouteType
+    icon: string
+    name: string
+    description: string
+  }
+
+  type IRouteType = 'failover' | 'p2p' | 'proxy'
+
+  type ISession = { device: IDevice; service: IService; user: IUser }
+
+  interface IEvent {
+    shared: any
+    scripting: boolean
+    id: string
+    state?: ConnectionState
+    timestamp: Date
+    type: string
+    actor?: IUser
+    services?: IService[]
+    users?: IUser[]
+  }
+
+  interface IEventList {
+    total: number
+    items: IEvent[]
+    hasMore: boolean
   }
 
   type gqlOptions = {

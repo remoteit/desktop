@@ -2,14 +2,14 @@ import React, { useEffect } from 'react'
 import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { IconButton, Tooltip, LinearProgress, Typography } from '@material-ui/core'
-import { Dispatch, ApplicationState } from '../../store'
-import { useDispatch, useSelector } from 'react-redux'
+import { LinearProgress, Typography } from '@material-ui/core'
+import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
 import { FilterButton } from '../../buttons/FilterButton'
+import { RefreshButton } from '../../buttons/RefreshButton'
 import { SearchField } from '../../components/SearchField'
 import { makeStyles } from '@material-ui/core/styles'
 import { Body } from '../../components/Body'
-import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -23,7 +23,6 @@ export const DevicesPage = () => {
       return lookup
     }, {}),
   }))
-  const { devices } = useDispatch<Dispatch>()
   const css = useStyles()
 
   useEffect(() => {
@@ -37,19 +36,7 @@ export const DevicesPage = () => {
           <div className={css.header}>
             <SearchField />
             <FilterButton />
-            <Tooltip title="Refresh devices">
-              <div>
-                <IconButton
-                  onClick={() => {
-                    devices.set({ from: 0 })
-                    devices.fetch()
-                  }}
-                  disabled={fetching}
-                >
-                  <Icon name="sync" size="sm" type="regular" />
-                </IconButton>
-              </div>
-            </Tooltip>
+            <RefreshButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>
