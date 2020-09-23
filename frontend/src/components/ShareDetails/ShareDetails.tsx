@@ -1,25 +1,21 @@
 import React from 'react'
+import { getPermissions } from '../../helpers/userHelper'
 import { ListItemSecondaryAction, Tooltip, makeStyles } from '@material-ui/core'
+import { ServiceMiniState } from '../ServiceMiniState'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
-import { ServiceMiniState } from '../ServiceMiniState'
 
-export function ShareDetails({
-  scripting,
-  shared,
-  services,
-  service,
-  connections,
-}: {
-  scripting?: boolean
-  shared?: number
-  services: IService[]
-  service: IService | undefined
-  connections: IConnection | undefined
-}): JSX.Element {
+type Props = {
+  user: IUser
+  device?: IDevice
+}
+
+export const ShareDetails: React.FC<Props> = ({ user, device }) => {
   const css = useStyles()
-  const display = service ? services.filter(s => s.id === service.id) : services
 
+  if (!device) return null
+
+  const { services, scripting } = getPermissions(device, user.email)
   return (
     <ListItemSecondaryAction className={css.indicators}>
       {scripting && (
@@ -27,14 +23,7 @@ export function ShareDetails({
           <Icon name="scroll" size="sm" type="regular" color="grayDark" />
         </Tooltip>
       )}
-      {!!shared &&
-        display?.map(service => (
-          <ServiceMiniState
-            key={service.id}
-            service={service}
-            connection={connections?.find((c: any) => c.id === service.id)}
-          />
-        ))}
+      {!!services.length && services.map(s => <ServiceMiniState key={s.id} service={s} showConnected={false} />)}
     </ListItemSecondaryAction>
   )
 }

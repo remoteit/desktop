@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
 import { version } from '../../../package.json'
-import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
+import { List, ListItemSecondaryAction, Chip, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { UninstallSetting } from '../../components/UninstallSetting'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
@@ -122,7 +123,6 @@ export const SettingsPage = () => {
             onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
           />
         )}
-
         <ListItemSetting
           label="Open at login"
           icon="power-off"
@@ -131,6 +131,35 @@ export const SettingsPage = () => {
         />
         <UpdateSetting />
       </List>
+      <Divider />
+      <Typography variant="subtitle1">Account Linking</Typography>
+      <List>
+        <ListItemLocation
+          icon="user-friends"
+          title="User Access"
+          subtitle="Link users to your account to grant them access to the devices you own."
+          pathname="/access"
+        >
+          <ListItemSecondaryAction>
+            <Tooltip title="Users">
+              <Chip label="3" size="small" />
+            </Tooltip>
+          </ListItemSecondaryAction>
+        </ListItemLocation>
+        <ListItemLocation
+          icon="user-circle"
+          title="Account Memberships"
+          subtitle="Accounts that have granted you access to the devices they own."
+          pathname="/members"
+        >
+          <ListItemSecondaryAction>
+            <Tooltip title="Accounts">
+              <Chip label="2" size="small" />
+            </Tooltip>
+          </ListItemSecondaryAction>
+        </ListItemLocation>
+      </List>
+
       {!(guest || notElevated) && (
         <>
           <Divider />

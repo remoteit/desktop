@@ -228,24 +228,3 @@ export function findService(devices: IDevice[], id: string) {
     [undefined, undefined] as [IService | undefined, IDevice | undefined]
   )
 }
-
-export function getUsersConnectedDeviceOrService(device?: IDevice, service?: IService) {
-  const userConnected: IUser[] = []
-
-  const getSessionService = (s: IService) =>
-    s?.sessions.forEach(session => !userConnected.includes(session) && userConnected.push(session))
-
-  if (service) getSessionService(service)
-  else if (device) device.services.forEach(getSessionService)
-  return userConnected
-}
-
-export function getDetailUserPermission(device: IDevice, emailUser: string) {
-  const services =
-    device.services.filter(service => service.access && service.access.find(_ac => _ac.email === emailUser)) || []
-  return {
-    scripting: device?.access.find(_ac => _ac.email === emailUser)?.scripting || false,
-    numberServices: services.length,
-    services,
-  }
-}

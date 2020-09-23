@@ -2,7 +2,7 @@ import React from 'react'
 import { List } from '@material-ui/core'
 import { ContactCard } from './ContactCard'
 import { useParams } from 'react-router-dom'
-import { getDetailUserPermission } from '../../models/devices'
+import { getPermissions } from '../../helpers/userHelper'
 import { SharingDetails } from './SharingForm'
 
 export function DeviceShareDetails({
@@ -20,8 +20,7 @@ export function DeviceShareDetails({
   changing: boolean
   setChanging: React.Dispatch<React.SetStateAction<boolean>>
 }): JSX.Element {
-  const { email = '' } = useParams()
-  const { serviceID = '' } = useParams()
+  const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
 
   const formComponent = (email: string, sharedService: string[], scripting?: boolean) => {
     return (
@@ -40,7 +39,7 @@ export function DeviceShareDetails({
   }
 
   const detailByEmail = (email: string) => {
-    const detail = getDetailUserPermission(device, email)
+    const detail = getPermissions(device, email)
     return formComponent(
       email,
       detail.services.map(s => s.id),
