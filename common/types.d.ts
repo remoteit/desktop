@@ -274,6 +274,7 @@ declare global {
     actor?: IUser
     services?: IService[]
     users?: IUser[]
+    action: string
   }
 
   interface IEventList {

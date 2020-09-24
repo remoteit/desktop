@@ -71,7 +71,7 @@ export function EventMessage({
             break
         }
       } else {
-        if (device.owner === actor && device.owner === loggedInUser?.email) {
+        if (device.owner === actor && device.owner === loggedInUser?.email && item.action === 'add') {
           message = (
             <>
               You shared <i>{device.name}</i> with <b>{userList}</b>

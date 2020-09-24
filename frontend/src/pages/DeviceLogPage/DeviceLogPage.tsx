@@ -15,7 +15,7 @@ import { EventMessage } from './EventMessage'
 import { EventIcon } from './EventIcon'
 
 const DATE_FORMAT = 'YYYY-MM-DD'
-const DATE_NOW = moment().add(1, 'd').format(DATE_FORMAT)
+const DATE_NOW = moment(new Date()).add(1, 'd').format(DATE_FORMAT)
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
@@ -82,10 +82,10 @@ export const DeviceLogPage = () => {
                 className={css.textField}
                 disableToolbar
                 variant="inline"
-                format="dd/MM/yyyy"
+                format="MM/dd/yyyy"
                 id="date-picker-inline"
                 label="Jump to Date"
-                value={selectedDate}
+                value={selectedDate || DATE_NOW}
                 onChange={handleChange}
                 inputVariant="standard"
                 maxDate={maxDay}
