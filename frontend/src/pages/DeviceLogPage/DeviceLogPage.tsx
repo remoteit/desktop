@@ -1,8 +1,8 @@
+import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import moment from 'moment'
 import { Dispatch, ApplicationState } from '../../store'
-import { Typography, Divider, makeStyles, List, ListItem, Box, Button, Link, ListItemIcon } from '@material-ui/core'
+import { Typography, makeStyles, List, ListItem, Box, Button, Link, ListItemIcon } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
@@ -18,7 +18,7 @@ const DATE_FORMAT = 'YYYY-MM-DD'
 const DATE_NOW = moment().add(1, 'd').format(DATE_FORMAT)
 
 export const DeviceLogPage = () => {
-  const { deviceID } = useParams()
+  const { deviceID } = useParams<{ deviceID: string }>()
   const { device, getting, user, items: logsToShow } = useSelector((state: ApplicationState) => {
     const device = state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
     return {
@@ -69,47 +69,47 @@ export const DeviceLogPage = () => {
 
   return (
     <Container
+      inset
       header={
         <>
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="file-alt" color="grayDarker" size="lg" />
             <Title>Device Logs</Title>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+                autoOk={true}
+                className={css.textField}
+                disableToolbar
+                variant="inline"
+                format="dd/MM/yyyy"
+                id="date-picker-inline"
+                label="Jump to Date"
+                value={selectedDate}
+                onChange={handleChange}
+                inputVariant="standard"
+                maxDate={maxDay}
+                minDate={minDay}
+                keyboardIcon={
+                  <Icon
+                    name={getting ? 'spinner-third' : 'calendar-day'}
+                    type="regular"
+                    size="md"
+                    spin={getting}
+                    fixedWidth
+                  />
+                }
+              />
+            </MuiPickersUtilsProvider>
           </Typography>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <KeyboardDatePicker
-              autoOk={true}
-              className={css.textField}
-              disableToolbar
-              variant="inline"
-              format="dd/MM/yyyy"
-              id="date-picker-inline"
-              label="Jump to Date"
-              value={selectedDate}
-              onChange={handleChange}
-              inputVariant="standard"
-              maxDate={maxDay}
-              minDate={minDay}
-              keyboardIcon={
-                <Icon
-                  name={getting ? 'spinner-third' : 'calendar-day'}
-                  type="regular"
-                  size="md"
-                  spin={getting}
-                  fixedWidth
-                />
-              }
-            />
-          </MuiPickersUtilsProvider>
-          <Divider />
         </>
       }
     >
-      <List>
+      <List className={css.item}>
         <span className="top"></span>
-        {logsToShow?.map(item => {
-          return <EventCell item={item} device={device} user={user} key={item.id} />
-        })}
+        {logsToShow?.map(item => (
+          <EventCell item={item} device={device} user={user} key={item.id} />
+        ))}
       </List>
 
       <Box className={css.box}>
@@ -134,47 +134,34 @@ export const DeviceLogPage = () => {
   )
 }
 
-export function EventCell({
-  item,
-  device,
-  user,
-}: {
-  item: IEvent
-  device: IDevice
-  user: IUser | undefined
-}): JSX.Element {
-  const css = useStyles()
-  const options = {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }
+const options = {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+}
 
+export function EventCell({ item, device, user }: { item: IEvent; device: IDevice; user?: IUser }): JSX.Element {
   return (
-    <>
-      <ListItem className={`${css.item} ${moment(item.timestamp).format(DATE_FORMAT).toString()}`}>
-        <span>{new Date(item.timestamp).toLocaleDateString('en-US', options)}</span>
-        <ListItemIcon className={css.icon}>
-          <EventIcon {...item} />
-        </ListItemIcon>
-        <EventMessage props={item} device={device} loggedinUser={user} />
-      </ListItem>
-    </>
+    <ListItem>
+      <span>{new Date(item.timestamp).toLocaleDateString('en-US', options)}</span>
+      <ListItemIcon>
+        <EventIcon {...item} />
+      </ListItemIcon>
+      <EventMessage props={item} device={device} loggedInUser={user} />
+    </ListItem>
   )
 }
 
 const useStyles = makeStyles({
   textField: {
+    display: 'block',
     marginLeft: spacing.sm,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
     marginTop: spacing.xxs,
     width: 200,
-  },
-  icon: {
-    minWidth: 35,
   },
   box: {
     display: 'flex',
@@ -186,20 +173,25 @@ const useStyles = makeStyles({
     height: 100,
   },
   item: {
-    padding: `4px 0`,
-    fontSize: fontSizes.sm,
-    fontFamily: 'Roboto Mono',
-    color: colors.grayDarker,
-    alignItems: 'start',
-    '& > span': {
-      fontFamily: 'Roboto',
+    '& li': {
+      padding: `4px 0`,
+      fontSize: fontSizes.sm,
       color: colors.grayDark,
-      minWidth: 130,
-      textTransform: 'capitalize',
-      marginLeft: spacing.md,
-    },
-    '& .fal': {
-      color: colors.grayDarker,
+      alignItems: 'start',
+      '& > span': {
+        fontSize: fontSizes.xxs,
+        textAlign: 'right',
+        fontFamily: 'Roboto Mono',
+        minWidth: 150,
+      },
+      '& b': {
+        color: colors.grayDarkest,
+        fontWeight: 400,
+      },
+      '& i': {
+        color: colors.grayDarker,
+        fontStyle: 'normal',
+      },
     },
   },
 })

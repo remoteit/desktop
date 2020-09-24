@@ -1,5 +1,5 @@
-import { Icon } from '../../components/Icon'
 import React from 'react'
+import { Icon } from '../../components/Icon'
 import { Color } from '../../styling'
 import { EventState, EventType } from './EventMessage'
 
@@ -22,24 +22,25 @@ export function EventIcon(item: IEvent): JSX.Element {
 
     case EventType.device_connect:
       if (item.state === EventState.connected) {
-        icon = 'exchange'
+        icon = 'dot-circle'
         color = 'primary'
         title = 'Device Connected'
       } else {
-        icon = 'ban'
-        color = 'gray'
+        icon = 'times-circle'
+        color = 'dangerLight'
         title = 'Device Disconnected'
       }
       break
 
     case EventType.device_share:
+      console.log('SHARE', item)
       if (item.shared) {
         icon = 'user-check'
         color = 'success'
         title = 'Device Shared'
       } else {
         icon = 'user-slash'
-        color = 'danger'
+        color = 'dangerLight'
         title = 'Device Share Removed'
       }
       break

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { removeDeviceName } from '../../shared/nameHelper'
 
 export const EventType = {
   device_state: 'DEVICE_STATE',
@@ -14,58 +14,81 @@ export const EventState = {
 export function EventMessage({
   props,
   device,
-  loggedinUser,
+  loggedInUser,
 }: {
   props: IEvent
   device: IDevice
-  loggedinUser: IUser | undefined
+  loggedInUser: IUser | undefined
 }): JSX.Element {
   const item = props
-  const serviceName = (item.services?.map(service => service.name) || [])[0]
-  let message = ''
-  const css = useStyles()
+  const serviceName = (item.services?.map(service => removeDeviceName(device.name, service.name)) || []).join(' + ')
+  let message: JSX.Element | string = ''
 
   switch (item.type) {
     case EventType.device_state:
-      message = `${item.services && serviceName !== device?.name ? serviceName : ''} ${
-        item.state === EventState.active ? 'come online' : 'went offline'
-      }`
+      message = (
+        <>
+          <b> {item.services && serviceName !== device?.name ? serviceName : device?.name} </b>
+          {item.state === EventState.active ? 'went online' : 'went offline'}
+        </>
+      )
       break
 
     case EventType.device_connect:
-      message = `${item.actor?.email} ${
-        item.state === EventState.connected ? 'connected' : 'disconnected'
-      } to ${serviceName}`
+      message = (
+        <>
+          <b>{item.actor?.email}</b> {item.state === EventState.connected ? 'connected to' : 'disconnected from'}{' '}
+          <i>{serviceName}</i>
+        </>
+      )
       break
 
     case EventType.device_share:
       const actor = item.actor?.email
-      const users = item.users && item.users.map(user => (user.email ? user.email : user.email + ' (deleted)'))
+      const users = item.users && item.users.map(user => user.email || '(deleted)')
       const userList =
         users && users.length !== 1 ? users.slice(0, -1).join(', ') + ' and ' + users.slice(-1) : users && users[0]
 
       const ownerDisplay = device.owner
       if (item.shared) {
         switch (device.owner) {
-          case loggedinUser?.email:
-            message = `You shared ${device.name} and ${
-              item.scripting ? 'ellowed' : 'restricted'
-            } script execution with ${userList}`
+          case loggedInUser?.email:
+            message = (
+              <>
+                You shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
+                <b> {userList} </b>
+              </>
+            )
             break
 
           default:
-            message = `${ownerDisplay} shared ${device.name} and ${
-              item.scripting ? 'ellowed' : 'restricted'
-            } script execution with you`
+            message = (
+              <>
+                <b>{ownerDisplay}</b> shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script
+                execution with you
+              </>
+            )
             break
         }
       } else {
-        if (device.owner === actor && device.owner === loggedinUser?.email) {
-          message = `You removed sharing of ${device.name} with ${userList}`
+        if (device.owner === actor && device.owner === loggedInUser?.email) {
+          message = (
+            <>
+              You shared <i>{device.name}</i> with <b>{userList}</b>
+            </>
+          )
         } else if (actor === device.owner) {
-          message = `You removed sharing of ${device.name} with ${userList}`
+          message = (
+            <>
+              You removed sharing of <i>{device.name}</i> with <b>{userList}</b>
+            </>
+          )
         } else {
-          message = `You left the shared device ${device.name}`
+          message = (
+            <>
+              You left the shared device <i>{device.name}</i>
+            </>
+          )
         }
       }
       break
@@ -74,12 +97,5 @@ export function EventMessage({
       break
   }
 
-  return <div className={css.log}>{message}</div>
+  return <div>{message}</div>
 }
-
-const useStyles = makeStyles({
-  log: {
-    minWidth: 150,
-    marginLeft: 10,
-  },
-})

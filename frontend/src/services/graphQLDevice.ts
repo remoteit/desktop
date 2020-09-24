@@ -1,5 +1,5 @@
 import { graphQLRequest } from './graphQL'
-import { renameServices } from '../shared/nameHelper'
+import { removeDeviceName } from '../shared/nameHelper'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
@@ -240,7 +240,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
           lastReported: s.lastReported && new Date(s.lastReported),
           contactedAt: new Date(s.endpoint?.timestamp),
           attributes: s.attributes,
-          name: s.name,
+          name: removeDeviceName(d.name, s.name),
           port: s.port,
           protocol: s.protocol,
           access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
@@ -256,7 +256,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
       events: d.events,
     })
   )
-  return updateConnections(renameServices(data))
+  return updateConnections(data)
 
   /* 
     Sort and filter session data
