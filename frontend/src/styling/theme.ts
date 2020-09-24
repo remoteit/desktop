@@ -76,6 +76,7 @@ export default createMuiTheme({
     MuiListItemSecondaryAction: { root: { right: gutters } },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
     MuiListItemText: {
+      root: { zIndex: 1 },
       primary: { lineHeight: 1.4 },
       secondary: { fontSize: fontSizes.xs },
     },

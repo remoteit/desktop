@@ -4,7 +4,7 @@ import classnames from 'classnames'
 import { isElectron } from '../../services/Browser'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Snackbar, IconButton, makeStyles } from '@material-ui/core'
+import { Snackbar, IconButton, makeStyles, useMediaQuery } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
@@ -25,6 +25,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     os: state.backend.environment.os,
   }))
 
+  const largeScreen = useMediaQuery('(min-width:600px)')
   const css = useStyles()
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearCliError = () => backend.set({ globalError: undefined })
@@ -33,7 +34,9 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   let remoteCss = ''
   let pageCss = classnames(css.page, css.full)
 
-  if (!isElectron()) {
+  console.log('small screen', largeScreen)
+
+  if (!isElectron() && largeScreen) {
     pageCss = classnames(pageCss, css.inset)
     remoteCss = classnames(css.full, css.default)
   }
@@ -42,7 +45,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     <div className={remoteCss}>
       <RemoteHeader os={os} />
       <div className={pageCss}>
-        <Sidebar />
+        {largeScreen && <Sidebar />}
         <div className={css.pageBody}>{children}</div>
         <Snackbar
           open={authenticated && !connected}
