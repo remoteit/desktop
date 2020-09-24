@@ -33,7 +33,6 @@ export function EventIcon(item: IEvent): JSX.Element {
       break
 
     case EventType.device_share:
-      console.log('SHARE', item)
       if (item.action === 'add') {
         icon = 'user-check'
         color = 'success'

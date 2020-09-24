@@ -15,7 +15,7 @@ import { EventMessage } from './EventMessage'
 import { EventIcon } from './EventIcon'
 
 const DATE_FORMAT = 'YYYY-MM-DD'
-const DATE_NOW = moment(new Date()).add(1, 'd').format(DATE_FORMAT)
+const DATE_NOW = moment().utc().add(1, 'd').format(DATE_FORMAT)
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
@@ -47,12 +47,12 @@ export const DeviceLogPage = () => {
 
   const handleChange = (date: any) => {
     setSelectedDate(date)
-    fetchLogs({ id: deviceID, from: 0, maxDate: moment(date).format(DATE_FORMAT) })
+    fetchLogs({ id: deviceID, from: 0, maxDate: `${moment(date).format(DATE_FORMAT)} 23:59:59` })
     setDateFilter('top')
   }
 
   const fetchMore = () => {
-    fetchLogs({ id: deviceID, from: device?.events.items.length, maxDate: selectedDate })
+    fetchLogs({ id: deviceID, from: device?.events.items.length, maxDate: `${selectedDate} 23:59:59` })
   }
 
   useEffect(() => {
