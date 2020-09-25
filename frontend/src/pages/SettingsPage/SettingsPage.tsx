@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
 import { version } from '../../../package.json'
-import { List, ListItemSecondaryAction, Chip, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
+import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
+import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { UninstallSetting } from '../../components/UninstallSetting'
-import { ListItemLocation } from '../../components/ListItemLocation'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
@@ -20,10 +20,11 @@ import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SettingsPage = () => {
-  const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
+export const SettingsPage: React.FC = () => {
+  const { os, user, target, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
     os: state.backend.environment.os,
     user: state.auth.user,
+    target: state.backend.device,
     installing: state.binaries.installing,
     cliVersion: state.binaries.installedVersion || '(loading...)',
     preferences: state.backend.preferences,
@@ -45,9 +46,13 @@ export const SettingsPage = () => {
     }
   }
 
-  const clearWarning = () =>
-    window.confirm('Are you sure? The next user that signs in will be able to claim this device.') &&
-    emit('user/clear-all')
+  const clearWarning = () => {
+    let message = 'Are you sure? This remove all your connections.'
+    if (target.uid) message = 'Are you sure? This will remove all your connections and let the next user that signs claim this device.'
+      window.confirm(message) && emit('user/clear-all')
+    }
+  }
+    
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install(true)
@@ -109,8 +114,6 @@ export const SettingsPage = () => {
           icon="user-slash"
           onClick={clearWarning}
         />
-
-        {!guest && <ListItemSetting label="Quit" icon="times" onClick={quitWarning} />}
       </List>
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
@@ -125,42 +128,15 @@ export const SettingsPage = () => {
         )}
         <ListItemSetting
           label="Open at login"
-          icon="power-off"
+          icon="door-open"
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
+        {!guest && <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
         <UpdateSetting />
       </List>
       <Divider />
-      <Typography variant="subtitle1">Account Linking</Typography>
-      <List>
-        <ListItemLocation
-          dense
-          icon="users"
-          title="User Access"
-          subtitle="Link users to your account to grant them access to the devices you own."
-          pathname="/settings/access"
-        >
-          <ListItemSecondaryAction>
-            <Tooltip title="Users">
-              <Chip label="3" size="small" />
-            </Tooltip>
-          </ListItemSecondaryAction>
-        </ListItemLocation>
-        <ListItemLocation
-          dense
-          icon="user-circle"
-          title="Account Memberships"
-          subtitle="Accounts that have granted you access to the devices they own."
-          pathname="/settings/membership"
-        >
-          <ListItemSecondaryAction>
-            <Tooltip title="Accounts">
-              <Chip label="2" size="small" />
-            </Tooltip>
-          </ListItemSecondaryAction>
-        </ListItemLocation>
-      </List>
+      <AccountLinkingSettings />
 
       {!(guest || notElevated) && (
         <>
