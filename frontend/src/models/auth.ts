@@ -91,7 +91,11 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     async signedOut(_: void, rootState: any) {
+      const user = await rootState.auth.authService.checkSignIn()
       await rootState.auth.authService.signOut()
+      if (user.cognitoUser.authProvider == 'Google') {
+        window.open('https://auth.remote.it/logout?client_id=26g0ltne0gr8lk1vs51mihrmig&logout_uri=remoteitdev://')
+      }
       dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
