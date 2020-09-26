@@ -1,24 +1,24 @@
 import React from 'react'
 import { List } from '@material-ui/core'
-import { ContactCard } from './ContactCard'
+import { ContactCard } from '../ContactCard'
 import { useParams } from 'react-router-dom'
 import { getPermissions } from '../../helpers/userHelper'
-import { SharingDetails } from './SharingForm'
+import { SharingDetails } from '../SharingForm'
 
 export function DeviceShareDetails({
   device,
   share,
-  selectedContacts,
+  selected,
   updateSharing,
-  changing,
-  setChanging,
+  changed,
+  setChanged,
 }: {
   device: IDevice
   share: (share: SharingDetails, isNew: boolean) => void
-  selectedContacts: string[]
+  selected: string[]
   updateSharing: (share: SharingDetails, isNew: boolean) => void
-  changing: boolean
-  setChanging: React.Dispatch<React.SetStateAction<boolean>>
+  changed: boolean
+  setChanged: React.Dispatch<React.SetStateAction<boolean>>
 }): JSX.Element {
   const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
 
@@ -29,11 +29,11 @@ export function DeviceShareDetails({
         share={share}
         scripting={scripting || false}
         sharedServices={sharedService}
-        selectedContacts={selectedContacts}
+        selected={selected}
         email={email}
         updateSharing={updateSharing}
-        changing={changing}
-        setChanging={setChanging}
+        changed={changed}
+        setChanged={setChanged}
       />
     )
   }

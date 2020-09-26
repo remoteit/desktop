@@ -6,31 +6,28 @@ import { Duration } from '../Duration'
 import { useLocation } from 'react-router-dom'
 
 interface Props {
-  index?: number
   user: IUser
   isConnected?: boolean
 }
 
-export const UserListItem: React.FC<Props> = ({ index, user, isConnected, children }) => {
+export const UserListItem: React.FC<Props> = ({ user, isConnected, children }) => {
   const location = useLocation()
 
   return (
-    <Fragment key={index}>
-      <ListItemLocation pathname={location.pathname + '/' + user.email} dense>
-        <ListItemIcon>
-          <InitiatorPlatform id={user.platform} connected={isConnected} />
-        </ListItemIcon>
-        {isConnected ? (
-          <ListItemText
-            primaryTypographyProps={{ color: 'primary' }}
-            primary={user.email}
-            secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
-          />
-        ) : (
-          <ListItemText primary={user.email} />
-        )}
-        {children}
-      </ListItemLocation>
-    </Fragment>
+    <ListItemLocation pathname={location.pathname + '/' + user.email} dense>
+      <ListItemIcon>
+        <InitiatorPlatform id={user.platform} connected={isConnected} />
+      </ListItemIcon>
+      {isConnected ? (
+        <ListItemText
+          primaryTypographyProps={{ color: 'primary' }}
+          primary={user.email}
+          secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
+        />
+      ) : (
+        <ListItemText primary={user.email} />
+      )}
+      {children}
+    </ListItemLocation>
   )
 }

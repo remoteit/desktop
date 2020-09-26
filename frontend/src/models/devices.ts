@@ -106,11 +106,13 @@ export default createModel({
 
     async graphQLFetchProcessor(options: any, globalState: any) {
       const { graphQLMetadata } = dispatch.devices
+      const parseAccounts = dispatch.accounts.parse
       try {
         const gqlResponse = await graphQLFetchDevices(options)
         const [gqlData, total, error] = await graphQLMetadata(gqlResponse)
         const connections = graphQLAdaptor(gqlData?.connections, gqlData?.id, true)
         const devices = graphQLAdaptor(gqlData?.devices, gqlData?.id)
+        await parseAccounts(gqlData)
         return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts, error }
       } catch (error) {
         await graphQLHandleError(error)

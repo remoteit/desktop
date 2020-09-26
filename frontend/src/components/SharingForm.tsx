@@ -1,10 +1,10 @@
 import { Divider, List, Typography } from '@material-ui/core'
 import React, { useEffect } from 'react'
-import { ListItemCheckbox } from '../ListItemCheckbox'
-import { ShareSaveActions } from '../ShareSaveActions'
+import { ListItemCheckbox } from './ListItemCheckbox'
+import { ShareSaveActions } from './ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
-import { useSelector } from '../../hooks/reactReduxHooks'
-import { ApplicationState } from '../../store'
+import { useSelector } from '../hooks/reactReduxHooks'
+import { ApplicationState } from '../store'
 
 export interface SharingDetails {
   access: SharingAccess
@@ -24,7 +24,7 @@ export function SharingForm({
   selectedServices,
   update,
   share,
-  changing,
+  changed,
 }: {
   onChange: (access: SharingAccess) => void
   device: IDevice
@@ -32,16 +32,17 @@ export function SharingForm({
   selectedServices: string[]
   update: () => void
   share: () => void
-  changing: boolean
+  changed: boolean
 }): JSX.Element {
   const history = useHistory()
   const location = useLocation()
-  const { email = '' } = useParams()
+  const { email = '' } = useParams<{ email: string }>()
   const saving = useSelector((state: ApplicationState) => state.shares.sharing)
 
-  let disabled = !(changing && saving === false)
+  let disabled = !changed || saving
 
   const handleChangeServices = (services: string[]) => {
+    console.log('ON CHANGE SERVICES', services)
     onChange({ scripting, services })
   }
 
@@ -51,6 +52,7 @@ export function SharingForm({
   }, [])
 
   const handleChangeScripting = () => {
+    console.log('ON CHANGE SCRIPTING')
     onChange({
       scripting: !scripting,
       services: selectedServices,

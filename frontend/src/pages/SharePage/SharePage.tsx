@@ -9,13 +9,18 @@ import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { useHistory } from 'react-router-dom'
+import { ContactSelector } from '../../components/ContactSelector'
+import { DeviceShareDetails } from '../../components/DeviceShareDetails'
+import { SharingDetails } from '../../components/SharingForm'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
-import { DeviceShareAdd, DeviceShareDetails } from '../../components/DeviceShareContainer'
-import { SharingDetails } from '../../components/DeviceShareContainer/SharingForm'
 
 export const SharePage = () => {
-  const { email = '', deviceID = '', serviceID = '' } = useParams()
+  const { email = '', deviceID = '', serviceID = '' } = useParams<{
+    email: string
+    deviceID: string
+    serviceID: string
+  }>()
   const { shares } = useDispatch<Dispatch>()
   const { device, deleting } = useSelector((state: ApplicationState) => {
     const deleting = state.shares.deleting
@@ -29,8 +34,8 @@ export const SharePage = () => {
     return { deleting, device }
   })
   const { contacts = [] } = useSelector((state: ApplicationState) => state.devices)
-  const [selectedContacts, setSelectedContacts] = React.useState<string[]>([])
-  const [changing, setChanging] = useState(false)
+  const [selected, setSelected] = React.useState<string[]>([])
+  const [changed, setChanged] = useState(false)
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
@@ -79,54 +84,51 @@ export const SharePage = () => {
     }
     return
   }
-
+  console.log('changed?!', changed)
+  console.log('contacts', !!selected.length)
   return (
     <Container
       header={
         <>
           <Breadcrumbs />
-          {email ? (
-            <Typography variant="h1">
-              <Icon name={email === '' ? 'user-plus' : 'user'} size="lg" />
-              <Title>{email || 'Share'}</Title>
-              {deleting ? (
-                <CircularProgress className={css.loading} size={styles.fontSizes.md} />
-              ) : (
-                <Tooltip title={`Remove ${email}`}>
-                  <IconButton onClick={handleUnshare} disabled={deleting}>
-                    <Icon name="trash-alt" size="md" fixedWidth />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Typography>
-          ) : (
-            device && (
-              <DeviceShareAdd
-                contacts={contacts}
-                device={device}
-                onChangeContacts={setSelectedContacts}
-                selectedContacts={selectedContacts}
-                setChanging={setChanging}
-              />
-            )
-          )}
+          <Typography variant="h1">
+            {email ? (
+              <>
+                <Icon name={email === '' ? 'user-plus' : 'user'} size="lg" />
+                <Title>{email || 'Share'}</Title>
+                {deleting ? (
+                  <CircularProgress className={css.loading} size={styles.fontSizes.md} />
+                ) : (
+                  <Tooltip title={`Remove ${email}`}>
+                    <IconButton onClick={handleUnshare} disabled={deleting}>
+                      <Icon name="trash-alt" size="md" fixedWidth />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </>
+            ) : (
+              device && (
+                <ContactSelector
+                  contacts={contacts}
+                  selected={contacts.filter(c => device.access.find(s => s.email === c.email))}
+                  onChange={setSelected}
+                />
+              )
+            )}
+          </Typography>
         </>
       }
     >
-      {
-        <>
-          {device && (
-            <DeviceShareDetails
-              device={device}
-              share={handleShareUpdate}
-              selectedContacts={selectedContacts}
-              updateSharing={handleShareUpdate}
-              changing={changing}
-              setChanging={setChanging}
-            />
-          )}
-        </>
-      }
+      {device && (
+        <DeviceShareDetails
+          device={device}
+          share={handleShareUpdate}
+          selected={selected}
+          updateSharing={handleShareUpdate}
+          changed={changed || !!selected.length}
+          setChanged={setChanged}
+        />
+      )}
     </Container>
   )
 }

@@ -1,27 +1,30 @@
 import React, { useEffect } from 'react'
-import { ApplicationState } from '../store'
+import { ApplicationState, Dispatch } from '../store'
+import {
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  Tooltip,
+  IconButton,
+} from '@material-ui/core'
+import { useSelector, useDispatch } from 'react-redux'
+import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { Breadcrumbs } from '../components/Breadcrumbs'
-import { Typography } from '@material-ui/core'
-import { SharedUsersList } from '../components/SharedUsersList'
-import { getConnected } from '../helpers/userHelper'
-import { useSelector } from 'react-redux'
-import { useParams } from 'react-router-dom'
 import { Container } from '../components/Container'
-import { AddUserButton } from '../buttons/AddUserButton'
-import { Icon } from '../components/Icon'
+import { Duration } from '../components/Duration'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountMembershipPage: React.FC = () => {
-  const { deviceID = '' } = useParams<{ deviceID: string }>()
-  const { device } = useSelector((state: ApplicationState) => ({
-    device: state.devices.all.find((d: IDevice) => d.id === deviceID),
-  }))
-  const users = device?.access
-  const connected = getConnected(device?.services)
+  const { member } = useSelector((state: ApplicationState) => state.accounts)
+  const { accounts } = useDispatch<Dispatch>()
 
   useEffect(() => {
-    analyticsHelper.page('AccountMembershipPage')
+    analyticsHelper.page('AccountAccessPage')
   }, [])
 
   return (
@@ -32,12 +35,34 @@ export const AccountMembershipPage: React.FC = () => {
           <Typography variant="h1">
             <Icon name="user-circle" size="lg" />
             <Title>Account Memberships</Title>
-            <AddUserButton device={device} />
           </Typography>
         </>
       }
     >
-      <SharedUsersList device={device} users={users} connected={connected} />
+      <List>
+        {member.map(user => (
+          <ListItem>
+            <ListItemIcon>
+              <InitiatorPlatform id={user.platform} />
+            </ListItemIcon>
+            <ListItemText
+              primary={user.email}
+              secondary={
+                <>
+                  Joined <Duration startTime={user.created?.getTime()} ago />
+                </>
+              }
+            />
+            <ListItemSecondaryAction>
+              <Tooltip title="Leave Account">
+                <IconButton onClick={() => accounts.leaveMembership(user.email)}>
+                  <Icon name="sign-out" size="md" fixedWidth />
+                </IconButton>
+              </Tooltip>
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
+      </List>
     </Container>
   )
 }

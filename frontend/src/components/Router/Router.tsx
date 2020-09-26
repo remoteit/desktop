@@ -19,6 +19,7 @@ import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
 import { UsersPageService } from '../../pages/UsersPageService'
 import { UsersPageDevice } from '../../pages/UsersPageDevice'
+import { AccountSharePage } from '../../pages/AccountSharePage'
 import { AccountAccessPage } from '../../pages/AccountAccessPage'
 import { AccountMembershipPage } from '../../pages/AccountMembershipPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage'
@@ -46,6 +47,9 @@ export const Router: React.FC = () => {
       />
       <Route path={['/settings/setupServices/network', '/devices/:deviceID/edit/add-service/network']}>
         <NetworkPage />
+      </Route>
+      <Route path={['/settings/membership/share', '/settings/access/share']}>
+        <AccountSharePage />
       </Route>
       <Route path="/settings/access">
         <AccountAccessPage />

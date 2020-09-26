@@ -24,14 +24,14 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
         </Typography>
       )}
       <List>
-        {connected.map((user, index) => (
-          <UserListItem user={user} index={index} isConnected={true}>
+        {connected.map(user => (
+          <UserListItem key={user.email} user={user} isConnected={true}>
             <ShareDetails user={user} device={device} />
           </UserListItem>
         ))}
         {!!connected.length && <Divider />}
-        {filtered.map((user, index) => (
-          <UserListItem user={user} index={index} isConnected={false}>
+        {filtered.map(user => (
+          <UserListItem key={user.email} user={user}>
             <ShareDetails user={user} device={device} />
           </UserListItem>
         ))}

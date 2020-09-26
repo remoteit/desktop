@@ -39,7 +39,7 @@ type Props = {
 export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const css = useStyles()
   const history = useHistory()
-  const { deviceID } = useParams()
+  const { deviceID } = useParams<{ deviceID: string }>()
   const { setupAddingService } = useSelector((state: ApplicationState) => state.ui)
   const device = useSelector((state: ApplicationState) =>
     state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)

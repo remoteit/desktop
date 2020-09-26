@@ -48,11 +48,12 @@ export const SettingsPage: React.FC = () => {
 
   const clearWarning = () => {
     let message = 'Are you sure? This remove all your connections.'
-    if (target.uid) message = 'Are you sure? This will remove all your connections and let the next user that signs claim this device.'
-      window.confirm(message) && emit('user/clear-all')
-    }
+    if (target.uid)
+      message =
+        'Are you sure? This will remove all your connections and let the next user that signs claim this device.'
+    window.confirm(message) && emit('user/clear-all')
   }
-    
+
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install(true)
@@ -116,6 +117,8 @@ export const SettingsPage: React.FC = () => {
         />
       </List>
       <Divider />
+      <AccountLinkingSettings />
+      <Divider />
       <Typography variant="subtitle1">Application</Typography>
       <List>
         {(os === 'mac' || os === 'windows') && (
@@ -135,9 +138,6 @@ export const SettingsPage: React.FC = () => {
         {!guest && <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
         <UpdateSetting />
       </List>
-      <Divider />
-      <AccountLinkingSettings />
-
       {!(guest || notElevated) && (
         <>
           <Divider />

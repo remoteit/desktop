@@ -77,6 +77,20 @@ export async function graphQLFetchDevices({ size, from, state, name, ids = [] }:
           id
           devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
           connections: devices(id: $ids) ${DEVICE_SELECT}
+          member {
+            created
+            scripting
+            user {
+              email
+            }
+          }
+          access {
+            created
+            scripting
+            user {
+              email
+            }
+          }
           contacts {
             id
             email
@@ -98,7 +112,7 @@ export async function graphQLFetchDevice(id: string) {
     ` query($id: [String!]) {
         login {
           id
-          devices(id: $id) ${DEVICE_SELECT}
+          device(id: $id) ${DEVICE_SELECT}
         }
       }`,
     {
