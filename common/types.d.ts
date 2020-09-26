@@ -278,6 +278,7 @@ declare global {
   type gqlOptions = {
     size: number
     from: number
+    account: string
     state?: string
     name?: string
     ids?: string[]

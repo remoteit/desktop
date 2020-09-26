@@ -127,7 +127,6 @@ export default createModel({
     signOutFinished(state: AuthState) {
       state.user = undefined
       clearUserCredentials()
-      window.localStorage.removeItem('devices')
       window.localStorage.removeItem(USER_KEY)
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {

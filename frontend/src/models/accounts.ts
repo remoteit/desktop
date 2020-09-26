@@ -3,9 +3,12 @@ import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 
+const ACCOUNT_KEY = 'account'
+
 type IUserState = ILookup & {
   member: IUser[]
   access: IUser[]
+  active?: string // email
 }
 
 type IGraphQLAccount = {
@@ -19,13 +22,21 @@ type IGraphQLAccount = {
 const state: IUserState = {
   member: [],
   access: [],
+  active: undefined,
 }
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async parse(gqlData?: { member: IGraphQLAccount[]; access: IGraphQLAccount[] }) {
+    async init(_, globalState) {
+      let active = window.localStorage.getItem(ACCOUNT_KEY)
+      active = active && JSON.parse(active)
+      dispatch.accounts.setActive(active)
+    },
+    async parse(gqlResponse?: any) {
+      const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
+      // { member: IGraphQLAccount[]; access: IGraphQLAccount[] }
       const { parseAccounts } = dispatch.accounts
       dispatch.accounts.set({
         member: await parseAccounts(gqlData.member),
@@ -85,6 +96,10 @@ export default createModel({
     },
   }),
   reducers: {
+    setActive(state: IUserState, email: string) {
+      window.localStorage.setItem(ACCOUNT_KEY, JSON.stringify(email))
+      state.active = email
+    },
     set(state: IUserState, params: ILookup) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },

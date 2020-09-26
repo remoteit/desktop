@@ -51,9 +51,11 @@ export default createModel({
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { all, query, filter, size, from, append, searched } = globalState.devices
       const { connections, device, targets } = globalState.backend
+      const account = globalState.accounts.active || globalState.auth.user?.email
       const options: gqlOptions = {
         size,
         from,
+        account,
         state: filter === 'all' ? undefined : filter,
         name: query,
         ids: append
@@ -84,8 +86,9 @@ export default createModel({
     /*
       Fetches a single device and merges in the state
     */
-    async get(id: string) {
+    async get(id: string, globalState: any) {
       const { graphQLMetadata, setDevice, set } = dispatch.devices
+      const account = globalState.accounts.active || globalState.auth.user?.email
       let result
 
       if (!hasCredentials()) return
@@ -93,7 +96,7 @@ export default createModel({
       set({ fetching: true })
 
       try {
-        const gqlResponse = await graphQLFetchDevice(id)
+        const gqlResponse = await graphQLFetchDevice(id, account)
         const [gqlData] = await graphQLMetadata(gqlResponse)
         result = graphQLAdaptor(gqlData.devices, gqlData.id)[0]
       } catch (error) {
@@ -112,7 +115,7 @@ export default createModel({
         const [gqlData, total, error] = await graphQLMetadata(gqlResponse)
         const connections = graphQLAdaptor(gqlData?.connections, gqlData?.id, true)
         const devices = graphQLAdaptor(gqlData?.devices, gqlData?.id)
-        await parseAccounts(gqlData)
+        await parseAccounts(gqlResponse)
         return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts, error }
       } catch (error) {
         await graphQLHandleError(error)
@@ -127,9 +130,8 @@ export default createModel({
 
     async graphQLMetadata(gqlData: any) {
       const error = graphQLGetErrors(gqlData)
-      const data = gqlData?.data?.data?.login || {}
+      const data = gqlData?.data?.data?.login?.account || {}
       const total = data?.devices?.total || 0
-
       return [data, total, error]
     },
 

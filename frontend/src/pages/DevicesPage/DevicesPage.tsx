@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react'
+import { makeStyles, LinearProgress, Typography } from '@material-ui/core'
+import { ApplicationState } from '../../store'
+import { DeviceListEmpty } from '../../components/DeviceListEmpty'
+import { RefreshButton } from '../../buttons/RefreshButton'
+import { AccountSelect } from '../../components/AccountSelect'
+import { FilterButton } from '../../buttons/FilterButton'
+import { SearchField } from '../../components/SearchField'
+import { useSelector } from 'react-redux'
 import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
-import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { LinearProgress, Typography } from '@material-ui/core'
-import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
-import { FilterButton } from '../../buttons/FilterButton'
-import { RefreshButton } from '../../buttons/RefreshButton'
-import { SearchField } from '../../components/SearchField'
-import { makeStyles } from '@material-ui/core/styles'
 import { Body } from '../../components/Body'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -35,6 +35,7 @@ export const DevicesPage = () => {
         <>
           <div className={css.header}>
             <SearchField />
+            <AccountSelect />
             <FilterButton />
             <RefreshButton />
           </div>

@@ -70,13 +70,15 @@ const DEVICE_SELECT = `{
   }
 }`
 
-export async function graphQLFetchDevices({ size, from, state, name, ids = [] }: gqlOptions) {
+export async function graphQLFetchDevices({ size, from, state, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!], $size: Int, $from: Int, $name: String, $state: String) {
+    ` query($ids: [String!], $size: Int, $from: Int, $name: String, $state: String, $account: String) {
         login {
           id
-          devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
-          connections: devices(id: $ids) ${DEVICE_SELECT}
+          account(id: $account) {
+            devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
+            connections: devices(id: $ids) ${DEVICE_SELECT}
+          }
           member {
             created
             scripting
@@ -102,21 +104,25 @@ export async function graphQLFetchDevices({ size, from, state, name, ids = [] }:
       size,
       from,
       state,
+      account,
       name: name?.trim() ? name : undefined,
     }
   )
 }
 
-export async function graphQLFetchDevice(id: string) {
+export async function graphQLFetchDevice(id: string, account: string) {
   return await graphQLRequest(
-    ` query($id: [String!]) {
+    ` query($id: [String!], $account: String) {
         login {
           id
-          device(id: $id) ${DEVICE_SELECT}
+          account(id: $account) {
+            device(id: $id) ${DEVICE_SELECT}
+          }
         }
       }`,
     {
       id,
+      account,
     }
   )
 }

@@ -43,7 +43,7 @@ export const AccountMembershipPage: React.FC = () => {
       {member.length ? (
         <List>
           {member.map(user => (
-            <ListItem>
+            <ListItem key={user.email}>
               <ListItemIcon>
                 <InitiatorPlatform id={user.platform} />
               </ListItemIcon>
