@@ -78,7 +78,7 @@ export const SettingsPage: React.FC = () => {
             <Typography className={css.user} variant="caption">
               {user?.email}
             </Typography>
-            <Avatar email={user?.email} />
+            <Avatar email={user?.email} button />
           </Typography>
         </>
       }

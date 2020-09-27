@@ -51,7 +51,7 @@ export default createModel({
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { all, query, filter, size, from, append, searched } = globalState.devices
       const { connections, device, targets } = globalState.backend
-      const account = globalState.accounts.active || globalState.auth.user?.email
+      const account = globalState.accounts.activeId || globalState.auth.user?.id
       const options: gqlOptions = {
         size,
         from,
@@ -88,7 +88,7 @@ export default createModel({
     */
     async get(id: string, globalState: any) {
       const { graphQLMetadata, setDevice, set } = dispatch.devices
-      const account = globalState.accounts.active || globalState.auth.user?.email
+      const account = globalState.accounts.activeId || globalState.auth.user?.id
       let result
 
       if (!hasCredentials()) return

@@ -8,13 +8,14 @@ const ACCOUNT_KEY = 'account'
 type IUserState = ILookup & {
   member: IUser[]
   access: IUser[]
-  active?: string // email
+  activeId?: string // user.id
 }
 
 type IGraphQLAccount = {
   scripting: boolean
   created: Date
   user: {
+    id: string
     email: string
   }
 }
@@ -22,21 +23,20 @@ type IGraphQLAccount = {
 const state: IUserState = {
   member: [],
   access: [],
-  active: undefined,
+  activeId: undefined,
 }
 
 export default createModel({
   state,
   effects: (dispatch: any) => ({
     async init(_, globalState) {
-      let active = window.localStorage.getItem(ACCOUNT_KEY)
-      active = active && JSON.parse(active)
-      dispatch.accounts.setActive(active)
+      let activeId = window.localStorage.getItem(ACCOUNT_KEY)
+      activeId = activeId && JSON.parse(activeId)
+      dispatch.accounts.setActive(activeId)
     },
     async parse(gqlResponse?: any) {
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
-      // { member: IGraphQLAccount[]; access: IGraphQLAccount[] }
       const { parseAccounts } = dispatch.accounts
       dispatch.accounts.set({
         member: await parseAccounts(gqlData.member),
@@ -45,6 +45,7 @@ export default createModel({
     },
     async parseAccounts(accounts: IGraphQLAccount[]): Promise<IUser[]> {
       return accounts.map(a => ({
+        id: a.user.id,
         scripting: a.scripting,
         created: new Date(a.created),
         email: a.user.email,
@@ -96,9 +97,9 @@ export default createModel({
     },
   }),
   reducers: {
-    setActive(state: IUserState, email: string) {
-      window.localStorage.setItem(ACCOUNT_KEY, JSON.stringify(email))
-      state.active = email
+    setActive(state: IUserState, id: string) {
+      window.localStorage.setItem(ACCOUNT_KEY, JSON.stringify(id))
+      state.activeId = id
     },
     set(state: IUserState, params: ILookup) {
       Object.keys(params).forEach(key => (state[key] = params[key]))

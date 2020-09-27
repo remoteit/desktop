@@ -1,15 +1,16 @@
-import React, { useState } from 'react'
-import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
+import React from 'react'
+import { makeStyles, TextField, MenuItem } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
+import { Avatar } from './Avatar'
 import { spacing } from '../styling'
 
 export const AccountSelect: React.FC = () => {
   const css = useStyles()
-  const { accounts } = useDispatch<Dispatch>()
-  const { fetching, options, active } = useSelector((state: ApplicationState) => ({
+  const { accounts, devices } = useDispatch<Dispatch>()
+  const { fetching, options, activeId } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
-    active: state.accounts.active || state.auth.user?.email,
+    activeId: state.accounts.activeId || state.auth.user?.id,
     options: [...state.accounts.member, state.auth.user],
   }))
 
@@ -21,17 +22,19 @@ export const AccountSelect: React.FC = () => {
       className={css.field}
       SelectProps={{ disableUnderline: true }}
       label="Device lists"
-      value={active}
+      value={activeId}
       disabled={fetching}
       variant="filled"
-      onChange={event => {
-        accounts.setActive(event.target.value.toString())
+      onChange={async event => {
+        await accounts.setActive(event.target.value.toString())
+        await devices.fetch()
       }}
     >
       {options.map(
         user =>
           !!user && (
-            <MenuItem value={user.email} key={user.email}>
+            <MenuItem value={user.id} key={user.id}>
+              {/* <Avatar email={user.email} size={24} label /> */}
               {user.email}
             </MenuItem>
           )
@@ -41,5 +44,10 @@ export const AccountSelect: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  field: { width: 300, marginRight: spacing.sm },
+  field: {
+    width: 300,
+    marginRight: spacing.sm,
+    '& .MuiButtonBase-root': {},
+    '& .MuiSelect-root': { whiteSpace: 'nowrap' },
+  },
 })

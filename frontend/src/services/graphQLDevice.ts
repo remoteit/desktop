@@ -83,6 +83,7 @@ export async function graphQLFetchDevices({ size, from, state, name, account, id
             created
             scripting
             user {
+              id
               email
             }
           }
@@ -90,6 +91,7 @@ export async function graphQLFetchDevices({ size, from, state, name, account, id
             created
             scripting
             user {
+              id
               email
             }
           }

@@ -230,10 +230,11 @@ declare global {
   }
 
   type IUser = {
+    id?: string
     email: string
-    timestamp?: Date
     created?: Date
     platform?: number
+    timestamp?: Date
     scripting?: boolean
   }
 
