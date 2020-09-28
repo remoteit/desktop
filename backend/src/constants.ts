@@ -67,10 +67,10 @@ export const PATHS = {
 
   WIN_USER_BINARIES: path.join(os.homedir(), 'AppData/Local/remoteit/bin'),
   WIN_USER_SETTINGS: path.join(os.homedir(), 'AppData/Local/remoteit'),
-  WIN_ADMIN_BINARIES: path.resolve('/Program Files/remoteit-bin'),
-  WIN_ADMIN_SETTINGS: path.resolve('/ProgramData/remoteit'),
+  WIN_ADMIN_BINARIES: path.resolve('C:/Program Files/remoteit-bin'),
+  WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
   WIN_DEPRECATED_BINARIES: [
-    path.resolve('/Program Files/remoteit/remoteit.exe'),
+    path.resolve('C:/Program Files/remoteit/remoteit.exe'),
     path.resolve('/Windows/remoteit.exe'),
   ],
 }
