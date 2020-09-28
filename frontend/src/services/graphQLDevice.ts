@@ -208,6 +208,25 @@ export async function graphQLGetMoreLogs(id: string, from: number, maxDate: stri
   )
 }
 
+export async function graphQLGetEventsURL(id: string, maxDate: string) {
+  return await graphQLRequest(
+    `
+        query($ids: String!, $maxDate: DateTime ) {
+          login {
+            id
+            device(id: $ids){
+              eventsUrl( maxDate: $maxDate  )
+            }
+          }
+        }
+      `,
+    {
+      maxDate,
+      ids: id,
+    }
+  )
+}
+
 export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   let data: IDevice[] = gqlDevices?.map(

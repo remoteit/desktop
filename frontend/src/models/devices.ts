@@ -1,4 +1,10 @@
-import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor, graphQLGetMoreLogs } from '../services/graphQLDevice'
+import {
+  graphQLFetchDevices,
+  graphQLFetchDevice,
+  graphQLAdaptor,
+  graphQLGetMoreLogs,
+  graphQLGetEventsURL,
+} from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
@@ -22,6 +28,7 @@ type IDeviceState = DeviceParams & {
   results: number
   searched: boolean
   fetching: boolean
+  fetchingMore: boolean
   destroying: boolean
   query: string
   append: boolean
@@ -29,6 +36,7 @@ type IDeviceState = DeviceParams & {
   size: number
   from: number
   contacts: IUserRef[]
+  eventsUrl: string
 }
 
 const state: IDeviceState = {
@@ -37,6 +45,7 @@ const state: IDeviceState = {
   results: 0,
   searched: false,
   fetching: true,
+  fetchingMore: false,
   destroying: false,
   query: '',
   append: false,
@@ -44,6 +53,7 @@ const state: IDeviceState = {
   size: 50,
   from: 0,
   contacts: [],
+  eventsUrl: '',
 }
 
 export default createModel({
@@ -135,7 +145,7 @@ export default createModel({
 
       if (!hasCredentials()) return
 
-      set({ getting: true })
+      from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
 
       try {
         const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
@@ -152,7 +162,21 @@ export default createModel({
         await graphQLError(error)
       }
 
-      set({ getting: false })
+      from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
+    },
+
+    async getEventsURL({ id, maxDate }: any, globalState: any) {
+      const { graphQLMetadata, graphQLError, set } = dispatch.devices
+
+      if (!hasCredentials()) return
+      try {
+        const gqlResponse = await graphQLGetEventsURL(id, maxDate)
+        const [gqlData] = await graphQLMetadata(gqlResponse)
+        const { eventsUrl } = gqlData.device
+        set({ eventsUrl: eventsUrl })
+      } catch (error) {
+        await graphQLError(error)
+      }
     },
 
     async updateShareDevice(device: IDevice) {
