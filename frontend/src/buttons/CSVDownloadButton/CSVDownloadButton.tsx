@@ -12,11 +12,7 @@ interface Props {
 export function CSVDownloadButton({ deviceID, maxDate }: Props) {
   const dispatch = useDispatch<Dispatch>()
   const { getEventsURL, set } = dispatch.devices
-  const { eventsURL } = useSelector((state: ApplicationState) => {
-    return {
-      eventsURL: state.devices.eventsUrl,
-    }
-  })
+  const eventsURL = useSelector((state: ApplicationState) => state.devices.eventsUrl)
   const [shouldDownload, setShouldDownload] = useState(false)
 
   useEffect(() => {
