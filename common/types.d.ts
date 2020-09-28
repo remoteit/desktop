@@ -114,7 +114,7 @@ declare global {
   interface IConnection {
     id: string
     name: string
-    owner: string
+    owner: IUserRef
     deviceID: string
     online: boolean // online if service is online
     port?: number
@@ -177,7 +177,7 @@ declare global {
   interface IDevice {
     id: string
     name: string
-    owner: string
+    owner: IUser
     state: DeviceState
     hardwareID?: string
     lastReported: Date
@@ -236,6 +236,11 @@ declare global {
     platform?: number
     timestamp?: Date
     scripting?: boolean
+  }
+
+  type IUserRef = {
+    id: string
+    email: string
   }
 
   type IApplicationType = {

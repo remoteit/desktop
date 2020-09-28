@@ -14,8 +14,9 @@ export interface DeviceListProps {
 
 export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {} }) => {
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
-  const { myDevice, registeredId } = useSelector((state: ApplicationState) => ({
+  const { myDevice, deviceOwner, registeredId } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
+    deviceOwner: state.accounts.activeId && state.accounts.activeId === state.auth.user?.id,
     myDevice: state.devices.all.find(device => device.id === state.backend.device.uid),
   }))
 
@@ -23,17 +24,24 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
     <>
       <List>
         {registeredId ? (
-          <DeviceListItem
-            key={registeredId}
-            device={myDevice}
-            connections={connections[registeredId]}
-            thisDevice={true}
-            setContextMenu={setContextMenu}
-          />
+          deviceOwner && (
+            <>
+              <DeviceListItem
+                key={registeredId}
+                device={myDevice}
+                connections={connections[registeredId]}
+                thisDevice={true}
+                setContextMenu={setContextMenu}
+              />
+              <Divider />
+            </>
+          )
         ) : (
-          <DeviceSetupItem />
+          <>
+            <DeviceSetupItem />
+            <Divider />
+          </>
         )}
-        <Divider />
         {devices.map(
           device =>
             device.id !== myDevice?.id && (

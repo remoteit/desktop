@@ -42,7 +42,7 @@ export function ContactCard({
           scripting: scripts,
           services: selectedServices,
         },
-        contacts: [email],
+        emails: [email],
       },
       false
     )
@@ -55,7 +55,7 @@ export function ContactCard({
           scripting: scripts,
           services: selectedServices,
         },
-        contacts: selected,
+        emails: selected,
       },
       true
     )

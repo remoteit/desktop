@@ -4,12 +4,14 @@ import { attributeName } from '../shared/nameHelper'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
-  const { auth, devices } = store.getState()
+  const { accounts, auth, devices } = store.getState()
+
+  const user = [...accounts.member, auth.user].find(u => u?.id === accounts.activeId)
 
   let connection: IConnection = {
     host: IP_PRIVATE,
     restriction: IP_OPEN,
-    owner: auth.user ? auth.user.username : 'Unknown',
+    owner: { id: user?.id || '', email: user?.email || 'Unknown' },
     name: 'Unknown',
     id: 'Error',
     deviceID: 'Unknown',

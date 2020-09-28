@@ -8,7 +8,7 @@ import { ApplicationState } from '../store'
 
 export interface SharingDetails {
   access: SharingAccess
-  contacts: string[]
+  emails: string[]
   deviceID?: string
 }
 

@@ -8,7 +8,7 @@ import { Typography, Link } from '@material-ui/core'
 
 type Props = {
   selected?: IUser[]
-  contacts: IUser[]
+  contacts: IUserRef[]
   onChange: (latest: any) => void
 }
 

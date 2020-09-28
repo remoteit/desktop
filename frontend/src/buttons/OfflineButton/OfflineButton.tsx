@@ -4,10 +4,11 @@ import { Fade } from '@material-ui/core'
 
 type Props = {
   service?: IService
+  connection?: IConnection
 }
 
-export const OfflineButton: React.FC<Props> = ({ service }) => {
-  const hidden = service && service.state === 'active'
+export const OfflineButton: React.FC<Props> = ({ service, connection }) => {
+  const hidden = service?.state === 'active' || connection?.active
   return (
     <Fade in={!hidden} timeout={600}>
       <div>

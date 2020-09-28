@@ -6,10 +6,11 @@ import { Icon } from '../../components/Icon'
 type Props = {
   device?: IDevice
   service?: IService
+  connection?: IConnection
   onClick?: () => void
 }
 
-export const EditButton: React.FC<Props> = ({ onClick, device, service }) => {
+export const EditButton: React.FC<Props> = ({ onClick, device, service, connection }) => {
   const location = useLocation()
   const history = useHistory()
   const instance = device || service
@@ -18,7 +19,7 @@ export const EditButton: React.FC<Props> = ({ onClick, device, service }) => {
   if (service) title += ' Service'
   else if (device) title += ' Device'
 
-  if (service && device?.shared) return null
+  if ((service && device?.shared) || connection?.active) return null
   if (instance) onClick = () => history.push(location.pathname + '/edit')
 
   return (

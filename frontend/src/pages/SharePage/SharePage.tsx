@@ -45,7 +45,7 @@ export const SharePage = () => {
   }, [])
 
   const handleUnshare = async () => {
-    await shares.delete({ deviceID, email })
+    await shares.delete({ deviceId: deviceID, email })
     history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
   }
 
@@ -54,7 +54,7 @@ export const SharePage = () => {
     const { scripting, services } = share.access
     shares.share(shareData)
     if (device && shareData) {
-      shares.updateDeviceState({ device, contacts: shareData.email, scripting, services, isNew })
+      shares.updateDeviceState({ device, emails: shareData.emails, scripting, services, isNew })
     }
     goToNext()
   }
@@ -72,20 +72,19 @@ export const SharePage = () => {
         serviceId: ser.id,
         action: access.services.includes(ser.id) ? 'ADD' : 'REMOVE',
       })) || []
-    const email = isNew ? share.contacts : [share.contacts[0]]
+    const emails = isNew ? share.emails : [share.emails[0]]
 
     if (device) {
       return {
         deviceId: device.id,
         scripting,
         services,
-        email,
+        emails,
       }
     }
     return
   }
-  console.log('changed?!', changed)
-  console.log('contacts', !!selected.length)
+
   return (
     <Container
       header={

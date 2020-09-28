@@ -51,7 +51,7 @@ export const DeviceDetailPage = () => {
               format: 'round',
               help: 'Average disconnects per day',
             },
-            { label: 'Owner', value: device.owner },
+            { label: 'Owner', value: device.owner.email },
             { label: 'Last reported', value: device.lastReported, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
             { label: 'Connection type', value: device.geo?.connectionType },

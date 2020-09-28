@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
-import { makeStyles, LinearProgress, Typography } from '@material-ui/core'
+import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { RefreshButton } from '../../buttons/RefreshButton'
+import { LoadingMessage } from '../../components/LoadingMessage'
 import { AccountSelect } from '../../components/AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
@@ -44,11 +45,7 @@ export const DevicesPage = () => {
       }
     >
       {fetching && !allDevices.length ? (
-        <Body center>
-          <Typography variant="body1" color="textSecondary">
-            Loading devices...
-          </Typography>
-        </Body>
+        <LoadingMessage message="Loading devices..." spinner={false} />
       ) : !allDevices.length ? (
         <DeviceListEmpty />
       ) : (

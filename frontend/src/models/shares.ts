@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
-import { graphQLHandleError } from '../services/graphQL'
+import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 
 type ShareParams = { [key: string]: any }
 
@@ -19,13 +19,13 @@ const state: IShareState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async delete(userDevice: { deviceID: string; email: string }) {
-      const { deviceID, email } = userDevice
+    async delete(userDevice: { deviceId: string; email: string }) {
+      const { deviceId, email } = userDevice
       const { set } = dispatch.shares
       set({ deleting: true })
       try {
-        await graphQLUnShareDevice({ deviceId: deviceID, email: [email] })
-        await dispatch.devices.get(deviceID)
+        await graphQLUnShareDevice({ deviceId, email: [email] })
+        await dispatch.devices.get({ deviceId })
       } catch (error) {
         await graphQLHandleError(error)
       }
@@ -33,12 +33,11 @@ export default createModel({
     },
 
     async share(newData?: any) {
-      const { graphQLMetadata } = dispatch.devices
       const { set } = dispatch.shares
       set({ sharing: true })
       try {
         const response = await graphQLShareDevice(newData)
-        await graphQLMetadata(response)
+        await graphQLGetErrors(response)
       } catch (error) {
         await graphQLHandleError(error)
       }
@@ -47,14 +46,14 @@ export default createModel({
 
     async updateDeviceState(infoUpdate: {
       device: IDevice
-      contacts: string[]
+      emails: string[]
       scripting: boolean
       services: string[]
       isNew?: boolean
     }) {
-      const { device, contacts, scripting, services, isNew } = infoUpdate
+      const { device, emails, scripting, services, isNew } = infoUpdate
 
-      const newUsers: IUser[] = contacts.map(email => ({ email, scripting }))
+      const newUsers: IUser[] = emails.map(email => ({ email, scripting }))
       if (isNew) {
         device.access = device.access.concat(newUsers)
       } else {

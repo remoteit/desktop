@@ -50,5 +50,5 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
 }
 
 const useStyles = makeStyles({
-  overlap: { position: 'absolute', left: 28, top: 20 },
+  overlap: { position: 'absolute', left: 28, top: 20, zIndex: 1 },
 })

@@ -10,7 +10,7 @@ export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   const onClick = () => {
     if (device) {
-      devices.get(device.id)
+      devices.fetchDevice({ deviceId: device.id })
     } else {
       devices.set({ from: 0 })
       devices.fetch()

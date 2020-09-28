@@ -1,5 +1,5 @@
 import { clearUserCredentials, updateUserCredentials, r3 } from '../services/remote.it'
-import { IUser } from 'remote.it'
+import { IUser as LegacyUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 import Controller from '../services/Controller'
@@ -12,7 +12,7 @@ export interface AuthState {
   signInStarted: boolean
   authenticated: boolean
   signInError?: string
-  user?: IUser
+  user?: LegacyUser
 }
 
 const state: AuthState = {
@@ -135,7 +135,7 @@ export default createModel({
     setError(state: AuthState, error: string) {
       state.signInError = error
     },
-    setUser(state: AuthState, user: IUser) {
+    setUser(state: AuthState, user: LegacyUser) {
       state.user = user
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))

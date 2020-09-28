@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
-import { useSelector } from 'react-redux'
 import { PortSetting } from '../../components/PortSetting'
 import { HostSetting } from '../../components/HostSetting'
 import { NameSetting } from '../../components/NameSetting'
@@ -12,13 +12,14 @@ import { ProxySetting } from '../../components/ProxySetting'
 import { UsernameSetting } from '../../components/UsernameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { ServiceConnected } from '../../components/ServiceConnected'
-import { ApplicationState } from '../../store'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
+import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { UnauthorizedPage } from '../UnauthorizedPage'
 import { LanShareSelect } from '../../components/LanShareSelect'
+import { LoadingMessage } from '../../components/LoadingMessage'
 import { LaunchSetting } from '../../components/LaunchSetting'
 import { AddUserButton } from '../../buttons/AddUserButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
@@ -36,16 +37,21 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const ServicePage: React.FC = () => {
   const css = useStyles()
   const location = useLocation()
-  const { serviceID = '' } = useParams()
+  const { serviceID = '' } = useParams<{ serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(false)
+  const { devices } = useDispatch<Dispatch>()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
   const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
+  const { fetching } = useSelector((state: ApplicationState) => state.devices)
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
+    if (!device && connection?.deviceID)
+      devices.fetchDevice({ deviceId: connection.deviceID, accountId: connection.owner.id, hidden: true })
   }, [])
 
+  if (fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <UnauthorizedPage />
 
   return (
@@ -56,7 +62,7 @@ export const ServicePage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
-            <EditButton device={device} service={service} />
+            <EditButton device={device} service={service} connection={connection} />
             <AddUserButton device={device} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />

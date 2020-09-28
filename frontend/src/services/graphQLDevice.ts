@@ -3,72 +3,68 @@ import { renameServices } from '../shared/nameHelper'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
-const DEVICE_SELECT = `{
-  total
-  items {
+const DEVICE_SELECT = `
+  id
+  name
+  state
+  created
+  lastReported
+  hardwareId
+  platform
+  version
+  attributes
+  ${LEGACY_ATTRIBUTES.join('\n')}
+  access {
+    user {
+      email
+    }
+    scripting
+  }
+  endpoint {
+    externalAddress
+    internalAddress
+    availability
+    instability
+    geo {
+      connectionType
+      countryName
+      stateName
+      city
+      isp
+    }
+  }
+  owner {
+    id
+    email
+  }
+  services {
     id
     name
     state
+    title
+    application
     created
     lastReported
-    hardwareId
-    platform
-    version
+    port
+    type
+    protocol
     attributes
-    ${LEGACY_ATTRIBUTES.join('\n')}
     access {
       user {
         email
       }
-      scripting
     }
-    endpoint {
-      externalAddress
-      internalAddress
-      availability
-      instability
-      geo {
-        connectionType
-        countryName
-        stateName
-        city
-        isp
+    sessions {
+      timestamp
+      endpoint {
+        platform
+      }
+      user {
+        id
+        email
       }
     }
-    owner {
-      id
-      email
-    }
-    services {
-      id
-      name
-      state
-      title
-      application
-      created
-      lastReported
-      port
-      type
-      protocol
-      attributes
-      access {
-        user {
-          email
-        }
-      }
-      sessions {
-        timestamp
-        endpoint {
-          platform
-        }
-        user {
-          id
-          email
-        }
-      }
-    }
-  }
-}`
+  }`
 
 export async function graphQLFetchDevices({ size, from, state, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
@@ -76,8 +72,18 @@ export async function graphQLFetchDevices({ size, from, state, name, account, id
         login {
           id
           account(id: $account) {
-            devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
-            connections: devices(id: $ids) ${DEVICE_SELECT}
+            devices(size: $size, from: $from, name: $name, state: $state) {
+              total
+              items {
+                ${DEVICE_SELECT}
+              }
+            }
+            connections: devices(id: $ids)  {
+              total
+              items {
+                ${DEVICE_SELECT}
+              }
+            }
           }
           member {
             created
@@ -114,11 +120,13 @@ export async function graphQLFetchDevices({ size, from, state, name, account, id
 
 export async function graphQLFetchDevice(id: string, account: string) {
   return await graphQLRequest(
-    ` query($id: [String!], $account: String) {
+    ` query($id: String!, $account: String) {
         login {
           id
           account(id: $account) {
-            device(id: $id) ${DEVICE_SELECT}
+            device(id: $id)  {
+              ${DEVICE_SELECT}
+            }
           }
         }
       }`,
@@ -129,13 +137,13 @@ export async function graphQLFetchDevice(id: string, account: string) {
   )
 }
 
-export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolean): IDevice[] {
+export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices) return []
-  let data: IDevice[] = gqlDevices?.items.map(
+  let data: IDevice[] = gqlDevices?.map(
     (d: any): IDevice => ({
       id: d.id,
       name: d.name,
-      owner: d.owner?.email,
+      owner: d.owner,
       state: d.state,
       hardwareID: d.hardwareId,
       createdAt: new Date(d.created),

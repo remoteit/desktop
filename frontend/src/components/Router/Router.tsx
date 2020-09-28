@@ -82,6 +82,7 @@ export const Router: React.FC = () => {
         path={[
           '/connections/:serviceID/users/:email',
           '/connections/:serviceID/users/share',
+          '/connections/:serviceID/share',
           '/devices/:deviceID/:serviceID/users/share',
           '/devices/:deviceID/:serviceID/users/:email',
           '/devices/:deviceID/:serviceID/share',

@@ -40,7 +40,7 @@ export const ServiceDetailPage = () => {
     { label: 'Remote Protocol', value: service.protocol },
     { label: 'Service Type', value: service.type },
     { label: 'Device Name', value: device.name },
-    { label: 'Owner', value: device.owner },
+    { label: 'Owner', value: device.owner.email },
     { label: 'Service ID', value: service.id },
   ])
 
