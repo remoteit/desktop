@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import {
@@ -11,6 +11,9 @@ import {
   Link,
   ListItemIcon,
   TextField,
+  FilledTextFieldProps,
+  OutlinedTextFieldProps,
+  StandardTextFieldProps,
 } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
@@ -18,12 +21,10 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { colors, fontSizes, spacing } from '../../styling'
-import DateFnsUtils from '@date-io/date-fns'
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
 import { EventMessage } from './EventMessage'
 import { EventIcon } from './EventIcon'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
-import { getDateFormatString } from '../../shared/applications'
+import { DatePicker } from '../../components/DatePicker/DatePicker'
 
 const TIME = 1000 * 60 * 60 * 24
 
@@ -65,47 +66,23 @@ export const DeviceLogPage = () => {
     fetchLogs({ id: deviceID, from: device?.events.items.length, maxDate: `${selectedDate} 23:59:59` })
   }
 
-  const TextFieldComponent = (props: any) => {
-    return <TextField {...props} disabled={true} />
-  }
-
   if (!device) return null
 
   return (
     <Container
-      inset
       header={
         <>
           <Breadcrumbs />
           <Typography variant="h1" className={css.header}>
             <Icon name="file-alt" color="grayDarker" size="lg" />
             <Title>Device Logs</Title>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <KeyboardDatePicker
-                autoOk={true}
-                className={css.textField}
-                disableToolbar
-                variant="inline"
-                format={getDateFormatString()}
-                id="date-picker-inline"
-                label="Jump to Date"
-                value={selectedDate || new Date()}
-                onChange={handleChange}
-                inputVariant="standard"
-                disableFuture={true}
-                TextFieldComponent={TextFieldComponent}
-                minDate={minDay}
-                keyboardIcon={
-                  <Icon
-                    name={fetching ? 'spinner-third' : 'calendar-day'}
-                    type="regular"
-                    size="md"
-                    spin={fetching}
-                    fixedWidth
-                  />
-                }
-              />
-            </MuiPickersUtilsProvider>
+            <DatePicker
+              handleChange={handleChange}
+              minDay={minDay}
+              selectedDate={selectedDate}
+              fetching={fetching}
+              label="Jump to Date"
+            />
 
             <CSVDownloadButton deviceID={deviceID} maxDate={selectedDate?.toDateString() || new Date().toString()} />
           </Typography>
@@ -160,7 +137,7 @@ export function EventCell({ item, device, user }: { item: IEvent; device: IDevic
 
 const useStyles = makeStyles({
   header: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   textField: {
     display: 'block',
