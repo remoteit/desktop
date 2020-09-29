@@ -1,15 +1,17 @@
 import React from 'react'
-import { makeStyles, TextField, MenuItem } from '@material-ui/core'
+import { makeStyles, TextField, MenuItem, Tooltip } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { getAccountId, getDevices } from '../models/accounts'
+import { getAccountId } from '../models/accounts'
+import { spacing, colors } from '../styling'
 import { Avatar } from './Avatar'
-import { spacing } from '../styling'
+import { Icon } from './Icon'
 
 export const AccountSelect: React.FC = () => {
   const css = useStyles()
   const { accounts, devices } = useDispatch<Dispatch>()
-  const { fetching, options, activeId } = useSelector((state: ApplicationState) => ({
+  const { signedInUser, fetching, options, activeId } = useSelector((state: ApplicationState) => ({
+    signedInUser: state.auth.user,
     fetching: state.devices.fetching,
     activeId: getAccountId(state),
     options: [...state.accounts.member, state.auth.user],
@@ -34,7 +36,11 @@ export const AccountSelect: React.FC = () => {
       {options.map(
         user =>
           !!user && (
-            <MenuItem value={user.id} key={user.id}>
+            <MenuItem
+              className={css.menuItem + (user.id === signedInUser?.id ? ' primary' : '')}
+              value={user.id}
+              key={user.id}
+            >
               {/* <Avatar email={user.email} size={24} label /> */}
               {user.email}
             </MenuItem>
@@ -51,4 +57,5 @@ const useStyles = makeStyles({
     '& .MuiButtonBase-root': {},
     '& .MuiSelect-root': { whiteSpace: 'nowrap' },
   },
+  menuItem: { '&.primary': { color: colors.primary } },
 })
