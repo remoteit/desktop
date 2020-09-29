@@ -116,11 +116,11 @@ export default createModel({
       const parseAccounts = dispatch.accounts.parse
       try {
         const gqlResponse = await graphQLFetchDevices(options)
-        const [gqlData, userId, total, error] = await graphQLMetadata(gqlResponse)
+        const [gqlData, userId, total, contacts, error] = await graphQLMetadata(gqlResponse)
         const connections = graphQLAdaptor(gqlData?.connections.items, userId, true)
         const devices = graphQLAdaptor(gqlData?.devices.items, userId)
         await parseAccounts(gqlResponse)
-        return { devices: [...connections, ...devices], total, contacts: gqlData?.contacts, error }
+        return { devices: [...connections, ...devices], total, contacts, error }
       } catch (error) {
         await graphQLHandleError(error)
         return { devices: [], total: 0, error }
@@ -135,9 +135,10 @@ export default createModel({
     async graphQLMetadata(gqlData: any) {
       const error = graphQLGetErrors(gqlData)
       const data = gqlData?.data?.data?.login?.account || {}
+      const contacts = gqlData?.data?.data?.login?.contacts
       const id = gqlData?.data?.data?.login?.id
       const total = data?.devices?.total || 0
-      return [data, id, total, error]
+      return [data, id, total, contacts, error]
     },
 
     async reset() {
@@ -151,13 +152,13 @@ export default createModel({
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].name = service.name
-      dispatch.devices.setDevice({ id: device.id, device })
+      dispatch.accounts.setDevice({ id: device.id, device })
       dispatch.devices.rename(service)
     },
 
     async renameDevice(device: IDevice) {
       console.log('DEVICE RENAME', device.name)
-      dispatch.devices.setDevice({ id: device.id, device })
+      dispatch.accounts.setDevice({ id: device.id, device })
       dispatch.devices.rename(device)
     },
 
@@ -173,7 +174,7 @@ export default createModel({
 
     async setAttributes(device: IDevice) {
       graphQLSetAttributes(device.attributes, device.id)
-      dispatch.devices.setDevice({ id: device.id, device })
+      dispatch.accounts.setDevice({ id: device.id, device })
     },
 
     async setServiceAttributes(service: IService, globalState: any) {
@@ -182,7 +183,7 @@ export default createModel({
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].attributes = service.attributes
       graphQLSetAttributes(service.attributes, service.id)
-      dispatch.devices.setDevice({ id: device.id, device })
+      dispatch.accounts.setDevice({ id: device.id, device })
       emit('service/forget', service) // clear connection since state changed?
     },
 
