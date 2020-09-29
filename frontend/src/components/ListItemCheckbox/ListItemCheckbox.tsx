@@ -4,7 +4,7 @@ import { ListItem, ListItemText, ListItemIcon, Checkbox } from '@material-ui/cor
 
 type Props = {
   keyProp?: string | number
-  label: string
+  label: string | React.ReactNode
   subLabel?: string | React.ReactNode
   disabled?: boolean
   checked?: boolean

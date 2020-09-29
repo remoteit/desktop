@@ -15,6 +15,7 @@ import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
 import { makeStyles } from '@material-ui/core/styles'
+import { Icon } from '../Icon'
 import { colors, spacing } from '../../styling'
 
 export interface ServiceListItemProps {
@@ -36,7 +37,12 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
     <span className={css.details}>
       {connection && hostName(connection)}
       {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
-      {otherUser && <span>Account {connection?.owner.email}</span>}
+      {otherUser && (
+        <span>
+          <Icon name="user" size="bug" type="solid" inlineLeft />
+          {connection?.owner.email}
+        </span>
+      )}
     </span>
   )
 
@@ -67,6 +73,6 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
 
 const useStyles = makeStyles({
   indent: { paddingLeft: 57 },
-  details: { '& > span': { marginLeft: spacing.xs } },
+  details: { '& > span': { marginLeft: spacing.sm } },
   restriction: { color: colors.grayDarker },
 })

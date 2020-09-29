@@ -120,10 +120,11 @@ function ServiceCheckboxes({
   return (
     <>
       <List className="collapseList">
-        <ListItemCheckbox disabled={saving} label="Select all" onClick={checked => selectAll(checked, services)} />
-      </List>
-      <Divider />
-      <List className="collapseList">
+        <ListItemCheckbox
+          disabled={saving}
+          label={<i>Select all</i>}
+          onClick={checked => selectAll(checked, services)}
+        />
         {services.map((service, key) => (
           <ListItemCheckbox
             key={key}
