@@ -1,4 +1,4 @@
-import { CLIENT_ID, API_URL, DEVELOPER_KEY } from '../../shared/constants'
+import { CLIENT_ID, API_URL, DEVELOPER_KEY, CALLBACK_URL } from '../../shared/constants'
 import theme from '../../styling/theme'
 import React from 'react'
 import styles from '../../styling'
@@ -24,6 +24,7 @@ export function SignInForm() {
         redirectURL={getRedirectUrl()}
         developerKey={DEVELOPER_KEY}
         errorMessage={signInError}
+        callbackURL={CALLBACK_URL}
       />
     </React.Fragment>
   )

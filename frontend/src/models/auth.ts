@@ -1,4 +1,4 @@
-import { CLIENT_ID, API_URL, DEVELOPER_KEY } from '../shared/constants'
+import { CLIENT_ID, API_URL, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
 import { r3 } from '../services/remote.it'
 
 import { IUser } from 'remote.it'
@@ -39,7 +39,7 @@ export default createModel({
       let { user } = rootState.auth
 
       if (!user) {
-        const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL:getRedirectUrl()});
+        const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL:getRedirectUrl(), callbackURL:CALLBACK_URL});
         dispatch.auth.setAuthService(authService)
         try {
           const authUser = await authService.checkSignIn()
