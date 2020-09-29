@@ -1,6 +1,7 @@
 import React from 'react'
 import { Typography } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
+import { getDevices } from '../../models/accounts'
 import { ApplicationState } from '../../store'
 import { usePermissions } from '../../hooks/usePermissions'
 import { useSelector } from 'react-redux'
@@ -10,7 +11,7 @@ import styles from '../../styling'
 
 export const Header: React.FC = () => {
   const device = useSelector((state: ApplicationState) =>
-    state.devices.all.find(d => d.id === state.backend.device.uid)
+    getDevices(state).find(d => d.id === state.backend.device.uid)
   )
   const { guest } = usePermissions()
   const css = useStyles()

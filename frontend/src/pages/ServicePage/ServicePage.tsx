@@ -27,6 +27,7 @@ import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
 import { UsersSelect } from '../../components/UsersSelect'
 import { ErrorButton } from '../../buttons/ErrorButton'
+import { getDevices } from '../../models/accounts'
 import { EditButton } from '../../buttons/EditButton'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
@@ -41,7 +42,9 @@ export const ServicePage: React.FC = () => {
   const [showError, setShowError] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
-  const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const [service, device] = useSelector((state: ApplicationState) =>
+    findService(getDevices(state, connection?.owner.id), serviceID)
+  )
   const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
   const { fetching } = useSelector((state: ApplicationState) => state.devices)
 

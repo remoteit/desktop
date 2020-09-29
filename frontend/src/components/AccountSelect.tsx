@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles, TextField, MenuItem } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
+import { getAccountId, getDevices } from '../models/accounts'
 import { Avatar } from './Avatar'
 import { spacing } from '../styling'
 
@@ -10,7 +11,7 @@ export const AccountSelect: React.FC = () => {
   const { accounts, devices } = useDispatch<Dispatch>()
   const { fetching, options, activeId } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
-    activeId: state.accounts.activeId || state.auth.user?.id,
+    activeId: getAccountId(state),
     options: [...state.accounts.member, state.auth.user],
   }))
 
@@ -27,7 +28,7 @@ export const AccountSelect: React.FC = () => {
       variant="filled"
       onChange={async event => {
         await accounts.setActive(event.target.value.toString())
-        await devices.fetch()
+        devices.fetch()
       }}
     >
       {options.map(

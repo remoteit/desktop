@@ -11,6 +11,7 @@ import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceForm } from '../../components/ServiceForm'
+import { getDevices } from '../../models/accounts'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -21,8 +22,8 @@ type Props = {
 }
 export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
-  const { serviceID = '', deviceID } = useParams()
-  const [service] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const { serviceID = '', deviceID } = useParams<{ serviceID: string; deviceID: string }>()
+  const [service] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
   const target = targets?.find(t => t.uid === serviceID)
   const thisDevice = service?.deviceID === targetDevice.uid
   const location = useLocation()

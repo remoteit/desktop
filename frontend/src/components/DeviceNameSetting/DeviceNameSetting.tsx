@@ -6,6 +6,7 @@ import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { attributeName } from '../../shared/nameHelper'
 import { safeHostname } from '../../shared/nameHelper'
 import { LabelButton } from '../../buttons/LabelButton'
+import { getDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core'
 
 export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITargetDevice }> = ({
@@ -16,7 +17,7 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
   const { devices } = useDispatch<Dispatch>()
   const { hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
-    nameBlacklist: state.devices.all
+    nameBlacklist: getDevices(state)
       .filter((device: IDevice) => !device.shared)
       .map((d: IDevice) => d.name.toLowerCase()),
   }))

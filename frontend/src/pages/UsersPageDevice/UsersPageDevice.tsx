@@ -4,6 +4,7 @@ import { SharedUsersHeader } from '../../components/SharedUsersHeader'
 import { SharedUsersList } from '../../components/SharedUsersList'
 import { getConnected } from '../../helpers/userHelper'
 import { useSelector } from 'react-redux'
+import { getDevices } from '../../models/accounts'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -11,7 +12,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const UsersPageDevice: React.FC = () => {
   const { deviceID = '' } = useParams<{ deviceID: string }>()
   const { device } = useSelector((state: ApplicationState) => ({
-    device: state.devices.all.find((d: IDevice) => d.id === deviceID),
+    device: getDevices(state).find((d: IDevice) => d.id === deviceID),
   }))
   const users = device?.access
   const connected = getConnected(device?.services)

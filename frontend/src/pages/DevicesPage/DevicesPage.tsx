@@ -8,6 +8,7 @@ import { AccountSelect } from '../../components/AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
 import { useSelector } from 'react-redux'
+import { getDevices } from '../../models/accounts'
 import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
 import { Body } from '../../components/Body'
@@ -17,7 +18,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const DevicesPage = () => {
   const { allDevices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
-    allDevices: state.devices.all.filter((d: IDevice) => !d.hidden),
+    allDevices: getDevices(state).filter((d: IDevice) => !d.hidden),
     connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]

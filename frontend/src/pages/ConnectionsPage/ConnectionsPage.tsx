@@ -6,6 +6,7 @@ import { ApplicationState } from '../../store'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { SessionsList } from '../../components/SessionsList'
 import { useSelector } from 'react-redux'
+import { getDevices } from '../../models/accounts'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
@@ -15,13 +16,14 @@ export const ConnectionsPage: React.FC = () => {
   const history = useHistory()
   const { connections, services, sessions } = useSelector((state: ApplicationState) => {
     const connections = state.backend.connections.filter(c => !!c.startTime)
+    const devices = getDevices(state)
     return {
       connections,
       services: findServices(
-        state.devices.all,
+        devices,
         connections.map(c => c.id)
       ),
-      sessions: state.devices.all.reduce((sessions: ISession[], d) => {
+      sessions: devices.reduce((sessions: ISession[], d) => {
         if (!d.hidden)
           d.services.forEach(s =>
             s.sessions.forEach(u => {

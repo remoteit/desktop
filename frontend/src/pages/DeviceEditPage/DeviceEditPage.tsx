@@ -17,6 +17,7 @@ import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
+import { getDevices } from '../../models/accounts'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { AddServiceButton } from '../../buttons/AddServiceButton'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
@@ -41,7 +42,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { setupAddingService } = useSelector((state: ApplicationState) => state.ui)
   const device = useSelector((state: ApplicationState) =>
-    state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
+    getDevices(state).find((d: IDevice) => d.id === deviceID && !d.hidden)
   )
 
   useEffect(() => {

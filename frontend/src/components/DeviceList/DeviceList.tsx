@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { DeviceListItem } from '../DeviceListItem'
+import { getAccountId, getDevices } from '../../models/accounts'
 import { DeviceSetupItem } from '../DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
@@ -16,8 +17,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
   const { myDevice, deviceOwner, registeredId } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
-    deviceOwner: state.accounts.activeId && state.accounts.activeId === state.auth.user?.id,
-    myDevice: state.devices.all.find(device => device.id === state.backend.device.uid),
+    deviceOwner: getAccountId(state) === state.auth.user?.id,
+    myDevice: getDevices(state).find(device => device.id === state.backend.device.uid),
   }))
 
   return (

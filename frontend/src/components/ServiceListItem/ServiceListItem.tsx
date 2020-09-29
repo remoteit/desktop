@@ -30,7 +30,7 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
   const css = useStyles()
   const [showError, setShowError] = useState<boolean>(false)
   const id = connection ? connection.id : service ? service.id : ''
-  const otherUser = !!connection?.owner.id && connection?.owner?.id !== user?.id
+  const otherUser = !!connection?.owner?.id && connection?.owner?.id !== user?.id
 
   const details = (
     <span className={css.details}>

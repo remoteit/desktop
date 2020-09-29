@@ -9,6 +9,7 @@ import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { useHistory } from 'react-router-dom'
+import { getDevices } from '../../models/accounts'
 import { ContactSelector } from '../../components/ContactSelector'
 import { DeviceShareDetails } from '../../components/DeviceShareDetails'
 import { SharingDetails } from '../../components/SharingForm'
@@ -24,11 +25,12 @@ export const SharePage = () => {
   const { shares } = useDispatch<Dispatch>()
   const { device, deleting } = useSelector((state: ApplicationState) => {
     const deleting = state.shares.deleting
+    const devices = getDevices(state)
     let device: IDevice | undefined
     if (deviceID) {
-      device = state.devices.all.find(device => device.id === deviceID)
+      device = devices.find(device => device.id === deviceID)
     } else if (serviceID) {
-      const result = findService(state.devices.all, serviceID)
+      const result = findService(devices, serviceID)
       device = result[1]
     }
     return { deleting, device }
