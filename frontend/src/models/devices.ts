@@ -142,7 +142,7 @@ export default createModel({
     },
 
     async reset() {
-      dispatch.account.setDevices({ devices: [] })
+      dispatch.accounts.setDevices({ devices: [] })
       dispatch.backend.set({ connections: [] })
       dispatch.devices.set({ query: '', filter: 'all', initialized: false })
     },
