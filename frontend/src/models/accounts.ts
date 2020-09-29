@@ -66,8 +66,8 @@ export default createModel({
           dispatch.ui.set({
             successMessage:
               emails.length > 1
-                ? `Accounts successfully linked: ${emails.join(', ')}`
-                : `${emails[0]} successfully linked.`,
+                ? `${emails.length} accounts successfully linked.`
+                : `${emails[0]} successfully linked to your account.`,
           })
         }
       } catch (error) {

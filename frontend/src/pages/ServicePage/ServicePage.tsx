@@ -41,12 +41,17 @@ export const ServicePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
-  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
-  const [service, device] = useSelector((state: ApplicationState) =>
-    findService(getDevices(state, connection?.owner.id), serviceID)
-  )
-  const thisDevice = useSelector((state: ApplicationState) => state.backend.device?.uid) === device?.id
-  const { fetching } = useSelector((state: ApplicationState) => state.devices)
+  const { connection, service, device, thisDevice, fetching } = useSelector((state: ApplicationState) => {
+    const connection = state.backend.connections.find(c => c.id === serviceID)
+    const [service, device] = findService(getDevices(state, connection?.owner.id), serviceID)
+    return {
+      service,
+      device,
+      connection,
+      thisDevice: state.backend.device?.uid === device?.id,
+      fetching: state.devices.fetching,
+    }
+  })
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')

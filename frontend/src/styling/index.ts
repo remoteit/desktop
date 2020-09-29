@@ -1,8 +1,9 @@
 import { PropTypes } from '@material-ui/core'
 
-export type FontSize = 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'max'
+export type FontSize = 'bug' | 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'max'
 
 export const fontSizes: { [key in FontSize]: number } = {
+  bug: 7,
   xxxs: 8,
   xxs: 10,
   xs: 11,
