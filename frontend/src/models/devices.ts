@@ -117,8 +117,8 @@ export default createModel({
       try {
         const gqlResponse = await graphQLFetchDevices(options)
         const [gqlData, userId, total, contacts, error] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData?.connections.items, userId, true)
-        const devices = graphQLAdaptor(gqlData?.devices.items, userId)
+        const connections = graphQLAdaptor(gqlData?.connections?.items, userId, true)
+        const devices = graphQLAdaptor(gqlData?.devices?.items, userId)
         await parseAccounts(gqlResponse)
         return { devices: [...connections, ...devices], total, contacts, error }
       } catch (error) {

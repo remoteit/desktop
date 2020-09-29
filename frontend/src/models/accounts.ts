@@ -37,14 +37,17 @@ export default createModel({
       activeId = activeId && JSON.parse(activeId)
       dispatch.accounts.setActive(activeId)
     },
-    async parse(gqlResponse?: any) {
+    async parse(gqlResponse: any, globalState) {
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts
-      dispatch.accounts.set({
-        member: await parseAccounts(gqlData.member),
-        access: await parseAccounts(gqlData.access),
-      })
+      const member: IUser[] = await parseAccounts(gqlData.member)
+      const access: IUser[] = await parseAccounts(gqlData.access)
+      dispatch.accounts.set({ member, access })
+      if (!member.find(m => m.id === globalState.accounts.activeId)) {
+        dispatch.accounts.setActive(globalState.auth.user?.id)
+        dispatch.devices.fetch()
+      }
     },
     async parseAccounts(accounts: IGraphQLAccount[]): Promise<IUser[]> {
       return accounts.map(a => ({

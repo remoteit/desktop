@@ -5,7 +5,6 @@ import { ApplicationState, Dispatch } from '../store'
 import { getAccountId } from '../models/accounts'
 import { spacing, colors } from '../styling'
 import { Avatar } from './Avatar'
-import { Icon } from './Icon'
 
 export const AccountSelect: React.FC = () => {
   const css = useStyles()
