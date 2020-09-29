@@ -88,7 +88,7 @@ export default createModel({
       dispatch.auth.signInFinished()
       await dispatch.auth.checkSession()
       dispatch.auth.setAuthenticated(true)
-      dispatch.devices.fetch()
+      dispatch.devices.init()
       dispatch.applicationTypes.fetch()
       dispatch.auth.setInitialized()
       emit('init')
@@ -108,6 +108,7 @@ export default createModel({
       dispatch.devices.reset()
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
+      dispatch.accounts.setActive('')
       window.location.hash = ''
       emit('user/sign-out-complete')
       analyticsHelper.clearIdentity()

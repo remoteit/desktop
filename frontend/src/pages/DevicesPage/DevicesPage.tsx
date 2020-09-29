@@ -16,9 +16,9 @@ import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DevicesPage = () => {
-  const { allDevices, connections, fetching } = useSelector((state: ApplicationState) => ({
+  const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
-    allDevices: getDevices(state).filter((d: IDevice) => !d.hidden),
+    devices: getDevices(state).filter((d: IDevice) => !d.hidden),
     connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
@@ -45,12 +45,12 @@ export const DevicesPage = () => {
         </>
       }
     >
-      {fetching && !allDevices.length ? (
+      {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." spinner={false} />
-      ) : !allDevices.length ? (
+      ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={allDevices} connections={connections} />
+        <DeviceList devices={devices} connections={connections} />
       )}
     </Container>
   )
