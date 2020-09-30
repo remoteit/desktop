@@ -89,6 +89,7 @@ export const SettingsPage: React.FC = () => {
       <Divider />
       <Typography variant="subtitle1">User</Typography>
       <List>
+        <AccountLinkingSettings />
         <ListItemSetting
           label="Help documentation"
           icon="books"
@@ -109,15 +110,18 @@ export const SettingsPage: React.FC = () => {
         />
         <ListItemSetting
           label={'Sign out and clear device credentials'}
-          subLabel={`This will remove all user credentials from this device, 
-                allowing the device to be transferred or another user to log in.
-                The next user to sign in will claim this device.`}
+          subLabel={
+            <>
+              This will remove all user credentials from this device, allowing the device to be transferred or another
+              user to log in.
+              <br />
+              The next user to sign in will claim this device.
+            </>
+          }
           icon="user-slash"
           onClick={clearWarning}
         />
       </List>
-      <Divider />
-      <AccountLinkingSettings />
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
       <List>

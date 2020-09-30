@@ -6,6 +6,7 @@ import { getAccountId } from '../models/accounts'
 import { spacing, colors } from '../styling'
 import { Icon } from './Icon'
 import { Avatar } from './Avatar'
+import classnames from 'classnames'
 
 export const AccountSelect: React.FC = () => {
   const css = useStyles()
@@ -14,10 +15,13 @@ export const AccountSelect: React.FC = () => {
     signedInUser: state.auth.user,
     fetching: state.devices.fetching,
     activeId: getAccountId(state),
-    options: [...state.accounts.member, state.auth.user],
+    options: [state.auth.user, ...state.accounts.member].sort(),
   }))
 
   if (options.length < 2) return null
+
+  const leave = (email: string) =>
+    window.confirm(`Are you sure you wish to leave the linked account ${email}?`) && accounts.leaveMembership(email)
 
   return (
     <TextField
@@ -37,21 +41,21 @@ export const AccountSelect: React.FC = () => {
         user =>
           !!user && (
             <MenuItem
-              className={css.menuItem + (user.id === signedInUser?.id ? ' primary' : '')}
+              className={classnames(css.menu, user.id === signedInUser?.id && css.primary)}
               value={user.id}
               key={user.id}
             >
               {/* <Avatar email={user.email} size={24} label /> */}
               {user.email}
-              {/* {user.id !== signedInUser?.id && (
-                <ListItemSecondaryAction>
+              {user.id !== signedInUser?.id && (
+                <ListItemSecondaryAction className={css.action}>
                   <Tooltip title="Leave Account">
-                    <IconButton onClick={() => accounts.leaveMembership(user.email)}>
-                      <Icon name="sign-out" size="md" fixedWidth />
+                    <IconButton onClick={() => leave(user.email)}>
+                      <Icon name="sign-out" type="regular" size="base" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 </ListItemSecondaryAction>
-              )} */}
+              )}
             </MenuItem>
           )
       )}
@@ -60,11 +64,8 @@ export const AccountSelect: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  field: {
-    width: 300,
-    marginRight: spacing.sm,
-    '& .MuiButtonBase-root': {},
-    '& .MuiSelect-root': { whiteSpace: 'nowrap' },
-  },
-  menuItem: { '&.primary': { color: colors.primary } },
+  field: { width: 300, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
+  menu: { paddingRight: 60 },
+  primary: { color: colors.primary },
+  action: { right: spacing.xs, marginLeft: spacing.sm },
 })
