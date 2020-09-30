@@ -2,14 +2,17 @@ import React from 'react'
 import { Icon } from './Icon'
 import { spacing, colors } from '../styling'
 import { makeStyles, Paper } from '@material-ui/core'
+import classnames from 'classnames'
 
-type Props = {}
+type Props = {
+  gutterBottom?: boolean
+}
 
-export const Notice: React.FC<Props> = ({ children }) => {
+export const Notice: React.FC<Props> = ({ gutterBottom, children }) => {
   const css = useStyles()
 
   return (
-    <Paper elevation={0} className={css.notice}>
+    <Paper elevation={0} className={classnames(css.notice, gutterBottom && css.gutter)}>
       <Icon name="info-circle" size="md" inlineLeft />
       {children}
     </Paper>
@@ -18,11 +21,14 @@ export const Notice: React.FC<Props> = ({ children }) => {
 
 const useStyles = makeStyles({
   notice: {
+    flexGrow: 1,
     padding: `${spacing.sm}px ${spacing.md}px`,
-    marginBottom: spacing.md,
     backgroundColor: colors.primaryHighlight,
     color: colors.primary,
     '& i': { fontStyle: 'normal' },
     '& b': { fontWeight: 'inherit', color: colors.grayDarkest },
+  },
+  gutter: {
+    marginBottom: spacing.md,
   },
 })

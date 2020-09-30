@@ -16,6 +16,7 @@ import { AddUserButton } from '../buttons/AddUserButton'
 import { Breadcrumbs } from '../components/Breadcrumbs'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
+import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
@@ -44,6 +45,9 @@ export const AccountAccessPage: React.FC = () => {
     >
       {access.length ? (
         <List>
+          <ListItem>
+            <Notice>These users have access to all the devices you own.</Notice>
+          </ListItem>
           {access.map(user => (
             <ListItem key={user.email}>
               <ListItemIcon>

@@ -47,7 +47,7 @@ export const AccountSharePage = () => {
     >
       <ContactSelector contacts={contacts.filter(c => !access.find(s => s.email === c.email))} onChange={setEmails} />
       {!!emails.length && (
-        <Notice>
+        <Notice gutterBottom>
           Granting access to all <b>{count} devices</b> owned by you <i>({user?.email})</i>.
         </Notice>
       )}

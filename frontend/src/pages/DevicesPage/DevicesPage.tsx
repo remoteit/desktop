@@ -11,7 +11,6 @@ import { useSelector } from 'react-redux'
 import { getDevices } from '../../models/accounts'
 import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
-import { Body } from '../../components/Body'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 

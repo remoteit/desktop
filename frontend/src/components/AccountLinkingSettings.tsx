@@ -14,8 +14,10 @@ export const AccountLinkingSettings: React.FC = () => {
         <ListItemLocation
           dense
           icon="users"
-          title="User Access"
-          subtitle="Link users to your account to grant them access to the devices you own."
+          title="Your Members"
+          // title="Users linked to your account"
+          subtitle="Users with access to the devices you own."
+          // subtitle="Link users to your account to grant them access to any devices you own."
           pathname="/settings/access"
         >
           <ListItemSecondaryAction>
@@ -27,8 +29,10 @@ export const AccountLinkingSettings: React.FC = () => {
         <ListItemLocation
           dense
           icon="user-circle"
-          title="Account Memberships"
-          subtitle="Accounts that have granted you access to the devices they own."
+          title="Your Memberships"
+          // title="Account Memberships"
+          subtitle="Other accounts that you can access."
+          // subtitle="Accounts that have granted you access to the devices they own."
           pathname="/settings/membership"
         >
           <ListItemSecondaryAction>
