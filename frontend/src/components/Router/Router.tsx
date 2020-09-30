@@ -5,9 +5,7 @@ import { isElectron } from '../../services/Browser'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
-import { SetupServices } from '../../pages/SetupServices'
 import { SetupDevice } from '../../pages/SetupDevice'
-import { SetupWaiting } from '../../pages/SetupWaiting'
 import { SetupView } from '../../pages/SetupView'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
@@ -45,7 +43,7 @@ export const Router: React.FC = () => {
           state: { autoConnect: true },
         }}
       />
-      <Route path={['/settings/setupServices/network', '/devices/:deviceID/edit/add-service/network']}>
+      <Route path="/devices/:deviceID/edit/add-service/network">
         <NetworkPage />
       </Route>
       <Route path={['/settings/membership/share', '/settings/access/share']}>
@@ -57,16 +55,7 @@ export const Router: React.FC = () => {
       <Route path="/settings/membership">
         <AccountMembershipPage />
       </Route>
-      <Route path="/settings/setupServices">
-        <SetupServices os={os} targetDevice={targetDevice} targets={targets} />
-      </Route>
-      <Route path={['/settings/setupWaiting', '/devices/setupWaiting']}>
-        <SetupWaiting os={os} targetDevice={targetDevice} />
-      </Route>
-      <Route path="/settings/setupDevice">
-        {registered ? <Redirect to="./setupServices" /> : <SetupDevice os={os} />}
-      </Route>
-      <Route path="/devices/setupDevice">
+      <Route path={['/devices/setupDevice']}>
         {registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}
       </Route>
       <Route path={['/settings/setupView', '/devices/setupView']}>
