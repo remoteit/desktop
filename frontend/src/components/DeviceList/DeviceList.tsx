@@ -1,10 +1,12 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { DeviceListItem } from '../DeviceListItem'
+import { getAccountId, getOwnDevices } from '../../models/accounts'
 import { DeviceSetupItem } from '../DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
-import { List, Divider } from '@material-ui/core'
+import { Notice } from '../Notice'
+import { List, Divider, ListItem } from '@material-ui/core'
 import { LoadMore } from '../LoadMore'
 
 export interface DeviceListProps {
@@ -14,26 +16,42 @@ export interface DeviceListProps {
 
 export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {} }) => {
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
-  const { myDevice, registeredId } = useSelector((state: ApplicationState) => ({
+  const { myDevice, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
-    myDevice: state.devices.all.find(device => device.id === state.backend.device.uid),
+    loggedInUser: getAccountId(state) === state.auth.user?.id,
+    myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
   }))
 
   return (
     <>
       <List>
         {registeredId ? (
-          <DeviceListItem
-            key={registeredId}
-            device={myDevice}
-            connections={connections[registeredId]}
-            thisDevice={true}
-            setContextMenu={setContextMenu}
-          />
+          loggedInUser &&
+          (myDevice ? (
+            <>
+              <DeviceListItem
+                key={registeredId}
+                device={myDevice}
+                connections={connections[registeredId]}
+                thisDevice={true}
+                setContextMenu={setContextMenu}
+              />
+              <Divider />
+            </>
+          ) : (
+            <>
+              <ListItem>
+                <Notice>This device is registered to another user</Notice>
+              </ListItem>
+              <Divider />
+            </>
+          ))
         ) : (
-          <DeviceSetupItem />
+          <>
+            <DeviceSetupItem />
+            <Divider />
+          </>
         )}
-        <Divider />
         {devices.map(
           device =>
             device.id !== myDevice?.id && (

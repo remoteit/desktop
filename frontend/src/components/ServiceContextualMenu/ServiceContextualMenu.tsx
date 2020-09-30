@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { useClipboard } from 'use-clipboard-copy'
 import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
+import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
@@ -30,7 +31,7 @@ interface Props {
 
 export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, setEl }) => {
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
-  const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const [service, device] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const history = useHistory()
   const css = useStyles()

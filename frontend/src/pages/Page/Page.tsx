@@ -34,8 +34,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   let remoteCss = ''
   let pageCss = classnames(css.page, css.full)
 
-  console.log('small screen', largeScreen)
-
   if (!isElectron() && largeScreen) {
     pageCss = classnames(pageCss, css.inset)
     remoteCss = classnames(css.full, css.default)

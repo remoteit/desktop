@@ -1,6 +1,5 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
 import { ApplicationState } from '../../store'
 import { ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
@@ -8,7 +7,6 @@ import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC = () => {
-  const location = useLocation()
   const { targetDevice, os } = useSelector((state: ApplicationState) => ({
     targetDevice: state.backend.device,
     os: state.backend.environment.os,
@@ -24,7 +22,7 @@ export const DeviceSetupItem: React.FC = () => {
   }
 
   return (
-    <ListItemLocation pathname={`${location.pathname}/setup`}>
+    <ListItemLocation pathname={`/devices/setup`}>
       <ListItemIcon>
         <Icon name="hdd" size="md" type="light" />
       </ListItemIcon>

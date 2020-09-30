@@ -1,22 +1,23 @@
 import React, { useEffect } from 'react'
+import { makeStyles, LinearProgress } from '@material-ui/core'
+import { ApplicationState } from '../../store'
+import { DeviceListEmpty } from '../../components/DeviceListEmpty'
+import { RefreshButton } from '../../buttons/RefreshButton'
+import { LoadingMessage } from '../../components/LoadingMessage'
+import { AccountSelect } from '../../components/AccountSelect'
+import { FilterButton } from '../../buttons/FilterButton'
+import { SearchField } from '../../components/SearchField'
+import { useSelector } from 'react-redux'
+import { getDevices } from '../../models/accounts'
 import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
-import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { LinearProgress, Typography } from '@material-ui/core'
-import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
-import { FilterButton } from '../../buttons/FilterButton'
-import { RefreshButton } from '../../buttons/RefreshButton'
-import { SearchField } from '../../components/SearchField'
-import { makeStyles } from '@material-ui/core/styles'
-import { Body } from '../../components/Body'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DevicesPage = () => {
-  const { allDevices, connections, fetching } = useSelector((state: ApplicationState) => ({
+  const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
-    allDevices: state.devices.all.filter((d: IDevice) => !d.hidden),
+    devices: getDevices(state).filter((d: IDevice) => !d.hidden),
     connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
@@ -35,6 +36,7 @@ export const DevicesPage = () => {
         <>
           <div className={css.header}>
             <SearchField />
+            <AccountSelect />
             <FilterButton />
             <RefreshButton />
           </div>
@@ -42,16 +44,12 @@ export const DevicesPage = () => {
         </>
       }
     >
-      {fetching && !allDevices.length ? (
-        <Body center>
-          <Typography variant="body1" color="textSecondary">
-            Loading devices...
-          </Typography>
-        </Body>
-      ) : !allDevices.length ? (
+      {fetching && !devices.length ? (
+        <LoadingMessage message="Loading devices..." spinner={false} />
+      ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={allDevices} connections={connections} />
+        <DeviceList devices={devices} connections={connections} />
       )}
     </Container>
   )
@@ -62,11 +60,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: styles.colors.white,
-    boxShadow: 'rgba(0,0,0,0.15) 0px 1px 2px',
     padding: `0 ${styles.spacing.md}px`,
-    position: 'relative',
-    zIndex: 1,
   },
   fetching: {
     position: 'absolute',

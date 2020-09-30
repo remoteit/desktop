@@ -8,13 +8,14 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { getDevices } from '../../models/accounts'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DeviceDetailPage = () => {
-  const { deviceID } = useParams()
-  const devices = useSelector((state: ApplicationState) => state.devices.all)
+  const { deviceID } = useParams<{ deviceID: string }>()
+  const devices = useSelector((state: ApplicationState) => getDevices(state))
   const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export const DeviceDetailPage = () => {
               format: 'round',
               help: 'Average disconnects per day',
             },
-            { label: 'Owner', value: device.owner },
+            { label: 'Owner', value: device.owner.email },
             { label: 'Last reported', value: device.lastReported, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
             { label: 'Connection type', value: device.geo?.connectionType },

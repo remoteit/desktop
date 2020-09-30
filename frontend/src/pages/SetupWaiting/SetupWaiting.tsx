@@ -4,6 +4,7 @@ import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
+import { getDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { DocsLinks } from '../../components/DocsLinks'
@@ -16,7 +17,7 @@ type Props = { os?: Ios; targetDevice: ITargetDevice }
 export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
   const { globalError, device } = useSelector((state: ApplicationState) => ({
     globalError: state.backend.globalError,
-    device: state.devices.all.find(d => d.id === targetDevice.uid),
+    device: getDevices(state).find(d => d.id === targetDevice.uid),
   }))
   const location = useLocation()
   const history = useHistory()

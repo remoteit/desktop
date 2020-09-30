@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { getOwnDevices } from './accounts'
 import { TARGET_PLATFORMS } from '../components/TargetPlatform'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -46,7 +47,7 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     devicesUpdated(_, globalState: any) {
-      const all: IDevice[] = globalState.devices.all
+      const all: IDevice[] = getOwnDevices(globalState)
       const targetDevice: ITargetDevice = globalState.backend.device
       const thisDevice = all.find(d => d.id === targetDevice.uid)
       const targetPlatform = TARGET_PLATFORMS[thisDevice?.targetPlatform || -1]

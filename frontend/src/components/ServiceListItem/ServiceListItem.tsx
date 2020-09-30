@@ -15,6 +15,7 @@ import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
 import { CopyButton } from '../../buttons/CopyButton'
 import { makeStyles } from '@material-ui/core/styles'
+import { Icon } from '../Icon'
 import { colors, spacing } from '../../styling'
 
 export interface ServiceListItemProps {
@@ -30,14 +31,18 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
   const css = useStyles()
   const [showError, setShowError] = useState<boolean>(false)
   const id = connection ? connection.id : service ? service.id : ''
-  const owner = connection && connection.owner
-  const notOwner: boolean = !!(user && owner && user.username !== owner)
+  const otherUser = !!connection?.owner?.id && connection?.owner?.id !== user?.id
 
   const details = (
     <span className={css.details}>
       {connection && hostName(connection)}
       {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
-      {notOwner && <span>Owned by {owner}</span>}
+      {otherUser && (
+        <span>
+          <Icon name="user" size="bug" type="solid" inlineLeft />
+          {connection?.owner.email}
+        </span>
+      )}
     </span>
   )
 
@@ -45,7 +50,12 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
 
   return (
     <>
-      <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} disabled={notOwner} dense={dense}>
+      <ListItemLocation
+        className={className}
+        pathname={`${location.pathname}/${id}`}
+        // disabled={otherUser}
+        dense={dense}
+      >
         <ComboButton connection={connection} service={service} />
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
         <ListItemSecondaryAction>
@@ -63,6 +73,6 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
 
 const useStyles = makeStyles({
   indent: { paddingLeft: 57 },
-  details: { '& > span': { marginLeft: spacing.xs } },
+  details: { '& > span': { marginLeft: spacing.sm } },
   restriction: { color: colors.grayDarker },
 })

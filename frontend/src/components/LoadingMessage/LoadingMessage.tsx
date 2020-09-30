@@ -7,14 +7,15 @@ import { spacing, colors } from '../../styling'
 
 export interface LoadingMessageProps {
   message?: string
+  spinner?: boolean
 }
 
-export function LoadingMessage({ message }: LoadingMessageProps) {
+export function LoadingMessage({ message, spinner = true }: LoadingMessageProps) {
   const css = useStyles()
 
   return (
     <Body center>
-      <Icon className={css.spinner} name="spinner-third" spin size="xxl" color="gray" />
+      {spinner && <Icon className={css.spinner} name="spinner-third" spin size="xxl" color="gray" />}
       {message && (
         <Typography className={css.text} variant="body2">
           {message}

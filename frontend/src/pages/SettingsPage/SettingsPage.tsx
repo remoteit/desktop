@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
+import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { UninstallSetting } from '../../components/UninstallSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { usePermissions } from '../../hooks/usePermissions'
@@ -19,10 +20,11 @@ import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SettingsPage = () => {
-  const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
+export const SettingsPage: React.FC = () => {
+  const { os, user, target, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
     os: state.backend.environment.os,
     user: state.auth.user,
+    target: state.backend.device,
     installing: state.binaries.installing,
     cliVersion: state.binaries.installedVersion || '(loading...)',
     preferences: state.backend.preferences,
@@ -44,9 +46,14 @@ export const SettingsPage = () => {
     }
   }
 
-  const clearWarning = () =>
-    window.confirm('Are you sure? The next user that signs in will be able to claim this device.') &&
-    emit('user/clear-all')
+  const clearWarning = () => {
+    let message = 'Are you sure? This remove all your connections.'
+    if (target.uid)
+      message =
+        'Are you sure? This will remove all your connections and let the next user that signs claim this device.'
+    window.confirm(message) && emit('user/clear-all')
+  }
+
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install(true)
@@ -71,7 +78,7 @@ export const SettingsPage = () => {
             <Typography className={css.user} variant="caption">
               {user?.email}
             </Typography>
-            <Avatar email={user?.email} />
+            <Avatar email={user?.email} button />
           </Typography>
         </>
       }
@@ -108,9 +115,9 @@ export const SettingsPage = () => {
           icon="user-slash"
           onClick={clearWarning}
         />
-
-        {!guest && <ListItemSetting label="Quit" icon="times" onClick={quitWarning} />}
       </List>
+      <Divider />
+      <AccountLinkingSettings />
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
       <List>
@@ -122,13 +129,13 @@ export const SettingsPage = () => {
             onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
           />
         )}
-
         <ListItemSetting
           label="Open at login"
-          icon="power-off"
+          icon="door-open"
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
+        {!guest && <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
         <UpdateSetting />
       </List>
       {!(guest || notElevated) && (

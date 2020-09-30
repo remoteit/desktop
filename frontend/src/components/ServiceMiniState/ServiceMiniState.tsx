@@ -9,12 +9,13 @@ interface Props {
   connection?: IConnection
   service?: IService
   setContextMenu?: React.Dispatch<React.SetStateAction<IContextMenu>>
+  showConnected?: boolean
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu, showConnected = true }) => {
   const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
   const css = useStyles()
-  const connected = !!service?.sessions.length
+  const connected = showConnected && !!service?.sessions.length
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'

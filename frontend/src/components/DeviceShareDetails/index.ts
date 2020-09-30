@@ -1,0 +1,1 @@
+export { DeviceShareDetails } from './DeviceShareDetails'

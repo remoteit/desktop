@@ -6,6 +6,7 @@ import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
+import { getDevices } from '../../models/accounts'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { colors, spacing, fontSizes } from '../../styling'
 import { ApplicationState } from '../../store'
@@ -17,12 +18,12 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
-  const { serviceID = '' } = useParams()
+  const { serviceID = '' } = useParams<{ serviceID: string }>()
   const privateIP = useSelector((state: ApplicationState) => state.backend.environment.privateIP)
   const connection = useSelector((state: ApplicationState) => {
     let c = state.backend.connections.find(c => c.id === serviceID)
     if (c) return c
-    const [service] = findService(state.devices.all, serviceID)
+    const [service] = findService(getDevices(state), serviceID)
     return newConnection(service)
   })
 

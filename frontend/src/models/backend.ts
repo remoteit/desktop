@@ -1,3 +1,4 @@
+import { getDevices } from './accounts'
 import { createModel } from '@rematch/core'
 import { findService } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
@@ -98,7 +99,7 @@ export default createModel({
       const { deferredAttributes, targets } = globalState.backend
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
-        let [service] = findService(globalState.devices.all, last.uid)
+        let [service] = findService(getDevices(globalState), last.uid)
         if (service) {
           service.attributes = { ...service.attributes, ...deferredAttributes }
           dispatch.devices.setServiceAttributes(service)

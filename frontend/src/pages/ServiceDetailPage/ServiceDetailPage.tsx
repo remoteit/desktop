@@ -9,13 +9,14 @@ import { Title } from '../../components/Title'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { findService } from '../../models/devices'
+import { getDevices } from '../../models/accounts'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServiceDetailPage = () => {
-  const { serviceID = '' } = useParams()
+  const { serviceID = '' } = useParams<{ serviceID: string }>()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
-  const [service, device] = useSelector((state: ApplicationState) => findService(state.devices.all, serviceID))
+  const [service, device] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
 
   let data: IDataDisplay[] = []
 
@@ -40,7 +41,7 @@ export const ServiceDetailPage = () => {
     { label: 'Remote Protocol', value: service.protocol },
     { label: 'Service Type', value: service.type },
     { label: 'Device Name', value: device.name },
-    { label: 'Owner', value: device.owner },
+    { label: 'Owner', value: device.owner.email },
     { label: 'Service ID', value: service.id },
   ])
 
