@@ -42,12 +42,9 @@ export default createModel({
         const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL:getRedirectUrl(), callbackURL:CALLBACK_URL});
         dispatch.auth.setAuthService(authService)
         try {
-          const authUser = await authService.checkSignIn()
-          if (authUser) {
-            await  dispatch.auth.handleSignInSuccess(authUser)
-          }
+          await authService.checkSignIn()
+          dispatch.auth.setInitialized()
         } catch (e) {
-          console.log('Not Authenticated')
           dispatch.auth.setInitialized()
         }
       }
@@ -59,10 +56,15 @@ export default createModel({
     },
     async checkSession(_: void, rootState: any) {
       try {
-        await rootState.auth.authService.checkSignIn()
+        const  authUser = await rootState.auth.authService.checkSignIn()
+        if (authUser) {
+          await  dispatch.auth.handleSignInSuccess(authUser)
+        } else {
+          dispatch.auth.signInError('Session Expired')
+        }
         return
       } catch (e) {
-        dispatch.auth.signInError('Login Expired')
+        dispatch.auth.signInError('Session Expired')
         return
       }
     },
@@ -85,7 +87,8 @@ export default createModel({
     },
     async signInError(error: string) {
       dispatch.auth.setError(error)
-      dispatch.auth.signedOut()
+      //send message to backend to sign out
+      emit('user/sign-out')
     },
     /**
      * Gets called when the backend signs the user out
@@ -93,7 +96,7 @@ export default createModel({
     async signedOut(_: void, rootState: any) {
       const user = await rootState.auth.authService.checkSignIn()
       await rootState.auth.authService.signOut()
-      if (user.cognitoUser.authProvider == 'Google') {
+      if (user?.cognitoUser.authProvider == 'Google') {
         window.open('https://auth.remote.it/logout?client_id=26g0ltne0gr8lk1vs51mihrmig&logout_uri=remoteitdev://')
       }
       dispatch.backend.set({ connections: [] })
