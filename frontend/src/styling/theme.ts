@@ -73,7 +73,7 @@ export default createMuiTheme({
         // paddingBottom: '2px !important',
       },
     },
-    MuiListItemSecondaryAction: { root: { right: gutters } },
+    MuiListItemSecondaryAction: { root: { right: gutters, zIndex: 2 } },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
     MuiListItemText: {
       root: { zIndex: 1 },

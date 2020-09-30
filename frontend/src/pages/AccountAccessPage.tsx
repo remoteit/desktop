@@ -36,7 +36,7 @@ export const AccountAccessPage: React.FC = () => {
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <Icon name="users" size="lg" />
+            <Icon name="people-arrows" size="lg" />
             <Title>Account Linked Users</Title>
             <AddUserButton />
           </Typography>

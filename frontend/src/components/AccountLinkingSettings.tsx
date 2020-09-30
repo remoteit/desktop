@@ -8,40 +8,16 @@ export const AccountLinkingSettings: React.FC = () => {
   const { member, access } = useSelector((state: ApplicationState) => state.accounts)
 
   return (
-    <>
-      <Typography variant="subtitle1">Account Linking</Typography>
-      <List>
-        <ListItemLocation
-          dense
-          icon="users"
-          title="Your Members"
-          // title="Users linked to your account"
-          subtitle="Users with access to the devices you own."
-          // subtitle="Link users to your account to grant them access to any devices you own."
-          pathname="/settings/access"
-        >
-          <ListItemSecondaryAction>
-            <Tooltip title="Users">
-              <Chip label={access.length} size="small" />
-            </Tooltip>
-          </ListItemSecondaryAction>
-        </ListItemLocation>
-        <ListItemLocation
-          dense
-          icon="user-circle"
-          title="Your Memberships"
-          // title="Account Memberships"
-          subtitle="Other accounts that you can access."
-          // subtitle="Accounts that have granted you access to the devices they own."
-          pathname="/settings/membership"
-        >
-          <ListItemSecondaryAction>
-            <Tooltip title="Accounts">
-              <Chip label={member.length} size="small" />
-            </Tooltip>
-          </ListItemSecondaryAction>
-        </ListItemLocation>
-      </List>
-    </>
+    <ListItemLocation
+      dense
+      icon="people-arrows"
+      title="Account Linking"
+      subtitle="Grant access to the all the devices you own."
+      pathname="/settings/access"
+    >
+      <ListItemSecondaryAction>
+        <Chip label={`${access.length} users`} size="small" />
+      </ListItemSecondaryAction>
+    </ListItemLocation>
   )
 }
