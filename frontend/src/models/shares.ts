@@ -1,6 +1,9 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { attributeName } from '../shared/nameHelper'
+import { ApplicationState } from '../store'
+import { getDevices } from './accounts'
 
 type ShareParams = { [key: string]: any }
 
@@ -24,20 +27,34 @@ export default createModel({
       const { set } = dispatch.shares
       set({ deleting: true })
       try {
-        await graphQLUnShareDevice({ deviceId, email: [email] })
-        await dispatch.devices.get({ deviceId })
+        const response = await graphQLUnShareDevice({ deviceId, email: [email] })
+        const errors = await graphQLGetErrors(response)
+        debugger
+        if (!errors) {
+          await dispatch.devices.fetchDevice({ deviceId })
+          dispatch.ui.set({ successMessage: `${email} successfully removed.` })
+        }
       } catch (error) {
         await graphQLHandleError(error)
       }
       set({ deleting: false })
     },
 
-    async share(newData?: any) {
+    async share(data: IShareProps, globalState) {
+      const state = globalState as ApplicationState
       const { set } = dispatch.shares
+      const device = getDevices(state).find((d: IDevice) => d.id === data.deviceId)
       set({ sharing: true })
       try {
-        const response = await graphQLShareDevice(newData)
-        await graphQLGetErrors(response)
+        const response = await graphQLShareDevice(data)
+        const errors = await graphQLGetErrors(response)
+        if (!errors)
+          dispatch.ui.set({
+            successMessage:
+              data.email.length > 1
+                ? `${data.email.length} accounts successfully shared to ${attributeName(device)}.`
+                : `${data.email[0]} successfully shared to ${attributeName(device)}.`,
+          })
       } catch (error) {
         await graphQLHandleError(error)
       }

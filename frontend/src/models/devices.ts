@@ -123,9 +123,9 @@ export default createModel({
       const parseAccounts = dispatch.accounts.parse
       try {
         const gqlResponse = await graphQLFetchDevices(options)
-        const [gqlData, total, contacts, error] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData?.connections?.items, options.account, true)
-        const devices = graphQLAdaptor(gqlData?.devices?.items, options.account)
+        const [gqlData, total, loginId, contacts, error] = await graphQLMetadata(gqlResponse)
+        const connections = graphQLAdaptor(gqlData?.connections?.items, loginId, true)
+        const devices = graphQLAdaptor(gqlData?.devices?.items, loginId)
         await parseAccounts(gqlResponse)
         return { devices: [...connections, ...devices], total, contacts, error }
       } catch (error) {
@@ -135,16 +135,16 @@ export default createModel({
     },
 
     async updateShareDevice(device: IDevice) {
-      const { setDevice } = dispatch.devices
-      setDevice({ id: device.id, device })
+      dispatch.accounts.setDevice({ id: device.id, device })
     },
 
     async graphQLMetadata(gqlData: any) {
       const error = graphQLGetErrors(gqlData)
       const data = gqlData?.data?.data?.login?.account || {}
       const contacts = gqlData?.data?.data?.login?.contacts
+      const loginId = gqlData?.data?.data?.login?.id
       const total = data?.devices?.total || 0
-      return [data, total, contacts, error]
+      return [data, total, loginId, contacts, error]
     },
 
     async reset() {

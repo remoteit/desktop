@@ -54,9 +54,9 @@ export const SharePage = () => {
   const handleShareUpdate = (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
     const { scripting, services } = share.access
-    shares.share(shareData)
+    if (shareData) shares.share(shareData)
     if (device && shareData) {
-      shares.updateDeviceState({ device, emails: shareData.emails, scripting, services, isNew })
+      shares.updateDeviceState({ device, emails: shareData.email, scripting, services, isNew })
     }
     goToNext()
   }
@@ -66,7 +66,7 @@ export const SharePage = () => {
       ? history.push(location.pathname.replace('/share', ''))
       : history.push(location.pathname.replace(`/${email}`, ''))
 
-  const mapShareData = (share: SharingDetails, isNew: boolean) => {
+  const mapShareData = (share: SharingDetails, isNew: boolean): IShareProps | undefined => {
     const { access } = share
     const scripting = access.scripting
     const services =
@@ -74,17 +74,16 @@ export const SharePage = () => {
         serviceId: ser.id,
         action: access.services.includes(ser.id) ? 'ADD' : 'REMOVE',
       })) || []
-    const emails = isNew ? share.emails : [share.emails[0]]
+    const email = isNew ? share.emails : [share.emails[0]]
 
     if (device) {
       return {
         deviceId: device.id,
         scripting,
         services,
-        emails,
+        email,
       }
     }
-    return
   }
 
   return (

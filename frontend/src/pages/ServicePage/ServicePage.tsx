@@ -43,7 +43,7 @@ export const ServicePage: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
   const { connection, service, device, thisDevice, fetching } = useSelector((state: ApplicationState) => {
     const connection = state.backend.connections.find(c => c.id === serviceID)
-    const [service, device] = findService(getDevices(state, connection?.owner.id), serviceID)
+    const [service, device] = findService(getDevices(state, connection?.owner?.id), serviceID)
     return {
       service,
       device,
@@ -56,7 +56,7 @@ export const ServicePage: React.FC = () => {
   useEffect(() => {
     analyticsHelper.page('ServicePage')
     if (!device && connection?.deviceID)
-      devices.fetchDevice({ deviceId: connection.deviceID, accountId: connection.owner.id, hidden: true })
+      devices.fetchDevice({ deviceId: connection.deviceID, accountId: connection.owner?.id, hidden: true })
   }, [])
 
   if (fetching) return <LoadingMessage message="Fetching data..." />
