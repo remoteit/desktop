@@ -1,15 +1,17 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
 import { attributeName } from '../shared/nameHelper'
+import { getDevices } from '../models/accounts'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
-  const { auth, devices } = store.getState()
+  const state = store.getState()
+  const user = [...state.accounts.member, state.auth.user].find(u => u?.id === state.accounts.activeId)
 
   let connection: IConnection = {
     host: IP_PRIVATE,
     restriction: IP_OPEN,
-    owner: auth.user ? auth.user.username : 'Unknown',
+    owner: { id: user?.id || '', email: user?.email || 'Unknown' },
     name: 'Unknown',
     id: 'Error',
     deviceID: 'Unknown',
@@ -20,7 +22,7 @@ export function newConnection(service?: IService | null, data = {}) {
   }
 
   if (service) {
-    const device = devices.all.find((d: IDevice) => d.id === service.deviceID)
+    const device = getDevices(state).find((d: IDevice) => d.id === service.deviceID)
     // @TODO The whole service obj should be in the connection
     connection.name = attributeName(service)
     connection.id = service.id
@@ -69,9 +71,11 @@ export function updateConnections(devices: IDevice[]) {
 }
 
 export function cleanOrphanConnections() {
-  const { backend, devices } = store.getState()
-  const services = devices.all.map(d => d.services.map(s => s.id)).flat()
-  backend.connections.forEach(c => {
+  const state = store.getState()
+  const services = getDevices(state)
+    .map(d => d.services.map(s => s.id))
+    .flat()
+  state.backend.connections.forEach(c => {
     if (!services.includes(c.id)) {
       console.log('DELETE CONNECTION', c)
       emit('service/forget', c)

@@ -17,6 +17,7 @@ import { isElectron } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { attributeName } from '../../shared/nameHelper'
 import { TargetPlatform } from '../../components/TargetPlatform'
+import { getOwnDevices } from '../../models/accounts'
 import { Icon } from '../../components/Icon'
 import onLanGraphic from '../../assets/remote-on-lan.svg'
 import onRemoteGraphic from '../../assets/remote-on-remote.svg'
@@ -29,7 +30,7 @@ export const Sidebar: React.FC = () => {
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
 
   const { name, label, device } = useSelector((state: ApplicationState) => {
-    const device = state.devices.all.find(d => d.id === state.backend.device.uid)
+    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
     return {
       device,
       label: state.labels.find(l => l.id === device?.attributes.color),
@@ -38,6 +39,7 @@ export const Sidebar: React.FC = () => {
   })
 
   const css = useStyles()
+  if (isElectron() || (isLocalhost && port === PORT.toString())) return null
 
   let graphic = onLanGraphic
   let diagram: NetworkType[] = [
@@ -46,8 +48,6 @@ export const Sidebar: React.FC = () => {
     { primary: 'This system', secondary: name },
     { primary: 'Remote devices' },
   ]
-
-  if (isElectron() || (isLocalhost && port === PORT.toString())) return null
 
   if (isLocalhost) {
     graphic = onRemoteGraphic

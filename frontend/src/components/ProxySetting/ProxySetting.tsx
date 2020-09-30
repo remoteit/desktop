@@ -1,6 +1,5 @@
 import React from 'react'
 import { ROUTES } from '../../shared/constants'
-import { ListItem, ListItemText, ListItemIcon, TextField, MenuItem } from '@material-ui/core'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { InlineSelectSetting } from '../InlineSelectSetting'
 import { Icon } from '../Icon'

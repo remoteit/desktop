@@ -3,80 +3,104 @@ import { renameServices } from '../shared/nameHelper'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
-const DEVICE_SELECT = `{
-  total
-  items {
+const DEVICE_SELECT = `
+  id
+  name
+  state
+  created
+  lastReported
+  hardwareId
+  platform
+  version
+  attributes
+  ${LEGACY_ATTRIBUTES.join('\n')}
+  access {
+    user {
+      email
+    }
+    scripting
+  }
+  endpoint {
+    externalAddress
+    internalAddress
+    availability
+    instability
+    geo {
+      connectionType
+      countryName
+      stateName
+      city
+      isp
+    }
+  }
+  owner {
+    id
+    email
+  }
+  services {
     id
     name
     state
+    title
+    application
     created
     lastReported
-    hardwareId
-    platform
-    version
+    port
+    type
+    protocol
     attributes
-    ${LEGACY_ATTRIBUTES.join('\n')}
     access {
       user {
         email
       }
-      scripting
     }
-    endpoint {
-      externalAddress
-      internalAddress
-      availability
-      instability
-      geo {
-        connectionType
-        countryName
-        stateName
-        city
-        isp
+    sessions {
+      timestamp
+      endpoint {
+        platform
+      }
+      user {
+        id
+        email
       }
     }
-    owner {
-      id
-      email
-    }
-    services {
-      id
-      name
-      state
-      title
-      application
-      created
-      lastReported
-      port
-      type
-      protocol
-      attributes
-      access {
-        user {
-          email
-        }
-      }
-      sessions {
-        timestamp
-        endpoint {
-          platform
-        }
-        user {
-          id
-          email
-        }
-      }
-    }
-  }
-}`
+  }`
 
-export async function graphQLFetchDevices({ size, from, state, name, ids = [] }: gqlOptions) {
+export async function graphQLFetchDevices({ size, from, state, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!], $size: Int, $from: Int, $name: String, $state: String) {
+    ` query($ids: [String!], $size: Int, $from: Int, $name: String, $state: String, $account: String) {
         login {
           id
-          devices(size: $size, from: $from, name: $name, state: $state) ${DEVICE_SELECT}
-          connections: devices(id: $ids) ${DEVICE_SELECT}
+          account(id: $account) {
+            devices(size: $size, from: $from, name: $name, state: $state) {
+              total
+              items {
+                ${DEVICE_SELECT}
+              }
+            }
+            connections: devices(id: $ids)  {
+              total
+              items {
+                ${DEVICE_SELECT}
+              }
+            }
+          }
+          member {
+            created
+            scripting
+            user {
+              id
+              email
+            }
+          }
+          access {
+            created
+            scripting
+            user {
+              id
+              email
+            }
+          }
           contacts {
             id
             email
@@ -88,32 +112,38 @@ export async function graphQLFetchDevices({ size, from, state, name, ids = [] }:
       size,
       from,
       state,
+      account,
       name: name?.trim() ? name : undefined,
     }
   )
 }
 
-export async function graphQLFetchDevice(id: string) {
+export async function graphQLFetchDevice(id: string, account: string) {
   return await graphQLRequest(
-    ` query($id: [String!]) {
+    ` query($id: String!, $account: String) {
         login {
           id
-          devices(id: $id) ${DEVICE_SELECT}
+          account(id: $account) {
+            device(id: $id)  {
+              ${DEVICE_SELECT}
+            }
+          }
         }
       }`,
     {
       id,
+      account,
     }
   )
 }
 
-export function graphQLAdaptor(gqlDevices: any, loginId: string, hidden?: boolean): IDevice[] {
+export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices) return []
-  let data: IDevice[] = gqlDevices?.items.map(
+  let data: IDevice[] = gqlDevices?.map(
     (d: any): IDevice => ({
       id: d.id,
       name: d.name,
-      owner: d.owner?.email,
+      owner: d.owner,
       state: d.state,
       hardwareID: d.hardwareId,
       createdAt: new Date(d.created),

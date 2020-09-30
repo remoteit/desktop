@@ -44,7 +44,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
       )}
       {device?.shared && (
         <sup>
-          <Tooltip title={`Shared by ${device?.owner}`} placement="top" arrow>
+          <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
             <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
           </Tooltip>
         </sup>

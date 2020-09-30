@@ -67,13 +67,14 @@ class Controller extends EventEmitter {
 type EventHandlers = { [event: string]: (data?: any) => any }
 
 function getEventHandlers() {
-  const { binaries, auth, backend, logs, ui } = store.dispatch
+  const { binaries, auth, backend, accounts, logs, ui } = store.dispatch
 
   return {
     connect: () => {
       ui.set({ connected: true })
       backend.set({ error: false })
       auth.init()
+      accounts.init()
     },
 
     unauthorized: (error: Error) => auth.signInError(error.message),

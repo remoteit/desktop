@@ -82,6 +82,7 @@ const jssTheme: ThemeOptions = {
     MuiListItemSecondaryAction: { root: { right: gutters } },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
     MuiListItemText: {
+      root: { zIndex: 1 },
       primary: { lineHeight: 1.4 },
       secondary: { fontSize: fontSizes.xs },
     },
@@ -152,10 +153,6 @@ const jssTheme: ThemeOptions = {
         minHeight: 50,
         color: colors.grayDarkest,
         letterSpacing: -0.2,
-        backgroundColor: colors.white,
-        position: 'relative',
-        zIndex: 1,
-        boxShadow: 'rgba(0,0,0,0.15) 0px 1px 2px',
         '& span + span': { marginLeft: spacing.lg },
       },
       h2: {

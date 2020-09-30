@@ -1,7 +1,6 @@
 import { CLIENT_ID, API_URL, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
 import { r3 } from '../services/remote.it'
-
-import { IUser } from 'remote.it'
+import { IUser as LegacyUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 import Controller from '../services/Controller'
@@ -18,7 +17,7 @@ export interface AuthState {
   authenticated: boolean
   backendAuthenticated: boolean
   signInError?: string
-  user?: IUser
+  user?: LegacyUser
   authService?: AuthService
 }
 
@@ -80,7 +79,7 @@ export default createModel({
     async authenticated(_: void, rootState: any) {
       if(rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
-        dispatch.devices.fetch()
+        dispatch.devices.init()
         dispatch.applicationTypes.fetch()
         emit('init')
       }
@@ -106,6 +105,7 @@ export default createModel({
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
       dispatch.auth.setBackendAuthenticated(false)
+      dispatch.accounts.setActive('')
       window.location.hash = ''
       emit('user/sign-out-complete')
       analyticsHelper.clearIdentity()
@@ -124,7 +124,6 @@ export default createModel({
     },
     signOutFinished(state: AuthState) {
       state.user = undefined
-      window.localStorage.removeItem('devices')
       window.localStorage.removeItem(USER_KEY)
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {
@@ -136,7 +135,7 @@ export default createModel({
     setError(state: AuthState, error: string) {
       state.signInError = error
     },
-    setUser(state: AuthState, user: IUser) {
+    setUser(state: AuthState, user: LegacyUser) {
       user.username = user.email
       state.user = user
       state.signInError = undefined

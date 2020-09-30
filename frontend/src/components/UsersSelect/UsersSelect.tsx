@@ -1,10 +1,10 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
+import { getConnected } from '../../helpers/userHelper'
 import { ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { colors } from '../../styling'
 import { Icon } from '../Icon'
-import { getUsersConnectedDeviceOrService } from '../../models/devices'
 
 type Props = {
   device?: IDevice
@@ -13,7 +13,7 @@ type Props = {
 
 export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   const location = useLocation()
-  const connected = getUsersConnectedDeviceOrService(device, service).length
+  const connected = service ? getConnected([service]).length : getConnected(device?.services).length
   const total = service ? service.access.length : device?.access.length
 
   if (device?.shared) return null
