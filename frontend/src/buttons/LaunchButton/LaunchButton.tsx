@@ -13,9 +13,7 @@ import {
   Tooltip,
   Typography,
   Dialog,
-  DialogContent,
   DialogActions,
-  TextField,
   Button,
   MenuItem,
   ListItemIcon,
@@ -23,6 +21,7 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
+import { ModalSetUsername } from '../../components/ModalSetUsername'
 
 type Props = {
   connection?: IConnection
@@ -104,37 +103,15 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
         </Tooltip>
       )}
 
-      <Dialog open={openUsername} onClose={closeAll} maxWidth="xs" fullWidth>
-        <form
-          onSubmit={event => {
-            event.preventDefault()
-            launch()
-          }}
-        >
-          <Typography variant="h1">Enter a username to launch</Typography>
-          <DialogContent>
-            <Typography variant="h4">{app.launch({ ...connection, username })}</Typography>
-            <TextField
-              autoFocus
-              variant="filled"
-              label="Username"
-              onChange={event => {
-                setUsername(event.target.value)
-                event.stopPropagation()
-              }}
-              fullWidth
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={closeAll} color="primary" size="small" type="button">
-              Cancel
-            </Button>
-            <Button variant="contained" color="primary" size="small" type="submit">
-              {loading ? 'Loading putty...' : 'Launch'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+      <ModalSetUsername
+        connection={connection}
+        openUsername={openUsername}
+        handleSubmit={launch}
+        username={username}
+        setUsername={setUsername}
+        service={service}
+        close={closeAll}
+      />
 
       <Dialog open={openPutty} onClose={closeAll} maxWidth="xs" fullWidth>
         <Typography variant="h1">Please install Putty to launch SSH connections.</Typography>
