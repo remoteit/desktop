@@ -58,7 +58,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             if (!name) return
             event.preventDefault()
             backend.registerDevice({ targets: selected, name })
-            history.push('./setupWaiting')
+            history.push('/devices/setupWaiting')
           }}
         >
           <section className={css.device}>
