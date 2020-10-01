@@ -13,12 +13,6 @@ const jssTheme: ThemeOptions = {
   overrides: {
     MuiDivider: { root: { backgroundColor: colors.grayLighter } },
     MuiFormHelperText: { root: { fontSize: 10 } },
-    MuiIconButton: {
-      root: {
-        padding: spacing.sm,
-        '&.MuiButtonBase-root': { padding: spacing.sm },
-      },
-    },
     MuiButton: {
       root: {
         color: colors.grayDark,
