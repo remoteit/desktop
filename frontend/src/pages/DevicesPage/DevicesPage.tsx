@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
@@ -13,6 +13,7 @@ import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
+import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 
 export const DevicesPage = () => {
   const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
@@ -24,6 +25,13 @@ export const DevicesPage = () => {
       return lookup
     }, {}),
   }))
+
+  const [open, setOpen] = useState(false)
+
+  const handleDrawer = (state: boolean) => {
+    setOpen(state)
+  }
+
   const css = useStyles()
 
   useEffect(() => {
@@ -37,8 +45,8 @@ export const DevicesPage = () => {
           <div className={css.header}>
             <SearchField />
             <AccountSelect />
-            <FilterButton />
             <RefreshButton />
+            <FilterButton handleDrawer={handleDrawer} open={open} />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>
@@ -49,7 +57,7 @@ export const DevicesPage = () => {
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={devices} connections={connections} />
+        <DeviceList devices={devices} connections={connections} handleDrawer={handleDrawer} open={open} />
       )}
     </Container>
   )
