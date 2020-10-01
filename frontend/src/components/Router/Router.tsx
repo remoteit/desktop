@@ -6,7 +6,7 @@ import { Switch, Route, Redirect } from 'react-router-dom'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
 import { SetupDevice } from '../../pages/SetupDevice'
-import { SetupView } from '../../pages/SetupView'
+import { SetupWaiting } from '../../pages/SetupWaiting'
 import { NetworkPage } from '../../pages/NetworkPage'
 import { DevicesPage } from '../../pages/DevicesPage'
 import { ServiceAddPage } from '../../pages/ServiceAddPage'
@@ -43,9 +43,6 @@ export const Router: React.FC = () => {
           state: { autoConnect: true },
         }}
       />
-      <Route path="/devices/:deviceID/edit/add-service/network">
-        <NetworkPage />
-      </Route>
       <Route path={['/settings/membership/share', '/settings/access/share']}>
         <AccountSharePage />
       </Route>
@@ -55,14 +52,14 @@ export const Router: React.FC = () => {
       <Route path="/settings/membership">
         <AccountMembershipPage />
       </Route>
-      <Route path={['/devices/setupDevice']}>
+      <Route path="/devices/setupWaiting">
+        <SetupWaiting os={os} targetDevice={targetDevice} />
+      </Route>
+      <Route path="/devices/setupDevice">
         {registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}
       </Route>
-      <Route path={['/settings/setupView', '/devices/setupView']}>
-        <SetupView targetDevice={targetDevice} targets={targets} />
-      </Route>
-      <Route path={['/devices/setup', '/settings/setup']}>
-        <Redirect to="./setupDevice" />
+      <Route path="/devices/setup">
+        <Redirect to="/devices/setupDevice" />
       </Route>
       <Route path="/settings">
         <SettingsPage />
@@ -81,6 +78,9 @@ export const Router: React.FC = () => {
         ]}
       >
         <SharePage />
+      </Route>
+      <Route path="/devices/:deviceID/edit/add-service/network">
+        <NetworkPage />
       </Route>
       <Route path={['/devices/:deviceID/:serviceID/lan', '/connections/:serviceID/lan']}>
         <LanSharePage />
