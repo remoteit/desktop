@@ -1,20 +1,52 @@
-import setup, { IUser } from 'remote.it'
-import { API_URL, DEVELOPER_KEY } from '../shared/constants'
+import setup from 'remote.it'
+import { API_URL, CLIENT_ID, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
+import { AuthService } from '@remote.it/services'
+import { getRedirectUrl } from '../services/Browser'
+import { store } from '../store'
 
-export function updateUserCredentials(user: IUser) {
-  r3.token = user.token
-  r3.authHash = user.authHash
+const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL: getRedirectUrl(), callbackURL:CALLBACK_URL});
+
+export const r3 = setup(
+  {
+    apiURL: API_URL,
+    developerKey: DEVELOPER_KEY,
+    successURL: window.location.origin,
+  },
+  getToken
+)
+
+export async function getToken(): Promise<string> {
+  const { auth } = store.dispatch
+  try {
+    const currentSession = await authService.currentCognitoSession()
+    if (currentSession !== undefined) {
+      const token = 'Bearer ' + currentSession.getAccessToken().getJwtToken()
+      return token
+    } else {
+      auth.signInError('Session Expired')
+      return ''
+    }
+  } catch (err) {
+      auth.signInError('Session Expired')
+      return ''
+  }
+
+  
 }
 
-export function clearUserCredentials() {
-  r3.token = undefined
-  r3.authHash = undefined
-}
 
-export const r3 = setup({ apiURL: API_URL, developerKey: DEVELOPER_KEY })
-
-export function hasCredentials() {
-  if (r3.token && r3.authHash) return true
-  console.warn('Missing api token or authHash. Token:', r3.token, 'AuthHash:', r3.authHash)
-  return false
+export async function hasCredentials() {
+  const { auth } = store.dispatch
+  try {
+    const currentSession = await authService.currentCognitoSession()
+    if (currentSession !== undefined) {
+      return true
+    } else {
+      auth.signInError('Session Expired')
+      return false
+    }
+  } catch {
+    auth.signInError('Session Expired')
+    return false
+  }
 }

@@ -8,6 +8,7 @@ import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 
+
 type DeviceParams = { [key: string]: any }
 
 type IGetDevice = {
@@ -75,7 +76,7 @@ export default createModel({
         ids: append ? [] : [device.uid].concat(connections.map((c: IConnection) => c.id)),
       }
 
-      if (!hasCredentials()) return
+      if (!await hasCredentials()) return
 
       set({ fetching: true })
       const { devices, total, contacts, error } = await graphQLFetchProcessor(options)
@@ -100,6 +101,8 @@ export default createModel({
       const { set } = dispatch.devices
       if (!hasCredentials()) return
       let result
+
+      if (!await hasCredentials()) return
 
       accountId = accountId || getAccountId(globalState)
 

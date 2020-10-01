@@ -3,7 +3,6 @@ import { SignInForm } from '../../components/SignInForm'
 import { Link, Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { isElectron } from '../../services/Browser'
-import { Logo } from '../../components/Logo'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
@@ -21,9 +20,6 @@ export function SignInPage() {
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
   return (
     <Body center>
-      <div className={css.logo}>
-        <Logo />
-      </div>
       <SignInForm />
       {allowSwitch && (
         <div className={css.link}>

@@ -17,11 +17,11 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend, ui } = useDispatch<Dispatch>()
-  const { connected, successMessage, globalError, authenticated, os } = useSelector((state: ApplicationState) => ({
+  const { connected, successMessage, globalError, backendAuthenticated, os } = useSelector((state: ApplicationState) => ({
     connected: state.ui.connected,
     successMessage: state.ui.successMessage,
     globalError: state.backend.globalError,
-    authenticated: state.auth.authenticated,
+    backendAuthenticated: state.auth.backendAuthenticated,
     os: state.backend.environment.os,
   }))
 
@@ -46,7 +46,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         {largeScreen && <Sidebar />}
         <div className={css.pageBody}>{children}</div>
         <Snackbar
-          open={authenticated && !connected}
+          open={backendAuthenticated && !connected}
           message="Webserver connection lost. Retrying..."
           action={
             <IconButton onClick={reconnect}>

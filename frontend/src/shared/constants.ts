@@ -4,10 +4,16 @@
   
   ONLY EDIT THE SOURCE FILE IN frontend
 */
-export const API_URL = process.env.REACT_APP_API_URL || 'https://api.remot3.it/apv/v27'
+export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID || '26g0ltne0gr8lk1vs51mihrmig'
+export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL || 'https://api.remot3.it/apv/v27'
 export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.remote.it/v1/graphql'
 export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API || 'https://api.remote.it/beta/graphql'
-export const DEVELOPER_KEY = process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
+export const DEVELOPER_KEY =
+  process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
+export const REDIRECT_URL =
+  process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || 'remoteitdev://authCallback'
+export const CALLBACK_URL =
+  process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || 'https://dev-auth.internal.remote.it/v1/callback'
 
 export const PORT = process.env.REACT_APP_PORT || 29999
 export const HEARTBEAT_INTERVAL = 1000 * 15

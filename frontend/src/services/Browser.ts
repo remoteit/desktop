@@ -1,3 +1,6 @@
+import { REDIRECT_URL } from '../shared/constants'
+
+
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
 const DEVELOPMENT = 'development'
@@ -12,6 +15,14 @@ export function os() {
   if (isMac()) return 'mac'
   if (isWindows()) return 'windows'
   return 'linux'
+}
+
+export function getRedirectUrl() {
+  let redirectUrl = window.origin
+  if(isElectron()) {
+    redirectUrl = REDIRECT_URL
+  }
+  return redirectUrl
 }
 
 export function isElectron() {

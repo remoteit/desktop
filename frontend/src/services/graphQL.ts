@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios'
-import { r3 } from '../services/remote.it'
+import { getToken } from '../services/remote.it'
 import { store } from '../store'
 import { version } from '../../package.json'
 import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
@@ -8,7 +8,7 @@ export async function graphQLRequest(query: String, variables: ILookup = {}) {
   const request = {
     url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
     method: 'post' as 'post',
-    headers: { token: r3.token },
+    headers: { Authorization: await getToken() },
     data: { query, variables },
   }
   console.log('GRAPHQL REQUEST', request)
@@ -28,12 +28,15 @@ export async function graphQLGetErrors(gqlData: any) {
 
 export async function graphQLHandleError(error: AxiosError) {
   const { auth, backend } = store.dispatch
-
   console.error('GraphQL fetch error:', error, error.response)
-  if (error && error.response && (error.response.status === 401 || error.response.status === 403)) {
+  if (error?.response?.status === 401) {
+    const { auth } = store.dispatch
+    auth.signInError('Session Expired')
+  } else if (error?.response?.status === 403) {
     auth.checkSession()
-  } else if (error.response) {
+    backend.set({ globalError: error.message })
+  } else {
     backend.set({ globalError: error.message })
   }
-  // else no response, no network connection - so don't display error
+  
 }
