@@ -29,9 +29,6 @@
     "watch-electron": "onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
   },
   "dependencies": {
-    "@date-io/date-fns": "^1.3.13",
-    "@material-ui/pickers": "^3.2.10",
-    "date-fns": "^2.16.1",
     "electron-updater": "^4.2.0",
     "keyboardjs": "2.5.1",
     "remoteit-headless": "file:backend"

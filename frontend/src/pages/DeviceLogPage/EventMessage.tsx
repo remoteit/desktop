@@ -51,7 +51,7 @@ export function EventMessage({
 
       const ownerDisplay = device.owner
       if (item.shared) {
-        switch (device.owner) {
+        switch (device.owner.email) {
           case loggedInUser?.email:
             message = (
               <>
@@ -71,13 +71,13 @@ export function EventMessage({
             break
         }
       } else {
-        if (device.owner === actor && device.owner === loggedInUser?.email && item.action === 'add') {
+        if (device.owner.email === actor && device.owner.email === loggedInUser?.email && item.action === 'add') {
           message = (
             <>
               You shared <i>{device.name}</i> with <b>{userList}</b>
             </>
           )
-        } else if (actor === device.owner) {
+        } else if (actor === device.owner.email) {
           message = (
             <>
               You removed sharing of <i>{device.name}</i> with <b>{userList}</b>

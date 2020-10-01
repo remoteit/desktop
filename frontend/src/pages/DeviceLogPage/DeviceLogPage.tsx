@@ -25,13 +25,15 @@ import { EventMessage } from './EventMessage'
 import { EventIcon } from './EventIcon'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../../components/DatePicker/DatePicker'
+import { getOwnDevices } from '../../models/accounts'
 
 const TIME = 1000 * 60 * 60 * 24
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { device, fetchingMore, fetching, user, items: logsToShow } = useSelector((state: ApplicationState) => {
-    const device = state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
+    // const device = state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
+    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
     return {
       device,
       fetchingMore: state.devices.fetchingMore,
@@ -90,7 +92,7 @@ export const DeviceLogPage = () => {
       }
     >
       <List className={css.item}>
-        {!fetching && logsToShow?.map(item => <EventCell item={item} device={device} user={user} key={item.id} />)}
+        {!fetching && logsToShow?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
       </List>
 
       <Box className={css.box}>

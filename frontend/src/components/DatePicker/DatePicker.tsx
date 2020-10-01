@@ -3,7 +3,7 @@ import { Icon } from '../Icon'
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns'
 import { makeStyles } from '@material-ui/core'
-import { getDateFormatString } from '../../shared/applications'
+import { getDateFormatString } from '../../helpers/dateHelper'
 import { spacing } from '../../styling'
 
 export const DatePicker: React.FC<{

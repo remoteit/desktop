@@ -1,4 +1,4 @@
-import { IconButton } from '@material-ui/core'
+import { IconButton, Tooltip } from '@material-ui/core'
 import React, { useEffect, useState } from 'react'
 import { Icon } from '../../components/Icon'
 import { Dispatch, ApplicationState } from '../../store'
@@ -29,10 +29,10 @@ export function CSVDownloadButton({ deviceID, maxDate }: Props) {
   }
 
   return (
-    <>
+    <Tooltip title="Download CSV">
       <IconButton>
         <Icon name="file-download" size="md" fixedWidth onClick={download} />
       </IconButton>
-    </>
+    </Tooltip>
   )
 }

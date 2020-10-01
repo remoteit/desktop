@@ -66,32 +66,31 @@ const DEVICE_SELECT = `
         email
       }
     }
-    events {
-      hasMore
-      total
-      items {
-        id
-        state
-        timestamp
-        type
-        action
-        actor {
-            email
-        }
-        services {
-            id
-            name
-        }
-        users {
-            email
-        }
-        ... on DeviceShareEvent {
-            scripting
-        }
+  }
+  events {
+    hasMore
+    total
+    items {
+      id
+      state
+      timestamp
+      type
+      action
+      actor {
+          email
+      }
+      services {
+          id
+          name
+      }
+      users {
+          email
+      }
+      ... on DeviceShareEvent {
+          scripting
       }
     }
-  }
-}`
+  }`
 
 const LOG_SELECT_FOR_DEVICE = `{
   items {
