@@ -8,6 +8,9 @@ jobs: # a collection of steps
     steps: # a collection of executable commands
       - checkout # special step to check out source code to working directory
       - run:
+          name: font-awesome
+          command: npm config set '//npm.fontawesome.com/:_authToken' "${FONTAWESOME_NPM_AUTH_TOKEN}"
+      - run:
           name: update-npm
           command: 'sudo npm install -g npm@latest'
       - restore_cache: # special step to restore the dependency cache
