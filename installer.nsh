@@ -5,8 +5,7 @@
     Var /GLOBAL PATH_REMOTE_DIR
     Var /GLOBAL REMOTE_CLI_EXE
 
-    StrCpy $0 $INSTDIR -9  # = "path without remoteit folder"
-    StrCpy $PATH_REMOTE_DIR "$0\Program Files\remoteit-bin"
+    StrCpy $PATH_REMOTE_DIR "C:\Program Files\remoteit-bin"
     StrCpy $REMOTE_CLI_EXE "$PATH_REMOTE_DIR\remoteit.exe"
 
     Var /GLOBAL installLog
@@ -122,26 +121,30 @@
     Var /GLOBAL PATH_REMOTE_DIR_U
     Var /GLOBAL REMOTE_CLI_EXE_U
 
-    StrCpy $0 $INSTDIR -9  # = "path without remoteit folder"
-    StrCpy $PATH_REMOTE_DIR_U "$0\Program Files\remoteit-bin"
+    StrCpy $PATH_REMOTE_DIR_U "C:\Program Files\remoteit-bin"
     StrCpy $REMOTE_CLI_EXE_U "$PATH_REMOTE_DIR_U\remoteit.exe"
 
+    Var /GLOBAL uninstallLog
+    IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
+    file_found_u:
+        FileOpen $uninstallLog "$TEMP\remoteit.log" a 
+        FileSeek $uninstallLog 0 END
+        goto end_of_test_u ;<== important for not continuing on the else branch
+    file_not_found_u:
+        FileOpen $uninstallLog "$TEMP\remoteit.log" w 
+    end_of_test_u:
 
-  ${GetOptions} $R0 "--update" $R1
+    ${GetOptions} $R0 "--update" $R1
         ${IfNot} ${Errors}
             ; This is UPDATE
             ; MessageBox MB_OK "This is a UPDATE!" 
+            FileWrite $uninstallLog "$\nUpdate (${__DATE__} ${__TIME__}): $\r$\n"
+            FileWrite $uninstallLog "-----------------------------$\r$\n"
+            RMDir /r "$PATH_REMOTE_DIR_U"
+            FileWrite $uninstallLog "- RMDir $PATH_REMOTE_DIR_U$\r$\n"
         ${Else}
 
-            Var /GLOBAL uninstallLog
-            IfFileExists "$TEMP\remoteit.log" file_found file_not_found
-            file_found:
-                FileOpen $uninstallLog "$TEMP\remoteit.log" a 
-                FileSeek $uninstallLog 0 END
-                goto end_of_test ;<== important for not continuing on the else branch
-            file_not_found:
-                FileOpen $uninstallLog "$TEMP\remoteit.log" w 
-            end_of_test:
+            
             FileWrite $uninstallLog "$\nUninstall (${__DATE__} ${__TIME__}): $\r$\n"
             FileWrite $uninstallLog "-----------------------------$\r$\n"
 
