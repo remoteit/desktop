@@ -5,18 +5,25 @@ import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 class Controller extends EventEmitter {
-  private socket: SocketIOClient.Socket
+  private socket?: SocketIOClient.Socket
   private retrying?: NodeJS.Timeout
+  private userName?: string
+  private userPassword?: string
 
   constructor() {
     super()
+  }
+  init() {
+    //Emptry function.  I'm not sure why but it was unhappy when I tried to remove this function and its call in index.tsx
+  }
+
+  setupConnection(username: string, password: string) {
+    this.userName = username
+    this.userPassword = password  
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'
     const url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
-    this.socket = io(url)
-  }
-
-  init() {
+    this.socket = io(url, { transports: [ 'websocket' ], forceNew: true})
     const handlers = getEventHandlers()
 
     for (const eventName in handlers) {
@@ -28,13 +35,17 @@ class Controller extends EventEmitter {
     }
   }
 
+  auth() {
+    emit('authentication', { username: this.userName, authHash: this.userPassword })
+  }
+
   // Retry open with delay, force skips delay
   open(retry?: boolean, force?: boolean) {
-    if (force || (!this.socket.connected && !this.retrying)) {
+    if (force || (!this.socket?.connected && !this.retrying)) {
       this.retrying = setTimeout(
         () => {
           this.retrying = undefined
-          this.socket.open()
+          this.socket?.open()
         },
         retry ? FRONTEND_RETRY_DELAY : 0
       )
@@ -42,24 +53,24 @@ class Controller extends EventEmitter {
   }
 
   close() {
-    if (this.socket.connected) {
-      this.socket.close()
+    if (this.socket?.connected) {
+      this.socket?.close()
     }
   }
 
   on(eventName: SocketEvent, handler: (...args: any[]) => void) {
-    this.socket.on(eventName, handler)
+    this.socket?.on(eventName, handler)
     return this
   }
 
   off(eventName: SocketEvent) {
-    this.socket.off(eventName)
+    this.socket?.off(eventName)
     return this
   }
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
     console.log('Controller emit', event, args)
-    this.socket.emit(event, ...args)
+    this.socket?.emit(event, ...args)
     return true
   }
 }
@@ -71,9 +82,9 @@ function getEventHandlers() {
 
   return {
     connect: () => {
+      controller.auth()
       ui.set({ connected: true })
       backend.set({ error: false })
-      auth.init()
       accounts.init()
     },
 
@@ -83,12 +94,10 @@ function getEventHandlers() {
 
     disconnect: () => {
       ui.set({ connected: false })
-      auth.handleDisconnect()
     },
 
     connect_error: () => {
       backend.set({ error: true })
-      auth.handleDisconnect()
     },
 
     pool: (result: IConnection[]) => {
