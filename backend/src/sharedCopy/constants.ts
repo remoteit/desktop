@@ -11,9 +11,9 @@ export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API || 'https
 export const DEVELOPER_KEY =
   process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 export const REDIRECT_URL =
-  process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || 'remoteitdev://authCallback'
+  process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || process.env.NODE_ENV === 'development' ? 'remoteitdev://authCallback' : 'remoteit://authCallback'
 export const CALLBACK_URL =
-  process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || 'https://dev-auth.internal.remote.it/v1/callback'
+  process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || process.env.NODE_ENV === 'development' ? 'https://dev-auth.internal.remote.it/v1/callback' : 'https://auth.api.remote.it/v1/callback'
 
 export const PORT = process.env.REACT_APP_PORT || 29999
 export const HEARTBEAT_INTERVAL = 1000 * 15

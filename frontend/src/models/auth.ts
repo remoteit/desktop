@@ -48,11 +48,6 @@ export default createModel({
         }
       }
     },
-    async handleDisconnect(_: void, rootState: any) {
-      const { authenticated } = rootState.auth
-      // re-open if disconnected unintentionally
-      if (authenticated) Controller.open(true)
-    },
     async checkSession(_: void, rootState: any) {
       try {
         const  authUser = await rootState.auth.authService.checkSignIn()
@@ -72,7 +67,6 @@ export default createModel({
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.setInitialized()
         const user = await r3.user.userData(authUser.cognitoUser?.username)
-        Controller.open(false,true)
         dispatch.auth.setUser(user)
       }
     },
@@ -141,7 +135,7 @@ export default createModel({
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
       analyticsHelper.identify(user.id)
-      emit('authentication', { username: user.username, authHash: user.authHash })
+      Controller.setupConnection(user.username, user.authHash)
     },
     setAuthService(state: AuthState, authService: AuthService) {
       state.authService = authService
