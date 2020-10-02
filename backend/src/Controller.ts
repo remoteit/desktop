@@ -161,8 +161,7 @@ class Controller {
 
   clearAll = async () => {
     Logger.info('CLEAR CREDENTIALS')
-    await user.clearAll() // moved to before clearing connections because having many connection would cause sign out to fail.
-    await this.pool.clearAll()
+    await user.clearAll()
   }
 
   signOutComplete = () => {
