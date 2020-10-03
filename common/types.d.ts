@@ -230,7 +230,7 @@ declare global {
   }
 
   type IUser = {
-    id?: string
+    id: string
     email: string
     created?: Date
     platform?: number

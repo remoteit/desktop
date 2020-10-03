@@ -42,7 +42,6 @@ export function SharingForm({
   let disabled = !changed || saving
 
   const handleChangeServices = (services: string[]) => {
-    console.log('ON CHANGE SERVICES', services)
     onChange({ scripting, services })
   }
 
@@ -52,7 +51,6 @@ export function SharingForm({
   }, [])
 
   const handleChangeScripting = () => {
-    console.log('ON CHANGE SCRIPTING')
     onChange({
       scripting: !scripting,
       services: selectedServices,

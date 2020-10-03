@@ -70,7 +70,7 @@ export default createModel({
     }) {
       const { device, emails, scripting, services, isNew } = infoUpdate
 
-      const newUsers: IUser[] = emails.map(email => ({ email, scripting }))
+      const newUsers: IUser[] = emails.map(email => ({ email, id: '', scripting }))
       if (isNew) {
         device.access = device.access.concat(newUsers)
       } else {

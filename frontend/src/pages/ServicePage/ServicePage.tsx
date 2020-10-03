@@ -55,8 +55,9 @@ export const ServicePage: React.FC = () => {
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
-    if (!device && connection?.deviceID)
+    if (!device && connection?.deviceID) {
       devices.fetchDevice({ deviceId: connection.deviceID, accountId: connection.owner?.id, hidden: true })
+    }
   }, [])
 
   if (fetching) return <LoadingMessage message="Fetching data..." />

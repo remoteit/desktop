@@ -6,7 +6,7 @@ import { ApplicationState } from '../../store'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { SessionsList } from '../../components/SessionsList'
 import { useSelector } from 'react-redux'
-import { getDevices } from '../../models/accounts'
+import { getAllDevices } from '../../models/accounts'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
@@ -16,7 +16,7 @@ export const ConnectionsPage: React.FC = () => {
   const history = useHistory()
   const { connections, services, sessions } = useSelector((state: ApplicationState) => {
     const connections = state.backend.connections.filter(c => !!c.startTime)
-    const devices = getDevices(state)
+    const devices = getAllDevices(state)
     return {
       connections,
       services: findServices(
@@ -70,7 +70,7 @@ export const ConnectionsPage: React.FC = () => {
 
 function findServices(devices: IDevice[], ids: string[]) {
   return devices.reduce((all: IService[], d: IDevice) => {
-    const service = d.services.filter(s => ids.includes(s.id))
+    const service = d?.services?.filter(s => ids.includes(s.id))
     return service ? all.concat(service) : all
   }, [])
 }

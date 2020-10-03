@@ -9,7 +9,7 @@ import { Typography, Link } from '@material-ui/core'
 type Props = {
   selected?: IUser[]
   contacts: IUserRef[]
-  onChange: (latest: any) => void
+  onChange: (emails: string[]) => void
 }
 
 export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onChange }) => {

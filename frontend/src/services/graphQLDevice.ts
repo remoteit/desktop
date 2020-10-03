@@ -16,6 +16,7 @@ const DEVICE_SELECT = `
   ${LEGACY_ATTRIBUTES.join('\n')}
   access {
     user {
+      id
       email
     }
     scripting
@@ -51,6 +52,7 @@ const DEVICE_SELECT = `
     attributes
     access {
       user {
+        id
         email
       }
     }
@@ -138,7 +140,7 @@ export async function graphQLFetchDevice(id: string, account: string) {
 }
 
 export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: boolean): IDevice[] {
-  if (!gqlDevices) return []
+  if (!gqlDevices || !gqlDevices.length) return []
   let data: IDevice[] = gqlDevices?.map(
     (d: any): IDevice => ({
       id: d.id,
@@ -172,11 +174,12 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
           name: s.name,
           port: s.port,
           protocol: s.protocol,
-          access: s.access.map((e: any) => ({ email: e.user?.email })),
+          access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
           sessions: processSessions(s.sessions, loginId),
         })
       ),
       access: d.access.map((e: any) => ({
+        id: e.user?.id,
         email: e.user?.email,
         scripting: e.scripting,
       })),
@@ -195,11 +198,9 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
     const dates = response.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
     const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
     const result = sorted.reduce((sessions: IUser[], e: any) => {
-      if (
-        loginId !== e.user?.id &&
-        !sessions.some(s => s.email === e.user?.email && s.platform === e.endpoint.platform)
-      )
+      if (loginId !== e.user?.id && !sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint.platform))
         sessions.push({
+          id: e.user?.id,
           timestamp: e.timestamp,
           email: e.user?.email,
           platform: e.endpoint.platform,

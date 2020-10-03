@@ -11,7 +11,7 @@ import { Icon } from '../../components/Icon'
 import { useHistory } from 'react-router-dom'
 import { getDevices } from '../../models/accounts'
 import { ContactSelector } from '../../components/ContactSelector'
-import { DeviceShareDetails } from '../../components/DeviceShareDetails'
+import { ContactCard } from '../../components/ContactCard'
 import { SharingDetails } from '../../components/SharingForm'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
@@ -35,7 +35,10 @@ export const SharePage = () => {
     }
     return { deleting, device }
   })
-  const { contacts = [] } = useSelector((state: ApplicationState) => state.devices)
+  const { contacts = [], user } = useSelector((state: ApplicationState) => ({
+    contacts: state.devices.contacts,
+    user: state.devices.contacts.find(c => c.email === email),
+  }))
   const [selected, setSelected] = React.useState<string[]>([])
   const [changed, setChanged] = useState(false)
   const location = useLocation()
@@ -51,7 +54,7 @@ export const SharePage = () => {
     history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
   }
 
-  const handleShareUpdate = (share: SharingDetails, isNew: boolean) => {
+  const handleShare = (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
     const { scripting, services } = share.access
     if (shareData) shares.share(shareData)
@@ -120,12 +123,12 @@ export const SharePage = () => {
       }
     >
       {device && (
-        <DeviceShareDetails
+        <ContactCard
           device={device}
-          share={handleShareUpdate}
+          user={user}
           selected={selected}
-          updateSharing={handleShareUpdate}
-          changed={changed || !!selected.length}
+          onShare={handleShare}
+          changed={changed}
           setChanged={setChanged}
         />
       )}
