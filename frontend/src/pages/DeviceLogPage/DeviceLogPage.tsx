@@ -10,10 +10,7 @@ import {
   Button,
   Link,
   ListItemIcon,
-  TextField,
-  FilledTextFieldProps,
-  OutlinedTextFieldProps,
-  StandardTextFieldProps,
+  ListItemSecondaryAction,
 } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../components/Container'
@@ -59,7 +56,7 @@ export const DeviceLogPage = () => {
 
   const css = useStyles()
 
-  const handleChange = (date: any) => {
+  const onChange = (date: any) => {
     setSelectedDate(date)
     fetchLogs({ id: deviceID, from: 0, maxDate: `${date}` })
   }
@@ -72,27 +69,40 @@ export const DeviceLogPage = () => {
 
   return (
     <Container
+      inset
       header={
         <>
           <Breadcrumbs />
-          <Typography variant="h1" className={css.header}>
+          <Typography variant="h1">
             <Icon name="file-alt" color="grayDarker" size="lg" />
             <Title>Device Logs</Title>
-            <DatePicker
-              handleChange={handleChange}
-              minDay={minDay}
-              selectedDate={selectedDate}
-              fetching={fetching}
-              label="Jump to Date"
-            />
-
-            <CSVDownloadButton deviceID={deviceID} maxDate={selectedDate?.toDateString() || new Date().toString()} />
           </Typography>
+          <List className={css.header}>
+            <ListItem dense>
+              <ListItemIcon>
+                <Icon name={fetching ? 'spinner-third' : 'calendar-day'} size="md" spin={fetching} fixedWidth />
+              </ListItemIcon>
+              <DatePicker
+                onChange={onChange}
+                minDay={minDay}
+                selectedDate={selectedDate}
+                fetching={fetching}
+                label="Jump to Date"
+              />
+              <ListItemSecondaryAction>
+                <CSVDownloadButton
+                  deviceID={deviceID}
+                  maxDate={selectedDate?.toDateString() || new Date().toString()}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+          </List>
         </>
       }
     >
       <List className={css.item}>
-        {!fetching && logsToShow?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
+        {!fetching &&
+          logsToShow?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
       </List>
 
       <Box className={css.box}>
@@ -139,7 +149,7 @@ export function EventCell({ item, device, user }: { item: IEvent; device: IDevic
 
 const useStyles = makeStyles({
   header: {
-    marginBottom: spacing.md,
+    paddingTop: 0,
   },
   textField: {
     display: 'block',

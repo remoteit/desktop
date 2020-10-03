@@ -31,7 +31,7 @@ export function CSVDownloadButton({ deviceID, maxDate }: Props) {
   return (
     <Tooltip title="Download CSV">
       <IconButton>
-        <Icon name="file-download" size="md" fixedWidth onClick={download} />
+        <Icon name="arrow-to-bottom" size="md" fixedWidth onClick={download} />
       </IconButton>
     </Tooltip>
   )
