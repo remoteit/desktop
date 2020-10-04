@@ -53,6 +53,7 @@ class Controller {
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
 
+    socket.on('init', this.initBackend)
     socket.on('user/sign-out', user.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
     socket.on('user/clear-all', this.clearAll)
@@ -63,7 +64,6 @@ class Controller {
     socket.on('service/launch', openCMDforWindows)
     socket.on('service/forget', this.pool.forget)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('init', this.initBackend)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -78,7 +78,6 @@ class Controller {
     socket.on('heartbeat', this.check)
     socket.on('showFolder', showFolder.openLogs)
 
-    this.initBackend() // things are ready, send the init data
     this.check(true) // check and log
   }
 
