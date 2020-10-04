@@ -64,7 +64,7 @@ const applications: Application[] = [
     launchTemplate: 'https://[host]:[port]',
   }),
   new Application({
-    types: [7, 30, 38],
+    types: [7, 30, 38, 42],
     title: 'Browser',
     icon: 'arrow-right',
     iconRotate: true,
