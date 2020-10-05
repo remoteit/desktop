@@ -107,6 +107,12 @@ Linux    /etc/remoteit/
 Windows  C:\ProgramData\remoteit\
 ```
 
+**Windows installer log**
+
+```
+Windows  C:\Users\%username%\AppData\Local\temp\remoteit.log
+```
+
 ## Development
 
 ```shell

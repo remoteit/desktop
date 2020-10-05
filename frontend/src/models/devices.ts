@@ -1,7 +1,7 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
-import { cleanOrphanConnections } from '../helpers/connectionHelper'
+import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
@@ -60,7 +60,6 @@ export default createModel({
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices } = dispatch.accounts
       const { query, filter, size, from, append, searched } = globalState.devices
-      const { device, connections } = globalState.backend
       const accountId = getAccountId(globalState)
       const all = getDevices(globalState)
       const options: gqlOptions = {
@@ -69,7 +68,7 @@ export default createModel({
         account: accountId,
         state: filter === 'all' ? undefined : filter,
         name: query,
-        ids: append ? undefined : [device.uid].concat(connections.map((c: IConnection) => c.id)),
+        ids: append ? undefined : getConnectionIds(globalState),
       }
 
       if (!(await hasCredentials())) return

@@ -51,6 +51,13 @@ export function clearConnectionError(connection: IConnection) {
   emit('connection', connection)
 }
 
+export function getConnectionIds(state: ApplicationState) {
+  const { device, connections } = state.backend
+  let ids = connections.map(c => c.id)
+  if (device.uid) ids.push(device.uid)
+  return ids
+}
+
 export function updateConnections(devices: IDevice[]) {
   const { connections } = store.getState().backend
   let lookup = connections.reduce((result: ConnectionLookup, c: IConnection) => {
