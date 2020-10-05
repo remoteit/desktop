@@ -106,7 +106,6 @@ export default createModel({
         const { device } = gqlResponse?.data?.data?.login || {}
         const loginId = gqlResponse?.data?.data?.login?.id
         result = device ? graphQLAdaptor(device, loginId, hidden)[0] : []
-        debugger
       } catch (error) {
         await graphQLHandleError(error)
       }

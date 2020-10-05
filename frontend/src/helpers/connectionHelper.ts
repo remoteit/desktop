@@ -54,7 +54,7 @@ export function clearConnectionError(connection: IConnection) {
 export function getConnectionIds(state: ApplicationState) {
   const { device, connections } = state.backend
   let ids = connections.map(c => c.id)
-  if (device.uid) ids.push(device.uid)
+  if (device.uid && !ids.includes(device.uid)) ids.push(device.uid)
   return ids
 }
 

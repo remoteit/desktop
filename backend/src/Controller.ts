@@ -160,7 +160,12 @@ class Controller {
 
   clearAll = async () => {
     Logger.info('CLEAR CREDENTIALS')
+<<<<<<< Updated upstream
     await user.clearAll()
+=======
+    await this.pool.clearAll()
+    user.clearAll()
+>>>>>>> Stashed changes
   }
 
   signOutComplete = () => {
