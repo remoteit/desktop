@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
-import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 const ACCOUNT_KEY = 'account'
@@ -36,6 +36,29 @@ export default createModel({
       let activeId = window.localStorage.getItem(ACCOUNT_KEY)
       activeId = activeId && JSON.parse(activeId)
       dispatch.accounts.setActive(activeId)
+      await dispatch.accounts.fetchMembers()
+    },
+    async fetchMembers() {
+      try {
+        const result = await graphQLRequest(
+          ` query {
+              login {
+                member {
+                  created
+                  scripting
+                  user {
+                    id
+                    email
+                  }
+                }
+              }
+            }`
+        )
+        graphQLGetErrors(result)
+        await dispatch.accounts.parse(result)
+      } catch (error) {
+        await graphQLHandleError(error)
+      }
     },
     async parse(gqlResponse: any, globalState) {
       const gqlData = gqlResponse?.data?.data?.login
@@ -49,6 +72,7 @@ export default createModel({
       }
     },
     async parseAccounts(accounts: IGraphQLAccount[]): Promise<IUser[]> {
+      if (!accounts) return []
       return accounts.map(a => ({
         id: a.user.id,
         scripting: a.scripting,
@@ -150,4 +174,11 @@ export function getDevices(state: ApplicationState, accountId?: string) {
 
 export function getOwnDevices(state: ApplicationState) {
   return state.accounts.devices[state.auth.user?.id || ''] || []
+}
+
+export function getAllDevices(state: ApplicationState) {
+  return Object.keys(state.accounts.devices).reduce(
+    (all: IDevice[], accountId) => all.concat(state.accounts.devices[accountId]),
+    []
+  )
 }

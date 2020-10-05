@@ -70,7 +70,7 @@ const DEVICE_SELECT = `
 
 export async function graphQLFetchDevices({ size, from, state, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!], $size: Int, $from: Int, $name: String, $state: String, $account: String) {
+    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $account: String) {
         login {
           id
           account(id: $account) {
@@ -80,12 +80,9 @@ export async function graphQLFetchDevices({ size, from, state, name, account, id
                 ${DEVICE_SELECT}
               }
             }
-            connections: devices(id: $ids)  {
-              total
-              items {
-                ${DEVICE_SELECT}
-              }
-            }
+          }
+          connections: device(id: $ids)  {
+            ${DEVICE_SELECT}
           }
           member {
             created
@@ -120,21 +117,21 @@ export async function graphQLFetchDevices({ size, from, state, name, account, id
   )
 }
 
-export async function graphQLFetchDevice(id: string, account: string) {
+/* 
+  Fetches single, or array of devices across shared accounts by id
+*/
+export async function graphQLFetchDevice(id: string) {
   return await graphQLRequest(
-    ` query($id: String!, $account: String) {
+    ` query($id: [String!]!) {
         login {
           id
-          account(id: $account) {
-            device(id: $id)  {
-              ${DEVICE_SELECT}
-            }
+          device(id: $id)  {
+            ${DEVICE_SELECT}
           }
         }
       }`,
     {
       id,
-      account,
     }
   )
 }

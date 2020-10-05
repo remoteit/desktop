@@ -38,7 +38,13 @@ export default createModel({
       let { user } = rootState.auth
 
       if (!user) {
-        const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL:getRedirectUrl(), callbackURL:CALLBACK_URL});
+        const authService = new AuthService({
+          cognitoClientID: CLIENT_ID,
+          apiURL: API_URL,
+          developerKey: DEVELOPER_KEY,
+          redirectURL: getRedirectUrl(),
+          callbackURL: CALLBACK_URL,
+        })
         dispatch.auth.setAuthService(authService)
         try {
           await authService.checkSignIn()
@@ -50,9 +56,9 @@ export default createModel({
     },
     async checkSession(_: void, rootState: any) {
       try {
-        const  authUser = await rootState.auth.authService.checkSignIn()
+        const authUser = await rootState.auth.authService.checkSignIn()
         if (authUser) {
-          await  dispatch.auth.handleSignInSuccess(authUser)
+          await dispatch.auth.handleSignInSuccess(authUser)
         } else {
           dispatch.auth.signInError('Session Expired')
         }
@@ -71,11 +77,11 @@ export default createModel({
       }
     },
     async authenticated(_: void, rootState: any) {
-      if(rootState.auth.authenticated) {
+      if (rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
-        dispatch.devices.init()
         dispatch.applicationTypes.fetch()
-        emit('init')
+        await dispatch.accounts.init()
+        dispatch.devices.fetch()
       }
     },
     async signInError(error: string) {
@@ -89,8 +95,8 @@ export default createModel({
     async signedOut(_: void, rootState: any) {
       const user = await rootState.auth.authService.checkSignIn()
       await rootState.auth.authService.signOut()
-      if (user?.cognitoUser.authProvider == 'Google') {
-        window.open('https://auth.remote.it/logout?client_id=26g0ltne0gr8lk1vs51mihrmig&logout_uri=remoteitdev://')
+      if (user?.cognitoUser.authProvider === 'Google') {
+        window.open('https://auth.remote.it/logout?client_id=26g0ltne0gr8lk1vs51mihrmig&logout_uri=remoteit://')
       }
       dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()

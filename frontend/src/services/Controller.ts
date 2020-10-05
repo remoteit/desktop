@@ -19,11 +19,11 @@ class Controller extends EventEmitter {
 
   setupConnection(username: string, password: string) {
     this.userName = username
-    this.userPassword = password  
+    this.userPassword = password
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'
     const url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
-    this.socket = io(url, { transports: [ 'websocket' ], forceNew: true})
+    this.socket = io(url, { transports: ['websocket'], forceNew: true })
     const handlers = getEventHandlers()
 
     for (const eventName in handlers) {
@@ -78,14 +78,13 @@ class Controller extends EventEmitter {
 type EventHandlers = { [event: string]: (data?: any) => any }
 
 function getEventHandlers() {
-  const { binaries, auth, backend, accounts, logs, ui } = store.dispatch
+  const { binaries, auth, backend, logs, ui } = store.dispatch
 
   return {
     connect: () => {
       controller.auth()
       ui.set({ connected: true })
       backend.set({ error: false })
-      accounts.init()
     },
 
     unauthorized: (error: Error) => auth.signInError(error.message),
@@ -152,13 +151,6 @@ function getEventHandlers() {
     },
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
-
-    //Analytics
-    setOSInfo: (osInfo: IosInfo) => {
-      analyticsHelper.setOS(osInfo.os)
-      analyticsHelper.setOsVersion(osInfo.version)
-      analyticsHelper.setArch(osInfo.arch)
-    },
 
     // User
     'signed-out': () => auth.signedOut(),

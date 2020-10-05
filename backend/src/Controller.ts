@@ -53,7 +53,6 @@ class Controller {
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
 
-    socket.on('init', this.initBackend)
     socket.on('user/sign-out', user.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
     socket.on('user/clear-all', this.clearAll)
@@ -78,6 +77,7 @@ class Controller {
     socket.on('heartbeat', this.check)
     socket.on('showFolder', showFolder.openLogs)
 
+    this.initBackend()
     this.check(true) // check and log
   }
 

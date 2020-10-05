@@ -1,12 +1,14 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
 import { attributeName } from '../shared/nameHelper'
-import { getDevices } from '../models/accounts'
+import { getDevices, getAccountId } from '../models/accounts'
+import { ApplicationState } from '../store'
 import { store } from '../store'
 
 export function newConnection(service?: IService | null, data = {}) {
   const state = store.getState()
-  const user = [...state.accounts.member, state.auth.user].find(u => u?.id === state.accounts.activeId)
+  const accountId = getAccountId(state)
+  const user = [...state.accounts.member, state.auth.user].find(u => u?.id === accountId)
 
   let connection: IConnection = {
     host: IP_PRIVATE,

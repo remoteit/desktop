@@ -1,7 +1,7 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
-import { cleanOrphanConnections, graphQLIds } from '../helpers/connectionHelper'
+import { cleanOrphanConnections } from '../helpers/connectionHelper'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
@@ -49,29 +49,27 @@ const state: IDeviceState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async init(_, globalState) {
-      dispatch.devices.fetch(true)
-      if (globalState.accounts.activeId !== globalState.auth.user?.id) {
-        dispatch.devices.fetch()
-      }
-    },
-
     /* 
       GraphQL search query for all device data
     */
-    async fetch(ownDevice, globalState: any) {
+
+    // @TODO might want a fetch member call and a fetch(logged in user) call
+    // The fetch member call could be smaller and not get the connections an
+    // other stuff
+    async fetch(_, globalState: any) {
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices } = dispatch.accounts
       const { query, filter, size, from, append, searched } = globalState.devices
-      const account = ownDevice ? globalState.auth.user?.id : getAccountId(globalState)
+      const { device, connections } = globalState.backend
+      const accountId = getAccountId(globalState)
       const all = getDevices(globalState)
       const options: gqlOptions = {
         size,
         from,
-        account,
+        account: accountId,
         state: filter === 'all' ? undefined : filter,
         name: query,
-        ids: append ? [] : graphQLIds(globalState),
+        ids: append ? undefined : [device.uid].concat(connections.map((c: IConnection) => c.id)),
       }
 
       if (!(await hasCredentials())) return
@@ -82,8 +80,8 @@ export default createModel({
       if (searched) set({ results: total })
       else set({ total })
 
-      if (append) setDevices({ devices: [...all, ...devices], accountId: account })
-      else setDevices({ devices, accountId: account })
+      if (append) setDevices({ devices: [...all, ...devices], accountId })
+      else setDevices({ devices, accountId })
 
       set({ initialized: true, fetching: false, append: false, contacts })
       // @TODO pull contacts out into it's own model / request on page load
@@ -95,7 +93,7 @@ export default createModel({
     /*
       Fetches a single device and merges in the state
     */
-    async fetchDevice({ deviceId, accountId = '', hidden }: IGetDevice, globalState: any) {
+    async fetchSingle({ deviceId, accountId = '', hidden }: IGetDevice, globalState: any) {
       const { set } = dispatch.devices
       let result
 
@@ -105,7 +103,7 @@ export default createModel({
       set({ fetching: true })
 
       try {
-        const gqlResponse = await graphQLFetchDevice(deviceId, accountId)
+        const gqlResponse = await graphQLFetchDevice(deviceId)
         graphQLGetErrors(gqlResponse)
         const { device } = gqlResponse?.data?.data?.login?.account || {}
         const loginId = gqlResponse?.data?.data?.login?.id
@@ -123,9 +121,9 @@ export default createModel({
       const parseAccounts = dispatch.accounts.parse
       try {
         const gqlResponse = await graphQLFetchDevices(options)
-        const [gqlData, total, loginId, contacts, error] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData?.connections?.items, loginId, true)
-        const devices = graphQLAdaptor(gqlData?.devices?.items, loginId)
+        const [deviceData, connectionData, total, loginId, contacts, error] = await graphQLMetadata(gqlResponse)
+        const connections = graphQLAdaptor(connectionData, loginId, true)
+        const devices = graphQLAdaptor(deviceData, loginId)
         await parseAccounts(gqlResponse)
         return { devices: [...connections, ...devices], total, contacts, error }
       } catch (error) {
@@ -140,11 +138,10 @@ export default createModel({
 
     async graphQLMetadata(gqlData: any) {
       const error = graphQLGetErrors(gqlData)
-      const data = gqlData?.data?.data?.login?.account || {}
-      const contacts = gqlData?.data?.data?.login?.contacts
-      const loginId = gqlData?.data?.data?.login?.id
-      const total = data?.devices?.total || 0
-      return [data, total, loginId, contacts, error]
+      const devices = gqlData?.data?.data?.login?.account?.devices?.items || {}
+      const { connections, contacts, id } = gqlData?.data?.data?.login
+      const total = devices.total || 0
+      return [devices, connections, total, id, contacts, error]
     },
 
     async reset() {

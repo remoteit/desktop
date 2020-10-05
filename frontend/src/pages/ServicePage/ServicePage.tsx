@@ -15,6 +15,7 @@ import { ServiceConnected } from '../../components/ServiceConnected'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
+import { getAllDevices, getAccountId } from '../../models/accounts'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { UnauthorizedPage } from '../UnauthorizedPage'
@@ -27,7 +28,6 @@ import { LaunchButton } from '../../buttons/LaunchButton'
 import { ForgetButton } from '../../buttons/ForgetButton'
 import { UsersSelect } from '../../components/UsersSelect'
 import { ErrorButton } from '../../buttons/ErrorButton'
-import { getDevices } from '../../models/accounts'
 import { EditButton } from '../../buttons/EditButton'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Container } from '../../components/Container'
@@ -41,10 +41,12 @@ export const ServicePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
-  const { connection, service, device, thisDevice, fetching } = useSelector((state: ApplicationState) => {
+  const { connection, service, device, thisDevice, fetching, accountId } = useSelector((state: ApplicationState) => {
     const connection = state.backend.connections.find(c => c.id === serviceID)
-    const [service, device] = findService(getDevices(state, connection?.owner?.id), serviceID)
+    const accountId = connection?.owner?.id || getAccountId(state)
+    const [service, device] = findService(getAllDevices(state), serviceID)
     return {
+      accountId,
       service,
       device,
       connection,
@@ -55,9 +57,7 @@ export const ServicePage: React.FC = () => {
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
-    if (!device && connection?.deviceID) {
-      devices.fetchDevice({ deviceId: connection.deviceID, accountId: connection.owner?.id, hidden: true })
-    }
+    if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, accountId, hidden: true })
   }, [])
 
   if (fetching) return <LoadingMessage message="Fetching data..." />
