@@ -101,19 +101,19 @@ export default createModel({
 
       accountId = accountId || getAccountId(globalState)
       set({ fetching: true })
-
       try {
         const gqlResponse = await graphQLFetchDevice(deviceId)
         graphQLGetErrors(gqlResponse)
-        const { device } = gqlResponse?.data?.data?.login?.account || {}
+        const { device } = gqlResponse?.data?.data?.login || {}
         const loginId = gqlResponse?.data?.data?.login?.id
-        result = device ? graphQLAdaptor([device], loginId)[0] : []
+        result = device ? graphQLAdaptor(device, loginId, hidden)[0] : []
+        debugger
       } catch (error) {
         await graphQLHandleError(error)
       }
 
       set({ fetching: false })
-      dispatch.accounts.setDevice({ id: deviceId, accountId, device: { ...result, hidden } })
+      dispatch.accounts.setDevice({ id: deviceId, accountId, device: result })
     },
 
     async graphQLFetchProcessor(options: gqlOptions) {

@@ -36,8 +36,8 @@ export const AccountAccessPage: React.FC = () => {
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <Icon name="people-arrows" size="lg" />
-            <Title>Account Linked Users</Title>
+            <Icon name="user-friends" size="lg" />
+            <Title>Device List Sharing</Title>
             <AddUserButton />
           </Typography>
         </>

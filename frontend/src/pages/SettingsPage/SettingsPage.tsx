@@ -87,9 +87,13 @@ export const SettingsPage: React.FC = () => {
         <DeviceSetupItem />
       </List>
       <Divider />
-      <Typography variant="subtitle1">User</Typography>
+      <Typography variant="subtitle1">Sharing</Typography>
       <List>
         <AccountLinkingSettings />
+      </List>
+      <Divider />
+      <Typography variant="subtitle1">User</Typography>
+      <List>
         <ListItemSetting
           label="Help documentation"
           icon="books"
