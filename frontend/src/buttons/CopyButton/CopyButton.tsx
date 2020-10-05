@@ -5,7 +5,7 @@ import { useClipboard } from 'use-clipboard-copy'
 import { Icon } from '../../components/Icon'
 import { FontSize } from '../../styling'
 import { setConnection } from '../../helpers/connectionHelper'
-import { ModalSetUsername } from '../../components/ModalSetUsername'
+import { UsernameModal } from '../../components/UsernameModal'
 
 export interface CopyButtonProps {
   connection?: IConnection
@@ -18,25 +18,22 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, men
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const app = useApplication(service && service.typeID)
 
-  const [username, setUsername] = useState<string>((connection && connection.username) || '')
-  const [openUsername, setOpenUsername] = useState<boolean>(false)
+  const [open, setOpen] = useState<boolean>(false)
   if (!connection || !connection.active || !app) return null
 
   const check = () => {
-    app.prompt && (connection.username === '' || connection.username === undefined)
-      ? setOpenUsername(true)
-      : clipboard.copy()
+    app.prompt && !connection.username ? setOpen(true) : clipboard.copy()
   }
-  const close = () => {
-    setOpenUsername(false)
+  const onClose = () => {
+    setOpen(false)
   }
 
-  const handleSubmit = () => {
+  const onSubmit = (username: string) => {
     if (username) {
       setConnection({ ...connection, username: username.toString() })
       setTimeout(function () {
         clipboard.copy()
-        close()
+        onClose()
       }, 500)
     }
   }
@@ -65,15 +62,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, men
         </Tooltip>
       )}
 
-      <ModalSetUsername
-        connection={connection}
-        openUsername={openUsername}
-        handleSubmit={handleSubmit}
-        username={username}
-        setUsername={setUsername}
-        service={service}
-        close={close}
-      />
+      <UsernameModal connection={connection} open={open} onSubmit={onSubmit} service={service} onClose={onClose} />
     </>
   )
 }
