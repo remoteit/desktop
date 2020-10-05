@@ -1,7 +1,10 @@
+import environment from './environment'
 import cli from './cliInterface'
+import rimraf from 'rimraf'
 import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
+import path from 'path'
 import { r3 } from './remote.it'
 
 const d = debug('r3:backend:User')
@@ -69,6 +72,7 @@ export class User {
     this.signedIn = false
 
     EventBus.emit(User.EVENTS.signedOut)
+    rimraf.sync(path.join(environment.userPath, 'user.json'), { disableGlob: true })
   }
 
   clearAll = async () => {

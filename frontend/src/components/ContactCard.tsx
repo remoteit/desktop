@@ -1,32 +1,24 @@
 import React, { useEffect } from 'react'
 import { SharingForm, SharingDetails, SharingAccess } from './SharingForm'
+import { getPermissions } from '../helpers/userHelper'
 
-export function ContactCard({
-  device,
-  share,
-  scripting,
-  sharedServices,
-  selected,
-  email,
-  updateSharing,
-  changed,
-  setChanged,
-}: {
+type Props = {
   device: IDevice
-  share: (access: SharingDetails, isNew: boolean) => void
-  scripting: boolean
-  sharedServices: string[]
+  user?: IUser
   selected: string[]
-  email: string
-  updateSharing: (access: SharingDetails, isNew: boolean) => void
+  onShare: (access: SharingDetails, isNew: boolean) => void
   changed: boolean
   setChanged: React.Dispatch<React.SetStateAction<boolean>>
-}): JSX.Element {
-  const [scripts, setScripts] = React.useState<boolean>(scripting)
-  const [selectedServices, setSelectedServices] = React.useState<string[]>(sharedServices)
+}
+
+export const ContactCard: React.FC<Props> = ({ device, user, selected, onShare, changed, setChanged }) => {
+  const permissions = getPermissions(device, user?.email)
+  const services = permissions.services.map(s => s.id)
+  const [scripts, setScripts] = React.useState<boolean>(permissions.scripting)
+  const [selectedServices, setSelectedServices] = React.useState<string[]>(services)
 
   useEffect(() => {
-    setSelectedServices(sharedServices)
+    setSelectedServices(services)
   }, [])
 
   const handleChange = (access: SharingAccess) => {
@@ -36,20 +28,21 @@ export function ContactCard({
   }
 
   const handleSharingUpdate = () => {
-    updateSharing(
-      {
-        access: {
-          scripting: scripts,
-          services: selectedServices,
+    if (user)
+      onShare(
+        {
+          access: {
+            scripting: scripts,
+            services: selectedServices,
+          },
+          emails: [user.email],
         },
-        emails: [email],
-      },
-      false
-    )
+        false
+      )
   }
 
   const handleShare = () => {
-    share(
+    onShare(
       {
         access: {
           scripting: scripts,

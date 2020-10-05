@@ -10,9 +10,9 @@ export const AccountLinkingSettings: React.FC = () => {
   return (
     <ListItemLocation
       dense
-      icon="people-arrows"
-      title="Account Linking"
-      subtitle="Grant access to the all the devices you own."
+      icon="user-friends"
+      title="Device List Sharing"
+      subtitle="Share all the devices you own to another user"
       pathname="/settings/access"
     >
       <ListItemSecondaryAction>

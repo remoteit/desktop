@@ -1,13 +1,12 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
-import { cleanOrphanConnections } from '../helpers/connectionHelper'
+import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
-
 
 type DeviceParams = { [key: string]: any }
 
@@ -50,33 +49,29 @@ const state: IDeviceState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async init(_, globalState) {
-      dispatch.devices.fetch(true)
-      if (globalState.accounts.activeId !== globalState.auth.user?.id) {
-        dispatch.devices.fetch()
-      }
-    },
-
     /* 
       GraphQL search query for all device data
     */
-    async fetch(ownDevice, globalState: any) {
+
+    // @TODO might want a fetch member call and a fetch(logged in user) call
+    // The fetch member call could be smaller and not get the connections an
+    // other stuff
+    async fetch(_, globalState: any) {
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices } = dispatch.accounts
       const { query, filter, size, from, append, searched } = globalState.devices
-      const { connections, device } = globalState.backend
-      const account = ownDevice ? globalState.auth.user?.id : getAccountId(globalState)
+      const accountId = getAccountId(globalState)
       const all = getDevices(globalState)
       const options: gqlOptions = {
         size,
         from,
-        account,
+        account: accountId,
         state: filter === 'all' ? undefined : filter,
         name: query,
-        ids: append ? [] : [device.uid].concat(connections.map((c: IConnection) => c.id)),
+        ids: append ? undefined : getConnectionIds(globalState),
       }
 
-      if (!await hasCredentials()) return
+      if (!(await hasCredentials())) return
 
       set({ fetching: true })
       const { devices, total, contacts, error } = await graphQLFetchProcessor(options)
@@ -84,8 +79,8 @@ export default createModel({
       if (searched) set({ results: total })
       else set({ total })
 
-      if (append) setDevices({ devices: [...all, ...devices], accountId: account })
-      else setDevices({ devices, accountId: account })
+      if (append) setDevices({ devices: [...all, ...devices], accountId })
+      else setDevices({ devices, accountId })
 
       set({ initialized: true, fetching: false, append: false, contacts })
       // @TODO pull contacts out into it's own model / request on page load
@@ -97,28 +92,26 @@ export default createModel({
     /*
       Fetches a single device and merges in the state
     */
-    async fetchDevice({ deviceId, accountId = '', hidden }: IGetDevice, globalState: any) {
+    async fetchSingle({ deviceId, accountId = '', hidden }: IGetDevice, globalState: any) {
       const { set } = dispatch.devices
-      if (!hasCredentials()) return
       let result
 
-      if (!await hasCredentials()) return
+      if (!(await hasCredentials())) return
 
       accountId = accountId || getAccountId(globalState)
-
       set({ fetching: true })
-
       try {
-        const gqlResponse = await graphQLFetchDevice(deviceId, accountId)
+        const gqlResponse = await graphQLFetchDevice(deviceId)
         graphQLGetErrors(gqlResponse)
-        const { device } = gqlResponse?.data?.data?.login?.account || {}
-        result = graphQLAdaptor([device], accountId)[0]
+        const { device } = gqlResponse?.data?.data?.login || {}
+        const loginId = gqlResponse?.data?.data?.login?.id
+        result = device ? graphQLAdaptor(device, loginId, hidden)[0] : []
       } catch (error) {
         await graphQLHandleError(error)
       }
 
       set({ fetching: false })
-      dispatch.accounts.setDevice({ id: deviceId, accountId, device: { ...result, hidden } })
+      dispatch.accounts.setDevice({ id: deviceId, accountId, device: result })
     },
 
     async graphQLFetchProcessor(options: gqlOptions) {
@@ -126,9 +119,9 @@ export default createModel({
       const parseAccounts = dispatch.accounts.parse
       try {
         const gqlResponse = await graphQLFetchDevices(options)
-        const [gqlData, total, loginId, contacts, error] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(gqlData?.connections?.items, loginId, true)
-        const devices = graphQLAdaptor(gqlData?.devices?.items, loginId)
+        const [deviceData, connectionData, total, loginId, contacts, error] = await graphQLMetadata(gqlResponse)
+        const connections = graphQLAdaptor(connectionData, loginId, true)
+        const devices = graphQLAdaptor(deviceData, loginId)
         await parseAccounts(gqlResponse)
         return { devices: [...connections, ...devices], total, contacts, error }
       } catch (error) {
@@ -143,11 +136,10 @@ export default createModel({
 
     async graphQLMetadata(gqlData: any) {
       const error = graphQLGetErrors(gqlData)
-      const data = gqlData?.data?.data?.login?.account || {}
-      const contacts = gqlData?.data?.data?.login?.contacts
-      const loginId = gqlData?.data?.data?.login?.id
-      const total = data?.devices?.total || 0
-      return [data, total, loginId, contacts, error]
+      const devices = gqlData?.data?.data?.login?.account?.devices?.items || {}
+      const { connections, contacts, id } = gqlData?.data?.data?.login
+      const total = devices.total || 0
+      return [devices, connections, total, id, contacts, error]
     },
 
     async reset() {
@@ -227,7 +219,7 @@ export default createModel({
 export function findService(devices: IDevice[], id: string) {
   return devices.reduce(
     (all, d) => {
-      const service = d.services.find(s => s.id === id)
+      const service = d?.services?.find(s => s.id === id)
       if (service) {
         all[0] = service
         all[1] = d

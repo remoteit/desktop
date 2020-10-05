@@ -5,7 +5,7 @@ import { ApplicationState } from '../../store'
 
 export const DeviceLabel: React.FC<{ device: IDevice }> = ({ device }) => {
   const css = useStyles()
-  const label = useSelector((state: ApplicationState) => state.labels.find(l => l.id === device.attributes.color))
+  const label = useSelector((state: ApplicationState) => state.labels.find(l => l.id === device.attributes?.color))
 
   if (!label) return null
 

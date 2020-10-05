@@ -63,7 +63,6 @@ class Controller {
     socket.on('service/launch', openCMDforWindows)
     socket.on('service/forget', this.pool.forget)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('init', this.initBackend)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -78,7 +77,7 @@ class Controller {
     socket.on('heartbeat', this.check)
     socket.on('showFolder', showFolder.openLogs)
 
-    this.initBackend() // things are ready, send the init data
+    this.initBackend()
     this.check(true) // check and log
   }
 
@@ -161,8 +160,8 @@ class Controller {
 
   clearAll = async () => {
     Logger.info('CLEAR CREDENTIALS')
-    await user.clearAll() // moved to before clearing connections because having many connection would cause sign out to fail.
     await this.pool.clearAll()
+    user.clearAll()
   }
 
   signOutComplete = () => {

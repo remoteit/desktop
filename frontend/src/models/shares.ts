@@ -29,7 +29,6 @@ export default createModel({
       try {
         const response = await graphQLUnShareDevice({ deviceId, email: [email] })
         const errors = await graphQLGetErrors(response)
-        debugger
         if (!errors) {
           await dispatch.devices.fetchDevice({ deviceId })
           dispatch.ui.set({ successMessage: `${email} successfully removed.` })
@@ -70,7 +69,7 @@ export default createModel({
     }) {
       const { device, emails, scripting, services, isNew } = infoUpdate
 
-      const newUsers: IUser[] = emails.map(email => ({ email, scripting }))
+      const newUsers: IUser[] = emails.map(email => ({ email, id: '', scripting }))
       if (isNew) {
         device.access = device.access.concat(newUsers)
       } else {
