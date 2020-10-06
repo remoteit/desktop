@@ -13,6 +13,7 @@ export function service({ name = 'SSH', type = 'SSH', state = 'active', ...other
     typeID: 30,
     sessions: [],
     access: [],
+    attributes: {},
     ...other,
   }
 }
@@ -51,7 +52,7 @@ export function connection(name = 'Some service name', port = 33001): IConnectio
     id: `some-service-id-${randomNumber()}`,
     name,
     port,
-    owner: 'username',
+    owner: { email: 'username', id: 'idstring' },
     online: true,
   }
 }

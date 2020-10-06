@@ -8,7 +8,7 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const LogPage: React.FC = () => {
   const { serviceID = '' } = useParams()
@@ -18,12 +18,11 @@ export const LogPage: React.FC = () => {
   const log = useSelector((state: ApplicationState) => state.logs[id] || [])
 
   useEffect(() => {
-    analytics.page('LogPage')
+    analyticsHelper.page('LogPage')
   }, [])
 
   return (
     <Container
-      scrollbars
       header={
         <>
           <Breadcrumbs />

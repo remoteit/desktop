@@ -1,39 +1,29 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Button,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Typography,
-  Switch,
-  TextField,
-  MenuItem,
-} from '@material-ui/core'
+import { Button, List, Typography, TextField, MenuItem } from '@material-ui/core'
 import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../shared/constants'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
-import { Icon } from '../../components/Icon'
+import { getDevices } from '../../models/accounts'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { colors, spacing, fontSizes } from '../../styling'
 import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
-  const { serviceID = '' } = useParams()
+  const { serviceID = '' } = useParams<{ serviceID: string }>()
   const privateIP = useSelector((state: ApplicationState) => state.backend.environment.privateIP)
   const connection = useSelector((state: ApplicationState) => {
     let c = state.backend.connections.find(c => c.id === serviceID)
     if (c) return c
-    const [service] = findService(state.devices.all, serviceID)
+    const [service] = findService(getDevices(state), serviceID)
     return newConnection(service)
   })
 
@@ -48,7 +38,7 @@ export const LanSharePage: React.FC = () => {
   ]
 
   useEffect(() => {
-    analytics.page('LanSharePage')
+    analyticsHelper.page('LanSharePage')
   }, [])
 
   const [enabled, setEnabled] = useState<boolean>(connection.host === IP_OPEN)
@@ -86,18 +76,12 @@ export const LanSharePage: React.FC = () => {
       }
     >
       <List>
-        <ListItem button onClick={() => setEnabled(!enabled)}>
-          <ListItemIcon>
-            <Icon name="network-wired" color={enabled ? 'primary' : 'gray'} size="lg" />
-          </ListItemIcon>
-          <ListItemText
-            primary="Enable local sharing"
-            primaryTypographyProps={{ style: { color: enabled ? colors.primary : colors.grayDarker } }}
-          />
-          <ListItemSecondaryAction>
-            <Switch checked={enabled} onChange={() => setEnabled(!enabled)} />
-          </ListItemSecondaryAction>
-        </ListItem>
+        <ListItemSetting
+          icon="network-wired"
+          toggle={enabled}
+          onClick={() => setEnabled(!enabled)}
+          label="Enable local sharing"
+        />
       </List>
 
       <div className={css.indent}>

@@ -1,3 +1,6 @@
+import { REDIRECT_URL } from '../shared/constants'
+
+
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
 const DEVELOPMENT = 'development'
@@ -14,6 +17,14 @@ export function os() {
   return 'linux'
 }
 
+export function getRedirectUrl() {
+  let redirectUrl = window.origin
+  if(isElectron()) {
+    redirectUrl = REDIRECT_URL
+  }
+  return redirectUrl
+}
+
 export function isElectron() {
   const userAgent = navigator.userAgent.toLowerCase()
   return userAgent.includes('electron')
@@ -27,4 +38,13 @@ export function isMac() {
 export function isWindows() {
   const platform = navigator.platform.toLowerCase()
   return platform.includes('win')
+}
+
+export function isDev() {
+  return environment() === DEVELOPMENT
+}
+
+export function launchBrowser(type: string) {
+  const platform = navigator ? navigator.platform.toLowerCase() : ''
+  return !(type === 'SSH' && platform.includes('win'))
 }

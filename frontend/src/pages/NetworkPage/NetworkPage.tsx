@@ -4,7 +4,7 @@ import { ApplicationState } from '../../store'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Network } from '../../components/Network'
 import { emit } from '../../services/Controller'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const NetworkPage: React.FC = () => {
   const { interfaces, targets, scanData, privateIP } = useSelector((state: ApplicationState) => ({
@@ -14,7 +14,7 @@ export const NetworkPage: React.FC = () => {
     privateIP: state.backend.environment.privateIP,
   }))
   const scan = (interfaceName: string) => {
-    analytics.track('networkScan')
+    analyticsHelper.track('networkScan')
     emit('scan', interfaceName)
   }
 
@@ -23,7 +23,7 @@ export const NetworkPage: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    analytics.page('NetworkPage')
+    analyticsHelper.page('NetworkPage')
   }, [])
 
   return (

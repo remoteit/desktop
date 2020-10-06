@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE } from '../../shared/constants'
-import { List, ListItem, ListItemIcon, ListItemText, Chip, Checkbox, Typography } from '@material-ui/core'
-import { getTypeId, findType, serviceTypes } from '../../services/serviceTypes'
+import { List, Chip, Typography } from '@material-ui/core'
+import { getTypeId, findType } from '../../models/applicationTypes'
 import { LoadingMessage } from '../LoadingMessage'
+import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
@@ -16,15 +17,20 @@ type Props = {
 export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => {
   const [state, setState] = useState<boolean[]>([])
   const css = useStyles()
-  const scanData = useSelector((state: ApplicationState) => {
-    const {localhost} =  state.backend.scanData
-
-    return localhost?.data[0] && localhost?.data[0][1].map(row => ({
-        ...DEFAULT_TARGET,
-        type: getTypeId(row[0]),
-        port: row[0],
-        name: row[1].replace(REGEX_NAME_SAFE, ''),
-      }))
+  const { applicationTypes, scanData } = useSelector((state: ApplicationState) => {
+    const { localhost } = state.backend.scanData
+    const applicationTypes = state.applicationTypes.all
+    return {
+      applicationTypes,
+      scanData:
+        localhost?.data[0] &&
+        localhost?.data[0][1].map(row => ({
+          ...DEFAULT_TARGET,
+          type: getTypeId(applicationTypes, row[0]),
+          port: row[0],
+          name: row[1].replace(REGEX_NAME_SAFE, ''),
+        })),
+    }
   })
 
   const updateTargets = useCallback(
@@ -36,7 +42,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
   )
 
   if (scanData && scanData.length !== state.length) {
-    const checked = scanData.map(row => !!serviceTypes.find(st => st.defaultPort === row.port || 29999 === row.port)) // 29999 temp hack to have remoteit admin checked
+    const checked = scanData.map(row => !!applicationTypes.find(t => t.port === row.port))
     setState(checked)
     updateTargets(checked)
   }
@@ -50,24 +56,24 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
       <Typography variant="body2" color="textSecondary">
         Services
       </Typography>
-      <List>
+      <List className="collapseList">
         {scanData.map((row, key) => (
-          <ListItem
+          <ListItemCheckbox
             key={key}
-            button
+            label={row.name}
+            checked={state[key]}
             onClick={() => {
               state[key] = !state[key]
               setState([...state])
               updateTargets([...state])
             }}
-            className={css.item}
           >
-            <ListItemIcon>
-              <Checkbox checked={state[key]} color="primary" />
-            </ListItemIcon>
-            <ListItemText className={css.name} primary={row.name} />
-            <Chip label={findType(row.type).name + ' - ' + row.port} size="small" />
-          </ListItem>
+            <Chip
+              className={css.chip}
+              label={findType(applicationTypes, row.type).name + ' - ' + row.port}
+              size="small"
+            />
+          </ListItemCheckbox>
         ))}
       </List>
     </>
@@ -75,6 +81,5 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
 }
 
 const useStyles = makeStyles({
-  item: { padding: 0, paddingRight: spacing.md },
-  name: { width: '60%', flex: 'none' },
+  chip: { marginRight: spacing.md },
 })

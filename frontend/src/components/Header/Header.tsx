@@ -1,23 +1,26 @@
 import React from 'react'
 import { Typography } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
+import { getOwnDevices } from '../../models/accounts'
 import { ApplicationState } from '../../store'
-import { usePermissions } from '../../hooks/usePermissions'
 import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
+import { attributeName } from '../../shared/nameHelper'
 import styles from '../../styling'
 
 export const Header: React.FC = () => {
-  const { device } = useSelector((state: ApplicationState) => state.backend)
-  const { guest } = usePermissions()
   const css = useStyles()
+  const { email, device } = useSelector((state: ApplicationState) => ({
+    email: false, //state.auth.user?.email,
+    device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+  }))
 
   if (!isMac() && isElectron()) return null
 
   return (
     <div className={css.header}>
       <Typography variant="body2">
-        {device.name ? device.name : 'remote.it'} {guest && <span className={css.guest}>- Guest</span>}
+        {device ? attributeName(device) : 'remote.it'} {email && <span className={css.email}>- {email}</span>}
       </Typography>
     </div>
   )
@@ -46,7 +49,7 @@ const useStyles = makeStyles({
       margin: 0,
     },
   },
-  guest: {
-    color: styles.colors.primary,
+  email: {
+    color: styles.colors.gray,
   },
 })

@@ -1,5 +1,6 @@
 import React from 'react'
-import { InlineSetting } from '../InlineSetting'
+import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
+import { attributeName } from '../../shared/nameHelper'
 import { REGEX_NAME_SAFE } from '../../shared/constants'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
@@ -7,13 +8,13 @@ export const NameSetting: React.FC<{ service: IService; connection?: IConnection
   if (!service) return null
   if (!connection) connection = newConnection(service)
 
-  const currentName = (connection && connection.name) || (service && service.name)
+  const currentName = connection?.name || attributeName(service)
 
   return (
-    <InlineSetting
+    <InlineTextFieldSetting
       value={currentName}
       label="Connection Name"
-      resetValue={service.name}
+      resetValue={attributeName(service)}
       filter={REGEX_NAME_SAFE}
       onSave={name =>
         connection &&

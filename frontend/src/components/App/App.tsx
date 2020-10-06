@@ -16,11 +16,22 @@ import { Page } from '../../pages/Page'
 import styles from '../../styling'
 
 export const App: React.FC = () => {
-  const { installed, signedOut, uninstalling } = useSelector((state: ApplicationState) => ({
+  const { authInitialized,backendAuthenticated, initialized, installed, signedOut, uninstalling } = useSelector((state: ApplicationState) => ({
+    authInitialized: state.auth.initialized,
+    backendAuthenticated: state.auth.backendAuthenticated,
+    initialized: state.devices.initialized,
     installed: state.binaries.installed,
-    signedOut: (!state.auth.user || !state.auth.authenticated) && !state.auth.loadingInitialState,
+    signedOut: state.auth.initialized &&  !state.auth.authenticated,
     uninstalling: state.ui.uninstalling,
   }))
+
+  // console.error("STATE")
+  // console.error("authInitialized" + authInitialized)
+  // console.error("backendAuthenticated" + backendAuthenticated)
+  // console.error("initialized" + initialized)
+  // console.error("installed" + installed)
+  // console.error("signedOut" + signedOut)
+  // console.error("uninstalling" + uninstalling)
 
   const css = useStyles()
   const history = useHistory()
@@ -50,6 +61,14 @@ export const App: React.FC = () => {
       </Page>
     )
 
+  if (!authInitialized)
+    return (
+      <Page>
+        <Header />
+        <LoadingMessage message="Checking Authentication..." />
+      </Page>
+    )
+
   if (signedOut)
     return (
       <Page>
@@ -57,12 +76,28 @@ export const App: React.FC = () => {
         <SignInPage />
       </Page>
     )
-
+  
+  if (!backendAuthenticated)
+    return (
+      <Page>
+        <Header />
+        <LoadingMessage message="Checking Backend..." />
+      </Page>
+    )
+  
   if (!installed)
     return (
       <Page>
         <Header />
         <InstallationNotice />
+      </Page>
+    )
+
+  if (!initialized)
+    return (
+      <Page>
+        <Header />
+        <LoadingMessage message="Starting up..." />
       </Page>
     )
 

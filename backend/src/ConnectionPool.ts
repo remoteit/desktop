@@ -190,4 +190,5 @@ export default class ConnectionPool {
       return result
     }, [])
   }
+
 }

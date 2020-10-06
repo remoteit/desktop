@@ -2,21 +2,28 @@ import io from 'socket.io-client'
 import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
-import analytics from '../helpers/Analytics'
+import analyticsHelper from '../helpers/analyticsHelper'
 
 class Controller extends EventEmitter {
-  private socket: SocketIOClient.Socket
+  private socket?: SocketIOClient.Socket
   private retrying?: NodeJS.Timeout
+  private userName?: string
+  private userPassword?: string
 
   constructor() {
     super()
+  }
+  init() {
+    //Emptry function.  I'm not sure why but it was unhappy when I tried to remove this function and its call in index.tsx
+  }
+
+  setupConnection(username: string, password: string) {
+    this.userName = username
+    this.userPassword = password
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'
     const url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
-    this.socket = io(url)
-  }
-
-  init() {
+    this.socket = io(url, { transports: ['websocket'], forceNew: true })
     const handlers = getEventHandlers()
 
     for (const eventName in handlers) {
@@ -28,13 +35,17 @@ class Controller extends EventEmitter {
     }
   }
 
+  auth() {
+    emit('authentication', { username: this.userName, authHash: this.userPassword })
+  }
+
   // Retry open with delay, force skips delay
   open(retry?: boolean, force?: boolean) {
-    if (force || (!this.socket.connected && !this.retrying)) {
+    if (force || (!this.socket?.connected && !this.retrying)) {
       this.retrying = setTimeout(
         () => {
           this.retrying = undefined
-          this.socket.open()
+          this.socket?.open()
         },
         retry ? FRONTEND_RETRY_DELAY : 0
       )
@@ -42,24 +53,24 @@ class Controller extends EventEmitter {
   }
 
   close() {
-    if (this.socket.connected) {
-      this.socket.close()
+    if (this.socket?.connected) {
+      this.socket?.close()
     }
   }
 
   on(eventName: SocketEvent, handler: (...args: any[]) => void) {
-    this.socket.on(eventName, handler)
+    this.socket?.on(eventName, handler)
     return this
   }
 
   off(eventName: SocketEvent) {
-    this.socket.off(eventName)
+    this.socket?.off(eventName)
     return this
   }
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
     console.log('Controller emit', event, args)
-    this.socket.emit(event, ...args)
+    this.socket?.emit(event, ...args)
     return true
   }
 }
@@ -71,9 +82,9 @@ function getEventHandlers() {
 
   return {
     connect: () => {
+      controller.auth()
       ui.set({ connected: true })
       backend.set({ error: false })
-      auth.init()
     },
 
     unauthorized: (error: Error) => auth.signInError(error.message),
@@ -82,12 +93,10 @@ function getEventHandlers() {
 
     disconnect: () => {
       ui.set({ connected: false })
-      auth.handleDisconnect()
     },
 
     connect_error: () => {
       backend.set({ error: true })
-      auth.handleDisconnect()
     },
 
     pool: (result: IConnection[]) => {
@@ -104,13 +113,13 @@ function getEventHandlers() {
       console.log('socket targets', result)
       if (result) {
         backend.set({ targets: result })
-        ui.setupUpdated(result.length)
+        backend.targetUpdated(result)
       }
     },
 
     device: (result: ITargetDevice) => {
       console.log('socket device', result)
-      if (result) backend.set({ device: result })
+      if (result) backend.targetDeviceUpdated(result)
     },
 
     scan: (result: IScanData) => {
@@ -119,10 +128,9 @@ function getEventHandlers() {
     },
 
     oob: (oob: IOob) => {
-      console.log('oob', oob)
       backend.set({ lan: oob })
-      analytics.setOobAvailable(oob.oobAvailable)
-      analytics.setOobActive(oob.oobActive)
+      analyticsHelper.setOobAvailable(oob.oobAvailable)
+      analyticsHelper.setOobActive(oob.oobActive)
     },
 
     interfaces: (result: IInterface[]) => {
@@ -136,20 +144,13 @@ function getEventHandlers() {
 
     environment: (result: ILookup) => {
       backend.set({ environment: result })
-      analytics.setOS(result.os)
-      analytics.setOsVersion(result.osVersion)
-      analytics.setArch(result.arch)
-      analytics.setManufacturerDetails(result.manufacturerDetails)
+      analyticsHelper.setOS(result.os)
+      analyticsHelper.setOsVersion(result.osVersion)
+      analyticsHelper.setArch(result.arch)
+      analyticsHelper.setManufacturerDetails(result.manufacturerDetails)
     },
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
-
-    //Analytics
-    setOSInfo: (osInfo: IosInfo) => {
-      analytics.setOS(osInfo.os)
-      analytics.setOsVersion(osInfo.version)
-      analytics.setArch(osInfo.arch)
-    },
 
     // User
     'signed-out': () => auth.signedOut(),
@@ -168,7 +169,7 @@ function getEventHandlers() {
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
-      analytics.trackConnect('connectionSucceeded', msg.connection)
+      analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
@@ -178,13 +179,22 @@ function getEventHandlers() {
     'service/error': (msg: ConnectionErrorMessage) => {
       logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
       backend.setConnection(msg.connection)
-      analytics.trackConnect('connectionFailed', msg.connection, msg)
+      analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
     },
 
     'binary/install/error': (error: string) => binaries.installError(error),
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: string) => binaries.notInstalled(binary),
+
+    'service/putty/required': (result: IPuttyValidation) => {
+      console.log({ result })
+      ui.set({
+        requireInstallPutty: result.install,
+        loading: result.loading,
+        pathPutty: result.pathPutty,
+      })
+    },
   } as EventHandlers
 }
 

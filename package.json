@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.7.8",
+  "version": "2.8.0-alpha.6",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -12,8 +12,8 @@
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
     "copy-images": "cp -R ./src/images ./build/",
+    "copy-install": "cp installer.nsh build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
-    "copy-uninstall": "cp installer.nsh build/",
     "electron": "cross-env NODE_ENV=development electron ./",
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
@@ -107,6 +107,12 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist"
     },
+    "extraResources": [
+      {
+        "from": "./backend/src/cli-version.txt",
+        "to": "./"
+      }
+    ],
     "files": [
       "build/**/*",
       "node_modules/**/*",

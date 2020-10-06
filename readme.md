@@ -76,11 +76,6 @@ The desktop app runs a web service at port 29999 for remote access.
 
 - Setup prompt: If you log in to a device through your browser for remote setup it will by default put you on the device setup screen instead of the device list.
 
-## Guest view
-
-If a device has already been setup by a user, other users that log in will be in guest view and have limited abilities.
-Also a user in guest view can be logged out if the primary user logs in.
-
 ## Troubleshooting
 
 If things aren't working the best way to clear everything and start over is to use the **Uninstall command line tools** menu in the advanced settings screen.
@@ -112,6 +107,12 @@ Linux    /etc/remoteit/
 Windows  C:\ProgramData\remoteit\
 ```
 
+**Windows installer log**
+
+```
+Windows  C:\Users\%username%\AppData\Local\temp\remoteit.log
+```
+
 ## Development
 
 ```shell
@@ -128,25 +129,15 @@ cd frontend
 npm start
 ```
 
-Click the system tray icon with command+option to open with dev tools.
+Command+option+I to open with dev tools.
 
 ## Testing
 
-Tests are written using Jest. End-to-end tests are in `tests/e2e`.
+Tests are written using Jest.
 
 ### Setup
 
 Copy the `backend/.env.example` file to `backend/.env` and then fill in the values.
-
-### End-to-End Tests
-
-```shell
-# in one tab:
-npm start
-
-# in another tab:
-npm run test-e2e
-```
 
 ### Packaging
 
@@ -196,7 +187,7 @@ With an EV signing cert you cannot automate the token password, but you can set 
 **To sign the application follow these steps:**
 
 1. Insert USB Certificate
-2. `PLATFORMS=w npm run build`
+2. `npm run build`
 3. Enter the token password for the certificate if prompted (once per login)
 4. After build is completed copy these four files to the main build directory:
 

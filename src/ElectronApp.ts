@@ -1,12 +1,15 @@
-import { WEB_DIR, EVENTS, environment, preferences, EventBus } from 'remoteit-headless'
+import { WEB_DIR, EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
+import AutoUpdater from './AutoUpdater'
 import electron from 'electron'
 import TrayMenu from './TrayMenu'
-import AutoUpdater from './AutoUpdater'
 import debug from 'debug'
 import path from 'path'
 import url from 'url'
 
 const d = debug('r3:headless:ElectronApp')
+
+const DEEP_LINK_PROTOCOL = 'remoteit'
+const DEEP_LINK_PROTOCOL_DEV = 'remoteitdev'
 
 export default class ElectronApp {
   public app: electron.App
@@ -15,27 +18,31 @@ export default class ElectronApp {
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private openAtLogin?: boolean
+  private deepLinkUrl?: string
+  private authCallback?: boolean
+  private protocol: string
 
   constructor() {
     this.app = electron.app
     this.quitSelected = false
     this.autoUpdater = new AutoUpdater()
+    this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
-    // Not primary instance of app
     if (!this.app.requestSingleInstanceLock()) this.app.quit()
+    this.app.setAsDefaultProtocolClient(this.protocol)
 
+    // Windows event
     this.app.on('ready', this.handleAppReady)
     this.app.on('activate', this.handleActivate)
     this.app.on('before-quit', () => (this.quitSelected = true))
-    this.app.on('second-instance', () => this.openWindow())
+    this.app.on('second-instance', this.handleSecondInstance)
+    this.app.on('open-url', this.handleOpenUrl)
 
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
-  check = () => {
-    this.autoUpdater.check()
-  }
+  check = () => this.autoUpdater.check()
 
   get url() {
     if (!this.window) return
@@ -48,10 +55,38 @@ export default class ElectronApp {
    * Some APIs can only be used after this event occurs.
    */
   private handleAppReady = () => {
+    this.setDeepLink(process.argv.pop())
     this.createSystemTray()
     this.createMainWindow()
     this.handleOpenAtLogin(preferences.data || {})
+    this.openWindow()
     EventBus.emit(EVENTS.ready, this.tray)
+  }
+
+  private handleSecondInstance = (_: electron.Event, argv: string[]) => {
+    // Windows deep link support
+    Logger.info('SECOND INSTANCE ARGS', { argv })
+    this.setDeepLink(argv.pop())
+    this.openWindow()
+  }
+
+  private handleOpenUrl = (event: electron.Event, url: string) => {
+    // Mac deep link support
+    event.preventDefault()
+    this.setDeepLink(url)
+    this.openWindow()
+  }
+
+  private setDeepLink(link?: string) {
+    const scheme = this.protocol + '://'
+    const authCallbackCode = 'authCallback'
+    if (link?.includes(scheme)) {
+      this.deepLinkUrl = link.substr(scheme.length)
+      Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
+    }
+    if(link?.includes(authCallbackCode)) {
+      this.authCallback = true
+    }
   }
 
   private handleActivate = () => {
@@ -72,7 +107,7 @@ export default class ElectronApp {
 
     this.window = new electron.BrowserWindow({
       width: 800,
-      height: 600,
+      height: 700,
       maxWidth: 1000,
       minWidth: 525,
       minHeight: 325,
@@ -84,18 +119,7 @@ export default class ElectronApp {
 
     this.window.setVisibleOnAllWorkspaces(true)
 
-    const startUrl =
-      process.env.NODE_ENV === 'development'
-        ? url.format({
-            protocol: 'http',
-            hostname: 'localhost',
-            port: '3000',
-          })
-        : url.format({
-            pathname: path.join(WEB_DIR, 'index.html'),
-            protocol: 'file',
-            slashes: true,
-          })
+    const startUrl = this.getStartUrl()
 
     this.window.loadURL(startUrl)
 
@@ -111,6 +135,20 @@ export default class ElectronApp {
       event.preventDefault()
       electron.shell.openExternal(url)
     })
+  }
+
+  private getStartUrl() : string {
+    return process.env.NODE_ENV === 'development'
+    ? url.format({
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+      })
+    : url.format({
+        pathname: path.join(WEB_DIR, 'index.html'),
+        protocol: 'file',
+        slashes: true,
+      })
   }
 
   private createSystemTray() {
@@ -139,7 +177,17 @@ export default class ElectronApp {
 
     this.window.show()
 
-    if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
+    if (this.deepLinkUrl) {
+      location = this.deepLinkUrl
+      this.deepLinkUrl = undefined
+    }
+
+    if (location && this.authCallback) {
+      this.authCallback = false
+      const fullUrl = this.getStartUrl() + '/' + location
+
+      this.window.loadURL(fullUrl)
+    } else if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
   }
 

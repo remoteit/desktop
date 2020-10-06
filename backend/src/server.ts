@@ -72,8 +72,8 @@ class Server {
         Logger.warn('HTTPS SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })
         app.quit()
       })
-      .listen(SSL_PORT, () => {
-        Logger.info('HTTPS SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
+      .listen(SSL_PORT, HOST, () => {
+        Logger.info('HTTPS SERVER STARTED', { port: SSL_PORT, directory: WEB_DIR })
       })
 
     this.io = SocketIO()

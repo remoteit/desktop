@@ -1,0 +1,1 @@
+export { ShareDetails } from './ShareDetails'

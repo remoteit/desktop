@@ -3,20 +3,20 @@ import { AnalyticsJS } from 'segment-analytics'
 
 declare global {
   // @FIXME this should only be connection state info, not overloading device / service state
-  export type ConnectionState = DeviceState | ServiceState | 'connecting' | 'disconnected' | 'unknown'
+  type ConnectionState = DeviceState | ServiceState | 'connecting' | 'disconnected' | 'unknown'
   // | 'active''
   // | 'inactive
   // | 'connecting'
   // | 'connected'
   // | 'restricted'
 
-  export type Tab = 'connections' | 'devices'
+  type Tab = 'connections' | 'devices'
 
-  export type Page = 'connections' | 'devices' | 'setup' | 'settings' | 'network'
+  type Page = 'connections' | 'devices' | 'setup' | 'settings' | 'network'
 
-  export type Route = { [key in Page]: React.ReactNode }
+  type Route = { [key in Page]: React.ReactNode }
 
-  export type ServerMessageType =
+  type ServerMessageType =
     | 'service/error'
     | 'service/status'
     | 'service/updated'
@@ -30,22 +30,56 @@ declare global {
     | 'service/uptime'
     | 'connectd/install/error'
 
-  export type LogType = 'general' | 'connectd' | 'alert'
+  type LogType = 'general' | 'connectd' | 'alert'
 
-  export interface Log {
+  interface Log {
     type: LogType
     message: string
     data?: any
     createdAt?: Date
   }
 
-  export type IconType = 'light' | 'regular' | 'solid' | 'brands'
+  interface ContactFields {
+    accountCreated?: boolean
+    companyName?: string
+    createdAt?: Date
+    email: string
+    firstName?: string
+    id?: string
+    inviteSent?: boolean
+    lastName?: string
+    language?: AvailableLanguage | string
+    updatedAt?: Date
+  }
+
+  interface IReactSelectOption {
+    value: string
+    label: string
+    isDisabled: boolean
+  }
+
+  interface ShareInfo {
+    created: string
+    email: string
+    scripting: boolean
+    services: string[]
+    uid: string
+    updated: string
+    userid: string
+  }
+
+  interface SimplifiedService {
+    id: string
+    name: string
+  }
+
+  type IconType = 'light' | 'regular' | 'solid' | 'brands'
 
   /**
    * Action which are called by components that are wrapped
    * by the context API store.
    */
-  export interface Action {
+  interface Action {
     type: string
     [key: string]: any
   }
@@ -57,12 +91,20 @@ declare global {
     analytics: AnalyticsJS
   }
 
-  export interface IDataDisplay {
+  interface IDataDisplay {
     label: string
     value?: any
     help?: string
     format?: 'duration' | 'percent' | 'round' | 'location'
   }
+
+  interface ILabel {
+    color: string
+    name: string
+    id: number
+  }
+
+  type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 
 declare module 'remote.it' {

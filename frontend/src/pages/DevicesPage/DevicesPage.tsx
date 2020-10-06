@@ -1,33 +1,33 @@
 import React, { useEffect } from 'react'
-import { DeviceList } from '../../components/DeviceList'
-import { Container } from '../../components/Container'
+import { makeStyles, LinearProgress } from '@material-ui/core'
+import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { IconButton, Tooltip, LinearProgress, Typography } from '@material-ui/core'
-import { Dispatch, ApplicationState } from '../../store'
-import { useDispatch, useSelector } from 'react-redux'
+import { RefreshButton } from '../../buttons/RefreshButton'
+import { LoadingMessage } from '../../components/LoadingMessage'
+import { AccountSelect } from '../../components/AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
-import { makeStyles } from '@material-ui/core/styles'
-import { Body } from '../../components/Body'
-import { Icon } from '../../components/Icon'
+import { useSelector } from 'react-redux'
+import { getDevices } from '../../models/accounts'
+import { DeviceList } from '../../components/DeviceList'
+import { Container } from '../../components/Container'
 import styles from '../../styling'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DevicesPage = () => {
-  const { allDevices, connections, fetching } = useSelector((state: ApplicationState) => ({
+  const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
-    allDevices: state.devices.all.filter((d: IDevice) => !d.hidden),
+    devices: getDevices(state).filter((d: IDevice) => !d.hidden),
     connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
       return lookup
     }, {}),
   }))
-  const { devices } = useDispatch<Dispatch>()
   const css = useStyles()
 
   useEffect(() => {
-    analytics.page('DevicesPage')
+    analyticsHelper.page('DevicesPage')
   }, [])
 
   return (
@@ -36,35 +36,20 @@ export const DevicesPage = () => {
         <>
           <div className={css.header}>
             <SearchField />
+            <AccountSelect />
             <FilterButton />
-            <Tooltip title="Refresh devices">
-              <div>
-                <IconButton
-                  onClick={() => {
-                    devices.set({ from: 0 })
-                    devices.fetch()
-                  }}
-                  disabled={fetching}
-                >
-                  <Icon name="sync" size="sm" type="regular" />
-                </IconButton>
-              </div>
-            </Tooltip>
+            <RefreshButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>
       }
     >
-      {fetching && !allDevices.length ? (
-        <Body center>
-          <Typography variant="body1" color="textSecondary">
-            Loading devices...
-          </Typography>
-        </Body>
-      ) : !allDevices.length ? (
+      {fetching && !devices.length ? (
+        <LoadingMessage message="Loading devices..." spinner={false} />
+      ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={allDevices} connections={connections} />
+        <DeviceList devices={devices} connections={connections} />
       )}
     </Container>
   )
@@ -75,8 +60,6 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: styles.colors.white,
-    borderBottom: `1px solid ${styles.colors.grayLight}`,
     padding: `0 ${styles.spacing.md}px`,
   },
   fetching: {

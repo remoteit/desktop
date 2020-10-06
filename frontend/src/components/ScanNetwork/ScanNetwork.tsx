@@ -14,11 +14,11 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { makeStyles } from '@material-ui/core/styles'
-import { getTypeId } from '../../services/serviceTypes'
+import { getTypeId } from '../../models/applicationTypes'
 import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '../../shared/constants'
-import { useHistory, useRouteMatch } from 'react-router-dom'
-import { Dispatch } from '../../store'
-import { useDispatch } from 'react-redux'
+import { useHistory, useLocation } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import styles, { spacing } from '../../styling'
 
 type Props = {
@@ -42,11 +42,15 @@ const InterfaceIcon: IInterfaceIcon = {
 export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, privateIP }) => {
   const css = useStyles()
   const history = useHistory()
+  const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
-  const match = useRouteMatch()
   const [open, setOpen] = useState<number[]>([])
+  const { applicationTypes, setupServicesLimit } = useSelector((state: ApplicationState) => ({
+    applicationTypes: state.applicationTypes.all,
+    setupServicesLimit: state.ui.setupServicesLimit,
+  }))
   const allClosed = open.length === 0
-  const disabled = targets.length > 9
+  const disabled = targets.length + 1 > setupServicesLimit
 
   function toggle(row: number) {
     const index = open.indexOf(row)
@@ -117,20 +121,20 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                         size="small"
                         disabled={disabled}
                         onClick={() => {
-                          history.push(`${match.path.replace(REGEX_LAST_PATH, '')}/setupServices`)
                           ui.set({
                             setupAdded: {
                               ...DEFAULT_TARGET,
-                              type: getTypeId(port[0]),
+                              type: getTypeId(applicationTypes, port[0]),
                               hostname: ip[0] === privateIP ? '' : ip[0],
                               port: port[0],
                               name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
                             },
                           })
+                          history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
                         }}
                       >
                         Add
-                        <Icon name="plus" inline />
+                        <Icon name="plus" size="sm" type="regular" inline />
                       </Button>
                     )}
                   </ListItemSecondaryAction>

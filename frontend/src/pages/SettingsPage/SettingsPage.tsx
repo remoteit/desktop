@@ -5,51 +5,61 @@ import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/cor
 import { useSelector, useDispatch } from 'react-redux'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
-import { SettingsListItem } from '../../components/SettingsListItem'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
+import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { UninstallSetting } from '../../components/UninstallSetting'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/core/styles'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
+import { Avatar } from '../../components/Avatar'
+import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SettingsPage = () => {
-  const { os, user, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
+export const SettingsPage: React.FC = () => {
+  const { os, user, target, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
     os: state.backend.environment.os,
     user: state.auth.user,
+    target: state.backend.device,
     installing: state.binaries.installing,
     cliVersion: state.binaries.installedVersion || '(loading...)',
     preferences: state.backend.preferences,
   }))
-
   const css = useStyles()
-
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
 
   const quitWarning = () =>
     window.confirm('Are you sure? Quitting will not close your connections.') && emit('user/quit')
   const signOutWarning = () => {
-    window.confirm(
-      'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
-    ) && emit('user/sign-out')
-    analytics.track('signOut')
-    analytics.clearIdentity()
+    if (
+      window.confirm(
+        'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
+      )
+    ) {
+      emit('user/sign-out')
+      analyticsHelper.track('signOut')
+    }
   }
 
-  const clearWarning = () =>
-    window.confirm('Are you sure? The next user that signs in will be able to claim this device as their own.') &&
-    emit('user/clear-all')
+  const clearWarning = () => {
+    let message = 'Are you sure? This remove all your connections.'
+    if (target.uid)
+      message =
+        'Are you sure? This will remove all your connections and let the next user that signs claim this device.'
+    window.confirm(message) && emit('user/clear-all')
+  }
+
   const installWarning = () =>
     window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
     binaries.install(true)
 
   useEffect(() => {
-    analytics.page('SettingsPage')
+    analyticsHelper.page('SettingsPage')
   }, [])
 
   return (
@@ -57,12 +67,18 @@ export const SettingsPage = () => {
       header={
         <>
           <OutOfBand />
-          <Typography className={css.header} variant="h1">
-            <Tooltip title="Visit remote.it on the web">
-              <ButtonBase onClick={() => window.open('https://remote.it')}>
-                <Logo width={110} />
-              </ButtonBase>
-            </Tooltip>
+          <Typography variant="h1">
+            <Title>
+              <Tooltip title="Visit remote.it on the web">
+                <ButtonBase onClick={() => window.open('https://remote.it')}>
+                  <Logo className={css.logo} width={110} />
+                </ButtonBase>
+              </Tooltip>
+            </Title>
+            <Typography className={css.user} variant="caption">
+              {user?.email}
+            </Typography>
+            <Avatar email={user?.email} button />
           </Typography>
         </>
       }
@@ -71,46 +87,63 @@ export const SettingsPage = () => {
         <DeviceSetupItem />
       </List>
       <Divider />
+      <Typography variant="subtitle1">Sharing</Typography>
+      <List>
+        <AccountLinkingSettings />
+      </List>
+      <Divider />
       <Typography variant="subtitle1">User</Typography>
       <List>
-        <SettingsListItem
+        <ListItemSetting
           label="Help documentation"
           icon="books"
           onClick={() => window.open('https://docs.remote.it/desktop-help')}
         />
-        <SettingsListItem
+        <ListItemSetting
           label="Send feedback"
           icon="envelope"
           onClick={() =>
             (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
           }
         />
-        <SettingsListItem
+        <ListItemSetting
           label="Sign out"
-          subLabel={`Signed in as ${user && user.username}`}
+          subLabel="Sign out and lock this system installation."
           icon="sign-out"
           onClick={signOutWarning}
         />
-        {!guest && <SettingsListItem label="Quit" icon="times" onClick={quitWarning} />}
+        <ListItemSetting
+          label={'Sign out and clear device credentials'}
+          subLabel={
+            <>
+              This will remove all user credentials from this device, allowing the device to be transferred or another
+              user to log in.
+              <br />
+              The next user to sign in will claim this device.
+            </>
+          }
+          icon="user-slash"
+          onClick={clearWarning}
+        />
       </List>
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
       <List>
         {(os === 'mac' || os === 'windows') && (
-          <SettingsListItem
+          <ListItemSetting
             label="Auto Update"
             icon="chevron-double-up"
             toggle={preferences.autoUpdate}
             onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
           />
         )}
-
-        <SettingsListItem
+        <ListItemSetting
           label="Open at login"
-          icon="power-off"
+          icon="door-open"
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
+        {!guest && <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
         <UpdateSetting />
       </List>
       {!(guest || notElevated) && (
@@ -119,7 +152,7 @@ export const SettingsPage = () => {
           <Typography variant="subtitle1">Advanced</Typography>
           <List>
             <SettingsDisableNetworkItem />
-            <SettingsListItem
+            <ListItemSetting
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}
@@ -127,15 +160,11 @@ export const SettingsPage = () => {
               onClick={installWarning}
             />
             <UninstallSetting />
-            <SettingsListItem
-              label={'Clear all credentials'}
-              subLabel={`This will remove all remote.it user credentials from this device. 
-                Credentials should be removed before transferring a device. 
-                The next user to sign in with elevated permissions will claim this device. 
-                The hosted services will only remain active until the next reboot 
-                if another user does not sign in and claim the device.`}
-              icon="user-slash"
-              onClick={clearWarning}
+            <ListItemSetting
+              label="Show application logs"
+              subLabel="Will show the folders that contain the application logs and config file."
+              icon="folder"
+              onClick={() => emit('showFolder')}
             />
           </List>
         </>
@@ -145,5 +174,6 @@ export const SettingsPage = () => {
 }
 
 const useStyles = makeStyles({
-  header: { '& img': { marginBottom: spacing.sm } },
+  logo: { marginBottom: spacing.xs },
+  user: { marginRight: spacing.sm, fontFamily: 'Roboto Mono' },
 })

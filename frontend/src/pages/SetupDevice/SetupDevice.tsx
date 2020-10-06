@@ -1,50 +1,42 @@
 import React, { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { LocalhostScanForm } from '../../components/LocalhostScanForm'
-import { TextField, Button, Typography } from '@material-ui/core'
-import { useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
+import { TextField, Button, Typography } from '@material-ui/core'
+import { LocalhostScanForm } from '../../components/LocalhostScanForm'
+import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
+import { getDevices } from '../../models/accounts'
 import { Container } from '../../components/Container'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
-import analytics from '../../helpers/Analytics'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
-type Props = {
-  os?: Ios
-  device: ITargetDevice
-}
+type Props = { os?: Ios }
 
-export const SetupDevice: React.FC<Props> = ({ os, device }) => {
+export const SetupDevice: React.FC<Props> = ({ os }) => {
   const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost,
-    nameBlacklist: state.devices.all
+    nameBlacklist: getDevices(state)
       .filter((device: IDevice) => !device.shared)
       .map((d: IDevice) => d.name.toLowerCase()),
   }))
-  const history = useHistory()
   const css = useStyles()
+  const history = useHistory()
+  const { backend } = useDispatch<Dispatch>()
   const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist))
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
   const [selected, setSelected] = useState<ITarget[]>([])
 
-  const onRegistration = () => {
-    analytics.track('deviceCreated', { ...device, id: device.uid })
-    selected.forEach(t => analytics.track('serviceCreated', { ...t, id: t.uid }))
-    emit('registration', { device: { ...device, name }, targets: selected })
-    history.push('/settings/setupWaiting')
-  }
-
   useEffect(() => {
     if (loading) {
       emit('scan', 'localhost')
-      analytics.track('networkScan')
+      analyticsHelper.track('networkScan')
     } else {
       setName(safeHostname(hostname, nameBlacklist))
     }
@@ -65,7 +57,8 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
           onSubmit={event => {
             if (!name) return
             event.preventDefault()
-            onRegistration()
+            backend.registerDevice({ targets: selected, name })
+            history.push('/devices/setupWaiting')
           }}
         >
           <section className={css.device}>
@@ -76,7 +69,7 @@ export const SetupDevice: React.FC<Props> = ({ os, device }) => {
               variant="filled"
               error={!!nameError}
               onChange={event => {
-                const validation = serviceNameValidation(event.target.value, true)
+                const validation = serviceNameValidation(event.target.value)
                 setName(validation.value)
                 if (validation.error) {
                   setNameError(validation.error)

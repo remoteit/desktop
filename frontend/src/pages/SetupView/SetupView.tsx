@@ -3,16 +3,15 @@ import { Container } from '../../components/Container'
 import { Typography, Tooltip, Divider } from '@material-ui/core'
 import { usePermissions } from '../../hooks/usePermissions'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { findType } from '../../services/serviceTypes'
 import { makeStyles } from '@material-ui/core/styles'
 import { spacing, colors, fontSizes } from '../../styling'
 import { Columns } from '../../components/Columns'
 import { Icon } from '../../components/Icon'
 
 export const SetupView: React.FC<{
-  device: ITargetDevice
+  targetDevice: ITargetDevice
   targets: ITarget[]
-}> = ({ device, targets }) => {
+}> = ({ targetDevice, targets }) => {
   const { adminUsername, notElevated } = usePermissions()
   const css = useStyles()
 
@@ -25,7 +24,7 @@ export const SetupView: React.FC<{
             <Tooltip title={`Only ${adminUsername} can edit this device`}>
               <Icon name="lock-alt" type="light" color="primary" size="lg" fixedWidth />
             </Tooltip>
-            <span>{device.name}</span>
+            <span>{targetDevice.name}</span>
           </Typography>
         </>
       }
@@ -64,7 +63,7 @@ export const SetupView: React.FC<{
                   <Typography variant="h2">{target.name}</Typography>
                 </td>
                 <td>
-                  <Typography variant="h2">{findType(target.type).name}</Typography>
+                  <Typography variant="h2">{target.type}</Typography>
                 </td>
                 <td>
                   <Typography variant="h2">{target.port}</Typography>

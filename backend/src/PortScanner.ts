@@ -37,8 +37,9 @@ export default class PortScanner {
     }
   }
 
+  // @TODO check https://www.npmjs.com/package/is-port-reachable when loading device page.
   public static async isPortFree(port: number, host: string = 'localhost'): Promise<boolean> {
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       const server = net.createServer()
 
       // Check if binding to port causes an exception

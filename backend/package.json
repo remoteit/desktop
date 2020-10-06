@@ -1,12 +1,12 @@
 {
     "name": "remoteit-headless",
-    "version": "2.7.8",
+    "version": "2.8.0-alpha.6",
     "private": true,
     "main": "build/index.js",
     "scripts": {
         "build": "cross-env NODE_ENV=production run-s clean copy-and-lock compile build-frontend pack",
         "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
-        "copy-and-lock": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/*",
+        "copy-and-lock": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/* && cp ./src/cli-version.txt ./build",
         "clean": "rimraf build/*",
         "compile": "tsc",
         "start": "node build/index.js",

@@ -27,9 +27,11 @@ declare global {
     | 'service/forget'
     | 'service/restart'
     | 'service/clear-recent'
+    | 'service/launch'
 
     // App/settings
     | 'app/open-on-login'
+    | 'showFolder'
 
     // Backend
     | 'init'
@@ -76,6 +78,7 @@ declare global {
     | 'service/throughput'
     | 'service/version'
     | 'service/unknown-event'
+    | 'service/putty/required'
 
     // binary
     | 'binary/install/start'
@@ -111,7 +114,7 @@ declare global {
   interface IConnection {
     id: string
     name: string
-    owner: string
+    owner: IUserRef
     deviceID: string
     online: boolean // online if service is online
     port?: number
@@ -122,6 +125,7 @@ declare global {
     autoStart?: boolean // auto retry connect if closed
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     failover?: boolean // allow proxy failover
+    proxyOnly?: boolean // disabled p2p
     connecting?: boolean
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template
@@ -155,6 +159,8 @@ declare global {
 
   type SocketEmit = (name: string, ...args: any[]) => any
 
+  type IStrategy = 'failover' | 'p2p' | 'proxy'
+
   interface ITarget {
     hostname: string //     proxy_dest_ip      service ip to forward
     hardwareID?: string
@@ -163,6 +169,7 @@ declare global {
     secret?: string //      password
     port: number //         proxy_dest_port    service port
     type: number //         application_type   service type
+    disabled: boolean //    service enabled / disabled
   }
 
   interface ITargetDevice extends ITarget {}
@@ -170,7 +177,7 @@ declare global {
   interface IDevice {
     id: string
     name: string
-    owner: string
+    owner: IUser
     state: DeviceState
     hardwareID?: string
     lastReported: Date
@@ -192,6 +199,13 @@ declare global {
     shared: boolean
     services: IService[]
     hidden?: boolean
+    access: IUser[]
+    attributes: ILookup & {
+      name?: string
+      color?: number
+      label?: string
+      accessDisabled?: boolean
+    }
   }
 
   interface IService {
@@ -206,23 +220,71 @@ declare global {
     connection?: IConnection
     typeID?: number
     port?: number
+    protocol?: string
     sessions: IUser[]
     access: IUser[]
-    // @TODO remove owner and targetPlatform after serviceName is refactored to separate device from service
-    owner?: string
-    targetPlatform?: number
+    attributes: {
+      name?: string
+      route?: IRouteType // p2p with failover | p2p | proxy
+    }
   }
 
   type IUser = {
+    id: string
     email: string
-    timestamp?: Date
     created?: Date
     platform?: number
+    timestamp?: Date
+    scripting?: boolean
+  }
+
+  type IUserRef = {
+    id: string
+    email: string
+  }
+
+  type IApplicationType = {
+    id: number
+    name: string
+    port: number
+    proxy: boolean
+    protocol: 'TCP' | 'UDP'
+    description: string
+  }
+
+  interface IRoute {
+    key: IRouteType
+    icon: string
+    name: string
+    description: string
+  }
+
+  type IRouteType = 'failover' | 'p2p' | 'proxy'
+
+  type ISession = { device: IDevice; service: IService; user: IUser }
+
+  interface IEvent {
+    shared: any
+    scripting: boolean
+    id: string
+    state?: ConnectionState
+    timestamp: Date
+    type: string
+    actor?: IUser
+    services?: IService[]
+    users?: IUser[]
+  }
+
+  interface IEventList {
+    total: number
+    items: IEvent[]
+    hasMore: boolean
   }
 
   type gqlOptions = {
     size: number
     from: number
+    account: string
     state?: string
     name?: string
     ids?: string[]
@@ -236,6 +298,12 @@ declare global {
   interface IOob {
     oobAvailable: boolean
     oobActive: boolean
+  }
+
+  interface IPuttyValidation {
+    install: boolean
+    loading: boolean
+    pathPutty: string
   }
 
   interface ILan {
@@ -277,6 +345,8 @@ declare global {
 
   type ILookup = { [key: string]: any }
 
+  type ISelect = { [key: string]: string | number }
+
   type IPreferences = ILookup
 
   type SegmentContext = {
@@ -308,6 +378,16 @@ declare global {
       platform?: number
       appCode?: number //called manufacturerId in connectd
     }
+  }
+
+  type IShareProps = {
+    deviceId: string
+    email: !string[]
+    scripting?: boolean
+    services?: {
+      serviceId: string
+      action: 'ADD' | 'REMOVE' | string
+    }[]
   }
 }
 

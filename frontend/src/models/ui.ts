@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { getOwnDevices } from './accounts'
 import { TARGET_PLATFORMS } from '../components/TargetPlatform'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -13,9 +14,10 @@ type UIState = UIParams & {
   scanInterface: string
   setupBusy: boolean
   setupAdded?: ITarget
+  setupRegisteringDevice: boolean
   setupDeletingDevice: boolean
   setupAddingService: boolean
-  setupDeletingService?: number
+  setupServiceBusy?: string
   setupServicesCount: number
   setupServicesNew: boolean
   setupServicesLimit: number
@@ -31,8 +33,9 @@ const state: UIState = {
   scanInterface: DEFAULT_INTERFACE,
   setupBusy: false,
   setupAdded: undefined,
+  setupRegisteringDevice: false,
   setupDeletingDevice: false,
-  setupDeletingService: undefined,
+  setupServiceBusy: undefined,
   setupAddingService: false,
   setupServicesCount: 0,
   setupServicesNew: true,
@@ -44,7 +47,7 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     devicesUpdated(_, globalState: any) {
-      const all: IDevice[] = globalState.devices.all
+      const all: IDevice[] = getOwnDevices(globalState)
       const targetDevice: ITargetDevice = globalState.backend.device
       const thisDevice = all.find(d => d.id === targetDevice.uid)
       const targetPlatform = TARGET_PLATFORMS[thisDevice?.targetPlatform || -1]
@@ -66,9 +69,8 @@ export default createModel({
     },
     reset(state: UIState) {
       state.setupBusy = false
-      state.setupDeletingDevice = false
       state.setupAddingService = false
-      state.setupDeletingService = undefined
+      state.setupServiceBusy = undefined
     },
   },
 })

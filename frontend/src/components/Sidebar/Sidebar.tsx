@@ -15,7 +15,9 @@ import { spacing, colors, fontSizes } from '../../styling'
 import { useSelector } from 'react-redux'
 import { isElectron } from '../../services/Browser'
 import { ApplicationState } from '../../store'
+import { attributeName } from '../../shared/nameHelper'
 import { TargetPlatform } from '../../components/TargetPlatform'
+import { getOwnDevices } from '../../models/accounts'
 import { Icon } from '../../components/Icon'
 import onLanGraphic from '../../assets/remote-on-lan.svg'
 import onRemoteGraphic from '../../assets/remote-on-remote.svg'
@@ -26,20 +28,26 @@ export const Sidebar: React.FC = () => {
   const [shown, setShown] = useState<boolean>(true)
   const { hostname, port } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
-  const device = useSelector((state: ApplicationState) =>
-    state.devices.all.find(d => d.id === state.backend.device.uid)
-  )
+
+  const { name, label, device } = useSelector((state: ApplicationState) => {
+    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+    return {
+      device,
+      label: state.labels.find(l => l.id === device?.attributes.color),
+      name: attributeName(device),
+    }
+  })
+
   const css = useStyles()
+  if (isElectron() || (isLocalhost && port === PORT.toString())) return null
 
   let graphic = onLanGraphic
   let diagram: NetworkType[] = [
     { primary: 'You' },
     { primary: 'Local network' },
-    { primary: 'This system', secondary: device?.name },
+    { primary: 'This system', secondary: name },
     { primary: 'Remote devices' },
   ]
-
-  if (isElectron() || (isLocalhost && port === PORT.toString())) return null
 
   if (isLocalhost) {
     graphic = onRemoteGraphic
@@ -47,7 +55,10 @@ export const Sidebar: React.FC = () => {
   }
 
   return (
-    <Box className={(shown ? css.open : css.closed) + ' ' + css.drawer}>
+    <Box
+      style={{ backgroundColor: label?.id ? label.color : colors.primary }}
+      className={(shown ? css.open : css.closed) + ' ' + css.drawer}
+    >
       <Box className={css.sideBar}>
         <Tooltip className={css.button} title={shown ? 'Hide sidebar' : 'Show sidebar'}>
           <IconButton onClick={() => setShown(!shown)}>
@@ -65,8 +76,8 @@ export const Sidebar: React.FC = () => {
           <Box className={css.graphic}>
             <img src={graphic} alt="From remote network graphic" />
             <List>
-              {diagram.map((i: NetworkType) => (
-                <ListItem>
+              {diagram.map((i: NetworkType, key) => (
+                <ListItem key={key}>
                   <ListItemText primary={i.primary} secondary={i.secondary} />
                 </ListItem>
               ))}

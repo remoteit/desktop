@@ -135,9 +135,9 @@ export default class CLI {
       if (status) {
         c.active = status.state === 'connected'
         c.connecting = status.state === 'connecting'
-        c.isP2P = status.isP2P
+        c.isP2P = status.state === 'connected' ? status.isP2P : undefined
         c.error = status.error // Can add back when CLI is more careful about creating errors
-        Logger.info('UPDATE STATUS', { c, status: status.state })
+        d('UPDATE STATUS', { c, status: status.state })
       }
       return c
     })
@@ -176,6 +176,16 @@ export default class CLI {
     })
     await this.exec({ cmds, checkAuthHash: true })
     this.read()
+  }
+
+  async setDevice(d: ITargetDevice) {
+    await this.exec({ cmds: [strings.setDevice(d)], checkAuthHash: true })
+    this.readDevice()
+  }
+
+  async setTarget(d: ITarget) {
+    await this.exec({ cmds: [strings.setTarget(d)], checkAuthHash: true })
+    this.readTargets()
   }
 
   async unregister() {

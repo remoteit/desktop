@@ -16,7 +16,7 @@ export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   const disabled = connection?.active || connection?.connecting || service.state !== 'active'
   const color = shared ? 'primary' : undefined
   return (
-    <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'}>
+    <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'} dense>
       <ListItemIcon>
         <Icon name="network-wired" color={color} size="md" type="light" />
       </ListItemIcon>
