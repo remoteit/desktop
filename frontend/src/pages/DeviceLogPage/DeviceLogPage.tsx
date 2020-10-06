@@ -28,14 +28,14 @@ const TIME = 1000 * 60 * 60 * 24
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { device, fetchingMore, fetching, user, items: logsToShow } = useSelector((state: ApplicationState) => {
+  const { device, fetchingMore, fetching, user, logsToShow } = useSelector((state: ApplicationState) => {
     const device = getOwnDevices(state).find(d => d.id === deviceID)
     return {
       device,
       fetchingMore: state.logs.fetchingMore,
       fetching: state.logs.fetching,
       user: state.auth.user,
-      items: device?.events.items,
+      logsToShow: device?.events.items,
     }
   })
 
@@ -109,7 +109,7 @@ export const DeviceLogPage = () => {
       </List>
 
       <Box className={css.box}>
-        {device.events.hasMore ? (
+        {device.events.hasMore || fetching ? (
           <Button color="primary" onClick={fetchMore} disabled={planUpgrade || fetchingMore || fetching}>
             {fetchingMore || fetching ? `Loading ...` : 'Load More'}
           </Button>
