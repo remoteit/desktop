@@ -1,8 +1,8 @@
 import { LEGACY_ATTRIBUTES } from '../../shared/constants'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
-import { useParams } from 'react-router-dom'
+import { Typography, Divider, List } from '@material-ui/core'
+import { useParams, useLocation } from 'react-router-dom'
 import { ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
@@ -12,11 +12,13 @@ import { getDevices } from '../../models/accounts'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
+import { ListItemLocation } from '../../components/ListItemLocation'
 
 export const DeviceDetailPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const devices = useSelector((state: ApplicationState) => getDevices(state))
   const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
+  const location = useLocation()
 
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')

@@ -57,6 +57,10 @@ const jssTheme: ThemeOptions = {
         paddingTop: 5,
         paddingBottom: 5,
       },
+      gutters: {
+        paddingLeft: 9,
+        paddingRight: 9,
+      },
       button: {
         '&:hover, &:focus': { backgroundColor: colors.grayLightest },
       },

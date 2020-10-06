@@ -22,6 +22,7 @@ type IDeviceState = DeviceParams & {
   results: number
   searched: boolean
   fetching: boolean
+  fetchingMore: boolean
   destroying: boolean
   query: string
   append: boolean
@@ -29,6 +30,7 @@ type IDeviceState = DeviceParams & {
   size: number
   from: number
   contacts: IUserRef[]
+  eventsUrl: string
 }
 
 const state: IDeviceState = {
@@ -37,6 +39,7 @@ const state: IDeviceState = {
   results: 0,
   searched: false,
   fetching: true,
+  fetchingMore: false,
   destroying: false,
   query: '',
   append: false,
@@ -44,6 +47,7 @@ const state: IDeviceState = {
   size: 50,
   from: 0,
   contacts: [],
+  eventsUrl: '',
 }
 
 export default createModel({

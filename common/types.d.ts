@@ -206,6 +206,7 @@ declare global {
       label?: string
       accessDisabled?: boolean
     }
+    events: IEventList
   }
 
   interface IService {
@@ -273,6 +274,7 @@ declare global {
     actor?: IUser
     services?: IService[]
     users?: IUser[]
+    action: string
   }
 
   interface IEventList {
