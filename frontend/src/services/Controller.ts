@@ -87,7 +87,7 @@ function getEventHandlers() {
       backend.set({ error: false })
     },
 
-    unauthorized: (error: Error) => auth.signInError(error.message),
+    unauthorized: (error: Error) => auth.backendSignInError(error.message),
 
     'server/authenticated': () => auth.authenticated(),
 
