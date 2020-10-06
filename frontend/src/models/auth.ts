@@ -89,6 +89,10 @@ export default createModel({
       //send message to backend to sign out
       emit('user/sign-out')
     },
+    async backendSignInError(error: string) {
+      await dispatch.auth.signedOut()
+      dispatch.auth.setError(error)
+    },
     /**
      * Gets called when the backend signs the user out
      */
