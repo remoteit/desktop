@@ -92,35 +92,6 @@ const DEVICE_SELECT = `
     }
   }`
 
-const LOG_SELECT_FOR_DEVICE = `{
-  items {
-    id
-    events(from: $from, maxDate: $maxDate) {
-      hasMore
-      total
-      items {
-        id
-        state
-        timestamp
-        type
-          action
-          actor {
-              email
-          }
-          services {
-              id
-              name
-          }
-          users {
-              email
-          }
-          ... on DeviceShareEvent {
-              scripting
-          }
-      }
-    }
-  }`
-
 export async function graphQLFetchDevices({ size, from, state, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
     ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $account: String) {
@@ -185,43 +156,6 @@ export async function graphQLFetchDevice(id: string) {
       }`,
     {
       id,
-    }
-  )
-}
-
-export async function graphQLGetMoreLogs(id: string, from: number, maxDate: string) {
-  return await graphQLRequest(
-    `
-        query($ids: [String!], $from: Int, $maxDate: DateTime ) {
-          login {
-            id
-            devices(id: $ids) ${LOG_SELECT_FOR_DEVICE}
-          }
-        }
-      `,
-    {
-      maxDate,
-      from,
-      ids: [id],
-    }
-  )
-}
-
-export async function graphQLGetEventsURL(id: string, maxDate: string) {
-  return await graphQLRequest(
-    `
-        query($ids: String!, $maxDate: DateTime ) {
-          login {
-            id
-            device(id: $ids){
-              eventsUrl( maxDate: $maxDate  )
-            }
-          }
-        }
-      `,
-    {
-      maxDate,
-      ids: id,
     }
   )
 }

@@ -29,12 +29,11 @@ const TIME = 1000 * 60 * 60 * 24
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { device, fetchingMore, fetching, user, items: logsToShow } = useSelector((state: ApplicationState) => {
-    // const device = state.devices.all.find((d: IDevice) => d.id === deviceID && !d.hidden)
-    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+    const device = getOwnDevices(state).find(d => d.id === deviceID)
     return {
       device,
-      fetchingMore: state.devices.fetchingMore,
-      fetching: state.devices.fetching,
+      fetchingMore: state.logs.fetchingMore,
+      fetching: state.logs.fetching,
       user: state.auth.user,
       items: device?.events.items,
     }
@@ -43,7 +42,7 @@ export const DeviceLogPage = () => {
   const dispatch = useDispatch<Dispatch>()
   const [planUpgrade, setPlanUpgrade] = useState(false)
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
-  const { fetchLogs } = dispatch.devices
+  const { fetchLogs } = dispatch.logs
   const freePlan = 90
 
   const limitDays = () => {
@@ -107,7 +106,7 @@ export const DeviceLogPage = () => {
 
       <Box className={css.box}>
         {device.events.hasMore ? (
-          <Button color="primary" onClick={fetchMore} disabled={planUpgrade}>
+          <Button color="primary" onClick={fetchMore} disabled={planUpgrade || fetchingMore || fetching}>
             {fetchingMore || fetching ? `Loading ...` : 'Load More'}
           </Button>
         ) : (

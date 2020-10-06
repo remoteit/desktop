@@ -1,10 +1,8 @@
 import React from 'react'
-import { Icon } from '../Icon'
 import { DatePicker as MuiDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns'
 import { makeStyles } from '@material-ui/core'
 import { getDateFormatString } from '../../helpers/dateHelper'
-import { spacing } from '../../styling'
 
 export const DatePicker: React.FC<{
   onChange: (date: any) => void
@@ -12,7 +10,7 @@ export const DatePicker: React.FC<{
   selectedDate: Date | null
   fetching: boolean
   label: string
-}> = ({ onChange: handleChange, minDay, selectedDate, fetching, label }) => {
+}> = ({ onChange, minDay, selectedDate, fetching, label }) => {
   const css = useStyles()
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -24,7 +22,7 @@ export const DatePicker: React.FC<{
         format={getDateFormatString()}
         label={label}
         value={selectedDate || new Date()}
-        onChange={handleChange}
+        onChange={onChange}
         inputVariant="standard"
         disableFuture={true}
         minDate={minDay}

@@ -1,10 +1,4 @@
-import {
-  graphQLFetchDevices,
-  graphQLFetchDevice,
-  graphQLAdaptor,
-  graphQLGetMoreLogs,
-  graphQLGetEventsURL,
-} from '../services/graphQLDevice'
+import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
@@ -137,45 +131,6 @@ export default createModel({
       } catch (error) {
         await graphQLHandleError(error)
         return { devices: [], total: 0, error }
-      }
-    },
-    async fetchLogs({ id, from, maxDate }: any, globalState: any) {
-      const { graphQLMetadata, graphQLError, setDevice, set } = dispatch.devices
-      const { all } = globalState.devices
-
-      if (!hasCredentials()) return
-
-      from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
-
-      try {
-        const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
-        const [gqlData] = await graphQLMetadata(gqlResponse)
-        const { events } = gqlData.devices.items[0]
-        const devices: IDevice[] = all
-          .filter((d: IDevice) => d.id === id)
-          .map((_d: IDevice) => {
-            const items = from === 0 ? events.items : _d.events.items.concat(events.items)
-            return { ..._d, events: { ...events, items } }
-          })
-        setDevice({ id, device: devices[0] })
-      } catch (error) {
-        await graphQLError(error)
-      }
-
-      from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
-    },
-
-    async getEventsURL({ id, maxDate }: any, globalState: any) {
-      const { graphQLMetadata, graphQLError, set } = dispatch.devices
-
-      if (!hasCredentials()) return
-      try {
-        const gqlResponse = await graphQLGetEventsURL(id, maxDate)
-        const [gqlData] = await graphQLMetadata(gqlResponse)
-        const { eventsUrl } = gqlData.device
-        set({ eventsUrl: eventsUrl })
-      } catch (error) {
-        await graphQLError(error)
       }
     },
 

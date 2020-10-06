@@ -290,7 +290,6 @@ declare global {
     state?: string
     name?: string
     ids?: string[]
-    fromLogs?: number
   }
 
   interface IRegistration {
