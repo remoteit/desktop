@@ -3,6 +3,7 @@ import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { isElectron } from '../services/Browser'
 
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
@@ -20,9 +21,7 @@ class Controller extends EventEmitter {
   setupConnection(username: string, password: string) {
     this.userName = username
     this.userPassword = password
-    const { protocol, host } = window.location
-    const isDev = host === 'localhost:3000'
-    const url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
+    const url = isElectron() ? `http://localhost:${PORT}` : '/'
     this.socket = io(url, { transports: ['websocket'], forceNew: true })
     const handlers = getEventHandlers()
 
