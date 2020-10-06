@@ -12,26 +12,32 @@ interface Props {
 export function CSVDownloadButton({ deviceID, maxDate }: Props) {
   const dispatch = useDispatch<Dispatch>()
   const { getEventsURL, set } = dispatch.logs
-  const eventsURL = useSelector((state: ApplicationState) => state.logs.eventsUrl)
+  const { eventsUrl } = useSelector((state: ApplicationState) => state.logs)
   const [shouldDownload, setShouldDownload] = useState(false)
 
   useEffect(() => {
-    if (shouldDownload && eventsURL) {
-      window.open(eventsURL)
+    if (shouldDownload && eventsUrl) {
+      window.open(eventsUrl)
       setShouldDownload(false)
       set({ eventsURL: '' })
     }
-  }, [eventsURL, shouldDownload])
+  }, [eventsUrl, shouldDownload])
 
   const download = () => {
-    getEventsURL({ id: deviceID, maxDate: maxDate })
-    setShouldDownload(true)
+      getEventsURL({ id: deviceID, maxDate: maxDate })
+      setShouldDownload(true)
   }
 
   return (
     <Tooltip title="Download CSV">
-      <IconButton>
-        <Icon name="arrow-to-bottom" size="md" fixedWidth onClick={download} />
+      <IconButton disabled={shouldDownload}>
+        <Icon
+          name={shouldDownload ? 'spinner-third' : 'arrow-to-bottom'}
+          size="md"
+          fixedWidth
+          onClick={download}
+          spin={shouldDownload}
+        />
       </IconButton>
     </Tooltip>
   )
