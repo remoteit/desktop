@@ -13,9 +13,7 @@ import {
   Tooltip,
   Typography,
   Dialog,
-  DialogContent,
   DialogActions,
-  TextField,
   Button,
   MenuItem,
   ListItemIcon,
@@ -23,6 +21,7 @@ import {
 } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
+import { UsernameModal } from '../../components/UsernameModal'
 
 type Props = {
   connection?: IConnection
@@ -40,18 +39,13 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const app = useApplication(service && service.typeID)
-  const [openUsername, setOpenUsername] = useState<boolean>(false)
-  const [username, setUsername] = useState<string>((connection && connection.username) || '')
+  const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
   const closeAll = () => {
-    setOpenUsername(false)
+    setOpen(false)
     setOpenPutty(false)
     ui.set({ requireInstallPutty: false })
   }
-
-  useEffect(() => {
-    setUsername(connection?.username || '')
-  }, [connection?.username])
 
   useEffect(() => {
     requireInstallPutty ? setOpenPutty(true) : closeAll()
@@ -61,16 +55,16 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
 
   const check = () => {
     if (!app.prompt || connection.username) launch()
-    else setOpenUsername(true)
+    else setOpen(true)
   }
-  const launch = () => {
+  const launch = (username?: string) => {
     closeAll()
     if (username)
       setConnection({
         ...connection,
         username: username.toString(),
       })
-    const launchApp = app.launch({ ...connection, username })
+    const launchApp = app.launch({ ...connection, username: username || connection.username})
 
     launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', { command: launchApp, pathPutty })
   }
@@ -104,37 +98,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
         </Tooltip>
       )}
 
-      <Dialog open={openUsername} onClose={closeAll} maxWidth="xs" fullWidth>
-        <form
-          onSubmit={event => {
-            event.preventDefault()
-            launch()
-          }}
-        >
-          <Typography variant="h1">Enter a username to launch</Typography>
-          <DialogContent>
-            <Typography variant="h4">{app.launch({ ...connection, username })}</Typography>
-            <TextField
-              autoFocus
-              variant="filled"
-              label="Username"
-              onChange={event => {
-                setUsername(event.target.value)
-                event.stopPropagation()
-              }}
-              fullWidth
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={closeAll} color="primary" size="small" type="button">
-              Cancel
-            </Button>
-            <Button variant="contained" color="primary" size="small" type="submit">
-              {loading ? 'Loading putty...' : 'Launch'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+      <UsernameModal connection={connection} open={open} onSubmit={launch} service={service} onClose={closeAll} />
 
       <Dialog open={openPutty} onClose={closeAll} maxWidth="xs" fullWidth>
         <Typography variant="h1">Please install Putty to launch SSH connections.</Typography>
