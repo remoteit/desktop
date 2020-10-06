@@ -24,20 +24,14 @@ export function CSVDownloadButton({ deviceID, maxDate }: Props) {
   }, [eventsUrl, shouldDownload])
 
   const download = () => {
-      getEventsURL({ id: deviceID, maxDate: maxDate })
-      setShouldDownload(true)
+    getEventsURL({ id: deviceID, maxDate: maxDate })
+    setShouldDownload(true)
   }
 
   return (
     <Tooltip title="Download CSV">
-      <IconButton disabled={shouldDownload}>
-        <Icon
-          name={shouldDownload ? 'spinner-third' : 'arrow-to-bottom'}
-          size="md"
-          fixedWidth
-          onClick={download}
-          spin={shouldDownload}
-        />
+      <IconButton disabled={shouldDownload} onClick={download}>
+        <Icon name={shouldDownload ? 'spinner-third' : 'arrow-to-bottom'} size="md" fixedWidth spin={shouldDownload} />
       </IconButton>
     </Tooltip>
   )
