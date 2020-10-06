@@ -67,30 +67,7 @@ const DEVICE_SELECT = `
       }
     }
   }
-  events {
-    hasMore
-    total
-    items {
-      id
-      state
-      timestamp
-      type
-      action
-      actor {
-          email
-      }
-      services {
-          id
-          name
-      }
-      users {
-          email
-      }
-      ... on DeviceShareEvent {
-          scripting
-      }
-    }
-  }`
+`
 
 export async function graphQLFetchDevices({ size, from, state, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
@@ -205,7 +182,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
         scripting: e.scripting,
       })),
       hidden,
-      events: d.events,
+      events: d.events || [],
     })
   )
   return updateConnections(data)

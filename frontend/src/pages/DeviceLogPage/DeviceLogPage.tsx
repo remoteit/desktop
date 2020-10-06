@@ -39,6 +39,10 @@ export const DeviceLogPage = () => {
     }
   })
 
+  useEffect(() => {
+    fetchLogs({ id: deviceID, from: 0 })
+  }, [deviceID])
+
   const dispatch = useDispatch<Dispatch>()
   const [planUpgrade, setPlanUpgrade] = useState(false)
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
