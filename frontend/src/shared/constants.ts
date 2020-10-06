@@ -10,8 +10,10 @@ export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.rem
 export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API || 'https://api.remote.it/beta/graphql'
 export const DEVELOPER_KEY =
   process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
+export const PROTOCOL =
+  process.env.PROTOCOL || process.env.PROTOCOL || process.env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
 export const REDIRECT_URL =
-  process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || process.env.NODE_ENV === 'development' ? 'remoteitdev://authCallback' : 'remoteit://authCallback'
+  process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const CALLBACK_URL =
   process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || process.env.NODE_ENV === 'development' ? 'https://dev-auth.internal.remote.it/v1/callback' : 'https://auth.api.remote.it/v1/callback'
 

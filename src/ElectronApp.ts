@@ -86,6 +86,7 @@ export default class ElectronApp {
     }
     if(link?.includes(authCallbackCode)) {
       this.authCallback = true
+      Logger.info('Auth Callback', { link: link })
     }
   }
 
@@ -184,8 +185,9 @@ export default class ElectronApp {
 
     if (location && this.authCallback) {
       this.authCallback = false
-      const fullUrl = this.getStartUrl() + '/' + location
-
+      const parameters = location.substring(location.indexOf('?'))
+      const fullUrl = this.getStartUrl() + parameters
+      Logger.info('Opening', { url: fullUrl })
       this.window.loadURL(fullUrl)
     } else if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
