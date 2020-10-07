@@ -62,7 +62,7 @@
         ${Else}
             StrCpy $0 "ERROR"
         ${EndIf}
-        FileWrite $installLog "- powershell $REMOTE_CLI_EXE     [$0]  $1$\r$\n"
+        FileWrite $installLog "- powershell $REMOTE_CLI_EXE     [$0]  $\r$\n"
 
         nsExec::ExecToStack /OEM 'powershell "& " "icacls $\'"$REMOTE_CLI_EXE$\'" /T /C /Q /grant "*S-1-5-32-545:RX" '
         Pop $0
@@ -140,8 +140,6 @@
             ; MessageBox MB_OK "This is a UPDATE!" 
             FileWrite $uninstallLog "$\nUpdate (${__DATE__} ${__TIME__}): $\r$\n"
             FileWrite $uninstallLog "-----------------------------$\r$\n"
-            RMDir /r "$PATH_REMOTE_DIR_U"
-            FileWrite $uninstallLog "- RMDir $PATH_REMOTE_DIR_U$\r$\n"
         ${Else}
 
             
@@ -226,18 +224,20 @@
             end_of_config:
 
 
-            RMDir /r "$PATH_REMOTE_DIR_U"
-            FileWrite $uninstallLog "- RMDir $PATH_REMOTE_DIR_U$\r$\n"
-
-            RMDir /r "$PROFILE\AppData\Local\remoteit"
-            FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
-
-            RMDir /r "$INSTDIR"
-            FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
-
-            FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
-            FileClose $uninstallLog 
+            
 
         ${endif}
 
+    RMDir /r "$PATH_REMOTE_DIR_U"
+    FileWrite $uninstallLog "- RMDir $PATH_REMOTE_DIR_U$\r$\n"
+
+    RMDir /r "$PROFILE\AppData\Local\remoteit"
+    FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+
+    RMDir /r "$INSTDIR"
+    FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
+
+    FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
+    FileClose $uninstallLog 
+    
 !macroend
