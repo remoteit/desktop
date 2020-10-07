@@ -30,7 +30,7 @@ export const RemoteHeader: React.FC<{ os?: Ios }> = ({ os }) => {
         </Tooltip>
       )}
       {os && <img className={css.icon} src={assets[os]} alt={os} />}
-      <Logo width={80} white />
+      <Logo width={80} margin="auto" white />
     </div>
   )
 }
