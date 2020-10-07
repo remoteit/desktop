@@ -24,7 +24,7 @@ export const SetupServices: React.FC<Props> = ({ targetDevice, os, targets, ...p
   }, [])
 
   if (!targetDevice.uid) {
-    history.push('/settings/setupDevice')
+    history.push('/settings/setup')
   }
 
   return (

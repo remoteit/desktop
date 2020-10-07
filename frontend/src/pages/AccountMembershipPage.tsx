@@ -15,6 +15,7 @@ import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { Breadcrumbs } from '../components/Breadcrumbs'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
+import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
@@ -34,14 +35,17 @@ export const AccountMembershipPage: React.FC = () => {
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <Icon name="user-circle" size="lg" />
-            <Title>Account Memberships</Title>
+            <Icon name="list-ul" size="lg" />
+            <Title>Manage Device Lists</Title>
           </Typography>
         </>
       }
     >
       {member.length ? (
         <List>
+          <ListItem>
+            <Notice>You have access to these device lists.</Notice>
+          </ListItem>
           {member.map(user => (
             <ListItem key={user.email}>
               <ListItemIcon>

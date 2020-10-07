@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 
 export const AccountLinkingSettings: React.FC = () => {
-  const { member, access } = useSelector((state: ApplicationState) => state.accounts)
+  const { access } = useSelector((state: ApplicationState) => state.accounts)
 
   return (
     <ListItemLocation
