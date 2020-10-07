@@ -48,7 +48,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   }, [])
 
   return (
-    <Container header={<Breadcrumbs />}>
+    <Container header={<Breadcrumbs />} integrated>
       <Body center={true}>
         <Typography variant="body2" align="center" color="textSecondary">
           Register your {osName(os)} for remote access
