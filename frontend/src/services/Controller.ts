@@ -9,21 +9,22 @@ class Controller extends EventEmitter {
   private retrying?: NodeJS.Timeout
   private userName?: string
   private userPassword?: string
+  private url: string = '/'
 
   constructor() {
     super()
   }
   init() {
-    //Emptry function.  I'm not sure why but it was unhappy when I tried to remove this function and its call in index.tsx
+    const { protocol, host } = window.location
+    const isDev = host === 'localhost:3000'
+    this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
+
   }
 
   setupConnection(username: string, password: string) {
     this.userName = username
     this.userPassword = password
-    const { protocol, host } = window.location
-    const isDev = host === 'localhost:3000'
-    const url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
-    this.socket = io(url, { transports: ['websocket'], forceNew: true })
+    this.socket = io(this.url, { transports: ['websocket'], forceNew: true })
     const handlers = getEventHandlers()
 
     for (const eventName in handlers) {

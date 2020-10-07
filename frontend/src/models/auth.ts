@@ -1,4 +1,4 @@
-import { CLIENT_ID, API_URL, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
+import { CLIENT_ID, API_URL, DEVELOPER_KEY, CALLBACK_URL, PROTOCOL } from '../shared/constants'
 import { r3 } from '../services/remote.it'
 import { IUser as LegacyUser } from 'remote.it'
 import { createModel } from '@rematch/core'
@@ -7,7 +7,7 @@ import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { AuthUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
-import { getRedirectUrl } from '../services/Browser'
+import { getRedirectUrl, isElectron } from '../services/Browser'
 
 const USER_KEY = 'user'
 
@@ -40,10 +40,10 @@ export default createModel({
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          apiURL: API_URL,
           developerKey: DEVELOPER_KEY,
-          redirectURL: getRedirectUrl(),
+          redirectURL: (Buffer.from(getRedirectUrl())).toString('hex'),
           callbackURL: CALLBACK_URL,
+          signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL 
         })
         dispatch.auth.setAuthService(authService)
         try {
@@ -97,11 +97,7 @@ export default createModel({
      * Gets called when the backend signs the user out
      */
     async signedOut(_: void, rootState: any) {
-      const user = await rootState.auth.authService.checkSignIn()
       await rootState.auth.authService.signOut()
-      if (user?.cognitoUser.authProvider === 'Google') {
-        window.open('https://auth.remote.it/logout?client_id=26g0ltne0gr8lk1vs51mihrmig&logout_uri=remoteit://')
-      }
       dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()

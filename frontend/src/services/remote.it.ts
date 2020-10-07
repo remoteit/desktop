@@ -1,10 +1,6 @@
 import setup from 'remote.it'
-import { API_URL, CLIENT_ID, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
-import { AuthService } from '@remote.it/services'
-import { getRedirectUrl } from '../services/Browser'
+import { API_URL, DEVELOPER_KEY } from '../shared/constants'
 import { store } from '../store'
-
-const authService = new AuthService({cognitoClientID:CLIENT_ID, apiURL:API_URL, developerKey:DEVELOPER_KEY, redirectURL: getRedirectUrl(), callbackURL:CALLBACK_URL});
 
 export const r3 = setup(
   {
@@ -17,8 +13,9 @@ export const r3 = setup(
 
 export async function getToken(): Promise<string> {
   const { auth } = store.dispatch
+  
   try {
-    const currentSession = await authService.currentCognitoSession()
+    const currentSession = await store.getState().auth.authService?.currentCognitoSession()
     if (currentSession !== undefined) {
       const token = 'Bearer ' + currentSession.getAccessToken().getJwtToken()
       return token
@@ -34,11 +31,10 @@ export async function getToken(): Promise<string> {
   
 }
 
-
 export async function hasCredentials() {
   const { auth } = store.dispatch
   try {
-    const currentSession = await authService.currentCognitoSession()
+    const currentSession = await store.getState().auth.authService?.currentCognitoSession()
     if (currentSession !== undefined) {
       return true
     } else {
