@@ -30,7 +30,7 @@ export default createModel({
         const response = await graphQLUnShareDevice({ deviceId, email: [email] })
         const errors = await graphQLGetErrors(response)
         if (!errors) {
-          await dispatch.devices.fetchDevice({ deviceId })
+          await dispatch.devices.fetchSingle({ deviceId })
           dispatch.ui.set({ successMessage: `${email} successfully removed.` })
         }
       } catch (error) {
