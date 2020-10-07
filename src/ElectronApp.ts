@@ -185,8 +185,12 @@ export default class ElectronApp {
 
     if (location && this.authCallback) {
       this.authCallback = false
-      const parameters = location.substring(location.indexOf('?'))
-      const fullUrl = this.getStartUrl() + parameters
+      const index = location.indexOf('?')
+      let fullUrl = this.getStartUrl()
+      if(index != -1) {
+        const parameters = location.substring(index)
+        fullUrl = fullUrl + parameters
+      }
       Logger.info('Opening', { url: fullUrl })
       this.window.loadURL(fullUrl)
     } else if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
