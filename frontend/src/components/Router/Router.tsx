@@ -50,17 +50,14 @@ export const Router: React.FC = () => {
       <Route path="/settings/access">
         <AccountAccessPage />
       </Route>
-      <Route path="/settings/membership">
-        <AccountMembershipPage />
-      </Route>
       <Route path="/devices/setupWaiting">
         <SetupWaiting os={os} targetDevice={targetDevice} />
       </Route>
-      <Route path="/devices/setupDevice">
+      <Route path="/devices/setup">
         {registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}
       </Route>
-      <Route path="/devices/setup">
-        <Redirect to="/devices/setupDevice" />
+      <Route path="/devices/membership">
+        <AccountMembershipPage />
       </Route>
       <Route path="/settings">
         <SettingsPage />

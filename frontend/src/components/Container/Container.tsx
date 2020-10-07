@@ -3,13 +3,13 @@ import { makeStyles } from '@material-ui/core'
 import { colors } from '../../styling'
 import { Body } from '../Body'
 
-type Props = { header: any; footer?: any; inset?: boolean }
+type Props = { header: any; footer?: any; inset?: boolean; integrated?: boolean }
 
-export const Container: React.FC<Props> = ({ header, footer, inset, children }) => {
+export const Container: React.FC<Props> = ({ header, footer, inset, integrated, children }) => {
   const css = useStyles()
   return (
     <div className={css.container}>
-      <div className={css.header}>{header}</div>
+      <div className={integrated ? undefined : css.header}>{header}</div>
       <Body inset={inset}>{children}</Body>
       {footer && <div>{footer}</div>}
     </div>

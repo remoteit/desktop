@@ -36,7 +36,7 @@ export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
   if (globalError) history.push('/settings')
 
   return (
-    <Container header={<Breadcrumbs />}>
+    <Container header={<Breadcrumbs />} integrated>
       <Body center={true}>
         <CircularProgress thickness={1.5} size={60} />
         <section>

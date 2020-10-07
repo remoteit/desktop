@@ -1,15 +1,16 @@
 import React from 'react'
-import { makeStyles, TextField, MenuItem, Tooltip, ListItemSecondaryAction, IconButton } from '@material-ui/core'
+import { makeStyles, TextField, MenuItem, Divider } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
+import { useHistory } from 'react-router-dom'
 import { getAccountId } from '../models/accounts'
 import { spacing, colors } from '../styling'
-import { Icon } from './Icon'
 import { Avatar } from './Avatar'
 import classnames from 'classnames'
 
 export const AccountSelect: React.FC = () => {
   const css = useStyles()
+  const history = useHistory()
   const { accounts, devices } = useDispatch<Dispatch>()
   const { signedInUser, fetching, options, activeId } = useSelector((state: ApplicationState) => ({
     signedInUser: state.auth.user,
@@ -33,8 +34,11 @@ export const AccountSelect: React.FC = () => {
       disabled={fetching}
       variant="filled"
       onChange={async event => {
-        await accounts.setActive(event.target.value.toString())
-        devices.fetch()
+        const id = event.target.value
+        if (id) {
+          await accounts.setActive(id.toString())
+          devices.fetch()
+        }
       }}
     >
       {options.map(
@@ -47,25 +51,21 @@ export const AccountSelect: React.FC = () => {
             >
               {/* <Avatar email={user.email} size={24} label /> */}
               {user.email}
-              {user.id !== signedInUser?.id && (
-                <ListItemSecondaryAction className={css.action}>
-                  <Tooltip title="Leave Account">
-                    <IconButton onClick={() => leave(user.email)}>
-                      <Icon name="sign-out" type="regular" size="base" fixedWidth />
-                    </IconButton>
-                  </Tooltip>
-                </ListItemSecondaryAction>
-              )}
             </MenuItem>
           )
       )}
+      <Divider className={css.divider} />
+      <MenuItem className={css.menu} onClick={() => history.push('/devices/membership')}>
+        Manage Lists...
+      </MenuItem>
     </TextField>
   )
 }
 
 const useStyles = makeStyles({
   field: { width: 300, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
-  menu: { paddingRight: 60 },
+  menu: { color: colors.grayDarkest, paddingLeft: spacing.md },
   primary: { color: colors.primary },
+  divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
   action: { right: spacing.xs, marginLeft: spacing.sm },
 })
