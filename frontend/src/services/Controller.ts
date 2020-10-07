@@ -3,26 +3,28 @@ import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { isElectron } from '../services/Browser'
 
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
   private retrying?: NodeJS.Timeout
   private userName?: string
   private userPassword?: string
+  private url: string = '/'
 
   constructor() {
     super()
   }
   init() {
-    //Emptry function.  I'm not sure why but it was unhappy when I tried to remove this function and its call in index.tsx
+    const { protocol, host } = window.location
+    const isDev = host === 'localhost:3000'
+    this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
+
   }
 
   setupConnection(username: string, password: string) {
     this.userName = username
     this.userPassword = password
-    const url = isElectron() ? `http://localhost:${PORT}` : '/'
-    this.socket = io(url, { transports: ['websocket'], forceNew: true })
+    this.socket = io(this.url, { transports: ['websocket'], forceNew: true })
     const handlers = getEventHandlers()
 
     for (const eventName in handlers) {

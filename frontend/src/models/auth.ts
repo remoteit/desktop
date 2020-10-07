@@ -42,7 +42,7 @@ export default createModel({
           cognitoClientID: CLIENT_ID,
           apiURL: API_URL,
           developerKey: DEVELOPER_KEY,
-          redirectURL: getRedirectUrl(),
+          redirectURL: (Buffer.from(getRedirectUrl())).toString('base64'),
           callbackURL: CALLBACK_URL,
         })
         dispatch.auth.setAuthService(authService)
