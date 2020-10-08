@@ -11,7 +11,7 @@ export function EventIcon(item: IEvent): JSX.Element {
     case EventType.device_state:
       if (item.state === EventState.active) {
         icon = 'check-circle'
-        color = 'success'
+        color = 'primary'
         title = 'Device Online'
       } else {
         icon = 'minus-circle'
