@@ -1,6 +1,4 @@
 import { createModel } from '@rematch/core'
-import { getOwnDevices } from './accounts'
-import { TARGET_PLATFORMS } from '../components/TargetPlatform'
 
 export const DEFAULT_INTERFACE = 'searching'
 
@@ -8,6 +6,8 @@ type UIParams = { [key: string]: any }
 type UIState = UIParams & {
   connected: boolean
   uninstalling: boolean
+  routingLock?: IRouteType
+  routingMessage?: string
   scanEnabled: boolean
   scanLoading: { [interfaceName: string]: boolean }
   scanTimestamp: { [interfaceName: string]: number }
@@ -27,6 +27,8 @@ type UIState = UIParams & {
 const state: UIState = {
   connected: false,
   uninstalling: false,
+  routingLock: undefined,
+  routingMessage: undefined,
   scanEnabled: true,
   scanLoading: {},
   scanTimestamp: {},
@@ -46,16 +48,6 @@ const state: UIState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    devicesUpdated(_, globalState: any) {
-      const all: IDevice[] = getOwnDevices(globalState)
-      const targetDevice: ITargetDevice = globalState.backend.device
-      const thisDevice = all.find(d => d.id === targetDevice.uid)
-      const targetPlatform = TARGET_PLATFORMS[thisDevice?.targetPlatform || -1]
-      if (targetPlatform === 'AWS') {
-        dispatch.ui.set({ setupServicesLimit: 100, scanEnabled: false })
-        console.log('TARGET PLATFORM', targetPlatform, 'settings applied')
-      }
-    },
     setupUpdated(count: number, globalState: any) {
       if (count !== globalState.ui.setupServicesCount) {
         dispatch.ui.reset()

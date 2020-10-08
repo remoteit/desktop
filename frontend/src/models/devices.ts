@@ -2,6 +2,7 @@ import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../serv
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
 import { cleanOrphanConnections, getConnectionIds, mergeConnections } from '../helpers/connectionHelper'
+import { platformConfiguration } from '../services/platformConfiguration'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
@@ -90,7 +91,7 @@ export default createModel({
       // @TODO pull contacts out into it's own model / request on page load
 
       if (!error) cleanOrphanConnections()
-      dispatch.ui.devicesUpdated()
+      platformConfiguration(globalState)
     },
 
     /*
