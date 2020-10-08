@@ -55,7 +55,7 @@ export function EventMessage({
           <>
             {actor} shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution
             with
-            <b>{affected} </b>
+            <b>{affected}</b>
           </>
         )
       } else if (item.action === 'add') {
