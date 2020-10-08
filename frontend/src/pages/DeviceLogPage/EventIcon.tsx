@@ -35,7 +35,7 @@ export function EventIcon(item: IEvent): JSX.Element {
     case EventType.device_share:
       if (item.action === 'add') {
         icon = 'user-check'
-        color = 'success'
+        color = 'primary'
         title = 'Device Shared'
       } else {
         icon = 'user-slash'
