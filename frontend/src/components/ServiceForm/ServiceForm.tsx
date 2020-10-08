@@ -27,14 +27,18 @@ export const ServiceForm: React.FC<Props> = ({
   onSubmit,
   onCancel,
 }) => {
-  const { applicationTypes, setupBusy, deleting } = useSelector((state: ApplicationState) => ({
-    applicationTypes: state.applicationTypes.all,
-    setupBusy: state.ui.setupBusy,
-    deleting: state.ui.setupServiceBusy === target?.uid,
-  }))
+  const { applicationTypes, setupBusy, deleting, routingLock, routingMessage } = useSelector(
+    (state: ApplicationState) => ({
+      applicationTypes: state.applicationTypes.all,
+      setupBusy: state.ui.setupBusy,
+      deleting: state.ui.setupServiceBusy === target?.uid,
+      routingLock: state.ui.routingLock,
+      routingMessage: state.ui.routingMessage,
+    })
+  )
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget & IService['attributes']>({ ...target, name, route })
+  const [form, setForm] = useState<ITarget & IService['attributes']>({ ...target, name, route: route || routingLock })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
 
@@ -131,8 +135,8 @@ export const ServiceForm: React.FC<Props> = ({
           <TextField
             select
             label="Routing"
-            value={form.route}
-            disabled={disabled}
+            value={routingLock || form.route}
+            disabled={!!routingLock || disabled}
             variant="filled"
             onChange={event => {
               setForm({ ...form, route: event.target.value as IRouteType })
@@ -144,7 +148,9 @@ export const ServiceForm: React.FC<Props> = ({
               </MenuItem>
             ))}
           </TextField>
-          <Typography variant="caption">{ROUTES.find(route => route.key === form.route)?.description}</Typography>
+          <Typography variant="caption">
+            {routingMessage || ROUTES.find(route => route.key === form.route)?.description}
+          </Typography>
         </ListItem>
       </List>
       <Columns inset count={1}>
@@ -162,10 +168,12 @@ export const ServiceForm: React.FC<Props> = ({
 const useStyles = makeStyles({
   field: {
     paddingLeft: 75,
+    paddingRight: spacing.xl,
     '& .MuiFormControl-root': { minWidth: 200, marginRight: 100 + spacing.lg },
   },
   fieldWide: {
     paddingLeft: 75,
+    paddingRight: spacing.xl,
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
 })

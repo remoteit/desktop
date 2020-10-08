@@ -5,7 +5,7 @@ import { Dispatch, ApplicationState } from '../store'
 import { Typography, Button } from '@material-ui/core'
 import { ContactSelector } from '../components/ContactSelector'
 import { Breadcrumbs } from '../components/Breadcrumbs'
-import { getDevices } from '../models/accounts'
+import { getAllDevices } from '../models/accounts'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -16,7 +16,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 export const AccountSharePage = () => {
   const { accounts } = useDispatch<Dispatch>()
   const { count, user, access, contacts = [] } = useSelector((state: ApplicationState) => ({
-    count: getDevices(state).reduce((count, d) => count + (d.shared || d.hidden ? 0 : 1), 0),
+    count: getAllDevices(state).reduce((count, d) => count + (d.shared || d.hidden ? 0 : 1), 0),
     user: state.auth.user,
     access: state.accounts.access,
     contacts: state.devices.contacts,
