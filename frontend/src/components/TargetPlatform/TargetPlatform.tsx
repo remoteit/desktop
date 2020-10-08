@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip } from '@material-ui/core'
+import { Tooltip, Box } from '@material-ui/core'
 import { FontSize } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -21,10 +21,11 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   65535: 'Unknown',
 }
 
-export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: boolean }> = ({
+export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: boolean; label?: boolean }> = ({
   id,
   size = 'xxs',
   tooltip,
+  label,
 }) => {
   let type: IconType = 'brands'
   let name: string = ''
@@ -65,11 +66,21 @@ export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: 
 
   if (!name || !id) return null
 
-  return tooltip ? (
-    <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
-      <Icon {...{ name, type, size }} />
-    </Tooltip>
-  ) : (
-    <Icon {...{ name, type, size }} />
-  )
+  const icon = <Icon {...{ name, type, size }} />
+
+  if (tooltip)
+    return (
+      <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
+        {icon}
+      </Tooltip>
+    )
+
+  if (label)
+    return (
+      <Box>
+        {icon} {TARGET_PLATFORMS[id]}
+      </Box>
+    )
+
+  return icon
 }

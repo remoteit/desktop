@@ -59,7 +59,7 @@ export const App: React.FC = () => {
     return (
       <Page>
         <Header />
-        <LoadingMessage message="Checking Authentication..." spinner={false} logo />
+        <LoadingMessage message="Checking Authentication..." logo />
       </Page>
     )
 
@@ -75,7 +75,7 @@ export const App: React.FC = () => {
     return (
       <Page>
         <Header />
-        <LoadingMessage message="Checking Backend..." spinner={false} logo />
+        <LoadingMessage message="Checking Backend..." logo />
       </Page>
     )
 
@@ -91,7 +91,7 @@ export const App: React.FC = () => {
     return (
       <Page>
         <Header />
-        <LoadingMessage message="Starting up..." logo spinner={false} />
+        <LoadingMessage message="Starting up..." logo />
       </Page>
     )
 
