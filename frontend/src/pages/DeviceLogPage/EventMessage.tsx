@@ -44,57 +44,39 @@ export function EventMessage({
       break
 
     case EventType.device_share:
-      const actor = item.actor?.email
+      const actor = item.actor?.email === loggedInUser?.email ? 'You' : item.actor?.email
       const users = item.users && item.users.map(user => user.email || '(deleted)')
       const userList =
         users && users.length !== 1 ? users.slice(0, -1).join(', ') + ' and ' + users.slice(-1) : users && users[0]
+      const affected = userList === loggedInUser?.email ? 'you' : userList
 
-      const ownerDisplay = device.owner
       if (item.shared) {
-        switch (device.owner.email) {
-          case loggedInUser?.email:
-            message = (
-              <>
-                You shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
-                <b> {userList} </b>
-              </>
-            )
-            break
-
-          default:
-            message = (
-              <>
-                <b>{ownerDisplay}</b> shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script
-                execution with you
-              </>
-            )
-            break
-        }
+        message = (
+          <>
+            {actor} shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution
+            with
+            <b>{affected}</b>
+          </>
+        )
+      } else if (item.action === 'add') {
+        message = (
+          <>
+            {actor} shared <i>{device.name}</i> with <b>{affected}</b>
+          </>
+        )
+      } else if (actor === affected) {
+        message = (
+          <>
+            You left the shared device <i>{device.name}</i>
+          </>
+        )
       } else {
-        if (device.owner.email === actor && device.owner.email === loggedInUser?.email && item.action === 'add') {
-          message = (
-            <>
-              You shared <i>{device.name}</i> with <b>{userList}</b>
-            </>
-          )
-        } else if (actor === device.owner.email) {
-          message = (
-            <>
-              You removed sharing of <i>{device.name}</i> with <b>{userList}</b>
-            </>
-          )
-        } else {
-          message = (
-            <>
-              You left the shared device <i>{device.name}</i>
-            </>
-          )
-        }
+        message = (
+          <>
+            {actor} removed sharing of <i>{device.name}</i> with <b>{affected}</b>
+          </>
+        )
       }
-      break
-
-    default:
-      break
   }
 
   return <div>{message}</div>
