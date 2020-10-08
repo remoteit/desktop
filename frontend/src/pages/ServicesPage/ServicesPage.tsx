@@ -21,7 +21,7 @@ export const ServicesPage: React.FC = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { connections, device, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections,
-    device: getDevices(state).find((d: IDevice) => d.id === deviceID && !d.hidden),
+    device: getDevices(state).find((d: IDevice) => d.id === deviceID),
     searched: state.devices.searched,
     query: state.devices.query,
     thisDeviceId: state.backend.device.uid,

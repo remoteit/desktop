@@ -1,7 +1,7 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
-import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
+import { cleanOrphanConnections, getConnectionIds, mergeConnections } from '../helpers/connectionHelper'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
@@ -127,7 +127,7 @@ export default createModel({
         const connections = graphQLAdaptor(connectionData, loginId, true)
         const devices = graphQLAdaptor(deviceData, loginId)
         await parseAccounts(gqlResponse)
-        return { devices: [...connections, ...devices], total, contacts, error }
+        return { devices: mergeConnections(devices, connections), total, contacts, error }
       } catch (error) {
         await graphQLHandleError(error)
         return { devices: [], total: 0, error }
