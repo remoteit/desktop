@@ -30,9 +30,9 @@ mutation query($deviceId: String!, $email: [String!]!, $scripting: Boolean, $ser
   )
 }`
 
-const LINK_ACCOUNT = `
+const SHARE_ACCOUNT = `
 mutation query($emails: [String!]!, $action: SharingAction) {
-  link(email: $emails, action: $action)
+  link(email: $emails, action: $action, scripting: true)
 }
 `
 
@@ -49,5 +49,5 @@ export async function graphQLShareDevice(params: IShareProps) {
 }
 
 export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMOVE' | 'LEAVE') {
-  return await graphQLRequest(LINK_ACCOUNT, { emails, action })
+  return await graphQLRequest(SHARE_ACCOUNT, { emails, action })
 }
