@@ -65,6 +65,9 @@ export default createModel({
     },
     async handleSignInSuccess(authUser: AuthUser): Promise<void> {
       if (authUser.cognitoUser?.username) {
+        if( authUser.cognitoUser?.authProvider === 'Google' ) {
+          window.localStorage.setItem('amplify-signin-with-hostedUI', 'true');
+        }
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.setInitialized()
         const user = await r3.user.userData(authUser.cognitoUser?.username)
@@ -93,6 +96,7 @@ export default createModel({
      */
     async signedOut(_: void, rootState: any) {
       await rootState.auth.authService.signOut()
+      window.localStorage.removeItem('amplify-signin-with-hostedUI')
       dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
