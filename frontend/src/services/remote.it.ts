@@ -12,19 +12,18 @@ export const r3 = setup(
 )
 
 export async function getToken(): Promise<string> {
-  const { auth } = store.dispatch
+  const { auth, backend } = store.dispatch
   
   try {
     const currentSession = await store.getState().auth.authService?.currentCognitoSession()
-    if (currentSession !== undefined) {
-      const token = 'Bearer ' + currentSession.getAccessToken().getJwtToken()
-      return token
-    } else {
-      auth.signInError('Session Expired')
-      return ''
-    }
+    const token = 'Bearer ' + currentSession?.getAccessToken().getJwtToken()
+    return token
   } catch (err) {
-      auth.signInError('Session Expired')
+      if(err.code === 'NetworkError') {
+        backend.set({ globalError:err.message })
+      } else {
+        auth.signInError('Session Expired')
+      }
       return ''
   }
 
@@ -32,17 +31,16 @@ export async function getToken(): Promise<string> {
 }
 
 export async function hasCredentials() {
-  const { auth } = store.dispatch
+  const { auth, backend } = store.dispatch
   try {
-    const currentSession = await store.getState().auth.authService?.currentCognitoSession()
-    if (currentSession !== undefined) {
-      return true
+    await store.getState().auth.authService?.currentCognitoSession()
+    return true
+  } catch (err) {
+    if(err.code === 'NetworkError') {
+      backend.set({ globalError:err.message })
     } else {
       auth.signInError('Session Expired')
-      return false
     }
-  } catch {
-    auth.signInError('Session Expired')
     return false
   }
 }

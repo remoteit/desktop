@@ -8,6 +8,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import { AuthUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { getRedirectUrl, isElectron } from '../services/Browser'
+import { store } from '../store'
 
 const USER_KEY = 'user'
 
@@ -46,26 +47,20 @@ export default createModel({
           signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL 
         })
         dispatch.auth.setAuthService(authService)
-        try {
-          await authService.checkSignIn()
-          dispatch.auth.setInitialized()
-        } catch (e) {
-          dispatch.auth.setInitialized()
-        }
+        dispatch.auth.setInitialized()
       }
     },
     async checkSession(_: void, rootState: any) {
-      try {
-        const authUser = await rootState.auth.authService.checkSignIn()
-        if (authUser) {
-          await dispatch.auth.handleSignInSuccess(authUser)
+      const { backend } = store.dispatch
+      const result = await rootState.auth.authService.checkSignIn()
+      if (result.authUser) {
+        await dispatch.auth.handleSignInSuccess(result.authUser)
+      } else {
+        if(result.error.code === 'NetworkError') {
+          backend.set({ globalError:result.error.message })
         } else {
           dispatch.auth.signInError('Session Expired')
-        }
-        return
-      } catch (e) {
-        dispatch.auth.signInError('Session Expired')
-        return
+        } 
       }
     },
     async handleSignInSuccess(authUser: AuthUser): Promise<void> {
