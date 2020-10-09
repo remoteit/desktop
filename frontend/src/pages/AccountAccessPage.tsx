@@ -74,10 +74,10 @@ export const AccountAccessPage: React.FC = () => {
       ) : (
         <Body center>
           <Typography variant="h2" gutterBottom>
-            No Linked Users
+            Your device list is not shared with anyone
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Linked users can access all the devices you own.
+            Share your device list to users to provide them with access to the devices you own.
           </Typography>
         </Body>
       )}

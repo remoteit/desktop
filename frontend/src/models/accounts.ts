@@ -92,8 +92,8 @@ export default createModel({
           dispatch.ui.set({
             successMessage:
               emails.length > 1
-                ? `${emails.length} accounts successfully linked.`
-                : `${emails[0]} successfully linked to your account.`,
+                ? `Your device list has been shared to ${emails.length} users.`
+                : `Your device list has been shared to ${emails[0]}.`,
           })
         }
       } catch (error) {
@@ -122,7 +122,7 @@ export default createModel({
         if (!errors?.length) {
           analyticsHelper.track('leaveMembership')
           dispatch.accounts.set({ member: member.filter(user => user.email !== email) })
-          dispatch.ui.set({ successMessage: `You successfully left ${email}'s account.` })
+          dispatch.ui.set({ successMessage: `You have successfully left ${email}'s device list.` })
         }
       } catch (error) {
         await graphQLHandleError(error)

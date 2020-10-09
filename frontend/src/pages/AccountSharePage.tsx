@@ -5,7 +5,6 @@ import { Dispatch, ApplicationState } from '../store'
 import { Typography, Button } from '@material-ui/core'
 import { ContactSelector } from '../components/ContactSelector'
 import { Breadcrumbs } from '../components/Breadcrumbs'
-import { getAllDevices } from '../models/accounts'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -15,8 +14,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountSharePage = () => {
   const { accounts } = useDispatch<Dispatch>()
-  const { count, user, access, contacts = [] } = useSelector((state: ApplicationState) => ({
-    count: getAllDevices(state).reduce((count, d) => count + (d.shared || d.hidden ? 0 : 1), 0),
+  const { user, access, contacts = [] } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     access: state.accounts.access,
     contacts: state.devices.contacts,
@@ -48,7 +46,8 @@ export const AccountSharePage = () => {
       <ContactSelector contacts={contacts.filter(c => !access.find(s => s.email === c.email))} onChange={setEmails} />
       {!!emails.length && (
         <Notice gutterBottom>
-          Granting access to all <b>{count} devices</b> owned by you <i>({user?.email})</i>.
+          Granting access to all the devices and services you ({user?.email}) own. <br />
+          <i>Scripting will also be allowed when available in desktop.</i>
         </Notice>
       )}
       <Button
