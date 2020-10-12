@@ -5,12 +5,13 @@
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s clean build-backend compile copy-* build-electron",
+    "build": "cross-env NODE_ENV=production run-s clean build-backend cli-download compile copy-* build-electron",
     "build-backend": "cd backend && npm run build",
     "build-electron": "cross-env electron-builder",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
+    "cli-download": "sh bin/build.sh",
     "copy-images": "cp -R ./src/images ./build/",
     "copy-install": "cp installer.nsh build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
@@ -110,6 +111,14 @@
     "extraResources": [
       {
         "from": "./backend/src/cli-version.txt",
+        "to": "./"
+      },
+      {
+        "from": "./bin/CLI/remoteit64.exe",
+        "to": "./"
+      },
+      {
+        "from": "./bin/CLI/remoteit86.exe",
         "to": "./"
       }
     ],
