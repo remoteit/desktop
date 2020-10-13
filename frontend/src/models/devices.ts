@@ -91,7 +91,7 @@ export default createModel({
       // @TODO pull contacts out into it's own model / request on page load
 
       if (!error) cleanOrphanConnections()
-      platformConfiguration(globalState)
+      platformConfiguration()
     },
 
     /*
