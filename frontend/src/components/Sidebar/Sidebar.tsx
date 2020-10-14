@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core'
 import { spacing, colors, fontSizes } from '../../styling'
 import { useSelector } from 'react-redux'
-import { isElectron } from '../../services/Browser'
+import { isRemote } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { attributeName } from '../../shared/nameHelper'
 import { TargetPlatform } from '../../components/TargetPlatform'
@@ -27,7 +27,7 @@ type NetworkType = { primary: string; secondary?: string }
 
 export const Sidebar: React.FC = () => {
   const [shown, setShown] = useState<boolean>(true)
-  const { hostname, port } = window.location
+  const { hostname } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
 
   const { name, label, device, remoteUI } = useSelector((state: ApplicationState) => {
@@ -41,7 +41,7 @@ export const Sidebar: React.FC = () => {
   })
 
   const css = useStyles()
-  if (isElectron() || (isLocalhost && port === PORT.toString())) return null
+  if (!isRemote()) return null
 
   let graphic = onLanGraphic
   let diagram: NetworkType[] = [

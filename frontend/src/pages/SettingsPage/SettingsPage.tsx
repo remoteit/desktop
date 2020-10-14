@@ -151,7 +151,9 @@ export const SettingsPage: React.FC = () => {
               if (
                 preferences.remoteUIOverride ||
                 window.confirm(
-                  `Are you sure? \nNew connections will be from ${targetDevice.name} and not your local machine.`
+                  `Are you sure? \nNew connections will be from ${
+                    targetDevice.name || 'this device'
+                  } and not your local machine.`
                 )
               ) {
                 analyticsHelper.track('enabledRemoteConnectUI')
