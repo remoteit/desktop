@@ -6,11 +6,11 @@ type Props = BoxProps & {
   white?: boolean
 }
 
-export const Logo: React.FC<Props> = props => {
+export const Logo: React.FC<Props> = ({ white, ...props }) => {
   const css = useStyles()
   let light = css.light
   let dark = css.dark
-  if (props.white) light = dark = css.white
+  if (white) light = dark = css.white
 
   return (
     <Box width={160} {...props}>

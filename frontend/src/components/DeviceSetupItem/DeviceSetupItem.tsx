@@ -3,13 +3,15 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
+import { getLinks } from '../../helpers/routeHelper'
 import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC = () => {
-  const { targetDevice, os } = useSelector((state: ApplicationState) => ({
+  const { targetDevice, os, links } = useSelector((state: ApplicationState) => ({
     targetDevice: state.backend.device,
     os: state.backend.environment.os,
+    links: getLinks(state),
   }))
 
   const registered = !!targetDevice.uid
@@ -22,7 +24,7 @@ export const DeviceSetupItem: React.FC = () => {
   }
 
   return (
-    <ListItemLocation pathname={`/devices/setup`}>
+    <ListItemLocation pathname={links.setup}>
       <ListItemIcon>
         <Icon name="hdd" size="md" type="light" />
       </ListItemIcon>

@@ -1,13 +1,13 @@
-import { CLIENT_ID, API_URL, DEVELOPER_KEY, CALLBACK_URL, PROTOCOL } from '../shared/constants'
-import { r3 } from '../services/remote.it'
-import { IUser as LegacyUser } from 'remote.it'
-import { createModel } from '@rematch/core'
-import { emit } from '../services/Controller'
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { r3 } from '../services/remote.it'
+import { emit } from '../services/Controller'
 import { AuthUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
+import { CLIENT_ID, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
 import { getRedirectUrl, isElectron } from '../services/Browser'
+import { IUser as LegacyUser } from 'remote.it'
+import { createModel } from '@rematch/core'
 import { store } from '../store'
 
 const USER_KEY = 'user'
@@ -42,9 +42,9 @@ export default createModel({
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
           developerKey: DEVELOPER_KEY,
-          redirectURL: (Buffer.from(getRedirectUrl())).toString('hex'),
+          redirectURL: Buffer.from(getRedirectUrl()).toString('hex'),
           callbackURL: CALLBACK_URL,
-          signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL 
+          signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL,
         })
         dispatch.auth.setAuthService(authService)
         dispatch.auth.setInitialized()
@@ -56,17 +56,17 @@ export default createModel({
       if (result.authUser) {
         await dispatch.auth.handleSignInSuccess(result.authUser)
       } else {
-        if(result.error.code === 'NetworkError') {
-          backend.set({ globalError:result.error.message })
+        if (result.error.code === 'NetworkError') {
+          backend.set({ globalError: result.error.message })
         } else {
           dispatch.auth.signInError('Session Expired')
-        } 
+        }
       }
     },
     async handleSignInSuccess(authUser: AuthUser): Promise<void> {
       if (authUser.cognitoUser?.username) {
-        if( authUser.cognitoUser?.authProvider === 'Google' ) {
-          window.localStorage.setItem('amplify-signin-with-hostedUI', 'true');
+        if (authUser.cognitoUser?.authProvider === 'Google') {
+          window.localStorage.setItem('amplify-signin-with-hostedUI', 'true')
         }
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.setInitialized()
@@ -79,7 +79,7 @@ export default createModel({
         dispatch.auth.setBackendAuthenticated(true)
         dispatch.applicationTypes.fetch()
         await dispatch.accounts.init()
-        dispatch.devices.fetch()
+        await dispatch.devices.fetch()
       }
     },
     async signInError(error: string) {

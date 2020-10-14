@@ -41,7 +41,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
           ) : (
             <>
               <ListItem>
-                <Notice>This device is registered to another user</Notice>
+                <Notice>This device is not registered to you.</Notice>
               </ListItem>
               <Divider />
             </>

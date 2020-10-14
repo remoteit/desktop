@@ -17,8 +17,9 @@ import { useParams } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
-import { getDevices } from '../../models/accounts'
+import { getAllDevices } from '../../models/accounts'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { AddServiceButton } from '../../buttons/AddServiceButton'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -26,6 +27,8 @@ import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
 import { ServiceMiniState } from '../../components/ServiceMiniState'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
+import { getLinks } from '../../helpers/routeHelper'
+import { isRemoteUI } from '../../helpers/uiHelper'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { fontSizes } from '../../styling'
@@ -40,19 +43,20 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const css = useStyles()
   const history = useHistory()
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { setupAddingService } = useSelector((state: ApplicationState) => state.ui)
-  const device = useSelector((state: ApplicationState) =>
-    getDevices(state).find((d: IDevice) => d.id === deviceID && !d.hidden)
-  )
+  const { device, setupAddingService, links, remoteUI } = useSelector((state: ApplicationState) => ({
+    device: getAllDevices(state).find((d: IDevice) => d.id === deviceID),
+    setupAddingService: state.ui.setupAddingService,
+    remoteUI: isRemoteUI(state),
+    links: getLinks(state, targetDevice.uid),
+  }))
 
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')
-  }, [])
+    // check that target device is registered and don't redirect
+    if (!device && !(remoteUI && targetDevice.uid)) history.push(links.home)
+  }, [device, targetDevice, history])
 
-  if (!device) {
-    history.push(`/devices`)
-    return null
-  }
+  if (!device) return null
 
   const thisDevice = device.id === targetDevice.uid
 
@@ -69,7 +73,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
       header={
         <>
           <OutOfBand />
-          <Breadcrumbs />
+          {remoteUI || <Breadcrumbs />}
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Edit device</Title>
@@ -82,14 +86,26 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
         {/* <DeviceLabelSetting device={device} /> */}
         {/* <SharedAccessSetting device={device} /> */}
+        {/* {thisDevice && (
+          <ListItemSetting
+            label={targetDevice.disabled ? 'Device disabled' : 'Device enabled'}
+            subLabel="Disabling your service will take it offline."
+            icon="circle-check"
+            toggle={!form.disabled}
+            disabled={setupBusy}
+            onClick={() => {
+              setForm({ ...form, disabled: !form.disabled })
+            }}
+          />
+        )} */}
       </List>
       <Divider />
       {!device.shared && (
         <>
           <Typography variant="subtitle1">
             <Title>Services</Title>
-            <AddFromNetworkButton device={device} thisDevice={thisDevice} />
-            <AddServiceButton device={device} thisDevice={thisDevice} />
+            <AddFromNetworkButton device={device} thisDevice={thisDevice} link={links.scan} />
+            <AddServiceButton device={device} thisDevice={thisDevice} link={links.add} />
           </Typography>
           <List>
             {thisDevice && setupAddingService && (
@@ -101,7 +117,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
               </ListItem>
             )}
             {device.services.map(s => (
-              <ListItemLocation key={s.id} pathname={`/devices/${deviceID}/edit/${s.id}`} dense>
+              <ListItemLocation key={s.id} pathname={links.service.replace(':serviceID', s.id)} dense>
                 <ListItemIcon></ListItemIcon>
                 <ListItemText primary={s.name} secondary={host(s)} />
                 <ListItemSecondaryAction className={css.actions}>

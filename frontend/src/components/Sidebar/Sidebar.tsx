@@ -18,6 +18,7 @@ import { ApplicationState } from '../../store'
 import { attributeName } from '../../shared/nameHelper'
 import { TargetPlatform } from '../../components/TargetPlatform'
 import { getOwnDevices } from '../../models/accounts'
+import { isRemoteUI } from '../../helpers/uiHelper'
 import { Icon } from '../../components/Icon'
 import onLanGraphic from '../../assets/remote-on-lan.svg'
 import onRemoteGraphic from '../../assets/remote-on-remote.svg'
@@ -29,12 +30,13 @@ export const Sidebar: React.FC = () => {
   const { hostname, port } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
 
-  const { name, label, device } = useSelector((state: ApplicationState) => {
+  const { name, label, device, remoteUI } = useSelector((state: ApplicationState) => {
     const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
     return {
       device,
       label: state.labels.find(l => l.id === device?.attributes.color),
       name: attributeName(device),
+      remoteUI: isRemoteUI(state),
     }
   })
 
@@ -70,6 +72,11 @@ export const Sidebar: React.FC = () => {
           <Typography variant="h2">
             You are managing <br />a remote device
           </Typography>
+          {!remoteUI && name && (
+            <Typography variant="body2">
+              Any connections you create will be to <em>{name}</em>, not your local machine.
+            </Typography>
+          )}
         </section>
         <Divider />
         <section>
@@ -83,10 +90,6 @@ export const Sidebar: React.FC = () => {
               ))}
             </List>
           </Box>
-          <Typography variant="body2">
-            Any connections you initiate in these panels can be used by this remote device or if LAN sharing is turned
-            on, by other devices on the network.
-          </Typography>
         </section>
       </Box>
     </Box>
@@ -117,6 +120,7 @@ const useStyles = makeStyles({
     '& span': { color: colors.white },
     '& h2': { fontSize: fontSizes.lg },
     '& h2, & p': { color: colors.white },
+    '& section > p': { marginTop: spacing.lg },
     '& section > div': { marginBottom: spacing.xl },
   },
   graphic: {

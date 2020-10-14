@@ -8,6 +8,7 @@ import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
 import { makeStyles } from '@material-ui/core/styles'
 import { SignInPage } from '../../pages/SignInPage'
+import { isRemoteUI } from '../../helpers/uiHelper'
 import { Header } from '../Header/Header'
 import { Router } from '../Router'
 import { Body } from '../Body'
@@ -16,16 +17,23 @@ import { Page } from '../../pages/Page'
 import styles from '../../styling'
 
 export const App: React.FC = () => {
-  const { authInitialized, backendAuthenticated, initialized, installed, signedOut, uninstalling } = useSelector(
-    (state: ApplicationState) => ({
-      authInitialized: state.auth.initialized,
-      backendAuthenticated: state.auth.backendAuthenticated,
-      initialized: state.devices.initialized,
-      installed: state.binaries.installed,
-      signedOut: state.auth.initialized && !state.auth.authenticated,
-      uninstalling: state.ui.uninstalling,
-    })
-  )
+  const {
+    authInitialized,
+    backendAuthenticated,
+    initialized,
+    installed,
+    signedOut,
+    uninstalling,
+    remoteUI,
+  } = useSelector((state: ApplicationState) => ({
+    authInitialized: state.auth.initialized,
+    backendAuthenticated: state.auth.backendAuthenticated,
+    initialized: state.devices.initialized,
+    installed: state.binaries.installed,
+    signedOut: state.auth.initialized && !state.auth.authenticated,
+    uninstalling: state.ui.uninstalling,
+    remoteUI: isRemoteUI(state),
+  }))
 
   const css = useStyles()
   const history = useHistory()
@@ -95,6 +103,13 @@ export const App: React.FC = () => {
       </Page>
     )
 
+  const menuItems = [
+    { label: 'Configuration', path: '/configure', icon: 'hdd', show: remoteUI },
+    { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
+    { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
+    { label: 'Settings', path: '/settings', icon: 'cog', show: true },
+  ]
+
   return (
     <Page>
       <Header />
@@ -102,9 +117,18 @@ export const App: React.FC = () => {
         <Router />
       </Body>
       <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
-        <BottomNavigationAction label="Connections" value="/connections" icon={<Icon name="scrubber" size="lg" />} />
-        <BottomNavigationAction label="Devices" value="/devices" icon={<Icon name="chart-network" size="lg" />} />
-        <BottomNavigationAction label="Settings" value="/settings" icon={<Icon name="cog" size="lg" />} />
+        {menuItems.reduce((items: JSX.Element[], m) => {
+          if (m.show)
+            items.push(
+              <BottomNavigationAction
+                key={m.path}
+                label={m.label}
+                value={m.path}
+                icon={<Icon name={m.icon} size="lg" />}
+              />
+            )
+          return items
+        }, [])}
       </BottomNavigation>
     </Page>
   )

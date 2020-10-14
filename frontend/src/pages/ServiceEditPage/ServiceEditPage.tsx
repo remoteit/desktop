@@ -12,6 +12,7 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceForm } from '../../components/ServiceForm'
 import { getDevices } from '../../models/accounts'
+import { getLinks } from '../../helpers/routeHelper'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -23,7 +24,10 @@ type Props = {
 export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams<{ serviceID: string; deviceID: string }>()
-  const [service] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
+  const { service, links } = useSelector((state: ApplicationState) => ({
+    service: findService(getDevices(state), serviceID)[0],
+    links: getLinks(state, deviceID),
+  }))
   const target = targets?.find(t => t.uid === serviceID)
   const thisDevice = service?.deviceID === targetDevice.uid
   const location = useLocation()
@@ -35,7 +39,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   }, [])
 
   if (!service || (thisDevice && !target)) {
-    history.push(`/devices/${deviceID}/edit`)
+    history.push(links.edit)
     return null
   }
 

@@ -32,7 +32,6 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
 
 const formats = {
   element: (el: JSX.Element) => {
-    console.log('el', el)
     return el
   },
   duration: (date: Date) => {

@@ -29,7 +29,7 @@ export default class Command {
     return this.commands.join(' && ')
   }
 
-  log(message: string, params: ILookup, type: 'info' | 'warn' | 'error' = 'info') {
+  log(message: string, params: ILookup<string>, type: 'info' | 'warn' | 'error' = 'info') {
     if (this.quiet) return
     if (user.authHash) {
       Object.keys(params).forEach(key => {

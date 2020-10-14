@@ -6,7 +6,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 const ACCOUNT_KEY = 'account'
 
-type IAccountsState = ILookup & {
+type IAccountsState = ILookup<any> & {
   member: IUser[]
   access: IUser[]
   activeId?: string // user.id
@@ -154,7 +154,7 @@ export default createModel({
     },
   }),
   reducers: {
-    set(state: IAccountsState, params: ILookup) {
+    set(state: IAccountsState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },
     setActive(state: IAccountsState, id: string) {

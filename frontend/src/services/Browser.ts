@@ -1,6 +1,5 @@
 import { REDIRECT_URL } from '../shared/constants'
 
-
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
 const DEVELOPMENT = 'development'
@@ -19,10 +18,15 @@ export function os() {
 
 export function getRedirectUrl() {
   let redirectUrl = window.origin
-  if(isElectron()) {
+  if (isElectron()) {
     redirectUrl = REDIRECT_URL
   }
   return redirectUrl
+}
+
+export function isRemote() {
+  const { port } = window.location
+  return !(isElectron() || port === '29999' || port === '29998')
 }
 
 export function isElectron() {
@@ -45,6 +49,5 @@ export function isDev() {
 }
 
 export function launchBrowser(type: string) {
-  const platform = navigator ? navigator.platform.toLowerCase() : ''
-  return !(type === 'SSH' && platform.includes('win'))
+  return !(type === 'SSH' && isWindows())
 }

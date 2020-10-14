@@ -14,6 +14,7 @@ import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/core/styles'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
+import { isRemote } from '../../services/Browser'
 import { spacing } from '../../styling'
 import { Avatar } from '../../components/Avatar'
 import { Title } from '../../components/Title'
@@ -21,14 +22,17 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
-  const { os, user, target, installing, cliVersion, preferences } = useSelector((state: ApplicationState) => ({
-    os: state.backend.environment.os,
-    user: state.auth.user,
-    target: state.backend.device,
-    installing: state.binaries.installing,
-    cliVersion: state.binaries.installedVersion || '(loading...)',
-    preferences: state.backend.preferences,
-  }))
+  const { os, user, target, installing, cliVersion, preferences, targetDevice } = useSelector(
+    (state: ApplicationState) => ({
+      os: state.backend.environment.os,
+      user: state.auth.user,
+      target: state.backend.device,
+      installing: state.binaries.installing,
+      cliVersion: state.binaries.installedVersion || '(loading...)',
+      preferences: state.backend.preferences,
+      targetDevice: state.backend.device,
+    })
+  )
   const css = useStyles()
   const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
@@ -61,6 +65,8 @@ export const SettingsPage: React.FC = () => {
   useEffect(() => {
     analyticsHelper.page('SettingsPage')
   }, [])
+
+  if (!preferences) return null
 
   return (
     <Container
@@ -131,7 +137,7 @@ export const SettingsPage: React.FC = () => {
       <List>
         {(os === 'mac' || os === 'windows') && (
           <ListItemSetting
-            label="Auto Update"
+            label="Auto update"
             icon="chevron-double-up"
             toggle={preferences.autoUpdate}
             onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
@@ -143,6 +149,23 @@ export const SettingsPage: React.FC = () => {
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
+        {isRemote() && (
+          <ListItemSetting
+            label="Show connect interface"
+            subLabel="Remote devices only show target configuration options. Enable for full access."
+            icon="dot-circle"
+            toggle={preferences.remoteUIOverride}
+            onClick={() => {
+              if (
+                preferences.remoteUIOverride ||
+                window.confirm(
+                  `Are you sure? \nNew connections will be from ${targetDevice.name} and not your local machine.`
+                )
+              )
+                emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })
+            }}
+          />
+        )}
         {!guest && <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
         <UpdateSetting />
       </List>

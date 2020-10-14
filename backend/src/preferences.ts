@@ -5,7 +5,14 @@ import environment from './environment'
 import path from 'path'
 
 export class Preferences {
-  data?: IPreferences
+  data: IPreferences = {
+    version: 'unknown',
+    autoUpdate: false,
+    openAtLogin: true,
+    remoteUIOverride: false,
+    disableLocalNetwork: false,
+  }
+
   private file: JSONFile<IPreferences>
 
   EVENTS = { update: 'preferences' }
@@ -18,14 +25,14 @@ export class Preferences {
 
   get defaults(): IPreferences {
     return {
+      ...this.data,
       version: environment.version,
       autoUpdate: environment.isMac || environment.isWindows,
-      openAtLogin: true,
     }
   }
 
   get(): IPreferences {
-    return this.data || {}
+    return this.data
   }
 
   update(pref: { [key: string]: any }) {

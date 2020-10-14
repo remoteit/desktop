@@ -12,9 +12,9 @@ import Logger from './Logger'
 import SocketIO from 'socket.io'
 import systemInfo from './systemInfo'
 import socketioAuth from 'socketio-auth'
+import Preferences from './preferences'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
-import Preferences from './preferences'
 import { IP_PRIVATE, IP_OPEN } from './sharedCopy/constants'
 
 const d = debug('Server')
@@ -53,7 +53,7 @@ class Server {
 
   async start() {
     const preferences = Preferences.get()
-    const HOST = preferences.disabledLocalNetwork ? IP_PRIVATE : IP_OPEN
+    const HOST = preferences.disableLocalNetwork ? IP_PRIVATE : IP_OPEN
     const server = createServer(this.app)
       .on('error', error => {
         Logger.warn('SERVER START FAILED', { error, details: error.toString(), directory: WEB_DIR })

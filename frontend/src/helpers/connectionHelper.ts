@@ -92,7 +92,6 @@ export function cleanOrphanConnections() {
     .flat()
   state.backend.connections.forEach(c => {
     if (!services.includes(c.id)) {
-      console.log('DELETE CONNECTION', c)
       emit('service/forget', c)
     }
   })

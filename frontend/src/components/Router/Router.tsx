@@ -1,7 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { isElectron } from '../../services/Browser'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
@@ -24,15 +23,17 @@ import { AccountMembershipPage } from '../../pages/AccountMembershipPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage'
 import { ServiceEditPage } from '../../pages/ServiceEditPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
+import { getLinks } from '../../helpers/routeHelper'
 import { LogPage } from '../../pages/LogPage'
 
 export const Router: React.FC = () => {
-  const { targetDevice, targets, registered, os } = useSelector((state: ApplicationState) => ({
+  const { targetDevice, targets, registered, os, links } = useSelector((state: ApplicationState) => ({
     targetDevice: state.backend.device,
     targets: state.backend.targets,
     registered: !!state.backend.device.uid,
     uninstalling: state.ui.uninstalling,
     os: state.backend.environment.os,
+    links: getLinks(state),
   }))
 
   return (
@@ -50,7 +51,7 @@ export const Router: React.FC = () => {
       <Route path="/settings/access">
         <AccountAccessPage />
       </Route>
-      <Route path="/devices/setupWaiting">
+      <Route path={links.waiting}>
         <SetupWaiting os={os} targetDevice={targetDevice} />
       </Route>
       <Route path="/devices/setup">
@@ -77,7 +78,7 @@ export const Router: React.FC = () => {
       >
         <SharePage />
       </Route>
-      <Route path="/devices/:deviceID/edit/add-service/network">
+      <Route path={links.scan}>
         <NetworkPage />
       </Route>
       <Route path={['/devices/:deviceID/:serviceID/lan', '/connections/:serviceID/lan']}>
@@ -92,16 +93,10 @@ export const Router: React.FC = () => {
       <Route path={['/devices/:deviceID/:serviceID/details', '/connections/:serviceID/details']}>
         <ServiceDetailPage />
       </Route>
-      <Route path="/devices/:deviceID/edit/add-service">
+      <Route path={links.add}>
         <ServiceAddPage targets={targets} />
       </Route>
-      <Route
-        path={[
-          '/devices/:deviceID/:serviceID/edit',
-          '/devices/:deviceID/edit/:serviceID',
-          '/connections/:serviceID/edit',
-        ]}
-      >
+      <Route path={[links.service, '/devices/:deviceID/:serviceID/edit', '/connections/:serviceID/edit']}>
         <ServiceEditPage targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path="/devices/:deviceID/users">
@@ -113,7 +108,7 @@ export const Router: React.FC = () => {
       <Route path="/devices/:deviceID/logs">
         <DeviceLogPage />
       </Route>
-      <Route path="/devices/:deviceID/edit">
+      <Route path={links.edit}>
         <DeviceEditPage targetDevice={targetDevice} targets={targets} />
       </Route>
       <Route path={['/devices/:deviceID/:serviceID', '/connections/:serviceID']}>
@@ -125,10 +120,15 @@ export const Router: React.FC = () => {
       <Route path="/connections">
         <ConnectionsPage />
       </Route>
+      <Route path="/configure">
+        {registered ? <Redirect to={`/configure/${targetDevice.uid}`} /> : <SetupDevice os={os} />}
+      </Route>
       <Route path="/devices">
         <DevicesPage />
       </Route>
-      <Route path="/">{isElectron() ? <Redirect to="/devices" /> : <Redirect to="/devices/setup" />}</Route>
+      <Route path="/">
+        <Redirect to={links.home} />
+      </Route>
     </Switch>
   )
 }

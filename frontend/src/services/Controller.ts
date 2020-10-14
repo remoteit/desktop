@@ -18,7 +18,6 @@ class Controller extends EventEmitter {
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'
     this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
-
   }
 
   setupConnection(username: string, password: string) {
@@ -143,7 +142,7 @@ function getEventHandlers() {
 
     dataReady: (result: boolean) => backend.set({ dataReady: result }),
 
-    environment: (result: ILookup) => {
+    environment: (result: ILookup<any>) => {
       backend.set({ environment: result })
       analyticsHelper.setOS(result.os)
       analyticsHelper.setOsVersion(result.osVersion)
