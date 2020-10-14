@@ -47,8 +47,8 @@ export const Sidebar: React.FC = () => {
   let diagram: NetworkType[] = [
     { primary: 'You' },
     { primary: 'Local network' },
-    { primary: 'This system', secondary: name },
-    { primary: 'Remote devices' },
+    { primary: 'This device', secondary: name },
+    { primary: 'Internet devices' },
   ]
 
   if (isLocalhost) {

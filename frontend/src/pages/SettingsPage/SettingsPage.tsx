@@ -161,8 +161,10 @@ export const SettingsPage: React.FC = () => {
                 window.confirm(
                   `Are you sure? \nNew connections will be from ${targetDevice.name} and not your local machine.`
                 )
-              )
+              ) {
+                analyticsHelper.track('enabledRemoteConnectUI')
                 emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })
+              }
             }}
           />
         )}
