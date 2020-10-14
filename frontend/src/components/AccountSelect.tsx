@@ -5,7 +5,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { getAccountId } from '../models/accounts'
 import { spacing, colors } from '../styling'
-import { Avatar } from './Avatar'
+// import { Avatar } from './Avatar'
 import classnames from 'classnames'
 
 export const AccountSelect: React.FC = () => {
@@ -20,9 +20,6 @@ export const AccountSelect: React.FC = () => {
   }))
 
   if (options.length < 2) return null
-
-  const leave = (email: string) =>
-    window.confirm(`Are you sure you wish to leave the linked account ${email}?`) && accounts.leaveMembership(email)
 
   return (
     <TextField

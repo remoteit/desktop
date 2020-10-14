@@ -1,9 +1,7 @@
 import React from 'react'
 import { getPermissions } from '../../helpers/userHelper'
 import { ListItemSecondaryAction, Tooltip, makeStyles } from '@material-ui/core'
-import { ApplicationState } from '../../store'
 import { ServiceMiniState } from '../ServiceMiniState'
-import { useSelector } from 'react-redux'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 

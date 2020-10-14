@@ -3,7 +3,7 @@ import { Typography, CircularProgress, Divider } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { getDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
@@ -21,7 +21,6 @@ export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
     device: getDevices(state).find(d => d.id === targetDevice.uid),
     links: getLinks(state, targetDevice.uid),
   }))
-  const location = useLocation()
   const history = useHistory()
   const css = useStyles()
 

@@ -11,9 +11,6 @@ class Controller extends EventEmitter {
   private userPassword?: string
   private url: string = '/'
 
-  constructor() {
-    super()
-  }
   init() {
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'

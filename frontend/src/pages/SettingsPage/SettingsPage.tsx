@@ -9,7 +9,6 @@ import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetw
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { UninstallSetting } from '../../components/UninstallSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
-import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/core/styles'
 import { isRemoteUI } from '../../helpers/uiHelper'
@@ -36,7 +35,6 @@ export const SettingsPage: React.FC = () => {
     })
   )
   const css = useStyles()
-  const { guest, notElevated } = usePermissions()
   const { binaries } = useDispatch<Dispatch>()
 
   const quitWarning = () =>

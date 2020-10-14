@@ -128,7 +128,7 @@ export default createModel({
         await graphQLHandleError(error)
       }
     },
-    async setDevices({ devices: devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
+    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
       const allDevices = globalState.accounts.devices
       accountId = accountId || getAccountId(globalState)
 

@@ -5,7 +5,7 @@ import { cleanOrphanConnections, getConnectionIds, mergeConnections } from '../h
 import { platformConfiguration } from '../services/platformConfiguration'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
-import { ApplicationState } from '../store'
+// import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 

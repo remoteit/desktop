@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import { ListItemText, ListItemIcon } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { InitiatorPlatform } from '../InitiatorPlatform'

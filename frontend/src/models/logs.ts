@@ -1,14 +1,12 @@
-
-import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
-import { getAccountId, getDevices } from './accounts'
-import { r3, hasCredentials } from '../services/remote.it'
+import { graphQLHandleError } from '../services/graphQL'
+import { getDevices } from './accounts'
+import { hasCredentials } from '../services/remote.it'
 import { createModel } from '@rematch/core'
 import { graphQLGetEventsURL, graphQLGetMoreLogs } from '../services/graphQLLogs'
 
 const MAX_LOG_LENGTH = 1000
 
 type LogParams = { [key: string]: any }
-
 
 type ILogState = LogParams & {
   total: number
@@ -29,7 +27,6 @@ const state: ILogState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-
     async fetchLogs({ id, from, maxDate }: any, globalState: any) {
       const { set } = dispatch.logs
       const all = getDevices(globalState)
@@ -44,7 +41,7 @@ export default createModel({
             const items = from === 0 ? events.items : _d.events.items.concat(events.items)
             return { ..._d, events: { ...events, items } }
           })
-        dispatch.accounts.setDevice({ id, device: device[0]})
+        dispatch.accounts.setDevice({ id, device: device[0] })
       } catch (error) {
         await graphQLHandleError(error)
       }
@@ -64,7 +61,6 @@ export default createModel({
         await graphQLHandleError(error)
       }
     },
-
   }),
 
   reducers: {
