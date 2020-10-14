@@ -12,6 +12,7 @@ import { ListItemSetting } from '../../components/ListItemSetting'
 import { usePermissions } from '../../hooks/usePermissions'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/core/styles'
+import { isRemoteUI } from '../../helpers/uiHelper'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { isRemote } from '../../services/Browser'
@@ -22,7 +23,7 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
-  const { os, user, target, installing, cliVersion, preferences, targetDevice } = useSelector(
+  const { os, user, target, installing, cliVersion, preferences, targetDevice, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       os: state.backend.environment.os,
       user: state.auth.user,
@@ -31,6 +32,7 @@ export const SettingsPage: React.FC = () => {
       cliVersion: state.binaries.installedVersion || '(loading...)',
       preferences: state.backend.preferences,
       targetDevice: state.backend.device,
+      remoteUI: isRemoteUI(state),
     })
   )
   const css = useStyles()
@@ -93,11 +95,15 @@ export const SettingsPage: React.FC = () => {
         <DeviceSetupItem />
       </List>
       <Divider />
-      <Typography variant="subtitle1">Sharing</Typography>
-      <List>
-        <AccountLinkingSettings />
-      </List>
-      <Divider />
+      {remoteUI || (
+        <>
+          <Typography variant="subtitle1">Sharing</Typography>
+          <List>
+            <AccountLinkingSettings />
+          </List>
+          <Divider />
+        </>
+      )}
       <Typography variant="subtitle1">User</Typography>
       <List>
         <ListItemSetting
@@ -135,25 +141,11 @@ export const SettingsPage: React.FC = () => {
       <Divider />
       <Typography variant="subtitle1">Application</Typography>
       <List>
-        {(os === 'mac' || os === 'windows') && (
-          <ListItemSetting
-            label="Auto update"
-            icon="chevron-double-up"
-            toggle={preferences.autoUpdate}
-            onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
-          />
-        )}
-        <ListItemSetting
-          label="Open at login"
-          icon="door-open"
-          toggle={preferences.openAtLogin}
-          onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
-        />
         {isRemote() && (
           <ListItemSetting
-            label="Show connect interface"
+            label="Show full interface"
             subLabel="Remote devices only show target configuration options. Enable for full access."
-            icon="dot-circle"
+            icon="sliders-h"
             toggle={preferences.remoteUIOverride}
             onClick={() => {
               if (
@@ -168,10 +160,24 @@ export const SettingsPage: React.FC = () => {
             }}
           />
         )}
-        {!guest && <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
+        {(os === 'mac' || os === 'windows') && (
+          <ListItemSetting
+            label="Auto update"
+            icon="chevron-double-up"
+            toggle={preferences.autoUpdate}
+            onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
+          />
+        )}
+        <ListItemSetting
+          label="Open at login"
+          icon="door-open"
+          toggle={preferences.openAtLogin}
+          onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
+        />
+        {remoteUI || <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
         <UpdateSetting />
       </List>
-      {!(guest || notElevated) && (
+      {remoteUI || (
         <>
           <Divider />
           <Typography variant="subtitle1">Advanced</Typography>
