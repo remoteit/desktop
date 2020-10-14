@@ -29,12 +29,12 @@ export default class Command {
     return this.commands.join(' && ')
   }
 
-  log(message: string, params: ILookup<string>, type: 'info' | 'warn' | 'error' = 'info') {
+  log(message: string, params: ILookup<string | boolean>, type: 'info' | 'warn' | 'error' = 'info') {
     if (this.quiet) return
     if (user.authHash) {
       Object.keys(params).forEach(key => {
-        if (typeof params[key] === 'string' && params[key].includes(user.authHash))
-          params[key] = params[key].replace(new RegExp(user.authHash, 'g'), '[CLEARED]')
+        if (typeof params[key] === 'string' && params[key].toString().includes(user.authHash))
+          params[key] = params[key].toString().replace(new RegExp(user.authHash, 'g'), '[CLEARED]')
       })
     }
     Logger[type](message, params)

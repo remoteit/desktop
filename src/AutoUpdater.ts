@@ -26,10 +26,10 @@ export default class AppUpdater {
 
     EventBus.on(EVENTS.preferences, ({ autoUpdate }: IPreferences) => {
       if (autoUpdate !== this.autoUpdate) this.check(true)
-      this.autoUpdate = autoUpdate
+      this.autoUpdate = !!autoUpdate
     })
 
-    this.autoUpdate = preferences.get().autoUpdate
+    this.autoUpdate = !!preferences.get().autoUpdate
   }
 
   check(force?: boolean) {
