@@ -4,7 +4,7 @@ import { store } from '../store'
 import { version } from '../../package.json'
 import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 
-export async function graphQLRequest(query: String, variables: ILookup = {}) {
+export async function graphQLRequest(query: String, variables: ILookup<any> = {}) {
   const request = {
     url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
     method: 'post' as 'post',
@@ -38,5 +38,4 @@ export async function graphQLHandleError(error: AxiosError) {
   } else {
     backend.set({ globalError: error.message })
   }
-  
 }

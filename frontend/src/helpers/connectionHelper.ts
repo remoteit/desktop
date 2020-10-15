@@ -39,7 +39,7 @@ export function newConnection(service?: IService | null, data = {}) {
 
 export function mergeConnections(devices: IDevice[], connections: IDevice[]) {
   const ids = devices.map(d => d.id)
-  const diff = connections.filter(c => ids.includes(c.id))
+  const diff = connections.filter(c => !ids.includes(c.id))
   return [...devices, ...diff]
 }
 
@@ -92,7 +92,6 @@ export function cleanOrphanConnections() {
     .flat()
   state.backend.connections.forEach(c => {
     if (!services.includes(c.id)) {
-      console.log('DELETE CONNECTION', c)
       emit('service/forget', c)
     }
   })

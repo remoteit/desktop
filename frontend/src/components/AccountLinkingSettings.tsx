@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItemSecondaryAction, Chip, Typography, Tooltip } from '@material-ui/core'
+import { ListItemSecondaryAction, Chip } from '@material-ui/core'
 import { ListItemLocation } from './ListItemLocation'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'

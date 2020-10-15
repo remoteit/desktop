@@ -64,8 +64,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
         ...connection,
         username: username.toString(),
       })
-    const launchApp = app.launch({ ...connection, username: username || connection.username})
-
+    const launchApp = app.launch({ ...connection, username: username || connection.username })
     launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', { command: launchApp, pathPutty })
   }
 

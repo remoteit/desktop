@@ -200,7 +200,7 @@ declare global {
     services: IService[]
     hidden?: boolean
     access: IUser[]
-    attributes: ILookup & {
+    attributes: ILookup<any> & {
       name?: string
       color?: number
       label?: string
@@ -345,11 +345,17 @@ declare global {
 
   type IEvents = { [event: string]: string }
 
-  type ILookup = { [key: string]: any }
+  type ILookup<T> = { [key: string]: T }
 
   type ISelect = { [key: string]: string | number }
 
-  type IPreferences = ILookup
+  type IPreferences = {
+    version?: string
+    autoUpdate?: boolean
+    openAtLogin?: boolean
+    remoteUIOverride?: boolean
+    disableLocalNetwork?: boolean
+  }
 
   type SegmentContext = {
     category?: string

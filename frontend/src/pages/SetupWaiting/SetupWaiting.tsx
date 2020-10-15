@@ -3,11 +3,12 @@ import { Typography, CircularProgress, Divider } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useSelector } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { getDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { DocsLinks } from '../../components/DocsLinks'
+import { getLinks } from '../../helpers/routeHelper'
 import { osName } from '../../shared/nameHelper'
 import { Body } from '../../components/Body'
 import styles from '../../styling'
@@ -15,25 +16,19 @@ import styles from '../../styling'
 type Props = { os?: Ios; targetDevice: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
-  const { globalError, device } = useSelector((state: ApplicationState) => ({
+  const { globalError, device, links } = useSelector((state: ApplicationState) => ({
     globalError: state.backend.globalError,
     device: getDevices(state).find(d => d.id === targetDevice.uid),
+    links: getLinks(state, targetDevice.uid),
   }))
-  const location = useLocation()
   const history = useHistory()
   const css = useStyles()
 
   useEffect(() => {
-    if (device) {
-      if (location.pathname.includes('/devices')) {
-        history.push(`/devices/${device.id}/edit`)
-      } else {
-        history.push('settings/setupServices')
-      }
-    }
+    if (device) history.push(links.edit)
   }, [device])
 
-  if (globalError) history.push('/settings')
+  if (globalError) history.push(links.setup)
 
   return (
     <Container header={<Breadcrumbs />} integrated>

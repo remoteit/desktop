@@ -36,7 +36,7 @@ mutation query($emails: [String!]!, $action: SharingAction) {
 }
 `
 
-export async function graphQLSetAttributes(attributes: ILookup, id: String) {
+export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, id: String) {
   return await graphQLRequest(SET_ATTRIBUTES, { ...attributes, serviceId: id })
 }
 

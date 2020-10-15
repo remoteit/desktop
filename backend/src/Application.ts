@@ -12,7 +12,6 @@ export default class Application {
   public pool: ConnectionPool
 
   constructor() {
-    Logger.info('Application starting up!')
     this.pool = new ConnectionPool()
     this.constructorSync()
   }

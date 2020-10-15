@@ -9,6 +9,8 @@ import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { getDevices } from '../../models/accounts'
 import { Container } from '../../components/Container'
+import { isRemoteUI } from '../../helpers/uiHelper'
+import { getLinks } from '../../helpers/routeHelper'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
@@ -18,7 +20,9 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 type Props = { os?: Ios }
 
 export const SetupDevice: React.FC<Props> = ({ os }) => {
-  const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
+  const { hostname, loading, nameBlacklist, links, remoteUI } = useSelector((state: ApplicationState) => ({
+    links: getLinks(state),
+    remoteUI: isRemoteUI(state),
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost,
     nameBlacklist: getDevices(state)
@@ -48,7 +52,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   }, [])
 
   return (
-    <Container header={<Breadcrumbs />} integrated>
+    <Container header={remoteUI || <Breadcrumbs />} integrated>
       <Body center={true}>
         <Typography variant="body2" align="center" color="textSecondary">
           Register your {osName(os)} for remote access
@@ -58,7 +62,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             if (!name) return
             event.preventDefault()
             backend.registerDevice({ targets: selected, name })
-            history.push('/devices/setupWaiting')
+            history.push(links.waiting)
           }}
         >
           <section className={css.device}>

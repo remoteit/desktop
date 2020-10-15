@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 
-type IApplicationTypeState = ILookup & {
+type IApplicationTypeState = ILookup<IApplicationType[]> & {
   all: IApplicationType[]
 }
 
@@ -36,7 +36,7 @@ export default createModel({
     },
   }),
   reducers: {
-    set(state: IApplicationTypeState, params: ILookup) {
+    set(state: IApplicationTypeState, params: ILookup<IApplicationType[]>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },
   },

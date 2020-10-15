@@ -7,6 +7,7 @@ import { Typography } from '@material-ui/core'
 import { Container } from '../../components/Container'
 import { ServiceForm } from '../../components/ServiceForm'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { getLinks } from '../../helpers/routeHelper'
 import { Title } from '../../components/Title'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
@@ -17,9 +18,12 @@ type Props = {
 }
 
 export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
-  const { setupServicesLimit, setupAdded } = useSelector((state: ApplicationState) => state.ui)
-  const { backend, ui, devices, applicationTypes } = useDispatch<Dispatch>()
-  const { deviceID } = useParams()
+  const { deviceID } = useParams<{ deviceID: string }>()
+  const { setupServicesLimit, setupAdded, links } = useSelector((state: ApplicationState) => ({
+    ...state.ui,
+    links: getLinks(state, deviceID),
+  }))
+  const { backend, ui, applicationTypes } = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
 
@@ -59,7 +63,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
 
             // set route attributes via deferred update
             backend.set({ deferredAttributes: { route: form.route } })
-            history.push(`/devices/${deviceID}/edit`)
+            history.push(links.edit)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
         />

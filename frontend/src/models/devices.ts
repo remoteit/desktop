@@ -5,7 +5,7 @@ import { cleanOrphanConnections, getConnectionIds, mergeConnections } from '../h
 import { platformConfiguration } from '../services/platformConfiguration'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
-import { ApplicationState } from '../store'
+// import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 
@@ -84,14 +84,15 @@ export default createModel({
       if (searched) set({ results: total })
       else set({ total })
 
-      if (append) setDevices({ devices: [...all, ...devices], accountId })
-      else setDevices({ devices, accountId })
-
-      set({ initialized: true, fetching: false, append: false, contacts })
-      // @TODO pull contacts out into it's own model / request on page load
+      // awaiting setDevices is critical for accurate initialized state
+      if (append) await setDevices({ devices: [...all, ...devices], accountId })
+      else await setDevices({ devices, accountId })
 
       if (!error) cleanOrphanConnections()
-      platformConfiguration(globalState)
+      platformConfiguration()
+
+      // @TODO pull contacts out into it's own model / request on page load
+      set({ initialized: true, fetching: false, append: false, contacts })
     },
 
     /*
@@ -163,7 +164,6 @@ export default createModel({
     },
 
     async renameDevice(device: IDevice) {
-      console.log('DEVICE RENAME', device.name)
       dispatch.accounts.setDevice({ id: device.id, device })
       dispatch.devices.rename(device)
     },

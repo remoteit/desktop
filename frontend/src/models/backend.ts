@@ -5,7 +5,7 @@ import { DEFAULT_TARGET } from '../shared/constants'
 import { emit } from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 
-type IBackendState = ILookup & {
+type IBackendState = ILookup<any> & {
   connections: IConnection[]
   device: ITargetDevice
   targets: ITarget[]
@@ -70,7 +70,7 @@ export default createModel({
       const { ui, backend, devices } = dispatch
       const { device } = globalState.backend
 
-      if (targetDevice.uid !== device.uid) {
+      if (targetDevice?.uid !== device.uid) {
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
           await devices.fetch()
           ui.set({
@@ -139,7 +139,7 @@ export default createModel({
   }),
 
   reducers: {
-    set(state: IBackendState, params: ILookup) {
+    set(state: IBackendState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
     },
 

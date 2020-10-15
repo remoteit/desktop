@@ -1,7 +1,4 @@
 import { graphQLRequest } from './graphQL'
-import { removeDeviceName } from '../shared/nameHelper'
-import { LEGACY_ATTRIBUTES } from '../shared/constants'
-import { updateConnections } from '../helpers/connectionHelper'
 
 const LOG_SELECT_FOR_DEVICE = `{
   

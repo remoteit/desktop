@@ -3,7 +3,7 @@ import cli from './cliInterface'
 import lan from './LAN'
 import os from 'os'
 
-export default async function systemInfo<ILookup>() {
+export default async function systemInfo() {
   await lan.getInterfaces()
 
   return {
