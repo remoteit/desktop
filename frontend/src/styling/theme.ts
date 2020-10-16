@@ -28,7 +28,7 @@ const jssTheme: ThemeOptions = {
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
-      sizeSmall: { fontSize: 11, fontWeight: 500, letterSpacing: 1 },
+      sizeSmall: { fontSize: 11, fontWeight: 500, letterSpacing: 1, whiteSpace: 'nowrap' },
     },
     MuiChip: {
       root: { borderRadius: 4, backgroundColor: colors.grayLighter },

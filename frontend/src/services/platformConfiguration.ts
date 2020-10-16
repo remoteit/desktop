@@ -1,13 +1,13 @@
 import { store } from '../store'
 import { getOwnDevices } from '../models/accounts'
-import { TARGET_PLATFORMS } from '../components/TargetPlatform'
+import { getTargetPlatform } from '../helpers/platformHelper'
 
 export function platformConfiguration() {
   const state = store.getState()
   const all = getOwnDevices(state)
   const targetDevice: ITargetDevice = state.backend.device
   const thisDevice = all.find(d => d.id === targetDevice.uid)
-  const targetPlatform = TARGET_PLATFORMS[thisDevice?.targetPlatform || -1]
+  const targetPlatform = getTargetPlatform(thisDevice)
 
   if (targetPlatform === 'AWS') {
     store.dispatch.ui.set({

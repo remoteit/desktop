@@ -1,25 +1,8 @@
 import React from 'react'
+import { TARGET_PLATFORMS } from '../../helpers/platformHelper'
 import { Tooltip, Box } from '@material-ui/core'
 import { FontSize } from '../../styling'
 import { Icon } from '../Icon'
-
-type ITargetPlatform = { [index: number]: string }
-
-export const TARGET_PLATFORMS: ITargetPlatform = {
-  0: 'Windows',
-  5: 'Windows Desktop',
-  10: 'Windows Server',
-  256: 'Mac',
-  768: 'Unix',
-  769: 'Linux',
-  1072: 'Raspberry Pi',
-  1075: 'Remoteit Pi',
-  1076: 'Remoteit Pi Lite',
-  1120: 'Debian Linux',
-  1185: 'AWS',
-  1200: 'Linux ARM',
-  65535: 'Unknown',
-}
 
 export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: boolean; label?: boolean }> = ({
   id,

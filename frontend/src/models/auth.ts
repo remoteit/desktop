@@ -77,9 +77,10 @@ export default createModel({
     async authenticated(_: void, rootState: any) {
       if (rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
-        dispatch.applicationTypes.fetch()
+        await dispatch.licensing.fetch()
         await dispatch.accounts.init()
         await dispatch.devices.fetch()
+        dispatch.applicationTypes.fetch()
       }
     },
     async signInError(error: string) {
