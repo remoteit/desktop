@@ -89,49 +89,12 @@ export default createModel({
     },
     async parse(data: any) {
       if (!data) return
-      // dispatch.licensing.set({
-      //   licenses: data.licenses.map((l: any) => ({
-      //     id: l.id,
-      //     created: new Date(l.created),
-      //     updated: new Date(l.updated),
-      //     expiration: new Date(l.expiration),
-      //     valid: false,
-      //     value: l.value,
-      //     plan: {
-      //       id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
-      //       name: 'TRIAL',
-      //       description: 'Limited Trial',
-      //       duration: 'P30D',
-      //       product: {
-      //         id: '55d9e884-05fd-11eb-bda8-021f403e8c27',
-      //         name: 'remote.it for AWS',
-      //         description: 'remote.it for AWS',
-      //         provider: 'AWS',
-      //       },
-      //     },
-      //   })),
-      //   limits: [
-      //     {
-      //       name: 'aws-evaluation',
-      //       value: 'P7D',
-      //       actual: null,
-      //     },
-      //     {
-      //       name: 'aws-services',
-      //       value: 30,
-      //       actual: 51,
-      //     },
-      //   ],
-      // })
       dispatch.licensing.set({
         licenses: data.licenses.map((l: any) => ({
-          id: l.id,
+          ...l,
           created: new Date(l.created),
           updated: new Date(l.updated),
           expiration: new Date(l.expiration),
-          valid: l.valid,
-          value: l.value,
-          plan: l.plan,
         })),
         limits: data.limits,
       })

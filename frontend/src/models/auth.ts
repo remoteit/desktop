@@ -98,10 +98,11 @@ export default createModel({
     async signedOut(_: void, rootState: any) {
       await rootState.auth.authService.signOut()
       window.localStorage.removeItem('amplify-signin-with-hostedUI')
-      dispatch.backend.set({ connections: [] })
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
-      dispatch.devices.reset()
+      dispatch.accounts.set({ devices: [] })
+      dispatch.backend.set({ connections: [] })
+      dispatch.devices.set({ query: '', filter: 'all', initialized: false })
       dispatch.logs.reset()
       dispatch.auth.setAuthenticated(false)
       dispatch.auth.setBackendAuthenticated(false)
