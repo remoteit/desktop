@@ -2,13 +2,14 @@ import debug from 'debug'
 import cli from './cliInterface'
 import electronInterface from './electronInterface'
 import remoteitInstaller from './remoteitInstaller'
+import environment from './environment'
+import PortScanner from './PortScanner'
 import Connection from './Connection'
+import JSONFile from './JSONFile'
 import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
-import environment from './environment'
-import PortScanner from './PortScanner'
-import JSONFile from './JSONFile'
+import user from './User'
 
 const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
@@ -26,6 +27,9 @@ export default class ConnectionPool {
 
   constructor() {
     this.connectionsFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
+  }
+
+  init() {
     const connections: IConnection[] = this.connectionsFile.read() || []
 
     Logger.info('Initializing connections pool', { length: connections.length })
@@ -46,7 +50,7 @@ export default class ConnectionPool {
 
   // Sync with CLI
   check = async () => {
-    if (!remoteitInstaller.isCliCurrent()) return
+    if (!remoteitInstaller.isCliCurrent() || !user.signedIn) return
 
     await cli.updateConnectionStatus()
 
@@ -142,16 +146,14 @@ export default class ConnectionPool {
 
   clearAll = async () => {
     Logger.info('CLEARING ALL CONNECTIONS')
-    if (this.pool.length) {
-      await this.pool.forEach(async c => await c.forget())
-      this.updated()
-    }
     this.pool = []
+    this.updated()
     this.connectionsFile.remove()
   }
 
   updated = () => {
     const json = this.toJSON()
+    if (!user.signedIn) return
     this.connectionsFile.write(json)
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
@@ -190,5 +192,4 @@ export default class ConnectionPool {
       return result
     }, [])
   }
-
 }

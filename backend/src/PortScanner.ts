@@ -1,8 +1,6 @@
 import net from 'net'
 import debug from 'debug'
 import Logger from './Logger'
-// import portfinder from 'portfinder'
-// import ConnectionPool from '../connectd/ConnectionPool'
 
 const d = debug('r3:desktop:PortScanner')
 
