@@ -38,8 +38,8 @@ export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
       >
         <LicensingTitle count={serviceLimit?.value} />
         <em>
-          You currently have {serviceLimit?.actual} services, {serviceLimit?.actual - serviceLimit?.value} are
-          unlicensed.
+          You currently have {serviceLimit?.actual} {serviceLimit?.actual === 1 ? 'service' : 'services'},{' '}
+          {serviceLimit?.actual - serviceLimit?.value} are unlicensed.
         </em>
       </Notice>
     )
