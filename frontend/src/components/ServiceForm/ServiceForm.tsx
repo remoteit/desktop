@@ -38,10 +38,11 @@ export const ServiceForm: React.FC<Props> = ({
   )
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget & IService['attributes']>({ ...target, name, route: route || routingLock })
+  const [form, setForm] = useState<ITarget & IService['attributes']>({ ...target, name, route: routingLock || route })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
-
+  console.log('ROUTING LOCK', routingLock)
+  console.log('FORM', form)
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1, name: form.name || appType.description })}>
       <List>
@@ -135,7 +136,7 @@ export const ServiceForm: React.FC<Props> = ({
           <TextField
             select
             label="Routing"
-            value={routingLock || form.route}
+            value={form.route}
             disabled={!!routingLock || disabled}
             variant="filled"
             onChange={event => {
