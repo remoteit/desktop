@@ -1,4 +1,4 @@
-import { createStyles, Drawer, makeStyles, Theme, Typography } from '@material-ui/core'
+import { createStyles, makeStyles, Theme, Typography } from '@material-ui/core'
 import React from 'react'
 import { spacing } from '../../styling'
 import { FilterSelector } from './FilterSelector'
@@ -11,7 +11,6 @@ const sortList = [
   { value: 'name', filterName: 'Name' },
   { value: 'state', filterName: 'State' },
   { value: 'color', filterName: 'Color' },
-  { value: 'owner', filterName: 'Owner' },
 ]
 const deviceList = [
   { value: 'all', filterName: 'All' },
@@ -24,9 +23,9 @@ const ownerList = [
   { value: 'others', filterName: 'Others' },
 ]
 const sortFilter = [
-  { title: 'Sort', filters: sortList },
-  { title: 'Device State', filters: deviceList },
-  { title: 'Owner', filters: ownerList },
+  { title: 'Sort', options: sortList },
+  { title: 'Device State', options: deviceList },
+  { title: 'Owner', options: ownerList },
 ]
 
 export function FilterDrawerContent({ open, close }: { open: boolean; close: (state: boolean) => void }): JSX.Element {
@@ -49,15 +48,7 @@ export function FilterDrawerContent({ open, close }: { open: boolean; close: (st
   }
 
   return (
-    <Drawer
-      className={css.drawer}
-      variant="persistent"
-      anchor="right"
-      open={open}
-      css={{
-        paper: css.drawerPaper,
-      }}
-    >
+    <div className={open ? css.drawer : css.drawerClose}>
       <div className={css.drawerHeader}>
         <Typography className={css.filter}>
           <Title>Filter</Title>
@@ -68,32 +59,25 @@ export function FilterDrawerContent({ open, close }: { open: boolean; close: (st
         <CloseButton onClick={handleClose} />
       </div>
       {sortFilter.map((f, index) => {
-        return <FilterSelector subtitle={f.title} filterList={f.filters} key={index} />
+        return <FilterSelector subtitle={f.title} filterList={f.options} key={index} />
       })}
-    </Drawer>
+    </div>
   )
 }
-
-const drawerWidth = 240
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     drawer: {
-      width: drawerWidth,
-      flexShrink: 0,
-      zIndex: 0,
+      transition: 'width 200ms ease-out',
+      borderLeft: '1px solid #dbdbdb',
     },
-    drawerPaper: {
-      width: drawerWidth,
-      height: 'calc(100% - 64px)',
-      top: 64,
+    drawerClose: {
+      display: 'none',
     },
     drawerHeader: {
       display: 'flex',
       alignItems: 'center',
-      ...theme.mixins.toolbar,
       justifyContent: 'flex-start',
-      paddingTop: 40,
       marginBottom: 30,
       top: 24,
       position: 'relative',

@@ -140,6 +140,5 @@ const useStyles = makeStyles({
     minHeight: 62,
     justifyContent: 'space-evenly',
     '& .MuiButtonBase-root': { maxWidth: '18%' },
-    zIndex: 1000,
   },
 })

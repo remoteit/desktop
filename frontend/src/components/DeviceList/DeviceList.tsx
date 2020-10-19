@@ -14,11 +14,11 @@ import { Body } from '../Body'
 export interface DeviceListProps {
   devices?: IDevice[]
   connections: { [deviceID: string]: IConnection[] }
-  handleDrawer: (state: boolean) => void
+  onOpen: (state: boolean) => void
   open: boolean
 }
 
-export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {}, handleDrawer, open }) => {
+export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {}, onOpen, open }) => {
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
   const { myDevice, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
@@ -30,90 +30,78 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
 
   return (
     <div className={css.root}>
-      <List
-        className={clsx(css.content, {
-          [css.contentShift]: open,
-        })}
-      >
-        {registeredId ? (
-          loggedInUser &&
-          (myDevice ? (
-            <>
-              <DeviceListItem
-                key={registeredId}
-                device={myDevice}
-                connections={connections[registeredId]}
-                thisDevice={true}
-                setContextMenu={setContextMenu}
-              />
-              <Divider />
-            </>
+      <div className={css.deviceList}>
+        <List>
+          {registeredId ? (
+            loggedInUser &&
+            (myDevice ? (
+              <>
+                <DeviceListItem
+                  key={registeredId}
+                  device={myDevice}
+                  connections={connections[registeredId]}
+                  thisDevice={true}
+                  setContextMenu={setContextMenu}
+                />
+                <Divider />
+              </>
+            ) : (
+              <>
+                <ListItem>
+                  <Notice>This device is registered to another user</Notice>
+                </ListItem>
+                <Divider />
+              </>
+            ))
           ) : (
             <>
               <ListItem>
                 <Notice>This device is not registered to you.</Notice>
               </ListItem>
+              <DeviceSetupItem />
               <Divider />
             </>
-          ))
-        ) : (
-          <>
-            <DeviceSetupItem />
-            <Divider />
-          </>
-        )}
-        {devices.length ? (
-          devices.map(
-            device =>
-              device.id !== myDevice?.id && (
-                <DeviceListItem
-                  key={device.id}
-                  device={device}
-                  connections={connections[device.id]}
-                  setContextMenu={setContextMenu}
-                />
-              )
-          )
-        ) : (
-          <Body center>
-            <Typography variant="body1" color="textSecondary">
-              Not devices found
-            </Typography>
-          </Body>
-        )}
-      </List>
-      <LoadMore />
-      <ServiceContextualMenu
-        el={contextMenu.el}
-        serviceID={contextMenu.serviceID}
-        setEl={el => setContextMenu({ ...contextMenu, el })}
-      />
-      <FilterDrawerContent open={open} close={handleDrawer} />
+          )}
+          {devices.length ? (
+            devices.map(
+              device =>
+                device.id !== myDevice?.id && (
+                  <DeviceListItem
+                    key={device.id}
+                    device={device}
+                    connections={connections[device.id]}
+                    setContextMenu={setContextMenu}
+                  />
+                )
+            )
+          ) : (
+            <Body center>
+              <Typography variant="body1" color="textSecondary">
+                Not devices found
+              </Typography>
+            </Body>
+          )}
+        </List>
+        <LoadMore />
+        <ServiceContextualMenu
+          el={contextMenu.el}
+          serviceID={contextMenu.serviceID}
+          setEl={el => setContextMenu({ ...contextMenu, el })}
+        />
+      </div>
+      <FilterDrawerContent open={open} close={onOpen} />
     </div>
   )
 }
 
-const drawerWidth = 240
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       display: 'flex',
+      flexDirection: 'row',
     },
-    content: {
+    deviceList: {
       flexGrow: 1,
-      padding: theme.spacing(3),
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      marginRight: -drawerWidth,
-    },
-    contentShift: {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginRight: 0,
     },
   })
 )

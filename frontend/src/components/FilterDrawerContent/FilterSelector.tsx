@@ -70,15 +70,9 @@ export function FilterSelector({
   }
 
   function TheFilter(props: { value: string; filterName: string }) {
-    if (props.value === owner || props.value === filter || props.value === sort) {
-      return (
-        <Typography color="primary">
-          <ListItemText className={css.name} primary={props.filterName} />
-        </Typography>
-      )
-    }
+    const selected = props.value === owner || props.value === filter || props.value === sort
     return (
-      <Typography>
+      <Typography color={selected ? 'primary' : undefined}>
         <ListItemText className={css.name} primary={props.filterName} />
       </Typography>
     )

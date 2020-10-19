@@ -13,7 +13,6 @@ import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
-import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 
 export const DevicesPage = () => {
   const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
@@ -28,7 +27,7 @@ export const DevicesPage = () => {
 
   const [open, setOpen] = useState(false)
 
-  const handleDrawer = (state: boolean) => {
+  const onOpen = (state: boolean) => {
     setOpen(state)
   }
 
@@ -46,7 +45,7 @@ export const DevicesPage = () => {
             <SearchField />
             <AccountSelect />
             <RefreshButton />
-            <FilterButton handleDrawer={handleDrawer} open={open} />
+            <FilterButton onOpen={onOpen} open={open} />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>
@@ -57,7 +56,7 @@ export const DevicesPage = () => {
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={devices} connections={connections} handleDrawer={handleDrawer} open={open} />
+        <DeviceList devices={devices} connections={connections} onOpen={onOpen} open={open} />
       )}
     </Container>
   )
