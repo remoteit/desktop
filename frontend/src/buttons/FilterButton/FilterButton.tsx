@@ -11,7 +11,7 @@ export const FilterButton = ({ onOpen, open }: { onOpen: (state: boolean) => voi
     <>
       <Tooltip title="Show filter panel">
         <IconButton onClick={handleChange}>
-          <Icon name="filter" color="grayDarker" size="base" type="regular" />
+          <Icon name="filter" color="primary" size="base" type="regular" />
         </IconButton>
       </Tooltip>
     </>

@@ -1,5 +1,4 @@
 import React from 'react'
-import clsx from 'clsx'
 import { useSelector } from 'react-redux'
 import { DeviceListItem } from '../DeviceListItem'
 import { getAccountId, getOwnDevices } from '../../models/accounts'
