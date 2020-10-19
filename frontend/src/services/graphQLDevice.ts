@@ -72,7 +72,7 @@ const DEVICE_SELECT = `
 
 export async function graphQLFetchDevices({ size, from, state, sort, owner, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!], $size: Int, $from: Int, $name: String, $state: String, $account: String, $sort: String, $owner: Boolean) {
+    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $account: String, $sort: String, $owner: Boolean) {
         login {
           id
           account(id: $account) {
