@@ -64,7 +64,7 @@ export class User {
     return user
   }
 
-  signOut = async () => {
+  signOut = () => {
     Logger.info('SIGN OUT USER')
 
     this.username = ''

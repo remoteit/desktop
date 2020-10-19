@@ -1,0 +1,10 @@
+{
+  "manufacturer": {
+    "id": "remote.it"
+  },
+  "product": {
+    "id": "CloudAMI",
+    "version": "0.0.1-alpha",
+    "platform": 1185
+  }
+}

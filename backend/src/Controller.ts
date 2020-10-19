@@ -132,6 +132,7 @@ class Controller {
 
   initBackend = async () => {
     cli.read()
+    this.pool.init()
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
@@ -160,8 +161,8 @@ class Controller {
 
   clearAll = async () => {
     Logger.info('CLEAR CREDENTIALS')
+    await user.clearAll()
     await this.pool.clearAll()
-    user.clearAll()
   }
 
   signOutComplete = () => {
@@ -174,10 +175,10 @@ class Controller {
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
     this.uninstallInitiated = true
-    await this.pool.clearAll()
     await cli.unInstall()
     await binaryInstaller.uninstall()
     await user.signOut()
+    await this.pool.clearAll()
     //frontend will emit user/sign-out-complete and then we will call exit
   }
 

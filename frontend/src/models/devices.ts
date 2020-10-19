@@ -148,12 +148,6 @@ export default createModel({
       return [devices, connections, total, id, contacts, error]
     },
 
-    async reset() {
-      dispatch.accounts.setDevices({ devices: [] })
-      dispatch.backend.set({ connections: [] })
-      dispatch.devices.set({ query: '', filter: 'all', initialized: false })
-    },
-
     async renameService(service: IService, globalState: any) {
       let device = getDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return

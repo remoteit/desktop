@@ -2,7 +2,9 @@ import React, { useEffect } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { LicensingNotice } from '../../components/LicensingNotice'
 import { REGEX_LAST_PATH } from '../../shared/constants'
+import { getAllDevices } from '../../models/accounts'
 import { Typography } from '@material-ui/core'
 import { Container } from '../../components/Container'
 import { ServiceForm } from '../../components/ServiceForm'
@@ -19,8 +21,9 @@ type Props = {
 
 export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { setupServicesLimit, setupAdded, links } = useSelector((state: ApplicationState) => ({
+  const { setupServicesLimit, setupAdded, device, links } = useSelector((state: ApplicationState) => ({
     ...state.ui,
+    device: getAllDevices(state).find(d => d.id === deviceID),
     links: getLinks(state, deviceID),
   }))
   const { backend, ui, applicationTypes } = useDispatch<Dispatch>()
@@ -43,6 +46,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Add service</Title>
           </Typography>
+          <LicensingNotice device={device} context="add" />
         </>
       }
     >

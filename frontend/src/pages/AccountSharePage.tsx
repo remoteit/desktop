@@ -47,7 +47,7 @@ export const AccountSharePage = () => {
       {!!emails.length && (
         <Notice gutterBottom>
           Granting access to all the devices and services you ({user?.email}) own. <br />
-          <i>Scripting will also be allowed when available in desktop.</i>
+          <em>Scripting will also be allowed when available in desktop.</em>
         </Notice>
       )}
       <Button

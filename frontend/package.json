@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "2.8.0-alpha.9",
+  "version": "2.8.0-alpha.10",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "@aws-amplify/cache": "^3.1.30",
     "@date-io/date-fns": "^1.3.13",
     "@kevinwolf/formal-web": "^0.1.3",
-    "@material-ui/core": "^4.9.14",
+    "@material-ui/core": "^4.11.0",
     "@material-ui/pickers": "^3.2.10",
     "@rematch/core": "^1.3.0",
     "@rematch/immer": "^1.2.0",

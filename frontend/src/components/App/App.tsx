@@ -104,7 +104,7 @@ export const App: React.FC = () => {
     )
 
   const menuItems = [
-    { label: 'Configuration', path: '/configure', icon: 'hdd', show: remoteUI },
+    { label: 'This Device', path: '/configure', icon: 'hdd', show: remoteUI },
     { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
     { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
     { label: 'Settings', path: '/settings', icon: 'cog', show: true },

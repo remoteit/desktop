@@ -21,14 +21,15 @@ import { getAllDevices } from '../../models/accounts'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 // import { ListItemSetting } from '../../components/ListItemSetting'
 import { AddServiceButton } from '../../buttons/AddServiceButton'
-import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { ListItemLocation } from '../../components/ListItemLocation'
-import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
 import { ServiceMiniState } from '../../components/ServiceMiniState'
+import { DeviceNameSetting } from '../../components/DeviceNameSetting'
+import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
+import { LicensingNotice } from '../../components/LicensingNotice'
 import { DeleteButton } from '../../buttons/DeleteButton'
-import { getLinks } from '../../helpers/routeHelper'
 import { isRemoteUI } from '../../helpers/uiHelper'
+import { getLinks } from '../../helpers/routeHelper'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { fontSizes } from '../../styling'
@@ -47,7 +48,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
     device: getAllDevices(state).find((d: IDevice) => d.id === deviceID),
     setupAddingService: state.ui.setupAddingService,
     remoteUI: isRemoteUI(state),
-    links: getLinks(state, targetDevice.uid),
+    links: getLinks(state, deviceID),
   }))
 
   useEffect(() => {
@@ -108,6 +109,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
             <AddServiceButton device={device} thisDevice={thisDevice} link={links.add} />
           </Typography>
           <List>
+            {thisDevice && <LicensingNotice device={device} />}
             {thisDevice && setupAddingService && (
               <ListItem disabled button dense>
                 <ListItemIcon>
