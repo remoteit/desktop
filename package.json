@@ -110,15 +110,11 @@
     },
     "extraResources": [
       {
-        "from": "./backend/src/cli-version.txt",
+        "from": "./backend/src/cli-version.json",
         "to": "./"
       },
       {
-        "from": "./bin/CLI/remoteit64.exe",
-        "to": "./"
-      },
-      {
-        "from": "./bin/CLI/remoteit86.exe",
+        "from": "./bin/CLI/",
         "to": "./"
       }
     ],

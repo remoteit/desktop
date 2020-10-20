@@ -86,9 +86,9 @@ The Desktop installs and depends on the remote.it CLI tools.
 At startup they are installed here:
 
 ```
-Mac      /usr/local/bin/
+Mac      /Applications/Remoteit.app/Contents/Resources/mac
 Linux    /usr/bin/
-Windows  C:\Program Files\remoteit-bin\
+Windows  C:/Program Files/remoteit/resources
 ```
 
 **Configuration and log files**

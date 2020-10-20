@@ -11,6 +11,9 @@ import https from 'https'
 import fs from 'fs'
 import path from 'path'
 import { existsSync } from 'fs'
+import tmp from 'tmp'
+
+tmp.setGracefulCleanup()
 
 const d = debug('installer')
 
@@ -20,6 +23,12 @@ interface InstallerArgs {
   name: string
   repoName: string
   version: string
+  versionMuxer: string
+  versionDemuxer: string
+  versionConnectd: string
+  baseUrl: string
+  cliUrl: string
+  connectdUrl: string
   dependencies: string[]
 }
 
@@ -27,9 +36,18 @@ export default class Installer {
   name: string
   repoName: string
   version: string
+  versionMuxer: string
+  versionDemuxer: string
+  versionConnectd: string
+  baseUrl: string
+  cliUrl: string
+  connectdUrl: string
   installedVersion?: string
   dependencies: string[]
   tempFile?: string
+  tempFileMuxer?: string
+  tempFileDemuxer?: string
+  tempFileConnectd?: string
 
   static EVENTS = {
     progress: 'binary/install/progress',
@@ -39,9 +57,16 @@ export default class Installer {
   }
 
   constructor(args: InstallerArgs) {
+    6
     this.name = args.name
     this.repoName = args.repoName
     this.version = args.version
+    this.versionMuxer = args.versionMuxer
+    this.versionDemuxer = args.versionDemuxer
+    this.versionConnectd = args.versionConnectd
+    this.baseUrl = args.baseUrl
+    this.cliUrl = args.cliUrl
+    this.connectdUrl = args.connectdUrl
     this.dependencies = args.dependencies
   }
 
@@ -73,7 +98,7 @@ export default class Installer {
 
   toJSON() {
     return {
-      path: this.binaryPath(),
+      path: this.binaryPathCLI(),
       version: this.version,
       name: this.name,
       installedVersion: this.installedVersion,
@@ -126,14 +151,23 @@ export default class Installer {
    * Download the binary, move it to the PATH on the user's
    * system and then make it writable.
    */
-  install(tempDir: string, cb?: ProgressCallback) {
+  install(cb?: ProgressCallback) {
     Logger.info('INSTALLING BINARY', {
       name: this.name,
       repoName: this.repoName,
       version: this.version,
     })
+    let tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
+    this.tempFile = path.join(tempDir.name, this.binaryName)
 
-    this.tempFile = path.join(tempDir, this.binaryName)
+    tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
+    this.tempFileMuxer = path.join(tempDir.name, this.muxerName)
+
+    tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
+    this.tempFileDemuxer = path.join(tempDir.name, this.demuxerName)
+
+    tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
+    this.tempFileConnectd = path.join(tempDir.name, this.connectdName)
 
     // Download the binary from Github
     return this.download(cb)
@@ -152,12 +186,60 @@ export default class Installer {
     return name + platform
   }
 
-  binaryPath(admin?: boolean) {
+  get downloadFileNameMuxer() {
+    let platform = ''
+    if (environment.isWindows32) platform = 'muxer.x86-win.exe'
+    else if (environment.isWindows) platform = 'muxer.x86_64-64.exe'
+    else if (environment.isMac) platform = 'muxer.x86_64-osx'
+    return platform
+  }
+
+  get downloadFileNameDemuxer() {
+    let platform = ''
+    if (environment.isWindows32) platform = 'demuxer.x86-win.exe'
+    else if (environment.isWindows) platform = 'demuxer.x86_64-64.exe'
+    else if (environment.isMac) platform = 'demuxer.x86_64-osx'
+    return platform
+  }
+
+  get downloadFileNameConnectd() {
+    let platform = ''
+    if (environment.isWindows32) platform = 'connectd.x86-win.exe'
+    else if (environment.isWindows) platform = 'connectd.x86_64-64.exe'
+    else if (environment.isMac) platform = 'connectd.x86_64-osx'
+    return platform
+  }
+
+  binaryPathCLI(admin?: boolean) {
     return path.join(environment.binPath, this.binaryName)
+  }
+
+  binaryPathMuxer(admin?: boolean) {
+    return path.join(environment.binPath, this.muxerName)
+  }
+
+  binaryPathDemuxer(admin?: boolean) {
+    return path.join(environment.binPath, this.demuxerName)
+  }
+
+  binaryPathConnectd(admin?: boolean) {
+    return path.join(environment.binPath, this.connectdName)
   }
 
   get binaryName() {
     return environment.isWindows ? this.name + '.exe' : this.name
+  }
+
+  get muxerName() {
+    return environment.isWindows ? this.dependencies[1] + '.exe' : this.dependencies[1]
+  }
+
+  get demuxerName() {
+    return environment.isWindows ? this.dependencies[2] + '.exe' : this.dependencies[2]
+  }
+
+  get connectdName() {
+    return environment.isWindows ? this.dependencies[0] + '.exe' : this.dependencies[0]
   }
 
   get dependencyNames() {
@@ -166,57 +248,72 @@ export default class Installer {
 
   private download(progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url =
-        CLI_DOWNLOAD === 'DEV'
-          ? `https://dev-cli.s3-us-west-2.amazonaws.com/v${this.version}/${this.downloadFileName}`
-          : `https://downloads.remote.it/cli/v${this.version}/${this.downloadFileName}`
+      const url_cli =
+        CLI_DOWNLOAD === 'DEV' ? 'https://dev-cli.s3-us-west-2.amazonaws.com/v' : 'https://downloads.remote.it/cli/v'
 
-      Logger.info('DOWNLOADING', { url })
+      const baseURL = 'https://downloads.remote.it/multiport/v'
+
+      const url = `${url_cli}${this.version}/${this.downloadFileName}`
+      const muxer = `${baseURL}${this.versionMuxer}/${this.downloadFileNameMuxer}`
+      const demuxer = `${baseURL}${this.versionDemuxer}/${this.downloadFileNameDemuxer}`
+      const connectd = `https://github.com/remoteit/connectd/releases/download/v${this.versionConnectd}/${this.downloadFileNameConnectd}`
+
       progress(0)
 
-      https
-        .get(url, res1 => {
-          if (!res1 || !res1.headers) {
-            Logger.warn('No response from download URL', { headers: res1.headers })
-            return reject(new Error('No response from download URL!'))
-          }
-          if (res1.headers.location) {
-            d('LOCATION FOUND', { location: res1.headers.location })
-            try {
-              https
-                .get(res1.headers.location, res2 => {
-                  if (!res2 || !res2.headers || !res2.headers['content-length'])
-                    return reject(new Error('No response from location URL!'))
-                  stream(res2)
-                })
-                .on('error', reject)
-            } catch (e) {
-              Logger.warn('Download file not found', { headers: res1.headers })
-              return reject(new Error('Download file not found'))
-            }
-          } else if (res1.headers['content-length']) {
-            stream(res1)
-          } else {
-            Logger.warn('No download header in download URL', { headers: res1.headers })
-            return reject(new Error('No download header in download URL!'))
-          }
-        })
-        .on('error', reject)
-
-      const stream = (res: any) => {
-        const total = parseInt(res.headers['content-length'], 10)
-        let completed = 0
-        if (!this.tempFile) return reject(new Error('No temp file path set'))
-        const w = fs.createWriteStream(this.tempFile)
-        res.pipe(w)
-        res.on('data', (data: any) => {
-          completed += data.length
-          progress(completed / total)
-        })
-        res.on('progress', progress)
-        res.on('error', reject)
-        res.on('end', resolve)
-      }
+      Logger.info('DOWNLOADING CLI', { url })
+      this.getFileWeb(url, resolve, reject, progress, this.tempFile)
+      Logger.info('DOWNLOADING MUXER', { muxer })
+      this.getFileWeb(muxer, resolve, reject, progress, this.tempFileMuxer)
+      Logger.info('DOWNLOADING DEMUXER', { demuxer })
+      this.getFileWeb(demuxer, resolve, reject, progress, this.tempFileDemuxer)
+      Logger.info('DOWNLOADING CONNECTD', { connectd })
+      this.getFileWeb(connectd, resolve, reject, progress, this.tempFileConnectd)
     })
+  }
+
+  private getFileWeb(url: string, resolve: any, reject: any, progress: any, temp: any) {
+    https
+      .get(url, res1 => {
+        if (!res1 || !res1.headers) {
+          Logger.warn('No response from download URL', { headers: res1.headers })
+          return reject(new Error('No response from download URL!'))
+        }
+        if (res1.headers.location) {
+          d('LOCATION FOUND', { location: res1.headers.location })
+          try {
+            https
+              .get(res1.headers.location, res2 => {
+                if (!res2 || !res2.headers || !res2.headers['content-length'])
+                  return reject(new Error('No response from location URL!'))
+                stream(res2)
+              })
+              .on('error', reject)
+          } catch (e) {
+            Logger.warn('Download file not found', { headers: res1.headers })
+            return reject(new Error('Download file not found'))
+          }
+        } else if (res1.headers['content-length']) {
+          stream(res1)
+        } else {
+          Logger.warn('No download header in download URL', { headers: res1.headers })
+          return reject(new Error('No download header in download URL!'))
+        }
+      })
+      .on('error', reject)
+
+    const stream = (res: any) => {
+      const total = parseInt(res.headers['content-length'], 10)
+      let completed = 0
+      if (!temp) return reject(new Error('No temp file path set'))
+      const w = fs.createWriteStream(temp)
+      res.pipe(w)
+      res.on('data', (data: any) => {
+        completed += data.length
+        progress(completed / total)
+      })
+      res.on('progress', progress)
+      res.on('error', reject)
+      res.on('end', resolve)
+    }
   }
 }

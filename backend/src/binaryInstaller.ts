@@ -40,33 +40,36 @@ class BinaryInstaller {
 
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
-      var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
-
       // Stop and remove old binaries
-      await this.migrateBinaries(installer.binaryPath())
+      await this.migrateBinaries(installer.binaryPathCLI())
 
       // Download and install binaries
-      await this.download(installer, tmpDir)
+      await this.download(installer)
 
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath()}"`)
-        commands.push(`icacls "${installer.binaryPath()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
+        commands.push(`move /y "${installer.tempFile}" "${installer.binaryPathCLI()}"`)
+        commands.push(`move /y "${installer.tempFileMuxer}" "${installer.binaryPathMuxer()}"`)
+        commands.push(`move /y "${installer.tempFileDemuxer}" "${installer.binaryPathDemuxer()}"`)
+        commands.push(`move /y "${installer.tempFileConnectd}" "${installer.binaryPathConnectd()}"`)
+        commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
       } else {
         if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
-        commands.push(`mv ${installer.tempFile} ${installer.binaryPath()}`)
-        commands.push(`chmod 755 ${installer.binaryPath()}`) // @TODO if this is going in the user folder must have user permissions
+        commands.push(`mv ${installer.tempFile} ${installer.binaryPathCLI()}`)
+        commands.push(`mv ${installer.tempFileMuxer} ${installer.binaryPathMuxer()}`)
+        commands.push(`mv ${installer.tempFileDemuxer} ${installer.binaryPathDemuxer()}`)
+        commands.push(`mv ${installer.tempFileConnectd} ${installer.binaryPathCLI()}`)
+        commands.push(`chmod 755 ${installer.binaryPathCLI()}`) // @TODO if this is going in the user folder must have user permissions
       }
 
-      commands.push(`"${installer.binaryPath()}" ${strings.toolsInstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.serviceUninstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.serviceInstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.signIn()}`)
+      //commands.push(`"${installer.binaryPath()}" ${strings.toolsInstall()}`)
+      commands.push(`"${installer.binaryPathCLI()}" ${strings.serviceUninstall()}`)
+      commands.push(`"${installer.binaryPathCLI()}" ${strings.serviceInstall()}`)
+      commands.push(`"${installer.binaryPathCLI()}" ${strings.signIn()}`)
 
       await commands.exec()
-      tmpDir.removeCallback()
       resolve()
     })
   }
@@ -106,9 +109,9 @@ class BinaryInstaller {
     })
   }
 
-  async download(installer: Installer, tmpDir: tmp.DirResult) {
+  async download(installer: Installer) {
     return installer
-      .install(tmpDir.name, (progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
+      .install((progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
       .catch(error => EventBus.emit(Installer.EVENTS.error, error.message))
   }
 
@@ -124,7 +127,7 @@ class BinaryInstaller {
       const options = { disableGlob: true }
 
       try {
-        rimraf.sync(installer.binaryPath(), options)
+        rimraf.sync(installer.binaryPathCLI(), options)
         rimraf.sync(environment.userPath, options)
       } catch (e) {
         reject(e)

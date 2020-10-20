@@ -9,6 +9,12 @@ import fs from 'fs'
 describe('backend/Installer', () => {
   describe('check', () => {
     const version = '0.37.6'
+    const versionMuxer = '0.37.6'
+    const versionDemuxer = '0.37.6'
+    const versionConnectd = '0.37.6'
+    const baseUrl = 'https://downloads.remote.it/cli/v'
+    const cliUrl = 'https://downloads.remote.it/cli/v'
+    const connectdUrl= 'https://downloads.remote.it/cli/v'
     const outdated = '0.30.1'
     const name = 'remoteit'
 
@@ -23,11 +29,17 @@ describe('backend/Installer', () => {
       installer = new Installer({
         name,
         version,
+        versionMuxer,
+        versionDemuxer,
+        versionConnectd,
+        baseUrl,
+        cliUrl,
+        connectdUrl,
         repoName: 'remoteit/cli',
         dependencies: ['connectd', 'muxer', 'demuxer'],
       })
 
-      path = installer.binaryPath()
+      path = installer.binaryPathCLI()
       prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: environment.version }))
       installSpy = jest.spyOn(binaryInstaller, 'install').mockImplementation()
       eventSpy = jest.spyOn(EventBus, 'emit').mockImplementation()
@@ -118,11 +130,26 @@ describe('backend/Installer', () => {
   describe('isCurrent', () => {
     const name = 'remoteit'
     const version = '0.37.6'
+    const versionMuxer = '0.37.6'
+    const versionDemuxer = '0.37.6'
+    const versionConnectd = '0.37.6'
+    const baseUrl = 'https://downloads.remote.it/cli/v'
+    const cliUrl = 'https://downloads.remote.it/cli/v'
+    const connectdUrl= 'https://downloads.remote.it/cli/v'
 
     let versionSpy: jest.SpyInstance
     let installer: Installer
 
-    beforeAll(() => (installer = new Installer({ name, version, repoName: 'remoteit/cli', dependencies: [] })))
+    beforeAll(() => (installer = new Installer({ 
+      name, 
+      version, 
+      versionMuxer, 
+      versionDemuxer, 
+      versionConnectd,
+      baseUrl,
+      cliUrl,
+      connectdUrl, 
+      repoName: 'remoteit/cli', dependencies: [] })))
     afterEach(() => versionSpy.mockClear())
 
     test('should detect old version', async () => {

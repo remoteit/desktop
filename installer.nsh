@@ -3,10 +3,14 @@
 
 !macro customInstall
     Var /GLOBAL PATH_REMOTE_DIR
+    Var /GLOBAL BINARIES
     Var /GLOBAL REMOTE_CLI_EXE
+    Var /GLOBAL MUXER
+    Var /GLOBAL DEMUXER
+    Var /GLOBAL CONNECTD
 
-    StrCpy $PATH_REMOTE_DIR "C:\Program Files\remoteit-bin"
-    StrCpy $REMOTE_CLI_EXE "$PATH_REMOTE_DIR\remoteit.exe"
+    StrCpy $PATH_REMOTE_DIR "C:\Program Files\remoteit\resources"
+    StrCpy $BINARIES "$INSTDIR\resources\win"
 
     Var /GLOBAL installLog
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
@@ -20,56 +24,23 @@
     
     FileWrite $installLog "$\nInstall (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $installLog "-----------------------------$\r$\n"
-     
-    Var /GLOBAL VERSION
-    FileOpen $4 "$INSTDIR\resources\cli-version.txt" r
-    FileRead $4 $VERSION
-    FileClose $4
 
-    Var /GLOBAL PLATFORM
     ${If} ${RunningX64}
-        StrCpy $PLATFORM "$INSTDIR\resources\remoteit64.exe"
         FileWrite $installLog "- Platform X64$\r$\n"
+        StrCpy $REMOTE_CLI_EXE "$BINARIES\x64\remoteit.exe"
+        StrCpy $MUXER "$BINARIES\x64\muxer.exe"
+        StrCpy $DEMUXER "$BINARIES\x64\demuxer.exe"
+        StrCpy $CONNECTD "$BINARIES\x64\connectd.exe"
     ${Else}
-        StrCpy $PLATFORM "$INSTDIR\resources\remoteit86.exe"
         FileWrite $installLog "- Platform X86$\r$\n"
+        StrCpy $REMOTE_CLI_EXE "$BINARIES\x86\remoteit.exe"
+        StrCpy $MUXER "$BINARIES\x86\muxer.exe"
+        StrCpy $DEMUXER "$BINARIES\x86\demuxer.exe"
+        StrCpy $CONNECTD "$BINARIES\x86\connectd.exe"
     ${EndIf}
-
-    CreateDirectory "$PATH_REMOTE_DIR"
-    Rename "$PLATFORM" "$REMOTE_CLI_EXE"
-    FileWrite $installLog "- Rename $PLATFORM -> $REMOTE_CLI_EXE $\r$\n"
     
     IfFileExists "$REMOTE_CLI_EXE" found_remoteIt not_found_remoteIt
     found_remoteIt:
-        nsExec::ExecToStack /OEM 'powershell "& " $\'"$REMOTE_CLI_EXE$\'"  '
-        Pop $0
-        Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $installLog "- powershell $REMOTE_CLI_EXE     [$0]  $1$\r$\n"
-
-        nsExec::ExecToStack /OEM 'powershell "& " "icacls $\'"$REMOTE_CLI_EXE$\'" /T /C /Q /grant "*S-1-5-32-545:RX" '
-        Pop $0
-        Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $installLog "- icacls $REMOTE_CLI_EXE /T /C /Q /grant *S-1-5-32-545:RX      [$0]  $1$\r$\n"
-
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'"$REMOTE_CLI_EXE$\'" -j tools install --update'
-        Pop $0
-        Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $installLog "- $REMOTE_CLI_EXE -j tools install --update      [$0]  $1$\r$\n" 
 
         nsExec::ExecToStack /OEM 'powershell "& " "$\'"$REMOTE_CLI_EXE$\'" -j service uninstall'
         Pop $0
@@ -91,6 +62,11 @@
         ${EndIf}
         FileWrite $installLog "- $REMOTE_CLI_EXE -j service install     [$0]  $1$\r$\n"
 
+        CopyFiles $REMOTE_CLI_EXE $PATH_REMOTE_DIR
+        CopyFiles $MUXER $PATH_REMOTE_DIR
+        CopyFiles $DEMUXER $PATH_REMOTE_DIR
+        CopyFiles $CONNECTD $PATH_REMOTE_DIR
+
         goto end_of_remoteIt
     not_found_remoteIt:
         ; MessageBox MB_OK "Error file not found: $REMOTE_CLI_EXE"
@@ -108,7 +84,7 @@
     Var /GLOBAL PATH_REMOTE_DIR_U
     Var /GLOBAL REMOTE_CLI_EXE_U
 
-    StrCpy $PATH_REMOTE_DIR_U "C:\Program Files\remoteit-bin"
+    StrCpy $PATH_REMOTE_DIR_U "C:\Program Files\remoteit\resources"
     StrCpy $REMOTE_CLI_EXE_U "$PATH_REMOTE_DIR_U\remoteit.exe"
 
     Var /GLOBAL uninstallLog

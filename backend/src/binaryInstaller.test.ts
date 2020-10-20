@@ -23,7 +23,7 @@ describe('backend/binaryInstaller', () => {
       commandSpy = jest.spyOn(Command.prototype, 'push').mockImplementation()
       downloadSpy = jest
         .spyOn(binaryInstaller, 'download')
-        .mockImplementation((i: Installer, t: tmp.DirResult) => Promise.resolve())
+        // .mockImplementation((i: Installer, t: tmp.DirResult) => Promise.resolve())
     })
 
     beforeEach(() => {

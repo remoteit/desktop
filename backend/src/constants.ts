@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import { readFileSync } from 'fs'
+import version from './cli-version.json'
 
 //General
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
@@ -13,8 +13,15 @@ export const AIRBRAKE_PROJECT_ID = 223457
 export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e1376551dbe5b1326f98edd78b6247ba'
 
 // CLI
-export const CLI_VERSION = readFileSync(path.join(__dirname, 'cli-version.txt'), 'utf8')
+export const CLI_VERSION = version.cli
+export const MUXER_VERSION = version.muxer
+export const DEMUXER_VERSION = version.demuxer
+export const CONNECTD_VERSION = version.connectd
 export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
+
+export const BASE_URL = version.url_base
+export const CLI_URL = version.url_cli
+export const CONNECTD_URL = version.url_connectd
 
 // CLI product tracking codes
 export const MANUFACTURE_ID_STANDARD = 33280
@@ -61,13 +68,13 @@ export const PATHS = {
 
   MAC_USER_BINARIES: path.join(os.homedir(), '.remoteit/bin'),
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  MAC_ADMIN_BINARIES: '/usr/local/bin',
+  MAC_ADMIN_BINARIES: './resources/mac',
   MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
 
   WIN_USER_BINARIES: path.join(os.homedir(), 'AppData/Local/remoteit/bin'),
   WIN_USER_SETTINGS: path.join(os.homedir(), 'AppData/Local/remoteit'),
-  WIN_ADMIN_BINARIES: path.resolve('C:/Program Files/remoteit-bin'),
+  WIN_ADMIN_BINARIES: path.resolve('./resources'),
   WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
   WIN_DEPRECATED_BINARIES: [
     path.resolve('C:/Program Files/remoteit/remoteit.exe'),
