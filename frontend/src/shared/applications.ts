@@ -29,7 +29,7 @@ class Application {
   }
 
   parse(url: string, connection: IConnection) {
-    for (const key in connection) url = url.replace(`[${key}]`, encodeURI(connection[key]))
+    for (const key in connection) if (connection[key]) url = url.replace(`[${key}]`, encodeURI(connection[key]))
     url = replaceHost(url)
     return url
   }
