@@ -127,19 +127,19 @@ class Controller {
 
   freePort = async () => {
     await this.pool.nextFreePort()
-    this.io.emit('nextFreePort', this.pool.freePort)
+    this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
   }
 
   initBackend = async () => {
     cli.read()
     this.pool.init()
+    this.freePort()
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
     this.io.emit('interfaces', lan.interfaces)
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
-    this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady', true)

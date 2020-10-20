@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { SignInForm } from '../../components/SignInForm'
-import { Link, Typography } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, Link, Typography } from '@material-ui/core'
 import { isElectron } from '../../services/Browser'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
@@ -51,6 +50,7 @@ export function SignInPage() {
     </Body>
   )
 }
+
 const useStyles = makeStyles({
   logo: {
     marginTop: -styles.spacing.xl,
