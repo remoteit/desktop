@@ -248,15 +248,10 @@ export default class Installer {
 
   private download(progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url_cli =
-        CLI_DOWNLOAD === 'DEV' ? 'https://dev-cli.s3-us-west-2.amazonaws.com/v' : 'https://downloads.remote.it/cli/v'
-
-      const baseURL = 'https://downloads.remote.it/multiport/v'
-
-      const url = `${url_cli}${this.version}/${this.downloadFileName}`
-      const muxer = `${baseURL}${this.versionMuxer}/${this.downloadFileNameMuxer}`
-      const demuxer = `${baseURL}${this.versionDemuxer}/${this.downloadFileNameDemuxer}`
-      const connectd = `https://github.com/remoteit/connectd/releases/download/v${this.versionConnectd}/${this.downloadFileNameConnectd}`
+      const url = `${this.cliUrl}${this.version}/${this.downloadFileName}`
+      const muxer = `${this.baseUrl}${this.versionMuxer}/${this.downloadFileNameMuxer}`
+      const demuxer = `${this.baseUrl}${this.versionDemuxer}/${this.downloadFileNameDemuxer}`
+      const connectd = `${this.connectdUrl}${this.versionConnectd}/${this.downloadFileNameConnectd}`
 
       progress(0)
 

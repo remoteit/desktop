@@ -60,7 +60,7 @@ class BinaryInstaller {
         commands.push(`mv ${installer.tempFile} ${installer.binaryPathCLI()}`)
         commands.push(`mv ${installer.tempFileMuxer} ${installer.binaryPathMuxer()}`)
         commands.push(`mv ${installer.tempFileDemuxer} ${installer.binaryPathDemuxer()}`)
-        commands.push(`mv ${installer.tempFileConnectd} ${installer.binaryPathCLI()}`)
+        commands.push(`mv ${installer.tempFileConnectd} ${installer.binaryPathConnectd()}`)
         commands.push(`chmod 755 ${installer.binaryPathCLI()}`) // @TODO if this is going in the user folder must have user permissions
       }
 
