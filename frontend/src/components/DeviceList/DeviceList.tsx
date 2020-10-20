@@ -47,38 +47,27 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
             ) : (
               <>
                 <ListItem>
-                  <Notice>This device is registered to another user</Notice>
+                  <Notice>This device is not registered to you.</Notice>
                 </ListItem>
                 <Divider />
               </>
             ))
           ) : (
             <>
-              <ListItem>
-                <Notice>This device is not registered to you.</Notice>
-              </ListItem>
               <DeviceSetupItem />
               <Divider />
             </>
           )}
-          {devices.length ? (
-            devices.map(
-              device =>
-                device.id !== myDevice?.id && (
-                  <DeviceListItem
-                    key={device.id}
-                    device={device}
-                    connections={connections[device.id]}
-                    setContextMenu={setContextMenu}
-                  />
-                )
-            )
-          ) : (
-            <Body center>
-              <Typography variant="body1" color="textSecondary">
-                Not devices found
-              </Typography>
-            </Body>
+          {devices?.map(
+            device =>
+              device.id !== myDevice?.id && (
+                <DeviceListItem
+                  key={device.id}
+                  device={device}
+                  connections={connections[device.id]}
+                  setContextMenu={setContextMenu}
+                />
+              )
           )}
         </List>
         <LoadMore />
