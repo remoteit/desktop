@@ -32,7 +32,6 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
       disabled={disabled}
       filter={REGEX_PORT_SAFE}
       resetValue={freePort}
-      // onReset={() => emit('freePort', connection)}
       onSave={port => save(+port)}
     />
   )

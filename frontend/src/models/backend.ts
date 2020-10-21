@@ -2,7 +2,9 @@ import { getDevices } from './accounts'
 import { createModel } from '@rematch/core'
 import { findService } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
+import { Dispatch } from '../store'
 import { emit } from '../services/Controller'
+import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type IBackendState = ILookup<any> & {
@@ -67,18 +69,27 @@ export default createModel({
   state,
   effects: (dispatch: any) => ({
     async targetDeviceUpdated(targetDevice: ITargetDevice, globalState: any) {
-      const { ui, backend, devices } = dispatch
+      const { ui, backend, devices } = dispatch as Dispatch
       const { device } = globalState.backend
 
       if (targetDevice?.uid !== device.uid) {
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
-          await devices.fetch()
+          const result = await devices.fetchSingle({ deviceId: targetDevice.uid })
+          if (!result) {
+            // Instances were reported where a device wasn't returned
+            await sleep(2000)
+            await devices.fetch()
+          }
           ui.set({
             setupRegisteringDevice: false,
             successMessage: `${targetDevice.name} registered successfully!`,
           })
         } else if (globalState.ui.setupDeletingDevice) {
-          await devices.fetch()
+          const result = await devices.fetchSingle({ deviceId: device.uid })
+          if (result) {
+            await sleep(2000)
+            await devices.fetch()
+          }
           ui.set({
             setupDeletingDevice: false,
             successMessage: `${device.name} unregistered successfully!`,

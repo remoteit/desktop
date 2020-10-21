@@ -98,6 +98,41 @@ export default createModel({
         })),
         limits: data.limits,
       })
+      // dispatch.licensing.set({
+      //   licenses: [
+      //     {
+      //       id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
+      //       created: new Date('2020-10-17T01:03:47.976Z'),
+      //       updated: new Date('2020-10-17T01:03:47.976Z'),
+      //       expiration: new Date('2020-10-16T01:03:48.000Z'),
+      //       valid: true,
+      //       plan: {
+      //         id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
+      //         name: 'TRIAL',
+      //         description: 'trial',
+      //         duration: 'P30D',
+      //         product: {
+      //           id: '55d9e884-05fd-11eb-bda8-021f403e8c27',
+      //           name: 'remote.it for AWS',
+      //           description: 'remote.it for AWS',
+      //           provider: 'AWS',
+      //         },
+      //       },
+      //     },
+      //   ],
+      //   limits: [
+      //     {
+      //       name: 'aws-evaluation',
+      //       value: 'P7D',
+      //       actual: null,
+      //     },
+      //     {
+      //       name: 'aws-services',
+      //       value: 2,
+      //       actual: 6,
+      //     },
+      //   ],
+      // })
     },
   }),
   reducers: {
