@@ -98,7 +98,10 @@ export default createModel({
     /*
       Fetches a single device and merges in the state
     */
-    async fetchSingle({ deviceId, accountId = '', hidden }: IGetDevice, globalState: any) {
+    async fetchSingle(
+      { deviceId, accountId = '', hidden }: IGetDevice,
+      globalState: any
+    ): Promise<IDevice | undefined> {
       const { set } = dispatch.devices
       let result
 
@@ -111,13 +114,14 @@ export default createModel({
         graphQLGetErrors(gqlResponse)
         const { device } = gqlResponse?.data?.data?.login || {}
         const loginId = gqlResponse?.data?.data?.login?.id
-        result = device ? graphQLAdaptor(device, loginId, hidden)[0] : []
+        result = device ? graphQLAdaptor(device, loginId, hidden)[0] : undefined
       } catch (error) {
         await graphQLHandleError(error)
       }
 
       set({ fetching: false })
-      dispatch.accounts.setDevice({ id: deviceId, accountId, device: result })
+      await dispatch.accounts.setDevice({ id: deviceId, accountId, device: result })
+      return result
     },
 
     async graphQLFetchProcessor(options: gqlOptions) {
