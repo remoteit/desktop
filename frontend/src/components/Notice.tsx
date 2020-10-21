@@ -36,8 +36,8 @@ export const Notice: React.FC<Props> = ({ severity = 'info', link, gutterBottom,
       <Icon name={icon} size="md" type="regular" />
       <Box>{children}</Box>
       {link && (
-        <Button style={{ color }} href={link} size="small" target="_blank">
-          Learn More
+        <Button color="primary" variant="contained" href={link} size="small" target="_blank">
+          Upgrade
         </Button>
       )}
     </Paper>
@@ -53,10 +53,9 @@ const useStyles = makeStyles({
     display: 'flex',
     fontWeight: 500,
     '& .MuiBox-root': { flexGrow: 1 },
-    '& .MuiButton-root': { minWidth: 110, marginLeft: spacing.md },
+    '& .MuiButton-root': { minWidth: 90, marginLeft: spacing.md },
     '& .far': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
-    '& a:hover': { backgroundColor: colors.screen },
   },
   gutter: {
     marginBottom: spacing.md,

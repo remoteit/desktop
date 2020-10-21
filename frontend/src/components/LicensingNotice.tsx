@@ -1,6 +1,6 @@
 import React from 'react'
 import { getLicense } from '../models/licensing'
-import { ListItem } from '@material-ui/core'
+import { ListItem, Link } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useSelector } from 'react-redux'
@@ -11,60 +11,57 @@ type Props = { device?: IDevice; context?: 'service' | 'add' | 'account' }
 
 export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
   const { license, serviceLimit, evaluationDays } = useSelector((state: ApplicationState) => getLicense(state, device))
-
   let notice
   let warnDate = new Date()
-  warnDate.setDate(warnDate.getDate() + 5) // warn 5 days in advance
+  warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
   if (!license) return null
+  const upgradeLink = 'https://downloads.remote.it/aws/latest/saas'
+  const learnMoreLink = (
+    <Link href="https://support.remote.it/hc/en-us/articles/360050474512" target="_blank">
+      Learn more.
+    </Link>
+  )
+  const title = (
+    <>
+      Your {license.plan.description} license of {license.plan.product.name}
+    </>
+  )
 
-  if (warnDate > license.expiration)
+  if (warnDate > license.expiration && license.plan.name === 'TRIAL' && !context)
     notice = (
-      <Notice
-        severity="info"
-        link="https://support.remote.it/hc/en-us/articles/360050474512-Step-1-Find-remote-it-in-the-AWS-Marketplace"
-      >
-        Your {license.plan.description} license of {license.plan.product.name} is expiring on{' '}
+      <Notice severity="info" link={upgradeLink}>
+        {title} will expire on {/* replace with countdown */}
         {license.expiration.toLocaleString(undefined, dateOptions)}.
-        <em>You will not be able to access these services after the {evaluationDays}-day grace period.</em>
       </Notice>
     )
 
-  if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value)
+  if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value && !context)
     notice = (
-      <Notice
-        severity="warning"
-        link="https://support.remote.it/hc/en-us/articles/360050474512-Step-1-Find-remote-it-in-the-AWS-Marketplace"
-      >
-        <LicensingTitle count={serviceLimit?.value} />
+      <Notice severity="warning" link={upgradeLink}>
+        {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
-          You currently have {serviceLimit?.actual} {serviceLimit?.actual === 1 ? 'service' : 'services'},{' '}
-          {serviceLimit?.actual - serviceLimit?.value} are unlicensed.
+          You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{learnMoreLink}
         </em>
       </Notice>
     )
 
-  if (!license.valid)
+  if (!license.valid && !context)
     notice = (
-      <Notice
-        severity="warning"
-        link="https://support.remote.it/hc/en-us/articles/360050474512-Step-1-Find-remote-it-in-the-AWS-Marketplace"
-      >
-        Your license has expired.
-        <em>You will not be able to access these services after a {evaluationDays}-day grace period.</em>
+      <Notice severity="warning" link={upgradeLink}>
+        {title} has expired.
+        <em>
+          Please upgrade your {license.plan.product.name} license.{learnMoreLink}
+        </em>
       </Notice>
     )
 
   if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value && context === 'add')
     notice = (
-      <Notice
-        severity="warning"
-        link="https://support.remote.it/hc/en-us/articles/360050474512-Step-1-Find-remote-it-in-the-AWS-Marketplace"
-      >
-        <LicensingTitle count={serviceLimit?.value} />
+      <Notice severity="warning" link={upgradeLink}>
+        {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
-          You will be allowed to add this service, but it will only be accessible for {evaluationDays}-days unless you
-          upgrade your license to support additional services.
+          This service will be accessible for {evaluationDays} days unless you upgrade your license.{learnMoreLink}
         </em>
       </Notice>
     )
