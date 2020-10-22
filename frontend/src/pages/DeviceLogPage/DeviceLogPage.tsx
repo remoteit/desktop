@@ -51,8 +51,8 @@ export const DeviceLogPage = () => {
 
   const limitDays = () => {
     const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
-    const createAt_days = Math.floor((new Date().getTime() - createAt.getTime()) / TIME)
-    return user?.plan.name === 'free' && createAt_days > freePlan ? freePlan : createAt_days
+    return Math.floor((new Date().getTime() - createAt.getTime()) / TIME)
+    // return user?.plan.name === 'free' && createAt_days > freePlan ? freePlan : createAt_days
   }
 
   const minDay = new Date(new Date().getTime() - TIME * limitDays())

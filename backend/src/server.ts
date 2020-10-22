@@ -84,6 +84,7 @@ class Server {
       authenticate: this.authenticate,
       postAuthenticate: this.postAuthenticate,
       disconnect: this.disconnect,
+      timeout: 10000,
     }
 
     socketioAuth(this.io, authOptions)
@@ -106,7 +107,7 @@ class Server {
     // Update credentials
     else if (user.username === credentials.username) {
       Logger.info('UPDATE CREDENTIALS')
-      return callback(null, await !!user.checkSignIn(credentials))
+      return callback(null, !!(await user.checkSignIn(credentials)))
     }
     // Sign in
     else if (credentials.username && credentials.authHash) {
@@ -115,7 +116,7 @@ class Server {
 
       // Not registered or signed in matches cli user
       if (!admin || !admin.username || credentials.username === admin.username) {
-        return callback(null, await !!user.checkSignIn(credentials))
+        return callback(null, !!(await user.checkSignIn(credentials)))
       }
       // User not allowed
       else {

@@ -1,12 +1,12 @@
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { r3 } from '../services/remote.it'
 import { emit } from '../services/Controller'
 import { AuthUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
+import { Dispatch } from '../store'
+import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { CLIENT_ID, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
 import { getRedirectUrl, isElectron } from '../services/Browser'
-import { IUser as LegacyUser } from 'remote.it'
 import { createModel } from '@rematch/core'
 import { store } from '../store'
 
@@ -18,8 +18,8 @@ export interface AuthState {
   authenticated: boolean
   backendAuthenticated: boolean
   signInError?: string
-  user?: LegacyUser
   authService?: AuthService
+  user?: IUser
 }
 
 const state: AuthState = {
@@ -50,6 +50,33 @@ export default createModel({
         dispatch.auth.setInitialized()
       }
     },
+    async fetchUser() {
+      const { auth } = dispatch as Dispatch
+      try {
+        const result = await graphQLRequest(
+          ` {
+              login {
+                id
+                email
+                authhash
+                yoicsId
+                created
+              }
+            }`
+        )
+        graphQLGetErrors(result)
+        const data = result?.data?.data?.login
+        auth.setUser({
+          id: data.id,
+          email: data.email,
+          authHash: data.authhash,
+          yoicsId: data.yoicsId,
+          created: data.created,
+        })
+      } catch (error) {
+        await graphQLHandleError(error)
+      }
+    },
     async checkSession(_: void, rootState: any) {
       const { backend } = store.dispatch
       const result = await rootState.auth.authService.checkSignIn()
@@ -70,8 +97,7 @@ export default createModel({
         }
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.setInitialized()
-        const user = await r3.user.userData(authUser.cognitoUser?.username)
-        dispatch.auth.setUser(user)
+        dispatch.auth.fetchUser()
       }
     },
     async authenticated(_: void, rootState: any) {
@@ -136,13 +162,13 @@ export default createModel({
     setError(state: AuthState, error: string) {
       state.signInError = error
     },
-    setUser(state: AuthState, user: LegacyUser) {
-      user.username = user.email
+    setUser(state: AuthState, user: IUser) {
       state.user = user
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
       analyticsHelper.identify(user.id)
-      Controller.setupConnection(user.username, user.authHash)
+      if (user.authHash && user.yoicsId) Controller.setupConnection(user.yoicsId, user.authHash)
+      else console.warn('Login failed!', user)
     },
     setAuthService(state: AuthState, authService: AuthService) {
       state.authService = authService

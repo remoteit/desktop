@@ -233,6 +233,8 @@ declare global {
   type IUser = {
     id: string
     email: string
+    authHash?: string
+    yoicsId?: string
     created?: Date
     platform?: number
     timestamp?: Date
