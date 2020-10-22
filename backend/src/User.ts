@@ -47,21 +47,25 @@ export class User {
 
     Logger.info('Attempting auth hash login')
 
-    const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
+    try {
+      const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
-    Logger.info('CHECK SIGN IN', { username: user.username })
-    d('User signed in', user)
+      Logger.info('CHECK SIGN IN', { username: user.username })
 
-    if (!user) return false
+      if (!user) return false
 
-    this.signedIn = true
-    this.username = user.username
-    this.authHash = user.authHash
+      this.signedIn = true
+      this.username = user.username
+      this.authHash = user.authHash
 
-    await cli.checkSignIn()
-    EventBus.emit(User.EVENTS.signedIn, user)
+      await cli.checkSignIn()
+      EventBus.emit(User.EVENTS.signedIn, user)
 
-    return user
+      return true
+    } catch (error) {
+      Logger.warn('LOGIN AUTH FAILURE', { username: credentials.username, error })
+      return false
+    }
   }
 
   signOut = () => {
