@@ -5,18 +5,13 @@ import preferences from './preferences'
 import EventBus from './EventBus'
 import cli from './cliInterface'
 import fs from 'fs'
+import { RESOURCES } from './constants'
+import version from './cli-version.json'
 
 describe('backend/Installer', () => {
   describe('check', () => {
-    const version = '0.37.6'
-    const versionMuxer = '0.37.6'
-    const versionDemuxer = '0.37.6'
-    const versionConnectd = '0.37.6'
-    const baseUrl = 'https://downloads.remote.it/cli/v'
-    const cliUrl = 'https://downloads.remote.it/cli/v'
-    const connectdUrl= 'https://downloads.remote.it/cli/v'
     const outdated = '0.30.1'
-    const name = 'remoteit'
+    const name = RESOURCES[0].name
 
     let installSpy: jest.SpyInstance,
       eventSpy: jest.SpyInstance,
@@ -27,14 +22,12 @@ describe('backend/Installer', () => {
 
     beforeAll(() => {
       installer = new Installer({
-        name,
-        version,
-        versionMuxer,
-        versionDemuxer,
-        versionConnectd,
-        baseUrl,
-        cliUrl,
-        connectdUrl,
+        resources: [
+          { name: 'remoteit', version: version.cli, url: version.url_cli },
+          { name: 'muxer', version: version.muxer, url: version.url_base },
+          { name: 'demuxer', version: version.demuxer, url: version.url_base },
+          { name: 'connectd', version: version.connectd, url: version.url_connectd },
+        ],
         repoName: 'remoteit/cli',
         dependencies: ['connectd', 'muxer', 'demuxer'],
       })
@@ -54,7 +47,7 @@ describe('backend/Installer', () => {
 
     test('should notify if installed', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
+      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(RESOURCES[0].version))
 
       await installer.check()
 
@@ -128,28 +121,22 @@ describe('backend/Installer', () => {
   })
 
   describe('isCurrent', () => {
-    const name = 'remoteit'
-    const version = '0.37.6'
-    const versionMuxer = '0.37.6'
-    const versionDemuxer = '0.37.6'
-    const versionConnectd = '0.37.6'
-    const baseUrl = 'https://downloads.remote.it/cli/v'
-    const cliUrl = 'https://downloads.remote.it/cli/v'
-    const connectdUrl= 'https://downloads.remote.it/cli/v'
-
     let versionSpy: jest.SpyInstance
     let installer: Installer
 
-    beforeAll(() => (installer = new Installer({ 
-      name, 
-      version, 
-      versionMuxer, 
-      versionDemuxer, 
-      versionConnectd,
-      baseUrl,
-      cliUrl,
-      connectdUrl, 
-      repoName: 'remoteit/cli', dependencies: [] })))
+    beforeAll(
+      () =>
+        (installer = new Installer({
+          resources: [
+            { name: 'remoteit', version: version.cli, url: version.url_cli },
+            { name: 'muxer', version: version.muxer, url: version.url_base },
+            { name: 'demuxer', version: version.demuxer, url: version.url_base },
+            { name: 'connectd', version: version.connectd, url: version.url_connectd },
+          ],
+          repoName: 'remoteit/cli',
+          dependencies: [],
+        }))
+    )
     afterEach(() => versionSpy.mockClear())
 
     test('should detect old version', async () => {

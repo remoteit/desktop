@@ -50,17 +50,9 @@ class BinaryInstaller {
 
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        commands.push(`move /y "${installer.tempFile}" "${installer.binaryPathCLI()}"`)
-        commands.push(`move /y "${installer.tempFileMuxer}" "${installer.binaryPathMuxer()}"`)
-        commands.push(`move /y "${installer.tempFileDemuxer}" "${installer.binaryPathDemuxer()}"`)
-        commands.push(`move /y "${installer.tempFileConnectd}" "${installer.binaryPathConnectd()}"`)
         commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
       } else {
         if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
-        commands.push(`mv ${installer.tempFile} ${installer.binaryPathCLI()}`)
-        commands.push(`mv ${installer.tempFileMuxer} ${installer.binaryPathMuxer()}`)
-        commands.push(`mv ${installer.tempFileDemuxer} ${installer.binaryPathDemuxer()}`)
-        commands.push(`mv ${installer.tempFileConnectd} ${installer.binaryPathConnectd()}`)
         commands.push(`chmod 755 ${installer.binaryPathCLI()}`) // @TODO if this is going in the user folder must have user permissions
       }
 

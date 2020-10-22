@@ -1,4 +1,3 @@
-import { CLI_DOWNLOAD } from './constants'
 import debug from 'debug'
 import cli from './cliInterface'
 import preferences from './preferences'
@@ -20,34 +19,17 @@ const d = debug('installer')
 export type ProgressCallback = (percent: number) => void
 
 interface InstallerArgs {
-  name: string
   repoName: string
-  version: string
-  versionMuxer: string
-  versionDemuxer: string
-  versionConnectd: string
-  baseUrl: string
-  cliUrl: string
-  connectdUrl: string
+  resources: { name: string, version: string, url:string }[]
   dependencies: string[]
 }
 
 export default class Installer {
-  name: string
   repoName: string
-  version: string
-  versionMuxer: string
-  versionDemuxer: string
-  versionConnectd: string
-  baseUrl: string
-  cliUrl: string
-  connectdUrl: string
+  resources: { name: string, version: string, url:string }[]
   installedVersion?: string
   dependencies: string[]
-  tempFile?: string
-  tempFileMuxer?: string
-  tempFileDemuxer?: string
-  tempFileConnectd?: string
+  pathFile?: string
 
   static EVENTS = {
     progress: 'binary/install/progress',
@@ -57,30 +39,22 @@ export default class Installer {
   }
 
   constructor(args: InstallerArgs) {
-    6
-    this.name = args.name
     this.repoName = args.repoName
-    this.version = args.version
-    this.versionMuxer = args.versionMuxer
-    this.versionDemuxer = args.versionDemuxer
-    this.versionConnectd = args.versionConnectd
-    this.baseUrl = args.baseUrl
-    this.cliUrl = args.cliUrl
-    this.connectdUrl = args.connectdUrl
+    this.resources = args.resources
     this.dependencies = args.dependencies
   }
 
   async check(log?: boolean) {
     if (binaryInstaller.inProgress) return
 
-    d('CHECK INSTALLATION', { name: this.name, version: this.version })
+    d('CHECK INSTALLATION', { name: this.resources[0].name, version: this.resources[0].version })
     const cliCurrent = await this.isCliCurrent(log)
 
     if (cliCurrent) {
       return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
     } else {
       if (environment.isElevated) await binaryInstaller.install()
-      else EventBus.emit(Installer.EVENTS.notInstalled, this.name)
+      else EventBus.emit(Installer.EVENTS.notInstalled, this.resources[0].name)
     }
   }
 
@@ -99,14 +73,14 @@ export default class Installer {
   toJSON() {
     return {
       path: this.binaryPathCLI(),
-      version: this.version,
-      name: this.name,
+      version: this.resources[0].version,
+      name: this.resources[0].name,
       installedVersion: this.installedVersion,
     } as InstallationInfo
   }
 
   isDesktopCurrent(log?: boolean) {
-    let desktopVersion = preferences.get().version || ''
+    let desktopVersion = preferences.get().version
     let current = semverCompare(desktopVersion, environment.version) >= 0
     if (current) {
       log && Logger.info('DESKTOP CURRENT', { desktopVersion })
@@ -125,16 +99,16 @@ export default class Installer {
       cliVersion = await cli.version()
       this.installedVersion = cliVersion
       try {
-        current = semverCompare(cliVersion, this.version) >= 0
+        current = semverCompare(cliVersion, this.resources[0].version) >= 0
       } catch (error) {
         Logger.warn('BAD CLI VERSION', { error })
       }
     }
 
     if (current) {
-      log && Logger.info('CHECK CLI VERSION', { current, name: this.name, cliVersion, desiredVersion: this.version })
+      log && Logger.info('CHECK CLI VERSION', { current, name: this.resources[0].name, cliVersion, desiredVersion: this.resources[0].version })
     } else {
-      Logger.info('CLI NOT CURRENT', { name: this.name, cliVersion, desiredVersion: this.version })
+      Logger.info('CLI NOT CURRENT', { name: this.resources[0].name, cliVersion, desiredVersion: this.resources[0].version })
     }
 
     return current
@@ -151,30 +125,21 @@ export default class Installer {
    * Download the binary, move it to the PATH on the user's
    * system and then make it writable.
    */
-  install(cb?: ProgressCallback) {
+  install( cb?: ProgressCallback) {
     Logger.info('INSTALLING BINARY', {
-      name: this.name,
+      name: this.resources[0].name,
       repoName: this.repoName,
-      version: this.version,
+      version: this.resources[0].version,
     })
-    let tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
-    this.tempFile = path.join(tempDir.name, this.binaryName)
-
-    tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
-    this.tempFileMuxer = path.join(tempDir.name, this.muxerName)
-
-    tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
-    this.tempFileDemuxer = path.join(tempDir.name, this.demuxerName)
-
-    tempDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
-    this.tempFileConnectd = path.join(tempDir.name, this.connectdName)
+ 
 
     // Download the binary from Github
     return this.download(cb)
   }
+  
 
   get downloadFileName() {
-    const name = `${this.name}_`
+    const name = `${this.resources[0].name}_`
     let platform = 'linux_arm64'
     if (environment.isWindows32) platform = 'windows_x86.exe'
     else if (environment.isWindows) platform = 'windows_x86_64.exe'
@@ -186,28 +151,24 @@ export default class Installer {
     return name + platform
   }
 
-  get downloadFileNameMuxer() {
+  get extensionName () {
     let platform = ''
-    if (environment.isWindows32) platform = 'muxer.x86-win.exe'
-    else if (environment.isWindows) platform = 'muxer.x86_64-64.exe'
-    else if (environment.isMac) platform = 'muxer.x86_64-osx'
-    return platform
+    if (environment.isWindows32) platform = '.x86-win.exe'
+    else if (environment.isWindows) platform = '.x86_64-64.exe'
+    else if (environment.isMac) platform = '.x86_64-osx'
+    return  platform
+  }
+
+  get downloadFileNameMuxer() {
+    return `muxer${this.extensionName}`
   }
 
   get downloadFileNameDemuxer() {
-    let platform = ''
-    if (environment.isWindows32) platform = 'demuxer.x86-win.exe'
-    else if (environment.isWindows) platform = 'demuxer.x86_64-64.exe'
-    else if (environment.isMac) platform = 'demuxer.x86_64-osx'
-    return platform
+    return `demuxer${this.extensionName}`
   }
 
   get downloadFileNameConnectd() {
-    let platform = ''
-    if (environment.isWindows32) platform = 'connectd.x86-win.exe'
-    else if (environment.isWindows) platform = 'connectd.x86_64-64.exe'
-    else if (environment.isMac) platform = 'connectd.x86_64-osx'
-    return platform
+    return `connectd${this.extensionName}`
   }
 
   binaryPathCLI(admin?: boolean) {
@@ -227,18 +188,18 @@ export default class Installer {
   }
 
   get binaryName() {
-    return environment.isWindows ? this.name + '.exe' : this.name
+    return environment.isWindows ? this.resources[0].name + '.exe' : this.resources[0].name
   }
 
-  get muxerName() {
+  get muxerName(){
     return environment.isWindows ? this.dependencies[1] + '.exe' : this.dependencies[1]
   }
 
-  get demuxerName() {
+  get demuxerName(){
     return environment.isWindows ? this.dependencies[2] + '.exe' : this.dependencies[2]
   }
 
-  get connectdName() {
+  get connectdName(){
     return environment.isWindows ? this.dependencies[0] + '.exe' : this.dependencies[0]
   }
 
@@ -248,59 +209,59 @@ export default class Installer {
 
   private download(progress: ProgressCallback = () => {}) {
     return new Promise((resolve, reject) => {
-      const url = `${this.cliUrl}${this.version}/${this.downloadFileName}`
-      const muxer = `${this.baseUrl}${this.versionMuxer}/${this.downloadFileNameMuxer}`
-      const demuxer = `${this.baseUrl}${this.versionDemuxer}/${this.downloadFileNameDemuxer}`
-      const connectd = `${this.connectdUrl}${this.versionConnectd}/${this.downloadFileNameConnectd}`
 
+      const url       = `${this.resources[0].url}${this.resources[0].version}/${this.downloadFileName}`
+      const muxer     = `${this.resources[1].url}${this.resources[1].version}/${this.downloadFileNameMuxer}`
+      const demuxer   = `${this.resources[2].url}${this.resources[2].version}/${this.downloadFileNameDemuxer}`
+      const connectd  = `${this.resources[3].url}${this.resources[3].version}/${this.downloadFileNameConnectd}`
+      
       progress(0)
 
-      Logger.info('DOWNLOADING CLI', { url })
-      this.getFileWeb(url, resolve, reject, progress, this.tempFile)
-      Logger.info('DOWNLOADING MUXER', { muxer })
-      this.getFileWeb(muxer, resolve, reject, progress, this.tempFileMuxer)
-      Logger.info('DOWNLOADING DEMUXER', { demuxer })
-      this.getFileWeb(demuxer, resolve, reject, progress, this.tempFileDemuxer)
-      Logger.info('DOWNLOADING CONNECTD', { connectd })
-      this.getFileWeb(connectd, resolve, reject, progress, this.tempFileConnectd)
+      Logger.info('DOWNLOADING BINARY', {  url, muxer, demuxer, connectd })
+
+      this.getFileWeb(url, resolve, reject, progress, this.binaryPathCLI())
+      this.getFileWeb(muxer, resolve, reject, progress, this.binaryPathMuxer())
+      this.getFileWeb(demuxer, resolve, reject, progress, this.binaryPathDemuxer())
+      this.getFileWeb(connectd, resolve, reject, progress, this.binaryPathConnectd())
+
     })
   }
 
-  private getFileWeb(url: string, resolve: any, reject: any, progress: any, temp: any) {
+  private getFileWeb(url: string, resolve:any, reject: any, progress: any, pathFile: any ){
     https
-      .get(url, res1 => {
-        if (!res1 || !res1.headers) {
-          Logger.warn('No response from download URL', { headers: res1.headers })
-          return reject(new Error('No response from download URL!'))
-        }
-        if (res1.headers.location) {
-          d('LOCATION FOUND', { location: res1.headers.location })
-          try {
-            https
-              .get(res1.headers.location, res2 => {
-                if (!res2 || !res2.headers || !res2.headers['content-length'])
-                  return reject(new Error('No response from location URL!'))
-                stream(res2)
-              })
-              .on('error', reject)
-          } catch (e) {
-            Logger.warn('Download file not found', { headers: res1.headers })
-            return reject(new Error('Download file not found'))
+        .get(url, res1 => {
+          if (!res1 || !res1.headers) {
+            Logger.warn('No response from download URL', { headers: res1.headers })
+            return reject(new Error('No response from download URL!'))
           }
-        } else if (res1.headers['content-length']) {
-          stream(res1)
-        } else {
-          Logger.warn('No download header in download URL', { headers: res1.headers })
-          return reject(new Error('No download header in download URL!'))
-        }
-      })
-      .on('error', reject)
+          if (res1.headers.location) {
+            d('LOCATION FOUND', { location: res1.headers.location })
+            try {
+              https
+                .get(res1.headers.location, res2 => {
+                  if (!res2 || !res2.headers || !res2.headers['content-length'])
+                    return reject(new Error('No response from location URL!'))
+                  stream(res2)
+                })
+                .on('error', reject)
+            } catch (e) {
+              Logger.warn('Download file not found', { headers: res1.headers })
+              return reject(new Error('Download file not found'))
+            }
+          } else if (res1.headers['content-length']) {
+            stream(res1)
+          } else {
+            Logger.warn('No download header in download URL', { headers: res1.headers })
+            return reject(new Error('No download header in download URL!'))
+          }
+        })
+        .on('error', reject)
 
     const stream = (res: any) => {
       const total = parseInt(res.headers['content-length'], 10)
       let completed = 0
-      if (!temp) return reject(new Error('No temp file path set'))
-      const w = fs.createWriteStream(temp)
+      if (!pathFile) return reject(new Error('No file path set'))
+      const w = fs.createWriteStream(pathFile)
       res.pipe(w)
       res.on('data', (data: any) => {
         completed += data.length
@@ -311,4 +272,6 @@ export default class Installer {
       res.on('end', resolve)
     }
   }
+
+
 }
