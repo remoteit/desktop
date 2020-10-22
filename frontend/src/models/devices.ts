@@ -146,9 +146,9 @@ export default createModel({
 
     async graphQLMetadata(gqlData: any) {
       const error = graphQLGetErrors(gqlData)
+      const total = gqlData?.data?.data?.login?.account?.devices?.total || 0
       const devices = gqlData?.data?.data?.login?.account?.devices?.items || {}
       const { connections, contacts, id } = gqlData?.data?.data?.login
-      const total = devices.total || 0
       return [devices, connections, total, id, contacts, error]
     },
 
