@@ -9,7 +9,7 @@ export function usePermissions() {
     user: state.auth.user,
   }))
 
-  const guest: boolean = !!adminUsername && !!user && user.email !== adminUsername
+  const guest: boolean = !!adminUsername && !!user && user.yoicsId !== adminUsername
   const notElevated: boolean = !guest && !isElectron() && !isElevated
 
   return {
