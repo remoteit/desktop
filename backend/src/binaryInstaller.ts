@@ -48,18 +48,21 @@ class BinaryInstaller {
 
       const commands = new Command({ onError: reject, admin: true })
 
+      let su = ''
+
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
         commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
       } else {
+        su = 'sudo'
         if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
         commands.push(`chmod 755 ${installer.binaryPathCLI()}`) // @TODO if this is going in the user folder must have user permissions
       }
 
-      //commands.push(`"${installer.binaryPath()}" ${strings.toolsInstall()}`)
-      commands.push(`"${installer.binaryPathCLI()}" ${strings.serviceUninstall()}`)
-      commands.push(`"${installer.binaryPathCLI()}" ${strings.serviceInstall()}`)
-      commands.push(`"${installer.binaryPathCLI()}" ${strings.signIn()}`)
+      commands.push(`cd ${environment.binPath}`)
+      commands.push(`${su} ${installer.binaryName} ${strings.serviceUninstall()}`)
+      commands.push(`${su} ${installer.binaryName} ${strings.serviceInstall()}`)
+      commands.push(`${su} ${installer.binaryName} ${strings.signIn()}`)
 
       await commands.exec()
       resolve()

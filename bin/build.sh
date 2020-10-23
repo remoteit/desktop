@@ -17,15 +17,9 @@ CONNECTD=$((cat ./backend/src/cli-version.json | grep -Eo '"connectd"[^,]*' | gr
 
 chmod -R 777 ./bin/
 
-mkdir -m 777 ./bin/CLI/mac
-
-mkdir -m 777 ./bin/CLI/win
-
-mkdir -m 777 ./bin/CLI/win/x64
-
-mkdir -m 777 ./bin/CLI/win/x86
-
 if [ "$(uname)" == "Darwin" ]; then
+
+    mkdir -m 777 ./bin/CLI/mac
 
     #Mac
     curl https://${URL_CLI}${CLI_VERSION}/remoteit_mac-osx_x86_64 --output ./bin/CLI/mac/remoteit
@@ -36,9 +30,15 @@ if [ "$(uname)" == "Darwin" ]; then
 
     curl https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-osx --output ./bin/CLI/mac/muxer
     
-    sudo ./bin/CLI/MAC/remoteit -j service install
+    sudo ./bin/CLI/mac/remoteit -j service install
 
 else
+
+    mkdir -m 777 ./bin/CLI/win
+
+    mkdir -m 777 ./bin/CLI/win/x64
+
+    mkdir -m 777 ./bin/CLI/win/x86
 
     #32 bits Windows 
     curl https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86.exe --output ./bin/CLI/win/X86/remoteit.exe 
