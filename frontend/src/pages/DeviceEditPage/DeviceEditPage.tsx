@@ -27,6 +27,7 @@ import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { LicensingNotice } from '../../components/LicensingNotice'
+import { RefreshButton } from '../../buttons/RefreshButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { getLinks } from '../../helpers/routeHelper'
@@ -79,6 +80,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Edit device</Title>
             {thisDevice ? <UnregisterDeviceButton targetDevice={targetDevice} /> : <DeleteButton device={device} />}
+            <RefreshButton device={device} />
           </Typography>
         </>
       }
