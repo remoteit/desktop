@@ -49,7 +49,6 @@ class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
 
       let su = ''
-
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
         commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
@@ -63,7 +62,6 @@ class BinaryInstaller {
       commands.push(`${su} ${installer.binaryName} ${strings.serviceUninstall()}`)
       commands.push(`${su} ${installer.binaryName} ${strings.serviceInstall()}`)
       commands.push(`${su} ${installer.binaryName} ${strings.signIn()}`)
-
       await commands.exec()
       resolve()
     })
