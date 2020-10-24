@@ -78,13 +78,13 @@ const useStyles = makeStyles({
   },
   input: {
     width: '100%',
-    backgroundColor: colors.grayLighter,
+    backgroundColor: colors.grayLightest,
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
     marginRight: spacing.sm,
     padding: `${spacing.sm}px ${spacing.md}px`,
     transition: 'background-color 300ms',
-    '&:focus, &:hover': { backgroundColor: colors.primaryLighter },
+    '&:focus, &:hover': { backgroundColor: colors.primaryHighlight },
   },
   focused: {
     backgroundColor: colors.primaryLighter,

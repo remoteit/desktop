@@ -1,7 +1,7 @@
 import React from 'react'
 import { Title } from '../Title'
 import { makeStyles } from '@material-ui/core/styles'
-import { ForgetButton } from '../../buttons/ForgetButton'
+import { ClearButton } from '../../buttons/ClearButton'
 import { ServiceListItem } from '../ServiceListItem'
 import { Typography, List, Divider } from '@material-ui/core'
 import styles from '../../styling'
@@ -30,7 +30,7 @@ export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
       {!!recent.length && (
         <Typography variant="subtitle1">
           <Title>Recent</Title>
-          <ForgetButton all />
+          <ClearButton all />
         </Typography>
       )}
       {recent.map(c => (

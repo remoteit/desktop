@@ -54,5 +54,5 @@ export const SessionsList: React.FC<Props> = ({ sessions }) => {
 }
 
 const useStyles = makeStyles({
-  title: { display: 'flex', alignItems: 'flex-end' },
+  title: { display: 'flex', alignItems: 'flex-end', '& > span:not(.fal)': { width: '50%' } },
 })

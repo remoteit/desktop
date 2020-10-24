@@ -8,25 +8,24 @@ import { Icon } from '../../components/Icon'
 type Props = {
   connection?: IConnection
   disabled?: boolean
-  all?: boolean
 }
 
-export const ForgetButton: React.FC<Props> = ({ disabled = false, connection, all }) => {
+export const ForgetButton: React.FC<Props> = ({ disabled = false, connection }) => {
   const history = useHistory()
   const location = useLocation()
 
-  if (!all && (!connection || connection.active)) return null
+  if (!connection || connection.active) return null
 
   const forget = () => {
-    emit(all ? 'service/clear-recent' : 'service/forget', connection)
+    emit('service/forget', connection)
     const menu = location.pathname.match(REGEX_FIRST_PATH)
     if (menu && menu[0] === '/connections') history.push('/connections')
   }
 
   return (
-    <Tooltip title={all ? 'Clear all connections' : 'Clear this connection'}>
+    <Tooltip title="Reset connection settings">
       <IconButton disabled={disabled} onClick={forget}>
-        <Icon name="times-circle" size="md" fixedWidth />
+        <Icon name="undo" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

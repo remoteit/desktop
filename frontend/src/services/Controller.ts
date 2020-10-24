@@ -172,7 +172,6 @@ function getEventHandlers() {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.setConnection(msg.connection)
     },
-    'service/forgotten': (id: string) => console.log(id),
     'service/error': (msg: ConnectionErrorMessage) => {
       logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
       backend.setConnection(msg.connection)
