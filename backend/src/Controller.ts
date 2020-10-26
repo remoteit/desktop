@@ -184,8 +184,12 @@ class Controller {
   }
 
   installBinaries = async (force?: boolean) => {
-    await binaryInstaller.install(force)
-    remoteitInstaller.check()
+    try {
+      await binaryInstaller.install(force)
+      remoteitInstaller.check()
+    } catch (error) {
+      EventBus.emit(Installer.EVENTS.error, error)
+    }
   }
 }
 

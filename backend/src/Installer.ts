@@ -208,13 +208,13 @@ export default class Installer {
   }
 
   private download(progress: ProgressCallback = () => {}) {
+    EventBus.emit(Installer.EVENTS.progress, { progress: 0, installer: 'download init' });
     return new Promise((resolve, reject) => {
 
       const url       = `${this.resources[0].url}${this.resources[0].version}/${this.downloadFileName}`
       const muxer     = `${this.resources[1].url}${this.resources[1].version}/${this.downloadFileNameMuxer}`
       const demuxer   = `${this.resources[2].url}${this.resources[2].version}/${this.downloadFileNameDemuxer}`
       const connectd  = `${this.resources[3].url}${this.resources[3].version}/${this.downloadFileNameConnectd}`
-      
       progress(0)
 
       Logger.info('DOWNLOADING BINARY', {  url, muxer, demuxer, connectd })

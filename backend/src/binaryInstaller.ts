@@ -59,10 +59,11 @@ class BinaryInstaller {
       }
 
       commands.push(`cd ${environment.binPath}`)
-      commands.push(`${su} ${installer.binaryName} ${strings.serviceUninstall()}`)
-      commands.push(`${su} ${installer.binaryName} ${strings.serviceInstall()}`)
+      //commands.push(`${su} ${installer.binaryName} ${strings.serviceUninstall()}`)
+      //commands.push(`${su} ${installer.binaryName} ${strings.serviceInstall()}`)
       commands.push(`${su} ${installer.binaryName} ${strings.signIn()}`)
       await commands.exec()
+      EventBus.emit(Installer.EVENTS.progress, { progress: 100, installer: 'finish commands' });
       resolve()
     })
   }

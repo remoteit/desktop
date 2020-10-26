@@ -58,16 +58,16 @@ export const SSL_PORT = WEB_PORT - 1
 
 // Install paths
 export const PATHS = {
-  LINUX_USER_BINARIES: path.join(os.homedir(), '.remoteit/bin'),
+  LINUX_USER_BINARIES: path.join(os.homedir(), './resources'),
   LINUX_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  LINUX_ADMIN_BINARIES: '/usr/bin',
+  LINUX_ADMIN_BINARIES: './resources',
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
   LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
 
-  MAC_USER_BINARIES: path.join(os.homedir(), '.remoteit/bin'),
+  MAC_USER_BINARIES: path.join(os.homedir(), './resources'),
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
   MAC_ADMIN_BINARIES: './resources',
-  MAC_ADMIN_SETTINGS: '/etc/remoteit',
+  MAC_ADMIN_SETTINGS: './resources',
   MAC_DEPRECATED_BINARIES: [],
 
   WIN_USER_BINARIES: path.join(os.homedir(), 'AppData/Local/remoteit/bin'),
