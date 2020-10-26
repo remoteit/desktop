@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { emit } from '../../services/Controller'
+import { Dispatch } from '../../store'
+import { useDispatch } from 'react-redux'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
+import { emit } from '../../services/Controller'
 import heartbeat from '../../services/Heartbeat'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -23,6 +25,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   autoConnect,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
+  const [started, setStarted] = useState<boolean>(false)
+  const { devices } = useDispatch<Dispatch>()
   const hidden = connection?.active || !service || service.state !== 'active'
   const connecting = !!connection?.connecting
   const clickHandler = () => {
@@ -42,7 +46,12 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       setAutoStart(false)
       clickHandler()
     }
+    setStarted(!!connection?.active)
   })
+
+  useEffect(() => {
+    if (started && connection && !connection?.active) devices.fetchSingle({ deviceId: connection.deviceID })
+  }, [started, connection])
 
   return (
     <Fade in={!hidden} timeout={600}>
