@@ -14,7 +14,7 @@ export function platformConfiguration() {
       setupServicesLimit: 100,
       scanEnabled: false,
       routingLock: 'p2p',
-      routingMessage: 'For security reasons, AWS devices are restricted to peer to peer connections only.',
+      routingMessage: 'For security reasons, connections to services within AWS are restricted to peer to peer.',
     })
     console.log(targetPlatform, 'TARGET PLATFORM settings applied')
   }

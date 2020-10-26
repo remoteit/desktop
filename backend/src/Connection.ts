@@ -12,7 +12,6 @@ export default class Connection extends EventEmitter {
   static EVENTS: { [name: string]: SocketEvent } = {
     connected: 'service/connected',
     disconnected: 'service/disconnected',
-    forgotten: 'service/forgotten',
     error: 'service/error',
   }
 
@@ -45,7 +44,8 @@ export default class Connection extends EventEmitter {
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
   }
 
-  async forget() {
+  async clear() {
+    this.params.startTime = undefined
     await cli.removeConnection(this.params, this.error)
   }
 

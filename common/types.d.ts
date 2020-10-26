@@ -26,6 +26,7 @@ declare global {
     | 'service/disconnect'
     | 'service/forget'
     | 'service/restart'
+    | 'service/clear'
     | 'service/clear-recent'
     | 'service/launch'
 
@@ -68,7 +69,6 @@ declare global {
     | 'service/started'
     | 'service/connected'
     | 'service/disconnected'
-    | 'service/forgotten'
     | 'service/error'
     | 'service/status'
     | 'service/uptime'

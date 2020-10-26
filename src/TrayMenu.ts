@@ -123,7 +123,7 @@ export default class TrayMenu {
             { label: 'Copy to clipboard', click: () => this.copy(connection) },
             connection.online
               ? { label: 'Launch', enabled: connection.active, click: () => this.launch(connection) }
-              : { label: 'Remove', click: () => EventBus.emit(EVENTS.forget, connection) },
+              : { label: 'Remove', click: () => EventBus.emit(EVENTS.clear, connection) },
           ],
         })
       }

@@ -10,7 +10,6 @@ export const Title: React.FC<{ offline?: boolean }> = ({ children, offline }) =>
 const useStyles = makeStyles({
   title: {
     flexGrow: 1,
-    width: '100%',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     '& sup': { marginLeft: spacing.xs, marginRight: spacing.xxs, color: colors.grayDark },

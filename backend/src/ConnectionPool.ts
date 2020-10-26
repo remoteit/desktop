@@ -44,8 +44,8 @@ export default class ConnectionPool {
     EventBus.on(Connection.EVENTS.disconnected, this.updated)
     EventBus.on(Connection.EVENTS.connected, this.updated)
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
-    EventBus.on(electronInterface.EVENTS.forget, this.forget)
-    EventBus.on(electronInterface.EVENTS.clearRecent, this.forgetRecent)
+    EventBus.on(electronInterface.EVENTS.clear, this.clear)
+    EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
   }
 
   // Sync with CLI
@@ -126,21 +126,28 @@ export default class ConnectionPool {
     const connection = this.find(id)
     if (connection) {
       const index = this.pool.indexOf(connection)
-      await connection.forget()
+      await connection.clear()
       this.pool.splice(index, 1)
       this.updated()
     }
-    EventBus.emit(Connection.EVENTS.forgotten, id)
   }
 
-  forgetRecent = () => {
-    const before = this.pool.length
-    this.pool = this.pool.filter(connection => {
+  clear = async ({ id }: IConnection) => {
+    Logger.info('CLEAR', { id })
+    const connection = this.find(id)
+    if (connection) {
+      await connection.clear()
+      this.updated()
+    }
+  }
+
+  clearRecent = () => {
+    this.pool = this.pool.filter(async connection => {
       if (connection.params.active) return true
-      connection.forget()
+      await connection.clear()
       return false
     })
-    Logger.info('FORGET RECENT CONNECTIONS', { count: before - this.pool.length })
+    Logger.info('CLEAR RECENT CONNECTIONS', { count: this.pool.length })
     this.updated()
   }
 
