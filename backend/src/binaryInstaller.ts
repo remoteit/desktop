@@ -42,28 +42,27 @@ class BinaryInstaller {
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
       // Stop and remove old binaries
-      await this.migrateBinaries(installer.binaryPathCLI())
-
-      // Download and install binaries
-      await this.download(installer)
+      // await this.migrateBinaries(installer.binaryPathCLI())
 
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
+        // commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
       } else {
-        if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
-        commands.push(`chmod 755 ./${installer.binaryPathCLI()}`) // @TODO if this is going in the user folder must have user permissions
-        commands.push(`ln -s ./${installer.binaryPathCLI()} /usr/local/bin/`)
+        commands.push(`ln -sf ${installer.binaryPathCLI()} /usr/local/bin/`)
+        commands.push(`ln -sf ${installer.binaryPathMuxer()} /usr/local/bin/`)
+        commands.push(`ln -sf ${installer.binaryPathDemuxer()} /usr/local/bin/`)
+        commands.push(`ln -sf ${installer.binaryPathConnectd()} /usr/local/bin/`)
       }
 
-      commands.push(`cd ${environment.binPath}`)
       commands.push(`${installer.binaryName} ${strings.serviceUninstall()}`)
       commands.push(`${installer.binaryName} ${strings.serviceInstall()}`)
       commands.push(`${installer.binaryName} ${strings.signIn()}`)
+
       await commands.exec()
-      EventBus.emit(Installer.EVENTS.progress, { progress: 100, installer: path });
+
+      EventBus.emit(Installer.EVENTS.progress, { progress: 100, installer: path })
       resolve()
     })
   }
@@ -104,9 +103,9 @@ class BinaryInstaller {
   }
 
   async download(installer: Installer) {
-    return installer
-      .install((progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
-      .catch(error => EventBus.emit(Installer.EVENTS.error, error.message))
+    // return installer
+    //   .install((progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
+    //   .catch(error => EventBus.emit(Installer.EVENTS.error, error.message))
   }
 
   async uninstall() {

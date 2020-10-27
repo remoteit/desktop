@@ -21,7 +21,7 @@
     "install-frontend": "cd frontend && npm i",
     "postinstall": "run-p install-*",
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
-    "start": "npm-run-all -l -n -p copy-* watch-*",
+    "start": "npm-run-all -l -n -p cli-download copy-* watch-*",
     "test": "cd backend && npm run test",
     "test-watch": "cd backend && npm run test-watch",
     "watch-backend": "cd backend && npm run watch",

@@ -151,6 +151,7 @@ export class Environment {
       userPath: this.userPath,
       adminPath: this.adminPath,
       binPath: this.binPath,
+      path: __dirname,
       deprecatedBinaries: this.deprecatedBinaries,
     }
   }

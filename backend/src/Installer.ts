@@ -20,13 +20,13 @@ export type ProgressCallback = (percent: number) => void
 
 interface InstallerArgs {
   repoName: string
-  resources: { name: string, version: string, url:string }[]
+  resources: { name: string; version: string; url: string }[]
   dependencies: string[]
 }
 
 export default class Installer {
   repoName: string
-  resources: { name: string, version: string, url:string }[]
+  resources: { name: string; version: string; url: string }[]
   installedVersion?: string
   dependencies: string[]
   pathFile?: string
@@ -63,11 +63,12 @@ export default class Installer {
    * to decide if we install connectd or not on startup.
    */
   isInstalled() {
-    if (binaryInstaller.inProgress) return false
-    const check = this.dependencyNames.concat(this.binaryName)
-    const missing = check.find(fileName => !this.fileExists(fileName))
-    d('IS INSTALLED?', { installed: !missing })
-    return !missing
+    return true
+    // if (binaryInstaller.inProgress) return false
+    // const check = this.dependencyNames.concat(this.binaryName)
+    // const missing = check.find(fileName => !this.fileExists(fileName))
+    // d('IS INSTALLED?', { installed: !missing })
+    // return !missing
   }
 
   toJSON() {
@@ -106,9 +107,19 @@ export default class Installer {
     }
 
     if (current) {
-      log && Logger.info('CHECK CLI VERSION', { current, name: this.resources[0].name, cliVersion, desiredVersion: this.resources[0].version })
+      log &&
+        Logger.info('CHECK CLI VERSION', {
+          current,
+          name: this.resources[0].name,
+          cliVersion,
+          desiredVersion: this.resources[0].version,
+        })
     } else {
-      Logger.info('CLI NOT CURRENT', { name: this.resources[0].name, cliVersion, desiredVersion: this.resources[0].version })
+      Logger.info('CLI NOT CURRENT', {
+        name: this.resources[0].name,
+        cliVersion,
+        desiredVersion: this.resources[0].version,
+      })
     }
 
     return current
@@ -125,18 +136,16 @@ export default class Installer {
    * Download the binary, move it to the PATH on the user's
    * system and then make it writable.
    */
-  install( cb?: ProgressCallback) {
+  install(cb?: ProgressCallback) {
     Logger.info('INSTALLING BINARY', {
       name: this.resources[0].name,
       repoName: this.repoName,
       version: this.resources[0].version,
     })
- 
 
     // Download the binary from Github
-    return this.download(cb)
+    // return this.download(cb)
   }
-  
 
   get downloadFileName() {
     const name = `${this.resources[0].name}_`
@@ -151,12 +160,12 @@ export default class Installer {
     return name + platform
   }
 
-  get extensionName () {
+  get extensionName() {
     let platform = ''
     if (environment.isWindows32) platform = '.x86-win.exe'
     else if (environment.isWindows) platform = '.x86_64-64.exe'
     else if (environment.isMac) platform = '.x86_64-osx'
-    return  platform
+    return platform
   }
 
   get downloadFileNameMuxer() {
@@ -191,15 +200,15 @@ export default class Installer {
     return environment.isWindows ? this.resources[0].name + '.exe' : this.resources[0].name
   }
 
-  get muxerName(){
+  get muxerName() {
     return environment.isWindows ? this.dependencies[1] + '.exe' : this.dependencies[1]
   }
 
-  get demuxerName(){
+  get demuxerName() {
     return environment.isWindows ? this.dependencies[2] + '.exe' : this.dependencies[2]
   }
 
-  get connectdName(){
+  get connectdName() {
     return environment.isWindows ? this.dependencies[0] + '.exe' : this.dependencies[0]
   }
 
@@ -207,55 +216,53 @@ export default class Installer {
     return this.dependencies.map(d => (environment.isWindows ? d + '.exe' : d))
   }
 
-  private download(progress: ProgressCallback = () => {}) {
-    EventBus.emit(Installer.EVENTS.progress, { progress: 0, installer: 'download init' });
-    return new Promise((resolve, reject) => {
+  // private download(progress: ProgressCallback = () => {}) {
+  //   EventBus.emit(Installer.EVENTS.progress, { progress: 0, installer: 'download init' })
+  //   return new Promise((resolve, reject) => {
+  //     const url = `${this.resources[0].url}${this.resources[0].version}/${this.downloadFileName}`
+  //     const muxer = `${this.resources[1].url}${this.resources[1].version}/${this.downloadFileNameMuxer}`
+  //     const demuxer = `${this.resources[2].url}${this.resources[2].version}/${this.downloadFileNameDemuxer}`
+  //     const connectd = `${this.resources[3].url}${this.resources[3].version}/${this.downloadFileNameConnectd}`
+  //     progress(0)
 
-      const url       = `${this.resources[0].url}${this.resources[0].version}/${this.downloadFileName}`
-      const muxer     = `${this.resources[1].url}${this.resources[1].version}/${this.downloadFileNameMuxer}`
-      const demuxer   = `${this.resources[2].url}${this.resources[2].version}/${this.downloadFileNameDemuxer}`
-      const connectd  = `${this.resources[3].url}${this.resources[3].version}/${this.downloadFileNameConnectd}`
-      progress(0)
+  //     Logger.info('DOWNLOADING BINARY', { url, muxer, demuxer, connectd })
 
-      Logger.info('DOWNLOADING BINARY', {  url, muxer, demuxer, connectd })
+  //     this.getFileWeb(url, resolve, reject, progress, this.binaryPathCLI())
+  //     this.getFileWeb(muxer, resolve, reject, progress, this.binaryPathMuxer())
+  //     this.getFileWeb(demuxer, resolve, reject, progress, this.binaryPathDemuxer())
+  //     this.getFileWeb(connectd, resolve, reject, progress, this.binaryPathConnectd())
+  //   })
+  // }
 
-      this.getFileWeb(url, resolve, reject, progress, this.binaryPathCLI())
-      this.getFileWeb(muxer, resolve, reject, progress, this.binaryPathMuxer())
-      this.getFileWeb(demuxer, resolve, reject, progress, this.binaryPathDemuxer())
-      this.getFileWeb(connectd, resolve, reject, progress, this.binaryPathConnectd())
-
-    })
-  }
-
-  private getFileWeb(url: string, resolve:any, reject: any, progress: any, pathFile: any ){
+  private getFileWeb(url: string, resolve: any, reject: any, progress: any, pathFile: any) {
     https
-        .get(url, res1 => {
-          if (!res1 || !res1.headers) {
-            Logger.warn('No response from download URL', { headers: res1.headers })
-            return reject(new Error('No response from download URL!'))
+      .get(url, res1 => {
+        if (!res1 || !res1.headers) {
+          Logger.warn('No response from download URL', { headers: res1.headers })
+          return reject(new Error('No response from download URL!'))
+        }
+        if (res1.headers.location) {
+          d('LOCATION FOUND', { location: res1.headers.location })
+          try {
+            https
+              .get(res1.headers.location, res2 => {
+                if (!res2 || !res2.headers || !res2.headers['content-length'])
+                  return reject(new Error('No response from location URL!'))
+                stream(res2)
+              })
+              .on('error', reject)
+          } catch (e) {
+            Logger.warn('Download file not found', { headers: res1.headers })
+            return reject(new Error('Download file not found'))
           }
-          if (res1.headers.location) {
-            d('LOCATION FOUND', { location: res1.headers.location })
-            try {
-              https
-                .get(res1.headers.location, res2 => {
-                  if (!res2 || !res2.headers || !res2.headers['content-length'])
-                    return reject(new Error('No response from location URL!'))
-                  stream(res2)
-                })
-                .on('error', reject)
-            } catch (e) {
-              Logger.warn('Download file not found', { headers: res1.headers })
-              return reject(new Error('Download file not found'))
-            }
-          } else if (res1.headers['content-length']) {
-            stream(res1)
-          } else {
-            Logger.warn('No download header in download URL', { headers: res1.headers })
-            return reject(new Error('No download header in download URL!'))
-          }
-        })
-        .on('error', reject)
+        } else if (res1.headers['content-length']) {
+          stream(res1)
+        } else {
+          Logger.warn('No download header in download URL', { headers: res1.headers })
+          return reject(new Error('No download header in download URL!'))
+        }
+      })
+      .on('error', reject)
 
     const stream = (res: any) => {
       const total = parseInt(res.headers['content-length'], 10)
@@ -272,6 +279,4 @@ export default class Installer {
       res.on('end', resolve)
     }
   }
-
-
 }
