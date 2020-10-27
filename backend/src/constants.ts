@@ -66,8 +66,8 @@ export const PATHS = {
 
   MAC_USER_BINARIES: path.join(os.homedir(), './resources'),
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  MAC_ADMIN_BINARIES: './resources',
-  MAC_ADMIN_SETTINGS: './resources',
+  MAC_ADMIN_BINARIES: 'remoteit',
+  MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
 
   WIN_USER_BINARIES: path.join(os.homedir(), 'AppData/Local/remoteit/bin'),

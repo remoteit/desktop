@@ -9,6 +9,7 @@ import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
 import Logger from './Logger'
+import path from 'path'
 import { existsSync, lstatSync } from 'fs'
 
 tmp.setGracefulCleanup()
@@ -48,22 +49,21 @@ class BinaryInstaller {
 
       const commands = new Command({ onError: reject, admin: true })
 
-      let su = ''
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
         commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
       } else {
-        su = 'sudo'
         if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
-        commands.push(`chmod 755 ${installer.binaryPathCLI()}`) // @TODO if this is going in the user folder must have user permissions
+        commands.push(`chmod 755 ./${installer.binaryPathCLI()}`) // @TODO if this is going in the user folder must have user permissions
+        commands.push(`ln -s ./${installer.binaryPathCLI()} /usr/local/bin/`)
       }
 
       commands.push(`cd ${environment.binPath}`)
-      //commands.push(`${su} ${installer.binaryName} ${strings.serviceUninstall()}`)
-      //commands.push(`${su} ${installer.binaryName} ${strings.serviceInstall()}`)
-      commands.push(`${su} ${installer.binaryName} ${strings.signIn()}`)
+      commands.push(`${installer.binaryName} ${strings.serviceUninstall()}`)
+      commands.push(`${installer.binaryName} ${strings.serviceInstall()}`)
+      commands.push(`${installer.binaryName} ${strings.signIn()}`)
       await commands.exec()
-      EventBus.emit(Installer.EVENTS.progress, { progress: 100, installer: 'finish commands' });
+      EventBus.emit(Installer.EVENTS.progress, { progress: 100, installer: path });
       resolve()
     })
   }
