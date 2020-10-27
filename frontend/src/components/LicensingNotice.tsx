@@ -1,5 +1,5 @@
 import React from 'react'
-import { getLicense } from '../models/licensing'
+import { selectLicense } from '../models/licensing'
 import { ListItem, Link } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
@@ -10,7 +10,9 @@ import { Notice } from './Notice'
 type Props = { device?: IDevice; context?: 'service' | 'add' | 'account' }
 
 export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
-  const { license, serviceLimit, evaluationDays } = useSelector((state: ApplicationState) => getLicense(state, device))
+  const { license, serviceLimit, evaluationDays } = useSelector((state: ApplicationState) =>
+    selectLicense(state, device)
+  )
   let notice
   let warnDate = new Date()
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance

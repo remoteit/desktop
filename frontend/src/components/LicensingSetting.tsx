@@ -1,0 +1,57 @@
+import React from 'react'
+import { makeStyles, List, ListItem, ListItemIcon, ListItemText, Typography, Divider, Box } from '@material-ui/core'
+import { ApplicationState } from '../store'
+import { useSelector } from 'react-redux'
+import { dateOptions } from './Duration/Duration'
+import { selectLicenses } from '../models/licensing'
+import { spacing } from '../styling'
+import { LicensingIcon } from './LicensingIcon'
+import { LimitSetting } from './LimitSetting'
+
+export const LicensingSetting: React.FC = () => {
+  const { licenses, limits } = useSelector((state: ApplicationState) => selectLicenses(state))
+  const css = useStyles()
+
+  if (!licenses.length) return null
+
+  return (
+    <>
+      <Typography variant="subtitle1">Licensing</Typography>
+      <List>
+        {licenses.map(license => (
+          <>
+            <ListItem key={license.id} dense>
+              <ListItemIcon>
+                <LicensingIcon license={license} />
+              </ListItemIcon>
+              <ListItemText
+                primary={`${license.plan.product.description} ${license.plan.description} plan`}
+                secondary={`Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemIcon></ListItemIcon>
+              <Box width={400}>
+                {license.limits.map(limit => (
+                  <LimitSetting key={limit.name} limit={limit} />
+                ))}
+              </Box>
+            </ListItem>
+          </>
+        ))}
+        {!!limits.length && <Divider className={css.divider} />}
+        {limits.map(limit => (
+          <ListItem key={limit.name}>
+            <ListItemIcon></ListItemIcon>
+            <LimitSetting limit={limit} />
+          </ListItem>
+        ))}
+      </List>
+      <Divider />
+    </>
+  )
+}
+
+const useStyles = makeStyles({
+  divider: { margin: `${spacing.sm}px ${spacing.xl}px ${spacing.xs}px 73px` },
+})

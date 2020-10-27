@@ -7,6 +7,7 @@ import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
+import { LicensingSetting } from '../../components/LicensingSetting'
 import { UninstallSetting } from '../../components/UninstallSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { UpdateSetting } from '../../components/UpdateSetting'
@@ -102,6 +103,7 @@ export const SettingsPage: React.FC = () => {
           <Divider />
         </>
       )}
+      <LicensingSetting />
       <Typography variant="subtitle1">User</Typography>
       <List>
         <ListItemSetting

@@ -2,11 +2,11 @@ import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 
-type ILicenseLookup = { id: string; services: string; evaluation: string; platform: number }
+type ILicenseLookup = { productId: string; services: string; evaluation: string; platform: number }
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
-    id: '55d9e884-05fd-11eb-bda8-021f403e8c27',
+    productId: '55d9e884-05fd-11eb-bda8-021f403e8c27',
     services: 'aws-services',
     evaluation: 'aws-evaluation',
     platform: 1185,
@@ -14,31 +14,8 @@ export const LicenseLookup: ILicenseLookup[] = [
 ]
 
 type ILicensing = ILookup<any> & {
-  licenses: {
-    id: string
-    created: Date
-    updated: Date
-    expiration: Date
-    valid: boolean
-    value: object
-    plan: {
-      id: string
-      name: string
-      description: string
-      duration: string
-      product: {
-        id: string
-        name: string
-        description: string
-        provider: string
-      }
-    }
-  }[]
-  limits: {
-    name: string
-    value: any
-    actual: any
-  }[]
+  licenses: ILicense[]
+  limits: ILimit[]
 }
 
 const state: ILicensing = {
@@ -77,6 +54,9 @@ export default createModel({
                   name
                   value
                   actual
+                  license {
+                    id
+                  }
                 }
               }
             }`
@@ -97,42 +77,41 @@ export default createModel({
           expiration: new Date(l.expiration),
         })),
         limits: data.limits,
+        // licenses: [
+        //   {
+        //     id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
+        //     created: new Date('2020-10-17T01:03:47.976Z'),
+        //     updated: new Date('2020-10-17T01:03:47.976Z'),
+        //     expiration: new Date('2020-10-16T01:03:48.000Z'),
+        //     valid: true,
+        //     plan: {
+        //       id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
+        //       name: 'TRIAL',
+        //       description: 'trial',
+        //       duration: 'P30D',
+        //       product: {
+        //         id: '55d9e884-05fd-11eb-bda8-021f403e8c27',
+        //         name: 'remote.it for AWS',
+        //         description: 'remote.it for AWS',
+        //         provider: 'AWS',
+        //       },
+        //     },
+        //   },
+        // ],
+        // limits: [
+        //   {
+        //     name: 'aws-evaluation',
+        //     value: 'P7D',
+        //     actual: null,
+        //   },
+        //   {
+        //     name: 'aws-services',
+        //     value: 5,
+        //     actual: 3,
+        //     license: { id: 'e46e5c55-7d12-46c5-aee3-493e29e604db' },
+        //   },
+        // ],
       })
-      // dispatch.licensing.set({
-      //   licenses: [
-      //     {
-      //       id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
-      //       created: new Date('2020-10-17T01:03:47.976Z'),
-      //       updated: new Date('2020-10-17T01:03:47.976Z'),
-      //       expiration: new Date('2020-10-16T01:03:48.000Z'),
-      //       valid: true,
-      //       plan: {
-      //         id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
-      //         name: 'TRIAL',
-      //         description: 'trial',
-      //         duration: 'P30D',
-      //         product: {
-      //           id: '55d9e884-05fd-11eb-bda8-021f403e8c27',
-      //           name: 'remote.it for AWS',
-      //           description: 'remote.it for AWS',
-      //           provider: 'AWS',
-      //         },
-      //       },
-      //     },
-      //   ],
-      //   limits: [
-      //     {
-      //       name: 'aws-evaluation',
-      //       value: 'P7D',
-      //       actual: null,
-      //     },
-      //     {
-      //       name: 'aws-services',
-      //       value: 2,
-      //       actual: 6,
-      //     },
-      //   ],
-      // })
     },
   }),
   reducers: {
@@ -142,13 +121,26 @@ export default createModel({
   },
 })
 
-export function getLicense(state: ApplicationState, device?: IDevice) {
+export function selectLicense(state: ApplicationState, device?: IDevice) {
   const lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
   const evaluationLimit = state.licensing.limits.find(l => l.name === lookup?.evaluation)
-  const evaluationDays = evaluationLimit?.value.replace(/\D/g, '')
   return {
-    license: state.licensing.licenses.find(l => l.plan.product.id === lookup?.id),
+    license: state.licensing.licenses.find(l => l.plan.product.id === lookup?.productId),
     serviceLimit: state.licensing.limits.find(l => l.name === lookup?.services),
-    evaluationDays,
+    evaluationDays: evaluationDays(evaluationLimit?.value),
   }
+}
+
+export function selectLicenses(state: ApplicationState) {
+  return {
+    licenses: state.licensing.licenses.map(l => ({
+      ...l,
+      limits: state.licensing.limits.filter(limit => limit.license?.id === l.id),
+    })),
+    limits: state.licensing.limits.filter(limit => !state.licensing.licenses.find(l => l.id === limit.license?.id)),
+  }
+}
+
+export function evaluationDays(value?: string) {
+  return value ? value.replace(/\D/g, '') : null
 }
