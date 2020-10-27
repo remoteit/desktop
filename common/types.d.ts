@@ -255,6 +255,34 @@ declare global {
     description: string
   }
 
+  type ILimit = {
+    name: string
+    value: any
+    actual: any
+    license?: { id: string }
+  }
+
+  type ILicense = {
+    id: string
+    created: Date
+    updated: Date
+    expiration: Date
+    valid: boolean
+    value: object
+    plan: {
+      id: string
+      name: string
+      description: string
+      duration: string
+      product: {
+        id: string
+        name: string
+        description: string
+        provider: string
+      }
+    }
+  }
+
   interface IRoute {
     key: IRouteType
     icon: string
