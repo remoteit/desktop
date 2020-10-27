@@ -9,8 +9,14 @@ import { Notice } from './Notice'
 
 type Props = { device?: IDevice; context?: 'service' | 'add' | 'account' }
 
+const learnMoreLink = (
+  <Link href="https://support.remote.it/hc/en-us/articles/360050474512" target="_blank">
+    Learn more.
+  </Link>
+)
+
 export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
-  const { license, serviceLimit, evaluationDays } = useSelector((state: ApplicationState) =>
+  const { license, serviceLimit, evaluationDays, upgradeUrl } = useSelector((state: ApplicationState) =>
     selectLicense(state, device)
   )
   let notice
@@ -18,12 +24,6 @@ export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
   if (!license) return null
-  const upgradeLink = 'https://downloads.remote.it/aws/latest/saas'
-  const learnMoreLink = (
-    <Link href="https://support.remote.it/hc/en-us/articles/360050474512" target="_blank">
-      Learn more.
-    </Link>
-  )
   const title = (
     <>
       Your {license.plan.description} license of {license.plan.product.name}
@@ -32,7 +32,7 @@ export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
 
   if (warnDate > license.expiration && license.plan.name === 'TRIAL' && !context)
     notice = (
-      <Notice severity="info" link={upgradeLink}>
+      <Notice severity="info" link={upgradeUrl}>
         {title} will expire on {/* replace with countdown */}
         {license.expiration.toLocaleString(undefined, dateOptions)}.
       </Notice>
@@ -40,7 +40,7 @@ export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
 
   if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value && !context)
     notice = (
-      <Notice severity="warning" link={upgradeLink}>
+      <Notice severity="warning" link={upgradeUrl}>
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
           You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{learnMoreLink}
@@ -50,7 +50,7 @@ export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
 
   if (!license.valid && !context)
     notice = (
-      <Notice severity="warning" link={upgradeLink}>
+      <Notice severity="warning" link={upgradeUrl}>
         {title} has expired.
         <em>
           Please upgrade your {license.plan.product.name} license.{learnMoreLink}
@@ -60,7 +60,7 @@ export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
 
   if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value && context === 'add')
     notice = (
-      <Notice severity="warning" link={upgradeLink}>
+      <Notice severity="warning" link={upgradeUrl}>
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
           This service will be accessible for {evaluationDays} days unless you upgrade your license.{learnMoreLink}

@@ -121,6 +121,8 @@ export default createModel({
   },
 })
 
+const upgradeUrl = 'https://downloads.remote.it/aws/latest/saas'
+
 export function selectLicense(state: ApplicationState, device?: IDevice) {
   const lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
   const evaluationLimit = state.licensing.limits.find(l => l.name === lookup?.evaluation)
@@ -128,6 +130,7 @@ export function selectLicense(state: ApplicationState, device?: IDevice) {
     license: state.licensing.licenses.find(l => l.plan.product.id === lookup?.productId),
     serviceLimit: state.licensing.limits.find(l => l.name === lookup?.services),
     evaluationDays: evaluationDays(evaluationLimit?.value),
+    upgradeUrl,
   }
 }
 
@@ -138,6 +141,7 @@ export function selectLicenses(state: ApplicationState) {
       limits: state.licensing.limits.filter(limit => limit.license?.id === l.id),
     })),
     limits: state.licensing.limits.filter(limit => !state.licensing.licenses.find(l => l.id === limit.license?.id)),
+    upgradeUrl,
   }
 }
 
