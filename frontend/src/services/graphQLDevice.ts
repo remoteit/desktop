@@ -49,6 +49,7 @@ const DEVICE_SELECT = `
     port
     type
     protocol
+    license
     attributes
     access {
       user {
@@ -168,6 +169,8 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
           createdAt: new Date(s.created),
           lastReported: s.lastReported && new Date(s.lastReported),
           contactedAt: new Date(s.endpoint?.timestamp),
+          license: s.license,
+          // license: ['UNKNOWN', 'LICENSED', 'EVALUATION', 'UNLICENSED'][index % 4] as IService['license'],
           attributes: s.attributes,
           name: removeDeviceName(d.name, s.name),
           port: s.port,

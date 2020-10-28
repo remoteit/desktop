@@ -53,16 +53,34 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     if (started && connection && !connection?.active) devices.fetchSingle({ deviceId: connection.deviceID })
   }, [started, connection])
 
+  let title = 'Connect'
+  let disabled = false
+  let variant: 'text' | 'outlined' | 'contained' | undefined
+
+  if (service?.license === 'EVALUATION') {
+    color = 'warning'
+    title = 'Unlicensed'
+    variant = 'text'
+  }
+  if (service?.license === 'UNLICENSED') {
+    color = 'grayLight'
+    title = 'Unlicensed'
+    disabled = true
+    variant = 'text'
+  }
+
   return (
     <Fade in={!hidden} timeout={600}>
       <div>
         <DynamicButton
-          title={connecting ? 'Connecting' : 'Connect'}
+          title={connecting ? 'Connecting' : title}
           icon="exchange"
+          variant={variant}
           loading={connecting}
           color={connecting ? undefined : color}
           size={size}
           onClick={clickHandler}
+          disabled={disabled}
         />
       </div>
     </Fade>

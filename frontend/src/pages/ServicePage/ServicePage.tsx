@@ -10,6 +10,7 @@ import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ProxySetting } from '../../components/ProxySetting'
 import { UsernameSetting } from '../../components/UsernameSetting'
+import { LicensingNotice } from '../../components/LicensingNotice'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
@@ -81,6 +82,7 @@ export const ServicePage: React.FC = () => {
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
+          <LicensingNotice device={device} />
         </>
       }
     >

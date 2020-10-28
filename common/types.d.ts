@@ -224,6 +224,7 @@ declare global {
     protocol?: string
     sessions: IUser[]
     access: IUser[]
+    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
     attributes: {
       name?: string
       route?: IRouteType // p2p with failover | p2p | proxy

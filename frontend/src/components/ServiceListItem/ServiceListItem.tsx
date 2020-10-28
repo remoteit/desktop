@@ -33,7 +33,7 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
   const id = connection ? connection.id : service ? service.id : ''
   const otherUser = !!connection?.owner?.id && connection?.owner?.id !== user?.id
 
-  const details = (
+  const secondary = (
     <span className={css.details}>
       {connection && hostName(connection)}
       {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
@@ -50,14 +50,9 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
 
   return (
     <>
-      <ListItemLocation
-        className={className}
-        pathname={`${location.pathname}/${id}`}
-        // disabled={otherUser}
-        dense={dense}
-      >
+      <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} dense={dense}>
         <ComboButton connection={connection} service={service} />
-        <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={details} />
+        <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={secondary} />
         <ListItemSecondaryAction>
           <LaunchButton connection={connection} service={service} />
           <CopyButton connection={connection} service={service} />
@@ -75,4 +70,5 @@ const useStyles = makeStyles({
   indent: { paddingLeft: 57 },
   details: { '& > span': { marginLeft: spacing.sm } },
   restriction: { color: colors.grayDarker },
+  evaluation: { color: colors.warning },
 })

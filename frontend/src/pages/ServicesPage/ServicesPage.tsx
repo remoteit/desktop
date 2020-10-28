@@ -5,6 +5,7 @@ import { ApplicationState } from '../../store'
 import { Typography, List, Divider } from '@material-ui/core'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { ListItemLocation } from '../../components/ListItemLocation'
+import { LicensingNotice } from '../../components/LicensingNotice'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
@@ -54,6 +55,7 @@ export const ServicesPage: React.FC = () => {
             <AddUserButton device={device} />
             <RefreshButton device={device} />
           </Typography>
+          <LicensingNotice device={device} />
         </>
       }
     >

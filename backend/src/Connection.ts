@@ -45,7 +45,9 @@ export default class Connection extends EventEmitter {
   }
 
   async clear() {
+    this.params.connecting = false
     this.params.startTime = undefined
+    this.params.error = undefined
     await cli.removeConnection(this.params, this.error)
   }
 
