@@ -1,5 +1,5 @@
 import React from 'react'
-import { selectLicense } from '../models/licensing'
+import { selectLicense, lookupLicenseProductId, evaluationDays } from '../models/licensing'
 import { ListItem, Link } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
 import { Notice } from './Notice'
 
-type Props = { device?: IDevice; context?: 'service' | 'add' | 'account' }
+type Props = { device?: IDevice; license?: ILicense; context?: 'service' | 'add' | 'account' }
 
 const learnMoreLink = (
   <Link href="https://support.remote.it/hc/en-us/articles/360050474512" target="_blank">
@@ -15,20 +15,19 @@ const learnMoreLink = (
   </Link>
 )
 
-export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
-  const { license, serviceLimit, evaluationDays, upgradeUrl } = useSelector((state: ApplicationState) =>
-    selectLicense(state, device)
+export const LicensingNotice: React.FC<Props> = ({ context, ...props }) => {
+  const { license, limits, upgradeUrl } = useSelector((state: ApplicationState) =>
+    selectLicense(state, props.device ? lookupLicenseProductId(props.device) : props.license?.plan.product.id)
   )
+  const serviceLimit = limits.find(l => l.name === 'aws-services')
+  const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
+
   let notice
   let warnDate = new Date()
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
   if (!license) return null
-  const title = (
-    <>
-      Your {license.plan.description} license of {license.plan.product.name}
-    </>
-  )
+  const title = `Your ${license.plan.description} license of ${license.plan.product.name}`
 
   if (warnDate > license.expiration && license.plan.name === 'TRIAL' && !context)
     notice = (
@@ -63,7 +62,8 @@ export const LicensingNotice: React.FC<Props> = ({ device, context }) => {
       <Notice severity="warning" link={upgradeUrl}>
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
-          This service will be accessible for {evaluationDays} days unless you upgrade your license.{learnMoreLink}
+          This service will be accessible for {evaluationDays(evaluationLimit?.value)} days unless you upgrade your
+          license.{learnMoreLink}
         </em>
       </Notice>
     )

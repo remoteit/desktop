@@ -15,9 +15,10 @@ import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
 import { selectLicenses } from '../models/licensing'
-import { spacing } from '../styling'
 import { LicensingIcon } from './LicensingIcon'
+import { LicensingNotice } from './LicensingNotice'
 import { LimitSetting } from './LimitSetting'
+import { spacing } from '../styling'
 
 export const LicensingSetting: React.FC = () => {
   const { licenses, limits, upgradeUrl } = useSelector((state: ApplicationState) => selectLicenses(state))
@@ -31,6 +32,7 @@ export const LicensingSetting: React.FC = () => {
       <List>
         {licenses.map(license => (
           <>
+            <LicensingNotice license={license} />
             <ListItem key={license.id} dense>
               <ListItemIcon>
                 <LicensingIcon license={license} />
