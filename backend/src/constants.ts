@@ -66,7 +66,7 @@ export const PATHS = {
 
   MAC_USER_BINARIES: path.join(os.homedir(), './resources'),
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  MAC_ADMIN_BINARIES: process.env.NODE_ENV === 'development' ? path.resolve('./bin/CLI') : '',
+  MAC_ADMIN_BINARIES: process.env.NODE_ENV === 'development' ? path.resolve('./bin/CLI') :  path.join(__dirname, '../../../../'),
   MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
 

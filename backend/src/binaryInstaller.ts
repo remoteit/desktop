@@ -58,11 +58,11 @@ class BinaryInstaller {
 
       commands.push(`${installer.binaryName} ${strings.serviceUninstall()}`)
       commands.push(`${installer.binaryName} ${strings.serviceInstall()}`)
-      commands.push(`${installer.binaryName} ${strings.signIn()}`)
+      // commands.push(`${installer.binaryName} ${strings.signIn()}`)
 
       await commands.exec()
 
-      EventBus.emit(Installer.EVENTS.progress, { progress: 100, installer: path })
+      EventBus.emit(Installer.EVENTS.installed, remoteitInstaller.toJSON())
       resolve()
     })
   }
