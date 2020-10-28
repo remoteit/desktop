@@ -82,7 +82,7 @@ export const ServicePage: React.FC = () => {
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
-          <LicensingNotice device={device} />
+          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
         </>
       }
     >
