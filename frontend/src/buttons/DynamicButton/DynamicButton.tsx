@@ -1,7 +1,7 @@
 import React from 'react'
-import { IconButton, Tooltip, Button } from '@material-ui/core'
+import { makeStyles, IconButton, Tooltip, Button, darken, lighten } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
-import { Color, muiColor } from '../../styling'
+import { Color, colors } from '../../styling'
 
 type Props = {
   icon: string
@@ -10,10 +10,13 @@ type Props = {
   size?: 'icon' | 'medium' | 'small'
   disabled?: boolean
   loading?: boolean
+  variant?: 'text' | 'outlined' | 'contained'
   onClick: () => void
 }
 
-export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, size = 'icon', disabled, loading }) => {
+export const DynamicButton: React.FC<Props> = props => {
+  const css = useStyles(props)()
+  let { title, icon, onClick, color, size = 'icon', variant = 'contained', disabled, loading }: Props = props
   let styles = {}
 
   const clickHandler = (event: React.MouseEvent) => {
@@ -38,14 +41,7 @@ export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, si
 
   if (size === 'small') {
     return (
-      <Button
-        variant="contained"
-        onClick={clickHandler}
-        disabled={disabled}
-        size={size}
-        color={muiColor(color)}
-        fullWidth
-      >
+      <Button variant={variant} onClick={clickHandler} disabled={disabled} size={size} className={css.button} fullWidth>
         {title}
         {loading && IconComponent}
       </Button>
@@ -56,11 +52,11 @@ export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, si
     return (
       <Button
         style={styles}
-        variant="contained"
+        variant={variant}
         onClick={clickHandler}
         disabled={disabled}
         size={size}
-        color={muiColor(color)}
+        className={css.button}
       >
         {title}
         {IconComponent}
@@ -77,4 +73,24 @@ export const DynamicButton: React.FC<Props> = ({ title, icon, onClick, color, si
       </span>
     </Tooltip>
   )
+}
+
+const useStyles = (props: Props) => {
+  let background = props.color ? colors[props.color] : undefined
+  let hover = background ? darken(background, 0.3) : undefined
+  let foreground
+
+  if (props.variant === 'text' && background) {
+    foreground = darken(background, 0.2)
+    hover = lighten(background, 0.8)
+    background = lighten(background, 0.9)
+  }
+
+  return makeStyles({
+    button: {
+      color: foreground,
+      backgroundColor: background,
+      '&:hover': { backgroundColor: hover },
+    },
+  })
 }

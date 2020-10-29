@@ -2,13 +2,11 @@ import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 
-type ILicenseLookup = { productId: string; services: string; evaluation: string; platform: number }
+type ILicenseLookup = { productId: string; platform: number }
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
     productId: '55d9e884-05fd-11eb-bda8-021f403e8c27',
-    services: 'aws-services',
-    evaluation: 'aws-evaluation',
     platform: 1185,
   },
 ]
@@ -82,7 +80,7 @@ export default createModel({
         //     id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
         //     created: new Date('2020-10-17T01:03:47.976Z'),
         //     updated: new Date('2020-10-17T01:03:47.976Z'),
-        //     expiration: new Date('2020-10-16T01:03:48.000Z'),
+        //     expiration: new Date('2020-11-16T01:03:48.000Z'),
         //     valid: true,
         //     plan: {
         //       id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
@@ -107,7 +105,7 @@ export default createModel({
         //   {
         //     name: 'aws-services',
         //     value: 5,
-        //     actual: 3,
+        //     actual: 8,
         //     license: { id: 'e46e5c55-7d12-46c5-aee3-493e29e604db' },
         //   },
         // ],
@@ -121,23 +119,31 @@ export default createModel({
   },
 })
 
-export function selectLicense(state: ApplicationState, device?: IDevice) {
+const upgradeUrl = 'https://downloads.remote.it/aws/latest/saas'
+
+export function lookupLicenseProductId(device?: IDevice) {
   const lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
-  const evaluationLimit = state.licensing.limits.find(l => l.name === lookup?.evaluation)
+  return lookup?.productId
+}
+
+export function selectLicense(state: ApplicationState, productId?: string) {
+  const { licensing } = state
   return {
-    license: state.licensing.licenses.find(l => l.plan.product.id === lookup?.productId),
-    serviceLimit: state.licensing.limits.find(l => l.name === lookup?.services),
-    evaluationDays: evaluationDays(evaluationLimit?.value),
+    license: licensing.licenses.find(l => l.plan.product.id === productId),
+    limits: licensing.limits,
+    upgradeUrl,
   }
 }
 
 export function selectLicenses(state: ApplicationState) {
+  const { licensing } = state
   return {
-    licenses: state.licensing.licenses.map(l => ({
-      ...l,
-      limits: state.licensing.limits.filter(limit => limit.license?.id === l.id),
+    licenses: licensing.licenses.map(license => ({
+      ...license,
+      limits: licensing.limits.filter(limit => limit.license?.id === license.id),
     })),
-    limits: state.licensing.limits.filter(limit => !state.licensing.licenses.find(l => l.id === limit.license?.id)),
+    limits: licensing.limits.filter(limit => !limit.license),
+    upgradeUrl,
   }
 }
 

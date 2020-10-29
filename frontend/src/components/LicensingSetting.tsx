@@ -1,15 +1,27 @@
 import React from 'react'
-import { makeStyles, List, ListItem, ListItemIcon, ListItemText, Typography, Divider, Box } from '@material-ui/core'
+import {
+  makeStyles,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Typography,
+  Divider,
+  Button,
+  Box,
+} from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
 import { selectLicenses } from '../models/licensing'
-import { spacing } from '../styling'
 import { LicensingIcon } from './LicensingIcon'
+import { LicensingNotice } from './LicensingNotice'
 import { LimitSetting } from './LimitSetting'
+import { spacing } from '../styling'
 
 export const LicensingSetting: React.FC = () => {
-  const { licenses, limits } = useSelector((state: ApplicationState) => selectLicenses(state))
+  const { licenses, limits, upgradeUrl } = useSelector((state: ApplicationState) => selectLicenses(state))
   const css = useStyles()
 
   if (!licenses.length) return null
@@ -20,6 +32,7 @@ export const LicensingSetting: React.FC = () => {
       <List>
         {licenses.map(license => (
           <>
+            <LicensingNotice license={license} />
             <ListItem key={license.id} dense>
               <ListItemIcon>
                 <LicensingIcon license={license} />
@@ -28,6 +41,11 @@ export const LicensingSetting: React.FC = () => {
                 primary={`${license.plan.product.description} ${license.plan.description} plan`}
                 secondary={`Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`}
               />
+              <ListItemSecondaryAction>
+                <Button color="primary" href={upgradeUrl} size="small" target="_blank">
+                  Change Plan
+                </Button>
+              </ListItemSecondaryAction>
             </ListItem>
             <ListItem>
               <ListItemIcon></ListItemIcon>

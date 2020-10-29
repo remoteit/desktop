@@ -70,17 +70,6 @@ export const colors: { [key in Color]: string } = {
   rpi: '#C51A4A',
 }
 
-export function muiColor(color?: Color): PropTypes.Color | undefined {
-  if (!color) return
-  switch (color) {
-    case 'primary':
-    case 'secondary':
-      return color
-    default:
-      return 'default'
-  }
-}
-
 export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 
 export const spacing: { [key in Spacing]: number } = {

@@ -17,7 +17,6 @@ const jssTheme: ThemeOptions = {
       root: {
         color: colors.grayDark,
         borderRadius: spacing.xs,
-        backgroundColor: colors.grayLightest,
         padding: `${spacing.sm - spacing.xxs}px ${spacing.md}px`,
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
         '&+.MuiButton-root': { marginLeft: spacing.sm },
@@ -37,7 +36,8 @@ const jssTheme: ThemeOptions = {
       },
     },
     MuiChip: {
-      root: { borderRadius: 4, backgroundColor: colors.grayLighter },
+      root: { borderRadius: 4, backgroundColor: colors.grayLightest },
+      sizeSmall: { fontSize: fontSizes.xs },
     },
     MuiSnackbar: {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },

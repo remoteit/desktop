@@ -13,6 +13,7 @@ export function service({ name = 'SSH', type = 'SSH', state = 'active', ...other
     typeID: 30,
     sessions: [],
     access: [],
+    license: 'UNKNOWN',
     attributes: {},
     ...other,
   }
