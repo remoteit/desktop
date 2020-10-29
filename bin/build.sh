@@ -19,11 +19,9 @@ chmod -R 777 ./bin/
 
 mkdir -m 777 ./bin/CLI/
 
-mkdir -m 777 ./bin/CLI/win
+mkdir -m 777 ./bin/CLI/x64
 
-mkdir -m 777 ./bin/CLI/win/x64
-
-mkdir -m 777 ./bin/CLI/win/x86
+mkdir -m 777 ./bin/CLI/x86
 
 if [ "$(uname)" == "Darwin" ]; then
 
@@ -39,22 +37,22 @@ if [ "$(uname)" == "Darwin" ]; then
 else
 
     #32 bits Windows 
-    curl https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86.exe --output ./bin/CLI/win/X86/remoteit.exe 
+    curl https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86.exe --output ./bin/CLI/X86/remoteit.exe 
 
-    curl https://${URL_CONNECTD}${CONNECTD}/connectd.x86-win.exe --output ./bin/CLI/win/X86/connectd.exe
+    curl https://${URL_CONNECTD}${CONNECTD}/connectd.x86-win.exe --output ./bin/CLI/X86/connectd.exe
 
-    curl https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86-win.exe --output ./bin/CLI/win/X86/demuxer.exe
+    curl https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86-win.exe --output ./bin/CLI/X86/demuxer.exe
 
-    curl https://${URL_DOWNLOAD}${MUXER}/muxer.x86-win.exe --output ./bin/CLI/win/X86/muxer.exe
+    curl https://${URL_DOWNLOAD}${MUXER}/muxer.x86-win.exe --output ./bin/CLI/X86/muxer.exe
 
 
     #64 bits Windows
-    curl https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86_64.exe --output ./bin/CLI/win/X64/remoteit.exe
+    curl https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86_64.exe --output ./bin/CLI/X64/remoteit.exe
 
-    curl https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-64.exe --output ./bin/CLI/win/X64/connectd.exe
+    curl https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-64.exe --output ./bin/CLI/X64/connectd.exe
 
-    curl https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-64.exe --output ./bin/CLI/win/X64/demuxer.exe
+    curl https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-64.exe --output ./bin/CLI/X64/demuxer.exe
 
-    curl https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-64.exe --output ./bin/CLI/win/X64/muxer.exe
+    curl https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-64.exe --output ./bin/CLI/X64/muxer.exe
 
 fi

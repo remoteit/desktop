@@ -1,11 +1,9 @@
 import binaryInstaller from './binaryInstaller'
 import remoteitInstaller from './remoteitInstaller'
-import Installer from './Installer'
 import environment from './environment'
 import user from './User'
 import Command from './Command'
 import rimraf from 'rimraf'
-import tmp from 'tmp'
 
 describe('Test framework is working', () => {
   expect(true).toBeTruthy()
@@ -21,48 +19,10 @@ describe('backend/binaryInstaller', () => {
       environment.binPath = '../jest/bin'
 
       commandSpy = jest.spyOn(Command.prototype, 'push').mockImplementation()
-      downloadSpy = jest
-        .spyOn(binaryInstaller, 'download')
-        // .mockImplementation((i: Installer, t: tmp.DirResult) => Promise.resolve())
     })
 
     beforeEach(() => {
       commandSpy.mockClear()
-      downloadSpy.mockClear()
-    })
-
-    test('downloads and sets up an installer for Unix', async () => {
-      environment.isWindows = false
-
-      await binaryInstaller.installBinary(remoteitInstaller)
-
-      expect(commandSpy).toBeCalledWith('mkdir -p ../jest/bin')
-      expect(commandSpy).toBeCalledWith('mv undefined ../jest/bin/remoteit')
-      expect(commandSpy).toBeCalledWith('chmod 755 ../jest/bin/remoteit')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j tools install --update')
-      expect(commandSpy).toBeCalledWith(
-        `"../jest/bin/remoteit" -j signin --user ${user.username} --authhash ${user.authHash}`
-      )
-
-      expect(commandSpy).toBeCalledTimes(7)
-      expect(downloadSpy).toBeCalledTimes(1)
-    })
-
-    test('downloads and sets up an installer for Windows', async () => {
-      environment.isWindows = true
-
-      await binaryInstaller.installBinary(remoteitInstaller)
-
-      expect(commandSpy).toBeCalledWith('md "../jest/bin"')
-      expect(commandSpy).toBeCalledWith('move /y "undefined" "../jest/bin/remoteit.exe"')
-      expect(commandSpy).toBeCalledWith('icacls "../jest/bin/remoteit.exe" /T /C /Q /grant "*S-1-5-32-545:RX"')
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j tools install --update')
-      expect(commandSpy).toBeCalledWith(
-        `"../jest/bin/remoteit.exe" -j signin --user ${user.username} --authhash ${user.authHash}`
-      )
-
-      expect(commandSpy).toBeCalledTimes(7)
-      expect(downloadSpy).toBeCalledTimes(1)
     })
   })
 

@@ -2,16 +2,7 @@
 ; !define REMOTE_CLI_EXE "$PATH_REMOTE_DIR\remoteit.exe"
 
 !macro customInstall
-    Var /GLOBAL PATH_REMOTE_DIR
     Var /GLOBAL BINARIES
-    Var /GLOBAL REMOTE_CLI_EXE
-    Var /GLOBAL MUXER
-    Var /GLOBAL DEMUXER
-    Var /GLOBAL CONNECTD
-
-    StrCpy $PATH_REMOTE_DIR "C:\Program Files\remoteit\resources"
-    StrCpy $BINARIES "$INSTDIR\resources\win"
-
     Var /GLOBAL installLog
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
     file_found:
@@ -27,22 +18,16 @@
 
     ${If} ${RunningX64}
         FileWrite $installLog "- Platform X64$\r$\n"
-        StrCpy $REMOTE_CLI_EXE "$BINARIES\x64\remoteit.exe"
-        StrCpy $MUXER "$BINARIES\x64\muxer.exe"
-        StrCpy $DEMUXER "$BINARIES\x64\demuxer.exe"
-        StrCpy $CONNECTD "$BINARIES\x64\connectd.exe"
+        StrCpy $BINARIES "$INSTDIR\resources\x64\remoteit.exe"
     ${Else}
         FileWrite $installLog "- Platform X86$\r$\n"
-        StrCpy $REMOTE_CLI_EXE "$BINARIES\x86\remoteit.exe"
-        StrCpy $MUXER "$BINARIES\x86\muxer.exe"
-        StrCpy $DEMUXER "$BINARIES\x86\demuxer.exe"
-        StrCpy $CONNECTD "$BINARIES\x86\connectd.exe"
+        StrCpy $BINARIES "$INSTDIR\resources\x86\remoteit.exe"
     ${EndIf}
     
-    IfFileExists "$REMOTE_CLI_EXE" found_remoteIt not_found_remoteIt
+    IfFileExists "$BINARIES" found_remoteIt not_found_remoteIt
     found_remoteIt:
 
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'"$REMOTE_CLI_EXE$\'" -j service uninstall'
+        nsExec::ExecToStack /OEM 'powershell "& " "$\'"$BINARIES$\'" -j service uninstall'
         Pop $0
         Pop $1
         ${If} $0 == 0
@@ -50,9 +35,9 @@
         ${Else}
             StrCpy $0 "ERROR"
         ${EndIf}
-        FileWrite $installLog "- $REMOTE_CLI_EXE -j service uninstall     [$0]  $1$\r$\n"
+        FileWrite $installLog "- $BINARIES -j service uninstall     [$0]  $1$\r$\n"
 
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'"$REMOTE_CLI_EXE$\'" -j service install'
+        nsExec::ExecToStack /OEM 'powershell "& " "$\'"$BINARIES$\'" -j service install'
         Pop $0
         Pop $1
         ${If} $0 == 0
@@ -60,17 +45,13 @@
         ${Else}
             StrCpy $0 "ERROR"
         ${EndIf}
-        FileWrite $installLog "- $REMOTE_CLI_EXE -j service install     [$0]  $1$\r$\n"
+        FileWrite $installLog "- $BINARIES -j service install     [$0]  $1$\r$\n"
 
-        CopyFiles $REMOTE_CLI_EXE $PATH_REMOTE_DIR
-        CopyFiles $MUXER $PATH_REMOTE_DIR
-        CopyFiles $DEMUXER $PATH_REMOTE_DIR
-        CopyFiles $CONNECTD $PATH_REMOTE_DIR
 
         goto end_of_remoteIt
     not_found_remoteIt:
-        ; MessageBox MB_OK "Error file not found: $REMOTE_CLI_EXE"
-        FileWrite $installLog "- [Error] file not found: $REMOTE_CLI_EXE$\r$\n"
+        ; MessageBox MB_OK "Error file not found: $BINARIES"
+        FileWrite $installLog "- [Error] file not found: $BINARIES$\r$\n"
     end_of_remoteIt:
 
     

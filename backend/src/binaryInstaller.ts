@@ -9,7 +9,6 @@ import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
 import Logger from './Logger'
-import path from 'path'
 import { existsSync, lstatSync } from 'fs'
 
 tmp.setGracefulCleanup()
@@ -42,22 +41,24 @@ class BinaryInstaller {
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
       // Stop and remove old binaries
-      // await this.migrateBinaries(installer.binaryPathCLI())
+      await this.migrateBinaries(installer.binaryPathCLI())
 
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        // commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
+        commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`)
+        commands.push(`${installer.binaryPathCLI()} ${strings.serviceUninstall()}`)
+        commands.push(`${installer.binaryPathCLI()} ${strings.serviceInstall()}`)
       } else {
         commands.push(`ln -sf ${installer.binaryPathCLI()} /usr/local/bin/`)
         commands.push(`ln -sf ${installer.binaryPathMuxer()} /usr/local/bin/`)
         commands.push(`ln -sf ${installer.binaryPathDemuxer()} /usr/local/bin/`)
         commands.push(`ln -sf ${installer.binaryPathConnectd()} /usr/local/bin/`)
+        commands.push(`${installer.binaryName} ${strings.serviceUninstall()}`)
+        commands.push(`${installer.binaryName} ${strings.serviceInstall()}`)
       }
 
-      commands.push(`${installer.binaryName} ${strings.serviceUninstall()}`)
-      commands.push(`${installer.binaryName} ${strings.serviceInstall()}`)
       // commands.push(`${installer.binaryName} ${strings.signIn()}`)
 
       await commands.exec()
@@ -100,12 +101,6 @@ class BinaryInstaller {
         Logger.warn('FILE REMOVAL FAILED', { file })
       }
     })
-  }
-
-  async download(installer: Installer) {
-    // return installer
-    //   .install((progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
-    //   .catch(error => EventBus.emit(Installer.EVENTS.error, error.message))
   }
 
   async uninstall() {
