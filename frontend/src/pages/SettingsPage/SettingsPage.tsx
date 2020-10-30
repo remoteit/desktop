@@ -109,7 +109,9 @@ export const SettingsPage: React.FC = () => {
         <ListItemSetting
           label="Help documentation"
           icon="books"
-          onClick={() => window.open('https://docs.remote.it/desktop-help')}
+          onClick={() =>
+            window.open('https://support.remote.it/hc/en-us/sections/360010275391-The-remote-it-Desktop-App')
+          }
         />
         <ListItemSetting
           label="Send feedback"
