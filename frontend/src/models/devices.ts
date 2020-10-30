@@ -5,7 +5,7 @@ import { cleanOrphanConnections, getConnectionIds, mergeConnections } from '../h
 import { platformConfiguration } from '../services/platformConfiguration'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
-// import { ApplicationState } from '../store'
+import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 
@@ -63,8 +63,9 @@ export default createModel({
     // other stuff
     async fetch(_, globalState: any) {
       const { set, graphQLFetchProcessor } = dispatch.devices
-      const { setDevices } = dispatch.accounts
+      const { setDevices, mergeDevices } = dispatch.accounts
       const { query, filter, size, from, append, searched } = globalState.devices
+      const { user } = globalState.auth as ApplicationState['auth']
       const accountId = getAccountId(globalState)
       const all = getDevices(globalState)
       const options: gqlOptions = {
@@ -79,14 +80,17 @@ export default createModel({
       if (!(await hasCredentials())) return
 
       set({ fetching: true })
-      const { devices, total, contacts, error } = await graphQLFetchProcessor(options)
+      const { devices, connections, total, contacts, error } = await graphQLFetchProcessor(options)
 
       if (searched) set({ results: total })
       else set({ total })
 
       // awaiting setDevices is critical for accurate initialized state
       if (append) await setDevices({ devices: [...all, ...devices], accountId })
-      else await setDevices({ devices, accountId })
+      else {
+        await setDevices({ devices, accountId })
+        await mergeDevices({ devices: connections, accountId: user?.id })
+      }
 
       if (!error) cleanOrphanConnections()
       platformConfiguration()
@@ -133,7 +137,7 @@ export default createModel({
         const connections = graphQLAdaptor(connectionData, loginId, true)
         const devices = graphQLAdaptor(deviceData, loginId)
         await parseAccounts(gqlResponse)
-        return { devices: mergeConnections(devices, connections), total, contacts, error }
+        return { devices, connections, total, contacts, error }
       } catch (error) {
         await graphQLHandleError(error)
         return { devices: [], total: 0, error }

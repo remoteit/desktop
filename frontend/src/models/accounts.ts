@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
+import { ApplicationState, Dispatch } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
+import { mergeConnections } from '../helpers/connectionHelper'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -32,7 +33,7 @@ const state: IAccountsState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async init(_, globalState) {
+    async init() {
       let activeId = window.localStorage.getItem(ACCOUNT_KEY)
       activeId = activeId && JSON.parse(activeId)
       dispatch.accounts.setActive(activeId)
@@ -60,7 +61,7 @@ export default createModel({
         await graphQLHandleError(error)
       }
     },
-    async parse(gqlResponse: any, globalState) {
+    async parse(gqlResponse: any, globalState: ApplicationState) {
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts
@@ -134,6 +135,12 @@ export default createModel({
 
       allDevices[accountId] = devices
       dispatch.accounts.set({ devices: allDevices })
+    },
+    async mergeDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
+      dispatch.accounts.setDevices({
+        devices: mergeConnections(getDevices(globalState, accountId), devices),
+        accountId,
+      })
     },
     async setDevice({ id, accountId, device }: { id: string; accountId?: string; device: IDevice }, globalState) {
       const { setDevices } = dispatch.accounts
