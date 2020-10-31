@@ -1,7 +1,7 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { getAccountId, getDevices } from './accounts'
-import { cleanOrphanConnections, getConnectionIds, mergeConnections } from '../helpers/connectionHelper'
+import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { platformConfiguration } from '../services/platformConfiguration'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
@@ -118,7 +118,7 @@ export default createModel({
         graphQLGetErrors(gqlResponse)
         const { device } = gqlResponse?.data?.data?.login || {}
         const loginId = gqlResponse?.data?.data?.login?.id
-        result = device ? graphQLAdaptor(device, loginId, hidden)[0] : undefined
+        result = device ? graphQLAdaptor(device, loginId, accountId, hidden)[0] : undefined
       } catch (error) {
         await graphQLHandleError(error)
       }
@@ -134,8 +134,8 @@ export default createModel({
       try {
         const gqlResponse = await graphQLFetchDevices(options)
         const [deviceData, connectionData, total, loginId, contacts, error] = await graphQLMetadata(gqlResponse)
-        const connections = graphQLAdaptor(connectionData, loginId, true)
-        const devices = graphQLAdaptor(deviceData, loginId)
+        const connections = graphQLAdaptor(connectionData, loginId, options.account, true)
+        const devices = graphQLAdaptor(deviceData, loginId, options.account)
         await parseAccounts(gqlResponse)
         return { devices, connections, total, contacts, error }
       } catch (error) {

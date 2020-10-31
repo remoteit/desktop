@@ -187,6 +187,7 @@ declare global {
     availability: number
     instability: number
     version: number // daemon version
+    accountId: string
     geo: {
       connectionType?: string
       countryName?: string

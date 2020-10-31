@@ -138,7 +138,7 @@ export async function graphQLFetchDevice(id: string) {
   )
 }
 
-export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: boolean): IDevice[] {
+export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   let data: IDevice[] = gqlDevices?.map(
     (d: any): IDevice => ({
@@ -184,6 +184,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, hidden?: bool
         email: e.user?.email,
         scripting: e.scripting,
       })),
+      accountId,
       hidden,
       events: d.events || [],
     })
