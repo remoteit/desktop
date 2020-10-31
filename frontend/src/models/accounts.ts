@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { ApplicationState, Dispatch } from '../store'
+import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
 import { mergeConnections } from '../helpers/connectionHelper'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
@@ -175,11 +175,11 @@ export function getAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
-export function getDevices(state: ApplicationState, accountId?: string) {
+export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
   return state.accounts.devices[accountId || getAccountId(state)] || []
 }
 
-export function getOwnDevices(state: ApplicationState) {
+export function getOwnDevices(state: ApplicationState): IDevice[] {
   return state.accounts.devices[state.auth.user?.id || ''] || []
 }
 

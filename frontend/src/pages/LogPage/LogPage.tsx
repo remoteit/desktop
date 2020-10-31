@@ -11,7 +11,7 @@ import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const LogPage: React.FC = () => {
-  const { serviceID = '' } = useParams()
+  const { serviceID = '' } = useParams<{ serviceID: string }>()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const dispatch = useDispatch<Dispatch>()
   const id = connection ? connection.id : ''
