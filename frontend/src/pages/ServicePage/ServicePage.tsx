@@ -5,10 +5,10 @@ import { makeStyles } from '@material-ui/core/styles'
 import { PortSetting } from '../../components/PortSetting'
 import { HostSetting } from '../../components/HostSetting'
 import { NameSetting } from '../../components/NameSetting'
-import { findService } from '../../models/devices'
 import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ProxySetting } from '../../components/ProxySetting'
+import { selectService } from '../../models/devices'
 import { UsernameSetting } from '../../components/UsernameSetting'
 import { LicensingNotice } from '../../components/LicensingNotice'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -16,7 +16,6 @@ import { ServiceConnected } from '../../components/ServiceConnected'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
 import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
-import { getAllDevices, getAccountId } from '../../models/accounts'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { UnauthorizedPage } from '../UnauthorizedPage'
@@ -42,12 +41,10 @@ export const ServicePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
-  const { connection, service, device, thisDevice, fetching, accountId } = useSelector((state: ApplicationState) => {
+  const { connection, service, device, thisDevice, fetching } = useSelector((state: ApplicationState) => {
     const connection = state.backend.connections.find(c => c.id === serviceID)
-    const accountId = connection?.owner?.id || getAccountId(state)
-    const [service, device] = findService(getAllDevices(state), serviceID)
+    const [service, device] = selectService(state, serviceID)
     return {
-      accountId,
       service,
       device,
       connection,
@@ -58,7 +55,7 @@ export const ServicePage: React.FC = () => {
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
-    if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, accountId, hidden: true })
+    if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
   }, [])
 
   if (fetching) return <LoadingMessage message="Fetching data..." />
