@@ -1,7 +1,6 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
-import { mergeConnections } from '../helpers/connectionHelper'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -137,8 +136,11 @@ export default createModel({
       dispatch.accounts.set({ devices: allDevices })
     },
     async mergeDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
+      const currentDevices = getDevices(globalState, accountId)
+      const ids = devices.map(d => d.id)
+      const diff = currentDevices.filter(c => !ids.includes(c.id))
       dispatch.accounts.setDevices({
-        devices: mergeConnections(getDevices(globalState, accountId), devices),
+        devices: [...devices, ...diff],
         accountId,
       })
     },

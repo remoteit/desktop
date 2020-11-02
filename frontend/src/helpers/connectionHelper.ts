@@ -37,12 +37,6 @@ export function newConnection(service?: IService | null, data = {}) {
   return { ...connection, ...data } as IConnection
 }
 
-export function mergeConnections(devices: IDevice[], connections: IDevice[]) {
-  const ids = devices.map(d => d.id)
-  const diff = connections.filter(c => !ids.includes(c.id))
-  return [...devices, ...diff]
-}
-
 export function setConnection(connection: IConnection) {
   if (!connection.id || !connection.name || !connection.deviceID) {
     var error = new Error()
