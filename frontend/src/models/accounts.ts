@@ -32,7 +32,7 @@ const state: IAccountsState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async init(_, globalState) {
+    async init() {
       let activeId = window.localStorage.getItem(ACCOUNT_KEY)
       activeId = activeId && JSON.parse(activeId)
       dispatch.accounts.setActive(activeId)
@@ -60,7 +60,7 @@ export default createModel({
         await graphQLHandleError(error)
       }
     },
-    async parse(gqlResponse: any, globalState) {
+    async parse(gqlResponse: any, globalState: ApplicationState) {
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts
@@ -135,6 +135,15 @@ export default createModel({
       allDevices[accountId] = devices
       dispatch.accounts.set({ devices: allDevices })
     },
+    async mergeDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
+      const currentDevices = getDevices(globalState, accountId)
+      const ids = devices.map(d => d.id)
+      const diff = currentDevices.filter(c => !ids.includes(c.id))
+      dispatch.accounts.setDevices({
+        devices: [...devices, ...diff],
+        accountId,
+      })
+    },
     async setDevice({ id, accountId, device }: { id: string; accountId?: string; device: IDevice }, globalState) {
       const { setDevices } = dispatch.accounts
       const devices = getDevices(globalState, accountId)
@@ -168,11 +177,11 @@ export function getAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
-export function getDevices(state: ApplicationState, accountId?: string) {
+export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
   return state.accounts.devices[accountId || getAccountId(state)] || []
 }
 
-export function getOwnDevices(state: ApplicationState) {
+export function getOwnDevices(state: ApplicationState): IDevice[] {
   return state.accounts.devices[state.auth.user?.id || ''] || []
 }
 

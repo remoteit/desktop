@@ -2,7 +2,7 @@ import { getDevices } from './accounts'
 import { createModel } from '@rematch/core'
 import { findService } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
-import { Dispatch } from '../store'
+import { Dispatch, ApplicationState } from '../store'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -100,8 +100,9 @@ export default createModel({
       backend.set({ device: targetDevice })
     },
     async targetUpdated(_, globalState: any) {
+      const { user } = globalState.auth as ApplicationState['auth']
       if (globalState.ui.setupBusy) {
-        await dispatch.devices.fetch()
+        await dispatch.devices.fetch(user?.id)
         await dispatch.backend.updateDeferredAttributes()
         dispatch.ui.reset()
       }

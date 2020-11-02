@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, Typography, Divider, Link } from '@material-ui/core'
+import { selectConnections } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { SessionsList } from '../../components/SessionsList'
@@ -15,7 +16,7 @@ export const ConnectionsPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const { connections, services, sessions } = useSelector((state: ApplicationState) => {
-    const connections = state.backend.connections.filter(c => !!c.startTime)
+    const connections = selectConnections(state)
     const devices = getAllDevices(state)
     return {
       connections,

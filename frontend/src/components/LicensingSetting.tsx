@@ -30,8 +30,8 @@ export const LicensingSetting: React.FC = () => {
     <>
       <Typography variant="subtitle1">Licensing</Typography>
       <List>
-        {licenses.map(license => (
-          <>
+        {licenses.map((license, index) => (
+          <React.Fragment key={index}>
             <LicensingNotice license={license} />
             <ListItem key={license.id} dense>
               <ListItemIcon>
@@ -55,7 +55,7 @@ export const LicensingSetting: React.FC = () => {
                 ))}
               </Box>
             </ListItem>
-          </>
+          </React.Fragment>
         ))}
         {!!limits.length && <Divider className={css.divider} />}
         {limits.map(limit => (

@@ -6,7 +6,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { IconButton, Link } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { attributeName } from '../../shared/nameHelper'
-import { getDevices } from '../../models/accounts'
+import { getAllDevices } from '../../models/accounts'
 import { Icon } from '../Icon'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { spacing, colors, fontSizes } from '../../styling'
@@ -23,7 +23,7 @@ export const Breadcrumbs: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
-  const devices = useSelector((state: ApplicationState) => getDevices(state))
+  const devices = useSelector((state: ApplicationState) => getAllDevices(state))
   const parentPath = location.pathname.replace(REGEX_LAST_PATH, '')
   const crumbs = parentPath.substr(1).split('/')
 

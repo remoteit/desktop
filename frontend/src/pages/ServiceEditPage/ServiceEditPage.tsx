@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { findService } from '../../models/devices'
+import { selectService } from '../../models/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { UnregisterServiceButton } from '../../buttons/UnregisterServiceButton'
@@ -25,7 +25,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams<{ serviceID: string; deviceID: string }>()
   const { service, links } = useSelector((state: ApplicationState) => ({
-    service: findService(getDevices(state), serviceID)[0],
+    service: selectService(state, serviceID)[0],
     links: getLinks(state, deviceID),
   }))
   const target = targets?.find(t => t.uid === serviceID)
