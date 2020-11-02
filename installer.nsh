@@ -1,8 +1,8 @@
 ; !define PATH_REMOTE_DIR "C:\Program Files\remoteit-bin"
-; !define REMOTE_CLI_EXE "$PATH_REMOTE_DIR\remoteit.exe"
+  
 
 !macro customInstall
-    Var /GLOBAL BINARIES
+    Var /GLOBAL ps_command
     Var /GLOBAL installLog
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
     file_found:
@@ -18,42 +18,33 @@
 
     ${If} ${RunningX64}
         FileWrite $installLog "- Platform X64$\r$\n"
-        StrCpy $BINARIES "$INSTDIR\resources\x64\remoteit.exe"
+        StrCpy $ps_command 'powershell [System.Environment]::SetEnvironmentVariable("$\'"remoteit$\'","$\'"$INSTDIR\resources\x64\remoteit.exe$\'", [System.EnvironmentVariableTarget]::User)'
+        nsExec::ExecToStack /OEM $ps_command
+        Pop $0
+        Pop $1
+        FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
+        
     ${Else}
         FileWrite $installLog "- Platform X86$\r$\n"
-        StrCpy $BINARIES "$INSTDIR\resources\x86\remoteit.exe"
-    ${EndIf}
-    
-    IfFileExists "$BINARIES" found_remoteIt not_found_remoteIt
-    found_remoteIt:
-
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'"$BINARIES$\'" -j service uninstall'
+        StrCpy $ps_command 'powershell "& " [System.Environment]::SetEnvironmentVariable("$\'"remoteit$\'", "$INSTDIR\resources\x86\remoteit.exe", [System.EnvironmentVariableTarget]::User)  '
+        nsExec::ExecToStack /OEM $ps_command
         Pop $0
         Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $installLog "- $BINARIES -j service uninstall     [$0]  $1$\r$\n"
+        FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
+        
+    ${EndIf} 
 
-        nsExec::ExecToStack /OEM 'powershell "& " "$\'"$BINARIES$\'" -j service install'
-        Pop $0
-        Pop $1
-        ${If} $0 == 0
-            StrCpy $0 "OK"
-        ${Else}
-            StrCpy $0 "ERROR"
-        ${EndIf}
-        FileWrite $installLog "- $BINARIES -j service install     [$0]  $1$\r$\n"
+    StrCpy $ps_command 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j service uninstall'
+    nsExec::ExecToStack /OEM $ps_command 
+    Pop $0
+    Pop $1
+    FileWrite $installLog '$ps_command     [$0]  $1$\r$\n'
 
-
-        goto end_of_remoteIt
-    not_found_remoteIt:
-        ; MessageBox MB_OK "Error file not found: $BINARIES"
-        FileWrite $installLog "- [Error] file not found: $BINARIES$\r$\n"
-    end_of_remoteIt:
-
+    StrCpy $ps_command 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j service install'
+    nsExec::ExecToStack /OEM $ps_command 
+    Pop $0
+    Pop $1
+    FileWrite $installLog '$ps_command     [$0]  $1$\r$\n'
     
 
     FileWrite $installLog "$\n***** End Install ******$\r$\n"
@@ -62,11 +53,17 @@
 
 !macro customUnInstall
 
-    Var /GLOBAL PATH_REMOTE_DIR_U
-    Var /GLOBAL REMOTE_CLI_EXE_U
+    Var /GLOBAL PATH_LINK
+    Var /GLOBAL PATH_REMOTE_EXE
+    Var /GLOBAL PATH_MUXER
+    Var /GLOBAL PATH_DEMUXER
+    Var /GLOBAL PATH_CONNECTD
 
-    StrCpy $PATH_REMOTE_DIR_U "C:\Program Files\remoteit\resources"
-    StrCpy $REMOTE_CLI_EXE_U "$PATH_REMOTE_DIR_U\remoteit.exe"
+    StrCpy $PATH_LINK "C:\Windows"
+    StrCpy $PATH_REMOTE_EXE "$PATH_LINK\remoteit.exe"
+    StrCpy $PATH_MUXER "$PATH_LINK\muxer.exe"
+    StrCpy $PATH_DEMUXER "$PATH_LINK\demuxer.exe"
+    StrCpy $PATH_CONNECTD "$PATH_LINK\connectd.exe"
 
     Var /GLOBAL uninstallLog
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
@@ -84,8 +81,8 @@
             ; MessageBox MB_OK "This is a UPDATE!" 
             FileWrite $uninstallLog "$\nUpdate (${__DATE__} ${__TIME__}): $\r$\n"
             FileWrite $uninstallLog "-----------------------------$\r$\n"
-            RMDir /r "$PATH_REMOTE_DIR_U"
-            FileWrite $uninstallLog "- RMDir $PATH_REMOTE_DIR_U$\r$\n"
+            RMDir /r "$PATH_REMOTE_EXE"
+            FileWrite $uninstallLog "- RMDir $PATH_REMOTE_EXE$\r$\n"
         ${Else}
 
             
@@ -108,25 +105,15 @@
                         true:
                             FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
 
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$REMOTE_CLI_EXE_U$\'" -j uninstall --yes'
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$PATH_REMOTE_EXE$\'" -j uninstall --yes'
                             Pop $0
-                            Pop $1       
-                            ${If} $0 == 0
-                                StrCpy $0 "OK"
-                            ${Else}
-                                StrCpy $0 "ERROR"
-                            ${EndIf}
-                            FileWrite $uninstallLog "- $REMOTE_CLI_EXE_U -j uninstall --yes     [$0]  $1$\r$\n"
+                            Pop $1      
+                            FileWrite $uninstallLog "- $PATH_REMOTE_EXE -j uninstall --yes     [$0]  $1$\r$\n"
 
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$REMOTE_CLI_EXE_U$\'" -j status' ; waits for processes to stop so can cleanly remove files
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$PATH_REMOTE_EXE$\'" -j status' ; waits for processes to stop so can cleanly remove files
                             Pop $0
                             Pop $1
-                            ${If} $0 == 0
-                                StrCpy $0 "OK"
-                            ${Else}
-                                StrCpy $0 "ERROR"
-                            ${EndIf}
-                            FileWrite $uninstallLog "- $REMOTE_CLI_EXE_U -j status     [$0]  $1$\r$\n"
+                            FileWrite $uninstallLog "- $PATH_REMOTE_EXE -j status     [$0]  $1$\r$\n"
 
                             RMDir /r "$APPDATA\remoteit"
                             FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
@@ -136,25 +123,15 @@
                         false:
                             FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
 
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$REMOTE_CLI_EXE_U$\'" -j service uninstall'
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$PATH_REMOTE_EXE$\'" -j service uninstall'
                             Pop $0
                             Pop $1
-                            ${If} $0 == 0
-                                StrCpy $0 "OK"
-                            ${Else}
-                                StrCpy $0 "ERROR"
-                            ${EndIf}
-                            FileWrite $uninstallLog "- $REMOTE_CLI_EXE_U -j service uninstall     [$0]  $1$\r$\n"
+                            FileWrite $uninstallLog "- $PATH_REMOTE_EXE -j service uninstall     [$0]  $1$\r$\n"
 
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$REMOTE_CLI_EXE_U$\'" -j status' ; waits for processes to stop so can cleanly remove files
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'$PATH_REMOTE_EXE$\'" -j status' ; waits for processes to stop so can cleanly remove files
                             Pop $0
                             Pop $1
-                            ${If} $0 == 0
-                                StrCpy $0 "OK"
-                            ${Else}
-                                StrCpy $0 "ERROR"
-                            ${EndIf}
-                            FileWrite $uninstallLog "- $REMOTE_CLI_EXE_U -j status     [$0]  $1$\r$\n"
+                            FileWrite $uninstallLog "- $PATH_REMOTE_EXE -j status     [$0]  $1$\r$\n"
 
                             RMDir /r "$APPDATA\remoteit\log"
                             FileWrite $uninstallLog "- RMDir $APPDATA\remoteit\log$\r$\n"
@@ -169,15 +146,17 @@
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
+            
+            nsExec::ExecToStack /OEM 'powershell [Environment]::SetEnvironmentVariable("$\'"remoteit$\'","$\'"$\'","$\'"user$\'")' 
+            nsExec::ExecToStack /OEM 'powershell  if(Test-Path -Path $PATH_REMOTE_EXE) {Remove-item $PATH_REMOTE_EXE } ' 
+            nsExec::ExecToStack /OEM 'powershell  if(Test-Path -Path $PATH_MUXER) {Remove-item $PATH_MUXER } ' 
+            nsExec::ExecToStack /OEM 'powershell  if(Test-Path -Path $PATH_DEMUXER) {Remove-item $PATH_DEMUXER } ' 
+            nsExec::ExecToStack /OEM 'powershell  if(Test-Path -Path $PATH_CONNECTD) {Remove-item $PATH_CONNECTD } ' 
+            nsExec::ExecToStack /OEM 'powershell  if(Test-Path -Path $INSTDIR) {Remove-item $INSTDIR } ' 
+            nsExec::ExecToStack /OEM 'powershell  if(Test-Path -Path $PROFILE\AppData\Local\remoteit) {Remove-item $PROFILE\AppData\Local\remoteit } ' 
+            
+            FileWrite $uninstallLog "-  Remove-item  $PATH_REMOTE_EXE, $PATH_MUXER, $PATH_DEMUXER, $PATH_CONNECTD, $INSTDIR, $PROFILE\AppData\Local\remoteit     [$0]  $1$\r$\n"
 
-            RMDir /r "$PATH_REMOTE_DIR_U"
-            FileWrite $uninstallLog "- RMDir $PATH_REMOTE_DIR_U$\r$\n"
-
-            RMDir /r "$PROFILE\AppData\Local\remoteit"
-            FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
-
-            RMDir /r "$INSTDIR"
-            FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
 
             FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
             FileClose $uninstallLog 

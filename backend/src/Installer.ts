@@ -100,32 +100,12 @@ export default class Installer {
     return path.join(environment.binPath, this.binaryName)
   }
 
-  binaryPathMuxer(admin?: boolean) {
-    return path.join(environment.binPath, this.muxerName)
-  }
-
-  binaryPathDemuxer(admin?: boolean) {
-    return path.join(environment.binPath, this.demuxerName)
-  }
-
-  binaryPathConnectd(admin?: boolean) {
-    return path.join(environment.binPath, this.connectdName)
+  dependenciesPath(admin?: boolean) {
+    return this.dependencies.map(d => path.join(environment.binPath, environment.isWindows ? d + '.exe' : d))
   }
 
   get binaryName() {
     return environment.isWindows ? this.resources[0].name + '.exe' : this.resources[0].name
-  }
-
-  get muxerName() {
-    return environment.isWindows ? this.dependencies[1] + '.exe' : this.dependencies[1]
-  }
-
-  get demuxerName() {
-    return environment.isWindows ? this.dependencies[2] + '.exe' : this.dependencies[2]
-  }
-
-  get connectdName() {
-    return environment.isWindows ? this.dependencies[0] + '.exe' : this.dependencies[0]
   }
 
   get dependencyNames() {

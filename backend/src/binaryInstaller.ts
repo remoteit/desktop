@@ -10,6 +10,7 @@ import Installer from './Installer'
 import Command from './Command'
 import Logger from './Logger'
 import { existsSync, lstatSync } from 'fs'
+const child_process = require('child_process')
 
 tmp.setGracefulCleanup()
 
@@ -40,26 +41,32 @@ class BinaryInstaller {
 
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
-      // Stop and remove old binaries
-      await this.migrateBinaries(installer.binaryPathCLI())
-
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        commands.push(`icacls "${installer.binaryPathCLI()}" /T /C /Q /grant "*S-1-5-32-545:RX"`)
-        commands.push(`${installer.binaryPathCLI()} ${strings.serviceUninstall()}`)
-        commands.push(`${installer.binaryPathCLI()} ${strings.serviceInstall()}`)
+        commands.push(`icacls remoteit /T /C /Q /grant "*S-1-5-32-545:RX"`)
+
+        if (existsSync(`"${environment.mklinkPath}/${installer.binaryName}"`))
+          commands.push(`del "${environment.mklinkPath}/${installer.binaryName}" `)
+        commands.push(`mklink /H "${environment.mklinkPath}/${installer.binaryName}" "${installer.binaryPathCLI()}"`)
+
+        installer.dependencyNames.map((name, index) => {
+          if (existsSync(`"${environment.mklinkPath}/${name}"`))
+            commands.push(`del "${environment.mklinkPath}/${name}" `)
+          commands.push(`mklink /H "${environment.mklinkPath}/${name}" "${installer.dependenciesPath()[index]}"`)
+        })
+
+        commands.push(`remoteit ${strings.serviceUninstall()}`)
+        commands.push(`remoteit ${strings.serviceInstall()}`)
       } else {
         commands.push(`ln -sf ${installer.binaryPathCLI()} /usr/local/bin/`)
-        commands.push(`ln -sf ${installer.binaryPathMuxer()} /usr/local/bin/`)
-        commands.push(`ln -sf ${installer.binaryPathDemuxer()} /usr/local/bin/`)
-        commands.push(`ln -sf ${installer.binaryPathConnectd()} /usr/local/bin/`)
+        installer.dependenciesPath().map(path => {
+          commands.push(`ln -sf ${path} /usr/local/bin/`)
+        })
         commands.push(`${installer.binaryName} ${strings.serviceUninstall()}`)
         commands.push(`${installer.binaryName} ${strings.serviceInstall()}`)
       }
-
-      // commands.push(`${installer.binaryName} ${strings.signIn()}`)
 
       await commands.exec()
 
@@ -68,39 +75,22 @@ class BinaryInstaller {
     })
   }
 
-  async restartService() {
-    await cli.restartService()
+  execCommand(command: string, shell: string) {
+    child_process.exec(command, { shell }, (error: any, stdout: any, stderr: any) => {
+      if (error) {
+        Logger.error(`EXEC ERROR: ${error}`)
+        return
+      }
+      if (stderr) {
+        Logger.error(`STDERR : ${stderr}`)
+        return
+      }
+      Logger.info(`EXEC SUCCESS: ${stdout}`)
+    })
   }
 
-  async migrateBinaries(installerPath?: string) {
-    const commands = new Command({ admin: true })
-    let files = environment.deprecatedBinaries
-    let toDelete: string[] = []
-
-    if (installerPath) files.push(installerPath)
-
-    files.forEach(file => {
-      // Too small to be the desktop app -> must be cli
-      if (existsSync(file) && lstatSync(file).size < 30000000) {
-        Logger.info('MIGRATING DEPRECATED BINARY', { file })
-        commands.push(`"${file}" ${strings.serviceUninstall()}`)
-        commands.push(`"${file}" ${strings.toolsUninstall()}`)
-        toDelete.push(file)
-      } else {
-        Logger.info('DEPRECATED BINARY DOES NOT EXIST', { file })
-      }
-    })
-
-    await commands.exec()
-
-    toDelete.forEach(file => {
-      try {
-        Logger.info('REMOVING FILE', { file })
-        rimraf.sync(file, { disableGlob: true })
-      } catch (e) {
-        Logger.warn('FILE REMOVAL FAILED', { file })
-      }
-    })
+  async restartService() {
+    await cli.restartService()
   }
 
   async uninstall() {

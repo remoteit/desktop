@@ -84,4 +84,5 @@ export const PATHS = {
     path.resolve('C:/Program Files/remoteit/remoteit.exe'),
     path.resolve('/Windows/remoteit.exe'),
   ],
+  WIN_MKLINK_PATH: 'C:/Windows'
 }

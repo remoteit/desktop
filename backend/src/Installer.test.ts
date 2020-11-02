@@ -22,12 +22,7 @@ describe('backend/Installer', () => {
 
     beforeAll(() => {
       installer = new Installer({
-        resources: [
-          { name: 'remoteit', version: version.cli, url: version.url_cli },
-          { name: 'muxer', version: version.muxer, url: version.url_base },
-          { name: 'demuxer', version: version.demuxer, url: version.url_base },
-          { name: 'connectd', version: version.connectd, url: version.url_connectd },
-        ],
+        resources: RESOURCES,
         repoName: 'remoteit/cli',
         dependencies: ['connectd', 'muxer', 'demuxer'],
       })
@@ -40,7 +35,7 @@ describe('backend/Installer', () => {
 
     afterEach(() => {
       prefSpy.mockClear()
-      installSpy.mockClear()
+      installSpy.mockClear() 
       eventSpy.mockClear()
       versionSpy.mockClear()
     })
@@ -110,12 +105,7 @@ describe('backend/Installer', () => {
     beforeAll(
       () =>
         (installer = new Installer({
-          resources: [
-            { name: 'remoteit', version: version.cli, url: version.url_cli },
-            { name: 'muxer', version: version.muxer, url: version.url_base },
-            { name: 'demuxer', version: version.demuxer, url: version.url_base },
-            { name: 'connectd', version: version.connectd, url: version.url_connectd },
-          ],
+          resources: RESOURCES,
           repoName: 'remoteit/cli',
           dependencies: [],
         }))
