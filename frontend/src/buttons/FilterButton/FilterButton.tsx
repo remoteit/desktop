@@ -1,47 +1,19 @@
 import React from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { Dispatch, ApplicationState } from '../../store'
-import { useDispatch, useSelector } from 'react-redux'
 import { Icon } from '../../components/Icon'
-import { Color } from '../../styling'
 
-export const FilterButton: React.FC<{}> = () => {
-  const { filter } = useSelector((state: ApplicationState) => state.devices)
-  const { devices } = useDispatch<Dispatch>()
-
-  let title: string, icon: string, color: Color, next: string
-
-  switch (filter) {
-    case 'active':
-      title = 'Showing online devices'
-      icon = 'check-circle'
-      color = 'success'
-      next = 'inactive'
-      break
-    case 'inactive':
-      title = 'Showing offline devices'
-      icon = 'minus-circle'
-      color = 'grayLight'
-      next = 'all'
-      break
-    default:
-      title = 'Showing all devices'
-      icon = 'filter'
-      color = 'grayDarker'
-      next = 'active'
-      break
+export const FilterButton = ({ onOpen, open }: { onOpen: (state: boolean) => void; open: boolean }): JSX.Element => {
+  function handleChange() {
+    onOpen(!open)
   }
 
   return (
-    <Tooltip title={title}>
-      <IconButton
-        onClick={() => {
-          devices.set({ filter: next, from: 0 })
-          devices.fetch()
-        }}
-      >
-        <Icon name={icon} color={color} size="base" type="regular" />
-      </IconButton>
-    </Tooltip>
+    <>
+      <Tooltip title="Show filter panel">
+        <IconButton onClick={handleChange}>
+          <Icon name="filter" color="primary" size="base" type="regular" />
+        </IconButton>
+      </Tooltip>
+    </>
   )
 }

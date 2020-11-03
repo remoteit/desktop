@@ -320,6 +320,8 @@ declare global {
     from: number
     account: string
     state?: string
+    owner?: boolean
+    sort?: string
     name?: string
     ids?: string[]
   }

@@ -70,13 +70,13 @@ const DEVICE_SELECT = `
   }
 `
 
-export async function graphQLFetchDevices({ size, from, state, name, account, ids = [] }: gqlOptions) {
+export async function graphQLFetchDevices({ size, from, state, sort, owner, name, account, ids = [] }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $account: String) {
+    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $account: String, $sort: String, $owner: Boolean) {
         login {
           id
           account(id: $account) {
-            devices(size: $size, from: $from, name: $name, state: $state) {
+            devices(size: $size, from: $from, name: $name, state: $state, sort: $sort, owner: $owner) {
               total
               items {
                 ${DEVICE_SELECT}
@@ -113,6 +113,8 @@ export async function graphQLFetchDevices({ size, from, state, name, account, id
       size,
       from,
       state,
+      sort,
+      owner,
       account,
       name: name?.trim() ? name : undefined,
     }

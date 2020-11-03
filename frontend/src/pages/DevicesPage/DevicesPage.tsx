@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
@@ -24,6 +24,13 @@ export const DevicesPage = () => {
       return lookup
     }, {}),
   }))
+
+  const [open, setOpen] = useState(false)
+
+  const onOpen = (state: boolean) => {
+    setOpen(state)
+  }
+
   const css = useStyles()
 
   useEffect(() => {
@@ -37,8 +44,8 @@ export const DevicesPage = () => {
           <div className={css.header}>
             <SearchField />
             <AccountSelect />
-            <FilterButton />
             <RefreshButton />
+            <FilterButton onOpen={onOpen} open={open} />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>
@@ -49,7 +56,7 @@ export const DevicesPage = () => {
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={devices} connections={connections} />
+        <DeviceList devices={devices} connections={connections} onOpen={onOpen} open={open} />
       )}
     </Container>
   )
