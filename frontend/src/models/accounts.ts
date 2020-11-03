@@ -159,7 +159,7 @@ export default createModel({
 
       // Add if new
       if (!exists && device) devices.push(device)
-      setDevices({ devices, accountId })
+      await setDevices({ devices, accountId })
     },
   }),
   reducers: {

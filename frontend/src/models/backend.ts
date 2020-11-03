@@ -3,6 +3,7 @@ import { createModel } from '@rematch/core'
 import { findService } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
+import { platformConfiguration } from '../services/platformConfiguration'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -98,6 +99,7 @@ export default createModel({
       }
 
       backend.set({ device: targetDevice })
+      platformConfiguration()
     },
     async targetUpdated(_, globalState: any) {
       const { user } = globalState.auth as ApplicationState['auth']

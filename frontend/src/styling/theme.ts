@@ -120,6 +120,7 @@ const jssTheme: ThemeOptions = {
         fontWeight: 500,
         textTransform: 'uppercase',
       },
+      filled: { pointerEvents: 'auto' },
     },
     MuiFilledInput: {
       root: {

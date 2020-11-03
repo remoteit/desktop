@@ -25,7 +25,8 @@ class Application {
   }
 
   copy(connection: IConnection) {
-    return this.copyTemplate ? this.parse(this.copyTemplate, connection) : this.launch(connection)
+    const template = connection.copyTemplate || this.copyTemplate
+    return template ? this.parse(template, connection) : this.launch(connection)
   }
 
   parse(url: string, connection: IConnection) {
