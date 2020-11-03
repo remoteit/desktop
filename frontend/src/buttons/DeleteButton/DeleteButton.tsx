@@ -12,7 +12,10 @@ type Props = {
 
 export const DeleteButton: React.FC<Props> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
-  const { destroying } = useSelector((state: ApplicationState) => state.devices)
+  const { destroying, userId } = useSelector((state: ApplicationState) => ({
+    userId: state.auth.user?.id,
+    destroying: state.devices.destroying,
+  }))
   const css = useStyles()
   let warning =
     "Are you sure?\nDeleting devices can't be undone so may require you to physically access the device if you wish to recover it."
@@ -20,7 +23,7 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
   let disabled: boolean = false
   let tooltip: string = 'Delete this device'
 
-  if (!device) return null
+  if (!device || device.accountId !== userId) return null
 
   if (device.state === 'active') {
     disabled = true
