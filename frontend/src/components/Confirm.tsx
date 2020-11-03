@@ -14,7 +14,6 @@ export const Confirm: React.FC<{
     TransitionComponent={Transition}
     transitionDuration={300}
     onClose={onDeny}
-    keepMounted
     fullWidth
   >
     {title && <DialogTitle>{title}</DialogTitle>}
