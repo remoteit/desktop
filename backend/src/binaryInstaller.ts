@@ -10,7 +10,6 @@ import Installer from './Installer'
 import Command from './Command'
 import Logger from './Logger'
 import { existsSync, lstatSync } from 'fs'
-const child_process = require('child_process')
 
 tmp.setGracefulCleanup()
 
@@ -41,31 +40,24 @@ class BinaryInstaller {
 
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
+      await this.migrateBinaries(installer.binaryPathCLI())
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        commands.push(`icacls remoteit /T /C /Q /grant "*S-1-5-32-545:RX"`)
-
-        if (existsSync(`"${environment.mklinkPath}/${installer.binaryName}"`))
-          commands.push(`del "${environment.mklinkPath}/${installer.binaryName}" `)
-        commands.push(`mklink /H "${environment.mklinkPath}/${installer.binaryName}" "${installer.binaryPathCLI()}"`)
-
-        installer.dependencyNames.map((name, index) => {
-          if (existsSync(`"${environment.mklinkPath}/${name}"`))
-            commands.push(`del "${environment.mklinkPath}/${name}" `)
-          commands.push(`mklink /H "${environment.mklinkPath}/${name}" "${installer.dependenciesPath()[index]}"`)
+        commands.push(`setx remoteit "${installer.binaryPathCLI()}"`)
+        installer.dependencies.map(name => {
+          commands.push(`setx  ${name} "${environment.binPath}\\${name}.exe"`)
         })
-
-        commands.push(`remoteit ${strings.serviceUninstall()}`)
-        commands.push(`remoteit ${strings.serviceInstall()}`)
+        commands.push(`"${process.env.remoteit}" ${strings.serviceUninstall()}`)
+        commands.push(`"${process.env.remoteit}" ${strings.serviceInstall()}`)
       } else {
         commands.push(`ln -sf ${installer.binaryPathCLI()} /usr/local/bin/`)
         installer.dependenciesPath().map(path => {
           commands.push(`ln -sf ${path} /usr/local/bin/`)
         })
-        commands.push(`${installer.binaryName} ${strings.serviceUninstall()}`)
-        commands.push(`${installer.binaryName} ${strings.serviceInstall()}`)
+        commands.push(`remoteit ${strings.serviceUninstall()}`)
+        commands.push(`remoteit ${strings.serviceInstall()}`)
       }
 
       await commands.exec()
@@ -75,22 +67,39 @@ class BinaryInstaller {
     })
   }
 
-  execCommand(command: string, shell: string) {
-    child_process.exec(command, { shell }, (error: any, stdout: any, stderr: any) => {
-      if (error) {
-        Logger.error(`EXEC ERROR: ${error}`)
-        return
-      }
-      if (stderr) {
-        Logger.error(`STDERR : ${stderr}`)
-        return
-      }
-      Logger.info(`EXEC SUCCESS: ${stdout}`)
-    })
-  }
-
   async restartService() {
     await cli.restartService()
+  }
+
+  async migrateBinaries(installerPath: string) {
+    const commands = new Command({ admin: true })
+    let paths = environment.isWindows
+      ? [process.env.remoteit, process.env.muxer, process.env.demuxer, process.env.connectd]
+      : [installerPath]
+    let toDelete: string[] = []
+
+    paths.forEach(path => {
+      if (path) {
+        Logger.info('UNINSTALL BINARY', { path })
+        toDelete.push(path || '')
+      } else {
+        Logger.info('ENVIRONMENT PATH DOES NOT EXIST', { path })
+      }
+    })
+
+    commands.push(`remoteit ${strings.serviceUninstall()}`)
+    commands.push(`remoteit ${strings.toolsUninstall()}`)
+
+    await commands.exec()
+
+    toDelete.forEach(path => {
+      try {
+        Logger.info('REMOVING PATH', { path })
+        rimraf.sync(path, { disableGlob: true })
+      } catch (e) {
+        Logger.warn('PATH REMOVAL FAILED', { path })
+      }
+    })
   }
 
   async uninstall() {
@@ -103,9 +112,18 @@ class BinaryInstaller {
   async uninstallBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
       const options = { disableGlob: true }
-
       try {
-        rimraf.sync(installer.binaryPathCLI(), options)
+        let paths = environment.isWindows
+          ? [process.env.remoteit, process.env.muxer, process.env.demuxer, process.env.connectd]
+          : [installer.binaryPathCLI()]
+        paths.forEach(path => {
+          if (path) {
+            Logger.info('REMOVE ENVIRONMENT PATH', { path })
+            rimraf.sync(path, options)
+          } else {
+            Logger.info('ENVIRONMENT PATH DOES NOT EXIST', { path })
+          }
+        })
         rimraf.sync(environment.userPath, options)
       } catch (e) {
         reject(e)

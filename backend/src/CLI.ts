@@ -255,7 +255,7 @@ export default class CLI {
     let result
     let commands = new Command({ admin, quiet })
     if (environment.isWindows) {
-      cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPathCLI()}" ${cmd}`))
+      cmds.forEach(cmd => commands.push(`"${process.env.remoteit}" ${cmd}`))
     } else {
       cmds.forEach(cmd => commands.push(`remoteit ${cmd}`))
     }

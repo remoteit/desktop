@@ -22,7 +22,8 @@ describe('backend/Installer', () => {
 
     beforeAll(() => {
       installer = new Installer({
-        resources: RESOURCES,
+        name: 'remoteit',
+        version: RESOURCES[0].version,
         repoName: 'remoteit/cli',
         dependencies: ['connectd', 'muxer', 'demuxer'],
       })
@@ -35,7 +36,7 @@ describe('backend/Installer', () => {
 
     afterEach(() => {
       prefSpy.mockClear()
-      installSpy.mockClear() 
+      installSpy.mockClear()
       eventSpy.mockClear()
       versionSpy.mockClear()
     })
@@ -105,7 +106,8 @@ describe('backend/Installer', () => {
     beforeAll(
       () =>
         (installer = new Installer({
-          resources: RESOURCES,
+          name: 'remoteit',
+          version: RESOURCES[0].version,
           repoName: 'remoteit/cli',
           dependencies: [],
         }))

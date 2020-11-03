@@ -23,7 +23,6 @@ export class Environment {
   adminUsername: string = ''
   userPath: string
   adminPath: string
-  mklinkPath: string
   binPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
@@ -45,14 +44,12 @@ export class Environment {
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
     this.version = this.getAppVersion()
-    this.mklinkPath = ''
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
       this.adminPath = PATHS.WIN_ADMIN_SETTINGS
       this.binPath = elevated ? PATHS.WIN_ADMIN_BINARIES : PATHS.WIN_USER_BINARIES
       this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
-      this.mklinkPath = PATHS.WIN_MKLINK_PATH
     } else if (this.isMac) {
       this.userPath = PATHS.MAC_USER_SETTINGS
       this.adminPath = PATHS.MAC_ADMIN_SETTINGS

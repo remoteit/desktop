@@ -15,13 +15,15 @@ export type ProgressCallback = (percent: number) => void
 
 interface InstallerArgs {
   repoName: string
-  resources: { name: string; version: string; url: string }[]
+  name: string
+  version: string
   dependencies: string[]
 }
 
 export default class Installer {
   repoName: string
-  resources: { name: string; version: string; url: string }[]
+  name: string
+  version: string
   installedVersion?: string
   dependencies: string[]
   pathFile?: string
@@ -35,29 +37,30 @@ export default class Installer {
 
   constructor(args: InstallerArgs) {
     this.repoName = args.repoName
-    this.resources = args.resources
+    this.name = args.name
+    this.version = args.version
     this.dependencies = args.dependencies
   }
 
   async check(log?: boolean) {
     if (binaryInstaller.inProgress) return
 
-    d('CHECK INSTALLATION', { name: this.resources[0].name, version: this.resources[0].version })
+    d('CHECK INSTALLATION', { name: this.name, version: this.version })
     const cliCurrent = await this.isCliCurrent(log)
 
     if (cliCurrent) {
       return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
     } else {
       if (environment.isElevated) await binaryInstaller.install()
-      else EventBus.emit(Installer.EVENTS.notInstalled, this.resources[0].name)
+      else EventBus.emit(Installer.EVENTS.notInstalled, this.name)
     }
   }
 
   toJSON() {
     return {
       path: this.binaryPathCLI(),
-      version: this.resources[0].version,
-      name: this.resources[0].name,
+      version: this.version,
+      name: this.name,
       installedVersion: this.installedVersion,
     } as InstallationInfo
   }
@@ -81,7 +84,7 @@ export default class Installer {
     cliVersion = await cli.version()
     this.installedVersion = cliVersion
     try {
-      current = semverCompare(cliVersion, this.resources[0].version) >= 0
+      current = semverCompare(cliVersion, this.version) >= 0
     } catch (error) {
       Logger.warn('BAD CLI VERSION', { error })
     }
@@ -105,7 +108,7 @@ export default class Installer {
   }
 
   get binaryName() {
-    return environment.isWindows ? this.resources[0].name + '.exe' : this.resources[0].name
+    return environment.isWindows ? this.name + '.exe' : this.name
   }
 
   get dependencyNames() {
