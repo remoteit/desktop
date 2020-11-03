@@ -9,13 +9,14 @@ import remoteitInstaller from './remoteitInstaller'
 import Installer from './Installer'
 import Command from './Command'
 import Logger from './Logger'
-import { existsSync, lstatSync } from 'fs'
+import { existsSync } from 'fs'
 
 tmp.setGracefulCleanup()
 
 class BinaryInstaller {
   options = { name: 'remoteit' }
   inProgress = false
+  path_link = {}
 
   async install(force?: boolean) {
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
@@ -40,7 +41,7 @@ class BinaryInstaller {
 
   async installBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
-      await this.migrateBinaries(installer.binaryPathCLI())
+      await this.uninstallBinary(installer)
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
@@ -49,8 +50,8 @@ class BinaryInstaller {
         installer.dependencies.map(name => {
           commands.push(`setx  ${name} "${environment.binPath}\\${name}.exe"`)
         })
-        commands.push(`"${process.env.remoteit}" ${strings.serviceUninstall()}`)
-        commands.push(`"${process.env.remoteit}" ${strings.serviceInstall()}`)
+        commands.push(`"%remoteit%" ${strings.serviceUninstall()}`)
+        commands.push(`"%remoteit%" ${strings.serviceInstall()}`)
       } else {
         commands.push(`ln -sf ${installer.binaryPathCLI()} /usr/local/bin/`)
         installer.dependenciesPath().map(path => {
@@ -59,7 +60,6 @@ class BinaryInstaller {
         commands.push(`remoteit ${strings.serviceUninstall()}`)
         commands.push(`remoteit ${strings.serviceInstall()}`)
       }
-
       await commands.exec()
 
       EventBus.emit(Installer.EVENTS.installed, remoteitInstaller.toJSON())
@@ -71,37 +71,6 @@ class BinaryInstaller {
     await cli.restartService()
   }
 
-  async migrateBinaries(installerPath: string) {
-    const commands = new Command({ admin: true })
-    let paths = environment.isWindows
-      ? [process.env.remoteit, process.env.muxer, process.env.demuxer, process.env.connectd]
-      : [installerPath]
-    let toDelete: string[] = []
-
-    paths.forEach(path => {
-      if (path) {
-        Logger.info('UNINSTALL BINARY', { path })
-        toDelete.push(path || '')
-      } else {
-        Logger.info('ENVIRONMENT PATH DOES NOT EXIST', { path })
-      }
-    })
-
-    commands.push(`remoteit ${strings.serviceUninstall()}`)
-    commands.push(`remoteit ${strings.toolsUninstall()}`)
-
-    await commands.exec()
-
-    toDelete.forEach(path => {
-      try {
-        Logger.info('REMOVING PATH', { path })
-        rimraf.sync(path, { disableGlob: true })
-      } catch (e) {
-        Logger.warn('PATH REMOVAL FAILED', { path })
-      }
-    })
-  }
-
   async uninstall() {
     if (this.inProgress) return Logger.info('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     this.inProgress = true
@@ -111,20 +80,27 @@ class BinaryInstaller {
 
   async uninstallBinary(installer: Installer) {
     return new Promise(async (resolve, reject) => {
+      const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
       try {
-        let paths = environment.isWindows
-          ? [process.env.remoteit, process.env.muxer, process.env.demuxer, process.env.connectd]
-          : [installer.binaryPathCLI()]
-        paths.forEach(path => {
-          if (path) {
-            Logger.info('REMOVE ENVIRONMENT PATH', { path })
-            rimraf.sync(path, options)
-          } else {
-            Logger.info('ENVIRONMENT PATH DOES NOT EXIST', { path })
-          }
-        })
-        rimraf.sync(environment.userPath, options)
+        if (environment.isWindows && process.env.remoteit) {
+          Logger.info('REMOVE ENVIRONMENT PATH')
+          commands.push(`"%remoteit%" ${strings.serviceUninstall()}`)
+          commands.push(`"%remoteit%" ${strings.serviceInstall()}`)
+          commands.push(`REG delete HKCU\\Environment /F /V remoteit `)
+          installer.dependencies.map(name => {
+            if (process.env.name) commands.push(`REG delete HKCU\\Environment /F /V ${name}`)
+          })
+          await commands.exec()
+        } else {
+          Logger.info('REMOVE LINKED PATH')
+          commands.push(`remoteit ${strings.serviceUninstall()}`)
+          commands.push(`remoteit ${strings.serviceInstall()}`)
+          rimraf.sync('/usr/local/bin/remoteit', options)
+          installer.dependencies.map(name => {
+            rimraf.sync(`/usr/local/bin/${name}`, options)
+          })
+        }
       } catch (e) {
         reject(e)
       }
