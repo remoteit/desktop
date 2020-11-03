@@ -127,10 +127,28 @@ export function lookupLicenseProductId(device?: IDevice) {
 }
 
 export function selectLicense(state: ApplicationState, productId?: string) {
-  const { licensing } = state
+  const license = state.licensing.licenses.find(l => l.plan.product.id === productId)
+  const limits = state.licensing.limits
+
+  const serviceLimit = limits.find(l => l.name === 'aws-services')
+  const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
+
+  if (!license) return {}
+
+  let noticeType
+  let warnDate = new Date()
+  warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
+
+  if (warnDate > license.expiration && license.plan.name === 'TRIAL') noticeType = 'EXPIRATION_WARNING'
+  if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value) noticeType = 'LIMIT_EXCEEDED'
+  if (!license.valid) noticeType = 'EXPIRED'
+
   return {
-    license: licensing.licenses.find(l => l.plan.product.id === productId),
-    limits: licensing.limits,
+    noticeType,
+    license,
+    limits,
+    serviceLimit,
+    evaluationLimit,
     upgradeUrl,
   }
 }
@@ -145,6 +163,16 @@ export function selectLicenses(state: ApplicationState) {
     limits: licensing.limits.filter(limit => !limit.license),
     upgradeUrl,
   }
+}
+
+export function selectLicenseIndicator(state: ApplicationState) {
+  let indicators = 0
+  const { licenses } = selectLicenses(state)
+  for (var license of licenses) {
+    const { noticeType } = selectLicense(state, license?.plan.product.id)
+    if (noticeType) indicators++
+  }
+  return indicators
 }
 
 export function evaluationDays(value?: string) {
