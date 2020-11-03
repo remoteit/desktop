@@ -194,12 +194,10 @@ const jssTheme: ThemeOptions = {
         color: colors.grayDark,
       },
     },
-    MuiDialogContent: { root: { margin: `${spacing.md}px ${gutters}px`, padding: 0 } },
-    MuiTooltip: {
-      tooltip: {
-        '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 },
-      },
-    },
+    MuiDialogTitle: { root: { margin: `${spacing.lg}px ${gutters}px 0`, padding: 0 } },
+    MuiDialogContent: { root: { margin: `${spacing.sm}px ${gutters}px`, padding: 0 } },
+    MuiDialogActions: { root: { margin: `${spacing.sm}px ${spacing.md}px`, padding: 0 } },
+    MuiTooltip: { tooltip: { '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 } } },
   },
 }
 

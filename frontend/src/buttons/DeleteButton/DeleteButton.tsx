@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Tooltip, IconButton, CircularProgress } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
+import { Confirm } from '../../components/Confirm'
 import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 
@@ -11,11 +12,12 @@ type Props = {
 }
 
 export const DeleteButton: React.FC<Props> = ({ device }) => {
+  const [open, setOpen] = useState<boolean>(false)
   const { devices } = useDispatch<Dispatch>()
   const { destroying } = useSelector((state: ApplicationState) => state.devices)
   const css = useStyles()
   let warning =
-    "Are you sure?\nDeleting devices can't be undone so may require you to physically access the device if you wish to recover it."
+    "Deleting devices can't be undone so may require you to physically access the device if you wish to recover it."
 
   let disabled: boolean = false
   let tooltip: string = 'Delete this device'
@@ -30,23 +32,29 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
   if (device.shared) {
     disabled = false
     tooltip = 'Leave Device'
-    warning = 'Are you sure?\nThis device will have to be re-shared to you if you wish to access it again.'
-  }
-
-  const onDelete = () => {
-    if (window.confirm(warning)) devices.destroy(device)
+    warning = 'This device will have to be re-shared to you if you wish to access it again.'
   }
 
   if (destroying) return <CircularProgress className={css.loading} size={styles.fontSizes.md} />
 
   return (
-    <Tooltip title={tooltip}>
-      <span>
-        <IconButton disabled={disabled} onClick={onDelete}>
-          <Icon name="trash-alt" size="md" fixedWidth />
-        </IconButton>
-      </span>
-    </Tooltip>
+    <>
+      <Tooltip title={tooltip}>
+        <span>
+          <IconButton disabled={disabled} onClick={() => setOpen(true)}>
+            <Icon name="trash-alt" size="md" fixedWidth />
+          </IconButton>
+        </span>
+      </Tooltip>
+      <Confirm
+        open={open}
+        onConfirm={() => devices.destroy(device)}
+        onDeny={() => setOpen(false)}
+        title="Are you sure?"
+      >
+        {warning}
+      </Confirm>
+    </>
   )
 }
 

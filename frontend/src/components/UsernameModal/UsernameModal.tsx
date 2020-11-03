@@ -10,7 +10,7 @@ export const UsernameModal: React.FC<{
   onClose: () => void
 }> = ({ connection, open, onSubmit, service, onClose }) => {
   const app = useApplication(service && service.typeID)
-  const [username, setUsername] = useState<string>((connection?.username) || '')
+  const [username, setUsername] = useState<string>(connection?.username || '')
 
   useEffect(() => {
     setUsername(connection?.username || '')
@@ -42,10 +42,10 @@ export const UsernameModal: React.FC<{
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={onClose} color="primary" size="small" type="button">
+            <Button onClick={onClose} color="primary" type="button">
               Cancel
             </Button>
-            <Button variant="contained" color="primary" size="small" type="submit">
+            <Button variant="contained" color="primary" type="submit">
               Save
             </Button>
           </DialogActions>
