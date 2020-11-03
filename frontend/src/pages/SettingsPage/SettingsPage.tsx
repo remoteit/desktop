@@ -8,7 +8,6 @@ import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { LicensingSetting } from '../../components/LicensingSetting'
-import { UninstallSetting } from '../../components/UninstallSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { makeStyles } from '@material-ui/core/styles'
@@ -36,32 +35,7 @@ export const SettingsPage: React.FC = () => {
     })
   )
   const css = useStyles()
-  const { binaries } = useDispatch<Dispatch>()
-
-  const quitWarning = () =>
-    window.confirm('Are you sure? Quitting will not close your connections.') && emit('user/quit')
-  const signOutWarning = () => {
-    if (
-      window.confirm(
-        'Are you sure?\n\nSigning out will leave all active connections and hosted services running.\n\nIf you wish to transfer the device you must clear your credentials.'
-      )
-    ) {
-      emit('user/sign-out')
-      analyticsHelper.track('signOut')
-    }
-  }
-
-  const clearWarning = () => {
-    let message = 'Are you sure? This remove all your connections.'
-    if (target.uid)
-      message =
-        'Are you sure? This will remove all your connections and let the next user that signs claim this device.'
-    window.confirm(message) && emit('user/clear-all')
-  }
-
-  const installWarning = () =>
-    window.confirm('Are you sure? This will stop all services and re-install the command line utilities.') &&
-    binaries.install(true)
+  const { binaries, ui } = useDispatch<Dispatch>()
 
   useEffect(() => {
     analyticsHelper.page('SettingsPage')
@@ -121,23 +95,29 @@ export const SettingsPage: React.FC = () => {
           }
         />
         <ListItemSetting
+          confirm
           label="Sign out"
           subLabel="Sign out and lock this system installation."
           icon="sign-out"
-          onClick={signOutWarning}
+          confirmTitle="Are you sure?"
+          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
+          onClick={() => {
+            emit('user/sign-out')
+            analyticsHelper.track('signOut')
+          }}
         />
         <ListItemSetting
+          confirm
           label={'Sign out and clear device credentials'}
-          subLabel={
-            <>
-              This will remove all user credentials from this device, allowing the device to be transferred or another
-              user to log in.
-              <br />
-              The next user to sign in will claim this device.
-            </>
+          subLabel="This will remove all user credentials from this device, allowing the device to be transferred or another user to log in."
+          confirmTitle="Are you sure?"
+          confirmMessage={
+            target.uid
+              ? 'This will remove all your connections and let another user who sign in.'
+              : 'This will remove all your connections.'
           }
           icon="user-slash"
-          onClick={clearWarning}
+          onClick={() => emit('user/clear-all')}
         />
       </List>
       <Divider />
@@ -145,22 +125,18 @@ export const SettingsPage: React.FC = () => {
       <List>
         {isRemote() && (
           <ListItemSetting
+            confirm={!preferences.remoteUIOverride}
             label="Show full interface"
             subLabel="Remote devices only show target configuration options. Enable for full access."
             icon="sliders-h"
             toggle={preferences.remoteUIOverride}
+            confirmTitle="Are you sure?"
+            confirmMessage={`New connections will be from ${
+              targetDevice.name || 'this device'
+            } and not your local machine.`}
             onClick={() => {
-              if (
-                preferences.remoteUIOverride ||
-                window.confirm(
-                  `Are you sure? \nNew connections will be from ${
-                    targetDevice.name || 'this device'
-                  } and not your local machine.`
-                )
-              ) {
-                analyticsHelper.track('enabledRemoteConnectUI')
-                emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })
-              }
+              analyticsHelper.track('enabledRemoteConnectUI')
+              emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })
             }}
           />
         )}
@@ -178,7 +154,16 @@ export const SettingsPage: React.FC = () => {
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
-        {remoteUI || <ListItemSetting label="Quit" icon="power-off" onClick={quitWarning} />}
+        {remoteUI || (
+          <ListItemSetting
+            confirm
+            label="Quit"
+            icon="power-off"
+            confirmTitle="Are you sure?"
+            confirmMessage="Quitting will not close your connections."
+            onClick={() => emit('user/quit')}
+          />
+        )}
         <UpdateSetting />
       </List>
       {remoteUI || (
@@ -188,13 +173,28 @@ export const SettingsPage: React.FC = () => {
           <List>
             <SettingsDisableNetworkItem />
             <ListItemSetting
+              confirm
               label={installing ? 'Installing...' : 'Re-install command line tools'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}
               icon="terminal"
-              onClick={installWarning}
+              confirmTitle="Are you sure?"
+              confirmMessage="This will stop all services and re-install the command line utilities."
+              onClick={() => binaries.install(true)}
             />
-            <UninstallSetting />
+            <ListItemSetting
+              confirm
+              label="Uninstall command line tools"
+              subLabel={`De-register this device, completely remove all saved data, and uninstall the command line tools. Do this before removing, or uninstalling the application from your system.`}
+              icon="trash-alt"
+              confirmTitle="Are you sure?"
+              confirmMessage="You will remove this system as a host, your connections and command line utilities."
+              onClick={() => {
+                emit('uninstall')
+                ui.set({ uninstalling: true })
+                analyticsHelper.track('uninstall')
+              }}
+            />
             <ListItemSetting
               label="Show application logs"
               subLabel="Will show the folders that contain the application logs and config file."

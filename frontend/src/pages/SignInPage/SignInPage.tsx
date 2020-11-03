@@ -8,15 +8,16 @@ import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export function SignInPage() {
-  useEffect(() => {
-    analyticsHelper.page('SigninPage')
-  }, [])
-
   const css = useStyles()
   const { hostname, protocol } = window.location
   const allowSwitch = !isElectron() && hostname !== 'localhost' && hostname !== '127.0.0.1'
   const secure: boolean = protocol.includes('https')
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
+
+  useEffect(() => {
+    analyticsHelper.page('SigninPage')
+  }, [])
+
   return (
     <Body center>
       <SignInForm />
