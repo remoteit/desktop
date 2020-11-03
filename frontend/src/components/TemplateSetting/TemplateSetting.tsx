@@ -9,32 +9,34 @@ import { Icon } from '../Icon'
 
 const SSH_TYPE = 28
 
-export const LaunchSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
+type Props = { service: IService; connection?: IConnection; template: 'copyTemplate' | 'launchTemplate' }
+
+export const TemplateSetting: React.FC<Props> = ({ service, connection, template }) => {
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
   const app = useApplication(service.typeID)
   let tokens = '[host] [port] [id]'
   if (service.typeID === SSH_TYPE) tokens += ' [username]'
   if (!connection) connection = newConnection(service)
-  let currentLaunchUrl = connection?.launchTemplate || app.launchTemplate
+  let templateString = connection[template] || app[template] || connection.launchTemplate || app.launchTemplate || ''
 
   return (
     <InlineTextFieldSetting
-      value={currentLaunchUrl}
-      displayValue={app.parse(currentLaunchUrl, { ...connection, port: connection.port || freePort })}
+      value={templateString}
+      displayValue={app.parse(templateString, { ...connection, port: connection.port || freePort })}
       label={
         <>
-          Launch URL
+          {template === 'copyTemplate' ? 'Copy Command' : 'Launch URL'}
           <Tooltip title={`Replacement Tokens ${tokens}`} placement="top" arrow>
             <Icon name="question-circle" size="sm" type="regular" inline />
           </Tooltip>
         </>
       }
-      resetValue={app.launchTemplate}
-      onSave={launchTemplate =>
+      resetValue={app[template]}
+      onSave={templateString =>
         connection &&
         setConnection({
           ...connection,
-          launchTemplate: launchTemplate.toString(),
+          [template]: templateString.toString(),
         })
       }
     />
