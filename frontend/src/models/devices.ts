@@ -127,8 +127,10 @@ export default createModel({
         await graphQLHandleError(error)
       }
 
-      set({ fetching: false })
       await dispatch.accounts.setDevice({ id: deviceId, accountId, device: result })
+      set({ fetching: false })
+
+      platformConfiguration()
       return result
     },
 
