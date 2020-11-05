@@ -76,7 +76,7 @@ export const PATHS = {
   WIN_ADMIN_BINARIES:
     process.env.NODE_ENV === 'development'
       ? path.resolve('./bin/CLI/x64')
-      : os.platform() === 'win32'
+      : os.platform() === 'win32' && process.arch === 'ia32'
       ? path.resolve('./resources/x86')
       : path.resolve('./resources/x64'),
   WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
@@ -84,5 +84,4 @@ export const PATHS = {
     path.resolve('C:/Program Files/remoteit/remoteit.exe'),
     path.resolve('/Windows/remoteit.exe'),
   ],
-  WIN_MKLINK_PATH: 'C:/Windows'
 }

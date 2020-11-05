@@ -43,7 +43,6 @@ describe('backend/Installer', () => {
 
     test('should notify if installed', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(RESOURCES[0].version))
 
       await installer.check()
 
@@ -54,7 +53,6 @@ describe('backend/Installer', () => {
 
     test('should notify if cli outdated', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))
 
       await installer.check()
 
@@ -66,7 +64,6 @@ describe('backend/Installer', () => {
 
     test('should notify if does not exist', async () => {
       jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation()
 
       await installer.check()
 
@@ -78,7 +75,6 @@ describe('backend/Installer', () => {
     test('should install if does not exist and elevated permissions', async () => {
       environment.isElevated = true
       jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation()
 
       await installer.check()
 
@@ -89,7 +85,6 @@ describe('backend/Installer', () => {
     test('should install if outdated and elevated permissions', async () => {
       environment.isElevated = true
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))
 
       await installer.check()
 
@@ -115,8 +110,6 @@ describe('backend/Installer', () => {
     afterEach(() => versionSpy.mockClear())
 
     test('should detect old version', async () => {
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('0.30.1'))
-
       const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
@@ -124,8 +117,6 @@ describe('backend/Installer', () => {
     })
 
     test('should consider a bad response as not current', async () => {
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('Error'))
-
       const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
@@ -133,8 +124,6 @@ describe('backend/Installer', () => {
     })
 
     test('should handle beta tags', async () => {
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('0.37.7-Beta'))
-
       const isCurrent = await installer.isCliCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)

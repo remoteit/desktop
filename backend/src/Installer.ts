@@ -45,15 +45,7 @@ export default class Installer {
   async check(log?: boolean) {
     if (binaryInstaller.inProgress) return
 
-    d('CHECK INSTALLATION', { name: this.name, version: this.version })
-    const cliCurrent = await this.isCliCurrent(log)
-
-    if (cliCurrent) {
-      return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
-    } else {
-      if (environment.isElevated) await binaryInstaller.install()
-      else EventBus.emit(Installer.EVENTS.notInstalled, this.name)
-    }
+    return EventBus.emit(Installer.EVENTS.installed, this.toJSON())
   }
 
   toJSON() {
@@ -78,18 +70,15 @@ export default class Installer {
   }
 
   async isCliCurrent(log?: boolean) {
-    let cliVersion = 'Not Installed'
-    let current = false
-
-    cliVersion = await cli.version()
-    this.installedVersion = cliVersion
-    try {
-      current = semverCompare(cliVersion, this.version) >= 0
-    } catch (error) {
-      Logger.warn('BAD CLI VERSION', { error })
+    this.installedVersion = this.version
+    if (
+      (environment.isWindows && !process.env.path?.includes(environment.binPath)) ||
+      !existsSync(`/usr/local/bin/${this.name}`)
+    ) {
+      return false
     }
 
-    return current
+    return true
   }
 
   fileExists(name: string) {

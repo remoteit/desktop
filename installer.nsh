@@ -1,5 +1,5 @@
 ; !define PATH_REMOTE_DIR "C:\Program Files\remoteit-bin"
-  
+
 
 !macro customInstall
     Var /GLOBAL ps_command
@@ -27,28 +27,24 @@
         
     ${EndIf} 
     
-    StrCpy $ps_command 'powershell $\n\
-    ([System.Environment]::SetEnvironmentVariable("$\'"remoteit$\'","$\'"$path_\remoteit.exe$\'", [System.EnvironmentVariableTarget]::User)) ; $\n\
-    ([System.Environment]::SetEnvironmentVariable("$\'"muxer$\'","$\'"$path_\muxer.exe$\'", [System.EnvironmentVariableTarget]::User)) ; $\n\
-    ([System.Environment]::SetEnvironmentVariable("$\'"demuxer$\'","$\'"$path_\demuxer.exe$\'", [System.EnvironmentVariableTarget]::User)) ; $\n\
-    ([System.Environment]::SetEnvironmentVariable("$\'"connectd$\'","$\'"$path_\connectd.exe$\'", [System.EnvironmentVariableTarget]::User)) $\n\
-    '
+    
+    StrCpy $ps_command 'powershell [Environment]::SetEnvironmentVariable("$\'"Path$\'",[Environment]::GetEnvironmentVariable("$\'"Path$\'", [EnvironmentVariableTarget]::"$\'"Machine$\'") + "$\'";$path_$\'",[EnvironmentVariableTarget]::"$\'"Machine$\'")'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    StrCpy $ps_command 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j service uninstall'
-    nsExec::ExecToStack /OEM $ps_command 
+    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j service uninstall'
+    nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
-    FileWrite $installLog '$ps_command     [$0]  $1$\r$\n'
+    FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    StrCpy $ps_command 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j service install'
-    nsExec::ExecToStack /OEM $ps_command 
+    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j service install'
+    nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
-    FileWrite $installLog '$ps_command     [$0]  $1$\r$\n'
+    FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
     
 
     FileWrite $installLog "$\n***** End Install ******$\r$\n"
@@ -97,13 +93,13 @@
                         MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
                         true:
                             FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
-                            StrCpy $ps_command_uninstall 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j uninstall --yes'
+                            StrCpy $ps_command_uninstall 'powershell "& " remoteit -j uninstall --yes'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
                             Pop $0
                             Pop $1      
                             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
 
-                            StrCpy $ps_command_uninstall 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j status'
+                            StrCpy $ps_command_uninstall 'powershell "& " remoteit -j status'
                             nsExec::ExecToStack /OEM $ps_command_uninstall
                             Pop $0
                             Pop $1
@@ -117,13 +113,13 @@
                         false:
                             FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
 
-                            StrCpy $ps_command_uninstall 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j service uninstall'
+                            StrCpy $ps_command_uninstall 'powershell "& " remoteit -j service uninstall'
                             nsExec::ExecToStack /OEM $ps_command_uninstall
                             Pop $0
                             Pop $1
                             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
 
-                            StrCpy $ps_command_uninstall 'powershell "& " ([System.Environment]::GetEnvironmentVariable("$\'"remoteit$\'","$\'"user$\'")) -j status'
+                            StrCpy $ps_command_uninstall 'powershell "& " remoteit -j status'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
                             Pop $0
                             Pop $1
@@ -142,11 +138,7 @@
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
-            StrCpy $ps_command_uninstall 'powershell $\n\
-            [Environment]::SetEnvironmentVariable("$\'"remoteit$\'","$\'"$\'","$\'"user$\'"); $\n\
-            [Environment]::SetEnvironmentVariable("$\'"muxer$\'","$\'"$\'","$\'"user$\'"); $\n\
-            [Environment]::SetEnvironmentVariable("$\'"demuxer$\'","$\'"$\'","$\'"user$\'"); $\n\
-            [Environment]::SetEnvironmentVariable("$\'"connectd$\'","$\'"$\'","$\'"user$\'") ' 
+            StrCpy $ps_command_uninstall 'powershell [System.Environment]::SetEnvironmentVariable("$\'"PATH$\'",((([System.Environment]::GetEnvironmentVariable("$\'"PATH$\'","$\'"Machine$\'")).Split("$\'";$\'") | Where-Object { $$_ -ne "$\'"C:\Program Files\remoteit\resources\x64$\'" }) -join "$\'";$\'"),"$\'"Machine$\'") ' 
             nsExec::ExecToStack /OEM $ps_command_uninstall
             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
 

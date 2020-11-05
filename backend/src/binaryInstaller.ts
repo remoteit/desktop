@@ -45,21 +45,21 @@ class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
+        const commands_env = new Command({ onError: reject, admin: true })
         if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        commands.push(`setx remoteit "${installer.binaryPathCLI()}"`)
-        installer.dependencies.map(name => {
-          commands.push(`setx  ${name} "${environment.binPath}\\${name}.exe"`)
-        })
-        commands.push(`"%remoteit%" ${strings.serviceUninstall()}`)
-        commands.push(`"%remoteit%" ${strings.serviceInstall()}`)
+
+        commands_env.push(`setx /M PATH "%PATH%;${environment.binPath}"`)
+        await commands_env.exec()
       } else {
         commands.push(`ln -sf ${installer.binaryPathCLI()} /usr/local/bin/`)
         installer.dependenciesPath().map(path => {
           commands.push(`ln -sf ${path} /usr/local/bin/`)
         })
-        commands.push(`remoteit ${strings.serviceUninstall()}`)
-        commands.push(`remoteit ${strings.serviceInstall()}`)
       }
+
+      commands.push(`${installer.name} ${strings.serviceUninstall()}`)
+      commands.push(`${installer.name} ${strings.serviceInstall()}`)
+
       await commands.exec()
 
       EventBus.emit(Installer.EVENTS.installed, remoteitInstaller.toJSON())
@@ -83,20 +83,17 @@ class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
       try {
-        if (environment.isWindows && process.env.remoteit) {
-          Logger.info('REMOVE ENVIRONMENT PATH')
-          commands.push(`"%remoteit%" ${strings.serviceUninstall()}`)
-          commands.push(`"%remoteit%" ${strings.serviceInstall()}`)
-          commands.push(`REG delete HKCU\\Environment /F /V remoteit `)
-          installer.dependencies.map(name => {
-            if (process.env.name) commands.push(`REG delete HKCU\\Environment /F /V ${name}`)
-          })
+        if (environment.isWindows && process.env.path?.includes(environment.binPath)) {
+          Logger.info('REMOVE ENVIRONMENT PATH', { path: environment.binPath })
+          // commands.push(`${installer.name} ${strings.serviceUninstall()}`)
+          // commands.push(`${installer.name} ${strings.toolsUninstall()}`)
+          commands.push(`setx /M PATH "%PATH:${environment.binPath};=%" `)
           await commands.exec()
         } else {
           Logger.info('REMOVE LINKED PATH')
-          commands.push(`remoteit ${strings.serviceUninstall()}`)
-          commands.push(`remoteit ${strings.serviceInstall()}`)
-          rimraf.sync('/usr/local/bin/remoteit', options)
+          // commands.push(`${installer.name} ${strings.serviceUninstall()}`)
+          // commands.push(`${installer.name} ${strings.toolsUninstall()}`)
+          rimraf.sync(`/usr/local/bin/${installer.name}`, options)
           installer.dependencies.map(name => {
             rimraf.sync(`/usr/local/bin/${name}`, options)
           })
