@@ -137,8 +137,16 @@ export default createModel({
     },
     async mergeDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
       const currentDevices = getDevices(globalState, accountId)
-      const ids = devices.map(d => d.id)
-      const diff = currentDevices.filter(c => !ids.includes(c.id))
+      const diff = currentDevices.filter(
+        c =>
+          !devices.find(d => {
+            if (d.id === c.id) {
+              d.hidden = c.hidden
+              return true
+            }
+            return false
+          })
+      )
       dispatch.accounts.setDevices({
         devices: [...devices, ...diff],
         accountId,

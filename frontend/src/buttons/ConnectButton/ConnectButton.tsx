@@ -59,7 +59,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (service?.license === 'EVALUATION') {
     color = 'warning'
-    title = 'Unlicensed'
+    title = 'Evaluation'
     variant = 'text'
   }
   if (service?.license === 'UNLICENSED') {

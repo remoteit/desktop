@@ -1,19 +1,31 @@
 import React from 'react'
-import { Tooltip, IconButton } from '@material-ui/core'
+import { useSelector, useDispatch } from 'react-redux'
+import { Tooltip, IconButton, Badge } from '@material-ui/core'
+import { state as defaults } from '../../models/devices'
+import { ApplicationState, Dispatch } from '../../store'
 import { Icon } from '../../components/Icon'
 
-export const FilterButton = ({ onOpen, open }: { onOpen: (state: boolean) => void; open: boolean }): JSX.Element => {
-  function handleChange() {
-    onOpen(!open)
-  }
+export const FilterButton: React.FC = () => {
+  const { open, changed } = useSelector((state: ApplicationState) => ({
+    open: state.ui.filterMenu,
+    changed:
+      state.devices.filter !== defaults.filter ||
+      state.devices.sort !== defaults.sort ||
+      state.devices.owner !== defaults.owner,
+  }))
+  const { ui } = useDispatch<Dispatch>()
 
   return (
-    <>
-      <Tooltip title="Show filter panel">
-        <IconButton onClick={handleChange}>
-          <Icon name="filter" color="primary" size="base" type="regular" />
-        </IconButton>
-      </Tooltip>
-    </>
+    <Tooltip title={open ? 'Hide filters' : 'Show filters'}>
+      <IconButton onClick={() => ui.set({ filterMenu: !open })}>
+        {changed ? (
+          <Badge variant="dot" color="primary">
+            <Icon name="filter" size="base" type="regular" />
+          </Badge>
+        ) : (
+          <Icon name="filter" size="base" type="regular" />
+        )}
+      </IconButton>
+    </Tooltip>
   )
 }

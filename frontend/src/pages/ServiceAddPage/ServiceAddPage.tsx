@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { LicensingNotice } from '../../components/LicensingNotice'
+import { LicensingServiceNotice } from '../../components/LicensingServiceNotice'
 import { REGEX_LAST_PATH } from '../../shared/constants'
 import { getAllDevices } from '../../models/accounts'
 import { Typography } from '@material-ui/core'
@@ -46,7 +46,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Add service</Title>
           </Typography>
-          <LicensingNotice device={device} context="add" />
+          <LicensingServiceNotice device={device} />
         </>
       }
     >

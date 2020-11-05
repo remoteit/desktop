@@ -6,7 +6,7 @@ import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ListItemIcon, ListItemText, ListItemSecondaryAction, Tooltip, Chip, makeStyles } from '@material-ui/core'
 
-const MAX_INDICATORS = 8
+const MAX_INDICATORS = 6
 
 type Props = {
   device?: IDevice

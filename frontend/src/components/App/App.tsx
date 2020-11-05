@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { useHistory, useLocation } from 'react-router-dom'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
-import { BottomNavigation, BottomNavigationAction } from '@material-ui/core'
+import { BottomNavigation, BottomNavigationAction, Badge } from '@material-ui/core'
+import { selectLicenseIndicator } from '../../models/licensing'
 import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
 import { makeStyles } from '@material-ui/core/styles'
@@ -25,6 +26,7 @@ export const App: React.FC = () => {
     signedOut,
     uninstalling,
     remoteUI,
+    noticeCount,
   } = useSelector((state: ApplicationState) => ({
     authInitialized: state.auth.initialized,
     backendAuthenticated: state.auth.backendAuthenticated,
@@ -33,6 +35,7 @@ export const App: React.FC = () => {
     signedOut: state.auth.initialized && !state.auth.authenticated,
     uninstalling: state.ui.uninstalling,
     remoteUI: isRemoteUI(state),
+    noticeCount: selectLicenseIndicator(state),
   }))
 
   const css = useStyles()
@@ -107,7 +110,7 @@ export const App: React.FC = () => {
     { label: 'This Device', path: '/configure', icon: 'hdd', show: remoteUI },
     { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
     { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
-    { label: 'Settings', path: '/settings', icon: 'cog', show: true },
+    { label: 'Settings', path: '/settings', icon: 'cog', badge: noticeCount, show: true },
   ]
 
   return (
@@ -124,7 +127,15 @@ export const App: React.FC = () => {
                 key={m.path}
                 label={m.label}
                 value={m.path}
-                icon={<Icon name={m.icon} size="lg" />}
+                icon={
+                  m.badge ? (
+                    <Badge variant="dot" color="primary">
+                      <Icon name={m.icon} size="lg" />
+                    </Badge>
+                  ) : (
+                    <Icon name={m.icon} size="lg" />
+                  )
+                }
               />
             )
           return items
