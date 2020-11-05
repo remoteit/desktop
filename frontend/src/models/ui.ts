@@ -8,6 +8,7 @@ type UIState = UIParams & {
   uninstalling: boolean
   routingLock?: IRouteType
   routingMessage?: string
+  filterMenu: boolean
   scanEnabled: boolean
   scanLoading: { [interfaceName: string]: boolean }
   scanTimestamp: { [interfaceName: string]: number }
@@ -29,6 +30,7 @@ const state: UIState = {
   uninstalling: false,
   routingLock: undefined,
   routingMessage: undefined,
+  filterMenu: false,
   scanEnabled: true,
   scanLoading: {},
   scanTimestamp: {},

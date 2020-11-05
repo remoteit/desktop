@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
+import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
@@ -25,12 +26,6 @@ export const DevicesPage = () => {
     }, {}),
   }))
 
-  const [open, setOpen] = useState(false)
-
-  const onOpen = (state: boolean) => {
-    setOpen(state)
-  }
-
   const css = useStyles()
 
   useEffect(() => {
@@ -45,18 +40,19 @@ export const DevicesPage = () => {
             <SearchField />
             <AccountSelect />
             <RefreshButton />
-            <FilterButton onOpen={onOpen} open={open} />
+            <FilterButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>
       }
+      sidebar={<FilterDrawerContent />}
     >
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." spinner={false} />
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={devices} connections={connections} onOpen={onOpen} open={open} />
+        <DeviceList devices={devices} connections={connections} />
       )}
     </Container>
   )

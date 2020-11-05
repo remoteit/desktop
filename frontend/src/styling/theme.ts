@@ -28,7 +28,7 @@ const jssTheme: ThemeOptions = {
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
       sizeSmall: {
-        fontSize: 11,
+        fontSize: fontSizes.xs,
         fontWeight: 500,
         letterSpacing: 1,
         whiteSpace: 'nowrap',
@@ -53,6 +53,16 @@ const jssTheme: ThemeOptions = {
       padding: {
         paddingTop: spacing.sm,
         paddingBottom: spacing.sm,
+      },
+    },
+    MuiListSubheader: {
+      root: {
+        color: colors.grayDark,
+        textTransform: 'uppercase',
+        fontSize: fontSizes.xs,
+        letterSpacing: 1,
+        fontWeight: 500,
+        lineHeight: '40px',
       },
     },
     MuiListItem: {

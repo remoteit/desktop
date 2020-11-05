@@ -65,7 +65,7 @@ export const colors: { [key in Color]: string } = {
   grayDarkest: '#333',
   white: '#fff',
   black: '#000',
-  darken: 'rgba(0,0,0,0.2)',
+  darken: 'rgba(0,0,0,0.15)',
   screen: 'rgba(0,0,0,0.03)',
   rpi: '#C51A4A',
 }

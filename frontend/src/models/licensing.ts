@@ -80,7 +80,7 @@ export default createModel({
         //     id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
         //     created: new Date('2020-10-17T01:03:47.976Z'),
         //     updated: new Date('2020-10-17T01:03:47.976Z'),
-        //     expiration: new Date('2020-11-16T01:03:48.000Z'),
+        //     expiration: new Date('2020-11-05T01:03:48.000Z'),
         //     valid: true,
         //     plan: {
         //       id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
@@ -105,7 +105,7 @@ export default createModel({
         //   {
         //     name: 'aws-services',
         //     value: 5,
-        //     actual: 8,
+        //     actual: 4,
         //     license: { id: 'e46e5c55-7d12-46c5-aee3-493e29e604db' },
         //   },
         // ],

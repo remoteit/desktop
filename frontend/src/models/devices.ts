@@ -27,7 +27,7 @@ type IDeviceState = DeviceParams & {
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
-  sort: 'name' | '-name'
+  sort: 'name' | '-name' | 'state' | '-state' | 'color' | '-color'
   owner: 'all' | 'me' | 'others'
   size: number
   from: number
@@ -35,7 +35,7 @@ type IDeviceState = DeviceParams & {
   eventsUrl: string
 }
 
-const state: IDeviceState = {
+export const state: IDeviceState = {
   initialized: false,
   total: 0,
   results: 0,

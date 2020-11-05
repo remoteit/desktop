@@ -58,7 +58,7 @@ export const ServicePage: React.FC = () => {
     if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
   }, [])
 
-  if (fetching) return <LoadingMessage message="Fetching data..." />
+  if (!device && fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <UnauthorizedPage />
 
   return (

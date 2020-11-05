@@ -162,7 +162,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       geo: d.endpoint?.geo,
       attributes: processAttributes(d),
       services: d.services.map(
-        (s: any): IService => ({
+        (s: any, index: number): IService => ({
           id: s.id,
           type: s.title,
           typeID: s.application,
