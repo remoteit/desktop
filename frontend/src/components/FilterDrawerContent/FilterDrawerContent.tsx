@@ -54,7 +54,6 @@ export const FilterDrawerContent: React.FC = () => {
   useEffect(() => {
     if (state.sort !== values.sort || state.filter !== values.filter || state.owner !== values.owner) {
       devices.set({ ...values, from: defaults.from })
-      console.table({ values })
       devices.fetch()
     }
   }, [values])
