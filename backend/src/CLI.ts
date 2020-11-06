@@ -24,6 +24,7 @@ type IData = {
 type IExec = {
   cmds: string[]
   checkAuthHash?: boolean
+  skipSignInCheck?: boolean
   admin?: boolean
   quiet?: boolean
   onError?: ErrorCallback
@@ -144,7 +145,12 @@ export default class CLI {
   }
 
   async status() {
-    const result = await this.exec({ cmds: [strings.status()], checkAuthHash: true, quiet: true })
+    const result = await this.exec({
+      cmds: [strings.status()],
+      checkAuthHash: true,
+      skipSignInCheck: true,
+      quiet: true,
+    })
     let data: { connections?: IConnectionStatus[] } = {}
     try {
       if (result) data = JSON.parse(result)
@@ -223,27 +229,28 @@ export default class CLI {
   }
 
   async signIn() {
-    await this.exec({ cmds: [strings.signIn()], checkAuthHash: true })
+    await this.exec({ cmds: [strings.signIn()], checkAuthHash: true, skipSignInCheck: true })
     this.read()
   }
 
   async signOut() {
-    if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], checkAuthHash: true })
+    if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], skipSignInCheck: true, checkAuthHash: true })
     this.read()
   }
 
   async scan(ipMask?: string) {
-    const result = await this.exec({ cmds: [strings.scan(ipMask)] })
+    const result = await this.exec({ cmds: [strings.scan(ipMask)], skipSignInCheck: true })
     return JSON.parse(result)
   }
 
   async version() {
-    const result = await this.exec({ cmds: [strings.version()], quiet: true })
+    const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true })
     return result.toString().trim()
   }
 
-  async exec({ cmds, checkAuthHash = false, admin = false, quiet = false, onError }: IExec) {
+  async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
     if ((checkAuthHash && !user.signedIn) || !remoteitInstaller.isInstalled()) return ''
+    if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
     let result
     let commands = new Command({ admin, quiet })
