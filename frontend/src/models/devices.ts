@@ -67,7 +67,7 @@ export default createModel({
     async fetch(optionalAccountId: any, globalState: any) {
       const accountId: string = optionalAccountId || getAccountId(globalState)
       const { set, graphQLFetchProcessor } = dispatch.devices
-      const { setDevices, mergeDevices } = dispatch.accounts
+      const { setDevices, appendDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched } = globalState.devices
       const { user } = globalState.auth as ApplicationState['auth']
       const all = getDevices(globalState)
@@ -94,7 +94,7 @@ export default createModel({
       if (append) await setDevices({ devices: [...all, ...devices], accountId })
       else {
         await setDevices({ devices, accountId })
-        await mergeDevices({ devices: connections, accountId: user?.id })
+        await appendDevices({ devices: connections, accountId: user?.id })
       }
 
       if (!error) cleanOrphanConnections()
