@@ -27,14 +27,15 @@ export async function graphQLGetErrors(gqlData: any) {
 }
 
 export async function graphQLHandleError(error: AxiosError) {
-  const { auth, backend } = store.dispatch
+  const { auth, backend, ui } = store.dispatch
   console.error('GraphQL fetch error:', error, error?.response?.status)
   if (error?.response?.status === 401) {
-    const { auth } = store.dispatch
     auth.signInError('Session Expired')
   } else if (error?.response?.status === 403) {
     auth.checkSession()
     backend.set({ globalError: error.message })
+  } else if (error.message === 'Network Error') {
+    // hide network disconnected error
   } else {
     backend.set({ globalError: error.message })
   }
