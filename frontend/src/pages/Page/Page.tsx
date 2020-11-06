@@ -17,18 +17,20 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend, ui } = useDispatch<Dispatch>()
-  const { connected, successMessage, globalError, backendAuthenticated, os } = useSelector((state: ApplicationState) => ({
-    connected: state.ui.connected,
-    successMessage: state.ui.successMessage,
-    globalError: state.backend.globalError,
-    backendAuthenticated: state.auth.backendAuthenticated,
-    os: state.backend.environment.os,
-  }))
+  const { connected, successMessage, globalError, backendAuthenticated, os } = useSelector(
+    (state: ApplicationState) => ({
+      connected: state.ui.connected,
+      successMessage: state.ui.successMessage,
+      globalError: state.backend.globalError,
+      backendAuthenticated: state.auth.backendAuthenticated,
+      os: state.backend.environment.os,
+    })
+  )
 
   const largeScreen = useMediaQuery('(min-width:600px)')
   const css = useStyles()
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
-  const clearCliError = () => backend.set({ globalError: undefined })
+  const clearGlobalError = () => backend.set({ globalError: undefined })
   const reconnect = () => Controller.open(false, true)
 
   let remoteCss = ''
@@ -64,11 +66,11 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
             </>
           }
           action={
-            <IconButton onClick={clearCliError}>
+            <IconButton onClick={clearGlobalError}>
               <Icon name="times" size="md" color="white" fixedWidth />
             </IconButton>
           }
-          onClose={clearCliError}
+          onClose={clearGlobalError}
         />
         <Snackbar
           key={successMessage}

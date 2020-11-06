@@ -20,7 +20,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
-  const accessDisabled = !!device?.attributes.accessDisabled
+  const accessDisabled = !!device?.attributes?.accessDisabled
   const offline = (instance?.state !== 'active' && !connection?.active) || service?.license === 'UNLICENSED'
   const targetPlatformId = device?.targetPlatform
   const proxy = service && connection?.isP2P === false

@@ -17,7 +17,6 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, subtitle, filterL
       <ListSubheader>{subtitle}</ListSubheader>
       {filterList.map((f, index) => (
         <ListItem button dense key={index} onClick={() => onSelect(f.value)}>
-          {console.log(f.value, value)}
           <ListItemIcon>{f.value === value.replace('-', '') && <Icon name={icon} color="primary" />}</ListItemIcon>
           <ListItemText
             primary={f.filterName}
