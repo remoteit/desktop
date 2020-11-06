@@ -133,6 +133,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
     '& .MuiFilledInput-input': { paddingTop: 22, paddingBottom: 10, fontSize: 14 },
+    '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .MuiTextField-root': { marginLeft: -12 },
     '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } }, // paddingTop: 3, marginTop: -6 },
     '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
