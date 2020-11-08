@@ -36,8 +36,6 @@ export default createModel({
     },
     installed(state: BinariesState, info: InstallationInfo) {
       state.installing = false
-
-      // Clear errors
       state.error = undefined
       state.installed = true
       state.path = info.path

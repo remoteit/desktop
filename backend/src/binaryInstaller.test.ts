@@ -1,6 +1,6 @@
 import binaryInstaller from './binaryInstaller'
-import remoteitInstaller from './remoteitInstaller'
-import environment from './environment'
+import remoteiInstaller from './remoteiInstaller'
+import environment from./Binaryment'
 import user from './User'
 import Command from './Command'
 import rimraf from 'rimraf'
@@ -43,7 +43,7 @@ describe('backend/binaryInstaller', () => {
     test('removes the files from a Unix installer', async () => {
       environment.isWindows = false
 
-      await binaryInstaller.uninstallBinary(remoteitInstaller)
+      await binaryInstaller.uninstallBinaries(remoteiInstaller)
 
       expect(installSpy).toBeCalledWith('../jest/bin/remoteit', { disableGlob: true })
       expect(installSpy).toBeCalledWith('../jest/user', { disableGlob: true })
@@ -53,7 +53,7 @@ describe('backend/binaryInstaller', () => {
     test('removes the files from a Windows installer', async () => {
       environment.isWindows = true
 
-      await binaryInstaller.uninstallBinary(remoteitInstaller)
+      await binaryInstaller.uninstallBinaries(remoteiInstaller)
 
       expect(installSpy).toBeCalledWith('../jest/bin/remoteit.exe', { disableGlob: true })
       expect(installSpy).toBeCalledWith('../jest/user', { disableGlob: true })

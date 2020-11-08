@@ -1,6 +1,5 @@
 import os from 'os'
 import path from 'path'
-import version from './cli-version.json'
 
 //General
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
@@ -14,12 +13,6 @@ export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e137655
 
 // CLI
 export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
-export const RESOURCES = [
-  { name: 'remoteit', version: version.cli, url: version.url_cli },
-  { name: 'muxer', version: version.muxer, url: version.url_base },
-  { name: 'demuxer', version: version.demuxer, url: version.url_base },
-  { name: 'connectd', version: version.connectd, url: version.url_connectd },
-]
 
 // CLI product tracking codes
 export const MANUFACTURE_ID_STANDARD = 33280
@@ -58,22 +51,20 @@ export const SSL_PORT = WEB_PORT - 1
 
 // Install paths
 export const PATHS = {
-  LINUX_USER_BINARIES: path.join(os.homedir(), './resources'),
   LINUX_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  LINUX_ADMIN_BINARIES: './resources',
+  LINUX_BINARIES: './resources',
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
   LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
 
-  MAC_USER_BINARIES: path.join(os.homedir(), './resources'),
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  MAC_ADMIN_BINARIES:
+  MAC_BINARIES:
     process.env.NODE_ENV === 'development' ? path.resolve('./bin/CLI') : path.join(__dirname, '../../../../'),
   MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
+  MAC_SYMLINKS: '/usr/local/bin',
 
-  WIN_USER_BINARIES: path.join(os.homedir(), 'AppData/Local/remoteit/bin'),
   WIN_USER_SETTINGS: path.join(os.homedir(), 'AppData/Local/remoteit'),
-  WIN_ADMIN_BINARIES:
+  WIN_BINARIES:
     process.env.NODE_ENV === 'development'
       ? path.resolve('./bin/CLI/x64')
       : os.platform() === 'win32' && process.arch === 'ia32'

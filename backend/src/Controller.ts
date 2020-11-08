@@ -9,10 +9,9 @@ import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
-import remoteitInstaller from './remoteitInstaller'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
-import Installer from './Installer'
+import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
@@ -31,7 +30,7 @@ class Controller {
 
     let eventNames = [
       ...Object.values(User.EVENTS),
-      ...Object.values(Installer.EVENTS),
+      ...Object.values(Binary.EVENTS),
       ...Object.values(Connection.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),
@@ -79,7 +78,8 @@ class Controller {
     socket.on('showFolder', showFolder.openLogs)
 
     this.initBackend()
-    this.check(true) // check and log
+    binaryInstaller.install()
+    this.check()
   }
 
   recapitate = () => {
@@ -87,8 +87,7 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
   }
 
-  check = (log?: boolean) => {
-    remoteitInstaller.check(log)
+  check = () => {
     this.pool.check()
     lan.check()
     app.check()
@@ -186,9 +185,8 @@ class Controller {
   installBinaries = async (force?: boolean) => {
     try {
       await binaryInstaller.install(force)
-      remoteitInstaller.check()
     } catch (error) {
-      EventBus.emit(Installer.EVENTS.error, error)
+      EventBus.emit(Binary.EVENTS.error, error)
     }
   }
 }

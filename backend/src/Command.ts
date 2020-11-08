@@ -22,7 +22,7 @@ export default class Command {
   }
 
   push(command: string) {
-    this.commands.push(command)
+    if (command) this.commands.push(command)
   }
 
   toString() {
@@ -62,6 +62,7 @@ export default class Command {
         headless: environment.isHeadless,
         elevated: environment.isElevated,
       })
+
       const { stdout, stderr } =
         this.admin && !environment.isHeadless && !environment.isElevated
           ? await sudoPromise(this.toString())

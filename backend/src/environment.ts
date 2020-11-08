@@ -24,6 +24,7 @@ export class Environment {
   userPath: string
   adminPath: string
   binPath: string
+  symlinkPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   version: string
@@ -44,21 +45,23 @@ export class Environment {
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
     this.version = this.getAppVersion()
+    this.symlinkPath = ''
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
       this.adminPath = PATHS.WIN_ADMIN_SETTINGS
-      this.binPath = elevated ? PATHS.WIN_ADMIN_BINARIES : PATHS.WIN_USER_BINARIES
+      this.binPath = PATHS.WIN_BINARIES
       this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
     } else if (this.isMac) {
       this.userPath = PATHS.MAC_USER_SETTINGS
       this.adminPath = PATHS.MAC_ADMIN_SETTINGS
-      this.binPath = elevated ? PATHS.MAC_ADMIN_BINARIES : PATHS.MAC_USER_BINARIES
+      this.binPath = PATHS.MAC_BINARIES
       this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
+      this.symlinkPath = PATHS.MAC_SYMLINKS
     } else {
       this.userPath = PATHS.LINUX_USER_SETTINGS
       this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
-      this.binPath = elevated ? PATHS.LINUX_ADMIN_BINARIES : PATHS.LINUX_USER_BINARIES
+      this.binPath = PATHS.LINUX_BINARIES
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
     }
     this.manufacturerDetails = this.getManufacturerDetails()

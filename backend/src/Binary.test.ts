@@ -1,5 +1,5 @@
 import binaryInstaller from './binaryInstaller'
-import Installer from './Installer'
+import Binary from './Binary'
 import environment from './environment'
 import preferences from './preferences'
 import EventBus from './EventBus'
@@ -17,18 +17,16 @@ describe('backend/Installer', () => {
       eventSpy: jest.SpyInstance,
       versionSpy: jest.SpyInstance,
       prefSpy: jest.SpyInstance
-    let installer: Installer
+    let installer: Binary
     let path: string
 
     beforeAll(() => {
-      installer = new Installer({
+      installer = new Binary({
         name: 'remoteit',
         version: RESOURCES[0].version,
-        repoName: 'remoteit/cli',
-        dependencies: ['connectd', 'muxer', 'demuxer'],
       })
 
-      path = installer.binaryPathCLI()
+      path = installer.path
       prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: environment.version }))
       installSpy = jest.spyOn(binaryInstaller, 'install').mockImplementation()
       eventSpy = jest.spyOn(EventBus, 'emit').mockImplementation()
@@ -96,11 +94,11 @@ describe('backend/Installer', () => {
 
   describe('isCurrent', () => {
     let versionSpy: jest.SpyInstance
-    let installer: Installer
+    let installer: Binary
 
     beforeAll(
       () =>
-        (installer = new Installer({
+        (installer = new Binary({
           name: 'remoteit',
           version: RESOURCES[0].version,
           repoName: 'remoteit/cli',
@@ -128,5 +126,6 @@ describe('backend/Installer', () => {
 
       expect(versionSpy).toBeCalledTimes(1)
     })
-  })
+  })isCurrent
 })
+isCurrentisCurrentisCurrentisCurrent

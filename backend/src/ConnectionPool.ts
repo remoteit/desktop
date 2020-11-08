@@ -1,7 +1,7 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import electronInterface from './electronInterface'
-import remoteitInstaller from './remoteitInstaller'
+import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import PortScanner from './PortScanner'
 import Connection from './Connection'
@@ -50,7 +50,7 @@ export default class ConnectionPool {
 
   // Sync with CLI
   check = async () => {
-    if (!remoteitInstaller.isCliCurrent() || !user.signedIn) return
+    if (!binaryInstaller.isCurrent() || !user.signedIn) return
 
     await cli.updateConnectionStatus()
 
