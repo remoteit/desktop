@@ -46,22 +46,22 @@ export default class Binary {
         this.installedVersion = version
         current = semverCompare(version, this.version) >= 0
       } catch (error) {
-        Logger.warn('BAD CLI VERSION', { error })
+        Logger.warn('BINARY VERSION ERROR', { name: this.name, error })
       }
     }
 
     if (current) {
-      log && Logger.info('CHECK CLI VERSION', { current, name: this.name, version, desiredVersion: this.version })
+      log && Logger.info('CHECK BINARY VERSION', { current, name: this.name, version, desiredVersion: this.version })
     } else {
-      Logger.info('CLI NOT CURRENT', { name: this.name, version, desiredVersion: this.version })
+      Logger.info('BINARY NOT CURRENT', { name: this.name, version, desiredVersion: this.version })
     }
 
     return current
   }
 
   isInstalled() {
-    let installed = commandExists.sync('remoteit')
-    d('BINARY EXISTS', { name: this.fileName, installed })
+    let installed = commandExists.sync(this.name)
+    Logger.info('BINARY EXISTS', { name: this.name, installed })
     return installed
   }
 

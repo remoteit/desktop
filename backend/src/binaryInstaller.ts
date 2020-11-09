@@ -66,13 +66,16 @@ class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
+        process.env.PATH = `${process.env.PATH};${environment.binPath}`
         commands.push(`setx /M PATH "%PATH%;${environment.binPath}"`)
+        commands.push(`${cliBinary.path} ${strings.serviceUninstall()}`)
+        commands.push(`${cliBinary.path} ${strings.serviceInstall()}`)
       } else {
         binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
+        commands.push(`remoteit ${strings.serviceUninstall()}`)
+        commands.push(`remoteit ${strings.serviceInstall()}`)
       }
 
-      commands.push(`remoteit ${strings.serviceUninstall()}`)
-      commands.push(`remoteit ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()
@@ -127,9 +130,11 @@ class BinaryInstaller {
       if (cliBinary.isInstalled() && !skipCommands) commands.push(`remoteit ${strings.serviceUninstall()}`)
 
       try {
-        if (environment.isWindows && cliBinary.isInstalled()) {
+        if (environment.isWindows) {
+          const removedPath = await this.getWindowsPathUninstalled()
           Logger.info('REMOVE FROM PATH', { binPath: environment.binPath })
-          commands.push(`setx /M PATH "${this.getWindowsPathUninstalled()}"`)
+          process.env.PATH = removedPath
+          commands.push(`setx /M PATH "${removedPath}"`)
           await commands.exec()
         } else if (environment.isMac) {
           await commands.exec()
@@ -148,9 +153,10 @@ class BinaryInstaller {
 
   async getWindowsPathUninstalled() {
     const path = await new Command({ command: 'echo %PATH%' }).exec()
-    Logger.info('WINDOWS PATH', { path, remove: environment.binPath })
+    Logger.info('PATH TO REMOVE', { remove: environment.binPath })
+    Logger.info('WINDOWS PATH', { path })
     const parts = path.split(';')
-    const keep = parts.filter(p => p && p.trim() !== environment.binPath)
+    const keep = parts.filter(p => p && (p.trim() !== environment.binPath || p.trim() !== 'C:\\Program Files\\remoteit-bin' ))
     const newPath = keep.join(';')
     Logger.info('WINDOWS NEW PATH', { newPath })
     return newPath
