@@ -26,45 +26,45 @@ mkdir -m 777 ./bin/x86
 if [ "$(uname)" == "Darwin" ]; then
 
     #Mac
-    echo "downloading https://${URL_CLI}${CLI_VERSION}/remoteit_mac-osx_x86_64"
+    echo -e "\n\ndownloading https://${URL_CLI}${CLI_VERSION}/remoteit_mac-osx_x86_64"
     curl -L https://${URL_CLI}${CLI_VERSION}/remoteit_mac-osx_x86_64 --output ./bin/remoteit
 
-    echo "downloading https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-osx"
+    echo -e "\n\ndownloading https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-osx"
     curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-osx --output ./bin/connectd
 
-    echo "downloading https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-osx"
+    echo -e "\n\ndownloading https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-osx"
     curl -L https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-osx --output ./bin/demuxer
 
-    echo "downloading https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-osx"
+    echo -e "\n\ndownloading https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-osx"
     curl -L https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-osx --output ./bin/muxer
     
 else
 
     #32 bits Windows 
-    echo "downloading https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86.exe"
+    echo -e "\n\ndownloading https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86.exe"
     curl -L https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86.exe --output ./bin/X86/remoteit.exe 
 
-    echo "downloading https://${URL_CONNECTD}${CONNECTD}/connectd.x86-win.exe"
+    echo -e "\n\ndownloading https://${URL_CONNECTD}${CONNECTD}/connectd.x86-win.exe"
     curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86-win.exe --output ./bin/X86/connectd.exe
 
-    echo "downloading https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86-win.exe"
+    echo -e "\n\ndownloading https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86-win.exe"
     curl -L https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86-win.exe --output ./bin/X86/demuxer.exe
 
-    echo "downloading https://${URL_DOWNLOAD}${MUXER}/muxer.x86-win.exe"
+    echo -e "\n\ndownloading https://${URL_DOWNLOAD}${MUXER}/muxer.x86-win.exe"
     curl -L https://${URL_DOWNLOAD}${MUXER}/muxer.x86-win.exe --output ./bin/X86/muxer.exe
 
 
     #64 bits Windows
-    echo "downloading https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86_64.exe"
+    echo -e "\n\ndownloading https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86_64.exe"
     curl -L https://${URL_CLI}${CLI_VERSION}/remoteit_windows_x86_64.exe --output ./bin/X64/remoteit.exe
 
-    echo "downloading https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-64.exe"
+    echo -e "\n\ndownloading https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-64.exe"
     curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-64.exe --output ./bin/X64/connectd.exe
 
-    echo "downloading https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-64.exe"
+    echo -e "\n\ndownloading https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-64.exe"
     curl -L https://${URL_DOWNLOAD}${DEMUXER}/demuxer.x86_64-64.exe --output ./bin/X64/demuxer.exe
 
-    echo "downloading https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-64.exe"
+    echo -e "\n\ndownloading https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-64.exe"
     curl -L https://${URL_DOWNLOAD}${MUXER}/muxer.x86_64-64.exe --output ./bin/X64/muxer.exe
 
 fi

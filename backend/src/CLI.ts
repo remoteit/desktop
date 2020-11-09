@@ -1,5 +1,6 @@
 import { removeDeviceName } from './sharedCopy/nameHelper'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
+import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import strings from './cliStrings'
 import JSONFile from './JSONFile'
@@ -248,16 +249,11 @@ export default class CLI {
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
-    if ((checkAuthHash && !user.signedIn) || !remoteitInstaller.isInstalled()) return ''
+    if ((checkAuthHash && !user.signedIn) || !binaryInstaller.isInstalled()) return ''
     if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
-    let result
     let commands = new Command({ admin, quiet })
-    if (environment.isWindows) {
-      cmds.forEach(cmd => commands.push(`"%remoteit%" ${cmd}`))
-    } else {
-      cmds.forEach(cmd => commands.push(`remoteit ${cmd}`))
-    }
+    cmds.forEach(cmd => commands.push(`remoteit ${cmd}`))
 
     if (!quiet)
       commands.onError = (e: Error) => {
@@ -265,8 +261,6 @@ export default class CLI {
         EventBus.emit(this.EVENTS.error, e.toString())
       }
 
-    result = await commands.exec()
-
-    return result
+    return await commands.exec()
   }
 }

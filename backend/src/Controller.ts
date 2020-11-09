@@ -176,7 +176,7 @@ class Controller {
     Logger.info('UNINSTALL INITIATED')
     this.uninstallInitiated = true
     await cli.unInstall()
-    await binaryInstaller.uninstall()
+    await binaryInstaller.uninstall(true)
     await user.signOut()
     await this.pool.clearAll()
     //frontend will emit user/sign-out-complete and then we will call exit

@@ -50,7 +50,7 @@ export default class ConnectionPool {
 
   // Sync with CLI
   check = async () => {
-    if (!binaryInstaller.isCurrent() || !user.signedIn) return // FIXME - change this is current check to is installed? Maybe cache results?
+    if (!binaryInstaller.isInstalled() || !user.signedIn) return
 
     await cli.updateConnectionStatus()
 

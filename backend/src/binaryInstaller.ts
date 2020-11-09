@@ -112,19 +112,19 @@ class BinaryInstaller {
     })
   }
 
-  async uninstall() {
+  async uninstall(skipCommands?: boolean) {
     if (this.inProgress) return Logger.info('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     this.inProgress = true
-    await this.uninstallBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
+    await this.uninstallBinaries(skipCommands).catch(error => EventBus.emit(Binary.EVENTS.error, error))
     this.inProgress = false
   }
 
-  async uninstallBinaries() {
+  async uninstallBinaries(skipCommands?: boolean) {
     return new Promise(async (resolve, reject) => {
       const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
 
-      if (cliBinary.isInstalled()) commands.push(`remoteit ${strings.serviceUninstall()}`)
+      if (cliBinary.isInstalled() && !skipCommands) commands.push(`remoteit ${strings.serviceUninstall()}`)
 
       try {
         if (environment.isWindows && cliBinary.isInstalled()) {
@@ -154,6 +154,10 @@ class BinaryInstaller {
     const newPath = keep.join(';')
     Logger.info('WINDOWS NEW PATH', { newPath })
     return newPath
+  }
+
+  isInstalled() {
+    return binaries.every(binary => binary.isInstalled())
   }
 
   async isCurrent(log?: boolean) {
