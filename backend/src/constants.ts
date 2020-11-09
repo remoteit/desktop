@@ -57,8 +57,7 @@ export const PATHS = {
   LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
 
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  MAC_BINARIES:
-    process.env.NODE_ENV === 'development' ? path.resolve('./bin/CLI') : path.join(__dirname, '../../../../'),
+  MAC_BINARIES: process.env.NODE_ENV === 'development' ? path.resolve('./bin') : path.join(__dirname, '../../../'),
   MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
   MAC_SYMLINKS: '/usr/local/bin',
@@ -66,7 +65,7 @@ export const PATHS = {
   WIN_USER_SETTINGS: path.join(os.homedir(), 'AppData/Local/remoteit'),
   WIN_BINARIES:
     process.env.NODE_ENV === 'development'
-      ? path.resolve('./bin/CLI/x64')
+      ? path.resolve('./bin/x64')
       : os.platform() === 'win32' && process.arch === 'ia32'
       ? path.resolve('./resources/x86')
       : path.resolve('./resources/x64'),

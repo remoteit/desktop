@@ -35,6 +35,7 @@ export default createModel({
       state.installing = true
     },
     installed(state: BinariesState, info: InstallationInfo) {
+      console.log('BINARY INSTALLED', info)
       state.installing = false
       state.error = undefined
       state.installed = true
@@ -43,6 +44,7 @@ export default createModel({
       state.installedVersion = info.installedVersion
     },
     notInstalled(state: BinariesState, name: BinaryName) {
+      console.log('BINARY NOT INSTALLED', name)
       state.installing = false
       state.installed = false
       state.path = undefined

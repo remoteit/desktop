@@ -1,8 +1,8 @@
 import cli from './cliInterface'
 import debug from 'debug'
 import semverCompare from 'semver/functions/compare'
+import commandExists from 'command-exists'
 import environment from './environment'
-import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
 
@@ -36,34 +36,19 @@ export default class Binary {
     this.isCli = args.isCli
   }
 
-  async check(log?: boolean) {
-    if (this.inProgress) return
-
-    const current = await this.isCurrent(log)
-
-    if (current) {
-      return EventBus.emit(Binary.EVENTS.installed, this.toJSON())
-    } else if (environment.isElevated) {
-      EventBus.emit(Binary.EVENTS.install)
-    }
-    EventBus.emit(Binary.EVENTS.notInstalled, this.name)
-  }
-
   async isCurrent(log?: boolean) {
     let version = 'Not Installed'
-    let current = false
+    let current = this.isInstalled()
 
-    if (!this.isCli) return true
-
-    // if (this.isInstalled()) {
-    try {
-      version = await cli.version()
-      this.installedVersion = version
-      current = semverCompare(version, this.version) >= 0
-    } catch (error) {
-      Logger.warn('BAD CLI VERSION', { error })
+    if (current && this.isCli) {
+      try {
+        version = await cli.version()
+        this.installedVersion = version
+        current = semverCompare(version, this.version) >= 0
+      } catch (error) {
+        Logger.warn('BAD CLI VERSION', { error })
+      }
     }
-    // }
 
     if (current) {
       log && Logger.info('CHECK CLI VERSION', { current, name: this.name, version, desiredVersion: this.version })
@@ -74,13 +59,11 @@ export default class Binary {
     return current
   }
 
-  // isInstalled() {
-  //   if (binaryInstaller.inProgress) return false
-  //   const filePath = path.join(environment.binPath, this.fileName)
-  //   const installed = existsSync(filePath)
-  //   d('BINARY EXISTS', { name: this.fileName, installed, filePath })
-  //   return installed
-  // }
+  isInstalled() {
+    let installed = commandExists.sync('remoteit')
+    d('BINARY EXISTS', { name: this.fileName, installed })
+    return installed
+  }
 
   get path() {
     return path.join(environment.binPath, this.fileName)

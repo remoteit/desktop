@@ -11,8 +11,10 @@ import Binary from './Binary'
 import Logger from './Logger'
 import { existsSync, lstatSync } from 'fs'
 
+export const cliBinary = new Binary({ name: 'remoteit', version: version.cli, isCli: true })
+
 export const binaries = [
-  new Binary({ name: 'remoteit', version: version.cli, isCli: true }),
+  cliBinary,
   new Binary({ name: 'muxer', version: version.muxer }),
   new Binary({ name: 'demuxer', version: version.demuxer }),
   new Binary({ name: 'connectd', version: version.connectd }),
@@ -21,11 +23,24 @@ export const binaries = [
 class BinaryInstaller {
   inProgress = false
 
+  async check(log?: boolean) {
+    if (this.inProgress) return
+
+    const current = await this.isCurrent(log)
+
+    if (current) {
+      return EventBus.emit(Binary.EVENTS.installed, cliBinary.toJSON())
+    } else if (environment.isElevated) {
+      EventBus.emit(Binary.EVENTS.install)
+    }
+    EventBus.emit(Binary.EVENTS.notInstalled, cliBinary.name)
+  }
+
   async install(force?: boolean) {
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
 
-    const binariesOutdated = this.isCurrent(force)
+    const binariesOutdated = !(await this.isCurrent(false)) || force
     const desktopOutdated = !this.isDesktopCurrent(true)
 
     Logger.info('INSTALL?', { binariesOutdated, updateDesktop: desktopOutdated })
@@ -46,7 +61,7 @@ class BinaryInstaller {
   async installBinaries() {
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
-      await this.uninstallBinaries() //fixme - just get commands to execute
+      await this.uninstallBinaries().catch() //fixme - just get commands to execute
 
       const commands = new Command({ onError: reject, admin: true })
 
@@ -109,10 +124,10 @@ class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
 
-      commands.push(`remoteit ${strings.serviceUninstall()}`)
+      if (cliBinary.isInstalled()) commands.push(`remoteit ${strings.serviceUninstall()}`)
 
       try {
-        if (environment.isWindows && process.env.path?.includes(environment.binPath)) {
+        if (environment.isWindows && cliBinary.isInstalled()) {
           Logger.info('REMOVE FROM PATH', { binPath: environment.binPath })
           commands.push(`setx /M PATH "${this.getWindowsPathUninstalled()}"`)
           await commands.exec()
@@ -141,8 +156,12 @@ class BinaryInstaller {
     return newPath
   }
 
-  isCurrent(force?: boolean) {
-    return binaries.find(async b => !(await b.isCurrent(true))) || force
+  async isCurrent(log?: boolean) {
+    let current = true
+    for (const binary of binaries) {
+      current = current && (await binary.isCurrent(log))
+    }
+    return current
   }
 
   isDesktopCurrent(log?: boolean) {

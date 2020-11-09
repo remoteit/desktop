@@ -78,8 +78,7 @@ class Controller {
     socket.on('showFolder', showFolder.openLogs)
 
     this.initBackend()
-    binaryInstaller.install()
-    this.check()
+    this.check(true)
   }
 
   recapitate = () => {
@@ -87,7 +86,8 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
   }
 
-  check = () => {
+  check = (log?: boolean) => {
+    binaryInstaller.check(log)
     this.pool.check()
     lan.check()
     app.check()
