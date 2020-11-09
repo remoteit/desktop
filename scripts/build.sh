@@ -70,10 +70,4 @@ else
 fi
 
 #set permissions
-chmod 755 ./bin/remoteit
-
-chmod 755 ./bin/connectd
-
-chmod 755 ./bin/demuxer
-
-chmod 755 ./bin/muxer
+chmod -R 755 ./bin

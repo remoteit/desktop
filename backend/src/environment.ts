@@ -17,6 +17,7 @@ export class Environment {
   isArmLinux: boolean
   isPi: boolean
   isPiZero: boolean
+  isDev: boolean
   simpleOS: Ios
   osVersion: string
   privateIP: ipAddress = ''
@@ -32,8 +33,6 @@ export class Environment {
   EVENTS = { send: 'environment' }
 
   constructor() {
-    const elevated: boolean = true //this.isElevated - always elevated for now
-
     // @ts-ignore
     this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
     this.isPi = detectRPi()
@@ -42,6 +41,7 @@ export class Environment {
     this.isMac = os.platform() === 'darwin'
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
+    this.isDev = process.env.NODE_ENV === 'development'
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
     this.version = this.getAppVersion()
@@ -50,12 +50,13 @@ export class Environment {
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
       this.adminPath = PATHS.WIN_ADMIN_SETTINGS
-      this.binPath = PATHS.WIN_BINARIES
+      this.binPath = this.isWindows32 ? PATHS.WIN_BINARIES_32 : PATHS.WIN_BINARIES
+      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : this.binPath
       this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
     } else if (this.isMac) {
       this.userPath = PATHS.MAC_USER_SETTINGS
       this.adminPath = PATHS.MAC_ADMIN_SETTINGS
-      this.binPath = PATHS.MAC_BINARIES
+      this.binPath = this.isDev ? PATHS.MAC_BINARIES_DEV : PATHS.MAC_BINARIES
       this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
       this.symlinkPath = PATHS.MAC_SYMLINKS
     } else {

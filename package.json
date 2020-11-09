@@ -19,7 +19,7 @@
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
     "install-frontend": "cd frontend && npm i",
-    "postinstall": "run-p install-* cli-download",
+    "postinstall": "run-s install-* cli-download",
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
     "start": "npm-run-all -l -n -p copy-* watch-*",
     "test": "cd backend && npm run test",

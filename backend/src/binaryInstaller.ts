@@ -148,9 +148,9 @@ class BinaryInstaller {
 
   async getWindowsPathUninstalled() {
     const path = await new Command({ command: 'echo %PATH%' }).exec()
-    Logger.info('WINDOWS PATH', { path })
+    Logger.info('WINDOWS PATH', { path, remove: environment.binPath })
     const parts = path.split(';')
-    const keep = parts.filter(p => p && p !== environment.binPath)
+    const keep = parts.filter(p => p && p.trim() !== environment.binPath)
     const newPath = keep.join(';')
     Logger.info('WINDOWS NEW PATH', { newPath })
     return newPath
