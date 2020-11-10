@@ -71,8 +71,8 @@ class BinaryInstaller {
         binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
-      commands.push(`${environment.cliCommand} ${strings.serviceUninstall()}`)
-      commands.push(`${environment.cliCommand} ${strings.serviceInstall()}`)
+      commands.push(`${cliBinary.command} ${strings.serviceUninstall()}`)
+      commands.push(`${cliBinary.command} ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()
@@ -124,8 +124,7 @@ class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
 
-      if (cliBinary.isInstalled() && !skipCommands)
-        commands.push(`${environment.cliCommand} ${strings.serviceUninstall()}`)
+      if (cliBinary.isInstalled() && !skipCommands) commands.push(`${cliBinary.command} ${strings.serviceUninstall()}`)
 
       try {
         if (environment.isWindows) {

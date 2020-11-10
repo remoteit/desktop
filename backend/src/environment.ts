@@ -30,7 +30,6 @@ export class Environment {
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   version: string
-  cliCommand: string
 
   EVENTS = { send: 'environment' }
 
@@ -68,7 +67,6 @@ export class Environment {
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
     }
     this.manufacturerDetails = this.getManufacturerDetails()
-    this.cliCommand = this.isWindows ? path.resolve(this.binPath, cliBinary.name) : cliBinary.name
   }
 
   get frontend() {

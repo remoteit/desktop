@@ -1,6 +1,6 @@
 import { removeDeviceName } from './sharedCopy/nameHelper'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
-import binaryInstaller from './binaryInstaller'
+import binaryInstaller, { cliBinary } from './binaryInstaller'
 import environment from './environment'
 import strings from './cliStrings'
 import JSONFile from './JSONFile'
@@ -253,7 +253,7 @@ export default class CLI {
     if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
     let commands = new Command({ admin, quiet })
-    cmds.forEach(cmd => commands.push(`${environment.cliCommand} ${cmd}`))
+    cmds.forEach(cmd => commands.push(`${cliBinary.command} ${cmd}`))
 
     if (!quiet)
       commands.onError = (e: Error) => {

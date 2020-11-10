@@ -61,7 +61,9 @@ export default class Binary {
   }
 
   isInstalled() {
-    return environment.isWindows ? existsSync(this.path) : commandExists.sync(this.name)
+    const installed = environment.isWindows ? existsSync(this.path) : commandExists.sync(this.name)
+    Logger.info('IS INSTALLED', { installed, which: this.command })
+    return installed
   }
 
   get path() {
@@ -70,6 +72,10 @@ export default class Binary {
 
   get fileName() {
     return environment.isWindows ? this.name + '.exe' : this.name
+  }
+
+  get command() {
+    return environment.isWindows ? this.path : this.name
   }
 
   get symlink() {
