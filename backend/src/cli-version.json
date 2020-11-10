@@ -1,9 +1,9 @@
 {
-    "cli": "1.6.14",
-    "connectd": "4.8",
-    "muxer": "0.3-alpha",
-    "demuxer": "0.3-alpha",
-    "url_base": "https://downloads.remote.it/multiport/v",
-    "url_cli": "https://downloads.remote.it/cli/v",
-    "url_connectd": "https://github.com/remoteit/connectd/releases/download/v"
+  "cli": "1.6.15",
+  "connectd": "4.8",
+  "muxer": "0.3-alpha",
+  "demuxer": "0.3-alpha",
+  "url_base": "https://downloads.remote.it/multiport/v",
+  "url_cli": "https://downloads.remote.it/cli/v",
+  "url_connectd": "https://github.com/remoteit/connectd/releases/download/v"
 }
