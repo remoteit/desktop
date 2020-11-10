@@ -1,5 +1,4 @@
 import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
-import { cliBinary } from './binaryInstaller'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import JSONFile from './JSONFile'

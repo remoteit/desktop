@@ -50,7 +50,7 @@ export default class ConnectionPool {
 
   // Sync with CLI
   check = async () => {
-    if (!binaryInstaller.isInstalled() || !user.signedIn) return
+    if (binaryInstaller.uninstallInitiated || !user.signedIn) return
 
     await cli.updateConnectionStatus()
 

@@ -12,6 +12,7 @@ import Logger from './Logger'
 
 export class BinaryInstaller {
   inProgress = false
+  uninstallInitiated = false
   binaries: Binary[]
   cliBinary: Binary
 
@@ -111,6 +112,7 @@ export class BinaryInstaller {
 
   async uninstall(skipCommands?: boolean) {
     if (this.inProgress) return Logger.info('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
+    this.uninstallInitiated = true
     this.inProgress = true
     await this.uninstallBinaries(skipCommands).catch(error => EventBus.emit(Binary.EVENTS.error, error))
     this.inProgress = false

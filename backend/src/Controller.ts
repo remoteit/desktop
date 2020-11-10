@@ -20,7 +20,6 @@ import launch, { openCMDforWindows } from './launch'
 class Controller {
   private io: SocketIO.Server
   private pool: ConnectionPool
-  private uninstallInitiated = false
 
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.io = io
@@ -78,7 +77,8 @@ class Controller {
     socket.on('showFolder', showFolder.openLogs)
 
     this.initBackend()
-    this.check(true)
+    this.check()
+    binaryInstaller.check(true)
   }
 
   recapitate = () => {
@@ -86,8 +86,7 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
   }
 
-  check = (log?: boolean) => {
-    binaryInstaller.check(log)
+  check = () => {
     this.pool.check()
     lan.check()
     app.check()
@@ -167,14 +166,13 @@ class Controller {
 
   signOutComplete = () => {
     Logger.info('FRONTEND SIGN OUT COMPLETE')
-    if (this.uninstallInitiated) {
+    if (binaryInstaller.uninstallInitiated) {
       this.quit()
     }
   }
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
-    this.uninstallInitiated = true
     await cli.unInstall()
     await binaryInstaller.uninstall(true)
     await user.signOut()
