@@ -250,11 +250,12 @@ export default class CLI {
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
-    if ((checkAuthHash && !user.signedIn) || !binaryInstaller.isInstalled()) return ''
+    if (!binaryInstaller.isInstalled()) binaryInstaller.check()
+    if (checkAuthHash && !user.signedIn) return ''
     if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
     let commands = new Command({ admin, quiet })
-    cmds.forEach(cmd => commands.push(`${cliBinary.command} ${cmd}`))
+    cmds.forEach(cmd => commands.push(`${cliBinary.path} ${cmd}`))
 
     if (!quiet)
       commands.onError = (e: Error) => {
