@@ -1,15 +1,11 @@
 import cli from './cliInterface'
-import debug from 'debug'
 import semverCompare from 'semver/functions/compare'
 import commandExists from 'command-exists'
 import environment from './environment'
+import version from './cli-version.json'
 import Logger from './Logger'
 import path from 'path'
 import { existsSync } from 'fs'
-
-const d = debug('binary')
-
-export type ProgressCallback = (percent: number) => void
 
 interface BinaryArgs {
   name: string
@@ -47,6 +43,7 @@ export default class Binary {
         this.installedVersion = version
         current = semverCompare(version, this.version) >= 0
       } catch (error) {
+        current = false
         Logger.warn('BINARY VERSION ERROR', { name: this.name, error })
       }
     }
@@ -91,3 +88,12 @@ export default class Binary {
     }
   }
 }
+
+export const cliBinary = new Binary({ name: 'remoteit', version: version.cli, isCli: true })
+
+export const binaries = [
+  cliBinary,
+  new Binary({ name: 'muxer', version: version.muxer }),
+  new Binary({ name: 'demuxer', version: version.demuxer }),
+  new Binary({ name: 'connectd', version: version.connectd }),
+]

@@ -1,27 +1,24 @@
 import cli from './cliInterface'
 import rimraf from 'rimraf'
 import strings from './cliStrings'
-import version from './cli-version.json'
 import EventBus from './EventBus'
 import environment from './environment'
 import preferences from './preferences'
 import semverCompare from 'semver/functions/compare'
-import Command from './Command'
-import Binary from './Binary'
-import Logger from './Logger'
 import { existsSync, lstatSync } from 'fs'
+import Command from './Command'
+import Binary, { binaries, cliBinary } from './Binary'
+import Logger from './Logger'
 
-export const cliBinary = new Binary({ name: 'remoteit', version: version.cli, isCli: true })
-
-export const binaries = [
-  cliBinary,
-  new Binary({ name: 'muxer', version: version.muxer }),
-  new Binary({ name: 'demuxer', version: version.demuxer }),
-  new Binary({ name: 'connectd', version: version.connectd }),
-]
-
-class BinaryInstaller {
+export class BinaryInstaller {
   inProgress = false
+  binaries: Binary[]
+  cliBinary: Binary
+
+  constructor(binaries: Binary[], cliBinary: Binary) {
+    this.binaries = binaries
+    this.cliBinary = cliBinary
+  }
 
   async check(log?: boolean) {
     if (this.inProgress) return
@@ -29,11 +26,11 @@ class BinaryInstaller {
     const current = await this.isCurrent(log)
 
     if (current) {
-      return EventBus.emit(Binary.EVENTS.installed, cliBinary.toJSON())
+      return EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     } else if (environment.isElevated) {
-      EventBus.emit(Binary.EVENTS.install)
+      return await this.install()
     }
-    EventBus.emit(Binary.EVENTS.notInstalled, cliBinary.name)
+    EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
   }
 
   async install(force?: boolean) {
@@ -54,7 +51,7 @@ class BinaryInstaller {
     }
 
     preferences.update({ version: environment.version })
-    binaries.map(binary => binary.isCli && EventBus.emit(Binary.EVENTS.installed, binary.toJSON()))
+    this.binaries.map(binary => binary.isCli && EventBus.emit(Binary.EVENTS.installed, binary.toJSON()))
     this.inProgress = false
   }
 
@@ -68,11 +65,11 @@ class BinaryInstaller {
       if (environment.isWindows) {
         commands.push(`setx /M PATH "%PATH%;${environment.binPath}"`)
       } else {
-        binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
+        this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
-      commands.push(`${cliBinary.command} ${strings.serviceUninstall()}`)
-      commands.push(`${cliBinary.command} ${strings.serviceInstall()}`)
+      commands.push(`${this.cliBinary.command} ${strings.serviceUninstall()}`)
+      commands.push(`${this.cliBinary.command} ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()
@@ -124,7 +121,8 @@ class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
 
-      if (cliBinary.isInstalled() && !skipCommands) commands.push(`${cliBinary.command} ${strings.serviceUninstall()}`)
+      if (this.cliBinary.isInstalled() && !skipCommands)
+        commands.push(`${this.cliBinary.command} ${strings.serviceUninstall()}`)
 
       try {
         if (environment.isWindows) {
@@ -134,7 +132,7 @@ class BinaryInstaller {
           await commands.exec()
         } else if (environment.isMac) {
           await commands.exec()
-          binaries.map(binary => {
+          this.binaries.map(binary => {
             Logger.info('REMOVE SYMLINK', { name: binary.symlink })
             rimraf.sync(binary.symlink, options)
           })
@@ -158,12 +156,12 @@ class BinaryInstaller {
   }
 
   isInstalled() {
-    return binaries.every(binary => binary.isInstalled())
+    return this.binaries.every(binary => binary.isInstalled())
   }
 
   async isCurrent(log?: boolean) {
     let current = true
-    for (const binary of binaries) {
+    for (const binary of this.binaries) {
       current = current && (await binary.isCurrent(log))
     }
     return current
@@ -183,4 +181,4 @@ class BinaryInstaller {
   }
 }
 
-export default new BinaryInstaller()
+export default new BinaryInstaller(binaries, cliBinary)

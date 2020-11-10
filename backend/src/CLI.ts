@@ -1,6 +1,7 @@
 import { removeDeviceName } from './sharedCopy/nameHelper'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
-import binaryInstaller, { cliBinary } from './binaryInstaller'
+import { cliBinary } from './Binary'
+import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import strings from './cliStrings'
 import JSONFile from './JSONFile'
