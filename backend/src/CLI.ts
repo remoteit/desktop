@@ -253,7 +253,7 @@ export default class CLI {
     if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
     let commands = new Command({ admin, quiet })
-    cmds.forEach(cmd => commands.push(`remoteit ${cmd}`))
+    cmds.forEach(cmd => commands.push(`${environment.cliCommand} ${cmd}`))
 
     if (!quiet)
       commands.onError = (e: Error) => {

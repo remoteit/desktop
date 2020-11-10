@@ -5,6 +5,7 @@ import commandExists from 'command-exists'
 import environment from './environment'
 import Logger from './Logger'
 import path from 'path'
+import { existsSync } from 'fs'
 
 const d = debug('binary')
 
@@ -60,9 +61,7 @@ export default class Binary {
   }
 
   isInstalled() {
-    let installed = commandExists.sync(this.name)
-    Logger.info('BINARY EXISTS', { name: this.name, installed })
-    return installed
+    return environment.isWindows ? existsSync(this.path) : commandExists.sync(this.name)
   }
 
   get path() {
