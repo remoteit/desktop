@@ -145,6 +145,27 @@ export default class CLI {
     })
   }
 
+  async agentRunning() {
+    const result = await this.exec({
+      cmds: [strings.agentStatus()],
+      checkAuthHash: true,
+      skipSignInCheck: true,
+      quiet: true,
+    })
+    let running = false,
+      data: { status: 0 | 1 }
+    try {
+      if (result) {
+        data = JSON.parse(result)
+        running = data.status === 0
+      }
+    } catch (error) {
+      Logger.warn('CLI AGENT STATUS PARSE ERROR', { result, errorMessage: error.message })
+    }
+    Logger.info('CLI AGENT STATUS', { running })
+    return true || running
+  }
+
   async status() {
     const result = await this.exec({
       cmds: [strings.status()],
@@ -253,13 +274,16 @@ export default class CLI {
     if (checkAuthHash && !user.signedIn) return ''
     if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
-    let commands = new Command({ admin, quiet })
+    let commands = new Command({ admin, quiet: false })
     cmds.forEach(cmd => commands.push(`${cliBinary.path} ${cmd}`))
 
     if (!quiet)
       commands.onError = (e: Error) => {
         if (typeof onError === 'function') onError(e)
+        // @TODO detect signing or service not started error and don't display,
+        // just run check and sign in commands.
         EventBus.emit(this.EVENTS.error, e.toString())
+        binaryInstaller.check()
       }
 
     return await commands.exec()

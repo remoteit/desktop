@@ -24,7 +24,7 @@ export class BinaryInstaller {
   async check(log?: boolean) {
     if (this.inProgress) return
 
-    const current = await this.isCurrent(log)
+    const current = (await this.isCurrent(log)) && (await cli.agentRunning())
 
     if (current) {
       return EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
@@ -38,12 +38,13 @@ export class BinaryInstaller {
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
 
-    const binariesOutdated = !(await this.isCurrent(false)) || force
+    const binariesOutdated = !(await this.isCurrent(false))
+    const serviceStopped = !(await cli.agentRunning())
     const desktopOutdated = !this.isDesktopCurrent(true)
 
     Logger.info('INSTALL?', { binariesOutdated, updateDesktop: desktopOutdated })
 
-    if (binariesOutdated) {
+    if (binariesOutdated || serviceStopped || force) {
       Logger.info('UPDATING BINARIES')
       await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
     } else if (desktopOutdated) {
@@ -128,9 +129,9 @@ export class BinaryInstaller {
 
       try {
         if (environment.isWindows) {
-          const removedPath = await this.getWindowsPathUninstalled()
+          const path = await this.getWindowsPathClean()
           Logger.info('REMOVE FROM PATH', { binPath: environment.binPath })
-          commands.push(`setx /M PATH "${removedPath}"`)
+          if (path.length < 1024) commands.push(`setx /M PATH "${path}"`) // setx path limited to 1024 characters
           await commands.exec()
         } else if (environment.isMac) {
           await commands.exec()
@@ -147,18 +148,14 @@ export class BinaryInstaller {
     })
   }
 
-  async getWindowsPathUninstalled() {
+  async getWindowsPathClean() {
     const path = await new Command({ command: 'echo %PATH%' }).exec()
     Logger.info('PATH TO REMOVE', { remove: environment.binPath })
     const parts = path.split(';')
     const keep = parts.filter(p => p && p.trim() !== environment.binPath)
     const newPath = keep.join(';')
-    Logger.info('WINDOWS NEW PATH', { newPath })
+    if (keep.length < parts.length) Logger.info('PATH REMOVED')
     return newPath
-  }
-
-  isInstalled() {
-    return this.binaries.every(binary => binary.isInstalled())
   }
 
   async isCurrent(log?: boolean) {

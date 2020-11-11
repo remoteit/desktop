@@ -14,6 +14,10 @@ export default {
     return `-j status --authhash ${user.authHash}`
   },
 
+  agentStatus() {
+    return `-j agent status --authhash ${user.authHash}`
+  },
+
   setup(device: ITargetDevice) {
     return `-j --manufacture-id ${environment.appCode} setup --name "${device.name}" --authhash ${user.authHash}`
   },
