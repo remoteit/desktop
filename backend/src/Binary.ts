@@ -34,8 +34,8 @@ export default class Binary {
   }
 
   async isCurrent(log?: boolean) {
-    let version = 'Not Installed'
     let current = this.isInstalled()
+    let version = current ? 'Installed' : 'Not Installed'
 
     if (current && this.isCli) {
       try {
@@ -58,7 +58,7 @@ export default class Binary {
   }
 
   isInstalled() {
-    const installed = environment.isWindows ? existsSync(this.path) : commandExists.sync(this.name)
+    const installed = existsSync(this.path)
     Logger.info('IS INSTALLED', { installed, which: this.path })
     return installed
   }

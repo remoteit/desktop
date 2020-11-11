@@ -250,7 +250,6 @@ export default class CLI {
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
-    if (!binaryInstaller.isInstalled()) binaryInstaller.check()
     if (checkAuthHash && !user.signedIn) return ''
     if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
