@@ -42,7 +42,7 @@ export class BinaryInstaller {
     const serviceStopped = !(await cli.agentRunning())
     const desktopOutdated = !this.isDesktopCurrent(true)
 
-    Logger.info('INSTALL?', { binariesOutdated, updateDesktop: desktopOutdated })
+    Logger.info('INSTALL?', { binariesOutdated, desktopOutdated, serviceStopped })
 
     if (binariesOutdated || serviceStopped || force) {
       Logger.info('UPDATING BINARIES')

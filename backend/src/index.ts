@@ -18,10 +18,7 @@ import { WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
 
-d('Starting up backend application!')
-Logger.info('environment info:', environment.toJSON())
-
-Logger.info('Headless starting up')
+Logger.info('ENVIRONMENT', environment.toJSON())
 
 process
   .on('uncaughtException', (error: Error) => {
