@@ -139,6 +139,14 @@ Tests are written using Jest.
 
 Copy the `backend/.env.example` file to `backend/.env` and then fill in the values.
 
+To use the fontawesome fonts:
+[Installation Instructions](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro)
+
+```shell
+npm config set "@fortawesome:registry" https://npm.fontawesome.com/
+npm config set "//npm.fontawesome.com/:_authToken" [FONT_AWESOME_TOKEN]
+```
+
 ### Packaging
 
 In order to be able to build on your local machine:
