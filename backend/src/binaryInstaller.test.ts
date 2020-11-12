@@ -106,7 +106,8 @@ describe('backend/binaryInstaller', () => {
       installedSpy: jest.SpyInstance,
       eventSpy: jest.SpyInstance,
       versionSpy: jest.SpyInstance,
-      prefSpy: jest.SpyInstance
+      prefSpy: jest.SpyInstance,
+      agentSpy: jest.SpyInstance
     let binary: Binary
     let path: string
 
@@ -115,12 +116,15 @@ describe('backend/binaryInstaller', () => {
         name,
         version,
       })
-
       path = binary.path
+    })
+
+    beforeEach(() => {
       prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: environment.version }))
       installSpy = jest.spyOn(binaryInstaller, 'install').mockImplementation()
       installedSpy = jest.spyOn(binary, 'isInstalled').mockImplementation(() => true)
       eventSpy = jest.spyOn(EventBus, 'emit').mockImplementation()
+      agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(true))
     })
 
     afterEach(() => {
@@ -129,6 +133,7 @@ describe('backend/binaryInstaller', () => {
       installedSpy.mockClear()
       eventSpy.mockClear()
       versionSpy.mockClear()
+      agentSpy.mockClear()
     })
 
     test('should notify if installed', async () => {
@@ -141,6 +146,20 @@ describe('backend/binaryInstaller', () => {
       expect(eventSpy).toBeCalledTimes(1)
       expect(versionSpy).toBeCalledTimes(1)
       expect(eventSpy).toBeCalledWith('binary/installed', { path, version, name, installedVersion: version })
+      expect(versionSpy).toBeCalledTimes(1)
+    })
+
+    test('should notify if agent is not installed', async () => {
+      jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
+      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
+      agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(false))
+
+      await binaryInstaller.check()
+
+      expect(installSpy).toBeCalledTimes(0)
+      expect(eventSpy).toBeCalledTimes(1)
+      expect(versionSpy).toBeCalledTimes(1)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
       expect(versionSpy).toBeCalledTimes(1)
     })
 

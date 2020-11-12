@@ -1,6 +1,6 @@
 {
   "cli": "1.6.16",
-  "connectd": "4.8",
+  "connectd": "4.9",
   "muxer": "0.3-alpha",
   "demuxer": "0.3-alpha",
   "url_base": "https://downloads.remote.it/multiport/v",
