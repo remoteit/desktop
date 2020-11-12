@@ -4,7 +4,15 @@ import { ServiceName } from '../ServiceName'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { ListItemIcon, ListItemText, ListItemSecondaryAction, Tooltip, Chip, makeStyles } from '@material-ui/core'
+import {
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Tooltip,
+  Chip,
+  makeStyles,
+  useMediaQuery,
+} from '@material-ui/core'
 
 const MAX_INDICATORS = 6
 
@@ -41,6 +49,7 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setConte
 
 export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, setContextMenu }) => {
   const activeConnection = connections && connections.find(c => c.active)
+  const largeScreen = useMediaQuery('(min-width:600px)')
 
   if (!device) return null
 
@@ -54,9 +63,11 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
         primary={<ServiceName device={device} connection={activeConnection} />}
         secondary={thisDevice && 'This system'}
       />
-      <ListItemSecondaryAction>
-        <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} />
-      </ListItemSecondaryAction>
+      {largeScreen && (
+        <ListItemSecondaryAction>
+          <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} />
+        </ListItemSecondaryAction>
+      )}
     </ListItemLocation>
   )
 }
