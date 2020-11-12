@@ -24,25 +24,29 @@ export class BinaryInstaller {
   async check(log?: boolean) {
     if (this.inProgress) return
 
-    const current = (await this.isCurrent(log)) && (await cli.agentRunning())
+    const install = (await this.isCurrent(log)) && (await cli.agentRunning())
 
-    if (current) {
+    if (install) {
       return EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     } else if (environment.isElevated) {
-      return await this.install()
+      return await this.install(true)
     }
     EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
   }
 
   async install(force?: boolean) {
+    let binariesOutdated, serviceStopped, desktopOutdated
+
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
 
-    const binariesOutdated = !(await this.isCurrent(false))
-    const serviceStopped = !(await cli.agentRunning())
-    const desktopOutdated = !this.isDesktopCurrent(true)
+    if (!force) {
+      binariesOutdated = !(await this.isCurrent(false))
+      serviceStopped = !(await cli.agentRunning())
+      desktopOutdated = !this.isDesktopCurrent(true)
+    }
 
-    Logger.info('INSTALL?', { binariesOutdated, desktopOutdated, serviceStopped })
+    Logger.info('INSTALL?', { force, binariesOutdated, desktopOutdated, serviceStopped })
 
     if (binariesOutdated || serviceStopped || force) {
       Logger.info('UPDATING BINARIES')
