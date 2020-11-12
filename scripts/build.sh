@@ -14,9 +14,6 @@ DEMUXER=$((cat ./backend/src/cli-version.json | grep -Eo '"demuxer"[^,]*' | grep
 
 CONNECTD=$((cat ./backend/src/cli-version.json | grep -Eo '"connectd"[^,]*' | grep -Eo '[^:]*$') | sed -e 's/^.//' -e 's/.$//' -e 's/^.//')
 
-
-chmod -R 777 ./bin/
-
 mkdir -m 777 ./bin/
 
 mkdir -m 777 ./bin/x64
