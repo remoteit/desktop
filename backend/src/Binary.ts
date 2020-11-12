@@ -1,6 +1,5 @@
 import cli from './cliInterface'
 import semverCompare from 'semver/functions/compare'
-import commandExists from 'command-exists'
 import environment from './environment'
 import version from './cli-version.json'
 import Logger from './Logger'
