@@ -56,6 +56,7 @@
     Var /GLOBAL ps_command_uninstall
 
     Var /GLOBAL uninstallLog
+    Var /GLOBAL path_u
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
         FileOpen $uninstallLog "$TEMP\remoteit.log" a 
@@ -66,12 +67,12 @@
     end_of_test_u:
 
     ${If} ${RunningX64}
-        FileWrite $installLog "- Platform X64$\r$\n"
-        StrCpy $path_ '$INSTDIR\resources\x64'
+        FileWrite $uninstallLog "- Platform X64$\r$\n"
+        StrCpy $path_u '$INSTDIR\resources\x64'
         
     ${Else}
-        FileWrite $installLog "- Platform X86$\r$\n"
-        StrCpy $path_ '$INSTDIR\resources\x86'
+        FileWrite $uninstallLog "- Platform X86$\r$\n"
+        StrCpy $path_u '$INSTDIR\resources\x86'
         
     ${EndIf} 
     
@@ -103,13 +104,13 @@
                         MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
                         true:
                             FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j uninstall --yes'
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j uninstall --yes'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
                             Pop $0
                             Pop $1      
                             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
 
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j status'
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j status'
                             nsExec::ExecToStack /OEM $ps_command_uninstall
                             Pop $0
                             Pop $1
@@ -123,13 +124,13 @@
                         false:
                             FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
 
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j service uninstall'
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j service uninstall'
                             nsExec::ExecToStack /OEM $ps_command_uninstall
                             Pop $0
                             Pop $1
                             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
 
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j status'
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j status'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
                             Pop $0
                             Pop $1
