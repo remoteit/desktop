@@ -163,7 +163,7 @@ export default class CLI {
       Logger.warn('CLI AGENT STATUS PARSE ERROR', { result, errorMessage: error.message })
     }
     Logger.info('CLI AGENT STATUS', { running })
-    return true || running
+    return running
   }
 
   async status() {

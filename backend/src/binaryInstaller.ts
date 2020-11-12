@@ -69,7 +69,8 @@ export class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
 
       if (environment.isWindows) {
-        commands.push(`setx /M PATH "%PATH%;${environment.binPath}"`)
+        const path = await this.getWindowsPathClean()
+        if (path.length < 1024) commands.push(`setx /M PATH "${path};${environment.binPath}"`) // setx path limited to 1024 characters
       } else {
         this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
@@ -128,10 +129,10 @@ export class BinaryInstaller {
       const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
 
-      if (this.cliBinary.isInstalled() && !skipCommands)
-        commands.push(`${this.cliBinary.path} ${strings.serviceUninstall()}`)
-
       try {
+        if (this.cliBinary.isInstalled() && !skipCommands)
+          commands.push(`${this.cliBinary.path} ${strings.serviceUninstall()}`)
+
         if (environment.isWindows) {
           const path = await this.getWindowsPathClean()
           Logger.info('REMOVE FROM PATH', { binPath: environment.binPath })
