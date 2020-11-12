@@ -91,13 +91,12 @@
     },
     "linux": {
       "category": "Network",
+      "artifactName": "${productName}-linux-${arch}.${ext}",
       "target": [
         {
           "target": "AppImage",
           "arch": [
-            "armv7l",
-            "x64",
-            "arm64"
+            "x64"
           ]
         }
       ]

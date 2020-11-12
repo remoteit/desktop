@@ -51,8 +51,12 @@ export const SSL_PORT = WEB_PORT - 1
 
 // Install paths
 export const PATHS = {
+  HEADLESS_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
+  HEADLESS_BINARIES: '/usr/bin',
+  HEADLESS_ADMIN_SETTINGS: '/etc/remoteit',
+
   LINUX_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  LINUX_BINARIES: './resources',
+  LINUX_BINARIES: path.join(__dirname, '../../../../'),
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
   LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
 
