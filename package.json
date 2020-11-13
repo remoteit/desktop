@@ -92,9 +92,10 @@
     "linux": {
       "category": "Network",
       "artifactName": "${productName}-linux-${arch}.${ext}",
+      "packageCategory": "net",
       "target": [
         {
-          "target": "AppImage",
+          "target": "deb",
           "arch": [
             "x64"
           ]

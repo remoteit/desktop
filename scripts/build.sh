@@ -59,3 +59,5 @@ fi
 
 #set permissions
 chmod -R 755 ./bin
+
+set +x

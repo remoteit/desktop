@@ -24,7 +24,7 @@ export class BinaryInstaller {
   async check(log?: boolean) {
     if (this.inProgress) return
 
-    const install = (await this.isCurrent(log)) && (await cli.agentRunning())
+    const install = (await this.cliBinary.isCurrent(log)) && (await cli.agentRunning())
 
     if (install) {
       return EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
@@ -41,7 +41,7 @@ export class BinaryInstaller {
     this.inProgress = true
 
     if (!force) {
-      binariesOutdated = !(await this.isCurrent(false))
+      binariesOutdated = !(await this.cliBinary.isCurrent(false))
       serviceStopped = !(await cli.agentRunning())
       desktopOutdated = !this.isDesktopCurrent(true)
     }
@@ -161,14 +161,6 @@ export class BinaryInstaller {
     const newPath = keep.join(';')
     if (keep.length < parts.length) Logger.info('PATH REMOVED')
     return newPath
-  }
-
-  async isCurrent(log?: boolean) {
-    let current = true
-    for (const binary of this.binaries) {
-      current = current && (await binary.isCurrent(log))
-    }
-    return current
   }
 
   isDesktopCurrent(log?: boolean) {

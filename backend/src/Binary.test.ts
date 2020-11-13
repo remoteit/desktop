@@ -27,7 +27,6 @@ describe('backend/Binary', () => {
       const isCurrent = await binary.isCurrent()
 
       expect(versionSpy).toBeCalledTimes(1)
-      expect(installedSpy).toBeCalledTimes(1)
       expect(isCurrent).toBe(false)
     })
 
@@ -65,16 +64,6 @@ describe('backend/Binary', () => {
 
       expect(versionSpy).toBeCalledTimes(1)
       expect(isCurrent).toBe(true)
-    })
-
-    test('should be false if not installed', async () => {
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve('0.37.6'))
-      installedSpy = jest.spyOn(binary, 'isInstalled').mockImplementation(() => false)
-
-      const isCurrent = await binary.isCurrent()
-
-      expect(versionSpy).toBeCalledTimes(0)
-      expect(isCurrent).toBe(false)
     })
   })
 })

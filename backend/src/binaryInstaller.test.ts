@@ -189,30 +189,6 @@ describe('backend/binaryInstaller', () => {
       expect(versionSpy).toBeCalledTimes(1)
     })
 
-    test('should notify if does not exist', async () => {
-      jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation()
-
-      await binaryInstaller.check()
-
-      expect(installSpy).toBeCalledTimes(0)
-      expect(eventSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', name)
-      expect(versionSpy).toBeCalledTimes(0)
-    })
-
-    test('should install if does not exist and elevated permissions', async () => {
-      environment.isElevated = true
-      jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation()
-
-      await binaryInstaller.check()
-
-      expect(installSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledTimes(0)
-      expect(versionSpy).toBeCalledTimes(0)
-    })
-
     test('should install if outdated and elevated permissions', async () => {
       environment.isElevated = true
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)

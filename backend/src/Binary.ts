@@ -33,10 +33,10 @@ export default class Binary {
   }
 
   async isCurrent(log?: boolean) {
-    let current = this.isInstalled()
-    let version = current ? 'Installed' : 'Not Installed'
+    let current = true
+    let version = 'Not fetched'
 
-    if (current && this.isCli) {
+    if (this.isCli) {
       try {
         version = await cli.version()
         this.installedVersion = version
