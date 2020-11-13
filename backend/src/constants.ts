@@ -59,6 +59,7 @@ export const PATHS = {
   LINUX_BINARIES: path.join(__dirname, '../../../../'),
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
   LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
+  LINUX_SYMLINKS: '/usr/bin',
 
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
   MAC_BINARIES: path.join(__dirname, '../../../../'),

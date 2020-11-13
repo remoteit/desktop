@@ -91,6 +91,7 @@ export class Environment {
       this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
       this.binPath = PATHS.LINUX_BINARIES
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
+      this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
   }
 
