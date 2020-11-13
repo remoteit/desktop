@@ -40,9 +40,9 @@ export function hostName(connection: IConnection) {
   return `${replaceHost(host)}:${port}`
 }
 
-export function removeDeviceName(deviceName: string, name: string) {
+export function removeDeviceName(deviceName: string, name?: string) {
   const nameExt = new RegExp(`^${deviceName}[- _]+`, 'gi')
-  return name.toString().replace(nameExt, '')
+  return name?.toString().replace(nameExt, '') || ''
 }
 
 export function addDeviceName(deviceName: string, name: string) {
