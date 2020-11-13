@@ -138,7 +138,7 @@ export default class CLI {
         c.active = status.state === 'connected'
         c.connecting = status.state === 'connecting'
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined
-        c.error = status.error // Can add back when CLI is more careful about creating errors
+        if (status.error) c.error = { message: status.error.message, code: status.error.code }
         d('UPDATE STATUS', { c, status: status.state })
       }
       return c
@@ -271,8 +271,8 @@ export default class CLI {
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
+    if (!skipSignInCheck) await this.checkSignIn()
     if (checkAuthHash && !user.signedIn) return ''
-    if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
 
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`${cliBinary.path} ${cmd}`))

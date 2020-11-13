@@ -45,11 +45,31 @@ export class Environment {
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
     this.version = this.getAppVersion()
-    this.symlinkPath = ''
-    this.userPath = PATHS.HEADLESS_USER_SETTINGS
-    this.adminPath = PATHS.HEADLESS_ADMIN_SETTINGS
-    this.binPath = PATHS.HEADLESS_BINARIES
-    this.deprecatedBinaries = []
+
+    if (this.isWindows) {
+      this.userPath = PATHS.WIN_USER_SETTINGS
+      this.adminPath = PATHS.WIN_ADMIN_SETTINGS
+      this.binPath = this.isWindows32 ? PATHS.WIN_BINARIES_32 : PATHS.WIN_BINARIES
+      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : this.binPath
+      this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
+    } else if (this.isMac) {
+      this.userPath = PATHS.MAC_USER_SETTINGS
+      this.adminPath = PATHS.MAC_ADMIN_SETTINGS
+      this.binPath = this.isDev ? PATHS.MAC_BINARIES_DEV : PATHS.MAC_BINARIES
+      this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
+      this.symlinkPath = PATHS.MAC_SYMLINKS
+    } else {
+      this.userPath = fs.existsSync(PATHS.LINUX_USER_SETTINGS)
+        ? PATHS.LINUX_USER_SETTINGS
+        : PATHS.HEADLESS_USER_SETTINGS
+      this.adminPath = fs.existsSync(PATHS.LINUX_ADMIN_SETTINGS)
+        ? PATHS.LINUX_ADMIN_SETTINGS
+        : PATHS.HEADLESS_ADMIN_SETTINGS
+      this.binPath = fs.existsSync(PATHS.LINUX_BINARIES) ? PATHS.LINUX_BINARIES : PATHS.HEADLESS_BINARIES
+      this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
+      this.symlinkPath = PATHS.LINUX_SYMLINKS
+    }
+
     this.manufacturerDetails = this.getManufacturerDetails()
   }
 
@@ -73,26 +93,6 @@ export class Environment {
   recapitate() {
     this.isHeadless = false
     this.manufacturerDetails.product.appCode = MANUFACTURE_ID_STANDARD
-
-    if (this.isWindows) {
-      this.userPath = PATHS.WIN_USER_SETTINGS
-      this.adminPath = PATHS.WIN_ADMIN_SETTINGS
-      this.binPath = this.isWindows32 ? PATHS.WIN_BINARIES_32 : PATHS.WIN_BINARIES
-      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : this.binPath
-      this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
-    } else if (this.isMac) {
-      this.userPath = PATHS.MAC_USER_SETTINGS
-      this.adminPath = PATHS.MAC_ADMIN_SETTINGS
-      this.binPath = this.isDev ? PATHS.MAC_BINARIES_DEV : PATHS.MAC_BINARIES
-      this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
-      this.symlinkPath = PATHS.MAC_SYMLINKS
-    } else {
-      this.userPath = PATHS.LINUX_USER_SETTINGS
-      this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
-      this.binPath = PATHS.LINUX_BINARIES
-      this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
-      this.symlinkPath = PATHS.LINUX_SYMLINKS
-    }
   }
 
   getSimpleOS() {
