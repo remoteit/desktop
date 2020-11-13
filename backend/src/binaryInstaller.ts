@@ -68,10 +68,7 @@ export class BinaryInstaller {
 
       const commands = new Command({ onError: reject, admin: true })
 
-      if (environment.isWindows) {
-        const path = await this.getWindowsPathClean()
-        if (path.length < 1024) commands.push(`setx /M PATH "${path};${environment.binPath}"`) // setx path limited to 1024 characters
-      } else {
+      if (!environment.isWindows) {
         this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
@@ -131,16 +128,12 @@ export class BinaryInstaller {
       const options = { disableGlob: true }
 
       try {
-        if (this.cliBinary.isInstalled() && !skipCommands)
+        if (this.cliBinary.isInstalled() && !skipCommands) {
           commands.push(`${this.cliBinary.path} ${strings.serviceUninstall()}`)
+          await commands.exec()
+        }
 
-        if (environment.isWindows) {
-          const path = await this.getWindowsPathClean()
-          Logger.info('REMOVE FROM PATH', { binPath: environment.binPath })
-          if (path.length < 1024) commands.push(`setx /M PATH "${path}"`) // setx path limited to 1024 characters
-          await commands.exec()
-        } else if (environment.isMac) {
-          await commands.exec()
+        if (!environment.isWindows) {
           this.binaries.map(binary => {
             Logger.info('REMOVE SYMLINK', { name: binary.symlink })
             rimraf.sync(binary.symlink, options)
@@ -152,16 +145,6 @@ export class BinaryInstaller {
 
       resolve()
     })
-  }
-
-  async getWindowsPathClean() {
-    const path = await new Command({ command: 'echo %PATH%' }).exec()
-    Logger.info('PATH TO REMOVE', { remove: environment.binPath })
-    const parts = path.split(';')
-    const keep = parts.filter(p => p && p.trim() !== environment.binPath)
-    const newPath = keep.join(';')
-    if (keep.length < parts.length) Logger.info('PATH REMOVED')
-    return newPath
   }
 
   isDesktopCurrent(log?: boolean) {
