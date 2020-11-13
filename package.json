@@ -23,7 +23,7 @@
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
     "start": "npm-run-all -l -n -p copy-* watch-*",
     "test": "cd backend && npm run test",
-    "watch-test": "cd backend && npm run test-watch",
+    "test-watch": "cd backend && npm run test-watch",
     "watch-backend": "cd backend && npm run watch",
     "watch-build": "tsc --watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
