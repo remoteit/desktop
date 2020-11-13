@@ -77,6 +77,7 @@ export class BinaryInstaller {
 
       commands.push(`${this.cliBinary.path} ${strings.serviceUninstall()}`)
       commands.push(`${this.cliBinary.path} ${strings.serviceInstall()}`)
+      commands.push(`${this.cliBinary.path} ${strings.signIn()}`)
 
       await commands.exec()
       resolve()
