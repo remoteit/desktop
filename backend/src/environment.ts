@@ -45,6 +45,7 @@ export class Environment {
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
     this.version = this.getAppVersion()
+    this.symlinkPath = ''
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
