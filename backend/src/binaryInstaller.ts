@@ -72,9 +72,9 @@ export class BinaryInstaller {
         this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
-      commands.push(`${this.cliBinary.path} ${strings.serviceUninstall()}`)
-      commands.push(`${this.cliBinary.path} ${strings.serviceInstall()}`)
-      commands.push(`${this.cliBinary.path} ${strings.signIn()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.signIn()}`)
 
       await commands.exec()
       resolve()
@@ -129,7 +129,7 @@ export class BinaryInstaller {
 
       try {
         if (this.cliBinary.isInstalled() && !skipCommands) {
-          commands.push(`${this.cliBinary.path} ${strings.serviceUninstall()}`)
+          commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
           await commands.exec()
         }
 

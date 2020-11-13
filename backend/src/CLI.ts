@@ -275,7 +275,7 @@ export default class CLI {
     if (checkAuthHash && !user.signedIn) return ''
 
     let commands = new Command({ admin, quiet })
-    cmds.forEach(cmd => commands.push(`${cliBinary.path} ${cmd}`))
+    cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
     if (!quiet)
       commands.onError = (e: Error) => {
