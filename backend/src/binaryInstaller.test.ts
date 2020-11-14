@@ -86,15 +86,10 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toHaveBeenCalledTimes(0)
     })
 
-    test('removes the files from a Windows installer', async () => {
+    test('removes no files from a Windows installer', async () => {
       environment.isWindows = true
-
       await binaryInstaller.uninstallBinaries()
-
-      expect(installSpy).toHaveBeenCalledTimes(0)
-
-      // expect(commandSpy).toBeCalledWith('setx')
-      expect(commandSpy).toHaveBeenCalledTimes(1)
+      expect(commandSpy).toHaveBeenCalledTimes(0)
     })
   })
 
