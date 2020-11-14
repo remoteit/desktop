@@ -175,6 +175,12 @@ To test install a snap package:
 sudo snap install my-snap-name_0.1_amd64.snap --dangerous --devmode
 ```
 
+To install and uninstall a deb package:
+```
+sudo dpkg -i /home/jamie/Code/desktop/dist/remoteit-amd64-installer.deb
+sudo dpkg -r remoteit-desktop
+```
+
 ### Publishing
 
 You should have an env var set `export GH_TOKEN="<YOUR_TOKEN_HERE>"`

@@ -1,4 +1,3 @@
-import { removeDeviceName } from './sharedCopy/nameHelper'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
 import { cliBinary } from './Binary'
 import binaryInstaller from './binaryInstaller'
@@ -90,19 +89,16 @@ export default class CLI {
     this.data.device = {
       ...device,
       hostname: device.hostname || '',
-      name: device.name || '',
     }
   }
 
   readTargets() {
-    const deviceName = this.data.device && this.data.device.name
     const config = this.readFile()
     const targets = config.services || []
     d('READ TARGETS', targets)
     this.data.targets = targets.map(service => ({
       ...service,
       hostname: service.hostname || '',
-      name: removeDeviceName(deviceName, service.name) || '',
     }))
   }
 
@@ -111,7 +107,6 @@ export default class CLI {
     const connections = config.connections || []
     this.data.connections = connections.map((c: any) => ({
       id: c.uid,
-      name: c.name,
       port: c.port,
       host: c.hostname,
       createdTime: Math.round(c.createdtimestamp / 1000000),
