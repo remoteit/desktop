@@ -22,7 +22,7 @@ export default class Command {
   }
 
   push(command: string) {
-    this.commands.push(command)
+    if (command) this.commands.push(command)
   }
 
   toString() {
@@ -53,15 +53,16 @@ export default class Command {
     if (this.commands.length === 0) return ''
 
     let result = ''
-    this.log('EXEC', {
-      quiet: !this.onError,
-      exec: this.toString(),
-      admin: this.admin,
-      headless: environment.isHeadless,
-      elevated: environment.isElevated,
-    })
 
     try {
+      this.log('EXEC', {
+        quiet: !this.onError,
+        exec: this.toString(),
+        admin: this.admin,
+        headless: environment.isHeadless,
+        elevated: environment.isElevated,
+      })
+
       const { stdout, stderr } =
         this.admin && !environment.isHeadless && !environment.isElevated
           ? await sudoPromise(this.toString())

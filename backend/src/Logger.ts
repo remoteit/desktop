@@ -49,6 +49,7 @@ const logger = winston.createLogger({
   transports,
 })
 
+logger.info('REMOTEIT DESKTOP STARTING UP ---------------------------------------------------------')
 logger.info('NODE_ENV', { env: ENVIRONMENT })
 
 export default logger

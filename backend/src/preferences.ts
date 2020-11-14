@@ -20,7 +20,6 @@ export class Preferences {
   constructor() {
     this.file = new JSONFile<IPreferences>(path.join(environment.userPath, 'preferences.json'))
     this.set({ ...this.defaults, ...this.file.read() })
-    Logger.info('PREFERENCES', { preferences: this.data })
   }
 
   get defaults(): IPreferences {

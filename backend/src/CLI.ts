@@ -1,6 +1,6 @@
-import { removeDeviceName } from './sharedCopy/nameHelper'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
-import remoteitInstaller from './remoteitInstaller'
+import { cliBinary } from './Binary'
+import binaryInstaller from './binaryInstaller'
 import environment from './environment'
 import strings from './cliStrings'
 import JSONFile from './JSONFile'
@@ -89,19 +89,16 @@ export default class CLI {
     this.data.device = {
       ...device,
       hostname: device.hostname || '',
-      name: device.name || '',
     }
   }
 
   readTargets() {
-    const deviceName = this.data.device && this.data.device.name
     const config = this.readFile()
     const targets = config.services || []
     d('READ TARGETS', targets)
     this.data.targets = targets.map(service => ({
       ...service,
       hostname: service.hostname || '',
-      name: removeDeviceName(deviceName, service.name) || '',
     }))
   }
 
@@ -110,7 +107,6 @@ export default class CLI {
     const connections = config.connections || []
     this.data.connections = connections.map((c: any) => ({
       id: c.uid,
-      name: c.name,
       port: c.port,
       host: c.hostname,
       createdTime: Math.round(c.createdtimestamp / 1000000),
@@ -137,11 +133,32 @@ export default class CLI {
         c.active = status.state === 'connected'
         c.connecting = status.state === 'connecting'
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined
-        c.error = status.error // Can add back when CLI is more careful about creating errors
+        if (status.error) c.error = { message: status.error.message, code: status.error.code }
         d('UPDATE STATUS', { c, status: status.state })
       }
       return c
     })
+  }
+
+  async agentRunning() {
+    const result = await this.exec({
+      cmds: [strings.agentStatus()],
+      checkAuthHash: true,
+      skipSignInCheck: true,
+      quiet: true,
+    })
+    let running = false,
+      data: { status: 0 | 1 }
+    try {
+      if (result) {
+        data = JSON.parse(result)
+        running = data.status === 0
+      }
+    } catch (error) {
+      Logger.warn('CLI AGENT STATUS PARSE ERROR', { result, errorMessage: error.message })
+    }
+    Logger.info('CLI AGENT STATUS', { running })
+    return running
   }
 
   async status() {
@@ -249,21 +266,21 @@ export default class CLI {
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
-    if ((checkAuthHash && !user.signedIn) || !remoteitInstaller.isInstalled()) return ''
-    if (!skipSignInCheck && user.signedIn) await this.checkSignIn()
+    if (!skipSignInCheck) await this.checkSignIn()
+    if (checkAuthHash && !user.signedIn) return ''
 
-    let result
     let commands = new Command({ admin, quiet })
+    cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
-    cmds.forEach(cmd => commands.push(`"${remoteitInstaller.binaryPath()}" ${cmd}`))
     if (!quiet)
       commands.onError = (e: Error) => {
         if (typeof onError === 'function') onError(e)
+        // @TODO detect signing or service not started error and don't display,
+        // just run check and sign in commands.
         EventBus.emit(this.EVENTS.error, e.toString())
+        binaryInstaller.check()
       }
 
-    result = await commands.exec()
-
-    return result
+    return await commands.exec()
   }
 }

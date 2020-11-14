@@ -11,7 +11,11 @@ export default {
   },
 
   status() {
-    return `-j status --authhash ${user.authHash}`
+    return `-j status -e --authhash ${user.authHash}`
+  },
+
+  agentStatus() {
+    return `-j agent status --authhash ${user.authHash}`
   },
 
   setup(device: ITargetDevice) {
@@ -67,11 +71,11 @@ export default {
   },
 
   serviceInstall() {
-    return '-j service install'
+    return '-j agent install'
   },
 
   serviceUninstall() {
-    return '-j service uninstall'
+    return '-j agent uninstall'
   },
 
   toolsInstall() {

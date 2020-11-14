@@ -38,8 +38,6 @@ export class User {
   }
 
   checkSignIn = async (credentials?: UserCredentials) => {
-    Logger.info('Check sign in:', { username: credentials && credentials.username })
-
     if (!credentials) {
       Logger.warn('No user, sign in failed')
       return false

@@ -184,8 +184,8 @@ export const SettingsPage: React.FC = () => {
             />
             <ListItemSetting
               confirm
-              label="Uninstall command line tools"
-              subLabel={`De-register this device, completely remove all saved data, and uninstall the command line tools. Do this before removing, or uninstalling the application from your system.`}
+              label="Uninstall"
+              subLabel={`De-register this device, completely remove all saved data, and uninstall the system service and command line tools link. Do this before removing, the application from your system.`}
               icon="trash-alt"
               confirmTitle="Are you sure?"
               confirmMessage="You will remove this system as a host, your connections and command line utilities."

@@ -14,9 +14,6 @@ class CLIInterface extends CLI {
         } else if (!this.data.device.uid && value.name) {
           await this.register(value)
           Logger.info('REGISTER ' + value.name)
-        } else if (value.name && value.name !== this.data.device.name) {
-          await this.setDevice(value)
-          Logger.info('MODIFY DEVICE' + this.data.device.name)
         } else if (value === 'DELETE') {
           await this.unregister()
           Logger.info('DELETE DEVICE ' + this.data.device.name)

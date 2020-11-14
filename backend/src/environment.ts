@@ -17,6 +17,7 @@ export class Environment {
   isArmLinux: boolean
   isPi: boolean
   isPiZero: boolean
+  isDev: boolean
   simpleOS: Ios
   osVersion: string
   privateIP: ipAddress = ''
@@ -24,6 +25,7 @@ export class Environment {
   userPath: string
   adminPath: string
   binPath: string
+  symlinkPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   version: string
@@ -31,8 +33,6 @@ export class Environment {
   EVENTS = { send: 'environment' }
 
   constructor() {
-    const elevated: boolean = true //this.isElevated - always elevated for now
-
     // @ts-ignore
     this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
     this.isPi = detectRPi()
@@ -41,26 +41,36 @@ export class Environment {
     this.isMac = os.platform() === 'darwin'
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
+    this.isDev = process.env.NODE_ENV === 'development'
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
     this.version = this.getAppVersion()
+    this.symlinkPath = ''
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
       this.adminPath = PATHS.WIN_ADMIN_SETTINGS
-      this.binPath = elevated ? PATHS.WIN_ADMIN_BINARIES : PATHS.WIN_USER_BINARIES
+      this.binPath = this.isWindows32 ? PATHS.WIN_BINARIES_32 : PATHS.WIN_BINARIES
+      this.binPath = this.isDev ? PATHS.WIN_BINARIES_DEV : this.binPath
       this.deprecatedBinaries = PATHS.WIN_DEPRECATED_BINARIES
     } else if (this.isMac) {
       this.userPath = PATHS.MAC_USER_SETTINGS
       this.adminPath = PATHS.MAC_ADMIN_SETTINGS
-      this.binPath = elevated ? PATHS.MAC_ADMIN_BINARIES : PATHS.MAC_USER_BINARIES
+      this.binPath = this.isDev ? PATHS.MAC_BINARIES_DEV : PATHS.MAC_BINARIES
       this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
+      this.symlinkPath = PATHS.MAC_SYMLINKS
     } else {
-      this.userPath = PATHS.LINUX_USER_SETTINGS
-      this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
-      this.binPath = elevated ? PATHS.LINUX_ADMIN_BINARIES : PATHS.LINUX_USER_BINARIES
+      this.userPath = fs.existsSync(PATHS.LINUX_USER_SETTINGS)
+        ? PATHS.LINUX_USER_SETTINGS
+        : PATHS.HEADLESS_USER_SETTINGS
+      this.adminPath = fs.existsSync(PATHS.LINUX_ADMIN_SETTINGS)
+        ? PATHS.LINUX_ADMIN_SETTINGS
+        : PATHS.HEADLESS_ADMIN_SETTINGS
+      this.binPath = fs.existsSync(PATHS.LINUX_BINARIES) ? PATHS.LINUX_BINARIES : PATHS.HEADLESS_BINARIES
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
+      this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
+
     this.manufacturerDetails = this.getManufacturerDetails()
   }
 
@@ -151,6 +161,7 @@ export class Environment {
       userPath: this.userPath,
       adminPath: this.adminPath,
       binPath: this.binPath,
+      path: __dirname,
       deprecatedBinaries: this.deprecatedBinaries,
     }
   }

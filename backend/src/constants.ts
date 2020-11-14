@@ -1,6 +1,5 @@
 import os from 'os'
 import path from 'path'
-import { readFileSync } from 'fs'
 
 //General
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
@@ -13,7 +12,6 @@ export const AIRBRAKE_PROJECT_ID = 223457
 export const AIRBRAKE_PROJECT_KEY = process.env.AIRBRAKE_PROJECT_KEY || 'e1376551dbe5b1326f98edd78b6247ba'
 
 // CLI
-export const CLI_VERSION = readFileSync(path.join(__dirname, 'cli-version.txt'), 'utf8')
 export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
 
 // CLI product tracking codes
@@ -53,24 +51,31 @@ export const SSL_PORT = WEB_PORT - 1
 
 // Install paths
 export const PATHS = {
-  LINUX_USER_BINARIES: path.join(os.homedir(), '.remoteit/bin'),
+  HEADLESS_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
+  HEADLESS_BINARIES: '/usr/bin',
+  HEADLESS_ADMIN_SETTINGS: '/etc/remoteit',
+
   LINUX_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  LINUX_ADMIN_BINARIES: '/usr/bin',
+  LINUX_BINARIES: path.join(__dirname, '../../../../'),
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
   LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
+  LINUX_SYMLINKS: '/usr/bin',
 
-  MAC_USER_BINARIES: path.join(os.homedir(), '.remoteit/bin'),
   MAC_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
-  MAC_ADMIN_BINARIES: '/usr/local/bin',
+  MAC_BINARIES: path.join(__dirname, '../../../../'),
+  MAC_BINARIES_DEV: path.resolve('./bin'),
   MAC_ADMIN_SETTINGS: '/etc/remoteit',
   MAC_DEPRECATED_BINARIES: [],
+  MAC_SYMLINKS: '/usr/local/bin',
 
-  WIN_USER_BINARIES: path.join(os.homedir(), 'AppData/Local/remoteit/bin'),
   WIN_USER_SETTINGS: path.join(os.homedir(), 'AppData/Local/remoteit'),
-  WIN_ADMIN_BINARIES: path.resolve('C:/Program Files/remoteit-bin'),
+  WIN_BINARIES: path.resolve('./resources/x64'),
+  WIN_BINARIES_32: path.resolve('./resources/x86'),
+  WIN_BINARIES_DEV: path.resolve('./bin/x64'),
   WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
   WIN_DEPRECATED_BINARIES: [
+    path.resolve('C:/Program Files/remoteit-bin/remoteit.exe'),
     path.resolve('C:/Program Files/remoteit/remoteit.exe'),
-    path.resolve('/Windows/remoteit.exe'),
+    path.resolve('C:/Windows/remoteit.exe'),
   ],
 }

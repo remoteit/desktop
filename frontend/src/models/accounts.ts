@@ -132,8 +132,10 @@ export default createModel({
       const allDevices = globalState.accounts.devices
       accountId = accountId || getAccountId(globalState)
 
-      allDevices[accountId] = devices
-      dispatch.accounts.set({ devices: allDevices })
+      if (accountId) {
+        allDevices[accountId] = devices
+        dispatch.accounts.set({ devices: allDevices })
+      }
     },
     async appendDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
       dispatch.accounts.setDevices({

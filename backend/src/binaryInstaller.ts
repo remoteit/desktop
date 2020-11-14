@@ -1,72 +1,82 @@
-import tmp from 'tmp'
 import cli from './cliInterface'
 import rimraf from 'rimraf'
 import strings from './cliStrings'
 import EventBus from './EventBus'
 import environment from './environment'
 import preferences from './preferences'
-import remoteitInstaller from './remoteitInstaller'
-import Installer from './Installer'
-import Command from './Command'
-import Logger from './Logger'
+import semverCompare from 'semver/functions/compare'
 import { existsSync, lstatSync } from 'fs'
+import Command from './Command'
+import Binary, { binaries, cliBinary } from './Binary'
+import Logger from './Logger'
 
-tmp.setGracefulCleanup()
-
-class BinaryInstaller {
-  options = { name: 'remoteit' }
+export class BinaryInstaller {
   inProgress = false
+  uninstallInitiated = false
+  binaries: Binary[]
+  cliBinary: Binary
+
+  constructor(binaries: Binary[], cliBinary: Binary) {
+    this.binaries = binaries
+    this.cliBinary = cliBinary
+  }
+
+  async check(log?: boolean) {
+    if (this.inProgress) return
+
+    const install = (await this.cliBinary.isCurrent(log)) && (await cli.agentRunning())
+
+    if (install) {
+      return EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
+    } else if (environment.isElevated) {
+      return await this.install(true)
+    }
+    EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
+  }
 
   async install(force?: boolean) {
+    let binariesOutdated, serviceStopped, desktopOutdated
+
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
-    const updateCli = !(await remoteitInstaller.isCliCurrent(true)) || force
-    const updateDesktop = !remoteitInstaller.isDesktopCurrent(true)
 
-    Logger.info('INSTALLING BINARIES', { updateCli, updateDesktop })
+    if (!force) {
+      binariesOutdated = !(await this.cliBinary.isCurrent(false))
+      serviceStopped = !(await cli.agentRunning())
+      desktopOutdated = !this.isDesktopCurrent(true)
+    }
 
-    if (updateCli) {
-      Logger.info('UPDATING CLI')
-      await this.installBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
-    } else if (updateDesktop) {
+    Logger.info('INSTALL?', { force, binariesOutdated, desktopOutdated, serviceStopped })
+
+    if (binariesOutdated || serviceStopped || force) {
+      Logger.info('UPDATING BINARIES')
+      await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
+    } else if (desktopOutdated) {
       Logger.info('RESTARTING CLI SYSTEM SERVICES')
       await this.restartService()
     }
 
     preferences.update({ version: environment.version })
-    EventBus.emit(Installer.EVENTS.installed, remoteitInstaller.toJSON())
+    this.binaries.map(binary => binary.isCli && EventBus.emit(Binary.EVENTS.installed, binary.toJSON()))
     this.inProgress = false
   }
 
-  async installBinary(installer: Installer) {
+  async installBinaries() {
     return new Promise(async (resolve, reject) => {
-      var tmpDir = tmp.dirSync({ unsafeCleanup: true, keep: true })
-
-      // Stop and remove old binaries
-      await this.migrateBinaries(installer.binaryPath())
-
-      // Download and install binaries
-      await this.download(installer, tmpDir)
+      await this.migrateBinaries()
+      await this.uninstallBinaries().catch() //fixme - just get commands to execute
 
       const commands = new Command({ onError: reject, admin: true })
 
-      if (environment.isWindows) {
-        if (!existsSync(environment.binPath)) commands.push(`md "${environment.binPath}"`)
-        commands.push(`move /y "${installer.tempFile}" "${installer.binaryPath()}"`)
-        commands.push(`icacls "${installer.binaryPath()}" /T /C /Q /grant "*S-1-5-32-545:RX"`) // Grant all group "Users" read and execute permissions
-      } else {
-        if (!existsSync(environment.binPath)) commands.push(`mkdir -p ${environment.binPath}`)
-        commands.push(`mv ${installer.tempFile} ${installer.binaryPath()}`)
-        commands.push(`chmod 755 ${installer.binaryPath()}`) // @TODO if this is going in the user folder must have user permissions
+      if (!environment.isWindows) {
+        this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
-      commands.push(`"${installer.binaryPath()}" ${strings.toolsInstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.serviceUninstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.serviceInstall()}`)
-      commands.push(`"${installer.binaryPath()}" ${strings.signIn()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.signIn()}`)
 
       await commands.exec()
-      tmpDir.removeCallback()
       resolve()
     })
   }
@@ -75,12 +85,10 @@ class BinaryInstaller {
     await cli.restartService()
   }
 
-  async migrateBinaries(installerPath?: string) {
+  async migrateBinaries() {
     const commands = new Command({ admin: true })
     let files = environment.deprecatedBinaries
     let toDelete: string[] = []
-
-    if (installerPath) files.push(installerPath)
 
     files.forEach(file => {
       // Too small to be the desktop app -> must be cli
@@ -106,26 +114,31 @@ class BinaryInstaller {
     })
   }
 
-  async download(installer: Installer, tmpDir: tmp.DirResult) {
-    return installer
-      .install(tmpDir.name, (progress: number) => EventBus.emit(Installer.EVENTS.progress, { progress, installer }))
-      .catch(error => EventBus.emit(Installer.EVENTS.error, error.message))
-  }
-
-  async uninstall() {
+  async uninstall(skipCommands?: boolean) {
     if (this.inProgress) return Logger.info('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
+    this.uninstallInitiated = true
     this.inProgress = true
-    await this.uninstallBinary(remoteitInstaller).catch(error => EventBus.emit(Installer.EVENTS.error, error))
+    await this.uninstallBinaries(skipCommands).catch(error => EventBus.emit(Binary.EVENTS.error, error))
     this.inProgress = false
   }
 
-  async uninstallBinary(installer: Installer) {
+  async uninstallBinaries(skipCommands?: boolean) {
     return new Promise(async (resolve, reject) => {
+      const commands = new Command({ onError: reject, admin: true })
       const options = { disableGlob: true }
 
       try {
-        rimraf.sync(installer.binaryPath(), options)
-        rimraf.sync(environment.userPath, options)
+        if (this.cliBinary.isInstalled() && !skipCommands) {
+          commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
+          await commands.exec()
+        }
+
+        if (!environment.isWindows) {
+          this.binaries.map(binary => {
+            Logger.info('REMOVE SYMLINK', { name: binary.symlink })
+            rimraf.sync(binary.symlink, options)
+          })
+        }
       } catch (e) {
         reject(e)
       }
@@ -133,6 +146,19 @@ class BinaryInstaller {
       resolve()
     })
   }
+
+  isDesktopCurrent(log?: boolean) {
+    let desktopVersion = preferences.get().version
+    let current = desktopVersion && semverCompare(desktopVersion, environment.version) >= 0
+
+    if (current) {
+      log && Logger.info('DESKTOP CURRENT', { desktopVersion })
+    } else {
+      Logger.info('DESKTOP UPDATE DETECTED', { oldVersion: desktopVersion, thisVersion: environment.version })
+    }
+
+    return current
+  }
 }
 
-export default new BinaryInstaller()
+export default new BinaryInstaller(binaries, cliBinary)

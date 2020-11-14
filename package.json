@@ -1,16 +1,17 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.9.0-alpha.1",
+  "version": "2.9.0-alpha.2",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s clean build-backend compile copy-* build-electron",
+    "build": "cross-env NODE_ENV=production run-s clean build-backend cli-download compile copy-* build-electron",
     "build-backend": "cd backend && npm run build",
     "build-electron": "cross-env electron-builder",
     "clean": "rimraf build/* dist/*",
     "compile": "tsc",
     "copy-icons": "cp -R ./src/icons ./build/",
+    "cli-download": "sh scripts/build.sh",
     "copy-images": "cp -R ./src/images ./build/",
     "copy-install": "cp installer.nsh build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
@@ -18,7 +19,7 @@
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
     "install-frontend": "cd frontend && npm i",
-    "postinstall": "run-p install-*",
+    "postinstall": "run-s install-* cli-download",
     "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
     "start": "npm-run-all -l -n -p copy-* watch-*",
     "test": "cd backend && npm run test",
@@ -59,9 +60,9 @@
   },
   "build": {
     "appId": "it.remote.desktop",
-    "afterSign": "scripts/notarize.js",
     "copyright": "remot3.it, Inc",
     "productName": "remoteit",
+    "afterSign": "scripts/notarize.js",
     "artifactName": "${productName}-${arch}-installer.${ext}",
     "generateUpdatesFilesForAllChannels": true,
     "publish": [
@@ -90,13 +91,12 @@
     },
     "linux": {
       "category": "Network",
+      "packageCategory": "net",
       "target": [
         {
           "target": "deb",
           "arch": [
-            "armv7l",
-            "x64",
-            "arm64"
+            "x64"
           ]
         }
       ]
@@ -109,7 +109,11 @@
     },
     "extraResources": [
       {
-        "from": "./backend/src/cli-version.txt",
+        "from": "./backend/src/cli-version.json",
+        "to": "./"
+      },
+      {
+        "from": "./bin/",
         "to": "./"
       }
     ],

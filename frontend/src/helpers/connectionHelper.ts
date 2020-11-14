@@ -1,7 +1,7 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
 import { attributeName } from '../shared/nameHelper'
-import { getDevices, getAccountId } from '../models/accounts'
+import { getAllDevices, getAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
 
@@ -24,7 +24,7 @@ export function newConnection(service?: IService | null, data = {}) {
   }
 
   if (service) {
-    const device = getDevices(state).find((d: IDevice) => d.id === service.deviceID)
+    const device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
     // @TODO The whole service obj should be in the connection
     connection.name = attributeName(service)
     connection.id = service.id
@@ -86,7 +86,7 @@ export function updateConnections(devices: IDevice[]) {
 
 export function cleanOrphanConnections() {
   const state = store.getState()
-  const services = getDevices(state)
+  const services = getAllDevices(state)
     .map(d => d.services.map(s => s.id))
     .flat()
   state.backend.connections.forEach(c => {

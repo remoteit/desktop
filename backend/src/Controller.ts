@@ -9,10 +9,9 @@ import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
-import remoteitInstaller from './remoteitInstaller'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
-import Installer from './Installer'
+import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
@@ -21,7 +20,6 @@ import launch, { openCMDforWindows } from './launch'
 class Controller {
   private io: SocketIO.Server
   private pool: ConnectionPool
-  private uninstallInitiated = false
 
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.io = io
@@ -31,7 +29,7 @@ class Controller {
 
     let eventNames = [
       ...Object.values(User.EVENTS),
-      ...Object.values(Installer.EVENTS),
+      ...Object.values(Binary.EVENTS),
       ...Object.values(Connection.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),
@@ -79,7 +77,8 @@ class Controller {
     socket.on('showFolder', showFolder.openLogs)
 
     this.initBackend()
-    this.check(true) // check and log
+    this.check()
+    binaryInstaller.check(true)
   }
 
   recapitate = () => {
@@ -87,8 +86,7 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
   }
 
-  check = (log?: boolean) => {
-    remoteitInstaller.check(log)
+  check = () => {
     this.pool.check()
     lan.check()
     app.check()
@@ -168,24 +166,26 @@ class Controller {
 
   signOutComplete = () => {
     Logger.info('FRONTEND SIGN OUT COMPLETE')
-    if (this.uninstallInitiated) {
+    if (binaryInstaller.uninstallInitiated) {
       this.quit()
     }
   }
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
-    this.uninstallInitiated = true
     await cli.unInstall()
-    await binaryInstaller.uninstall()
+    await binaryInstaller.uninstall(true)
     await user.signOut()
     await this.pool.clearAll()
     //frontend will emit user/sign-out-complete and then we will call exit
   }
 
   installBinaries = async (force?: boolean) => {
-    await binaryInstaller.install(force)
-    remoteitInstaller.check()
+    try {
+      await binaryInstaller.install(force)
+    } catch (error) {
+      EventBus.emit(Binary.EVENTS.error, error)
+    }
   }
 }
 

@@ -86,9 +86,9 @@ The Desktop installs and depends on the remote.it CLI tools.
 At startup they are installed here:
 
 ```
-Mac      /usr/local/bin/
+Mac      /Applications/Remoteit.app/Contents/Resources/mac
 Linux    /usr/bin/
-Windows  C:\Program Files\remoteit-bin\
+Windows  C:/Program Files/remoteit/resources
 ```
 
 **Configuration and log files**
@@ -139,6 +139,14 @@ Tests are written using Jest.
 
 Copy the `backend/.env.example` file to `backend/.env` and then fill in the values.
 
+To use the fontawesome fonts:
+[Installation Instructions](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro)
+
+```shell
+npm config set "@fortawesome:registry" https://npm.fontawesome.com/
+npm config set "//npm.fontawesome.com/:_authToken" [FONT_AWESOME_TOKEN]
+```
+
 ### Packaging
 
 In order to be able to build on your local machine:
@@ -153,10 +161,24 @@ If it's not working check that the developer account is signed into XCode and th
 
 More info can be found in this setup guide: [Notarizing on Mac OS](https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/)
 
-## Packaging for running headless
+#### Packaging for running headless
 
 ```cmd
 npm run package
+```
+
+#### Packaging for linux snaps
+
+To test install a snap package:
+
+```cmd
+sudo snap install my-snap-name_0.1_amd64.snap --dangerous --devmode
+```
+
+To install and uninstall a deb package:
+```
+sudo dpkg -i /home/jamie/Code/desktop/dist/remoteit-amd64-installer.deb
+sudo dpkg -r remoteit-desktop
 ```
 
 ### Publishing
