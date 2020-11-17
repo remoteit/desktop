@@ -78,6 +78,18 @@ export default {
     return '-j agent uninstall'
   },
 
+  toolsInstall() {
+    return '-j tools install --update'
+  },
+
+  toolsUninstall() {
+    return '-j tools uninstall --yes'
+  },
+
+  uninstall() {
+    return `-j uninstall --yes`
+  },
+
   scan(ipMask?: string) {
     return ipMask ? `-j scan -m ${ipMask}` : '-j scan'
   },
