@@ -66,7 +66,8 @@ export class BinaryInstaller {
 
       commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
       commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
-      // commands.push(`"${this.cliBinary.path}" ${strings.signIn()}`) // this is failing because the service install is returning before it's ready
+      commands.push(`"${this.cliBinary.path}" ${strings.status()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.signIn()}`) // this is failing because the service install is returning before it's ready
 
       await commands.exec()
       resolve()
@@ -88,6 +89,7 @@ export class BinaryInstaller {
         Logger.info('MIGRATING DEPRECATED BINARY', { file })
         commands.push(`"${file}" ${strings.serviceUninstall()}`)
         commands.push(`"${file}" ${strings.toolsUninstall()}`)
+        commands.push(`"${file}" ${strings.status()}`)
         toDelete.push(file)
       } else {
         Logger.info('DEPRECATED BINARY DOES NOT EXIST', { file })
@@ -106,24 +108,17 @@ export class BinaryInstaller {
     })
   }
 
-  async uninstall(skipCommands?: boolean) {
+  async uninstall() {
     if (this.inProgress) return Logger.info('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     this.uninstallInitiated = true
     this.inProgress = true
-    await this.uninstallBinaries(skipCommands).catch(error => EventBus.emit(Binary.EVENTS.error, error))
+    await this.uninstallBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
     this.inProgress = false
   }
 
-  async uninstallBinaries(skipCommands?: boolean) {
-    return new Promise(async (resolve, reject) => {
-      // const commands = new Command({ onError: reject, admin: true })
-
+  async uninstallBinaries() {
+    return new Promise((resolve, reject) => {
       try {
-        // if (this.cliBinary.isInstalled() && !skipCommands) {
-        //   commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
-        //   await commands.exec()
-        // }
-
         if (!environment.isWindows) {
           this.binaries.map(binary => {
             Logger.info('REMOVE SYMLINK', { name: binary.symlink })
@@ -133,7 +128,6 @@ export class BinaryInstaller {
       } catch (e) {
         reject(e)
       }
-
       resolve()
     })
   }
