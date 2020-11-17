@@ -180,7 +180,7 @@ export const SettingsPage: React.FC = () => {
               icon="terminal"
               confirmTitle="Are you sure?"
               confirmMessage="This will stop all services and re-install the command line utilities."
-              onClick={() => binaries.install(true)}
+              onClick={() => binaries.install()}
             />
             <ListItemSetting
               confirm

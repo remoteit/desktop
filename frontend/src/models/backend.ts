@@ -150,21 +150,24 @@ export default createModel({
       targets[tIndex] = target
       emit('targets', targets)
     },
+
+    async updateConnection(connection: IConnection, globalState: any) {
+      const state = globalState.backend as ApplicationState['backend']
+      state.connections.some((c, index) => {
+        if (c.id === connection.id) {
+          state.connections[index] = connection
+          dispatch.backend.set({ connections: state.connections })
+          if (!c.active && connection.active) dispatch.ui.set({ successMessage: `${connection.name} connected.` })
+          if (connection) return true
+        }
+        return false
+      })
+    },
   }),
 
   reducers: {
     set(state: IBackendState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
-    },
-
-    setConnection(state: IBackendState, connection: IConnection) {
-      state.connections.some((c, index) => {
-        if (c.id === connection.id) {
-          state.connections[index] = connection
-          return true
-        }
-        return false
-      })
     },
   },
 })

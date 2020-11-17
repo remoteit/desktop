@@ -103,7 +103,7 @@ function getEventHandlers() {
 
     connection: (result: IConnection) => {
       console.log('socket connection', result)
-      backend.setConnection(result)
+      backend.updateConnection(result)
     },
 
     targets: (result: ITarget[]) => {
@@ -163,20 +163,20 @@ function getEventHandlers() {
     },
 
     // Connections
-    'service/connected': (msg: ConnectionMessage) => {
-      logs.add({ id: msg.connection.id, log: msg.raw })
-      backend.setConnection(msg.connection)
-      analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
-    },
-    'service/disconnected': (msg: ConnectionMessage) => {
-      logs.add({ id: msg.connection.id, log: msg.raw })
-      backend.setConnection(msg.connection)
-    },
-    'service/error': (msg: ConnectionErrorMessage) => {
-      logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
-      backend.setConnection(msg.connection)
-      analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
-    },
+    // 'service/connected': (msg: ConnectionMessage) => {
+    //   logs.add({ id: msg.connection.id, log: msg.raw })
+    //   backend.setConnection(msg.connection)
+    //   analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
+    // },
+    // 'service/disconnected': (msg: ConnectionMessage) => {
+    //   logs.add({ id: msg.connection.id, log: msg.raw })
+    //   backend.setConnection(msg.connection)
+    // },
+    // 'service/error': (msg: ConnectionErrorMessage) => {
+    //   logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
+    //   backend.setConnection(msg.connection)
+    //   analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
+    // },
 
     'binary/install/error': (error: string) => binaries.installError(error),
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),

@@ -23,10 +23,10 @@ const state: BinariesState = {
 export default createModel({
   state,
   effects: (dispatch: any) => ({
-    async install(force?: boolean) {
+    async install() {
       dispatch.binaries.clearError()
       dispatch.binaries.installing()
-      emit('binaries/install', force)
+      emit('binaries/install')
       analyticsHelper.track('install')
     },
   }),

@@ -24,37 +24,29 @@ export class BinaryInstaller {
   async check(log?: boolean) {
     if (this.inProgress) return
 
-    const install = (await this.cliBinary.isCurrent(log)) && (await cli.agentRunning())
+    const shouldInstall = await this.shouldInstall(log)
 
-    if (install) {
-      return EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
-    } else if (environment.isElevated) {
-      return await this.install(true)
+    if (shouldInstall) {
+      if (environment.isElevated) return await this.install()
+      return EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
     }
-    EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
+    EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
   }
 
-  async install(force?: boolean) {
-    let binariesOutdated, serviceStopped, desktopOutdated
+  async shouldInstall(log?: boolean) {
+    const binariesOutdated = !(await this.cliBinary.isCurrent(log))
+    const serviceStopped = !(await cli.agentRunning())
+    const desktopOutdated = !this.isDesktopCurrent(log)
+    log && Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, desktopOutdated })
+    return binariesOutdated || serviceStopped || desktopOutdated
+  }
 
+  async install() {
     if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     this.inProgress = true
 
-    if (!force) {
-      binariesOutdated = !(await this.cliBinary.isCurrent(false))
-      serviceStopped = !(await cli.agentRunning())
-      desktopOutdated = !this.isDesktopCurrent(true)
-    }
-
-    Logger.info('INSTALL?', { force, binariesOutdated, desktopOutdated, serviceStopped })
-
-    if (binariesOutdated || serviceStopped || force) {
-      Logger.info('UPDATING BINARIES')
-      await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
-    } else if (desktopOutdated) {
-      Logger.info('RESTARTING CLI SYSTEM SERVICES')
-      await this.restartService()
-    }
+    Logger.info('STARTING INSTALLATION')
+    await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
     preferences.update({ version: environment.version })
     this.binaries.map(binary => binary.isCli && EventBus.emit(Binary.EVENTS.installed, binary.toJSON()))
@@ -74,7 +66,7 @@ export class BinaryInstaller {
 
       commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
       commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
-      commands.push(`"${this.cliBinary.path}" ${strings.signIn()}`)
+      // commands.push(`"${this.cliBinary.path}" ${strings.signIn()}`) // this is failing because the service install is returning before it's ready
 
       await commands.exec()
       resolve()
@@ -124,19 +116,18 @@ export class BinaryInstaller {
 
   async uninstallBinaries(skipCommands?: boolean) {
     return new Promise(async (resolve, reject) => {
-      const commands = new Command({ onError: reject, admin: true })
-      const options = { disableGlob: true }
+      // const commands = new Command({ onError: reject, admin: true })
 
       try {
-        if (this.cliBinary.isInstalled() && !skipCommands) {
-          commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
-          await commands.exec()
-        }
+        // if (this.cliBinary.isInstalled() && !skipCommands) {
+        //   commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
+        //   await commands.exec()
+        // }
 
         if (!environment.isWindows) {
           this.binaries.map(binary => {
             Logger.info('REMOVE SYMLINK', { name: binary.symlink })
-            rimraf.sync(binary.symlink, options)
+            rimraf.sync(binary.symlink, { disableGlob: true })
           })
         }
       } catch (e) {

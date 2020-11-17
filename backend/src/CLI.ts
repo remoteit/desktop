@@ -240,11 +240,6 @@ export default class CLI {
     await this.exec({ cmds: [strings.toolsInstall()], admin: true })
   }
 
-  async unInstall() {
-    await this.exec({ cmds: [strings.uninstall()], admin: true })
-    this.read()
-  }
-
   async signIn() {
     await this.exec({ cmds: [strings.signIn()], checkAuthHash: true, skipSignInCheck: true })
     this.read()

@@ -132,7 +132,7 @@ class Controller {
   initBackend = async () => {
     cli.read()
     this.pool.init()
-    this.freePort()
+    // this.freePort()
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
@@ -173,16 +173,16 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
-    await cli.unInstall()
+    await cli.unregister()
     await binaryInstaller.uninstall(true)
     await user.signOut()
     await this.pool.clearAll()
     //frontend will emit user/sign-out-complete and then we will call exit
   }
 
-  installBinaries = async (force?: boolean) => {
+  installBinaries = async () => {
     try {
-      await binaryInstaller.install(force)
+      await binaryInstaller.install()
     } catch (error) {
       EventBus.emit(Binary.EVENTS.error, error)
     }
