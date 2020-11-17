@@ -43,7 +43,7 @@ export default createModel({
 })
 
 export function findType(all: IApplicationType[], typeId?: number) {
-  return all.find(t => t.id === typeId) || emptyServiceType
+  return all.find(t => t.id === typeId) || all[0] || emptyServiceType
 }
 
 export function getTypeId(all: IApplicationType[], port: number) {
@@ -52,9 +52,9 @@ export function getTypeId(all: IApplicationType[], port: number) {
 }
 
 const emptyServiceType = {
-  id: 0,
+  id: 1,
   name: '',
-  port: 0,
+  port: null,
   proxy: false,
   protocol: 'TCP',
   description: '',

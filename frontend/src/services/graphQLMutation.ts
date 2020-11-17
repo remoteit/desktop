@@ -1,13 +1,23 @@
 import { graphQLRequest } from './graphQL'
 
 const SET_ATTRIBUTES = `
-mutation query($name: String, $color: Int, $label: String, $route: String, $serviceId: String) {
+mutation query(
+  $color: Int, 
+  $label: String, 
+  $username: String, 
+  $route: String, 
+  $launchTemplate: String, 
+  $commandTemplate: String, 
+  $serviceId: String
+) {
   setAttributes(
     attributes: {
-      name: $name
       color: $color
       label: $label
+      username: $username
       route: $route
+      launchTemplate: $launchTemplate
+      commandTemplate: $commandTemplate
     }
     serviceId: $serviceId
   )
@@ -36,8 +46,8 @@ mutation query($emails: [String!]!, $action: SharingAction) {
 }
 `
 
-export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, id: String) {
-  return await graphQLRequest(SET_ATTRIBUTES, { ...attributes, serviceId: id })
+export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId: String) {
+  return await graphQLRequest(SET_ATTRIBUTES, { ...attributes, serviceId })
 }
 
 export async function graphQLUnShareDevice(params: IShareProps) {

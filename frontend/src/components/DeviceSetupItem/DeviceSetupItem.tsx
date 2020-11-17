@@ -22,7 +22,7 @@ export const DeviceSetupItem: React.FC = () => {
   let subTitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
 
   if (registered) {
-    title = attributeName(device) || targetDevice.name
+    title = attributeName(device) || targetDevice.name || ''
     subTitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
   }
 

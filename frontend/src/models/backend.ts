@@ -126,7 +126,7 @@ export default createModel({
       emit('registration', { device: { ...targetDevice, name }, targets })
       dispatch.ui.set({ setupRegisteringDevice: true })
       analyticsHelper.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
-      targets.forEach(t => analyticsHelper.track('serviceCreated', { ...t, id: t.uid }))
+      targets.forEach(t => analyticsHelper.track('serviceCreated', { ...t, name, id: t.uid }))
     },
     async addTargetService(target: ITarget, globalState: any) {
       analyticsHelper.track('serviceCreated', { ...target, id: target.uid })

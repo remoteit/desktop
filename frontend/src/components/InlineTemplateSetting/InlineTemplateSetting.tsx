@@ -7,35 +7,34 @@ import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { Tooltip } from '@material-ui/core'
 import { Icon } from '../Icon'
 
-const SSH_TYPE = 28
+type Props = { service: IService; connection?: IConnection; template: 'commandTemplate' | 'launchTemplate' }
 
-type Props = { service: IService; connection?: IConnection; template: 'copyTemplate' | 'launchTemplate' }
-
-export const TemplateSetting: React.FC<Props> = ({ service, connection, template }) => {
+export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, template }) => {
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
   const app = useApplication(service.typeID)
-  let tokens = '[host] [port] [id]'
-  if (service.typeID === SSH_TYPE) tokens += ' [username]'
+
   if (!connection) connection = newConnection(service)
-  let templateString = connection[template] || app[template] || connection.launchTemplate || app.launchTemplate || ''
+
+  const instance = { ...service.attributes, ...connection }
+  let templateString = instance[template] || app[template] || ''
 
   return (
     <InlineTextFieldSetting
       value={templateString}
-      displayValue={app.parse(templateString, { ...connection, port: connection.port || freePort })}
+      displayValue={app.parse(templateString, { ...instance, port: instance.port || freePort })}
       label={
         <>
-          {template === 'copyTemplate' ? 'Copy Command' : 'Launch URL'}
-          <Tooltip title={`Replacement Tokens ${tokens}`} placement="top" arrow>
+          {template === 'commandTemplate' ? 'Copy Command' : 'Launch URL'}
+          <Tooltip title={`Replacement Tokens ${app.tokens}`} placement="top" arrow>
             <Icon name="question-circle" size="sm" type="regular" inline />
           </Tooltip>
         </>
       }
       resetValue={app[template]}
       onSave={templateString =>
-        connection &&
+        instance &&
         setConnection({
-          ...connection,
+          ...instance,
           [template]: templateString.toString(),
         })
       }

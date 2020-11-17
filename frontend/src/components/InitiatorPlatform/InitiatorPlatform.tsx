@@ -43,7 +43,7 @@ export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean }> =
       type = 'brands'
       break
     case 5:
-      name = 'globe'
+      name = 'cloud'
       break
     case 6:
     case 7:
@@ -51,7 +51,7 @@ export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean }> =
       type = 'brands'
       break
     case 8:
-      name = 'globe'
+      name = 'cloud'
       break
     case 9:
     case 10:

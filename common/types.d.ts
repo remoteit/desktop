@@ -166,7 +166,7 @@ declare global {
     hostname: string //     proxy_dest_ip      service ip to forward
     hardwareID?: string
     uid: string //          UID
-    name: string
+    name?: string
     secret?: string //      password
     port: number //         proxy_dest_port    service port
     type: number //         application_type   service type
@@ -228,8 +228,11 @@ declare global {
     access: IUser[]
     license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
     attributes: {
-      name?: string
+      // altname?: string // can't have this collide with service name
+      username?: string
       route?: IRouteType // p2p with failover | p2p | proxy
+      launchTemplate?: string
+      commandTemplate?: string
     }
   }
 
