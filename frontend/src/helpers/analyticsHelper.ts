@@ -130,7 +130,7 @@ export class AnalyticsHelper {
 
   public track(
     name: string,
-    data?: { id: string; name: string; typeID?: number; connectionType?: string; error?: ISimpleError }
+    data?: { id: string; name?: string; typeID?: number; connectionType?: string; error?: ISimpleError }
   ) {
     let context: any = this.context
 

@@ -10,10 +10,10 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
 
 type Props = {
-  targetDevice?: ITargetDevice
+  device?: IDevice
 }
 
-export const UnregisterDeviceButton: React.FC<Props> = ({ targetDevice }) => {
+export const UnregisterDeviceButton: React.FC<Props> = ({ device }) => {
   const css = useStyles()
   const [open, setOpen] = useState<boolean>(false)
   const { ui } = useDispatch<Dispatch>()
@@ -22,7 +22,7 @@ export const UnregisterDeviceButton: React.FC<Props> = ({ targetDevice }) => {
     setupDeletingDevice: state.ui.setupDeletingDevice,
   }))
 
-  if (!targetDevice) return null
+  if (!device) return null
 
   return setupDeletingDevice ? (
     <CircularProgress className={css.loading} size={styles.fontSizes.md} />
@@ -36,7 +36,7 @@ export const UnregisterDeviceButton: React.FC<Props> = ({ targetDevice }) => {
       <Confirm
         open={open}
         onConfirm={() => {
-          analyticsHelper.track('deviceRemoved', { ...targetDevice, id: targetDevice.uid })
+          analyticsHelper.track('deviceRemoved', device)
           ui.set({ setupDeletingDevice: true, setupBusy: true })
           emit('device', 'DELETE')
         }}

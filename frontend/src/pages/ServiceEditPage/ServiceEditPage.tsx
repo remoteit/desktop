@@ -11,7 +11,6 @@ import { Container } from '../../components/Container'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceForm } from '../../components/ServiceForm'
-import { getDevices } from '../../models/accounts'
 import { getLinks } from '../../helpers/routeHelper'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -60,19 +59,19 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
       }
     >
       <ServiceForm
+        {...service.attributes}
         target={target}
         name={service.name}
-        route={service.attributes.route}
         thisDevice={thisDevice}
         onCancel={exit}
         onSubmit={form => {
           // for local cli config update
           backend.updateTargetService(form)
           // for cloud route attribute change
-          service.attributes.route = form.route
+          service.attributes = { ...service.attributes, ...form }
           devices.setServiceAttributes(service)
           // for rest api name change
-          service.name = form.name
+          service.name = form.name || ''
           devices.rename(service)
           exit()
         }}

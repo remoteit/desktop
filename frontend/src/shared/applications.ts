@@ -12,9 +12,10 @@ class Application {
   title: string = 'URL'
   icon: string = 'arrow-right'
   launchTemplate: string = 'http://[host]:[port]'
-  copyTemplate?: string
+  commandTemplate?: string = '[host]:[port]'
   prompt: boolean = false
   iconRotate: boolean = false
+  tokens: string = '[host] [port] [id]'
 
   constructor(options: { [key in keyof Application]?: any }) {
     Object.assign(this, options)
@@ -25,11 +26,11 @@ class Application {
   }
 
   copy(connection: IConnection) {
-    const template = connection.copyTemplate || this.copyTemplate
+    const template = connection.commandTemplate || this.commandTemplate
     return template ? this.parse(template, connection) : this.launch(connection)
   }
 
-  parse(url: string, connection: IConnection) {
+  parse(url: string = '', connection: ILookup<any>) {
     for (const key in connection) if (connection[key]) url = url.replace(`[${key}]`, encodeURI(connection[key]))
     url = replaceHost(url)
     return url
@@ -54,8 +55,10 @@ const applications: Application[] = [
     title: 'SSH',
     icon: 'terminal',
     prompt: true,
+    tokens: '[host] [port] [id] [username]',
     launchTemplate: 'ssh://[username]@[host]:[port]',
-    copyTemplate: 'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
+    commandTemplate:
+      'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
   }),
   new Application({
     types: [8, 10, 33],
@@ -69,7 +72,6 @@ const applications: Application[] = [
     title: 'Browser',
     icon: 'arrow-right',
     iconRotate: true,
-    launchTemplate: 'http://[host]:[port]',
   }),
   new Application({
     types: [34],
@@ -84,13 +86,11 @@ const defaultApp = new Application({
   title: 'URL',
   icon: 'arrow-right',
   iconRotate: true,
-  launchTemplate: 'https://[host]:[port]',
-  copyTemplate: '[host]:[port]',
 })
-
-export default useApplication
 
 export function useApplication(type?: number) {
   let app = applications.find(a => a.types.includes(type || 0))
   return app || defaultApp
 }
+
+export default useApplication

@@ -1,18 +1,19 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { ROUTES } from '../../shared/constants'
-import { ListItemSetting } from '../ListItemSetting'
 import { useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
+import findApplication, { useApplication } from '../../shared/applications'
+import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
+import { TemplateSetting } from '../TemplateSetting'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
-import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { Columns } from '../Columns'
 import { spacing } from '../../styling'
 
-type Props = {
+type Props = IService['attributes'] & {
   name?: string
-  route?: IRouteType
   target?: ITarget
   thisDevice: boolean
   onSubmit: (form: ITarget & IService['attributes']) => void
@@ -20,8 +21,11 @@ type Props = {
 }
 
 export const ServiceForm: React.FC<Props> = ({
-  name = '',
+  name,
+  username,
   route = ROUTES[0].key,
+  commandTemplate,
+  launchTemplate,
   target = DEFAULT_TARGET,
   thisDevice,
   onSubmit,
@@ -38,42 +42,47 @@ export const ServiceForm: React.FC<Props> = ({
   )
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget & IService['attributes']>({ ...target, name, route: routingLock || route })
+  const [form, setForm] = useState<ITarget & IService['attributes']>(() => {
+    const defaults = findApplication(target.type)
+    const defaultAppType = findType(applicationTypes, target.type)
+    return {
+      ...target,
+      route: routingLock || route,
+      name: name || serviceNameValidation(defaultAppType.description).value,
+      username: username || '',
+      commandTemplate: commandTemplate || defaults.commandTemplate,
+      launchTemplate: launchTemplate || defaults.launchTemplate,
+    }
+  })
   const appType = findType(applicationTypes, form.type)
+  const app = useApplication(form.type)
   const css = useStyles()
 
   return (
-    <form onSubmit={() => onSubmit({ ...form, port: form.port || 1, name: form.name || appType.description })}>
+    <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
       <List>
-        <ListItem className={css.fieldWide}>
-          <TextField
-            autoFocus
-            label="Service Name"
-            value={form.name}
-            disabled={disabled}
-            error={!!error}
-            variant="filled"
-            helperText={error || ''}
-            placeholder={appType.description}
-            onChange={event => {
-              const validation = serviceNameValidation(event.target.value)
-              setForm({ ...form, name: validation.value })
-              validation.error ? setError(validation.error) : setError(undefined)
-            }}
-          />
-        </ListItem>
         {thisDevice && (
           <>
             <ListItem className={css.field}>
               <TextField
                 select
+                autoFocus
                 label="Service Type"
                 value={form.type}
                 disabled={disabled}
                 variant="filled"
                 onChange={event => {
-                  const type: number = Number(event.target.value)
-                  setForm({ ...form, type, port: findType(applicationTypes, type).port || form.port })
+                  const type = Number(event.target.value)
+                  const updatedApp = findApplication(type)
+                  const updatedAppType = findType(applicationTypes, type)
+                  setForm({
+                    ...form,
+                    type,
+                    port: findType(applicationTypes, type).port || 0,
+                    name: serviceNameValidation(updatedAppType.description).value,
+                    commandTemplate: updatedApp.commandTemplate,
+                    launchTemplate: updatedApp.launchTemplate,
+                  })
                 }}
               >
                 {applicationTypes.map(type => (
@@ -103,7 +112,7 @@ export const ServiceForm: React.FC<Props> = ({
             <ListItem className={css.fieldWide}>
               <TextField
                 label="Service Host Address"
-                value={form.hostname || ''}
+                value={form.hostname}
                 disabled={disabled}
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
@@ -119,17 +128,32 @@ export const ServiceForm: React.FC<Props> = ({
       </List>
       <Divider />
       <List>
-        {thisDevice && (
-          <ListItemSetting
-            label={form.disabled ? 'Service disabled' : 'Service enabled'}
-            subLabel="Disabling your service will take it offline."
-            icon="circle-check"
-            toggle={!form.disabled}
-            disabled={setupBusy}
-            onClick={() => {
-              setForm({ ...form, disabled: !form.disabled })
+        <ListItem className={css.fieldWide}>
+          <TextField
+            label="Service Name"
+            value={form.name}
+            disabled={disabled}
+            error={!!error}
+            variant="filled"
+            helperText={error || ''}
+            placeholder={appType.description}
+            onChange={event => {
+              const validation = serviceNameValidation(event.target.value)
+              setForm({ ...form, name: validation.value })
+              validation.error ? setError(validation.error) : setError(undefined)
             }}
           />
+        </ListItem>
+        {app.tokens.includes('username') && (
+          <ListItem className={css.fieldWide}>
+            <TextField
+              label="Username"
+              value={form.username}
+              disabled={disabled}
+              variant="filled"
+              onChange={event => setForm({ ...form, username: event.target.value })}
+            />
+          </ListItem>
         )}
         <ListItem className={css.fieldWide}>
           <TextField
@@ -152,7 +176,41 @@ export const ServiceForm: React.FC<Props> = ({
             {routingMessage || ROUTES.find(route => route.key === form.route)?.description}
           </Typography>
         </ListItem>
+        <TemplateSetting
+          className={css.fieldWide}
+          label="Launch URL Template"
+          value={form.launchTemplate}
+          disabled={disabled}
+          username={form.username}
+          type={form.type}
+          onChange={value => setForm({ ...form, launchTemplate: value })}
+        />
+        <TemplateSetting
+          className={css.fieldWide}
+          label="Copy Command Template"
+          value={form.commandTemplate}
+          disabled={disabled}
+          username={form.username}
+          type={form.type}
+          onChange={value => setForm({ ...form, commandTemplate: value })}
+        />
       </List>
+      {thisDevice && (
+        <>
+          <Divider />
+          <List>
+            <ListItemCheckbox
+              checked={!form.disabled}
+              label={form.disabled ? 'Service disabled' : 'Service enabled'}
+              subLabel="Disabling your service will take it offline."
+              disabled={setupBusy}
+              onClick={() => {
+                setForm({ ...form, disabled: !form.disabled })
+              }}
+            />
+          </List>
+        </>
+      )}
       <Columns inset count={1}>
         <span>
           <Button type="submit" variant="contained" color="primary" disabled={setupBusy || !!error}>

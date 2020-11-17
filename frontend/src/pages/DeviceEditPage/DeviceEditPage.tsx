@@ -79,7 +79,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title>Edit device</Title>
-            {thisDevice ? <UnregisterDeviceButton targetDevice={targetDevice} /> : <DeleteButton device={device} />}
+            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
             <RefreshButton device={device} />
           </Typography>
         </>

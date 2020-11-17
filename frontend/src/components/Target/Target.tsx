@@ -120,7 +120,12 @@ export const Target: React.FC<Props> = ({
       <td>
         {changed && !adding && (
           <Tooltip title="Save">
-            <IconButton color="primary" onClick={() => onSave(state)} type="submit" disabled={state.name.length < 1}>
+            <IconButton
+              color="primary"
+              onClick={() => onSave(state)}
+              type="submit"
+              disabled={!state.name || state.name.length < 1}
+            >
               <Icon name="check" size="md" fixedWidth />
             </IconButton>
           </Tooltip>

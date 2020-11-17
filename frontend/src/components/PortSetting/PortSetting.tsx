@@ -15,7 +15,7 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
   }, [freePort, connection])
 
   if (!service) return null
-  if (!connection) connection = newConnection(service, { port: freePort })
+  if (!connection) connection = newConnection(service, freePort)
 
   const disabled = connection.active || connection.connecting
   const save = (port?: number) =>

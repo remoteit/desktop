@@ -200,6 +200,7 @@ const jssTheme: ThemeOptions = {
         fontSize: '11px',
         color: colors.grayDark,
         lineHeight: '1.5em',
+        '& b': { color: colors.grayDarkest, fontWeight: 400 },
       },
       colorTextSecondary: {
         color: colors.grayDark,

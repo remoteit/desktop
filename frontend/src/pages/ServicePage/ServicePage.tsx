@@ -21,7 +21,7 @@ import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { UnauthorizedPage } from '../UnauthorizedPage'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { TemplateSetting } from '../../components/TemplateSetting'
+import { InlineTemplateSetting } from '../../components/InlineTemplateSetting'
 import { AddUserButton } from '../../buttons/AddUserButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
@@ -89,8 +89,8 @@ export const ServicePage: React.FC = () => {
           <NameSetting connection={connection} service={service} />
           <PortSetting connection={connection} service={service} />
           <UsernameSetting connection={connection} service={service} />
-          <TemplateSetting connection={connection} service={service} template="launchTemplate" />
-          <TemplateSetting connection={connection} service={service} template="copyTemplate" />
+          <InlineTemplateSetting connection={connection} service={service} template="launchTemplate" />
+          <InlineTemplateSetting connection={connection} service={service} template="commandTemplate" />
         </List>
         <div className={css.actions}>
           <ConnectButton

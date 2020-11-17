@@ -121,7 +121,7 @@ export const DeviceLogPage = () => {
 
         {planUpgrade && (
           <Typography variant="body2" align="center" color="textSecondary">
-            Plan Upgrade required to view logs past 90 days <br />
+            Plan upgrade required to view logs past 90 days <br />
             <Link onClick={() => window.open('https://remote.it/developers/#pricing')}>Learn more</Link>
           </Typography>
         )}

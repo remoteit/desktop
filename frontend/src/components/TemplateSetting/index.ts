@@ -1,1 +1,0 @@
-export { TemplateSetting } from './TemplateSetting'

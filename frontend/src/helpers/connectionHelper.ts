@@ -5,12 +5,13 @@ import { getAllDevices, getAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
 
-export function newConnection(service?: IService | null, data = {}) {
+export function newConnection(service?: IService | null, port?: number) {
   const state = store.getState()
   const accountId = getAccountId(state)
   const user = [...state.accounts.member, state.auth.user].find(u => u?.id === accountId)
 
   let connection: IConnection = {
+    port,
     host: IP_PRIVATE,
     restriction: IP_OPEN,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
@@ -34,7 +35,7 @@ export function newConnection(service?: IService | null, data = {}) {
     if (device) connection.name = `${attributeName(device)} - ${attributeName(service)}`
   }
 
-  return { ...connection, ...data } as IConnection
+  return connection
 }
 
 export function setConnection(connection: IConnection) {
