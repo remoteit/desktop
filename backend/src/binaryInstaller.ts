@@ -21,10 +21,10 @@ export class BinaryInstaller {
     this.cliBinary = cliBinary
   }
 
-  async check(log?: boolean) {
+  async check() {
     if (this.inProgress) return
 
-    const shouldInstall = await this.shouldInstall(log)
+    const shouldInstall = await this.shouldInstall()
 
     if (shouldInstall) {
       if (environment.isElevated) return await this.install()
@@ -33,11 +33,11 @@ export class BinaryInstaller {
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
   }
 
-  async shouldInstall(log?: boolean) {
-    const binariesOutdated = !(await this.cliBinary.isCurrent(log))
+  async shouldInstall() {
+    const binariesOutdated = !(await this.cliBinary.isCurrent())
     const serviceStopped = !(await cli.agentRunning())
-    const desktopOutdated = !this.isDesktopCurrent(log)
-    log && Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, desktopOutdated })
+    const desktopOutdated = !this.isDesktopCurrent()
+    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, desktopOutdated })
     return binariesOutdated || serviceStopped || desktopOutdated
   }
 
@@ -66,8 +66,6 @@ export class BinaryInstaller {
 
       commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
       commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
-      commands.push(`"${this.cliBinary.path}" ${strings.status()}`)
-      commands.push(`"${this.cliBinary.path}" ${strings.signIn()}`) // this is failing because the service install is returning before it's ready
 
       await commands.exec()
       resolve()
@@ -89,7 +87,6 @@ export class BinaryInstaller {
         Logger.info('MIGRATING DEPRECATED BINARY', { file })
         commands.push(`"${file}" ${strings.serviceUninstall()}`)
         commands.push(`"${file}" ${strings.toolsUninstall()}`)
-        commands.push(`"${file}" ${strings.status()}`)
         toDelete.push(file)
       } else {
         Logger.info('DEPRECATED BINARY DOES NOT EXIST', { file })
@@ -132,12 +129,12 @@ export class BinaryInstaller {
     })
   }
 
-  isDesktopCurrent(log?: boolean) {
+  isDesktopCurrent() {
     let desktopVersion = preferences.get().version
     let current = desktopVersion && semverCompare(desktopVersion, environment.version) >= 0
 
     if (current) {
-      log && Logger.info('DESKTOP CURRENT', { desktopVersion })
+      Logger.info('DESKTOP CURRENT', { desktopVersion })
     } else {
       Logger.info('DESKTOP UPDATE DETECTED', { oldVersion: desktopVersion, thisVersion: environment.version })
     }

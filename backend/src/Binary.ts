@@ -32,7 +32,7 @@ export default class Binary {
     this.isCli = args.isCli
   }
 
-  async isCurrent(log?: boolean) {
+  async isCurrent() {
     let current = true
     let version = 'Not fetched'
 
@@ -48,7 +48,7 @@ export default class Binary {
     }
 
     if (current) {
-      log && Logger.info('CHECK BINARY VERSION', { current, name: this.name, version, desiredVersion: this.version })
+      Logger.info('CHECK BINARY VERSION', { current, name: this.name, version, desiredVersion: this.version })
     } else {
       Logger.info('BINARY NOT CURRENT', { name: this.name, version, desiredVersion: this.version })
     }
