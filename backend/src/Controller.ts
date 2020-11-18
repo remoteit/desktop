@@ -2,6 +2,7 @@ import SocketIO from 'socket.io'
 import app from '.'
 import lan from './LAN'
 import cli from './cliInterface'
+import rimraf from 'rimraf'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
 import showFolder from './showFolder'
@@ -173,9 +174,12 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
+    await cli.unregister()
+    await cli.serviceUninstall()
     await cli.reset()
     await binaryInstaller.uninstall()
     await this.pool.clearAll()
+    rimraf.sync(environment.userPath, { disableGlob: true })
     await user.signOut()
     // frontend will emit user/sign-out-complete and then we will call exit
   }

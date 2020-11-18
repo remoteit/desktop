@@ -75,7 +75,7 @@ export default {
   },
 
   serviceUninstall() {
-    return '-j agent uninstall'
+    return `-j agent uninstall --authhash ${user.authHash}`
   },
 
   toolsInstall() {
