@@ -119,7 +119,7 @@ export default createModel({
   },
 })
 
-const upgradeUrl = 'https://downloads.remote.it/aws/latest/saas'
+const upgradeUrl = 'https://link.remote.it/aws-marketplace/byol'
 
 export function lookupLicenseProductId(device?: IDevice) {
   const lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)

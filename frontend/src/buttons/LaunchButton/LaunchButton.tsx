@@ -69,7 +69,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   }
 
   const getPutty = () => {
-    window.open('https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html')
+    window.open('https://link.remote.it/download/putty')
     closeAll()
   }
 

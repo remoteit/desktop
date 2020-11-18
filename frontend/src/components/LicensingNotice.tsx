@@ -10,7 +10,7 @@ import { Notice } from './Notice'
 type Props = { device?: IDevice; license?: ILicense }
 
 const learnMoreLink = (
-  <Link href="https://support.remote.it/hc/en-us/articles/360050474512" target="_blank">
+  <Link href="https://link.remote.it/documentation-aws/setup" target="_blank">
     Learn more.
   </Link>
 )

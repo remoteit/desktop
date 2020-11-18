@@ -10,15 +10,15 @@ export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
       <Typography variant="body2" align="center" gutterBottom>
         See how to:
       </Typography>
-      <Link href={`https://docs.remote.it/desktop-welcome`} target="_blank">
+      <Link href={`https://link.remote.it/documentation-desktop/overview`} target="_blank">
         Use remote.it Desktop
         <Icon className={css.rotate} name="arrow-right" size="sm" type="regular" />
       </Link>
-      <Link href={`https://docs.remote.it/connect-${os}`} target="_blank">
+      <Link href={`https://link.remote.it/documentation-desktop/${os}-connections`} target="_blank">
         Connect to this device from anywhere
         <Icon className={css.rotate} name="arrow-right" size="sm" type="regular" />
       </Link>
-      <Link href={`https://docs.remote.it/minecraft`} target="_blank">
+      <Link href={`https://link.remote.it/documentation-minecraft/overview`} target="_blank">
         Host a Minecraft server with remote.it
         <Icon className={css.rotate} name="arrow-right" size="sm" type="regular" />
       </Link>
