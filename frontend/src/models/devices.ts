@@ -114,7 +114,7 @@ export default createModel({
 
       let result
 
-      if (!(await hasCredentials())) return
+      if (!(await hasCredentials()) || !deviceId) return
 
       set({ fetching: true })
       try {

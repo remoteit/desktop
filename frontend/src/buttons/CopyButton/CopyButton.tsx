@@ -16,7 +16,7 @@ export interface CopyButtonProps {
 
 export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, menuItem, size = 'md' }) => {
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const app = useApplication(service && service.typeID)
+  const app = useApplication(service?.typeID)
 
   const [open, setOpen] = useState<boolean>(false)
   if (!connection || !connection.active || !app) return null

@@ -162,21 +162,21 @@ function getEventHandlers() {
       ui.reset()
     },
 
-    // Connections
-    // 'service/connected': (msg: ConnectionMessage) => {
-    //   logs.add({ id: msg.connection.id, log: msg.raw })
-    //   backend.setConnection(msg.connection)
-    //   analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
-    // },
-    // 'service/disconnected': (msg: ConnectionMessage) => {
-    //   logs.add({ id: msg.connection.id, log: msg.raw })
-    //   backend.setConnection(msg.connection)
-    // },
-    // 'service/error': (msg: ConnectionErrorMessage) => {
-    //   logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
-    //   backend.setConnection(msg.connection)
-    //   analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
-    // },
+    // Connections --- TODO validate we need these three channels
+    'service/connected': (msg: ConnectionMessage) => {
+      logs.add({ id: msg.connection.id, log: msg.raw })
+      backend.updateConnection(msg.connection)
+      analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
+    },
+    'service/disconnected': (msg: ConnectionMessage) => {
+      logs.add({ id: msg.connection.id, log: msg.raw })
+      backend.updateConnection(msg.connection)
+    },
+    'service/error': (msg: ConnectionErrorMessage) => {
+      logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
+      backend.updateConnection(msg.connection)
+      analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
+    },
 
     'binary/install/error': (error: string) => binaries.installError(error),
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),

@@ -38,7 +38,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   }))
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
-  const app = useApplication(service && service.typeID)
+  const app = useApplication(service?.typeID)
   const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
   const closeAll = () => {

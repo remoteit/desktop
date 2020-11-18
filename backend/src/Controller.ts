@@ -78,7 +78,7 @@ class Controller {
 
     this.initBackend()
     this.check()
-    binaryInstaller.check(true)
+    binaryInstaller.check()
   }
 
   recapitate = () => {

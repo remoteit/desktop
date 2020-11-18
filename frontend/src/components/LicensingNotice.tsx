@@ -23,7 +23,7 @@ export const LicensingNotice: React.FC<Props> = props => {
   if (!license || !noticeType) return null
 
   let notice
-  const title = `Your ${license.plan.description} license of ${license.plan.product.name}`
+  const title = `Your ${license.plan.description} plan of ${license.plan.product.name}`
 
   if (noticeType === 'EXPIRATION_WARNING')
     notice = (

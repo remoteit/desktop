@@ -157,7 +157,6 @@ export default createModel({
         if (c.id === connection.id) {
           state.connections[index] = connection
           dispatch.backend.set({ connections: state.connections })
-          if (!c.active && connection.active) dispatch.ui.set({ successMessage: `${connection.name} connected.` })
           if (connection) return true
         }
         return false
