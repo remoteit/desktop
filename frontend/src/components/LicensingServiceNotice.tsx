@@ -1,6 +1,6 @@
 import React from 'react'
 import { selectLicense, lookupLicenseProductId, evaluationDays } from '../models/licensing'
-import { ListItem, Link } from '@material-ui/core'
+import { Link } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useSelector } from 'react-redux'
@@ -9,7 +9,7 @@ import { Notice } from './Notice'
 type Props = { device?: IDevice }
 
 const learnMoreLink = (
-  <Link href="https://support.remote.it/hc/en-us/articles/360050474512" target="_blank">
+  <Link href="https://link.remote.it/documentation-aws/setup" target="_blank">
     Learn more.
   </Link>
 )

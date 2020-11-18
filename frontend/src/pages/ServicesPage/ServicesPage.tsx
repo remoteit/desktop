@@ -12,7 +12,7 @@ import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceList } from '../../components/ServiceList'
 import { UsersSelect } from '../../components/UsersSelect/UsersSelect'
 import { EditButton } from '../../buttons/EditButton'
-import { getDevices } from '../../models/accounts'
+import { selectDevice } from '../../models/devices'
 import { Container } from '../../components/Container'
 import { Subtitle } from '../../components/Subtitle'
 import { AddUserButton } from '../../buttons/AddUserButton'
@@ -22,7 +22,7 @@ export const ServicesPage: React.FC = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { connections, device, searched, query, thisDeviceId } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections,
-    device: getDevices(state).find((d: IDevice) => d.id === deviceID),
+    device: selectDevice(state, deviceID),
     searched: state.devices.searched,
     query: state.devices.query,
     thisDeviceId: state.backend.device.uid,

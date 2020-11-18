@@ -9,7 +9,7 @@ export const UsernameModal: React.FC<{
   onSubmit: (username: string) => void
   onClose: () => void
 }> = ({ connection, open, onSubmit, service, onClose }) => {
-  const app = useApplication(service && service.typeID)
+  const app = useApplication(service?.typeID)
   const [username, setUsername] = useState<string>(connection?.username || '')
 
   useEffect(() => {

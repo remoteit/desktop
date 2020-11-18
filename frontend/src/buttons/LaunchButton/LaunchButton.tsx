@@ -38,7 +38,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   }))
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
-  const app = useApplication(service && service.typeID)
+  const app = useApplication(service?.typeID)
   const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
   const closeAll = () => {
@@ -69,7 +69,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   }
 
   const getPutty = () => {
-    window.open('https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html')
+    window.open('https://link.remote.it/download/putty')
     closeAll()
   }
 

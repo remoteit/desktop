@@ -1,6 +1,5 @@
-import { getDevices } from './accounts'
 import { createModel } from '@rematch/core'
-import { findService } from '../models/devices'
+import { selectService } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { platformConfiguration } from '../services/platformConfiguration'
@@ -83,7 +82,7 @@ export default createModel({
           }
           ui.set({
             setupRegisteringDevice: false,
-            successMessage: `${targetDevice.name} registered successfully!`,
+            successMessage: 'Device registered successfully!',
           })
         } else if (globalState.ui.setupDeletingDevice) {
           const result = await devices.fetchSingle({ deviceId: device.uid })
@@ -93,7 +92,7 @@ export default createModel({
           }
           ui.set({
             setupDeletingDevice: false,
-            successMessage: `${device.name} unregistered successfully!`,
+            successMessage: 'Device unregistered successfully!',
           })
         }
       }
@@ -113,7 +112,7 @@ export default createModel({
       const { deferredAttributes, targets } = globalState.backend
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
-        let [service] = findService(getDevices(globalState), last.uid)
+        let [service] = selectService(globalState, last.uid)
         if (service) {
           service.attributes = { ...service.attributes, ...deferredAttributes }
           dispatch.devices.setServiceAttributes(service)
@@ -150,21 +149,23 @@ export default createModel({
       targets[tIndex] = target
       emit('targets', targets)
     },
+
+    async updateConnection(connection: IConnection, globalState: any) {
+      const state = globalState.backend as ApplicationState['backend']
+      state.connections.some((c, index) => {
+        if (c.id === connection.id) {
+          state.connections[index] = connection
+          dispatch.backend.set({ connections: state.connections })
+          if (connection) return true
+        }
+        return false
+      })
+    },
   }),
 
   reducers: {
     set(state: IBackendState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
-    },
-
-    setConnection(state: IBackendState, connection: IConnection) {
-      state.connections.some((c, index) => {
-        if (c.id === connection.id) {
-          state.connections[index] = connection
-          return true
-        }
-        return false
-      })
     },
   },
 })

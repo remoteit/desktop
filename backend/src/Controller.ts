@@ -2,6 +2,7 @@ import SocketIO from 'socket.io'
 import app from '.'
 import lan from './LAN'
 import cli from './cliInterface'
+import rimraf from 'rimraf'
 import Logger from './Logger'
 import EventRelay from './EventRelay'
 import showFolder from './showFolder'
@@ -78,7 +79,7 @@ class Controller {
 
     this.initBackend()
     this.check()
-    binaryInstaller.check(true)
+    binaryInstaller.check()
   }
 
   recapitate = () => {
@@ -132,7 +133,7 @@ class Controller {
   initBackend = async () => {
     cli.read()
     this.pool.init()
-    this.freePort()
+    // this.freePort()
     this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
@@ -173,16 +174,19 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
-    await cli.unInstall()
-    await binaryInstaller.uninstall(true)
-    await user.signOut()
+    await cli.unregister()
+    await cli.serviceUninstall()
+    await cli.reset()
+    await binaryInstaller.uninstall()
     await this.pool.clearAll()
-    //frontend will emit user/sign-out-complete and then we will call exit
+    rimraf.sync(environment.userPath, { disableGlob: true })
+    await user.signOut()
+    // frontend will emit user/sign-out-complete and then we will call exit
   }
 
-  installBinaries = async (force?: boolean) => {
+  installBinaries = async () => {
     try {
-      await binaryInstaller.install(force)
+      await binaryInstaller.install()
     } catch (error) {
       EventBus.emit(Binary.EVENTS.error, error)
     }

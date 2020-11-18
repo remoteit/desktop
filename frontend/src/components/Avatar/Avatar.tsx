@@ -26,7 +26,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => 
 
   return button ? (
     <Tooltip title="Account options">
-      <ButtonBase onClick={() => window.open('https://app.remote.it/#account')}>{avatar}</ButtonBase>
+      <ButtonBase onClick={() => window.open('https://link.remote.it/portal/account')}>{avatar}</ButtonBase>
     </Tooltip>
   ) : (
     avatar

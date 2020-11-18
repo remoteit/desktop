@@ -29,7 +29,7 @@ export default class PortScanner {
     for (const port of range) {
       const free = await this.isPortFree(port)
       if (free) {
-        Logger.info('Found free port:', { free })
+        d('Found free port:', { free })
         return port
       }
     }

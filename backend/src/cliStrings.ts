@@ -11,7 +11,7 @@ export default {
   },
 
   status() {
-    return `-j status -e --authhash ${user.authHash}`
+    return `-j -jj status -e --authhash ${user.authHash}`
   },
 
   agentStatus() {
@@ -75,7 +75,7 @@ export default {
   },
 
   serviceUninstall() {
-    return '-j agent uninstall'
+    return `-j agent uninstall --authhash ${user.authHash}`
   },
 
   toolsInstall() {
@@ -84,6 +84,10 @@ export default {
 
   toolsUninstall() {
     return '-j tools uninstall --yes'
+  },
+
+  reset() {
+    return `-j reset --yes --authhash ${user.authHash}`
   },
 
   uninstall() {

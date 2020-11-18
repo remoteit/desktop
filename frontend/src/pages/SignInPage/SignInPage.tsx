@@ -40,7 +40,7 @@ export function SignInPage() {
                 You will be prompted by your browser with a security message regarding the remoteitpi.local certificate.
                 <br />
                 This is normal for local connections. Your data is still encrypted.
-                <Link href="http://docs.remote.it/desktop-https" target="_blank">
+                <Link href="https://link.remote.it/documentation-desktop/https-connections" target="_blank">
                   Learn more
                 </Link>
               </Typography>

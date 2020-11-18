@@ -27,7 +27,7 @@ export const OutOfBand: React.FC = () => {
   return (
     <span className={css.container}>
       <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
-        <Link href="https://docs.remote.it/guides/out-of-band" target="_blank">
+        <Link href="https://link.remote.it/documentation-guides/out-of-band" target="_blank">
           <div className={css.oob + (active ? ' ' + css.active : '')}>
             <span />
             <small>Out of Band</small>

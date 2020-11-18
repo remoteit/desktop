@@ -103,7 +103,7 @@ function getEventHandlers() {
 
     connection: (result: IConnection) => {
       console.log('socket connection', result)
-      backend.setConnection(result)
+      backend.updateConnection(result)
     },
 
     targets: (result: ITarget[]) => {
@@ -162,19 +162,19 @@ function getEventHandlers() {
       ui.reset()
     },
 
-    // Connections
+    // Connections --- TODO validate we need these three channels
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
-      backend.setConnection(msg.connection)
+      backend.updateConnection(msg.connection)
       analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
-      backend.setConnection(msg.connection)
+      backend.updateConnection(msg.connection)
     },
     'service/error': (msg: ConnectionErrorMessage) => {
       logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
-      backend.setConnection(msg.connection)
+      backend.updateConnection(msg.connection)
       analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
     },
 

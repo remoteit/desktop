@@ -104,7 +104,7 @@
                         MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
                         true:
                             FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j uninstall --yes'
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregistered --yes'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
                             Pop $0
                             Pop $1      
@@ -152,6 +152,15 @@
             StrCpy $ps_command_uninstall 'powershell [System.Environment]::SetEnvironmentVariable("$\'"PATH$\'",((([System.Environment]::GetEnvironmentVariable("$\'"PATH$\'","$\'"Machine$\'")).Split("$\'";$\'") | Where-Object { $$_ -ne "$\'"C:\Program Files\remoteit\resources\x64$\'" }) -join "$\'";$\'"),"$\'"Machine$\'") ' 
             nsExec::ExecToStack /OEM $ps_command_uninstall
             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
+
+            RMDir /r "$APPDATA\remoteit"
+            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
+
+            RMDir /r "$PROFILE\AppData\Local\remoteit"
+            FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+
+            RMDir /r "$INSTDIR"
+            FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
 
             FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
             FileClose $uninstallLog 

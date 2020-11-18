@@ -43,6 +43,11 @@ export const ListItemSetting: React.FC<Props> = ({
     else onClick && onClick()
   }
 
+  const handleConfirm = () => {
+    onClick && onClick()
+    setOpen(false)
+  }
+
   return (
     <>
       <ListItem button onClick={handleClick} disabled={disabled} style={{ opacity: 1 }} dense>
@@ -63,7 +68,7 @@ export const ListItemSetting: React.FC<Props> = ({
         )}
       </ListItem>
       {confirm && onClick && (
-        <Confirm open={open} onConfirm={onClick} onDeny={() => setOpen(false)} title={confirmTitle}>
+        <Confirm open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)} title={confirmTitle}>
           {confirmMessage}
         </Confirm>
       )}
