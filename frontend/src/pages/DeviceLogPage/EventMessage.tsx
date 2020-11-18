@@ -1,5 +1,4 @@
 import React from 'react'
-import { removeDeviceName } from '../../shared/nameHelper'
 
 export const EventType = {
   device_state: 'DEVICE_STATE',
@@ -21,7 +20,7 @@ export function EventMessage({
   loggedInUser: IUser | undefined
 }): JSX.Element {
   const item = props
-  const serviceName = (item.services?.map(service => removeDeviceName(device.name, service.name)) || []).join(' + ')
+  const serviceName = (item.services?.map(service => service.name) || []).join(' + ')
   let message: JSX.Element | string = ''
 
   switch (item.type) {
@@ -53,8 +52,7 @@ export function EventMessage({
       if (item.shared) {
         message = (
           <>
-            {actor} shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution
-            with
+            {actor} shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
             <b>{affected}</b>
           </>
         )

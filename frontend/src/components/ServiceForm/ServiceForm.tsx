@@ -118,9 +118,11 @@ export const ServiceForm: React.FC<Props> = ({
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
               />
               <Typography variant="caption">
-                Local network IP address or fully qualified domain name
+                Local network IP address or fully qualified domain name to host this service. Leave blank for this
+                system to host.
                 <br />
-                to host this service. Leave blank for this system to host.
+                <i>AWS example:</i>
+                <b> vpc-company-[id].us-west-1.es.amazonaws.com</b>
               </Typography>
             </ListItem>
           </>
