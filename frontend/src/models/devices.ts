@@ -112,7 +112,7 @@ export default createModel({
       const device = selectDevice(globalState, deviceId)
       const accountId = device?.accountId || getAccountId(globalState)
 
-      let result
+      let result: IDevice | undefined
 
       if (!(await hasCredentials()) || !deviceId) return
 

@@ -1,6 +1,5 @@
-import { getDevices } from './accounts'
 import { createModel } from '@rematch/core'
-import { findService } from '../models/devices'
+import { selectService } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { Dispatch, ApplicationState } from '../store'
 import { platformConfiguration } from '../services/platformConfiguration'
@@ -83,7 +82,7 @@ export default createModel({
           }
           ui.set({
             setupRegisteringDevice: false,
-            successMessage: `${targetDevice.name} registered successfully!`,
+            successMessage: 'Device registered successfully!',
           })
         } else if (globalState.ui.setupDeletingDevice) {
           const result = await devices.fetchSingle({ deviceId: device.uid })
@@ -93,7 +92,7 @@ export default createModel({
           }
           ui.set({
             setupDeletingDevice: false,
-            successMessage: `${device.name} unregistered successfully!`,
+            successMessage: 'Device unregistered successfully!',
           })
         }
       }
@@ -113,7 +112,7 @@ export default createModel({
       const { deferredAttributes, targets } = globalState.backend
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
-        let [service] = findService(getDevices(globalState), last.uid)
+        let [service] = selectService(globalState, last.uid)
         if (service) {
           service.attributes = { ...service.attributes, ...deferredAttributes }
           dispatch.devices.setServiceAttributes(service)

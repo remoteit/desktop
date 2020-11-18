@@ -236,8 +236,8 @@ export default class CLI {
     await this.exec({ cmds: [strings.serviceUninstall(), strings.serviceInstall()], admin: true })
   }
 
-  async toolsInstall() {
-    await this.exec({ cmds: [strings.toolsInstall()], admin: true })
+  async reset() {
+    await this.exec({ cmds: [strings.reset()], checkAuthHash: true })
   }
 
   async signIn() {

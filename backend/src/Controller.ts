@@ -173,11 +173,11 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
-    await cli.unregister()
+    await cli.reset()
     await binaryInstaller.uninstall()
-    await user.signOut()
     await this.pool.clearAll()
-    //frontend will emit user/sign-out-complete and then we will call exit
+    await user.signOut()
+    // frontend will emit user/sign-out-complete and then we will call exit
   }
 
   installBinaries = async () => {
