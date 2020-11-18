@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { SharingForm, SharingDetails, SharingAccess } from './SharingForm'
-import { getPermissions } from '../helpers/userHelper'
 
 type Props = {
   device: IDevice
@@ -9,18 +8,24 @@ type Props = {
   onShare: (access: SharingDetails, isNew: boolean) => void
   changed: boolean
   setChanged: React.Dispatch<React.SetStateAction<boolean>>
+  scripts: boolean
+  setScripts: React.Dispatch<React.SetStateAction<boolean>>
+  selectedServices: string[]
+  setSelectedServices: React.Dispatch<React.SetStateAction<string[]>>
 }
 
-export const ContactCard: React.FC<Props> = ({ device, user, selected, onShare, changed, setChanged }) => {
-  const permissions = getPermissions(device, user?.email)
-  const services = permissions.services.map(s => s.id)
-  const [scripts, setScripts] = React.useState<boolean>(permissions.scripting)
-  const [selectedServices, setSelectedServices] = React.useState<string[]>(services)
-
-  useEffect(() => {
-    setSelectedServices(services)
-  }, [])
-
+export const ContactCard: React.FC<Props> = ({
+  device,
+  user,
+  selected,
+  onShare,
+  changed,
+  setChanged,
+  scripts,
+  setScripts,
+  selectedServices,
+  setSelectedServices,
+}) => {
   const handleChange = (access: SharingAccess) => {
     setScripts(access.scripting)
     setSelectedServices(access.services)

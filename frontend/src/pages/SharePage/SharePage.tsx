@@ -15,6 +15,7 @@ import { ContactCard } from '../../components/ContactCard'
 import { SharingDetails } from '../../components/SharingForm'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
+import { getPermissions } from '../../helpers/userHelper'
 
 export const SharePage = () => {
   const { email = '', deviceID = '', serviceID = '' } = useParams<{
@@ -40,7 +41,11 @@ export const SharePage = () => {
     user: state.devices.contacts.find(c => c.email === email),
   }))
   const [selected, setSelected] = React.useState<string[]>([])
+  const [userSelected, setUserSelected] = React.useState<IUserRef | undefined>(user)
   const [changed, setChanged] = useState(false)
+  const permissions = device && getPermissions(device, userSelected?.email)
+  const [selectedServices, setSelectedServices] = useState(permissions?.services.map(s => s.id) || [])
+  const [scripts, setScripts] = useState(permissions?.scripting || false)
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
@@ -62,6 +67,20 @@ export const SharePage = () => {
       shares.updateDeviceState({ device, emails: shareData.email, scripting, services, isNew })
     }
     goToNext()
+  }
+
+  const selectContacts = (emails: string[]) => {
+    let userSelectedServices: string[][] = emails.map(email => {
+      return device ? getPermissions(device, email).services.map(s => s.id) : []
+    })
+    let userSelectedScript: boolean[] = emails.map(email => {
+      return device ? getPermissions(device, email).scripting : false
+    })
+    setScripts(userSelectedScript.find(b => b === true) || false)
+    setSelectedServices(userSelectedServices.flat())
+    setUserSelected(contacts.find(c => emails.includes(c.email)))
+    setSelected(emails)
+    emails.length && userSelectedServices.flat().length ? setChanged(true) : setChanged(false)
   }
 
   const goToNext = () =>
@@ -114,7 +133,7 @@ export const SharePage = () => {
                 <ContactSelector
                   contacts={contacts}
                   selected={contacts.filter(c => device.access.find(s => s.email === c.email))}
-                  onChange={setSelected}
+                  onChange={selectContacts}
                 />
               )
             )}
@@ -125,11 +144,15 @@ export const SharePage = () => {
       {device && (
         <ContactCard
           device={device}
-          user={user}
+          user={email === '' ? userSelected : user}
           selected={selected}
           onShare={handleShare}
           changed={changed}
           setChanged={setChanged}
+          scripts={scripts}
+          setScripts={setScripts}
+          selectedServices={selectedServices}
+          setSelectedServices={setSelectedServices}
         />
       )}
     </Container>
