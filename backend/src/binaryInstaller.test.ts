@@ -72,8 +72,8 @@ describe('backend/binaryInstaller', () => {
       commandSpy.mockClear()
     })
 
-    test('removes the files from a Unix installer', async () => {
-      environment.isWindows = false
+    test('removes the files from a mac installer', async () => {
+      environment.isMac = true
 
       await binaryInstaller.uninstallBinaries()
 
