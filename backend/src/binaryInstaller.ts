@@ -115,15 +115,15 @@ export class BinaryInstaller {
 
   async uninstallBinaries() {
     return new Promise((resolve, reject) => {
-      try {
-        if (!environment.isWindows) {
+      if (environment.isMac) {
+        try {
           this.binaries.map(binary => {
             Logger.info('REMOVE SYMLINK', { name: binary.symlink })
             rimraf.sync(binary.symlink, { disableGlob: true })
           })
+        } catch (e) {
+          reject(e)
         }
-      } catch (e) {
-        reject(e)
       }
       resolve()
     })
