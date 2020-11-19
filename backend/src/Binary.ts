@@ -4,7 +4,6 @@ import environment from './environment'
 import version from './cli-version.json'
 import Logger from './Logger'
 import path from 'path'
-import { existsSync } from 'fs'
 
 interface BinaryArgs {
   name: string
@@ -56,14 +55,8 @@ export default class Binary {
     return current
   }
 
-  isInstalled() {
-    const installed = existsSync(this.path)
-    Logger.info('IS INSTALLED', { installed, which: this.path })
-    return installed
-  }
-
   get path() {
-    return path.join(environment.binPath, this.fileName)
+    return environment.isHeadless ? cliBinary.name : path.join(environment.binPath, this.fileName)
   }
 
   get fileName() {

@@ -71,10 +71,6 @@ export class BinaryInstaller {
     })
   }
 
-  async restartService() {
-    await cli.restartService()
-  }
-
   async migrateBinaries() {
     const commands = new Command({ admin: true })
     let files = environment.deprecatedBinaries

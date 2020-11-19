@@ -69,7 +69,6 @@ export class Environment {
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
-    if (this.isHeadless) this.binPath = PATHS.HEADLESS_BINARIES
     this.manufacturerDetails = this.getManufacturerDetails()
   }
 

@@ -232,10 +232,6 @@ export default class CLI {
     await this.readConnections()
   }
 
-  async restartService() {
-    await this.exec({ cmds: [strings.serviceUninstall(), strings.serviceInstall()], admin: true })
-  }
-
   async reset() {
     await this.exec({ cmds: [strings.reset()], checkAuthHash: true })
   }
