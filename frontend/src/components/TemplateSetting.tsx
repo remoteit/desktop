@@ -24,6 +24,7 @@ export const TemplateSetting: React.FC<Props> = ({ label, value, type, username,
         disabled={disabled}
         variant="filled"
         onChange={event => onChange(event.target.value)}
+        multiline={true}
       />
       <Typography variant="caption">
         Replacement tokens {app.tokens}
