@@ -2,6 +2,9 @@ import { graphQLRequest } from './graphQL'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
+export const SERVICE_ATTRIBUTES = ['username', 'route', 'launchTemplate', 'commandTemplate']
+export const DEVICE_ATTRIBUTES = ['color', 'label', 'accessDisabled']
+
 const DEVICE_SELECT = `
   id
   name
@@ -159,9 +162,9 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       instability: d.endpoint?.instability,
       version: d.version,
       geo: d.endpoint?.geo,
-      attributes: processAttributes(d),
+      attributes: processDeviceAttributes(d),
       services: d.services.map(
-        (s: any, index: number): IService => ({
+        (s: any): IService => ({
           id: s.id,
           type: s.title,
           typeID: s.application,
@@ -171,8 +174,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
           lastReported: s.lastReported && new Date(s.lastReported),
           contactedAt: new Date(s.endpoint?.timestamp),
           license: s.license,
-          // license: ['UNKNOWN', 'LICENSED', 'EVALUATION', 'UNLICENSED'][index % 4] as IService['license'],
-          attributes: s.attributes,
+          attributes: processServiceAttributes(s),
           name: s.name,
           port: s.port,
           protocol: s.protocol,
@@ -215,10 +217,24 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
   }
 }
 
-function processAttributes(response: any): IDevice['attributes'] {
-  let result = response.attributes
+function processDeviceAttributes(response: any): IDevice['attributes'] {
+  let result = processAttributes(response, DEVICE_ATTRIBUTES)
   LEGACY_ATTRIBUTES.forEach(attribute => {
     if (response[attribute]) result[attribute] = response[attribute]
   })
+  return result
+}
+
+function processServiceAttributes(response: any): IService['attributes'] {
+  return processAttributes(response, SERVICE_ATTRIBUTES)
+}
+
+function processAttributes(response: any, keys: string[]) {
+  const root = response.attributes || {}
+  const $ = root.$remoteit || {}
+  console.log('$ ATTRIBUTES', $)
+  let result = {}
+  keys.forEach(key => (result[key] = $[key] || root[key]))
+  // console.log('PROCESS ATTRIBUTES', result)
   return result
 }
