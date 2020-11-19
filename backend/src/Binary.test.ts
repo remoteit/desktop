@@ -8,17 +8,14 @@ describe('backend/Binary', () => {
     const isCli = true
 
     let versionSpy: jest.SpyInstance
-    let installedSpy: jest.SpyInstance
     let binary: Binary
 
     beforeAll(() => {
       binary = new Binary({ name, version, isCli })
-      installedSpy = jest.spyOn(binary, 'isInstalled').mockImplementation(() => true)
     })
 
     afterEach(() => {
       versionSpy.mockClear()
-      installedSpy.mockClear()
     })
 
     test('should detect old version', async () => {

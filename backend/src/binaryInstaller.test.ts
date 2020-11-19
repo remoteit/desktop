@@ -72,8 +72,9 @@ describe('backend/binaryInstaller', () => {
       commandSpy.mockClear()
     })
 
-    test('removes the files from a mac installer', async () => {
+    test('removes the files from a mac installer when not headless', async () => {
       environment.isWindows = false
+      environment.isHeadless = false
 
       await binaryInstaller.uninstall()
 
@@ -82,6 +83,13 @@ describe('backend/binaryInstaller', () => {
       expect(commandSpy).toBeCalledWith('rm ../jest/symlink/muxer')
       expect(commandSpy).toBeCalledWith('rm ../jest/symlink/demuxer')
       expect(commandSpy).toHaveBeenCalledTimes(4)
+    })
+
+    test('does not remove files if headless', async () => {
+      environment.isHeadless = true
+
+      await binaryInstaller.uninstall()
+      expect(commandSpy).toHaveBeenCalledTimes(0)
     })
 
     test('removes no files from a Windows installer', async () => {
@@ -115,7 +123,6 @@ describe('backend/binaryInstaller', () => {
     beforeEach(() => {
       prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: environment.version }))
       installSpy = jest.spyOn(binaryInstaller, 'install').mockImplementation()
-      installedSpy = jest.spyOn(binary, 'isInstalled').mockImplementation(() => true)
       eventSpy = jest.spyOn(EventBus, 'emit').mockImplementation()
       agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(true))
     })
@@ -123,7 +130,6 @@ describe('backend/binaryInstaller', () => {
     afterEach(() => {
       prefSpy.mockClear()
       installSpy.mockClear()
-      installedSpy.mockClear()
       eventSpy.mockClear()
       versionSpy.mockClear()
       agentSpy.mockClear()
