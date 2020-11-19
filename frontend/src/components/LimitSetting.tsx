@@ -1,6 +1,6 @@
 import React from 'react'
 import { evaluationDays } from '../models/licensing'
-import { makeStyles, LinearProgress, Typography } from '@material-ui/core'
+import { makeStyles, LinearProgress, Typography, Box } from '@material-ui/core'
 import { colors, spacing } from '../styling'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
@@ -10,22 +10,19 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   switch (limit.name) {
     case 'aws-services':
       Limit = limit.value ? (
-        <>
-          <Typography variant="caption">
+        <Box className={css.box}>
+          <Typography variant="caption" display="block">
             {limit.actual} of {limit.value} services registered
           </Typography>
-          <LinearProgress
-            classes={css}
-            variant="determinate"
-            value={(limit.actual / limit.value) * 100}
-            style={{ width: '100%' }}
-          />
-        </>
+          <LinearProgress classes={css} variant="determinate" value={(limit.actual / limit.value) * 100} />
+        </Box>
       ) : (
-        <>
-          <Typography variant="caption">Unlimited services</Typography>
+        <Box className={css.box}>
+          <Typography variant="caption" display="block">
+            Unlimited services
+          </Typography>
           <LinearProgress classes={css} variant="determinate" value={0} />
-        </>
+        </Box>
       )
       break
     case 'aws-evaluation':
@@ -41,6 +38,10 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
 }
 
 const useStyles = makeStyles({
+  box: {
+    width: '70%',
+    marginBottom: spacing.sm,
+  },
   root: {
     height: spacing.xs,
     borderRadius: spacing.xxs,
