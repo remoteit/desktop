@@ -58,7 +58,7 @@ export class BinaryInstaller {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
 
-      if (!environment.isWindows) {
+      if (!environment.isWindows && !environment.isHeadless) {
         this.pushUninstallCommands(commands)
         this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
@@ -116,7 +116,8 @@ export class BinaryInstaller {
   }
 
   async pushUninstallCommands(commands: Command) {
-    if (!environment.isWindows) this.binaries.map(binary => commands.push(`rm ${binary.symlink}`))
+    if (!environment.isWindows && !environment.isHeadless)
+      this.binaries.map(binary => commands.push(`rm ${binary.symlink}`))
   }
 
   isDesktopCurrent() {

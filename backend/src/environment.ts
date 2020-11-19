@@ -1,4 +1,5 @@
 import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
+import isElectron from 'is-electron'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
 import JSONFile from './JSONFile'
@@ -9,7 +10,7 @@ import fs from 'fs'
 
 export class Environment {
   isElevated: boolean = false
-  isHeadless: boolean = true
+  isHeadless: boolean
   isWindows: boolean
   isWindows32: boolean
   isMac: boolean
@@ -45,6 +46,7 @@ export class Environment {
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
     this.version = this.getAppVersion()
+    this.isHeadless = !isElectron()
     this.symlinkPath = ''
 
     if (this.isWindows) {
@@ -60,17 +62,14 @@ export class Environment {
       this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
       this.symlinkPath = PATHS.MAC_SYMLINKS
     } else {
-      this.userPath = fs.existsSync(PATHS.LINUX_USER_SETTINGS)
-        ? PATHS.LINUX_USER_SETTINGS
-        : PATHS.HEADLESS_USER_SETTINGS
-      this.adminPath = fs.existsSync(PATHS.LINUX_ADMIN_SETTINGS)
-        ? PATHS.LINUX_ADMIN_SETTINGS
-        : PATHS.HEADLESS_ADMIN_SETTINGS
-      this.binPath = fs.existsSync(PATHS.LINUX_BINARIES) ? PATHS.LINUX_BINARIES : PATHS.HEADLESS_BINARIES
+      this.userPath = PATHS.LINUX_USER_SETTINGS
+      this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
+      this.binPath = PATHS.LINUX_BINARIES
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
+    if (this.isHeadless) this.binPath = PATHS.HEADLESS_BINARIES
     this.manufacturerDetails = this.getManufacturerDetails()
   }
 
