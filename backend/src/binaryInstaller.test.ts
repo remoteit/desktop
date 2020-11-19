@@ -73,22 +73,20 @@ describe('backend/binaryInstaller', () => {
     })
 
     test('removes the files from a mac installer', async () => {
-      environment.isMac = true
+      environment.isWindows = false
 
-      await binaryInstaller.uninstallBinaries()
+      await binaryInstaller.uninstall()
 
-      expect(installSpy).toBeCalledWith('../jest/symlink/remoteit', { disableGlob: true })
-      expect(installSpy).toBeCalledWith('../jest/symlink/connectd', { disableGlob: true })
-      expect(installSpy).toBeCalledWith('../jest/symlink/muxer', { disableGlob: true })
-      expect(installSpy).toBeCalledWith('../jest/symlink/demuxer', { disableGlob: true })
-      expect(installSpy).toHaveBeenCalledTimes(4)
-
-      expect(commandSpy).toHaveBeenCalledTimes(0)
+      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/remoteit')
+      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/connectd')
+      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/muxer')
+      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/demuxer')
+      expect(commandSpy).toHaveBeenCalledTimes(4)
     })
 
     test('removes no files from a Windows installer', async () => {
       environment.isWindows = true
-      await binaryInstaller.uninstallBinaries()
+      await binaryInstaller.uninstall()
       expect(commandSpy).toHaveBeenCalledTimes(0)
     })
   })

@@ -42,10 +42,10 @@ export class BinaryInstaller {
   }
 
   async install() {
-    if (this.inProgress) return Logger.info('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
+    if (this.inProgress) return Logger.warn('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
+    Logger.info('START INSTALLATION')
     this.inProgress = true
 
-    Logger.info('STARTING INSTALLATION')
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
     preferences.update({ version: environment.version })
@@ -56,11 +56,10 @@ export class BinaryInstaller {
   async installBinaries() {
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
-      await this.uninstallBinaries().catch() //fixme - just get commands to execute
-
       const commands = new Command({ onError: reject, admin: true })
 
       if (!environment.isWindows) {
+        this.pushUninstallCommands(commands)
         this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
@@ -106,27 +105,18 @@ export class BinaryInstaller {
   }
 
   async uninstall() {
-    if (this.inProgress) return Logger.info('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
+    if (this.inProgress) return Logger.warn('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
+    Logger.info('START UNINSTALL')
     this.uninstallInitiated = true
     this.inProgress = true
-    await this.uninstallBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
+    const commands = new Command({ admin: true })
+    this.pushUninstallCommands(commands)
+    commands.exec()
     this.inProgress = false
   }
 
-  async uninstallBinaries() {
-    return new Promise((resolve, reject) => {
-      if (environment.isMac) {
-        try {
-          this.binaries.map(binary => {
-            Logger.info('REMOVE SYMLINK', { name: binary.symlink })
-            rimraf.sync(binary.symlink, { disableGlob: true })
-          })
-        } catch (e) {
-          reject(e)
-        }
-      }
-      resolve()
-    })
+  async pushUninstallCommands(commands: Command) {
+    if (!environment.isWindows) this.binaries.map(binary => commands.push(`rm ${binary.symlink}`))
   }
 
   isDesktopCurrent() {
