@@ -9,6 +9,7 @@ import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { QualityDetails } from '../../components/QualityDetails'
 import { getDevices } from '../../models/accounts'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -43,16 +44,9 @@ export const DeviceDetailPage = () => {
             { label: 'Device Name', value: device.name },
             { label: 'Platform', value: TargetPlatform({ id: device.targetPlatform, label: true }), format: 'element' },
             {
-              label: 'Availability',
-              value: device.availability,
-              format: 'percent',
-              help: 'Average time online per day',
-            },
-            {
-              label: 'Instability',
-              value: device.instability,
-              format: 'round',
-              help: 'Average disconnects per day',
+              label: 'Connection Quality',
+              format: 'element',
+              value: <QualityDetails device={device} />,
             },
             { label: 'Owner', value: device.owner.email },
             { label: 'Last reported', value: device.lastReported, format: 'duration' },

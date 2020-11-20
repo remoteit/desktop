@@ -2,12 +2,14 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
+import { useHistory } from 'react-router-dom'
+import { makeStyles, IconButton, Badge, Box } from '@material-ui/core'
 import { colors, spacing, Color } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
-  service?: IService | IDevice
+  service?: IService
+  device?: IDevice
   state?: ConnectionState
   mini?: boolean
   thisDevice?: boolean
@@ -16,25 +18,29 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
 export function ConnectionStateIcon({
   connection,
   service,
+  device,
   state,
   mini,
   thisDevice,
   ...props
 }: ConnectionStateIconProps) {
   const css = useStyles()
+  const history = useHistory()
 
-  state = state || service?.state
-
+  let instance = service || device
   let icon = 'question-circle'
   let colorName: Color = 'warning'
+  let showQuality = device?.quality === 'POOR' || device?.quality === 'MODERATE'
   let element: any
+
+  state = state || instance?.state
 
   if (connection) {
     if (connection.active) state = 'connected'
     if (connection.connecting) state = 'connecting'
   }
 
-  let name: string = state || 'unknown'
+  let name: any = state || 'unknown'
 
   switch (state) {
     case 'active':
@@ -46,6 +52,7 @@ export function ConnectionStateIcon({
       icon = 'minus-circle'
       colorName = 'grayLight'
       name = 'offline'
+      showQuality = false
       break
     case 'connected':
       icon = 'scrubber'
@@ -54,14 +61,17 @@ export function ConnectionStateIcon({
     case 'connecting':
       icon = 'spinner-third'
       colorName = 'grayLight'
+      showQuality = false
       break
     case 'restricted':
       icon = 'times-circle'
       colorName = 'danger'
+      showQuality = false
       break
     case 'unknown':
       icon = 'question-circle'
       colorName = 'grayLight'
+      showQuality = false
   }
 
   if (mini)
@@ -74,17 +84,54 @@ export function ConnectionStateIcon({
     element = (
       <span className={css.combo}>
         <Icon {...props} name="hdd" color="grayDarker" fixedWidth />
-        <sup>
-          <Icon name={icon} color={colorName} spin={state === 'connecting'} size="sm" type="regular" fixedWidth />
-        </sup>
+        {!(showQuality && device) && (
+          <sup>
+            <Icon name={icon} color={colorName} spin={state === 'connecting'} size="sm" type="regular" fixedWidth />
+          </sup>
+        )}
       </span>
     )
   else element = <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+
+  if (showQuality && device) {
+    name = (
+      <>
+        <b className={css.capitalize}>{name}</b>
+        <br />
+        <Icon
+          name="circle"
+          color={device.quality === 'POOR' ? 'danger' : 'warning'}
+          size="bug"
+          type="solid"
+          inlineLeft
+        />
+        Connection quality {device.quality.toLowerCase()}
+      </>
+    )
+    element = (
+      <IconButton
+        onClick={event => {
+          event.stopPropagation()
+          history.push(`/devices/${device.id}/details`)
+        }}
+      >
+        <Badge
+          variant="dot"
+          color="error"
+          overlap="circle"
+          classes={{ colorError: device.quality === 'POOR' ? css.poor : css.moderate }}
+        >
+          {element}
+        </Badge>
+      </IconButton>
+    )
+  }
 
   return <Tooltip title={name}>{element}</Tooltip>
 }
 
 const useStyles = makeStyles({
+  capitalize: { textTransform: 'capitalize' },
   mini: {
     '& > span': {
       height: 4,
@@ -103,4 +150,6 @@ const useStyles = makeStyles({
       borderRadius: '50%',
     },
   },
+  moderate: { backgroundColor: colors.warning },
+  poor: { backgroundColor: colors.danger },
 })
