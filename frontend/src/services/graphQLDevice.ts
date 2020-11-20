@@ -28,6 +28,7 @@ const DEVICE_SELECT = `
     internalAddress
     availability
     instability
+    quality
     geo {
       connectionType
       countryName
@@ -160,6 +161,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       targetPlatform: d.platform,
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
+      quality: d.endpoint?.quality,
       version: d.version,
       geo: d.endpoint?.geo,
       attributes: processDeviceAttributes(d),

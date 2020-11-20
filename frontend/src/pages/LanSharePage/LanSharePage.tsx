@@ -13,6 +13,7 @@ import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
+import { Quote } from '../../components/Quote'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Selections = { value: string | Function; name: string; note: string }
@@ -111,7 +112,7 @@ export const LanSharePage: React.FC = () => {
               <span className={css.mask}>Mask {getSelectionValue()}</span>
             </div>
             {typeof selected.value === 'function' && (
-              <div className={css.quote}>
+              <Quote>
                 <TextField
                   className={css.textField}
                   value={address}
@@ -119,7 +120,7 @@ export const LanSharePage: React.FC = () => {
                   label="IP address"
                   onChange={event => setAddress(event.target.value.replace(REGEX_IP_SAFE, ''))}
                 />
-              </div>
+              </Quote>
             )}
           </>
         )}
@@ -156,10 +157,5 @@ const useStyles = makeStyles({
     fontStyle: 'italic',
     fontSize: fontSizes.sm,
     marginLeft: spacing.sm,
-  },
-  quote: {
-    margin: `${spacing.xl}px 0`,
-    paddingLeft: spacing.lg,
-    borderLeft: `1px solid ${colors.grayLighter}`,
   },
 })

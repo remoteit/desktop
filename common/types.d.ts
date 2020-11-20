@@ -187,6 +187,7 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
+    quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
     accountId: string
     geo: {

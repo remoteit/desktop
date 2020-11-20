@@ -57,7 +57,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
     <ListItemLocation pathname={`/devices/${device.id}`}>
       <DeviceLabel device={device} />
       <ListItemIcon>
-        <ConnectionStateIcon service={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
+        <ConnectionStateIcon device={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
       <ListItemText
         primary={<ServiceName device={device} connection={activeConnection} />}
