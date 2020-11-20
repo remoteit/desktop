@@ -1,26 +1,9 @@
 import { graphQLRequest } from './graphQL'
+import { SERVICE_ATTRIBUTES, DEVICE_ATTRIBUTES } from './graphQLDevice'
 
 const SET_ATTRIBUTES = `
-mutation query(
-  $color: Int, 
-  $label: String, 
-  $username: String, 
-  $route: String, 
-  $launchTemplate: String, 
-  $commandTemplate: String, 
-  $serviceId: String
-) {
-  setAttributes(
-    attributes: {
-      color: $color
-      label: $label
-      username: $username
-      route: $route
-      launchTemplate: $launchTemplate
-      commandTemplate: $commandTemplate
-    }
-    serviceId: $serviceId
-  )
+mutation query($attributes: Object!, $serviceId: String) {
+  setAttributes(attributes: $attributes, serviceId: $serviceId)
 }`
 
 const UNSHARE_DEVICE = `
@@ -46,8 +29,12 @@ mutation query($emails: [String!]!, $action: SharingAction) {
 }
 `
 
-export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId: String) {
-  return await graphQLRequest(SET_ATTRIBUTES, { ...attributes, serviceId })
+export async function graphQLSetAttributes(allAttributes: ILookup<string | number | undefined>, serviceId: String) {
+  let attributes = {}
+  DEVICE_ATTRIBUTES.concat(SERVICE_ATTRIBUTES).forEach(key => {
+    if (allAttributes[key]) attributes[key] = allAttributes[key]
+  })
+  return await graphQLRequest(SET_ATTRIBUTES, { attributes: { $remoteit: attributes }, serviceId })
 }
 
 export async function graphQLUnShareDevice(params: IShareProps) {

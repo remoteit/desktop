@@ -122,7 +122,7 @@ export const ServiceForm: React.FC<Props> = ({
                 system to host.
                 <br />
                 <i>AWS example:</i>
-                <b> vpc-company-[id].us-west-1.es.amazonaws.com</b>
+                <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
               </Typography>
             </ListItem>
           </>
