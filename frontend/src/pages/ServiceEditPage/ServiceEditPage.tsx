@@ -59,9 +59,8 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
       }
     >
       <ServiceForm
-        {...service.attributes}
+        service={service}
         target={target}
-        name={service.name}
         thisDevice={thisDevice}
         onCancel={exit}
         onSubmit={form => {

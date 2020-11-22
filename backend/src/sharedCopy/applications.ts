@@ -7,39 +7,79 @@
 
 import { replaceHost } from './nameHelper'
 
-class Application {
+export class Application {
   types: number[] = []
   title: string = 'URL'
   icon: string = 'arrow-right'
-  launchTemplate: string = 'http://[host]:[port]'
-  commandTemplate?: string = '[host]:[port]'
-  prompt: boolean = false
+  context?: 'copy' | 'launch'
+  defaultLaunchTemplate: string = 'http://[host]:[port]'
+  defaultCommandTemplate: string = '[host]:[port]'
   iconRotate: boolean = false
-  tokens: string = '[host] [port] [id]'
+
+  connection?: IConnection
+  service?: IService
+
+  REGEX_PARSE: RegExp = /\[[^\]]*\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
     Object.assign(this, options)
   }
 
-  launch(connection: IConnection) {
-    return this.parse(connection.launchTemplate || this.launchTemplate, connection)
+  get contextTitle() {
+    return this.context === 'copy' ? 'Copy Command' : 'Launch URL'
   }
 
-  copy(connection: IConnection) {
-    const template = connection.commandTemplate || this.commandTemplate
-    return template ? this.parse(template, connection) : this.launch(connection)
+  get template() {
+    return this.context === 'copy' ? this.commandTemplate : this.launchTemplate
   }
 
-  parse(url: string = '', connection: ILookup<any>) {
-    for (const key in connection) if (connection[key]) url = url.replace(`[${key}]`, encodeURI(connection[key]))
-    url = replaceHost(url)
-    return url
+  get command() {
+    return this.parse(this.commandTemplate)
   }
 
-  missingTokens(url: string, connection: IConnection) {
-    const result = this.parse(url, connection)
-    const matches: string[] = result.match(/\[[^\]]*\]/g) || []
-    return matches.map(m => m.slice(1, -1))
+  get prompt() {
+    return this.missingTokens(this.template).length
+  }
+
+  get tokens() {
+    return this.extractTokens(this.launchTemplate + this.commandTemplate)
+  }
+
+  get data() {
+    let data: ILookup<string> = {}
+    for (const token in this.missingTokens(this.template)) data[token] = ''
+    return data
+  }
+
+  private get launchTemplate() {
+    return this.connection?.launchTemplate || this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
+  }
+
+  private get commandTemplate() {
+    return (
+      this.connection?.commandTemplate ||
+      this.service?.attributes.commandTemplate ||
+      this.defaultCommandTemplate ||
+      this.defaultLaunchTemplate
+    )
+  }
+
+  private missingTokens(template: string) {
+    return this.extractTokens(this.parse(template)) || []
+  }
+
+  private parse(template: string = '') {
+    let lookup: ILookup<any> = this.connection || {}
+    if (this.service) lookup = { ...this.service.attributes, ...lookup }
+    for (const key in lookup) if (lookup[key]) template = template.replace(`[${key}]`, encodeURI(lookup[key]))
+    template = replaceHost(template)
+    return template
+  }
+
+  private extractTokens(template: string) {
+    const matches: string[] = (template.match(this.REGEX_PARSE) || []).map(m => m.slice(1, -1))
+    const unique = new Set(matches)
+    return [...Array.from(unique)]
   }
 }
 
@@ -48,16 +88,14 @@ const applications: Application[] = [
     types: [4],
     title: 'VNC',
     icon: 'desktop',
-    launchTemplate: 'vnc://[host]:[port]',
+    defaultLaunchTemplate: 'vnc://[host]:[port]',
   }),
   new Application({
     types: [28],
     title: 'SSH',
     icon: 'terminal',
-    prompt: true,
-    tokens: '[host] [port] [id] [username]',
-    launchTemplate: 'ssh://[username]@[host]:[port]',
-    commandTemplate:
+    defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
+    defaultCommandTemplate:
       'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
   }),
   new Application({
@@ -65,7 +103,7 @@ const applications: Application[] = [
     title: 'Secure Browser',
     icon: 'arrow-right',
     iconRotate: true,
-    launchTemplate: 'https://[host]:[port]',
+    defaultLaunchTemplate: 'https://[host]:[port]',
   }),
   new Application({
     types: [7, 30, 38, 42],
@@ -77,7 +115,7 @@ const applications: Application[] = [
     types: [34],
     title: 'Samba',
     icon: 'folder',
-    launchTemplate: 'smb://[host]:[port]',
+    defaultLaunchTemplate: 'smb://[host]:[port]',
   }),
 ]
 
@@ -90,6 +128,16 @@ const defaultApp = new Application({
 
 export function useApplication(type?: number) {
   let app = applications.find(a => a.types.includes(type || 0))
+  return app || defaultApp
+}
+
+export function useApplicationService(context: Application['context'], service?: IService, connection?: IConnection) {
+  let app = applications.find(a => a.types.includes(service?.typeID || 0))
+  if (app) {
+    app.context = context
+    app.service = service
+    app.connection = connection
+  }
   return app || defaultApp
 }
 

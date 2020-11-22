@@ -48,6 +48,6 @@ export function isDev() {
   return environment() === DEVELOPMENT
 }
 
-export function launchBrowser(type: string) {
-  return !(type === 'SSH' && isWindows())
+export function launchPutty(typeID?: number) {
+  return typeID === 22 && isWindows()
 }

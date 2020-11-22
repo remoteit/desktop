@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
-import { useApplication } from '../../shared/applications'
+import { useApplicationService } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
-import { launchBrowser } from '../../services/Browser'
+import { launchPutty } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
+import { PromptModal } from '../../components/PromptModal'
 import { Dispatch } from '../../store'
 import { FontSize } from '../../styling'
+import { Icon } from '../../components/Icon'
+import { emit } from '../../services/Controller'
 import {
   makeStyles,
   IconButton,
@@ -19,9 +22,6 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
-import { emit } from '../../services/Controller'
-import { UsernameModal } from '../../components/UsernameModal'
 
 type Props = {
   connection?: IConnection
@@ -33,12 +33,12 @@ type Props = {
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, size = 'md' }) => {
   const { requireInstallPutty, loading, pathPutty } = useSelector((state: ApplicationState) => ({
     requireInstallPutty: state.ui.requireInstallPutty,
-    loading: state.ui.loading,
     pathPutty: state.ui.pathPutty,
+    loading: state.ui.loading,
   }))
   const css = useStyles()
+  const app = useApplicationService('launch', service, connection)
   const { ui } = useDispatch<Dispatch>()
-  const app = useApplication(service?.typeID)
   const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
   const closeAll = () => {
@@ -54,18 +54,19 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   if (!connection || !connection.active || !app) return null
 
   const check = () => {
-    if (!app.prompt || connection.username) launch()
-    else setOpen(true)
+    app.prompt ? setOpen(true) : launch()
   }
-  const launch = (username?: string) => {
+
+  const launch = () => {
+    launchPutty(service?.typeID)
+      ? emit('service/launch', { command: app.command, pathPutty })
+      : window.open(app.command)
+  }
+
+  const onSubmit = (tokens: ILookup<string>) => {
     closeAll()
-    if (username)
-      setConnection({
-        ...connection,
-        username: username.toString(),
-      })
-    const launchApp = app.launch({ ...connection, username: username || connection.username })
-    launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', { command: launchApp, pathPutty })
+    if (!app.prompt) setConnection({ ...connection, ...tokens })
+    launch()
   }
 
   const getPutty = () => {
@@ -97,7 +98,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
         </Tooltip>
       )}
 
-      <UsernameModal connection={connection} open={open} onSubmit={launch} service={service} onClose={closeAll} />
+      <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
 
       <Dialog open={openPutty} onClose={closeAll} maxWidth="xs" fullWidth>
         <Typography variant="h1">Please install Putty to launch SSH connections.</Typography>

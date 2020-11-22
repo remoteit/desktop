@@ -88,8 +88,8 @@ export const ServicePage: React.FC = () => {
           <NameSetting connection={connection} service={service} />
           <PortSetting connection={connection} service={service} />
           <UsernameSetting connection={connection} service={service} />
-          <InlineTemplateSetting connection={connection} service={service} template="launchTemplate" />
-          <InlineTemplateSetting connection={connection} service={service} template="commandTemplate" />
+          <InlineTemplateSetting connection={connection} service={service} context="launch" />
+          <InlineTemplateSetting connection={connection} service={service} context="copy" />
         </List>
         <div className={css.actions}>
           <ConnectButton

@@ -6,7 +6,7 @@ import { Duration } from '../Duration'
 import { ServiceName } from '../ServiceName'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { InitiatorPlatform } from '../InitiatorPlatform'
-import { makeStyles, Typography, List, ListItem, ListItemText, ListItemIcon } from '@material-ui/core'
+import { makeStyles, Typography, List, ListItem, ListItemText, ListItemIcon, Box } from '@material-ui/core'
 
 export interface Props {
   sessions: ISession[]
@@ -40,12 +40,16 @@ export const SessionsList: React.FC<Props> = ({ sessions }) => {
             classes={{ primary: css.title }}
             primary={
               <>
-                <Title>{s.user.email}</Title>
+                <Box>
+                  <Title>{s.user.email}</Title>
+                  <Typography variant="caption" display="block">
+                    <Duration startTime={s.user.timestamp?.getTime()} ago />
+                  </Typography>
+                </Box>
                 <Icon name="long-arrow-right" color="primary" size="lg" inline inlineLeft fixedWidth />
                 <ServiceName device={s.device} service={s.service} />
               </>
             }
-            secondary={<Duration startTime={s.user.timestamp?.getTime()} ago />}
           />
         </ListItem>
       ))}
