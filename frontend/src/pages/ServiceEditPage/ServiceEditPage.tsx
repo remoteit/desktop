@@ -67,7 +67,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
           // for local cli config update
           backend.updateTargetService(form)
           // for cloud route attribute change
-          service.attributes = { ...service.attributes, ...form }
+          service.attributes = { ...service.attributes, ...form.attributes }
           devices.setServiceAttributes(service)
           // for rest api name change
           service.name = form.name || ''

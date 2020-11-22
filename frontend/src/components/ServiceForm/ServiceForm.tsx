@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
-import { ROUTES } from '../../shared/constants'
+import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
 import { useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
 import findApplication from '../../shared/applications'
@@ -35,7 +35,6 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<ITarget & IServiceForm>(() => {
-    // const defaults = findApplication(target.type)
     const defaultAppType = findType(applicationTypes, target.type)
     return {
       name: service?.name || serviceNameValidation(defaultAppType.description).value,
@@ -45,6 +44,8 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
+
+  console.log('SERVICE FORM', form)
 
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
@@ -67,9 +68,12 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                     ...form,
                     type,
                     port: findType(applicationTypes, type).port || 0,
-                    // name: serviceNameValidation(updatedAppType.description).value,
-                    // commandTemplate: updatedApp.commandTemplate,
-                    // launchTemplate: updatedApp.launchTemplate,
+                    name: serviceNameValidation(updatedAppType.description).value,
+                    attributes: {
+                      ...form.attributes,
+                      commandTemplate: undefined,
+                      launchTemplate: undefined,
+                    },
                   })
                 }}
               >
@@ -137,7 +141,11 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
         <ServiceAttributesForm
           className={css.fieldWide}
           subClassName={css.fieldSub}
-          service={service}
+          connection={{
+            ...DEFAULT_CONNECTION,
+            ...form.attributes,
+            typeID: form.type,
+          }}
           disabled={disabled}
           attributes={form.attributes}
           setAttributes={attributes => setForm({ ...form, attributes })}

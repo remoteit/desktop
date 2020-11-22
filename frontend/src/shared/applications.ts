@@ -14,12 +14,13 @@ export class Application {
   context?: 'copy' | 'launch'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
+  defaultTokens: string[] = ['host', 'port', 'id']
   iconRotate: boolean = false
 
   connection?: IConnection
   service?: IService
 
-  REGEX_PARSE: RegExp = /\[[^\]]*\]/g
+  REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
   constructor(options: { [key in keyof Application]?: any }) {
     Object.assign(this, options)
@@ -34,7 +35,7 @@ export class Application {
   }
 
   get command() {
-    return this.parse(this.commandTemplate)
+    return this.parse(this.template)
   }
 
   get prompt() {
@@ -43,6 +44,10 @@ export class Application {
 
   get tokens() {
     return this.extractTokens(this.launchTemplate + this.commandTemplate)
+  }
+
+  get customTokens() {
+    return this.tokens.filter(token => !this.defaultTokens.includes(token))
   }
 
   get data() {
@@ -83,62 +88,76 @@ export class Application {
   }
 }
 
-const applications: Application[] = [
-  new Application({
-    types: [4],
-    title: 'VNC',
-    icon: 'desktop',
-    defaultLaunchTemplate: 'vnc://[host]:[port]',
-  }),
-  new Application({
-    types: [28],
-    title: 'SSH',
-    icon: 'terminal',
-    defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
-    defaultCommandTemplate:
-      'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
-  }),
-  new Application({
-    types: [8, 10, 33],
-    title: 'Secure Browser',
-    icon: 'arrow-right',
-    iconRotate: true,
-    defaultLaunchTemplate: 'https://[host]:[port]',
-  }),
-  new Application({
-    types: [7, 30, 38, 42],
-    title: 'Browser',
-    icon: 'arrow-right',
-    iconRotate: true,
-  }),
-  new Application({
-    types: [34],
-    title: 'Samba',
-    icon: 'folder',
-    defaultLaunchTemplate: 'smb://[host]:[port]',
-  }),
-]
-
-const defaultApp = new Application({
-  types: [],
-  title: 'URL',
-  icon: 'arrow-right',
-  iconRotate: true,
-})
-
-export function useApplication(type?: number) {
-  let app = applications.find(a => a.types.includes(type || 0))
-  return app || defaultApp
+class DefaultApp extends Application {
+  types = []
+  title = 'URL'
+  icon = 'arrow-right'
+  iconRotate = true
 }
 
 export function useApplicationService(context: Application['context'], service?: IService, connection?: IConnection) {
-  let app = applications.find(a => a.types.includes(service?.typeID || 0))
-  if (app) {
-    app.context = context
-    app.service = service
-    app.connection = connection
+  const app = useApplication(service?.typeID || connection?.typeID)
+
+  app.context = context
+  app.service = service
+  app.connection = connection
+
+  return app
+}
+
+export function useApplication(typeID?: number) {
+  let app: Application
+
+  switch (typeID) {
+    case 4:
+      app = new Application({
+        title: 'VNC',
+        icon: 'desktop',
+        defaultLaunchTemplate: 'vnc://[host]:[port]',
+      })
+      break
+    case 28:
+      app = new Application({
+        title: 'SSH',
+        icon: 'terminal',
+        defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
+        defaultCommandTemplate:
+          'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
+      })
+      break
+    case 8:
+    case 10:
+    case 33:
+      app = new Application({
+        title: 'Secure Browser',
+        icon: 'arrow-right',
+        iconRotate: true,
+        defaultLaunchTemplate: 'https://[host]:[port]',
+      })
+      break
+    case 7:
+    case 30:
+    case 38:
+    case 42:
+      app = new Application({
+        title: 'Browser',
+        icon: 'arrow-right',
+        iconRotate: true,
+      })
+      break
+    case 34:
+      app = new Application({
+        types: [34],
+        title: 'Samba',
+        icon: 'folder',
+        defaultLaunchTemplate: 'smb://[host]:[port]',
+      })
+      break
+    default:
+      app = new DefaultApp({})
   }
-  return app || defaultApp
+
+  return app
 }
 
 export default useApplication

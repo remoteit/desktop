@@ -5,21 +5,27 @@ import { getAllDevices, getAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
 
+export const DEFAULT_CONNECTION = {
+  id: 'Error',
+  name: 'Unknown',
+  owner: { id: '', email: 'Unknown' },
+  deviceID: 'Unknown',
+  online: false,
+  port: 33000,
+  host: IP_PRIVATE,
+  restriction: IP_OPEN,
+  autoStart: true,
+}
+
 export function newConnection(service?: IService | null, port?: number) {
   const state = store.getState()
   const accountId = getAccountId(state)
   const user = [...state.accounts.member, state.auth.user].find(u => u?.id === accountId)
 
   let connection: IConnection = {
+    ...DEFAULT_CONNECTION,
     port,
-    host: IP_PRIVATE,
-    restriction: IP_OPEN,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
-    name: 'Unknown',
-    id: 'Error',
-    deviceID: 'Unknown',
-    autoStart: true,
-    online: false,
     failover: service?.attributes.route !== 'p2p',
     proxyOnly: service?.attributes.route === 'proxy',
   }

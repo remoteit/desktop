@@ -1,5 +1,4 @@
 import { graphQLRequest } from './graphQL'
-import { SERVICE_ATTRIBUTES, DEVICE_ATTRIBUTES } from './graphQLDevice'
 
 const SET_ATTRIBUTES = `
 mutation query($attributes: Object!, $serviceId: String) {
@@ -29,11 +28,7 @@ mutation query($emails: [String!]!, $action: SharingAction) {
 }
 `
 
-export async function graphQLSetAttributes(allAttributes: ILookup<string | number | undefined>, serviceId: String) {
-  let attributes = {}
-  DEVICE_ATTRIBUTES.concat(SERVICE_ATTRIBUTES).forEach(key => {
-    if (allAttributes[key]) attributes[key] = allAttributes[key]
-  })
+export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId: String) {
   return await graphQLRequest(SET_ATTRIBUTES, { attributes: { $remoteit: attributes }, serviceId })
 }
 

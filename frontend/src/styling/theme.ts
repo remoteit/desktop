@@ -160,7 +160,7 @@ const jssTheme: ThemeOptions = {
     MuiTypography: {
       gutterBottom: { marginBottom: spacing.md },
       h1: {
-        fontSize: 19,
+        fontSize: fontSizes.lg,
         fontWeight: 400,
         display: 'flex',
         alignItems: 'center',
@@ -171,7 +171,7 @@ const jssTheme: ThemeOptions = {
         '& span + span': { marginLeft: spacing.lg },
       },
       h2: {
-        fontSize: 16,
+        fontSize: fontSizes.md,
         fontWeight: 400,
       },
       h4: {
@@ -197,7 +197,7 @@ const jssTheme: ThemeOptions = {
         fontSize: fontSizes.base,
       },
       caption: {
-        fontSize: '11px',
+        fontSize: fontSizes.xs,
         color: colors.grayDark,
         lineHeight: '1.5em',
         '& b': { color: colors.grayDarkest, fontWeight: 400 },

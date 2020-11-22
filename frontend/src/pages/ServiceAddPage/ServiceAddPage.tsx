@@ -64,7 +64,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
             backend.addTargetService(form)
 
             // set route attributes via deferred update
-            backend.set({ deferredAttributes: form })
+            backend.set({ deferredAttributes: form.attributes })
             history.push(links.edit)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}

@@ -5,12 +5,13 @@ import { useApplicationService } from '../shared/applications'
 import { ApplicationState } from '../store'
 import { TemplateSetting } from './TemplateSetting'
 import { ROUTES } from '../shared/constants'
+import { Notice } from './Notice'
 import { Quote } from './Quote'
 
 type Props = IService['attributes'] & {
   className?: string
   subClassName?: string
-  service?: IService
+  connection?: IConnection
   disabled: boolean
   attributes: IService['attributes']
   setAttributes: (attributes: IService['attributes']) => void
@@ -20,14 +21,21 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   className,
   subClassName,
   disabled,
-  service,
+  connection,
   attributes,
   setAttributes,
 }) => {
   const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
-  const copyApp = useApplicationService('copy', service)
-  const launchApp = useApplicationService('launch', service)
-  // const appType = findType(applicationTypes, attributes.type)
+  const copyApp = useApplicationService('copy', undefined, connection)
+  const launchApp = useApplicationService('launch', undefined, connection)
+
+  // Defaults
+  attributes = {
+    ...attributes,
+    route: routingLock || attributes.route || ROUTES[0].key,
+    commandTemplate: attributes.commandTemplate || copyApp.template,
+    launchTemplate: attributes.launchTemplate || launchApp.template,
+  }
 
   return (
     <>
@@ -59,7 +67,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         disabled={disabled}
         onChange={value => setAttributes({ ...attributes, launchTemplate: value })}
       >
-        Replacement tokens {launchApp.tokens}
+        Replacement tokens <b>{launchApp.tokens.join(', ')}</b>
         <br />
         <b>{launchApp.command}</b>
       </TemplateSetting>
@@ -70,24 +78,34 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         disabled={disabled}
         onChange={value => setAttributes({ ...attributes, commandTemplate: value })}
       >
-        Replacement tokens {copyApp.tokens}
+        Replacement tokens <b>{copyApp.tokens.join(', ')}</b>
         <br />
         <b>{copyApp.command}</b>
       </TemplateSetting>
       <ListItem className={subClassName}>
-        <Quote>
-          {launchApp.tokens.map(token => (
-            <TextField
-              fullWidth
-              key={token}
-              label={token}
-              value={attributes[token]}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => setAttributes({ ...attributes, [token]: event.target.value })}
-            />
-          ))}
-        </Quote>
+        {launchApp.customTokens.length ? (
+          <Quote>
+            {launchApp.customTokens.map(token => (
+              <TextField
+                fullWidth
+                key={token}
+                label={`${token} default`}
+                value={attributes[token] || ''}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => setAttributes({ ...attributes, [token]: event.target.value })}
+              />
+            ))}
+          </Quote>
+        ) : (
+          <Notice fullWidth>
+            Add custom [tokens]
+            <em>
+              You can add custom [tokens] to the templates above. Just enclose a tag in brackets to create a [token] you
+              can set a default value for. If not filled out, tokens will prompt you at time of connection.
+            </em>
+          </Notice>
+        )}
       </ListItem>
     </>
   )
