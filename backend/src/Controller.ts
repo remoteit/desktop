@@ -174,9 +174,8 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
-    await cli.unregister()
-    await cli.serviceUninstall()
     await cli.reset()
+    await cli.serviceUninstall()
     await binaryInstaller.uninstall()
     await this.pool.clearAll()
     rimraf.sync(environment.userPath, { disableGlob: true })
