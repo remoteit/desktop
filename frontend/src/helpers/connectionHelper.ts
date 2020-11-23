@@ -6,7 +6,7 @@ import { ApplicationState } from '../store'
 import { store } from '../store'
 
 export const DEFAULT_CONNECTION = {
-  id: 'Error',
+  id: 'service-id',
   name: 'Unknown',
   owner: { id: '', email: 'Unknown' },
   deviceID: 'Unknown',
