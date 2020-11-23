@@ -44,7 +44,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
-  console.log('FORM', form)
+
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
       <List>
