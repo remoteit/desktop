@@ -3,6 +3,7 @@ import debug from 'debug'
 import EventBus from './EventBus'
 import { EventEmitter } from 'events'
 import { IP_OPEN, IP_PRIVATE } from './sharedCopy/constants'
+import { Logger } from '.'
 
 const d = debug('r3:backend:Connection')
 
@@ -48,6 +49,11 @@ export default class Connection extends EventEmitter {
     this.params.connecting = false
     this.params.startTime = undefined
     this.params.error = undefined
+    await cli.removeConnection(this.params, this.error)
+  }
+
+  async forget() {
+    Logger.info('FORGET ', this.params)
     await cli.removeConnection(this.params, this.error)
   }
 

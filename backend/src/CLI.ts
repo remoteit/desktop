@@ -213,7 +213,7 @@ export default class CLI {
 
   async unregister() {
     if (!this.data.device.uid) return
-    await this.exec({ cmds: [strings.unregister()], checkAuthHash: true })
+    await this.exec({ cmds: [strings.unregister()], checkAuthHash: true, admin: true })
     this.read()
   }
 
@@ -233,11 +233,11 @@ export default class CLI {
   }
 
   async reset() {
-    await this.exec({ cmds: [strings.reset()], checkAuthHash: true })
+    await this.exec({ cmds: [strings.reset()], checkAuthHash: true, admin: true })
   }
 
   async serviceUninstall() {
-    await this.exec({ cmds: [strings.serviceUninstall()], checkAuthHash: true })
+    await this.exec({ cmds: [strings.serviceUninstall()], checkAuthHash: true, admin: true })
   }
 
   async signIn() {

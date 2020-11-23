@@ -153,8 +153,11 @@ export default class ConnectionPool {
 
   clearAll = async () => {
     Logger.info('CLEARING ALL CONNECTIONS')
+    if (this.pool.length) {
+      await this.pool.forEach(async c => await c.forget())
+      this.updated()
+    }
     this.pool = []
-    this.updated()
     this.connectionsFile.remove()
   }
 
