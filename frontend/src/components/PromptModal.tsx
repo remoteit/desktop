@@ -9,6 +9,7 @@ export const PromptModal: React.FC<{
   onSubmit: (tokens: ILookup<string>) => void
 }> = ({ app, open, onSubmit, onClose }) => {
   const [tokens, setTokens] = useState<ILookup<string>>(app.data)
+  const [error, setError] = useState<string>()
 
   useEffect(() => {
     setTokens(app.data)
@@ -19,22 +20,29 @@ export const PromptModal: React.FC<{
       <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
         <form
           onSubmit={event => {
+            let error = false
+            Object.keys(tokens).forEach(key => {
+              if (!tokens[key]) {
+                setError(key)
+                error = true
+              }
+            })
             event.preventDefault()
-            onSubmit(tokens)
+            if (!error) onSubmit(tokens)
           }}
         >
           <DialogTitle>Missing data detected</DialogTitle>
           <DialogContent>
             <Typography variant="h4">{app.command}</Typography>
-            {Object.keys(tokens).map(token => (
+            {app.missingTokens.map(token => (
               <TextField
                 fullWidth
+                key={token}
                 variant="filled"
                 label={token}
-                onChange={event => {
-                  // event.stopPropagation()
-                  setTokens({ ...tokens, [token]: event.target.value })
-                }}
+                value={tokens[token]}
+                error={token === error}
+                onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
               />
             ))}
           </DialogContent>

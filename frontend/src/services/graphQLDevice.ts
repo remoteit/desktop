@@ -233,6 +233,5 @@ function processAttributes(response: any) {
   const $ = root.$remoteit || {}
   let result = { ...root, ...$ }
   delete result.$remoteit
-  console.log('ATTRIBUTES', result)
   return result
 }

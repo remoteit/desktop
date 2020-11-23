@@ -36,42 +36,49 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     pathPutty: state.ui.pathPutty,
     loading: state.ui.loading,
   }))
-  const css = useStyles()
-  const app = useApplicationService('launch', service, connection)
-  const { ui } = useDispatch<Dispatch>()
+  const { ui, backend } = useDispatch<Dispatch>()
+  const [launch, setLaunch] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
-  const closeAll = () => {
-    setOpen(false)
-    setOpenPutty(false)
-    ui.set({ requireInstallPutty: false })
-  }
+  const app = useApplicationService('launch', service, connection)
+  const css = useStyles()
 
   useEffect(() => {
-    requireInstallPutty ? setOpenPutty(true) : closeAll()
-  }, [requireInstallPutty])
+    if (launch) {
+      app.prompt ? setOpen(true) : launchBrowser()
+    }
+    if (requireInstallPutty) {
+      setOpenPutty(true)
+      ui.set({ requireInstallPutty: false })
+    }
+  }, [requireInstallPutty, launch, app])
 
   if (!connection || !connection.active || !app) return null
 
-  const check = () => {
-    app.prompt ? setOpen(true) : launch()
-  }
-
-  const launch = () => {
-    launchPutty(service?.typeID)
-      ? emit('service/launch', { command: app.command, pathPutty })
-      : window.open(app.command)
+  const launchBrowser = () => {
+    try {
+      launchPutty(service?.typeID)
+        ? emit('service/launch', { command: app.command, pathPutty })
+        : window.open(app.command)
+    } catch (error) {
+      backend.set({ globalError: `Could not launch ${app.command}. Invalid URL.` })
+    }
+    closeAll()
   }
 
   const onSubmit = (tokens: ILookup<string>) => {
-    closeAll()
-    if (!app.prompt) setConnection({ ...connection, ...tokens })
-    launch()
+    setConnection({ ...connection, ...tokens })
   }
 
   const getPutty = () => {
     window.open('https://link.remote.it/download/putty')
     closeAll()
+  }
+
+  const closeAll = () => {
+    setLaunch(false)
+    setOpen(false)
+    setOpenPutty(false)
   }
 
   const LaunchIcon = (
@@ -86,13 +93,13 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   return (
     <>
       {menuItem ? (
-        <MenuItem dense onClick={check}>
+        <MenuItem dense onClick={() => setLaunch(true)}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={`Launch ${app.title}`} />
         </MenuItem>
       ) : (
         <Tooltip title={`Launch ${app.title}`}>
-          <IconButton onClick={check} disabled={loading}>
+          <IconButton onClick={() => setLaunch(true)} disabled={loading}>
             {LaunchIcon}
           </IconButton>
         </Tooltip>

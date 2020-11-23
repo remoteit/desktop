@@ -26,6 +26,14 @@ export class Application {
     Object.assign(this, options)
   }
 
+  value(token: string) {
+    return this.connection ? this.connection[token] : this.service ? this.service?.attributes[token] : ''
+  }
+
+  get templateKey() {
+    return this.context === 'copy' ? 'commandTemplate' : 'launchTemplate'
+  }
+
   get contextTitle() {
     return this.context === 'copy' ? 'Copy Command' : 'Launch URL'
   }
@@ -39,7 +47,7 @@ export class Application {
   }
 
   get prompt() {
-    return this.missingTokens(this.template).length
+    return this.missingTokens.length
   }
 
   get tokens() {
@@ -52,8 +60,12 @@ export class Application {
 
   get data() {
     let data: ILookup<string> = {}
-    for (const token in this.missingTokens(this.template)) data[token] = ''
+    this.missingTokens.forEach(token => (data[token] = ''))
     return data
+  }
+
+  get missingTokens() {
+    return this.extractTokens(this.parse(this.template)) || []
   }
 
   private get launchTemplate() {
@@ -67,10 +79,6 @@ export class Application {
       this.defaultCommandTemplate ||
       this.defaultLaunchTemplate
     )
-  }
-
-  private missingTokens(template: string) {
-    return this.extractTokens(this.parse(template)) || []
   }
 
   private parse(template: string = '') {

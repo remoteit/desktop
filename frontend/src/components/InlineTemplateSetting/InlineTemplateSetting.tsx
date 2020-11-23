@@ -31,7 +31,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, co
         connection &&
         setConnection({
           ...connection,
-          [template]: template.toString(),
+          [app.templateKey]: template.toString(),
         })
       }
     />

@@ -15,10 +15,10 @@ export interface CopyButtonProps {
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, menuItem, size = 'md' }) => {
+  const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const app = useApplicationService('copy', service, connection)
 
-  const [open, setOpen] = useState<boolean>(false)
   if (!connection || !connection.active || !app) return null
 
   const check = () => {
@@ -29,13 +29,11 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, men
   }
 
   const onSubmit = (tokens: ILookup<string>) => {
-    if (tokens.length) {
-      setConnection({ ...connection, ...tokens })
-      setTimeout(function () {
-        clipboard.copy()
-        onClose()
-      }, 500)
-    }
+    setConnection({ ...connection, ...tokens })
+    setTimeout(() => {
+      clipboard.copy()
+      onClose()
+    }, 500)
   }
 
   const CopyIcon = (
