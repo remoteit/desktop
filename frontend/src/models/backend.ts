@@ -128,6 +128,7 @@ export default createModel({
       targets.forEach(t => analyticsHelper.track('serviceCreated', { ...t, name, id: t.uid }))
     },
     async addTargetService(target: ITarget, globalState: any) {
+      debugger
       analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
       dispatch.ui.set({ setupBusy: true, setupAddingService: true })
       emit('targets', [...globalState.backend.targets, target])

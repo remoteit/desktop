@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
-import { useApplicationService } from '../../shared/applications'
+import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
 import { launchPutty } from '../../services/Browser'
 import { useSelector } from 'react-redux'
@@ -40,7 +40,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   const [launch, setLaunch] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
-  const app = useApplicationService('launch', service, connection)
+  const app = useApplication('launch', service, connection)
   const css = useStyles()
 
   useEffect(() => {

@@ -228,7 +228,7 @@ declare global {
     sessions: IUser[]
     access: IUser[]
     license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
-    attributes: {
+    attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       username?: string
       route?: IRouteType // p2p with failover | p2p | proxy

@@ -24,9 +24,10 @@ export function attributeName(instance?: IDevice | IService) {
 }
 
 export function replaceHost(url: string) {
-  if (url.includes(IP_PRIVATE)) {
-    return url.replace(IP_PRIVATE, 'localhost')
-  }
+  // Disabled for better compatibility
+  // if (url.includes(IP_PRIVATE)) {
+  //   return url.replace(IP_PRIVATE, 'localhost')
+  // }
   if (url.includes(IP_OPEN)) {
     const { privateIP } = getEnvironment()
     return url.replace(IP_OPEN, privateIP)

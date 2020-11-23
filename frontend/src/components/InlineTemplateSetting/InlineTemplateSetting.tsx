@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { ApplicationState } from '../../store'
-import { useApplicationService, Application } from '../../shared/applications'
+import { useApplication, Application } from '../../shared/applications'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { Tooltip } from '@material-ui/core'
 import { Icon } from '../Icon'
@@ -12,7 +12,7 @@ type Props = { service: IService; connection?: IConnection; context: Application
 export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, context }) => {
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
   if (!connection) connection = newConnection(service)
-  const app = useApplicationService(context, service, { ...connection, port: connection.port || freePort })
+  const app = useApplication(context, service, { ...connection, port: connection.port || freePort })
 
   return (
     <InlineTextFieldSetting

@@ -59,12 +59,12 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
       ) : (
         <ServiceForm
           thisDevice={true}
-          onSubmit={form => {
-            ui.set({ setupAdded: undefined })
-            backend.addTargetService(form)
+          onSubmit={async form => {
+            await ui.set({ setupAdded: undefined })
+            await backend.addTargetService(form)
 
             // set route attributes via deferred update
-            backend.set({ deferredAttributes: form.attributes })
+            await backend.set({ deferredAttributes: form.attributes })
             history.push(links.edit)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}

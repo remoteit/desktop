@@ -27,7 +27,7 @@ export class Application {
   }
 
   value(token: string) {
-    return this.connection ? this.connection[token] : this.service ? this.service?.attributes[token] : ''
+    return this.connection ? this.connection[token] : this.service ? this.service.attributes[token] : ''
   }
 
   get templateKey() {
@@ -103,8 +103,8 @@ class DefaultApp extends Application {
   iconRotate = true
 }
 
-export function useApplicationService(context: Application['context'], service?: IService, connection?: IConnection) {
-  const app = useApplication(service?.typeID || connection?.typeID)
+export function useApplication(context: Application['context'], service?: IService, connection?: IConnection) {
+  const app = getApplication(service?.typeID || connection?.typeID)
 
   app.context = context
   app.service = service
@@ -113,7 +113,7 @@ export function useApplicationService(context: Application['context'], service?:
   return app
 }
 
-export function useApplication(typeID?: number) {
+function getApplication(typeID?: number) {
   let app: Application
 
   switch (typeID) {
@@ -167,5 +167,3 @@ export function useApplication(typeID?: number) {
 
   return app
 }
-
-export default useApplication

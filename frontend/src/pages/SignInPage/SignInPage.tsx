@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
-import { SignInForm } from '../../components/SignInForm'
 import { makeStyles, Link, Typography } from '@material-ui/core'
+import { SignInForm } from '../../components/SignInForm'
+import { IP_PRIVATE } from '../../shared/constants'
 import { isElectron } from '../../services/Browser'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
@@ -10,7 +11,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export function SignInPage() {
   const css = useStyles()
   const { hostname, protocol } = window.location
-  const allowSwitch = !isElectron() && hostname !== 'localhost' && hostname !== '127.0.0.1'
+  const allowSwitch = !isElectron() && hostname !== 'localhost' && hostname !== IP_PRIVATE
   const secure: boolean = protocol.includes('https')
   const switchUrl = secure ? `http://${hostname}:29999` : `https://${hostname}:29998`
 

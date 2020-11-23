@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Typography, TextField, ListItem, MenuItem } from '@material-ui/core'
-import { useApplicationService } from '../shared/applications'
+import { useApplication } from '../shared/applications'
 import { ApplicationState } from '../store'
 import { TemplateSetting } from './TemplateSetting'
 import { ROUTES } from '../shared/constants'
@@ -26,8 +26,8 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   setAttributes,
 }) => {
   const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
-  const copyApp = useApplicationService('copy', undefined, connection)
-  const launchApp = useApplicationService('launch', undefined, connection)
+  const copyApp = useApplication('copy', undefined, connection)
+  const launchApp = useApplication('launch', undefined, connection)
 
   // Defaults
   attributes = {

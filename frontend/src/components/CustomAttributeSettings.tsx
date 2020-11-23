@@ -2,12 +2,12 @@ import React from 'react'
 import { REGEX_NAME_SAFE } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { useApplicationService } from '../shared/applications'
+import { useApplication } from '../shared/applications'
 
 type Props = { service: IService; connection?: IConnection }
 
 export const CustomAttributeSettings: React.FC<Props> = ({ service, connection }) => {
-  const app = useApplicationService('launch', service, connection)
+  const app = useApplication('launch', service, connection)
   const disabled = service.state !== 'active'
 
   if (!connection) connection = newConnection(service)

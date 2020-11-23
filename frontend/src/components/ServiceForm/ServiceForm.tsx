@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
 import { useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
-import findApplication from '../../shared/applications'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
 import { Columns } from '../Columns'
-import { spacing, colors } from '../../styling'
+import { spacing } from '../../styling'
 
 type IServiceForm = ITarget & {
   name: string
@@ -37,14 +36,15 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   const [form, setForm] = useState<ITarget & IServiceForm>(() => {
     const defaultAppType = findType(applicationTypes, target.type)
     return {
+      ...target,
       name: service?.name || serviceNameValidation(defaultAppType.description).value,
       attributes: service?.attributes || {},
-      ...(target || setupAdded),
+      ...setupAdded,
     }
   })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
-
+  console.log('FORM', form)
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
       <List>
@@ -60,7 +60,6 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => {
                   const type = Number(event.target.value)
-                  const updatedApp = findApplication(type)
                   const updatedAppType = findType(applicationTypes, type)
                   setForm({
                     ...form,
