@@ -1,4 +1,5 @@
 import { graphQLRequest } from './graphQL'
+import { removeDeviceName } from '../shared/nameHelper'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
@@ -174,7 +175,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
           contactedAt: new Date(s.endpoint?.timestamp),
           license: s.license,
           attributes: processServiceAttributes(s),
-          name: s.name,
+          name: removeDeviceName(d.name, s.name),
           port: s.port,
           protocol: s.protocol,
           access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
