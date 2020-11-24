@@ -11,7 +11,7 @@ export default {
   },
 
   status() {
-    return `-j -jj status -e --authhash ${user.authHash}`
+    return `-jj status -e --authhash ${user.authHash}`
   },
 
   agentStatus() {
