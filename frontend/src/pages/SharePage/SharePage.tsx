@@ -45,6 +45,7 @@ export const SharePage = () => {
   const [changed, setChanged] = useState(false)
   const permissions = device && getPermissions(device, userSelected?.email)
   const [selectedServices, setSelectedServices] = useState(permissions?.services.map(s => s.id) || [])
+  const [indeterminate, setIndeterminate] = React.useState<string[]>([])
   const [scripts, setScripts] = useState(permissions?.scripting || false)
   const location = useLocation()
   const history = useHistory()
@@ -69,6 +70,8 @@ export const SharePage = () => {
     goToNext()
   }
 
+  //array to check intersection of servicees and users selected
+  let arr: string[] = []
   const selectContacts = (emails: string[]) => {
     let userSelectedServices: string[][] = emails.map(email => {
       return device ? getPermissions(device, email).services.map(s => s.id) : []
@@ -76,11 +79,20 @@ export const SharePage = () => {
     let userSelectedScript: boolean[] = emails.map(email => {
       return device ? getPermissions(device, email).scripting : false
     })
+    const intersection = userSelectedServices.map((a, index) => {
+      arr = index === 0 ? a : arr.filter(value => a.includes(value))
+      return arr
+    })
+    const uniqueSelectedService = userSelectedServices
+      .filter(value => !intersection.includes(value))
+      .flat()
+      .filter((v, i, a) => a.indexOf(v) === i)
     setScripts(userSelectedScript.find(b => b === true) || false)
-    setSelectedServices(userSelectedServices.flat())
+    setSelectedServices(intersection[intersection.length - 1])
+    setIndeterminate(userSelectedServices.filter(value => !intersection.includes(value)).flat())
     setUserSelected(contacts.find(c => emails.includes(c.email)))
     setSelected(emails)
-    emails.length && userSelectedServices.flat().length ? setChanged(true) : setChanged(false)
+    emails.length && uniqueSelectedService.length ? setChanged(true) : setChanged(false)
   }
 
   const goToNext = () =>
@@ -152,6 +164,7 @@ export const SharePage = () => {
           scripts={scripts}
           setScripts={setScripts}
           selectedServices={selectedServices}
+          indeterminateServices={indeterminate}
           setSelectedServices={setSelectedServices}
         />
       )}

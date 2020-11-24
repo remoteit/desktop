@@ -10,6 +10,7 @@ type Props = {
   setChanged: React.Dispatch<React.SetStateAction<boolean>>
   scripts: boolean
   setScripts: React.Dispatch<React.SetStateAction<boolean>>
+  indeterminateServices: string[]
   selectedServices: string[]
   setSelectedServices: React.Dispatch<React.SetStateAction<string[]>>
 }
@@ -23,13 +24,16 @@ export const ContactCard: React.FC<Props> = ({
   setChanged,
   scripts,
   setScripts,
+  indeterminateServices,
   selectedServices,
   setSelectedServices,
 }) => {
-  const handleChange = (access: SharingAccess) => {
+  const handleChange = (access: SharingAccess, users: string[]) => {
     setScripts(access.scripting)
     setSelectedServices(access.services)
-    setChanged(true)
+    if ((users.length || user) && (access.scripting || access.services.length)) {
+      setChanged(true)
+    }
   }
 
   const handleSharingUpdate = () => {
@@ -65,6 +69,8 @@ export const ContactCard: React.FC<Props> = ({
       scripting={scripts}
       onChange={handleChange}
       selectedServices={selectedServices}
+      indeterminateServices={indeterminateServices}
+      users={selected}
       update={handleSharingUpdate}
       share={handleShare}
       changed={changed}

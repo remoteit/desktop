@@ -22,14 +22,18 @@ export function SharingForm({
   device,
   scripting,
   selectedServices,
+  indeterminateServices,
+  users,
   update,
   share,
   changed,
 }: {
-  onChange: (access: SharingAccess) => void
+  onChange: (access: SharingAccess, users: string[]) => void
   device: IDevice
   scripting: boolean
   selectedServices: string[]
+  indeterminateServices: string[]
+  users: string[]
   update: () => void
   share: () => void
   changed: boolean
@@ -42,7 +46,7 @@ export function SharingForm({
   let disabled = !changed || saving
 
   const handleChangeServices = (services: string[]) => {
-    onChange({ scripting, services })
+    onChange({ scripting, services }, users)
   }
 
   useEffect(() => {
@@ -51,10 +55,13 @@ export function SharingForm({
   }, [])
 
   const handleChangeScripting = () => {
-    onChange({
-      scripting: !scripting,
-      services: selectedServices,
-    })
+    onChange(
+      {
+        scripting: !scripting,
+        services: selectedServices,
+      },
+      users
+    )
   }
   const action = () => {
     email === '' ? share() : update()
@@ -68,6 +75,7 @@ export function SharingForm({
         services={device.services.map(s => ({ label: s.name, value: s.id }))}
         saving={saving}
         selectedServices={selectedServices}
+        indeterminateServices={indeterminateServices}
       />
       <Divider />
       <List>
@@ -98,11 +106,13 @@ function ServiceCheckboxes({
   services = [],
   saving,
   selectedServices = [],
+  indeterminateServices,
 }: {
   onChange: (services: string[]) => void
   services: CheckboxItem[]
   saving: boolean
   selectedServices: string[]
+  indeterminateServices: string[]
 }): JSX.Element {
   const update = (checked: boolean, id: string): void => {
     const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id)
@@ -130,6 +140,7 @@ function ServiceCheckboxes({
             label={service.label}
             checked={selectedServices.includes(service.value)}
             onClick={checked => update(checked, service.value)}
+            indeterminate={indeterminateServices.includes(service.value)}
           />
         ))}
       </List>

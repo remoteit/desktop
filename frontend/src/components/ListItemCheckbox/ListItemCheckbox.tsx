@@ -8,16 +8,26 @@ type Props = {
   subLabel?: string | React.ReactNode
   disabled?: boolean
   checked?: boolean
+  indeterminate?: boolean
   onClick: (checked: boolean) => void
 }
 
-export const ListItemCheckbox: React.FC<Props> = ({ label, subLabel, disabled, checked, onClick, children }) => {
+export const ListItemCheckbox: React.FC<Props> = ({
+  label,
+  subLabel,
+  disabled,
+  checked,
+  indeterminate,
+  onClick,
+  children,
+}) => {
   const inputRef = useRef<HTMLInputElement>(null)
   return (
     <ListItem disabled={disabled} button dense onClick={() => inputRef.current?.click()}>
       <ListItemIcon>
         <Checkbox
           checked={checked}
+          indeterminate={indeterminate}
           inputRef={inputRef}
           onChange={event => onClick(event.target.checked)}
           onClick={event => event.stopPropagation()}
