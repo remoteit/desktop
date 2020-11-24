@@ -103,7 +103,6 @@ export class BinaryInstaller {
   async uninstall() {
     if (this.inProgress) return Logger.warn('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     Logger.info('START UNINSTALL')
-    this.uninstallInitiated = true
     this.inProgress = true
     const commands = new Command({ admin: true })
     this.pushUninstallCommands(commands)

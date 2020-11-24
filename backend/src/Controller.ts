@@ -174,6 +174,7 @@ class Controller {
 
   uninstall = async () => {
     Logger.info('UNINSTALL INITIATED')
+    binaryInstaller.uninstallInitiated = true
     await cli.reset()
     await cli.serviceUninstall()
     await binaryInstaller.uninstall()
