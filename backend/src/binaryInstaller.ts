@@ -106,7 +106,7 @@ export class BinaryInstaller {
     this.inProgress = true
     const commands = new Command({ admin: true })
     this.pushUninstallCommands(commands)
-    commands.exec()
+    await commands.exec()
     this.inProgress = false
   }
 

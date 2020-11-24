@@ -237,7 +237,7 @@ export default class CLI {
   }
 
   async serviceUninstall() {
-    await this.exec({ cmds: [strings.serviceUninstall()], checkAuthHash: true, admin: true })
+    await this.exec({ cmds: [strings.serviceUninstall()], admin: true })
   }
 
   async signIn() {
