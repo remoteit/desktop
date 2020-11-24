@@ -58,12 +58,12 @@ export class BinaryInstaller {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
 
+      this.pushUninstallCommands(commands)
+
       if (!environment.isWindows && !environment.isHeadless) {
-        this.pushUninstallCommands(commands)
         this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
-      commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
       commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
 
       await commands.exec()
@@ -111,8 +111,8 @@ export class BinaryInstaller {
   }
 
   async pushUninstallCommands(commands: Command) {
+    commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
     if (!environment.isWindows && !environment.isHeadless) {
-      if (existsSync(this.cliBinary.symlink)) commands.push(`"${this.cliBinary.symlink}" ${strings.serviceUninstall()}`)
       this.binaries.map(binary => commands.push(`rm -f ${binary.symlink}`))
     }
   }
