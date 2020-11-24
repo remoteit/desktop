@@ -44,7 +44,7 @@ export const DeviceDetailPage = () => {
             { label: 'Device Name', value: device.name },
             { label: 'Platform', value: TargetPlatform({ id: device.targetPlatform, label: true }), format: 'element' },
             {
-              label: 'Connection Quality',
+              label: 'Internet Connectivity',
               format: 'element',
               value: <QualityDetails device={device} />,
             },

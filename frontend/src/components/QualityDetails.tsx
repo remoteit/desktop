@@ -26,14 +26,14 @@ export const QualityDetails: React.FC<{ device: IDevice }> = ({ device }) => {
 
   return (
     <Box>
-      <Icon name="circle" color={color} size="bug" type="solid" inlineLeft /> {title} connection quality
+      <Icon name="circle" color={color} size="bug" type="solid" inlineLeft /> {title}
       <Quote>
         <Divider orientation="vertical" />
-        <Typography variant="body2">Availability {Formats.percent(device.availability)}</Typography>
+        <Typography variant="body2">Availability: {Formats.percent(device.availability)}</Typography>
         <Typography variant="caption">Average time online per day.</Typography>
         <br />
         <br />
-        <Typography variant="body2">Instability {Formats.round(device.instability)}</Typography>
+        <Typography variant="body2">Instability: {Formats.round(device.instability)}</Typography>
         <Typography variant="caption">Average number of disconnects per day.</Typography>
       </Quote>
     </Box>
