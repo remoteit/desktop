@@ -178,7 +178,11 @@ class Controller {
     await cli.reset()
     await binaryInstaller.uninstall()
     await this.pool.clearAll()
-    rimraf.sync(environment.userPath, { disableGlob: true })
+    try {
+      rimraf.sync(environment.userPath, { disableGlob: true })
+    } catch (error) {
+      Logger.warn('FILE REMOVAL FAILED', { error, path: environment.userPath })
+    }
     await user.signOut()
     // frontend will emit user/sign-out-complete and then we will call exit
   }
