@@ -6,7 +6,7 @@ import headless, {
   user,
   ConnectionPool,
   hostName,
-  getApplication,
+  useApplication,
   Logger,
 } from 'remoteit-headless'
 import electron from 'electron'
@@ -164,13 +164,15 @@ export default class TrayMenu {
   }
 
   private copy(connection: IConnection) {
-    const app = getApplication(connection.typeID)
-    electron.clipboard.writeText(app.copy(connection))
+    const app = useApplication('copy', undefined, connection)
+    Logger.info('COPY', { command: app.command, connection })
+    electron.clipboard.writeText(app.command)
   }
 
   private launch(connection: IConnection) {
-    const app = getApplication(connection.typeID)
-    electron.shell.openExternal(app.launch(connection))
+    const app = useApplication('launch', undefined, connection)
+    Logger.info('LAUNCH', { command: app.command, connection })
+    electron.shell.openExternal(app.command)
   }
 
   private updateCheck() {

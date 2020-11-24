@@ -11,7 +11,7 @@ class ShowFolder {
   }
 
   open(path: string) {
-    return environment.isWindows ? `start "" "${path}"` : `open ${path}`
+    return environment.isWindows ? `start "" "${path}"` : environment.isMac ? `open ${path}` : `nautilus ${path}`
   }
 }
 

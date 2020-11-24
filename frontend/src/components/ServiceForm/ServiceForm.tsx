@@ -1,61 +1,48 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
-import { ROUTES } from '../../shared/constants'
+import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
 import { useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
-import findApplication, { useApplication } from '../../shared/applications'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
-import { TemplateSetting } from '../TemplateSetting'
+import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
 import { Columns } from '../Columns'
 import { spacing } from '../../styling'
 
-type Props = IService['attributes'] & {
-  name?: string
+type IServiceForm = ITarget & {
+  name: string
+  attributes: IService['attributes']
+}
+
+type Props = {
+  service?: IService
   target?: ITarget
   thisDevice: boolean
-  onSubmit: (form: ITarget & IService['attributes']) => void
+  onSubmit: (IServiceForm) => void
   onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({
-  name,
-  username,
-  route = ROUTES[0].key,
-  commandTemplate,
-  launchTemplate,
-  target = DEFAULT_TARGET,
-  thisDevice,
-  onSubmit,
-  onCancel,
-}) => {
-  const { applicationTypes, setupBusy, deleting, routingLock, routingMessage } = useSelector(
-    (state: ApplicationState) => ({
-      applicationTypes: state.applicationTypes.all,
-      setupBusy: state.ui.setupBusy,
-      deleting: state.ui.setupServiceBusy === target?.uid,
-      routingLock: state.ui.routingLock,
-      routingMessage: state.ui.routingMessage,
-    })
-  )
+export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
+  const { applicationTypes, setupBusy, setupAdded, deleting } = useSelector((state: ApplicationState) => ({
+    applicationTypes: state.applicationTypes.all,
+    setupBusy: state.ui.setupBusy,
+    setupAdded: state.ui.setupAdded,
+    deleting: state.ui.setupServiceBusy === target?.uid,
+  }))
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget & IService['attributes']>(() => {
-    const defaults = findApplication(target.type)
+  const [form, setForm] = useState<ITarget & IServiceForm>(() => {
     const defaultAppType = findType(applicationTypes, target.type)
     return {
       ...target,
-      route: routingLock || route,
-      name: name || serviceNameValidation(defaultAppType.description).value,
-      username: username || '',
-      commandTemplate: commandTemplate || defaults.commandTemplate,
-      launchTemplate: launchTemplate || defaults.launchTemplate,
+      name: service?.name || serviceNameValidation(defaultAppType.description).value,
+      attributes: service?.attributes || {},
+      ...setupAdded,
     }
   })
   const appType = findType(applicationTypes, form.type)
-  const app = useApplication(form.type)
   const css = useStyles()
 
   return (
@@ -73,15 +60,17 @@ export const ServiceForm: React.FC<Props> = ({
                 variant="filled"
                 onChange={event => {
                   const type = Number(event.target.value)
-                  const updatedApp = findApplication(type)
                   const updatedAppType = findType(applicationTypes, type)
                   setForm({
                     ...form,
                     type,
                     port: findType(applicationTypes, type).port || 0,
                     name: serviceNameValidation(updatedAppType.description).value,
-                    commandTemplate: updatedApp.commandTemplate,
-                    launchTemplate: updatedApp.launchTemplate,
+                    attributes: {
+                      ...form.attributes,
+                      commandTemplate: undefined,
+                      launchTemplate: undefined,
+                    },
                   })
                 }}
               >
@@ -146,55 +135,17 @@ export const ServiceForm: React.FC<Props> = ({
             }}
           />
         </ListItem>
-        {app.tokens.includes('username') && (
-          <ListItem className={css.fieldWide}>
-            <TextField
-              label="Username"
-              value={form.username}
-              disabled={disabled}
-              variant="filled"
-              onChange={event => setForm({ ...form, username: event.target.value })}
-            />
-          </ListItem>
-        )}
-        <ListItem className={css.fieldWide}>
-          <TextField
-            select
-            label="Routing"
-            value={form.route}
-            disabled={!!routingLock || disabled}
-            variant="filled"
-            onChange={event => {
-              setForm({ ...form, route: event.target.value as IRouteType })
-            }}
-          >
-            {ROUTES.map(route => (
-              <MenuItem value={route.key} key={route.key}>
-                {route.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <Typography variant="caption">
-            {routingMessage || ROUTES.find(route => route.key === form.route)?.description}
-          </Typography>
-        </ListItem>
-        <TemplateSetting
+        <ServiceAttributesForm
           className={css.fieldWide}
-          label="Launch URL Template"
-          value={form.launchTemplate}
+          subClassName={css.fieldSub}
+          connection={{
+            ...DEFAULT_CONNECTION,
+            ...form.attributes,
+            typeID: form.type,
+          }}
           disabled={disabled}
-          username={form.username}
-          type={form.type}
-          onChange={value => setForm({ ...form, launchTemplate: value })}
-        />
-        <TemplateSetting
-          className={css.fieldWide}
-          label="Copy Command Template"
-          value={form.commandTemplate}
-          disabled={disabled}
-          username={form.username}
-          type={form.type}
-          onChange={value => setForm({ ...form, commandTemplate: value })}
+          attributes={form.attributes}
+          setAttributes={attributes => setForm({ ...form, attributes })}
         />
       </List>
       {thisDevice && (
@@ -235,5 +186,15 @@ const useStyles = makeStyles({
     paddingLeft: 75,
     paddingRight: spacing.xl,
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
+  },
+  fieldSub: {
+    padding: `0 ${spacing.xl}px 0 75px`,
+    '& .MuiFormControl-root': {
+      minWidth: 300 - spacing.lg,
+      display: 'block',
+    },
+    '& .MuiFormControl-root + .MuiFormControl-root': {
+      marginTop: spacing.sm,
+    },
   },
 })

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
 import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
-import { launchBrowser } from '../../services/Browser'
+import { launchPutty } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
+import { PromptModal } from '../../components/PromptModal'
 import { Dispatch } from '../../store'
 import { FontSize } from '../../styling'
+import { Icon } from '../../components/Icon'
+import { emit } from '../../services/Controller'
 import {
   makeStyles,
   IconButton,
@@ -19,9 +22,6 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
-import { emit } from '../../services/Controller'
-import { UsernameModal } from '../../components/UsernameModal'
 
 type Props = {
   connection?: IConnection
@@ -33,44 +33,52 @@ type Props = {
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, size = 'md' }) => {
   const { requireInstallPutty, loading, pathPutty } = useSelector((state: ApplicationState) => ({
     requireInstallPutty: state.ui.requireInstallPutty,
-    loading: state.ui.loading,
     pathPutty: state.ui.pathPutty,
+    loading: state.ui.loading,
   }))
-  const css = useStyles()
-  const { ui } = useDispatch<Dispatch>()
-  const app = useApplication(service?.typeID)
+  const { ui, backend } = useDispatch<Dispatch>()
+  const [launch, setLaunch] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
-  const closeAll = () => {
-    setOpen(false)
-    setOpenPutty(false)
-    ui.set({ requireInstallPutty: false })
-  }
+  const app = useApplication('launch', service, connection)
+  const css = useStyles()
 
   useEffect(() => {
-    requireInstallPutty ? setOpenPutty(true) : closeAll()
-  }, [requireInstallPutty])
+    if (launch) {
+      app.prompt ? setOpen(true) : launchBrowser()
+    }
+    if (requireInstallPutty) {
+      setOpenPutty(true)
+      ui.set({ requireInstallPutty: false })
+    }
+  }, [requireInstallPutty, launch, app])
 
   if (!connection || !connection.active || !app) return null
 
-  const check = () => {
-    if (!app.prompt || connection.username) launch()
-    else setOpen(true)
-  }
-  const launch = (username?: string) => {
+  const launchBrowser = () => {
+    try {
+      launchPutty(service?.typeID)
+        ? emit('service/launch', { command: app.command, pathPutty })
+        : window.open(app.command)
+    } catch (error) {
+      backend.set({ globalError: `Could not launch ${app.command}. Invalid URL.` })
+    }
     closeAll()
-    if (username)
-      setConnection({
-        ...connection,
-        username: username.toString(),
-      })
-    const launchApp = app.launch({ ...connection, username: username || connection.username })
-    launchBrowser(app.title) ? window.open(launchApp) : emit('service/launch', { command: launchApp, pathPutty })
+  }
+
+  const onSubmit = (tokens: ILookup<string>) => {
+    setConnection({ ...connection, ...tokens })
   }
 
   const getPutty = () => {
     window.open('https://link.remote.it/download/putty')
     closeAll()
+  }
+
+  const closeAll = () => {
+    setLaunch(false)
+    setOpen(false)
+    setOpenPutty(false)
   }
 
   const LaunchIcon = (
@@ -85,19 +93,19 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   return (
     <>
       {menuItem ? (
-        <MenuItem dense onClick={check}>
+        <MenuItem dense onClick={() => setLaunch(true)}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={`Launch ${app.title}`} />
         </MenuItem>
       ) : (
         <Tooltip title={`Launch ${app.title}`}>
-          <IconButton onClick={check} disabled={loading}>
+          <IconButton onClick={() => setLaunch(true)} disabled={loading}>
             {LaunchIcon}
           </IconButton>
         </Tooltip>
       )}
 
-      <UsernameModal connection={connection} open={open} onSubmit={launch} service={service} onClose={closeAll} />
+      <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
 
       <Dialog open={openPutty} onClose={closeAll} maxWidth="xs" fullWidth>
         <Typography variant="h1">Please install Putty to launch SSH connections.</Typography>

@@ -137,7 +137,8 @@ export default createModel({
         dispatch.accounts.set({ devices: allDevices })
       }
     },
-    async appendDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
+    async appendDevices({ devices, accountId }: { devices?: IDevice[]; accountId?: string }, globalState: any) {
+      if (!devices) return
       dispatch.accounts.setDevices({
         devices: [...getDevices(globalState, accountId), ...devices],
         accountId,

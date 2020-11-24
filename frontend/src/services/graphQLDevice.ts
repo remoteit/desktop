@@ -1,9 +1,7 @@
 import { graphQLRequest } from './graphQL'
+import { removeDeviceName } from '../shared/nameHelper'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
-
-export const SERVICE_ATTRIBUTES = ['username', 'route', 'launchTemplate', 'commandTemplate']
-export const DEVICE_ATTRIBUTES = ['color', 'label', 'accessDisabled']
 
 const DEVICE_SELECT = `
   id
@@ -177,7 +175,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
           contactedAt: new Date(s.endpoint?.timestamp),
           license: s.license,
           attributes: processServiceAttributes(s),
-          name: s.name,
+          name: removeDeviceName(d.name, s.name),
           port: s.port,
           protocol: s.protocol,
           access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
@@ -220,7 +218,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
 }
 
 function processDeviceAttributes(response: any): IDevice['attributes'] {
-  let result = processAttributes(response, DEVICE_ATTRIBUTES)
+  let result = processAttributes(response)
   LEGACY_ATTRIBUTES.forEach(attribute => {
     if (response[attribute]) result[attribute] = response[attribute]
   })
@@ -228,15 +226,13 @@ function processDeviceAttributes(response: any): IDevice['attributes'] {
 }
 
 function processServiceAttributes(response: any): IService['attributes'] {
-  return processAttributes(response, SERVICE_ATTRIBUTES)
+  return processAttributes(response)
 }
 
-function processAttributes(response: any, keys: string[]) {
+function processAttributes(response: any) {
   const root = response.attributes || {}
   const $ = root.$remoteit || {}
-  console.log('$ ATTRIBUTES', $)
-  let result = {}
-  keys.forEach(key => (result[key] = $[key] || root[key]))
-  // console.log('PROCESS ATTRIBUTES', result)
+  let result = { ...root, ...$ }
+  delete result.$remoteit
   return result
 }

@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { useApplication } from '../../shared/applications'
-import { useClipboard } from 'use-clipboard-copy'
-import { Icon } from '../../components/Icon'
-import { FontSize } from '../../styling'
 import { setConnection } from '../../helpers/connectionHelper'
-import { UsernameModal } from '../../components/UsernameModal'
+import { useClipboard } from 'use-clipboard-copy'
+import { PromptModal } from '../../components/PromptModal'
+import { FontSize } from '../../styling'
+import { Icon } from '../../components/Icon'
 
 export interface CopyButtonProps {
   connection?: IConnection
@@ -15,27 +15,25 @@ export interface CopyButtonProps {
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, menuItem, size = 'md' }) => {
-  const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const app = useApplication(service?.typeID)
-
   const [open, setOpen] = useState<boolean>(false)
+  const clipboard = useClipboard({ copiedTimeout: 1000 })
+  const app = useApplication('copy', service, connection)
+
   if (!connection || !connection.active || !app) return null
 
   const check = () => {
-    app.prompt && !connection.username ? setOpen(true) : clipboard.copy()
+    app.prompt ? setOpen(true) : clipboard.copy()
   }
   const onClose = () => {
     setOpen(false)
   }
 
-  const onSubmit = (username: string) => {
-    if (username) {
-      setConnection({ ...connection, username: username.toString() })
-      setTimeout(function () {
-        clipboard.copy()
-        onClose()
-      }, 500)
-    }
+  const onSubmit = (tokens: ILookup<string>) => {
+    setConnection({ ...connection, ...tokens })
+    setTimeout(() => {
+      clipboard.copy()
+      onClose()
+    }, 500)
   }
 
   const CopyIcon = (
@@ -46,7 +44,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, men
         size={size}
         fixedWidth
       />
-      <input type="hidden" ref={clipboard.target} value={app.copy(connection)} />
+      <input type="hidden" ref={clipboard.target} value={app.command} />
     </>
   )
   return (
@@ -62,7 +60,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, men
         </Tooltip>
       )}
 
-      <UsernameModal connection={connection} open={open} onSubmit={onSubmit} service={service} onClose={onClose} />
+      <PromptModal app={app} open={open} onClose={onClose} onSubmit={onSubmit} />
     </>
   )
 }

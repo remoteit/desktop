@@ -1,20 +1,17 @@
 import React from 'react'
-import { useApplication } from '../shared/applications'
+import { Application } from '../shared/applications'
 import { newConnection } from '../helpers/connectionHelper'
 import { ListItem, TextField, Typography } from '@material-ui/core'
 
 type Props = {
   label: string
   value?: string
-  type: number
   disabled: boolean
-  username?: string
   onChange: (value: string) => void
   className?: string
 }
 
-export const TemplateSetting: React.FC<Props> = ({ label, value, type, username, disabled, onChange, className }) => {
-  const app = useApplication(type)
+export const TemplateSetting: React.FC<Props> = ({ label, value, disabled, onChange, className, children }) => {
   const connection = newConnection(null, 33000)
   return (
     <ListItem className={className}>
@@ -26,11 +23,7 @@ export const TemplateSetting: React.FC<Props> = ({ label, value, type, username,
         onChange={event => onChange(event.target.value)}
         multiline={true}
       />
-      <Typography variant="caption">
-        Replacement tokens {app.tokens}
-        <br />
-        <b>{app.parse(value, { ...connection, username })}</b>
-      </Typography>
+      <Typography variant="caption">{children}</Typography>
     </ListItem>
   )
 }

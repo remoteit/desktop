@@ -78,10 +78,10 @@ describe('backend/binaryInstaller', () => {
 
       await binaryInstaller.uninstall()
 
-      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/remoteit')
-      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/connectd')
-      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/muxer')
-      expect(commandSpy).toBeCalledWith('rm ../jest/symlink/demuxer')
+      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/remoteit')
+      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/connectd')
+      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/muxer')
+      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/demuxer')
       expect(commandSpy).toHaveBeenCalledTimes(4)
     })
 

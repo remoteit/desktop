@@ -47,7 +47,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
     >
       <TextField
         autoFocus
-        multiline={value.toString().length > 50}
+        multiline={value.toString().length > 30}
         inputRef={fieldRef}
         label={label}
         error={!!error}

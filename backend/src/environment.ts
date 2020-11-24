@@ -64,7 +64,7 @@ export class Environment {
     } else {
       this.userPath = PATHS.LINUX_USER_SETTINGS
       this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
-      this.binPath = PATHS.LINUX_BINARIES
+      this.binPath = this.isDev ? PATHS.LINUX_BINARIES_DEV : PATHS.LINUX_BINARIES
       this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }

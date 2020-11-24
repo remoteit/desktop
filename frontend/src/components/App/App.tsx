@@ -86,7 +86,7 @@ export const App: React.FC = () => {
     return (
       <Page>
         <Header />
-        <LoadingMessage message="Checking Backend..." logo />
+        <LoadingMessage message="Signing in..." logo />
       </Page>
     )
 

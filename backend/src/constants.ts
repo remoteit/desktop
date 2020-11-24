@@ -53,6 +53,7 @@ export const SSL_PORT = WEB_PORT - 1
 export const PATHS = {
   LINUX_USER_SETTINGS: path.join(os.homedir(), '.remoteit'),
   LINUX_BINARIES: path.join(__dirname, '../../../../'),
+  LINUX_BINARIES_DEV: path.resolve('./bin'),
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
   LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
   LINUX_SYMLINKS: '/usr/bin',

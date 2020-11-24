@@ -21,7 +21,7 @@ type Props = {
 
 export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { setupServicesLimit, setupAdded, device, links } = useSelector((state: ApplicationState) => ({
+  const { setupServicesLimit, device, links } = useSelector((state: ApplicationState) => ({
     ...state.ui,
     device: getAllDevices(state).find(d => d.id === deviceID),
     links: getLinks(state, deviceID),
@@ -59,14 +59,12 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
       ) : (
         <ServiceForm
           thisDevice={true}
-          name={setupAdded?.name}
-          target={setupAdded}
-          onSubmit={form => {
-            ui.set({ setupAdded: undefined })
-            backend.addTargetService(form)
+          onSubmit={async form => {
+            await ui.set({ setupAdded: undefined })
+            await backend.addTargetService(form)
 
             // set route attributes via deferred update
-            backend.set({ deferredAttributes: form })
+            await backend.set({ deferredAttributes: form.attributes })
             history.push(links.edit)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
