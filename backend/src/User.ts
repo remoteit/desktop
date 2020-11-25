@@ -11,7 +11,7 @@ const d = debug('r3:backend:User')
 
 export class User {
   static EVENTS = {
-    signInError: 'user/sign-in/error',
+    signInError: 'unauthorized',
     signedOut: 'signed-out',
     signedIn: 'signed-in',
   }
@@ -43,22 +43,27 @@ export class User {
       return false
     }
 
-    Logger.info('Attempting auth hash login')
+    Logger.info('Attempting auth hash login', { username: credentials.username })
 
     try {
       const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
       Logger.info('CHECK SIGN IN', { username: user.username })
 
-      if (!user) return false
+      if (!user) {
+        EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
+        return false
+      }
 
       this.signedIn = true
       this.username = user.username
       this.authHash = user.authHash
 
+      Logger.info('CHECK CLI SIGNIN')
       await cli.checkSignIn()
       EventBus.emit(User.EVENTS.signedIn, user)
 
+      Logger.info('BACKEND SIGNED IN', { username: user.username })
       return true
     } catch (error) {
       Logger.warn('LOGIN AUTH FAILURE', { username: credentials.username, error })
