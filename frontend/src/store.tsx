@@ -1,5 +1,5 @@
 import { init, RematchRootState } from '@rematch/core'
-import * as models from './models'
+import {models} from './models/rootModel'
 import immer from '@rematch/immer'
 import logger from 'redux-logger'
 
@@ -12,4 +12,4 @@ export const store = init({ models, plugins: [immer()], redux: { middlewares } }
 // Export types
 export type Store = typeof store
 export type Dispatch = typeof store.dispatch
-export type ApplicationState = RematchRootState<typeof models>
+export type ApplicationState = RematchRootState<typeof RootModel>

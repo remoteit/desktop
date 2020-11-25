@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { RootModel } from './rootModel'
 
 type IApplicationTypeState = ILookup<IApplicationType[]> & {
   all: IApplicationType[]
@@ -10,7 +11,7 @@ const state: IApplicationTypeState = {
   all: [],
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
   effects: (dispatch: any) => ({
     async fetch() {

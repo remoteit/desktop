@@ -3,10 +3,11 @@ import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { RootModel } from './rootModel'
 
 const ACCOUNT_KEY = 'account'
 
-type IAccountsState = ILookup<any> & {
+export type IAccountsState = ILookup<any> & {
   member: IUser[]
   access: IUser[]
   activeId?: string // user.id
@@ -29,7 +30,7 @@ const state: IAccountsState = {
   devices: {},
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
   effects: (dispatch: any) => ({
     async init() {
