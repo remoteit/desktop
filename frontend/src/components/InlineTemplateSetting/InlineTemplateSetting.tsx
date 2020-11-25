@@ -14,7 +14,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, co
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
   if (!connection) connection = newConnection(service, freePort)
   const app = useApplication(context, service, connection)
-  console.log('INLINE TEMPLATE', connection.port)
+
   return (
     <InlineTextFieldSetting
       value={app.template}
