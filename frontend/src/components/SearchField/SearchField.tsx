@@ -4,7 +4,7 @@ import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, colors } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
-import { Icon } from '../Icon'
+import { Icon } from '@remote.it/components'
 
 export const SearchField: React.FC = () => {
   const { total, results, query, searched, fetching, filter } = useSelector((state: ApplicationState) => state.devices)
@@ -53,14 +53,14 @@ export const SearchField: React.FC = () => {
                 devices.fetch()
               }}
             >
-              <Icon name="times" size="md" type="light" color="grayDarker" fixedWidth />
+              <Icon name="times" size="sm" color="grayDarker" fixedWidth />
             </IconButton>
           </Tooltip>
         )}
         <Tooltip title="Search">
           <span>
             <IconButton type="submit" disabled={disabled}>
-              <Icon name="search" size="md" type="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
+              <Icon name="search" size="sm" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />
             </IconButton>
           </span>
         </Tooltip>
