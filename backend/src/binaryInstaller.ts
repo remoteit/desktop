@@ -58,12 +58,12 @@ export class BinaryInstaller {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
 
-      if (!environment.isWindows && !environment.isHeadless) {
-        this.pushUninstallCommands(commands)
+      this.pushUninstallCommands(commands)
+
+      if (!(environment.isWindows || environment.isHeadless)) {
         this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
       }
 
-      commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
       commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
 
       await commands.exec()
@@ -103,17 +103,16 @@ export class BinaryInstaller {
   async uninstall() {
     if (this.inProgress) return Logger.warn('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     Logger.info('START UNINSTALL')
-    this.uninstallInitiated = true
     this.inProgress = true
     const commands = new Command({ admin: true })
     this.pushUninstallCommands(commands)
-    commands.exec()
+    await commands.exec()
     this.inProgress = false
   }
 
   async pushUninstallCommands(commands: Command) {
-    if (!environment.isWindows && !environment.isHeadless) {
-      if (existsSync(this.cliBinary.symlink)) commands.push(`"${this.cliBinary.symlink}" ${strings.serviceUninstall()}`)
+    commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
+    if (!(environment.isWindows || environment.isHeadless)) {
       this.binaries.map(binary => commands.push(`rm -f ${binary.symlink}`))
     }
   }

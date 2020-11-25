@@ -78,24 +78,30 @@ describe('backend/binaryInstaller', () => {
 
       await binaryInstaller.uninstall()
 
+      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j agent uninstall')
       expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/remoteit')
       expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/connectd')
       expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/muxer')
       expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/demuxer')
-      expect(commandSpy).toHaveBeenCalledTimes(4)
+      expect(commandSpy).toHaveBeenCalledTimes(5)
     })
 
     test('does not remove files if headless', async () => {
+      environment.isWindows = false
       environment.isHeadless = true
 
       await binaryInstaller.uninstall()
-      expect(commandSpy).toHaveBeenCalledTimes(0)
+      expect(commandSpy).toBeCalledWith('"remoteit" -j agent uninstall')
+      expect(commandSpy).toHaveBeenCalledTimes(1)
     })
 
     test('removes no files from a Windows installer', async () => {
       environment.isWindows = true
+      environment.isHeadless = false
+
       await binaryInstaller.uninstall()
-      expect(commandSpy).toHaveBeenCalledTimes(0)
+      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j agent uninstall')
+      expect(commandSpy).toHaveBeenCalledTimes(1)
     })
   })
 

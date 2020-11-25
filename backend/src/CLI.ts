@@ -237,7 +237,7 @@ export default class CLI {
   }
 
   async serviceUninstall() {
-    await this.exec({ cmds: [strings.serviceUninstall()], checkAuthHash: true, admin: true })
+    await this.exec({ cmds: [strings.serviceUninstall()], admin: true })
   }
 
   async signIn() {
@@ -261,7 +261,7 @@ export default class CLI {
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
-    if (!skipSignInCheck) await this.checkSignIn()
+    if (!skipSignInCheck && !binaryInstaller.uninstallInitiated) await this.checkSignIn()
     if (checkAuthHash && !user.signedIn) return ''
 
     let commands = new Command({ admin, quiet })
