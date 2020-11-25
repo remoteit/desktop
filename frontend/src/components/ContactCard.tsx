@@ -34,6 +34,8 @@ export const ContactCard: React.FC<Props> = ({
     if ((users.length || user) && (access.scripting || access.services.length)) {
       setChanged(true)
     }
+    const indeterminate = indeterminateServices.filter(value => !access.services.includes(value))
+    indeterminate.length && setChanged(false)
   }
 
   const handleSharingUpdate = () => {

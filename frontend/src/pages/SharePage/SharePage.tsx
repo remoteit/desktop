@@ -70,8 +70,8 @@ export const SharePage = () => {
     goToNext()
   }
 
-  //array to check intersection of servicees and users selected
-  let arr: string[] = []
+  //everything happend here
+  let intersection: string[] = []
   const selectContacts = (emails: string[]) => {
     let userSelectedServices: string[][] = emails.map(email => {
       return device ? getPermissions(device, email).services.map(s => s.id) : []
@@ -79,20 +79,22 @@ export const SharePage = () => {
     let userSelectedScript: boolean[] = emails.map(email => {
       return device ? getPermissions(device, email).scripting : false
     })
-    const intersection = userSelectedServices.map((a, index) => {
-      arr = index === 0 ? a : arr.filter(value => a.includes(value))
-      return arr
+    const match = userSelectedServices.map((services, index) => {
+      intersection = index === 0 ? services : intersection.filter(value => services.includes(value))
+      return intersection
     })
-    const uniqueSelectedService = userSelectedServices
-      .filter(value => !intersection.includes(value))
-      .flat()
-      .filter((v, i, a) => a.indexOf(v) === i)
-    setScripts(userSelectedScript.find(b => b === true) || false)
-    setSelectedServices(intersection[intersection.length - 1])
-    setIndeterminate(userSelectedServices.filter(value => !intersection.includes(value)).flat())
+    const matchServices = match[match.length - 1]
+    const indeterminateServices = userSelectedServices
+      .filter(value => !match.includes(value))
+      .flat() // get one array of indeterminate
+      .filter((v, i, a) => a.indexOf(v) === i) // filter duplicates
+      .filter(value => !matchServices.includes(value)) // get just indeterminate value
+    setScripts(userSelectedScript.find(script => script === true) || false)
+    setSelectedServices(matchServices)
+    setIndeterminate(indeterminateServices)
     setUserSelected(contacts.find(c => emails.includes(c.email)))
     setSelected(emails)
-    emails.length && uniqueSelectedService.length ? setChanged(true) : setChanged(false)
+    emails.length && indeterminateServices.length ? setChanged(false) : setChanged(true)
   }
 
   const goToNext = () =>
