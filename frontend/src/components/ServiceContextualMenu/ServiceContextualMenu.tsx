@@ -3,7 +3,7 @@ import { isDev } from '../../services/Browser'
 import { useHistory } from 'react-router-dom'
 import { useClipboard } from 'use-clipboard-copy'
 import { useSelector } from 'react-redux'
-import { CopyConnectionButton } from '../../buttons/CopyConnectionButton'
+import { CopyButton } from '../../buttons/CopyButton'
 import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
@@ -58,7 +58,7 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
       </ListItem>
       <ListItem className={css.connect} dense>
         <ComboButton connection={connection} service={service} />
-        <CopyConnectionButton connection={connection} service={service} size="base" />
+        <CopyButton connection={connection} service={service} size="base" />
         <LaunchButton connection={connection} service={service} size="base" />
       </ListItem>
       <Divider />

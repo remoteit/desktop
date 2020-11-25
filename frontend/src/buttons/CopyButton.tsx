@@ -8,7 +8,7 @@ import { FontSize } from '../styling'
 import { Icon } from '../components/Icon'
 
 export interface CopyButtonProps {
-  connection: IConnection
+  connection?: IConnection
   service?: IService
   context?: Application['context']
   title?: string
@@ -30,7 +30,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const app = useApplication(context, service, connection)
 
-  if (!show && (!connection.active || !app)) return null
+  if (!connection || (!show && (!connection.active || !app))) return null
 
   const check = event => {
     event.preventDefault()
