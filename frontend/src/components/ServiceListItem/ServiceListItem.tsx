@@ -13,7 +13,7 @@ import { ClearButton } from '../../buttons/ClearButton'
 import { ComboButton } from '../../buttons/ComboButton'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
-import { CopyButton } from '../../buttons/CopyButton'
+import { CopyConnectionButton } from '../../buttons/CopyConnectionButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 import { colors, spacing } from '../../styling'
@@ -55,7 +55,7 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={secondary} />
         <ListItemSecondaryAction>
           <LaunchButton connection={connection} service={service} />
-          <CopyButton connection={connection} service={service} />
+          <CopyConnectionButton connection={connection} service={service} />
           <SessionsButton service={service} />
           <ClearButton connection={connection} />
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />

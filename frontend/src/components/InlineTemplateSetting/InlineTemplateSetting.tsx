@@ -4,6 +4,7 @@ import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { ApplicationState } from '../../store'
 import { useApplication, Application } from '../../shared/applications'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { CopyButton } from '../../buttons/CopyButton'
 import { Tooltip } from '@material-ui/core'
 import { Icon } from '../Icon'
 
@@ -11,13 +12,14 @@ type Props = { service: IService; connection?: IConnection; context: Application
 
 export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, context }) => {
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
-  if (!connection) connection = newConnection(service)
-  const app = useApplication(context, service, { ...connection, port: connection.port || freePort })
-
+  if (!connection) connection = newConnection(service, freePort)
+  const app = useApplication(context, service, connection)
+  console.log('INLINE TEMPLATE', connection.port)
   return (
     <InlineTextFieldSetting
       value={app.template}
       displayValue={app.command}
+      actionIcon={<CopyButton connection={connection} service={service} context={context} show />}
       label={
         <>
           {app.contextTitle}

@@ -28,7 +28,7 @@ import { ForgetButton } from '../../buttons/ForgetButton'
 import { UsersSelect } from '../../components/UsersSelect'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { EditButton } from '../../buttons/EditButton'
-import { CopyButton } from '../../buttons/CopyButton'
+import { CopyConnectionButton } from '../../buttons/CopyConnectionButton'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { spacing } from '../../styling'
@@ -73,7 +73,7 @@ export const ServicePage: React.FC = () => {
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />
-            <CopyButton connection={connection} service={service} />
+            <CopyConnectionButton connection={connection} service={service} />
           </Typography>
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
@@ -87,9 +87,9 @@ export const ServicePage: React.FC = () => {
         <List>
           <NameSetting connection={connection} service={service} />
           <PortSetting connection={connection} service={service} />
-          <CustomAttributeSettings connection={connection} service={service} />
           <InlineTemplateSetting connection={connection} service={service} context="launch" />
           <InlineTemplateSetting connection={connection} service={service} context="copy" />
+          <CustomAttributeSettings connection={connection} service={service} />
         </List>
         <div className={css.actions}>
           <ConnectButton
