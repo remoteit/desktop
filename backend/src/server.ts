@@ -25,8 +25,7 @@ class Server {
   private app: Express
 
   EVENTS = {
-    connection: 'server/connection',
-    authenticated: 'server/authenticated',
+    authenticated: 'authenticated',
   }
 
   constructor() {
@@ -84,7 +83,7 @@ class Server {
       authenticate: this.authenticate,
       postAuthenticate: this.postAuthenticate,
       disconnect: this.disconnect,
-      timeout: 10000,
+      timeout: 20000,
     }
 
     socketioAuth(this.io, authOptions)
@@ -142,8 +141,8 @@ class Server {
   }
 
   disconnect = (socket: SocketIO.Socket) => {
-    socket.removeAllListeners()
     Logger.info('SERVER DISCONNECT')
+    socket.removeAllListeners()
   }
 }
 

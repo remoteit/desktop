@@ -109,6 +109,12 @@ export default createModel({
         dispatch.applicationTypes.fetch()
       }
     },
+    async disconnect(_: void, rootState: any) {
+      if (!rootState.auth.backendAuthenticated) {
+        dispatch.auth.backendSignInError('Sign in failed')
+      }
+      dispatch.ui.set({ connected: false })
+    },
     async signInError(error: string) {
       dispatch.auth.setError(error)
       //send message to backend to sign out
