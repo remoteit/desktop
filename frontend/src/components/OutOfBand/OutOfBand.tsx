@@ -6,7 +6,7 @@ import { ApplicationState } from '../../store'
 import { colors, spacing, fontSizes } from '../../styling'
 import { emit } from '../../services/Controller'
 
-export const OutOfBand: React.FC = () => {
+export const OutOfBand: React.FC<{ inline?: boolean }> = ({ inline }) => {
   const css = useStyles()
   const { available, active } = useSelector((state: ApplicationState) => ({
     available: state.backend.lan.oobAvailable,
@@ -25,7 +25,7 @@ export const OutOfBand: React.FC = () => {
   if (!available) return null
 
   return (
-    <span className={css.container}>
+    <span className={inline ? undefined : css.container}>
       <Tooltip title={active ? 'Mode active' : 'Mode inactive'}>
         <Link href="https://link.remote.it/documentation-guides/out-of-band" target="_blank">
           <div className={css.oob + (active ? ' ' + css.active : '')}>

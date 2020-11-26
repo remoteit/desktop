@@ -29,6 +29,7 @@ export class Environment {
   symlinkPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
+  oobAvailable: boolean
   version: string
 
   EVENTS = { send: 'environment' }
@@ -70,6 +71,7 @@ export class Environment {
     }
 
     this.manufacturerDetails = this.getManufacturerDetails()
+    this.oobAvailable = this.getOobAvailable()
   }
 
   get frontend() {
@@ -92,6 +94,11 @@ export class Environment {
   recapitate() {
     this.isHeadless = false
     this.manufacturerDetails.product.appCode = MANUFACTURE_ID_STANDARD
+  }
+
+  getOobAvailable() {
+    const platforms = [PLATFORM_CODES.REMOTEIT_PI, PLATFORM_CODES.REMOTEIT_PI_LITE, PLATFORM_CODES.REMOTEIT_PI_ARM64]
+    return platforms.includes(this.manufacturerDetails.product.platform || 0)
   }
 
   getSimpleOS() {

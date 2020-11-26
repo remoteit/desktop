@@ -14,7 +14,6 @@ class LAN {
   data: IScanData = {}
   interfaces?: IInterface[]
   privateIP?: ipAddress = 'unknown'
-  oobAvailable?: boolean
   oobActive?: boolean
   nextCheck?: number
 
@@ -26,7 +25,6 @@ class LAN {
   }
 
   constructor() {
-    this.oobAvailable = environment.manufacturerDetails.product.platform === PLATFORM_CODES.REMOTEIT_PI
     this.oobActive = false
     this.getInterfaces()
   }
@@ -44,11 +42,11 @@ class LAN {
   }
 
   async check() {
-    if (this.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
+    if (environment.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
       let prevOobActive = this.oobActive
       await this.checkOob()
       if (prevOobActive !== this.oobActive) {
-        EventBus.emit(this.EVENTS.oob, { oobAvailable: this.oobAvailable, oobActive: this.oobActive })
+        EventBus.emit(this.EVENTS.oob, { oobAvailable: environment.oobAvailable, oobActive: this.oobActive })
       }
       this.nextCheck = Date.now() + LAN.OOB_CHECK_INTERVAL
     }
@@ -56,7 +54,7 @@ class LAN {
 
   async checkOob() {
     this.oobActive = false
-    if (!this.oobAvailable) {
+    if (!environment.oobAvailable) {
       return
     }
     try {

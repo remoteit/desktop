@@ -112,7 +112,7 @@ class Controller {
 
   oobCheck = async () => {
     await lan.checkOob()
-    this.io.emit(lan.EVENTS.oob, { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
+    this.io.emit(lan.EVENTS.oob, { oobAvailable: environment.oobAvailable, oobActive: lan.oobActive })
   }
 
   interfaces = async () => {
@@ -134,7 +134,7 @@ class Controller {
     cli.read()
     this.pool.init()
     // this.freePort()
-    this.io.emit('oob', { oobAvailable: lan.oobAvailable, oobActive: lan.oobActive })
+    this.io.emit('oob', { oobAvailable: environment.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
