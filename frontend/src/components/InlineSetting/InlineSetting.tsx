@@ -19,6 +19,7 @@ type Props = {
   value?: string | number
   label: JSX.Element | string
   icon?: JSX.Element
+  actionIcon?: JSX.Element
   displayValue?: string | number
   disabled?: boolean
   resetValue?: string | number
@@ -33,6 +34,7 @@ export const InlineSetting: React.FC<Props> = ({
   label,
   icon,
   value = '',
+  actionIcon,
   displayValue,
   disabled,
   resetValue,
@@ -108,20 +110,23 @@ export const InlineSetting: React.FC<Props> = ({
     )
 
   return (
-    <ListItem button onClick={triggerEdit} disabled={disabled} style={{ opacity: 1 }} dense>
-      <ListItemIcon>{icon}</ListItemIcon>
-      <Title>
-        <ListItemText>
-          <InputLabel shrink>{label}</InputLabel>
-          {displayValue || value || '–'}
-        </ListItemText>
-      </Title>
-      {!disabled && (
-        <ListItemSecondaryAction className="hidden">
-          <EditButton onClick={triggerEdit} />
-        </ListItemSecondaryAction>
-      )}
-    </ListItem>
+    <>
+      {actionIcon && <span className={css.action}> {actionIcon}</span>}
+      <ListItem button onClick={triggerEdit} disabled={disabled} style={{ opacity: 1 }} dense>
+        <ListItemIcon>{icon}</ListItemIcon>
+        <Title>
+          <ListItemText>
+            <InputLabel shrink>{label}</InputLabel>
+            {displayValue || value || '–'}
+          </ListItemText>
+        </Title>
+        {!disabled && (
+          <ListItemSecondaryAction className="hidden">
+            <EditButton onClick={triggerEdit} />
+          </ListItemSecondaryAction>
+        )}
+      </ListItem>
+    </>
   )
 }
 
@@ -142,5 +147,12 @@ const useStyles = makeStyles({
     paddingTop: 0,
     paddingBottom: 0,
     backgroundColor: colors.primaryHighlight,
+  },
+  action: {
+    position: 'absolute',
+    zIndex: 1,
+    right: 'auto',
+    left: spacing.md,
+    marginTop: spacing.xs,
   },
 })

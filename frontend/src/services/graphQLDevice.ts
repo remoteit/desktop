@@ -204,7 +204,10 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
     const dates = response.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
     const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
     const result = sorted.reduce((sessions: IUser[], e: any) => {
-      if (loginId !== e.user?.id && !sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint.platform))
+      if (
+        (loginId !== e.user?.id || e.endpoint.platform === 5) && // show your portal connections
+        !sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint.platform)
+      )
         sessions.push({
           id: e.user?.id,
           timestamp: e.timestamp,

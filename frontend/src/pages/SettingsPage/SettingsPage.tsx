@@ -68,16 +68,6 @@ export const SettingsPage: React.FC = () => {
         <DeviceSetupItem />
       </List>
       <Divider />
-      {remoteUI || (
-        <>
-          <Typography variant="subtitle1">Sharing</Typography>
-          <List>
-            <AccountLinkingSettings />
-          </List>
-          <Divider />
-        </>
-      )}
-      <LicensingSetting />
       <Typography variant="subtitle1">User</Typography>
       <List>
         <ListItemSetting
@@ -119,6 +109,16 @@ export const SettingsPage: React.FC = () => {
         />
       </List>
       <Divider />
+      {remoteUI || (
+        <>
+          <Typography variant="subtitle1">Sharing</Typography>
+          <List>
+            <AccountLinkingSettings />
+          </List>
+          <Divider />
+        </>
+      )}
+      <LicensingSetting />
       <Typography variant="subtitle1">Application</Typography>
       <List>
         {isRemote() && (

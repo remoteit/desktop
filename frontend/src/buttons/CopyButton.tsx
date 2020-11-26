@@ -1,27 +1,40 @@
 import React, { useState } from 'react'
 import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { useApplication } from '../../shared/applications'
-import { setConnection } from '../../helpers/connectionHelper'
+import { useApplication, Application } from '../shared/applications'
+import { setConnection } from '../helpers/connectionHelper'
 import { useClipboard } from 'use-clipboard-copy'
-import { PromptModal } from '../../components/PromptModal'
-import { FontSize } from '../../styling'
-import { Icon } from '../../components/Icon'
+import { PromptModal } from '../components/PromptModal'
+import { FontSize } from '../styling'
+import { Icon } from '../components/Icon'
 
 export interface CopyButtonProps {
   connection?: IConnection
   service?: IService
+  context?: Application['context']
+  title?: string
   menuItem?: boolean
   size?: FontSize
+  show?: boolean
 }
 
-export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, menuItem, size = 'md' }) => {
+export const CopyButton: React.FC<CopyButtonProps> = ({
+  connection,
+  service,
+  menuItem,
+  context = 'copy',
+  title = 'Copy',
+  size = 'md',
+  show,
+}) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const app = useApplication('copy', service, connection)
+  const app = useApplication(context, service, connection)
 
-  if (!connection || !connection.active || !app) return null
+  if (!connection || (!show && (!connection.active || !app))) return null
 
-  const check = () => {
+  const check = event => {
+    event.preventDefault()
+    event.stopPropagation()
     app.prompt ? setOpen(true) : clipboard.copy()
   }
   const onClose = () => {
@@ -52,11 +65,13 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ connection, service, men
       {menuItem ? (
         <MenuItem dense onClick={check}>
           <ListItemIcon>{CopyIcon}</ListItemIcon>
-          <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy connection'} />
+          <ListItemText primary={clipboard.copied ? 'Copied!' : title} />
         </MenuItem>
       ) : (
-        <Tooltip title={clipboard.copied ? 'Copied!' : 'Copy connection'}>
-          <IconButton onClick={check}>{CopyIcon}</IconButton>
+        <Tooltip title={clipboard.copied ? 'Copied!' : title}>
+          <IconButton onClick={check} onMouseEnter={event => event.stopPropagation()}>
+            {CopyIcon}
+          </IconButton>
         </Tooltip>
       )}
 

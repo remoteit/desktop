@@ -31,7 +31,7 @@ export const PromptModal: React.FC<{
             if (!error) onSubmit(tokens)
           }}
         >
-          <DialogTitle>Missing data detected</DialogTitle>
+          <DialogTitle>Missing info found</DialogTitle>
           <DialogContent>
             <Typography variant="h4">{app.command}</Typography>
             {app.missingTokens.map(token => (

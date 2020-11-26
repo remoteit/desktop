@@ -113,6 +113,7 @@ export default createModel({
       if (!rootState.auth.backendAuthenticated) {
         dispatch.auth.backendSignInError('Sign in failed')
       }
+      dispatch.auth.setBackendAuthenticated(false)
       dispatch.ui.set({ connected: false })
     },
     async signInError(error: string) {
@@ -136,11 +137,10 @@ export default createModel({
       dispatch.backend.set({ connections: [] })
       dispatch.devices.set({ query: '', filter: 'all', initialized: false })
       dispatch.logs.reset()
-      dispatch.auth.setAuthenticated(false)
-      dispatch.auth.setBackendAuthenticated(false)
       dispatch.accounts.setActive('')
       window.location.hash = ''
       emit('user/sign-out-complete')
+      dispatch.auth.setAuthenticated(false)
       analyticsHelper.clearIdentity()
       Controller.close()
     },

@@ -6,6 +6,7 @@ type Props = {
   value?: string | number
   label: string | JSX.Element
   icon?: JSX.Element
+  actionIcon?: JSX.Element
   displayValue?: string | number
   filter?: RegExp
   disabled?: boolean

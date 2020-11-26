@@ -14,14 +14,22 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
           <Typography variant="caption" display="block">
             {limit.actual} of {limit.value} services registered
           </Typography>
-          <LinearProgress classes={css} variant="determinate" value={(limit.actual / limit.value) * 100} />
+          <LinearProgress
+            classes={{ root: css.root, colorPrimary: css.colorPrimary, bar: css.bar }}
+            variant="determinate"
+            value={(limit.actual / limit.value) * 100}
+          />
         </Box>
       ) : (
         <Box className={css.box}>
           <Typography variant="caption" display="block">
             Unlimited services
           </Typography>
-          <LinearProgress classes={css} variant="determinate" value={0} />
+          <LinearProgress
+            classes={{ root: css.root, colorPrimary: css.colorPrimary, bar: css.bar }}
+            variant="determinate"
+            value={0}
+          />
         </Box>
       )
       break
