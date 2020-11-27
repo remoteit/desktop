@@ -68,8 +68,7 @@ class Controller {
     socket.on('device', this.device)
     socket.on('registration', this.registration)
     socket.on('scan', this.scan)
-    socket.on('oobCheck', this.oobCheck)
-    socket.on('interfaces', this.interfaces)
+    socket.on(lan.EVENTS.interfaces, this.interfaces)
     socket.on('freePort', this.freePort)
     socket.on('preferences', preferences.set)
     socket.on('restart', this.restart)
@@ -110,14 +109,9 @@ class Controller {
     this.io.emit('targets', cli.data.targets)
   }
 
-  oobCheck = async () => {
-    await lan.checkOob()
-    this.io.emit(lan.EVENTS.oob, { oobAvailable: environment.oobAvailable, oobActive: lan.oobActive })
-  }
-
   interfaces = async () => {
     await lan.getInterfaces()
-    this.io.emit('interfaces', lan.interfaces)
+    this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
   }
 
   scan = async (interfaceName: string) => {
@@ -133,12 +127,10 @@ class Controller {
   initBackend = async () => {
     cli.read()
     this.pool.init()
-    // this.freePort()
-    this.io.emit('oob', { oobAvailable: environment.oobAvailable, oobActive: lan.oobActive })
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
-    this.io.emit('interfaces', lan.interfaces)
+    this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)

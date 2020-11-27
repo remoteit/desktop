@@ -13,10 +13,6 @@ type IBackendState = ILookup<any> & {
   targets: ITarget[]
   scanData: IScanData
   interfaces: IInterface[]
-  lan: {
-    oobAvailable: boolean
-    oobActive: boolean
-  }
   error: boolean
   freePort?: number
   update?: string
@@ -31,6 +27,7 @@ type IBackendState = ILookup<any> & {
     isElevated: boolean
     privateIP: ipAddress
     hostname: string
+    oobAvailable: boolean
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
@@ -42,10 +39,6 @@ const state: IBackendState = {
   targets: [],
   scanData: { wlan0: { data: [], timestamp: 0 } },
   interfaces: [],
-  lan: {
-    oobAvailable: false,
-    oobActive: false,
-  },
   error: false,
   freePort: undefined,
   update: undefined,
@@ -60,6 +53,7 @@ const state: IBackendState = {
     isElevated: false,
     privateIP: '',
     hostname: '',
+    oobAvailable: false,
   },
   preferences: {},
   deferredAttributes: undefined,

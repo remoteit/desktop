@@ -1,4 +1,3 @@
-import { PLATFORM_CODES, REMOTEIT_PI_WIFI } from './constants'
 import { IP_PRIVATE } from './sharedCopy/constants'
 import environment from './environment'
 import Logger from './Logger'
@@ -6,7 +5,6 @@ import EventBus from './EventBus'
 import cli from './cliInterface'
 import nm from 'netmask'
 import nw from 'network'
-import PiWifi from 'rpi-wifi-connection'
 
 const { Netmask } = nm
 
@@ -14,19 +12,25 @@ class LAN {
   data: IScanData = {}
   interfaces?: IInterface[]
   privateIP?: ipAddress = 'unknown'
-  oobActive?: boolean
   nextCheck?: number
 
-  private static readonly OOB_CHECK_INTERVAL = 30 * 60 * 1000 //30 Min in ms
+  private static readonly CHECK_INTERVAL = 30 * 60 * 1000 // 30 Min in ms
 
   EVENTS = {
     privateIP: 'privateIP',
-    oob: 'oob',
+    interfaces: 'interfaces',
   }
 
   constructor() {
-    this.oobActive = false
     this.getInterfaces()
+  }
+
+  async check() {
+    if (environment.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
+      this.getInterfaces()
+      EventBus.emit(this.EVENTS.interfaces, this.interfaces)
+      this.nextCheck = Date.now() + LAN.CHECK_INTERVAL
+    }
   }
 
   setPrivateIP() {
@@ -39,39 +43,6 @@ class LAN {
     Logger.info('PRIVATE IP', { ip: this.privateIP })
     environment.privateIP = this.privateIP || ''
     EventBus.emit(environment.EVENTS.send, environment.frontend)
-  }
-
-  async check() {
-    if (environment.oobAvailable && (!this.nextCheck || this.nextCheck < Date.now())) {
-      let prevOobActive = this.oobActive
-      await this.checkOob()
-      if (prevOobActive !== this.oobActive) {
-        EventBus.emit(this.EVENTS.oob, { oobAvailable: environment.oobAvailable, oobActive: this.oobActive })
-      }
-      this.nextCheck = Date.now() + LAN.OOB_CHECK_INTERVAL
-    }
-  }
-
-  async checkOob() {
-    this.oobActive = false
-    if (!environment.oobAvailable) {
-      return
-    }
-    try {
-      if (environment.isPi || environment.isPiZero) {
-        Logger.info('GET WIFI STATUS')
-        let piWifi = new PiWifi()
-        let status = await piWifi.getStatus()
-        Logger.info('Status:')
-        Logger.info(status)
-        if (status.ssid === REMOTEIT_PI_WIFI) {
-          this.oobActive = true
-          return
-        }
-      }
-    } catch (error) {
-      Logger.error(error)
-    }
   }
 
   async getInterfaces() {

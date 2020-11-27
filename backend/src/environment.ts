@@ -84,6 +84,7 @@ export class Environment {
       isElevated: this.isElevated,
       privateIP: this.privateIP,
       hostname: os.hostname(),
+      oobAvailable: this.oobAvailable,
     }
   }
 

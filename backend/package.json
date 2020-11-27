@@ -34,7 +34,6 @@
     "portfinder": "^1.0.25",
     "remote.it": "^0.44.1",
     "rimraf": "^3.0.0",
-    "rpi-wifi-connection": "^1.0.17",
     "semver": "^7.1.3",
     "socket.io": "^2.3.0",
     "socketio-auth": "^0.1.1",

@@ -1,26 +1,16 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector } from 'react-redux'
 import { Tooltip, Link } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { colors, spacing, fontSizes } from '../../styling'
-import { emit } from '../../services/Controller'
 
 export const OutOfBand: React.FC<{ inline?: boolean }> = ({ inline }) => {
   const css = useStyles()
   const { available, active } = useSelector((state: ApplicationState) => ({
-    available: state.backend.lan.oobAvailable,
-    active: state.backend.lan.oobActive,
+    available: state.backend.environment.oobAvailable,
+    active: state.backend.interfaces.length > 1,
   }))
-
-  useEffect(() => {
-    emit('oobCheck')
-    let timer = setInterval(() => emit('oobCheck'), 30000)
-
-    return () => {
-      clearInterval(timer)
-    }
-  }, [])
 
   if (!available) return null
 
@@ -43,6 +33,7 @@ const useStyles = makeStyles({
     top: spacing.xs,
     right: spacing.lg,
     position: 'absolute',
+    zIndex: 3,
   },
   oob: {
     border: `1px solid ${colors.grayLight}`,

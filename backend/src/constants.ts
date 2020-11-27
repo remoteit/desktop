@@ -3,9 +3,6 @@ import path from 'path'
 
 //General
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
-export const PRODUCT_NAME = 'Desktop'
-export const MANUFACTURER_NAME = 'remote.it'
-export const REMOTEIT_PI_WIFI = 'remote.itPi'
 
 // Airbrake error reporting
 export const AIRBRAKE_PROJECT_ID = 223457
