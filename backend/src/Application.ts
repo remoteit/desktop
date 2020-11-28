@@ -4,7 +4,6 @@ import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import server from './server'
 import EventBus from './EventBus'
-import lan from './LAN'
 
 export default class Application {
   public electron?: any
@@ -16,7 +15,6 @@ export default class Application {
   }
 
   async constructorSync() {
-    await lan.checkOob()
     await environment.setElevatedState()
     server.start()
     if (server.io) new Controller(server.io, this.pool)

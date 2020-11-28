@@ -2,7 +2,10 @@ import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { OutOfBand } from '../../components/OutOfBand'
-import { Network } from '../../components/Network'
+import { Scan } from '../../components/Scan'
+import { Container } from '../../components/Container'
+import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { Typography } from '@material-ui/core'
 import { emit } from '../../services/Controller'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -27,9 +30,16 @@ export const NetworkPage: React.FC = () => {
   }, [])
 
   return (
-    <>
-      <OutOfBand />
-      <Network data={scanData} targets={targets} interfaces={interfaces} onScan={scan} privateIP={privateIP} />
-    </>
+    <Container
+      header={
+        <>
+          <OutOfBand />
+          <Breadcrumbs />
+          <Typography variant="h1">Add from Network</Typography>
+        </>
+      }
+    >
+      <Scan data={scanData} targets={targets} interfaces={interfaces} onScan={scan} privateIP={privateIP} />
+    </Container>
   )
 }

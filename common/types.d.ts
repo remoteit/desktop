@@ -336,11 +336,6 @@ declare global {
     targets: ITarget[]
   }
 
-  interface IOob {
-    oobAvailable: boolean
-    oobActive: boolean
-  }
-
   interface IPuttyValidation {
     install: boolean
     loading: boolean

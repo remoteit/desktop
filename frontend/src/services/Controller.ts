@@ -122,15 +122,12 @@ function getEventHandlers() {
       if (result) backend.set({ scanData: result })
     },
 
-    oob: (oob: IOob) => {
-      backend.set({ lan: oob })
-      analyticsHelper.setOobAvailable(oob.oobAvailable)
-      analyticsHelper.setOobActive(oob.oobActive)
-    },
-
     interfaces: (result: IInterface[]) => {
       console.log('socket interfaces', result)
-      if (result) backend.set({ interfaces: result })
+      if (result) {
+        backend.set({ interfaces: result })
+        analyticsHelper.setOobActive(result.length > 1)
+      }
     },
 
     freePort: (result: number) => backend.set({ freePort: result }),
@@ -143,6 +140,7 @@ function getEventHandlers() {
       analyticsHelper.setOsVersion(result.osVersion)
       analyticsHelper.setArch(result.arch)
       analyticsHelper.setManufacturerDetails(result.manufacturerDetails)
+      analyticsHelper.setOobAvailable(result.oobAvailable)
     },
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),

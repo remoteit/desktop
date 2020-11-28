@@ -3,9 +3,6 @@ import path from 'path'
 
 //General
 export const ENVIRONMENT = process.env.NODE_ENV || 'production'
-export const PRODUCT_NAME = 'Desktop'
-export const MANUFACTURER_NAME = 'remote.it'
-export const REMOTEIT_PI_WIFI = 'remote.itPi'
 
 // Airbrake error reporting
 export const AIRBRAKE_PROJECT_ID = 223457
@@ -32,8 +29,9 @@ export const PLATFORM_CODES = {
   LINUX: 769,
   MAC: 256,
   RASPBERRY_PI: 1072,
-  REMOTEIT_PI_LITE: 1076,
   REMOTEIT_PI: 1075, // This will come in out of the manufacture.json
+  REMOTEIT_PI_LITE: 1076,
+  REMOTEIT_PI_ARM64: 1077,
   UNIX: 768, // Might not be able to detect
   UNKNOWN: 65535,
   WINDOWS_DESKTOP: 5,

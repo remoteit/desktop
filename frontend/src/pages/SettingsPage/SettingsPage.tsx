@@ -47,7 +47,6 @@ export const SettingsPage: React.FC = () => {
     <Container
       header={
         <>
-          <OutOfBand />
           <Typography variant="h1">
             <Title>
               <Tooltip title="Visit remote.it on the web">
@@ -56,6 +55,7 @@ export const SettingsPage: React.FC = () => {
                 </ButtonBase>
               </Tooltip>
             </Title>
+            <OutOfBand inline />
             <Typography className={css.user} variant="caption">
               {user?.email}
             </Typography>

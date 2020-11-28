@@ -111,7 +111,7 @@ export default createModel({
     },
     async disconnect(_: void, rootState: any) {
       if (!rootState.auth.backendAuthenticated) {
-        dispatch.auth.backendSignInError('Sign in failed')
+        dispatch.auth.backendSignInError('Sign in failed, please try again.')
       }
       dispatch.auth.setBackendAuthenticated(false)
       dispatch.ui.set({ connected: false })
