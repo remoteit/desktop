@@ -23,17 +23,18 @@ export interface ServiceListItemProps {
   service?: IService
   indent?: boolean
   dense?: boolean
+  secondary?: string | JSX.Element
 }
 
-export function ServiceListItem({ connection, service, indent, dense }: ServiceListItemProps) {
+export function ServiceListItem({ connection, service, indent, dense, secondary }: ServiceListItemProps) {
+  const [showError, setShowError] = useState<boolean>(false)
   const location = useLocation()
   const user = useSelector((state: ApplicationState) => state.auth.user)
   const css = useStyles()
-  const [showError, setShowError] = useState<boolean>(false)
   const id = connection ? connection.id : service ? service.id : ''
   const otherUser = !!connection?.owner?.id && connection?.owner?.id !== user?.id
 
-  const secondary = (
+  secondary = secondary || (
     <span className={css.details}>
       {connection && hostName(connection)}
       {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
@@ -55,7 +56,7 @@ export function ServiceListItem({ connection, service, indent, dense }: ServiceL
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={secondary} />
         <ListItemSecondaryAction>
           <LaunchButton connection={connection} service={service} />
-          <CopyButton connection={connection} service={service} />
+          <CopyButton connection={connection} service={service} title="Copy Command" />
           <SessionsButton service={service} />
           <ClearButton connection={connection} />
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />

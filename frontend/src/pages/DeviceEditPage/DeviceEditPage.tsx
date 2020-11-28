@@ -26,6 +26,7 @@ import { ServiceMiniState } from '../../components/ServiceMiniState'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
+import { AdminPanelConnect } from '../../components/AdminPanelConnect'
 import { LicensingNotice } from '../../components/LicensingNotice'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
@@ -45,12 +46,16 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   const css = useStyles()
   const history = useHistory()
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { device, setupAddingService, links, remoteUI } = useSelector((state: ApplicationState) => ({
-    device: getAllDevices(state).find((d: IDevice) => d.id === deviceID),
-    setupAddingService: state.ui.setupAddingService,
-    remoteUI: isRemoteUI(state),
-    links: getLinks(state, deviceID),
-  }))
+  const { device, connections, setupAddingService, links, remoteUI } = useSelector((state: ApplicationState) => {
+    const device = getAllDevices(state).find((d: IDevice) => d.id === deviceID)
+    return {
+      device,
+      connections: state.backend.connections.filter(c => c.deviceID === deviceID),
+      setupAddingService: state.ui.setupAddingService,
+      remoteUI: isRemoteUI(state),
+      links: getLinks(state, deviceID),
+    }
+  })
 
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')
@@ -103,6 +108,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         )} */}
       </List>
       <Divider />
+      {!thisDevice && <AdminPanelConnect device={device} connections={connections} />}
       {!device.shared && (
         <>
           <Typography variant="subtitle1">
@@ -125,7 +131,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
                 <ListItemIcon></ListItemIcon>
                 <ListItemText primary={s.name} secondary={host(s)} />
                 <ListItemSecondaryAction className={css.actions}>
-                  <ServiceMiniState service={s} />
+                  <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
                 </ListItemSecondaryAction>
               </ListItemLocation>
             ))}
