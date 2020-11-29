@@ -79,7 +79,11 @@ export class User {
     this.signedIn = false
 
     EventBus.emit(User.EVENTS.signedOut)
-    rimraf.sync(path.join(environment.userPath, 'user.json'), { disableGlob: true })
+    try {
+      rimraf.sync(path.join(environment.userPath, 'user.json'), { disableGlob: true })
+    } catch (error) {
+      Logger.info('NO USER FILE TO CLEAN UP', { error })
+    }
   }
 
   clearAll = async () => {

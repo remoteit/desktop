@@ -47,9 +47,9 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
 
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
-      <List>
-        {thisDevice && (
-          <>
+      {thisDevice && (
+        <>
+          <List>
             <ListItem className={css.field}>
               <TextField
                 select
@@ -114,10 +114,10 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
               </Typography>
             </ListItem>
-          </>
-        )}
-      </List>
-      <Divider />
+          </List>
+          <Divider />
+        </>
+      )}
       <List>
         <ListItem className={css.fieldWide}>
           <TextField

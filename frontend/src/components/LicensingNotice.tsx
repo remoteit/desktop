@@ -47,9 +47,7 @@ export const LicensingNotice: React.FC<Props> = props => {
     notice = (
       <Notice severity="warning" link={upgradeUrl}>
         {title} has expired.
-        <em>
-          Please upgrade your {license.plan.product.name} license.{learnMoreLink}
-        </em>
+        <em>Please upgrade your license.{learnMoreLink}</em>
       </Notice>
     )
 
