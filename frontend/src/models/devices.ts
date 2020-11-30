@@ -8,6 +8,7 @@ import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
+import { RootModel } from './rootModel'
 
 type DeviceParams = { [key: string]: any }
 
@@ -54,7 +55,7 @@ export const state: IDeviceState = {
   eventsUrl: '',
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
   effects: (dispatch: any) => ({
     /* 
@@ -225,6 +226,7 @@ export default createModel({
   reducers: {
     set(state: IDeviceState, params: DeviceParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
     },
   },
 })

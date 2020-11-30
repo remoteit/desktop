@@ -6,6 +6,7 @@ import { platformConfiguration } from '../services/platformConfiguration'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { RootModel } from './rootModel'
 
 type IBackendState = ILookup<any> & {
   connections: IConnection[]
@@ -59,7 +60,7 @@ const state: IBackendState = {
   deferredAttributes: undefined,
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
   effects: (dispatch: any) => ({
     async targetDeviceUpdated(targetDevice: ITargetDevice, globalState: any) {
@@ -94,7 +95,7 @@ export default createModel({
       backend.set({ device: targetDevice })
       platformConfiguration()
     },
-    async targetUpdated(_, globalState: any) {
+    async targetUpdated(_: ITarget[], globalState: any) {
       const { user } = globalState.auth as ApplicationState['auth']
       if (globalState.ui.setupBusy) {
         await dispatch.devices.fetch(user?.id)
@@ -160,6 +161,7 @@ export default createModel({
   reducers: {
     set(state: IBackendState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
     },
   },
 })

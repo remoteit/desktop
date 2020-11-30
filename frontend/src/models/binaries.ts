@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { emit } from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { RootModel } from './rootModel'
 
 export interface BinariesState {
   error?: any
@@ -20,9 +21,9 @@ const state: BinariesState = {
   installedVersion: undefined,
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
+  effects: (dispatch) => ({
     async install() {
       dispatch.binaries.clearError()
       dispatch.binaries.installing()
@@ -33,6 +34,7 @@ export default createModel({
   reducers: {
     installing(state: BinariesState) {
       state.installing = true
+      return state
     },
     installed(state: BinariesState, info: InstallationInfo) {
       console.log('BINARY INSTALLED', info)
@@ -42,6 +44,7 @@ export default createModel({
       state.path = info.path
       state.version = info.version
       state.installedVersion = info.installedVersion
+      return state
     },
     notInstalled(state: BinariesState, name: BinaryName) {
       console.log('BINARY NOT INSTALLED', name)
@@ -49,14 +52,17 @@ export default createModel({
       state.installed = false
       state.path = undefined
       state.version = undefined
+      return state
     },
     installError(state: BinariesState, error: string) {
       state.error = error
       state.installing = false
+      return state
     },
     clearError(state: BinariesState) {
       state.error = undefined
       state.installing = false
+      return state
     },
   },
 })

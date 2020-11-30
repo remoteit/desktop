@@ -145,7 +145,7 @@ export default createModel<RootModel>()({
         accountId,
       })
     },
-    async setDevice({ id, accountId, device }: { id: string; accountId?: string; device: IDevice }, globalState) {
+    async setDevice({ id, accountId, device }: { id: string; accountId?: string; device?: IDevice }, globalState) {
       const { setDevices } = dispatch.accounts
       const devices = getDevices(globalState, accountId)
 
@@ -166,10 +166,12 @@ export default createModel<RootModel>()({
   reducers: {
     set(state: IAccountsState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
     },
     setActive(state: IAccountsState, id: string) {
       window.localStorage.setItem(ACCOUNT_KEY, JSON.stringify(id))
       state.activeId = id
+      return state
     },
   },
 })

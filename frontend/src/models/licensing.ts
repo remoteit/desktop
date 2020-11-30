@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { RootModel } from './rootModel'
 
 type ILicenseLookup = { productId: string; platform: number }
 
@@ -21,7 +22,7 @@ const state: ILicensing = {
   limits: [],
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
   effects: (dispatch: any) => ({
     async fetch() {
@@ -115,6 +116,7 @@ export default createModel({
   reducers: {
     set(state: ILicensing, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
     },
   },
 })

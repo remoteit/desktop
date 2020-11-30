@@ -9,6 +9,7 @@ import { CLIENT_ID, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
 import { getRedirectUrl, isElectron } from '../services/Browser'
 import { createModel } from '@rematch/core'
 import { store } from '../store'
+import { RootModel } from './rootModel'
 
 const USER_KEY = 'user'
 
@@ -32,7 +33,7 @@ const state: AuthState = {
   authService: undefined,
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
   effects: (dispatch: any) => ({
     async init(_: void, rootState: any) {
@@ -148,25 +149,32 @@ export default createModel({
   reducers: {
     setInitialized(state: AuthState) {
       state.initialized = true
+      return state
     },
     signInStarted(state: AuthState) {
       state.signInStarted = true
+      return state
     },
     signInFinished(state: AuthState) {
       state.signInStarted = false
+      return state
     },
     signOutFinished(state: AuthState) {
       state.user = undefined
       window.localStorage.removeItem(USER_KEY)
+      return state
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {
       state.authenticated = authenticated
+      return state
     },
     setBackendAuthenticated(state: AuthState, backendAuthenticated: boolean) {
       state.backendAuthenticated = backendAuthenticated
+      return state
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
+      return state
     },
     setUser(state: AuthState, user: IUser) {
       state.user = user
@@ -175,9 +183,11 @@ export default createModel({
       analyticsHelper.identify(user.id)
       if (user.authHash && user.yoicsId) Controller.setupConnection(user.yoicsId, user.authHash)
       else console.warn('Login failed!', user)
+      return state
     },
     setAuthService(state: AuthState, authService: AuthService) {
       state.authService = authService
+      return state
     },
   },
 })

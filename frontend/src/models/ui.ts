@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { RootModel } from './rootModel'
 
 export const DEFAULT_INTERFACE = 'searching'
 
@@ -47,9 +48,9 @@ const state: UIState = {
   successMessage: '',
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
+  effects: dispatch => ({
     setupUpdated(count: number, globalState: any) {
       if (count !== globalState.ui.setupServicesCount) {
         dispatch.ui.reset()
@@ -60,11 +61,13 @@ export default createModel({
   reducers: {
     set(state: UIState, params: UIParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
     },
     reset(state: UIState) {
       state.setupBusy = false
       state.setupAddingService = false
       state.setupServiceBusy = undefined
+      return state
     },
   },
 })

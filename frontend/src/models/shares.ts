@@ -4,6 +4,7 @@ import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { attributeName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { getDevices } from './accounts'
+import { RootModel } from './rootModel'
 
 type ShareParams = { [key: string]: any }
 
@@ -19,9 +20,9 @@ const state: IShareState = {
   sharing: false,
 }
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
+  effects: (dispatch) => ({
     async delete(userDevice: { deviceId: string; email: string }) {
       const { deviceId, email } = userDevice
       const { set } = dispatch.shares
@@ -92,6 +93,7 @@ export default createModel({
   reducers: {
     set(state: IShareState, params: ShareParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
     },
   },
 })

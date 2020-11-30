@@ -13,7 +13,7 @@ const state: IApplicationTypeState = {
 
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
+  effects: dispatch => ({
     async fetch() {
       try {
         const result = await graphQLRequest(
@@ -39,6 +39,7 @@ export default createModel<RootModel>()({
   reducers: {
     set(state: IApplicationTypeState, params: ILookup<IApplicationType[]>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
     },
   },
 })
