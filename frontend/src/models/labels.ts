@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { colors } from '../styling'
+import { RootModel } from './rootModel'
 
 const state: ILabel[] = [
   {
@@ -44,7 +45,7 @@ const state: ILabel[] = [
   },
 ]
 
-export default createModel({
+export default createModel<RootModel>()({
   state,
   reducers: {
     // setup as a model for when we can edit labels

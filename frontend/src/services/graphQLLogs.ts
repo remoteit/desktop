@@ -29,7 +29,7 @@ const LOG_SELECT_FOR_DEVICE = `{
     }
   }`
 
-export async function graphQLGetMoreLogs(id: string, from: number, maxDate: string) {
+export async function graphQLGetMoreLogs(id: string, from?: number, maxDate?: string) {
   return await graphQLRequest(
     `
         query($id: [String!]!, $from: Int, $maxDate: DateTime ) {
@@ -47,7 +47,7 @@ export async function graphQLGetMoreLogs(id: string, from: number, maxDate: stri
   )
 }
 
-export async function graphQLGetEventsURL(id: string, maxDate: string) {
+export async function graphQLGetEventsURL(id: string, maxDate?: string) {
   return await graphQLRequest(
     `
         query($ids: [String!]!, $maxDate: DateTime ) {
