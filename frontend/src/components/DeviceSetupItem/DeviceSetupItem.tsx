@@ -11,8 +11,8 @@ import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC = () => {
-  const { device, targetDevice, os, links } = useSelector((state: ApplicationState) => ({
-    device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+  const { thisDevice, targetDevice, os, links } = useSelector((state: ApplicationState) => ({
+    thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
     targetDevice: state.backend.device,
     os: state.backend.environment.os,
     links: getLinks(state),
@@ -23,8 +23,8 @@ export const DeviceSetupItem: React.FC = () => {
   let subTitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
 
   if (registered) {
-    if (device) {
-      title = attributeName(device) || targetDevice.name || ''
+    if (thisDevice) {
+      title = attributeName(thisDevice) || targetDevice.name || ''
       subTitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
     } else {
       return (
