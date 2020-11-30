@@ -1,5 +1,5 @@
 import { Divider, List, Typography } from '@material-ui/core'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { ShareSaveActions } from './ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
@@ -114,14 +114,21 @@ function ServiceCheckboxes({
   selectedServices: string[]
   indeterminateServices: string[]
 }): JSX.Element {
+  const [serviceIndeterminates, setServicesIndeterminates] = useState<string[]>([])
+
+  useEffect(() => {
+    setServicesIndeterminates(indeterminateServices)
+  }, [indeterminateServices])
   const update = (checked: boolean, id: string): void => {
     const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id)
+    setServicesIndeterminates(serviceIndeterminates.filter(sI => sI !== id))
     onChange(all)
   }
 
   const selectAll = (checked: boolean, services: CheckboxItem[]): void => {
     const ids = services.map(service => service.value).filter(id => [...selectedServices, id])
     const all = checked ? ids : selectedServices.filter(v => '')
+    setServicesIndeterminates([])
     onChange(all)
   }
 
@@ -140,7 +147,7 @@ function ServiceCheckboxes({
             label={service.label}
             checked={selectedServices.includes(service.value)}
             onClick={checked => update(checked, service.value)}
-            indeterminate={indeterminateServices.includes(service.value)}
+            indeterminate={serviceIndeterminates.includes(service.value)}
           />
         ))}
       </List>
