@@ -95,7 +95,7 @@ declare global {
     | 'privateIP'
     | 'preferences'
 
-  type BinaryName = 'connectd' | 'muxer' | 'demuxer'
+  type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
 
   type Ios = 'mac' | 'windows' | 'linux' | 'rpi'
 

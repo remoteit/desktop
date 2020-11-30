@@ -111,8 +111,10 @@ export default createModel<RootModel>()({
       }
     },
     async disconnect(_: void, rootState: any) {
+      console.log('DISCONNECT')
       if (!rootState.auth.backendAuthenticated) {
-        dispatch.auth.backendSignInError('Sign in failed, please try again.')
+        await dispatch.auth.signedOut()
+        dispatch.auth.setDefaultError('Sign in failed, please try again.')
       }
       dispatch.auth.setBackendAuthenticated(false)
       dispatch.ui.set({ connected: false })
@@ -174,6 +176,10 @@ export default createModel<RootModel>()({
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
+      return state
+    },
+    setDefaultError(state: AuthState, error: string) {
+      state.signInError = state.signInError || error
       return state
     },
     setUser(state: AuthState, user: IUser) {
