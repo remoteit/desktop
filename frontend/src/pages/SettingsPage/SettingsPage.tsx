@@ -83,12 +83,9 @@ export const SettingsPage: React.FC = () => {
           }
         />
         <ListItemSetting
-          confirm
-          label="Sign out"
-          subLabel="Sign out and lock this system installation."
+          label={'Sign out'}
+          subLabel="Allow this device to be transferred or another user to sign in. Will stop all connections."
           icon="sign-out"
-          confirmTitle="Are you sure?"
-          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
           onClick={() => {
             emit('user/sign-out')
             analyticsHelper.track('signOut')
@@ -96,16 +93,15 @@ export const SettingsPage: React.FC = () => {
         />
         <ListItemSetting
           confirm
-          label={'Sign out and clear device credentials'}
-          subLabel="This will remove all user credentials from this device, allowing the device to be transferred or another user to log in."
+          label="Lock application"
+          subLabel="Sign out and prevent others from signing in."
+          icon="lock"
           confirmTitle="Are you sure?"
-          confirmMessage={
-            target.uid
-              ? 'This will remove all your connections and let another user who sign in.'
-              : 'This will remove all your connections.'
-          }
-          icon="user-slash"
-          onClick={() => emit('user/clear-all')}
+          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
+          onClick={() => {
+            emit('user/lock')
+            analyticsHelper.track('signOutLock')
+          }}
         />
       </List>
       <Divider />

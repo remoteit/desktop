@@ -67,7 +67,28 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
+  const id = state.auth.user?.id
   return state.backend.connections.filter(c => !!c.startTime)
+}
+
+export function selectMyConnections(state: ApplicationState) {
+  const devices = getAllDevices(state)
+  const allConnections = selectConnections(state)
+
+  let services: IService[] = []
+  let connections: IConnection[] = []
+
+  for (const device of devices) {
+    for (const service of device.services) {
+      const connection = allConnections.find(c => c.id === service.id)
+      if (connection) {
+        connections.push(connection)
+        services.push(service)
+      }
+    }
+  }
+
+  return { services, connections }
 }
 
 export function updateConnections(devices: IDevice[]) {

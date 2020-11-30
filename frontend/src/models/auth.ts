@@ -38,7 +38,7 @@ export default createModel<RootModel>()({
   effects: (dispatch: any) => ({
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
-
+      console.log('AUTH INIT', { user })
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
@@ -120,7 +120,7 @@ export default createModel<RootModel>()({
     async signInError(error: string) {
       dispatch.auth.setError(error)
       //send message to backend to sign out
-      emit('user/sign-out')
+      emit('user/lock')
     },
     async backendSignInError(error: string) {
       await dispatch.auth.signedOut()

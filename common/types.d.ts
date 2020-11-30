@@ -8,8 +8,8 @@ declare global {
     | 'user/check-sign-in'
     | 'user/sign-in'
     | 'user/sign-out-complete'
+    | 'user/lock'
     | 'user/sign-out'
-    | 'user/clear-all'
     | 'user/quit'
 
     // binaries
@@ -109,6 +109,7 @@ declare global {
   interface UserCredentials {
     username: string
     authHash: string
+    guid: string
   }
 
   interface IConnection {

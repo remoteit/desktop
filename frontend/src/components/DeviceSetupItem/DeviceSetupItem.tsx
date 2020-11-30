@@ -1,11 +1,12 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { getLinks } from '../../helpers/routeHelper'
+import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
@@ -22,8 +23,16 @@ export const DeviceSetupItem: React.FC = () => {
   let subTitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
 
   if (registered) {
-    title = attributeName(device) || targetDevice.name || ''
-    subTitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
+    if (device) {
+      title = attributeName(device) || targetDevice.name || ''
+      subTitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
+    } else {
+      return (
+        <ListItem>
+          <Notice>This device is not registered to you.</Notice>
+        </ListItem>
+      )
+    }
   }
 
   return (
