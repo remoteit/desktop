@@ -66,7 +66,7 @@ export default class TrayMenu {
           {
             label: 'Sign out',
             type: 'normal',
-            click: user.signOut,
+            click: () => EventBus.emit(EVENTS.signOut),
           },
           {
             label: 'Quit',

@@ -7,5 +7,6 @@ export const EVENTS = {
   downloaded: 'update/downloaded',
   available: 'update/available',
   recapitate: 'recapitate',
+  signOut: 'sign-out',
 }
 export default { EVENTS }
