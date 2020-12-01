@@ -85,7 +85,6 @@ export const SharePage = () => {
     })
     const matchServices = match[match.length - 1]
     const indeterminateServices = userSelectedServices
-      .filter(value => !match.includes(value))
       .flat() // get one array of indeterminate
       .filter((v, i, a) => a.indexOf(v) === i) // filter duplicates
       .filter(value => !matchServices.includes(value)) // get just indeterminate value
