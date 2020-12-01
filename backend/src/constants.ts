@@ -64,8 +64,8 @@ export const PATHS = {
   MAC_SYMLINKS: '/usr/local/bin',
 
   WIN_USER_SETTINGS: path.join(os.homedir(), 'AppData/Local/remoteit'),
-  WIN_BINARIES: path.resolve('./resources/x64'),
-  WIN_BINARIES_32: path.resolve('./resources/x86'),
+  WIN_BINARIES: path.join(__dirname,'../../../../x64'),
+  WIN_BINARIES_32: path.join(__dirname,'../../../../x86'),
   WIN_BINARIES_DEV: path.resolve('./bin/x64'),
   WIN_ADMIN_SETTINGS: path.resolve('C:/ProgramData/remoteit'),
   WIN_DEPRECATED_BINARIES: [
