@@ -59,10 +59,9 @@ export default class ConnectionPool {
       d('SYNC CLI CONNECTION', { connection, c })
       if (
         !connection ||
-        (connection.owner.id === user.id &&
-          (connection.startTime !== c.startTime ||
-            connection.active !== c.active ||
-            connection.connecting !== c.connecting))
+        connection.startTime !== c.startTime ||
+        connection.active !== c.active ||
+        connection.connecting !== c.connecting
       ) {
         Logger.info('CONNECTION DIFF', {
           connection: !connection,
