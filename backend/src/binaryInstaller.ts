@@ -121,6 +121,12 @@ export class BinaryInstaller {
     let desktopVersion = preferences.get().version
     let current = desktopVersion && semverCompare(desktopVersion, environment.version) >= 0
 
+    if (environment.isWindows && !current) {
+      // Windows as an installer script to update so doesn't need this check
+      preferences.update({ version: environment.version })
+      return true
+    }
+
     if (current) {
       Logger.info('DESKTOP CURRENT', { desktopVersion })
     } else {
