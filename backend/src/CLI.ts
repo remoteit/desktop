@@ -109,6 +109,7 @@ export default class CLI {
       id: c.uid,
       port: c.port,
       host: c.hostname,
+      owner: { id: config.auth?.guid, email: config.auth?.username },
       createdTime: Math.round(c.createdtimestamp / 1000000),
       startTime: Math.round((c.startedtimestamp || c.createdtimestamp) / 1000000),
       endTime: Math.round(c.stoppedtimestamp / 1000000),

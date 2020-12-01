@@ -38,7 +38,7 @@ export default createModel<RootModel>()({
   effects: (dispatch: any) => ({
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
-
+      console.log('AUTH INIT', { user })
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
@@ -111,8 +111,10 @@ export default createModel<RootModel>()({
       }
     },
     async disconnect(_: void, rootState: any) {
+      console.log('DISCONNECT')
       if (!rootState.auth.backendAuthenticated) {
-        dispatch.auth.backendSignInError('Sign in failed, please try again.')
+        await dispatch.auth.signedOut()
+        dispatch.auth.setDefaultError('Sign in failed, please try again.')
       }
       dispatch.auth.setBackendAuthenticated(false)
       dispatch.ui.set({ connected: false })
@@ -120,7 +122,7 @@ export default createModel<RootModel>()({
     async signInError(error: string) {
       dispatch.auth.setError(error)
       //send message to backend to sign out
-      emit('user/sign-out')
+      emit('user/lock')
     },
     async backendSignInError(error: string) {
       await dispatch.auth.signedOut()
@@ -174,6 +176,10 @@ export default createModel<RootModel>()({
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
+      return state
+    },
+    setDefaultError(state: AuthState, error: string) {
+      state.signInError = state.signInError || error
       return state
     },
     setUser(state: AuthState, user: IUser) {

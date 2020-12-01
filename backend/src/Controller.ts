@@ -27,6 +27,7 @@ class Controller {
     this.pool = pool
     EventBus.on(server.EVENTS.authenticated, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
+    EventBus.on(electronInterface.EVENTS.signOut, this.signOut)
 
     let eventNames = [
       ...Object.values(User.EVENTS),
@@ -52,9 +53,9 @@ class Controller {
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
 
-    socket.on('user/sign-out', user.signOut)
+    socket.on('user/lock', user.signOut)
+    socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
-    socket.on('user/clear-all', this.clearAll)
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.pool.start)
     socket.on('service/launch', openCMDforWindows)
@@ -151,10 +152,11 @@ class Controller {
     app.restart()
   }
 
-  clearAll = async () => {
+  signOut = async () => {
     Logger.info('CLEAR CREDENTIALS')
-    await user.clearAll()
-    await this.pool.clearAll()
+    await cli.signOut()
+    await user.signOut()
+    await this.pool.clearMemory()
   }
 
   signOutComplete = () => {
@@ -169,7 +171,7 @@ class Controller {
     binaryInstaller.uninstallInitiated = true
     await cli.reset()
     await binaryInstaller.uninstall()
-    await this.pool.clearAll()
+    await this.pool.clearMemory()
     try {
       rimraf.sync(environment.userPath, { disableGlob: true })
     } catch (error) {

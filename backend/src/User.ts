@@ -16,6 +16,7 @@ export class User {
     signedIn: 'signed-in',
   }
 
+  id: string = ''
   username: string = ''
   authHash: string = ''
   signedIn: boolean = false
@@ -48,7 +49,7 @@ export class User {
     try {
       const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
-      Logger.info('CHECK SIGN IN', { username: user.username })
+      Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
 
       if (!user) {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
@@ -58,8 +59,9 @@ export class User {
       this.signedIn = true
       this.username = user.username
       this.authHash = user.authHash
+      this.id = user.id
 
-      Logger.info('CHECK CLI SIGNIN')
+      Logger.info('CHECK CLI SIGN IN')
       await cli.checkSignIn()
       EventBus.emit(User.EVENTS.signedIn, user)
 
@@ -72,11 +74,11 @@ export class User {
   }
 
   signOut = () => {
-    Logger.info('SIGN OUT USER')
-
     this.username = ''
     this.authHash = ''
     this.signedIn = false
+
+    Logger.info('SIGN OUT USER', { user: this })
 
     EventBus.emit(User.EVENTS.signedOut)
     try {
@@ -84,11 +86,6 @@ export class User {
     } catch (error) {
       Logger.info('NO USER FILE TO CLEAN UP', { error })
     }
-  }
-
-  clearAll = async () => {
-    await cli.signOut()
-    this.signOut()
   }
 }
 
