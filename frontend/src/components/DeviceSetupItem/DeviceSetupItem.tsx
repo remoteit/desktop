@@ -9,7 +9,7 @@ import { attributeName } from '../../shared/nameHelper'
 import { getLinks } from '../../helpers/routeHelper'
 import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
-import { Icon } from '@remote.it/components'
+import { Icon } from '../../components/Icon'
 
 export const DeviceSetupItem: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
@@ -56,7 +56,7 @@ export const DeviceSetupItem: React.FC = () => {
   return (
     <ListItemLocation pathname={links.setup}>
       <ListItemIcon>
-        <Icon name="hdd" size="1x" />
+        <Icon name="hdd" size="md" type="light" />
       </ListItemIcon>
       <ListItemText primary={title} secondary={subtitle} />
       {canRestore && (

@@ -4,7 +4,7 @@ import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, colors } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
-import { Icon } from '@remote.it/components'
+import { Icon } from '../../components/Icon'
 
 export const SearchField: React.FC = () => {
   const { total, results, query, searched, fetching, filter } = useSelector((state: ApplicationState) => state.devices)

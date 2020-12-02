@@ -1,5 +1,4 @@
 import React from 'react'
-import './Icon.css'
 import { fontSizes, colors, spacing, Color, FontSize } from '../../styling'
 import { IconName } from '@fortawesome/pro-light-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

@@ -2,7 +2,7 @@ import React from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { Icon } from '@remote.it/components'
+import { Icon } from '../../components/Icon'
 
 export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { fetching } = useSelector((state: ApplicationState) => state.devices)
