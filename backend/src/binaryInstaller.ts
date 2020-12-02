@@ -49,7 +49,7 @@ export class BinaryInstaller {
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
     preferences.update({ version: environment.version })
-    this.binaries.map(binary => binary.isCli && EventBus.emit(Binary.EVENTS.installed, binary.toJSON()))
+    EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     this.inProgress = false
   }
 

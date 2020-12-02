@@ -80,10 +80,12 @@ export function selectMyConnections(state: ApplicationState) {
 
   for (const device of devices) {
     for (const service of device.services) {
-      const connection = allConnections.find(c => c.id === service.id)
-      if (connection) {
-        connections.push(connection)
+      const index = allConnections.findIndex(c => c.id === service.id)
+
+      if (index > -1) {
+        connections.push(allConnections[index])
         services.push(service)
+        allConnections.splice(index, 1)
       }
     }
   }
