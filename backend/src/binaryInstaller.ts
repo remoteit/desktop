@@ -113,7 +113,15 @@ export class BinaryInstaller {
   async pushUninstallCommands(commands: Command) {
     commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
     if (!(environment.isWindows || environment.isHeadless)) {
-      this.binaries.map(binary => commands.push(`rm -f ${binary.symlink}`))
+      this.binaries.map(binary => {
+        if (existsSync(binary.symlink)) {
+          if (lstatSync(binary.symlink).isSymbolicLink()) {
+            commands.push(`unlink ${binary.symlink}`)
+          } else {
+            commands.push(`rm -f ${binary.symlink}`)
+          }
+        }
+      })
     }
   }
 

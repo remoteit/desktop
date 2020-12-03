@@ -62,7 +62,7 @@ describe('backend/binaryInstaller', () => {
     let commandSpy: jest.SpyInstance
 
     beforeAll(() => {
-      environment.symlinkPath = '../jest/symlink'
+      environment.symlinkPath = '../jest/symlink/'
       installSpy = jest.spyOn(rimraf, 'sync').mockImplementation()
       commandSpy = jest.spyOn(Command.prototype, 'push').mockImplementation()
     })
