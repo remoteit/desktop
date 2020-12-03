@@ -54,6 +54,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
               <TextField
                 select
                 autoFocus
+                size="small"
                 label="Service Type"
                 value={form.type}
                 disabled={disabled}
@@ -100,6 +101,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
             </ListItem>
             <ListItem className={css.fieldWide}>
               <TextField
+                size="small"
                 label="Service Host Address"
                 value={form.hostname}
                 disabled={disabled}
@@ -121,6 +123,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
       <List>
         <ListItem className={css.fieldWide}>
           <TextField
+            size="small"
             label="Service Name"
             value={form.name}
             disabled={disabled}
