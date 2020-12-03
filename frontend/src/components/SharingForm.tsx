@@ -58,7 +58,6 @@ export function SharingForm({
   }, [hasIndetermante])
 
   const handleChangeScripting = (revertScripting = true) => {
-    console.log({revertScripting})
     onChange(
       {
         scripting: revertScripting ? !scripting : scripting,
