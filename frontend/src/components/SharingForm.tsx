@@ -1,5 +1,5 @@
-import { Divider, List, Typography } from '@material-ui/core'
 import React, { useEffect, useState } from 'react'
+import { Divider, List, Typography } from '@material-ui/core'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { ShareSaveActions } from './ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
@@ -23,12 +23,11 @@ export function SharingForm({
   scripting,
   selectedServices,
   indeterminateServices,
-  users,
   update,
   share,
   changed,
 }: {
-  onChange: (access: SharingAccess, users: string[]) => void
+  onChange: (access: SharingAccess, hasIndetermante: boolean) => void
   device: IDevice
   scripting: boolean
   selectedServices: string[]
@@ -42,11 +41,11 @@ export function SharingForm({
   const location = useLocation()
   const { email = '' } = useParams<{ email: string }>()
   const saving = useSelector((state: ApplicationState) => state.shares.sharing)
-
+  const [hasIndetermante, setHasIndetermante] = useState<boolean>(false)
   let disabled = !changed || saving
 
   const handleChangeServices = (services: string[]) => {
-    onChange({ scripting, services }, users)
+    onChange({ scripting, services }, hasIndetermante)
   }
 
   useEffect(() => {
@@ -54,13 +53,17 @@ export function SharingForm({
     crumbs[2] !== 'users' && handleChangeServices([crumbs[2]])
   }, [])
 
-  const handleChangeScripting = () => {
+  useEffect(() => {
+    handleChangeScripting(false)
+  }, [hasIndetermante])
+
+  const handleChangeScripting = (revertScripting = true) => {
     onChange(
       {
-        scripting: !scripting,
+        scripting: revertScripting ? !scripting : scripting,
         services: selectedServices,
       },
-      users
+      hasIndetermante
     )
   }
   const action = () => {
@@ -76,6 +79,7 @@ export function SharingForm({
         saving={saving}
         selectedServices={selectedServices}
         indeterminateServices={indeterminateServices}
+        setHasIndetermante={setHasIndetermante}
       />
       <Divider />
       <List>
@@ -107,18 +111,32 @@ function ServiceCheckboxes({
   saving,
   selectedServices = [],
   indeterminateServices,
+  setHasIndetermante,
 }: {
   onChange: (services: string[]) => void
   services: CheckboxItem[]
   saving: boolean
   selectedServices: string[]
   indeterminateServices: string[]
+  setHasIndetermante: (indeternate: boolean) => void
 }): JSX.Element {
   const [serviceIndeterminates, setServicesIndeterminates] = useState<string[]>([])
+  const [allIndeterminate, setAllIndeterminate] = useState<boolean>(false)
+  const [selectAllChecked, setSelectAllChecked] = useState<boolean>(false)
+
+  useEffect(() => {
+    setHasIndetermante(serviceIndeterminates.length > 0)
+  }, [serviceIndeterminates])
 
   useEffect(() => {
     setServicesIndeterminates(indeterminateServices)
   }, [indeterminateServices])
+
+  useEffect(() => {
+    setAllIndeterminate(services?.length !== selectedServices?.length && selectedServices?.length !== 0)
+    setSelectAllChecked(services?.length === selectedServices?.length && selectedServices?.length !== 0)
+  }, [services, selectedServices])
+
   const update = (checked: boolean, id: string): void => {
     const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id)
     setServicesIndeterminates(serviceIndeterminates.filter(sI => sI !== id))
@@ -130,6 +148,7 @@ function ServiceCheckboxes({
     const all = checked ? ids : selectedServices.filter(v => '')
     setServicesIndeterminates([])
     onChange(all)
+    console.log("test")
   }
 
   return (
@@ -139,6 +158,8 @@ function ServiceCheckboxes({
           disabled={saving}
           label={<i>Select all</i>}
           onClick={checked => selectAll(checked, services)}
+          checked={selectAllChecked}
+          indeterminate={allIndeterminate}
         />
         {services.map((service, key) => (
           <ListItemCheckbox

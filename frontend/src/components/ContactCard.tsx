@@ -28,14 +28,11 @@ export const ContactCard: React.FC<Props> = ({
   selectedServices,
   setSelectedServices,
 }) => {
-  const handleChange = (access: SharingAccess, users: string[]) => {
+  const handleChange = (access: SharingAccess, hasIndetermante: boolean) => {
     setScripts(access.scripting)
     setSelectedServices(access.services)
-    if ((users.length || user) && (access.scripting || access.services.length)) {
-      setChanged(true)
-    }
-    const indeterminate = indeterminateServices.filter(value => !access.services.includes(value))
-    indeterminate.length && setChanged(false)
+    console.log({hasIndetermante})
+    setChanged(!hasIndetermante)
   }
 
   const handleSharingUpdate = () => {
@@ -75,7 +72,7 @@ export const ContactCard: React.FC<Props> = ({
       users={selected}
       update={handleSharingUpdate}
       share={handleShare}
-      changed={changed}
+      changed={changed && selected?.length > 0}
     />
   )
 }

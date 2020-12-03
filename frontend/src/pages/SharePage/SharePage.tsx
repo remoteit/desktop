@@ -93,7 +93,6 @@ export const SharePage = () => {
     setIndeterminate(indeterminateServices)
     setUserSelected(contacts.find(c => emails.includes(c.email)))
     setSelected(emails)
-    emails.length && indeterminateServices.length ? setChanged(false) : setChanged(true)
   }
 
   const goToNext = () =>
