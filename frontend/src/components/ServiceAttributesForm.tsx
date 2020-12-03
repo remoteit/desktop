@@ -42,6 +42,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       <ListItem className={className}>
         <TextField
           select
+          size="small"
           label="Routing"
           value={attributes.route}
           disabled={!!routingLock || disabled}
@@ -88,6 +89,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             {launchApp.customTokens.map(token => (
               <TextField
                 fullWidth
+                size="small"
                 key={token}
                 label={`${token} default`}
                 value={attributes[token] || ''}
