@@ -58,6 +58,7 @@ export function SharingForm({
   }, [hasIndetermante])
 
   const handleChangeScripting = (revertScripting = true) => {
+    console.log({revertScripting})
     onChange(
       {
         scripting: revertScripting ? !scripting : scripting,
@@ -88,7 +89,7 @@ export function SharingForm({
           subLabel="Give the user the ability to run scripts on this device."
           disabled={saving}
           checked={scripting}
-          onClick={handleChangeScripting}
+          onClick={() => handleChangeScripting(true)}
         />
       </List>
       <ShareSaveActions
