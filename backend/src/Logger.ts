@@ -21,7 +21,7 @@ const consoleFormat = printf(p => {
 
 const transports = [
   new winston.transports.File({
-    filename: path.join(LOG_DIR, 'remoteit.error.log'),
+    filename: path.join(LOG_DIR, 'error.log'),
     format: consoleFormat,
     level: 'error',
     maxsize: MAX_LOG_SIZE_BYTES, // in bytes
@@ -30,7 +30,7 @@ const transports = [
     silent: ENV === 'test',
   }),
   new winston.transports.File({
-    filename: path.join(LOG_DIR, 'remoteit.combined.log'),
+    filename: path.join(LOG_DIR, 'combined.log'),
     format: consoleFormat,
     maxsize: MAX_LOG_SIZE_BYTES, // in bytes
     maxFiles: MAX_LOG_FILES,
