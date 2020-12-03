@@ -63,7 +63,7 @@ export default class ConnectionPool {
         connection.active !== c.active ||
         connection.connecting !== c.connecting
       ) {
-        Logger.info('CONNECTION DIFF', {
+        d('CONNECTION DIFF', {
           connection: !connection,
           startTime: connection?.startTime !== c.startTime,
           active: connection?.active !== c.active,

@@ -61,7 +61,9 @@ export class BinaryInstaller {
       this.pushUninstallCommands(commands)
 
       if (!(environment.isWindows || environment.isHeadless)) {
-        this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
+        this.binaries.map(binary => {
+          if (existsSync(environment.symlinkPath)) commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`)
+        })
       }
 
       commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
