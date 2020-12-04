@@ -202,10 +202,9 @@ export default class ConnectionPool {
     const legacyFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
     if (legacyFile.exists) {
       Logger.info('MIGRATING LEGACY CONNECTIONS FILE')
-      if (!this.file.exists) {
-        Logger.info('COPYING CONNECTIONS DATA')
-        this.file.write(legacyFile.read())
-      }
+      const data = legacyFile.read()
+      Logger.info('COPYING CONNECTIONS DATA', { data })
+      this.file.write(data)
       legacyFile.remove()
     }
   }

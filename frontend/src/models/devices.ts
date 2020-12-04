@@ -65,12 +65,12 @@ export default createModel<RootModel>()({
     // @TODO might want a fetch member call and a fetch(logged in user) call
     // The fetch member call could be smaller and not get the connections an
     // other stuff
-    async fetch(optionalAccountId: any, globalState: any) {
+    async fetch(optionalAccountId: string | undefined, globalState) {
       const accountId: string = optionalAccountId || getAccountId(globalState)
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, appendDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched } = globalState.devices
-      const { user } = globalState.auth as ApplicationState['auth']
+      const { user } = globalState.auth
       const all = getDevices(globalState)
       const options: gqlOptions = {
         size,
@@ -180,7 +180,7 @@ export default createModel<RootModel>()({
     async rename({ id, name }: { id: string; name: string }) {
       try {
         await r3.post(`/device/name/`, { deviceaddress: id, devicealias: name })
-        await dispatch.devices.fetch()
+        await dispatch.devices.fetch(undefined)
       } catch (error) {
         dispatch.backend.set({ globalError: error.message })
         console.warn(error)
@@ -214,7 +214,7 @@ export default createModel<RootModel>()({
               scripting: false,
             })
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
-        await dispatch.devices.fetch()
+        await dispatch.devices.fetch(undefined)
       } catch (error) {
         dispatch.backend.set({ globalError: error.message })
         console.warn(error)

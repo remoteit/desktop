@@ -24,7 +24,7 @@ export const SearchField: React.FC = () => {
       onSubmit={e => {
         e.preventDefault()
         devices.set({ searched: true, from: 0 })
-        devices.fetch()
+        devices.fetch(undefined)
       }}
     >
       <InputBase
@@ -34,7 +34,7 @@ export const SearchField: React.FC = () => {
         onKeyPress={e => {
           if (e.key === 'Enter' && query.trim().length < 2) {
             devices.set({ query: '', searched: false, from: 0 })
-            devices.fetch()
+            devices.fetch(undefined)
           }
         }}
         onChange={e => devices.set({ query: e.target.value })}
@@ -50,7 +50,7 @@ export const SearchField: React.FC = () => {
               type="button"
               onClick={() => {
                 devices.set({ query: '', searched: false, from: 0 })
-                devices.fetch()
+                devices.fetch(undefined)
               }}
             >
               <Icon name="times" size="md" type="light" color="grayDarker" fixedWidth />
