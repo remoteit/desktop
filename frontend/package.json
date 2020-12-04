@@ -19,7 +19,7 @@
     "@material-ui/core": "^4.11.0",
     "@material-ui/pickers": "^3.2.10",
     "@rematch/core": "^2.0.0-next.6",
-    "@rematch/immer": "^1.2.0",
+    "@rematch/immer": "^2.0.0-next.7",
     "@remote.it/components": "^0.29.52",
     "@remote.it/services": "^0.7.23",
     "@remote.it/types": "^0.4.0",
