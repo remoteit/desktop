@@ -95,9 +95,6 @@ Section "Uninstall"
                             MessageBox MB_OK "Your device was unregistered!" 
                             Goto next
                         false:
-                            FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
-                            RMDir /r "$APPDATA\remoteit\log"
-                            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit\log$\r$\n"
                             Goto next
                         next:
                         Goto done
