@@ -90,22 +90,12 @@ Section "Uninstall"
                         true:
                             FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
                             
-                            RMDir /r "$APPDATA\remoteit"
-                            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
+                
                             MessageBox MB_OK "Your device was unregistered!" 
                             Goto next
                         false:
                             FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent uninstall'
-                            nsExec::ExecToStack /OEM $ps_command_uninstall
-                            Pop $0
-                            Pop $1
-                            FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j status'
-                            nsExec::ExecToStack /OEM $ps_command_uninstall 
-                            Pop $0
-                            Pop $1
-                            FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
                             RMDir /r "$APPDATA\remoteit\log"
                             FileWrite $uninstallLog "- RMDir $APPDATA\remoteit\log$\r$\n"
                             Goto next
