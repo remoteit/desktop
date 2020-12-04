@@ -219,6 +219,9 @@ With an EV signing cert you cannot automate the token password, but you can set 
 
 You should now have a fully signed windows app suite with installer, and uninstaller that can be auto-updated.
 
+_Note if you run into signing errors "SignTool Error: The file is being used by another process." disable Windows Defender_
+_Also it's good to run the signtool command once in console so that the signtool will keep the password in memory for the build_
+
 ### Windows partial manual signing
 
 To sign the application follow these steps:
