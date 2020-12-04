@@ -34,13 +34,13 @@
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j service uninstall'
+    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent uninstall'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j service install'
+    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
@@ -104,7 +104,7 @@
                         MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
                         true:
                             FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregistered --yes'
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
                             Pop $0
                             Pop $1      
@@ -116,28 +116,10 @@
                             Pop $1
                             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
 
-                            RMDir /r "$APPDATA\remoteit"
-                            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
-
                             MessageBox MB_OK "Your device was unregistered!" 
                             Goto next
                         false:
                             FileWrite $uninstallLog "- ...unregister your device: NO$\r$\n"
-
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j service uninstall'
-                            nsExec::ExecToStack /OEM $ps_command_uninstall
-                            Pop $0
-                            Pop $1
-                            FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
-
-                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j status'
-                            nsExec::ExecToStack /OEM $ps_command_uninstall 
-                            Pop $0
-                            Pop $1
-                            FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
-
-                            RMDir /r "$APPDATA\remoteit\log"
-                            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit\log$\r$\n"
                             Goto next
                         next:
                         Goto done
@@ -149,14 +131,13 @@
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
-            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent uninstall'
+            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j reset --yes'
             nsExec::ExecToStack /OEM $ps_command_uninstall 
-
             Pop $0
             Pop $1      
             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
 
-            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j uninstall --yes'
+            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent uninstall'
             nsExec::ExecToStack /OEM $ps_command_uninstall 
             Pop $0
             Pop $1      
