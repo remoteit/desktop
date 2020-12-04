@@ -61,11 +61,7 @@ export default createModel<RootModel>()({
     /* 
       GraphQL search query for all device data
     */
-
-    // @TODO might want a fetch member call and a fetch(logged in user) call
-    // The fetch member call could be smaller and not get the connections an
-    // other stuff
-    async fetch(optionalAccountId: string | undefined, globalState) {
+    async fetch(optionalAccountId?: string, globalState?) {
       const accountId: string = optionalAccountId || getAccountId(globalState)
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, appendDevices } = dispatch.accounts
@@ -180,7 +176,7 @@ export default createModel<RootModel>()({
     async rename({ id, name }: { id: string; name: string }) {
       try {
         await r3.post(`/device/name/`, { deviceaddress: id, devicealias: name })
-        await dispatch.devices.fetch(undefined)
+        await dispatch.devices.fetch()
       } catch (error) {
         dispatch.backend.set({ globalError: error.message })
         console.warn(error)
@@ -214,7 +210,7 @@ export default createModel<RootModel>()({
               scripting: false,
             })
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
-        await dispatch.devices.fetch(undefined)
+        await dispatch.devices.fetch()
       } catch (error) {
         dispatch.backend.set({ globalError: error.message })
         console.warn(error)

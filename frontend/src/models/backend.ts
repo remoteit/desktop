@@ -73,7 +73,7 @@ export default createModel<RootModel>()({
           if (!result) {
             // Instances were reported where a device wasn't returned
             await sleep(2000)
-            await devices.fetch(undefined)
+            await devices.fetch()
           }
           ui.set({
             setupRegisteringDevice: false,
@@ -83,7 +83,7 @@ export default createModel<RootModel>()({
           const result = await devices.fetchSingle({ deviceId: device.uid })
           if (result) {
             await sleep(2000)
-            await devices.fetch(undefined)
+            await devices.fetch()
           }
           ui.set({
             setupDeletingDevice: false,
@@ -97,8 +97,9 @@ export default createModel<RootModel>()({
     },
     async targetUpdated(_: ITarget[], globalState) {
       const { user } = globalState.auth
+      const { fetch } = dispatch.devices as any
       if (globalState.ui.setupBusy) {
-        await dispatch.devices.fetch(user?.id)
+        await fetch(user?.id)
         await dispatch.backend.updateDeferredAttributes()
         dispatch.ui.reset()
       }
@@ -162,8 +163,10 @@ export default createModel<RootModel>()({
         if (!connection.owner) {
           console.log('CONNECTION DATA MISSING', connection.id)
           const [service] = selectService(globalState, connection.id)
-          connection = { ...newConnection(service), ...connection }
-          if (service) setConnection(connection)
+          if (service) {
+            connection = { ...newConnection(service), ...connection }
+            setConnection(connection)
+          }
         }
       })
       dispatch.backend.set({ connections })

@@ -106,7 +106,7 @@ export default createModel<RootModel>()({
         dispatch.auth.setBackendAuthenticated(true)
         await dispatch.licensing.fetch()
         await dispatch.accounts.init()
-        await dispatch.devices.fetch(undefined)
+        await dispatch.devices.fetch()
         dispatch.applicationTypes.fetch()
       }
     },

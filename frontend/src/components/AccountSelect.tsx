@@ -35,7 +35,7 @@ export const AccountSelect: React.FC = () => {
         if (id) {
           await accounts.setActive(id.toString())
           devices.set({ query: '', searched: false, from: 0 })
-          devices.fetch(undefined)
+          devices.fetch()
         }
       }}
     >

@@ -13,7 +13,7 @@ export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
       devices.fetchSingle({ deviceId: device.id })
     } else {
       devices.set({ from: 0 })
-      devices.fetch(undefined)
+      devices.fetch()
     }
     licensing.fetch()
   }
