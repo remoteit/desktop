@@ -149,6 +149,19 @@
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
+            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent uninstall'
+            nsExec::ExecToStack /OEM $ps_command_uninstall 
+
+            Pop $0
+            Pop $1      
+            FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
+
+            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j uninstall --yes'
+            nsExec::ExecToStack /OEM $ps_command_uninstall 
+            Pop $0
+            Pop $1      
+            FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
+
             StrCpy $ps_command_uninstall 'powershell [System.Environment]::SetEnvironmentVariable("$\'"PATH$\'",((([System.Environment]::GetEnvironmentVariable("$\'"PATH$\'","$\'"Machine$\'")).Split("$\'";$\'") | Where-Object { $$_ -ne "$\'"C:\Program Files\remoteit\resources\x64$\'" }) -join "$\'";$\'"),"$\'"Machine$\'") ' 
             nsExec::ExecToStack /OEM $ps_command_uninstall
             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
