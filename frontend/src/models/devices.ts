@@ -61,16 +61,12 @@ export default createModel<RootModel>()({
     /* 
       GraphQL search query for all device data
     */
-
-    // @TODO might want a fetch member call and a fetch(logged in user) call
-    // The fetch member call could be smaller and not get the connections an
-    // other stuff
-    async fetch(optionalAccountId: any, globalState: any) {
+    async fetch(optionalAccountId?: string, globalState?) {
       const accountId: string = optionalAccountId || getAccountId(globalState)
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, appendDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched } = globalState.devices
-      const { user } = globalState.auth as ApplicationState['auth']
+      const { user } = globalState.auth
       const all = getDevices(globalState)
       const options: gqlOptions = {
         size,
