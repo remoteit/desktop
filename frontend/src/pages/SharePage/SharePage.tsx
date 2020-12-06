@@ -47,6 +47,7 @@ export const SharePage = () => {
   const [selectedServices, setSelectedServices] = useState(permissions?.services.map(s => s.id) || [])
   const [indeterminate, setIndeterminate] = React.useState<string[]>([])
   const [scripts, setScripts] = useState(permissions?.scripting || false)
+  const [scriptIndeterminate, setScriptIndeterminate] = useState(false)
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
@@ -88,7 +89,16 @@ export const SharePage = () => {
       .flat() // get one array of indeterminate
       .filter((v, i, a) => a.indexOf(v) === i) // filter duplicates
       .filter(value => !matchServices.includes(value)) // get just indeterminate value
-    setScripts(userSelectedScript.find(script => script === true) || false)
+
+    const unique: any = new Set(userSelectedScript)
+    if ([...Array.from(unique)].length > 1) {
+      setScriptIndeterminate(true)
+      setScripts(false)
+    } else {
+      setScripts(userSelectedScript.find(script => script === true) || false)
+      setScriptIndeterminate(false)
+    }
+
     setSelectedServices(matchServices)
     setIndeterminate(indeterminateServices)
     setUserSelected(contacts.find(c => emails.includes(c.email)))
@@ -117,6 +127,15 @@ export const SharePage = () => {
         services,
         email,
       }
+    }
+  }
+
+  const handleSetScript = newValue => {
+    if (scriptIndeterminate) {
+      setScripts(true)
+      setScriptIndeterminate(false)
+    } else {
+      setScripts(newValue)
     }
   }
 
@@ -162,7 +181,8 @@ export const SharePage = () => {
           changed={changed}
           setChanged={setChanged}
           scripts={scripts}
-          setScripts={setScripts}
+          setScripts={handleSetScript}
+          indeterminateScript={scriptIndeterminate}
           selectedServices={selectedServices}
           indeterminateServices={indeterminate}
           setSelectedServices={setSelectedServices}

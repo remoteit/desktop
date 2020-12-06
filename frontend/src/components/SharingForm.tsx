@@ -23,6 +23,7 @@ export function SharingForm({
   scripting,
   selectedServices,
   indeterminateServices,
+  indeterminateScript,
   update,
   share,
   changed,
@@ -32,6 +33,7 @@ export function SharingForm({
   scripting: boolean
   selectedServices: string[]
   indeterminateServices: string[]
+  indeterminateScript: boolean
   users: string[]
   update: () => void
   share: () => void
@@ -87,7 +89,8 @@ export function SharingForm({
           label="Allow script execution"
           subLabel="Give the user the ability to run scripts on this device."
           disabled={saving}
-          checked={scripting}
+          checked={!indeterminateScript && scripting}
+          indeterminate={indeterminateScript}
           onClick={() => handleChangeScripting(true)}
         />
       </List>
@@ -148,7 +151,6 @@ function ServiceCheckboxes({
     const all = checked ? ids : selectedServices.filter(v => '')
     setServicesIndeterminates([])
     onChange(all)
-    console.log("test")
   }
 
   return (
