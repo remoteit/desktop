@@ -49,7 +49,7 @@ export class BinaryInstaller {
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
     preferences.update({ version: environment.version })
-    this.binaries.map(binary => binary.isCli && EventBus.emit(Binary.EVENTS.installed, binary.toJSON()))
+    EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     this.inProgress = false
   }
 
@@ -61,7 +61,9 @@ export class BinaryInstaller {
       this.pushUninstallCommands(commands)
 
       if (!(environment.isWindows || environment.isHeadless)) {
-        this.binaries.map(binary => commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`))
+        this.binaries.map(binary => {
+          if (existsSync(environment.symlinkPath)) commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`)
+        })
       }
 
       commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
@@ -113,13 +115,27 @@ export class BinaryInstaller {
   async pushUninstallCommands(commands: Command) {
     commands.push(`"${this.cliBinary.path}" ${strings.serviceUninstall()}`)
     if (!(environment.isWindows || environment.isHeadless)) {
-      this.binaries.map(binary => commands.push(`rm -f ${binary.symlink}`))
+      this.binaries.map(binary => {
+        if (existsSync(binary.symlink)) {
+          if (lstatSync(binary.symlink).isSymbolicLink()) {
+            commands.push(`unlink ${binary.symlink}`)
+          } else {
+            commands.push(`rm -f ${binary.symlink}`)
+          }
+        }
+      })
     }
   }
 
   isDesktopCurrent() {
     let desktopVersion = preferences.get().version
     let current = desktopVersion && semverCompare(desktopVersion, environment.version) >= 0
+
+    if (environment.isWindows && !current) {
+      // Windows as an installer script to update so doesn't need this check
+      preferences.update({ version: environment.version })
+      return true
+    }
 
     if (current) {
       Logger.info('DESKTOP CURRENT', { desktopVersion })

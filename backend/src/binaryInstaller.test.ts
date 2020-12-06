@@ -60,16 +60,22 @@ describe('backend/binaryInstaller', () => {
   describe('uninstallBinary', () => {
     let installSpy: jest.SpyInstance
     let commandSpy: jest.SpyInstance
+    let existsSpy: jest.SpyInstance
+    let lstatSpy: jest.SpyInstance
 
     beforeAll(() => {
-      environment.symlinkPath = '../jest/symlink'
+      environment.symlinkPath = '../jest/symlink/'
       installSpy = jest.spyOn(rimraf, 'sync').mockImplementation()
       commandSpy = jest.spyOn(Command.prototype, 'push').mockImplementation()
+      existsSpy = jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
+      lstatSpy = jest.spyOn(fs, 'lstatSync').mockImplementation(() => ({ isSymbolicLink: () => false } as any))
     })
 
     beforeEach(() => {
       installSpy.mockClear()
       commandSpy.mockClear()
+      existsSpy.mockClear()
+      lstatSpy.mockClear()
     })
 
     test('removes the files from a mac installer when not headless', async () => {

@@ -36,6 +36,8 @@ export default class TrayMenu {
       })
     }
 
+    this.render()
+
     EventBus.on(User.EVENTS.signedIn, this.render)
     EventBus.on(User.EVENTS.signedOut, this.render)
     EventBus.on(ConnectionPool.EVENTS.updated, this.updatePool)
@@ -66,7 +68,7 @@ export default class TrayMenu {
           {
             label: 'Sign out',
             type: 'normal',
-            click: user.signOut,
+            click: () => EventBus.emit(EVENTS.signOut),
           },
           {
             label: 'Quit',

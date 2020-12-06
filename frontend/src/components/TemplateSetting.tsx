@@ -1,6 +1,4 @@
 import React from 'react'
-import { Application } from '../shared/applications'
-import { newConnection } from '../helpers/connectionHelper'
 import { ListItem, TextField, Typography } from '@material-ui/core'
 
 type Props = {
@@ -12,10 +10,10 @@ type Props = {
 }
 
 export const TemplateSetting: React.FC<Props> = ({ label, value, disabled, onChange, className, children }) => {
-  const connection = newConnection(null, 33000)
   return (
     <ListItem className={className}>
       <TextField
+        size="small"
         label={label}
         value={value}
         disabled={disabled}

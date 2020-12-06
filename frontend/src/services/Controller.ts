@@ -96,7 +96,7 @@ function getEventHandlers() {
 
     pool: (result: IConnection[]) => {
       console.log('socket pool', result)
-      backend.set({ connections: result })
+      backend.updateConnections(result)
     },
 
     connection: (result: IConnection) => {

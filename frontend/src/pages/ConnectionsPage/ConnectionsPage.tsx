@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, Typography, Divider, Link } from '@material-ui/core'
-import { selectConnections } from '../../helpers/connectionHelper'
+import { selectMyConnections } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { SessionsList } from '../../components/SessionsList'
@@ -16,14 +16,9 @@ export const ConnectionsPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const { connections, services, sessions } = useSelector((state: ApplicationState) => {
-    const connections = selectConnections(state)
     const devices = getAllDevices(state)
     return {
-      connections,
-      services: findServices(
-        devices,
-        connections.map(c => c.id)
-      ),
+      ...selectMyConnections(state),
       sessions: devices.reduce((sessions: ISession[], d) => {
         if (!d.hidden)
           d.services.forEach(s =>
@@ -67,13 +62,6 @@ export const ConnectionsPage: React.FC = () => {
       <SessionsList sessions={sessions} />
     </>
   )
-}
-
-function findServices(devices: IDevice[], ids: string[]) {
-  return devices.reduce((all: IService[], d: IDevice) => {
-    const service = d?.services?.filter(s => ids.includes(s.id))
-    return service ? all.concat(service) : all
-  }, [])
 }
 
 const useStyles = makeStyles({

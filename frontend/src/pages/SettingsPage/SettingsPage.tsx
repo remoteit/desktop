@@ -10,6 +10,7 @@ import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { LicensingSetting } from '../../components/LicensingSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { UpdateSetting } from '../../components/UpdateSetting'
+import { getOwnDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -22,15 +23,15 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
-  const { os, user, target, installing, cliVersion, preferences, targetDevice, remoteUI } = useSelector(
+  const { os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       os: state.backend.environment.os,
       user: state.auth.user,
-      target: state.backend.device,
       installing: state.binaries.installing,
       cliVersion: state.binaries.installedVersion || '(loading...)',
       preferences: state.backend.preferences,
       targetDevice: state.backend.device,
+      notOwner: !!state.backend.device.uid && !getOwnDevices(state).find(d => d.id === state.backend.device.uid),
       remoteUI: isRemoteUI(state),
     })
   )
@@ -83,12 +84,9 @@ export const SettingsPage: React.FC = () => {
           }
         />
         <ListItemSetting
-          confirm
-          label="Sign out"
-          subLabel="Sign out and lock this system installation."
+          label={'Sign out'}
+          subLabel="Allow this device to be transferred or another user to sign in. Will stop all connections."
           icon="sign-out"
-          confirmTitle="Are you sure?"
-          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
           onClick={() => {
             emit('user/sign-out')
             analyticsHelper.track('signOut')
@@ -96,16 +94,15 @@ export const SettingsPage: React.FC = () => {
         />
         <ListItemSetting
           confirm
-          label={'Sign out and clear device credentials'}
-          subLabel="This will remove all user credentials from this device, allowing the device to be transferred or another user to log in."
+          label="Lock application"
+          subLabel="Sign out and prevent others from signing in."
+          icon="lock"
           confirmTitle="Are you sure?"
-          confirmMessage={
-            target.uid
-              ? 'This will remove all your connections and let another user who sign in.'
-              : 'This will remove all your connections.'
-          }
-          icon="user-slash"
-          onClick={() => emit('user/clear-all')}
+          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
+          onClick={() => {
+            emit('user/lock')
+            analyticsHelper.track('signOutLock')
+          }}
         />
       </List>
       <Divider />
@@ -180,19 +177,21 @@ export const SettingsPage: React.FC = () => {
               confirmMessage="This will stop all services and re-install the command line utilities."
               onClick={() => binaries.install()}
             />
-            <ListItemSetting
-              confirm
-              label="Uninstall"
-              subLabel={`De-register this device, completely remove all saved data, and uninstall the system service and command line tools link. Do this before removing, the application from your system.`}
-              icon="trash-alt"
-              confirmTitle="Are you sure?"
-              confirmMessage="You will remove this system as a host, your connections and command line utilities."
-              onClick={() => {
-                emit('uninstall')
-                ui.set({ uninstalling: true })
-                analyticsHelper.track('uninstall')
-              }}
-            />
+            {!notOwner && (
+              <ListItemSetting
+                confirm
+                label="Uninstall"
+                subLabel={`De-register this device, completely remove all saved data, and uninstall the system service and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
+                icon="trash-alt"
+                confirmTitle="Are you sure?"
+                confirmMessage="You will remove this system as a host, your connections and command line utilities."
+                onClick={() => {
+                  emit('uninstall')
+                  ui.set({ uninstalling: true })
+                  analyticsHelper.track('uninstall')
+                }}
+              />
+            )}
             <ListItemSetting
               label="Show application logs"
               subLabel="Will show the folders that contain the application logs and config file."

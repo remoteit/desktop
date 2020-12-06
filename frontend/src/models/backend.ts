@@ -1,12 +1,12 @@
 import { createModel } from '@rematch/core'
 import { selectService } from '../models/devices'
+import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_TARGET } from '../shared/constants'
-import { Dispatch, ApplicationState } from '../store'
 import { platformConfiguration } from '../services/platformConfiguration'
+import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { RootModel } from './rootModel'
 
 type IBackendState = ILookup<any> & {
   connections: IConnection[]
@@ -62,9 +62,9 @@ const state: IBackendState = {
 
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
-    async targetDeviceUpdated(targetDevice: ITargetDevice, globalState: any) {
-      const { ui, backend, devices } = dispatch as Dispatch
+  effects: dispatch => ({
+    async targetDeviceUpdated(targetDevice: ITargetDevice, globalState) {
+      const { ui, backend, devices } = dispatch
       const { device } = globalState.backend
 
       if (targetDevice?.uid !== device.uid) {
@@ -95,15 +95,16 @@ export default createModel<RootModel>()({
       backend.set({ device: targetDevice })
       platformConfiguration()
     },
-    async targetUpdated(_: ITarget[], globalState: any) {
-      const { user } = globalState.auth as ApplicationState['auth']
+    async targetUpdated(_: ITarget[], globalState) {
+      const { user } = globalState.auth
+      const { fetch } = dispatch.devices as any
       if (globalState.ui.setupBusy) {
-        await dispatch.devices.fetch(user?.id)
+        await fetch(user?.id)
         await dispatch.backend.updateDeferredAttributes()
         dispatch.ui.reset()
       }
     },
-    async updateDeferredAttributes(_, globalState: any) {
+    async updateDeferredAttributes(_, globalState) {
       const { deferredAttributes, targets } = globalState.backend
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
@@ -115,20 +116,20 @@ export default createModel<RootModel>()({
         }
       }
     },
-    async registerDevice({ targets, name }: { targets: ITarget[]; name: string }, globalState: any) {
+    async registerDevice({ targets, name }: { targets: ITarget[]; name: string }, globalState) {
       const targetDevice = globalState.backend.device
       emit('registration', { device: { ...targetDevice, name }, targets })
       dispatch.ui.set({ setupRegisteringDevice: true })
       analyticsHelper.track('deviceCreated', { ...targetDevice, id: targetDevice.uid })
       targets.forEach(t => analyticsHelper.track('serviceCreated', { ...t, name, id: t.uid }))
     },
-    async addTargetService(target: ITarget, globalState: any) {
+    async addTargetService(target: ITarget, globalState) {
       analyticsHelper.track('serviceCreated', { ...target, id: target.uid })
       dispatch.ui.set({ setupBusy: true, setupAddingService: true })
       emit('targets', [...globalState.backend.targets, target])
     },
-    async removeTargetService(target: ITarget, globalState: any) {
-      const targets: ITarget[] = globalState.backend.targets
+    async removeTargetService(target: ITarget, globalState) {
+      const targets = globalState.backend.targets
       const index = targets?.findIndex(t => t.uid === target.uid)
       analyticsHelper.track('serviceRemoved', { ...target, id: target.uid })
       let copy = [...globalState.backend.targets]
@@ -136,8 +137,8 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupBusy: true, setupServiceBusy: target.uid })
       emit('targets', copy)
     },
-    async updateTargetService(target: ITarget, globalState: any) {
-      const targets: ITarget[] = globalState.backend.targets
+    async updateTargetService(target: ITarget, globalState) {
+      const targets = globalState.backend.targets
       analyticsHelper.track('serviceUpdated', { ...target, id: target.uid })
       dispatch.ui.set({ setupBusy: true, setupServiceBusy: true })
       const tIndex = targets?.findIndex(t => t.uid === target.uid)
@@ -145,8 +146,8 @@ export default createModel<RootModel>()({
       emit('targets', targets)
     },
 
-    async updateConnection(connection: IConnection, globalState: any) {
-      const state = globalState.backend as ApplicationState['backend']
+    async updateConnection(connection: IConnection, globalState) {
+      const state = globalState.backend
       state.connections.some((c, index) => {
         if (c.id === connection.id) {
           state.connections[index] = connection
@@ -155,6 +156,20 @@ export default createModel<RootModel>()({
         }
         return false
       })
+    },
+    async updateConnections(connections: IConnection[], globalState) {
+      connections.forEach(connection => {
+        // data missing from cli if our connections file is lost
+        if (!connection.owner) {
+          console.log('CONNECTION DATA MISSING', connection.id)
+          const [service] = selectService(globalState, connection.id)
+          if (service) {
+            connection = { ...newConnection(service), ...connection }
+            setConnection(connection)
+          }
+        }
+      })
+      dispatch.backend.set({ connections })
     },
   }),
 

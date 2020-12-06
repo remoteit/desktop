@@ -1,7 +1,7 @@
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { emit } from '../services/Controller'
-import { AuthUser } from '@remote.it/types'
+import { AuthUser, CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { Dispatch } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
@@ -38,11 +38,10 @@ export default createModel<RootModel>()({
   effects: (dispatch: any) => ({
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
-
+      console.log('AUTH INIT', { user })
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          developerKey: DEVELOPER_KEY,
           redirectURL: Buffer.from(getRedirectUrl()).toString('hex'),
           callbackURL: CALLBACK_URL,
           signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL,
@@ -82,7 +81,7 @@ export default createModel<RootModel>()({
       const { backend } = store.dispatch
       const result = await rootState.auth.authService.checkSignIn()
       if (result.authUser) {
-        await dispatch.auth.handleSignInSuccess(result.authUser)
+        await dispatch.auth.handleSignInSuccess(result.cognitoUser)
       } else {
         if (result.error.code === 'NetworkError') {
           backend.set({ globalError: result.error.message })
@@ -91,9 +90,9 @@ export default createModel<RootModel>()({
         }
       }
     },
-    async handleSignInSuccess(authUser: AuthUser): Promise<void> {
-      if (authUser.cognitoUser?.username) {
-        if (authUser.cognitoUser?.authProvider === 'Google') {
+    async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
+      if (cognitoUser?.username) {
+        if (cognitoUser?.authProvider === 'Google') {
           window.localStorage.setItem('amplify-signin-with-hostedUI', 'true')
         }
         dispatch.auth.setAuthenticated(true)
@@ -111,8 +110,10 @@ export default createModel<RootModel>()({
       }
     },
     async disconnect(_: void, rootState: any) {
+      console.log('DISCONNECT')
       if (!rootState.auth.backendAuthenticated) {
-        dispatch.auth.backendSignInError('Sign in failed, please try again.')
+        await dispatch.auth.signedOut()
+        dispatch.auth.setDefaultError('Sign in failed, please try again.')
       }
       dispatch.auth.setBackendAuthenticated(false)
       dispatch.ui.set({ connected: false })
@@ -120,7 +121,7 @@ export default createModel<RootModel>()({
     async signInError(error: string) {
       dispatch.auth.setError(error)
       //send message to backend to sign out
-      emit('user/sign-out')
+      emit('user/lock')
     },
     async backendSignInError(error: string) {
       await dispatch.auth.signedOut()
@@ -174,6 +175,10 @@ export default createModel<RootModel>()({
     },
     setError(state: AuthState, error: string) {
       state.signInError = error
+      return state
+    },
+    setDefaultError(state: AuthState, error: string) {
+      state.signInError = state.signInError || error
       return state
     },
     setUser(state: AuthState, user: IUser) {

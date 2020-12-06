@@ -18,21 +18,20 @@ export default class ConnectionPool {
   freePort?: number
 
   private pool: Connection[] = []
-  private connectionsFile: JSONFile<IConnection[]>
+  private file?: JSONFile<IConnection[]>
 
   static EVENTS = {
     updated: 'pool',
     freePort: 'freePort',
   }
 
-  constructor() {
-    this.connectionsFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
-  }
-
   init() {
-    const connections: IConnection[] = this.connectionsFile.read() || []
+    this.file = new JSONFile<IConnection[]>(path.join(environment.userPath, `connections/${user.id}.json`))
+    this.migrateLegacyFile()
 
-    Logger.info('Initializing connections pool', { length: connections.length })
+    const connections: IConnection[] = this.file.read() || []
+
+    Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
     // load connection data
     connections.map(c => this.set(c))
@@ -62,9 +61,9 @@ export default class ConnectionPool {
         !connection ||
         connection.startTime !== c.startTime ||
         connection.active !== c.active ||
-        connection?.connecting !== c.connecting
+        connection.connecting !== c.connecting
       ) {
-        Logger.info('CONNECTION DIFF', {
+        d('CONNECTION DIFF', {
           connection: !connection,
           startTime: connection?.startTime !== c.startTime,
           active: connection?.active !== c.active,
@@ -151,17 +150,15 @@ export default class ConnectionPool {
     this.updated()
   }
 
-  clearAll = async () => {
-    Logger.info('CLEARING ALL CONNECTIONS')
+  clearMemory = async () => {
+    Logger.info('CLEARING CONNECTIONS')
     this.pool = []
-    this.updated()
-    this.connectionsFile.remove()
   }
 
   updated = () => {
     const json = this.toJSON()
     if (!user.signedIn) return
-    this.connectionsFile.write(json)
+    this.file?.write(json)
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
 
@@ -198,5 +195,17 @@ export default class ConnectionPool {
       if (c.params.port) result.push(c.params.port)
       return result
     }, [])
+  }
+
+  private migrateLegacyFile() {
+    if (!this.file) return
+    const legacyFile = new JSONFile<IConnection[]>(path.join(environment.userPath, 'connections.json'))
+    if (legacyFile.exists) {
+      Logger.info('MIGRATING LEGACY CONNECTIONS FILE')
+      const data = legacyFile.read()
+      Logger.info('COPYING CONNECTIONS DATA', { data })
+      this.file.write(data)
+      legacyFile.remove()
+    }
   }
 }

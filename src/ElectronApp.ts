@@ -28,8 +28,12 @@ export default class ElectronApp {
     this.autoUpdater = new AutoUpdater()
     this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
-    if (!this.app.requestSingleInstanceLock()) this.app.quit()
+    if (!this.app.requestSingleInstanceLock()) {
+      Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
+      this.app.quit()
+    }
     this.app.setAsDefaultProtocolClient(this.protocol)
+    Logger.info('ELECTRON STARTING UP')
 
     // Windows event
     this.app.on('ready', this.handleAppReady)
@@ -84,7 +88,7 @@ export default class ElectronApp {
       this.deepLinkUrl = link.substr(scheme.length)
       Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
     }
-    if(link?.includes(authCallbackCode)) {
+    if (link?.includes(authCallbackCode)) {
       this.authCallback = true
       Logger.info('Auth Callback', { link: link })
     }
@@ -138,22 +142,22 @@ export default class ElectronApp {
     })
   }
 
-  private getStartUrl() : string {
+  private getStartUrl(): string {
     return process.env.NODE_ENV === 'development'
-    ? url.format({
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-      })
-    : url.format({
-        pathname: path.join(WEB_DIR, 'index.html'),
-        protocol: 'file',
-        slashes: true,
-      })
+      ? url.format({
+          protocol: 'http',
+          hostname: 'localhost',
+          port: '3000',
+        })
+      : url.format({
+          pathname: path.join(WEB_DIR, 'index.html'),
+          protocol: 'file',
+          slashes: true,
+        })
   }
 
   private createSystemTray() {
-    d('Create system tray')
+    Logger.info('CREATE SYSTEM TRAY')
 
     const iconFile = environment.isMac
       ? 'iconTemplate.png'
@@ -187,7 +191,7 @@ export default class ElectronApp {
       this.authCallback = false
       const index = location.indexOf('?')
       let fullUrl = this.getStartUrl()
-      if(index != -1) {
+      if (index != -1) {
         const parameters = location.substring(index)
         fullUrl = fullUrl + parameters
       }
