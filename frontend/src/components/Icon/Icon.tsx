@@ -2,7 +2,6 @@ import React from 'react'
 import { fontSizes, colors, spacing, Color, FontSize } from '../../styling'
 import { fal, IconName, IconPrefix } from '@fortawesome/pro-light-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Box } from '@material-ui/core'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 
@@ -49,5 +48,6 @@ export function Icon({
       break
     }
   }
-  return <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} />
+
+  return <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} spin={spin} />
 }
