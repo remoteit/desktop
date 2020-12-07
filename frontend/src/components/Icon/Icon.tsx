@@ -49,9 +49,5 @@ export function Icon({
       break
     }
   }
-  return (
-    <Box color={color && colors[color]} component="span">
-      <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} />
-    </Box>
-  )
+  return <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} />
 }
