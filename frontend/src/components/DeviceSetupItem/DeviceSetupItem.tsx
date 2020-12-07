@@ -9,7 +9,7 @@ import { attributeName } from '../../shared/nameHelper'
 import { getLinks } from '../../helpers/routeHelper'
 import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
-import { Icon } from '../../components/Icon'
+import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
