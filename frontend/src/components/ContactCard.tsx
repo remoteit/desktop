@@ -7,13 +7,13 @@ type Props = {
   selected: string[]
   onShare: (access: SharingDetails, isNew: boolean) => void
   changed: boolean
-  setChanged: React.Dispatch<React.SetStateAction<boolean>>
+  onChanged: React.Dispatch<React.SetStateAction<boolean>>
   scripts: boolean
-  setScripts: React.Dispatch<React.SetStateAction<boolean>>
+  onScripts: React.Dispatch<React.SetStateAction<boolean>>
   indeterminateServices: string[]
   indeterminateScript: boolean
   selectedServices: string[]
-  setSelectedServices: React.Dispatch<React.SetStateAction<string[]>>
+  onSelectedServices: React.Dispatch<React.SetStateAction<string[]>>
 }
 
 export const ContactCard: React.FC<Props> = ({
@@ -22,19 +22,19 @@ export const ContactCard: React.FC<Props> = ({
   selected,
   onShare,
   changed,
-  setChanged,
+  onChanged,
   scripts,
-  setScripts,
+  onScripts,
   indeterminateServices,
   indeterminateScript,
   selectedServices,
-  setSelectedServices,
+  onSelectedServices,
 }) => {
-  const handleChange = (access: SharingAccess, hasIndetermante: boolean) => {
+  const handleChange = (access: SharingAccess, hasIndeterminate: boolean) => {
     const updatingScript =  access.scripting !== scripts
-    updatingScript && setScripts(access.scripting)
-    setSelectedServices(access.services)
-    setChanged(!hasIndetermante && (!indeterminateScript || updatingScript))
+    updatingScript && onScripts(access.scripting)
+    onSelectedServices(access.services)
+    onChanged(!hasIndeterminate && (!indeterminateScript || updatingScript))
   }
 
   const handleSharingUpdate = () => {

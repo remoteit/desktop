@@ -43,11 +43,11 @@ export function SharingForm({
   const location = useLocation()
   const { email = '' } = useParams<{ email: string }>()
   const saving = useSelector((state: ApplicationState) => state.shares.sharing)
-  const [hasIndetermante, setHasIndetermante] = useState<boolean>(false)
+  const [hasIndeterminate, setHasIndeterminate] = useState<boolean>(false)
   let disabled = !changed || saving
 
   const handleChangeServices = (services: string[]) => {
-    onChange({ scripting, services }, hasIndetermante)
+    onChange({ scripting, services }, hasIndeterminate)
   }
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function SharingForm({
 
   useEffect(() => {
     handleChangeScripting(false)
-  }, [hasIndetermante])
+  }, [hasIndeterminate])
 
   const handleChangeScripting = (revertScripting = true) => {
     onChange(
@@ -65,7 +65,7 @@ export function SharingForm({
         scripting: revertScripting ? !scripting : scripting,
         services: selectedServices,
       },
-      hasIndetermante
+      hasIndeterminate
     )
   }
   const action = () => {
@@ -81,7 +81,7 @@ export function SharingForm({
         saving={saving}
         selectedServices={selectedServices}
         indeterminateServices={indeterminateServices}
-        setHasIndetermante={setHasIndetermante}
+        onHasIndeterminate={setHasIndeterminate}
       />
       <Divider />
       <List>
@@ -114,25 +114,25 @@ function ServiceCheckboxes({
   saving,
   selectedServices = [],
   indeterminateServices,
-  setHasIndetermante,
+  onHasIndeterminate: onHasIndetermante,
 }: {
   onChange: (services: string[]) => void
   services: CheckboxItem[]
   saving: boolean
   selectedServices: string[]
   indeterminateServices: string[]
-  setHasIndetermante: (indeternate: boolean) => void
+  onHasIndeterminate: (indeterminate: boolean) => void
 }): JSX.Element {
-  const [serviceIndeterminates, setServicesIndeterminates] = useState<string[]>([])
+  const [serviceIndeterminate, setServicesIndeterminate] = useState<string[]>([])
   const [allIndeterminate, setAllIndeterminate] = useState<boolean>(false)
   const [selectAllChecked, setSelectAllChecked] = useState<boolean>(false)
 
   useEffect(() => {
-    setHasIndetermante(serviceIndeterminates.length > 0)
-  }, [serviceIndeterminates])
+    onHasIndetermante(serviceIndeterminate.length > 0)
+  }, [serviceIndeterminate])
 
   useEffect(() => {
-    setServicesIndeterminates(indeterminateServices)
+    setServicesIndeterminate(indeterminateServices)
   }, [indeterminateServices])
 
   useEffect(() => {
@@ -142,14 +142,14 @@ function ServiceCheckboxes({
 
   const update = (checked: boolean, id: string): void => {
     const all = checked ? [...selectedServices, id] : selectedServices.filter(v => v !== id)
-    setServicesIndeterminates(serviceIndeterminates.filter(sI => sI !== id))
+    setServicesIndeterminate(serviceIndeterminate.filter(sI => sI !== id))
     onChange(all)
   }
 
   const selectAll = (checked: boolean, services: CheckboxItem[]): void => {
     const ids = services.map(service => service.value).filter(id => [...selectedServices, id])
     const all = checked ? ids : selectedServices.filter(v => '')
-    setServicesIndeterminates([])
+    setServicesIndeterminate([])
     onChange(all)
   }
 
@@ -170,7 +170,7 @@ function ServiceCheckboxes({
             label={service.label}
             checked={selectedServices.includes(service.value)}
             onClick={checked => update(checked, service.value)}
-            indeterminate={serviceIndeterminates.includes(service.value)}
+            indeterminate={serviceIndeterminate.includes(service.value)}
           />
         ))}
       </List>

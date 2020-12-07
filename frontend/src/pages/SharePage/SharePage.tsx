@@ -179,13 +179,13 @@ export const SharePage = () => {
           selected={selected}
           onShare={handleShare}
           changed={changed}
-          setChanged={setChanged}
+          onChanged={setChanged}
           scripts={scripts}
-          setScripts={handleSetScript}
+          onScripts={handleSetScript}
           indeterminateScript={scriptIndeterminate}
           selectedServices={selectedServices}
           indeterminateServices={indeterminate}
-          setSelectedServices={setSelectedServices}
+          onSelectedServices={setSelectedServices}
         />
       )}
     </Container>
