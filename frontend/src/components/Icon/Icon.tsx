@@ -1,9 +1,12 @@
 import React from 'react'
 import { fontSizes, colors, spacing, Color, FontSize } from '../../styling'
-import { IconName } from '@fortawesome/pro-light-svg-icons'
+import { fal, IconName, IconPrefix } from '@fortawesome/pro-light-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Box } from '@material-ui/core'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { fab } from '@fortawesome/free-brands-svg-icons'
 
+library.add(fal, fab)
 export interface IconProps {
   className?: string
   color?: Color
@@ -38,9 +41,17 @@ export function Icon({
   if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 2 : spacing.md
   if (size) styles.fontSize = fontSizes[size]
 
+  let fontType: IconPrefix = 'fal'
+
+  switch (type) {
+    case 'brands': {
+      fontType = 'fab'
+      break
+    }
+  }
   return (
     <Box color={color && colors[color]} component="span">
-      <FontAwesomeIcon style={styles} icon={['fal', name as IconName]} {...props} />
+      <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} />
     </Box>
   )
 }
