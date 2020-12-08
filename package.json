@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -76,7 +76,8 @@
           "target": "nsis",
           "arch": [
             "ia32",
-            "x64"
+            "x64",
+            "arm64"
           ]
         }
       ]
