@@ -39,7 +39,7 @@ export class Environment {
     this.isPiZero = detectRPi() && process.config.variables.arm_version === '6'
     this.isPi = detectRPi()
     this.isWindows = os.platform() === 'win32'
-    this.isWindows32 = this.isWindows && process.arch === 'ia32'
+    this.isWindows32 = this.isWindows && os.arch() !== 'x64'
     this.isMac = os.platform() === 'darwin'
     this.isLinux = os.platform() === 'linux'
     this.isArmLinux = this.isLinux && os.arch() === 'arm64'
