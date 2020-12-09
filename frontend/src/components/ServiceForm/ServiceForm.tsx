@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
+import { Dispatch } from '../../store'
 import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { DEFAULT_TARGET } from '../../shared/constants'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
@@ -25,11 +26,13 @@ type Props = {
 }
 
 export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
-  const { applicationTypes, setupBusy, setupAdded, deleting } = useSelector((state: ApplicationState) => ({
+  const { service: serviceDispatch } = useDispatch<Dispatch>()
+  const { applicationTypes, setupBusy, setupAdded, deleting, isValid } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
     setupBusy: state.ui.setupBusy,
     setupAdded: state.ui.setupAdded,
     deleting: state.ui.setupServiceBusy === target?.uid,
+    isValid: state.service.isValid,
   }))
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
@@ -44,6 +47,17 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
+
+  useEffect(() => {
+    if ((form?.port, form?.hostname)) {
+      serviceDispatch.checkService({
+        port: form.port,
+        host: form?.hostname,
+      })
+    } else {
+      serviceDispatch.set({ isValid: false })
+    }
+  }, [form?.port, form?.hostname])
 
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
@@ -98,6 +112,8 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => setForm({ ...form, port: +event.target.value })}
               />
+
+              {/* isValid show ok icon */}
             </ListItem>
             <ListItem className={css.fieldWide}>
               <TextField
@@ -108,6 +124,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
               />
+              {/* isValid show ok icon */}
               <Typography variant="caption">
                 Local network IP address or fully qualified domain name to host this service. Leave blank for this
                 system to host.

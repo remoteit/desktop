@@ -23,6 +23,7 @@ declare global {
 
     // individual actions
     | 'service/connect'
+    | 'service/check-host-port'
     | 'service/disconnect'
     | 'service/forget'
     | 'service/restart'
@@ -69,6 +70,7 @@ declare global {
     // connection events
     | 'service/started'
     | 'service/connected'
+    | 'service/check-host-port'
     | 'service/disconnected'
     | 'service/error'
     | 'service/status'
@@ -433,6 +435,13 @@ declare global {
       action: 'ADD' | 'REMOVE' | string
     }[]
   }
+
+  type IServiceProps = {
+    port: number
+    host: string
+    isValid?: boolean
+  }
+
 }
 
 export {}

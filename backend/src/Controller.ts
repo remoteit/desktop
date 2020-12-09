@@ -63,6 +63,7 @@ class Controller {
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.pool.forget)
+    socket.on('service/check-host-port', this.checkHostAndPort)
     socket.on('binaries/install', this.installBinaries)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
@@ -147,6 +148,10 @@ class Controller {
 
   connection = async (connection: IConnection) => {
     await this.pool.set(connection, true)
+  }
+
+  checkHostAndPort = async (data: any) => {
+    // send ping
   }
 
   quit = () => {

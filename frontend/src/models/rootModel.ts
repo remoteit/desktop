@@ -10,6 +10,7 @@ import licensing from './licensing';
 import logs from './logs';
 import shares from './shares';
 import ui from './ui';
+import service from './service';
 
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts,
@@ -23,6 +24,7 @@ export interface RootModel extends Models<RootModel> {
   logs: typeof logs,
   shares: typeof shares,
   ui: typeof ui,
+  service: typeof service,
 }
 
 export const models: RootModel = {
@@ -37,4 +39,5 @@ export const models: RootModel = {
   logs,
   shares,
   ui,
+  service,
 };
