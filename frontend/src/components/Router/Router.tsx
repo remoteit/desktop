@@ -126,6 +126,7 @@ export const Router: React.FC = () => {
       <Route path="/devices">
         <DevicesPage />
       </Route>
+      <Route path="/reports">Put reports component here</Route>
       <Route path="/">
         <Redirect to={links.home} />
       </Route>
