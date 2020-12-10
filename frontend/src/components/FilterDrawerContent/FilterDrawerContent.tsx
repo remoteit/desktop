@@ -3,10 +3,10 @@ import { TARGET_PLATFORMS } from '../../helpers/platformHelper'
 import { state as defaults } from '../../models/devices'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles, List, Button } from '@material-ui/core'
+import { makeStyles, List, Button, Divider } from '@material-ui/core'
 import { FilterSelector } from './FilterSelector'
-import { CloseButton } from '../../buttons/CloseButton'
 import { spacing, colors } from '../../styling'
+import { CloseButton } from '../../buttons/CloseButton'
 import { Body } from '../Body'
 import classnames from 'classnames'
 
@@ -71,6 +71,7 @@ export const FilterDrawerContent: React.FC = () => {
         </Button>
         <CloseButton onClick={() => ui.set({ filterMenu: false })} />
       </div>
+      <Divider />
       <Body maxHeight="100%">
         <List dense className={css.list}>
           <FilterSelector
@@ -124,7 +125,12 @@ export const FilterDrawerContent: React.FC = () => {
 
 const useStyles = makeStyles({
   drawer: {
+    display: 'flex',
+    alignItems: 'stretch',
+    flexFlow: 'column',
     height: '100%',
+    // position: 'relative',
+
     maxWidth: 180,
     transition: 'max-width 200ms ease-out',
     '& > *': { minWidth: 180 },

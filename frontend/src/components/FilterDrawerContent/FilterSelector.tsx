@@ -13,7 +13,6 @@ type Props = {
 export const FilterSelector: React.FC<Props> = ({ value, icon, subtitle, filterList, onSelect }) => {
   return (
     <>
-      <Divider />
       <ListSubheader>{subtitle}</ListSubheader>
       {filterList.map((f, index) => (
         <ListItem button dense key={index} onClick={() => onSelect(f.value)}>
@@ -24,6 +23,7 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, subtitle, filterL
           />
         </ListItem>
       ))}
+      <Divider />
     </>
   )
 }
