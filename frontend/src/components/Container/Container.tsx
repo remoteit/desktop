@@ -13,7 +13,7 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, inset, int
       {sidebar ? (
         <div className={css.sidebar}>
           <Body inset={inset}>{children}</Body>
-          <div className={css.fixed}>{sidebar}</div>
+          <div className={css.sideContent}>{sidebar}</div>
         </div>
       ) : (
         <Body inset={inset}>{children}</Body>
@@ -44,8 +44,7 @@ const useStyles = makeStyles({
     overflow: 'hidden',
     position: 'relative',
   },
-  fixed: {
-    display: 'fixed',
+  sideContent: {
     boxShadow: `-1px 0 2px ${colors.darken}`,
     backgroundColor: colors.white,
     position: 'relative',
