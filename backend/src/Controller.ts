@@ -16,6 +16,7 @@ import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
+import PortScanner from './PortScanner'
 import launch, { openCMDforWindows } from './launch'
 
 class Controller {
@@ -152,6 +153,14 @@ class Controller {
 
   checkHostAndPort = async (data: any) => {
     // send ping
+    try {
+      const { port, host } = data
+      const response = await PortScanner.isPortFree(port, host)
+      // check response
+    } catch {
+      // is not valid
+    }
+    
   }
 
   quit = () => {

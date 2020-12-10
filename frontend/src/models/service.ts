@@ -22,6 +22,7 @@ export default createModel<RootModel>()({
   effects: (dispatch) => ({
 
     async checkService(data: IServiceProps, globalState) {
+      // port and host
       const state = globalState as ApplicationState
       emit('service/check-host-port', data)
       try {
