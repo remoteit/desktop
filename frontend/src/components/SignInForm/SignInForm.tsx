@@ -20,6 +20,7 @@ export function SignInForm() {
       onSignInSuccess={(user: CognitoUser) => setSuccessUser(user)}
       errorMessage={signInError}
       authService={authService}
+      hideCaptcha={true}
     />
   )
 }
