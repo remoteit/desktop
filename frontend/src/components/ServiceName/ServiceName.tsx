@@ -2,6 +2,7 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { Title } from '../Title'
 import { Tooltip } from '@material-ui/core'
+import { isOffline } from '../../models/devices'
 import { useLocation } from 'react-router-dom'
 import { TargetPlatform } from '../TargetPlatform'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
@@ -21,7 +22,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
   const accessDisabled = !!device?.attributes?.accessDisabled
-  const offline = (instance?.state !== 'active' && !connection?.active) || service?.license === 'UNLICENSED'
+  const offline = isOffline(instance, connection)
   const targetPlatformId = device?.targetPlatform
   const proxy = service && connection?.isP2P === false
 
