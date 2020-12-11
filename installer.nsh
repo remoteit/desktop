@@ -1,7 +1,7 @@
 !include FileFunc.nsh
 !include x64.nsh
 !include LogicLib.nsh
-!define REMOTEIT_BACKUP "$APPDATA\remoteit-backup"
+!define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 
 !macro customInstall
     WriteUninstaller "$INSTDIR\Uninstall.exe"
