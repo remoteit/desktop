@@ -4,7 +4,7 @@
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 
 !macro customInstall
-    WriteUninstaller "$INSTDIR\Uninstall.exe"
+    ; WriteUninstaller "$INSTDIR\Uninstall.exe"
     Var /GLOBAL ps_command
     Var /GLOBAL path_
     Var /GLOBAL installLog
@@ -61,7 +61,8 @@
 #    backupEnd:
 #FunctionEnd
 
-Section "Uninstall"
+; Section "Uninstall"
+!macro customUninstall
     Var /GLOBAL ps_command_uninstall
     Var /GLOBAL uninstallLog
     Var /GLOBAL path_u
@@ -163,4 +164,5 @@ Section "Uninstall"
             FileClose $uninstallLog 
          ${endif}
 
-SectionEnd
+!macroend
+; SectionEnd
