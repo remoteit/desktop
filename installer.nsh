@@ -17,13 +17,20 @@
     end_of_test:
     FileWrite $installLog "$\nInstall (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $installLog "-----------------------------$\r$\n"
+    
     ${If} ${RunningX64}
         FileWrite $installLog "- Platform X64$\r$\n"
         StrCpy $path_ '$INSTDIR\resources\x64'
     ${Else}
         FileWrite $installLog "- Platform X86$\r$\n"
         StrCpy $path_ '$INSTDIR\resources\x86'
-    ${EndIf} 
+    ${EndIf}
+
+    ${If} ${IsNativeARM64}
+        FileWrite $installLog "- Platform X86 for ARM$\r$\n"
+        StrCpy $path_ '$INSTDIR\resources\x86'
+    ${EndIf}
+
     StrCpy $ps_command 'powershell [Environment]::SetEnvironmentVariable("$\'"Path$\'",[Environment]::GetEnvironmentVariable("$\'"Path$\'", [EnvironmentVariableTarget]::"$\'"Machine$\'") + "$\'";$path_$\'",[EnvironmentVariableTarget]::"$\'"Machine$\'")'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0

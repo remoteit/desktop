@@ -1,11 +1,12 @@
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
+import cloudController from '../services/cloudController'
 import { emit } from '../services/Controller'
-import { AuthUser, CognitoUser } from '@remote.it/types'
+import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { Dispatch } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
-import { CLIENT_ID, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
+import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { getRedirectUrl, isElectron } from '../services/Browser'
 import { createModel } from '@rematch/core'
 import { store } from '../store'
@@ -100,9 +101,10 @@ export default createModel<RootModel>()({
         dispatch.auth.fetchUser()
       }
     },
-    async authenticated(_: void, rootState: any) {
+    async authenticated(_: void, rootState) {
       if (rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
+        await cloudController.init()
         await dispatch.licensing.fetch()
         await dispatch.accounts.init()
         await dispatch.devices.fetch()

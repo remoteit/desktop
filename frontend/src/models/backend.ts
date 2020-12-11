@@ -161,8 +161,8 @@ export default createModel<RootModel>()({
       connections.forEach(connection => {
         // data missing from cli if our connections file is lost
         if (!connection.owner) {
-          console.log('CONNECTION DATA MISSING', connection.id)
           const [service] = selectService(globalState, connection.id)
+          console.log('CONNECTION DATA MISSING', connection.id, service?.id)
           if (service) {
             connection = { ...newConnection(service), ...connection }
             setConnection(connection)

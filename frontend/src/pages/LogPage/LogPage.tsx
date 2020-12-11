@@ -12,10 +12,8 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const LogPage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
-  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const dispatch = useDispatch<Dispatch>()
-  const id = connection ? connection.id : ''
-  const log = useSelector((state: ApplicationState) => state.logs[id] || [])
+  const log = useSelector((state: ApplicationState) => state.logs[serviceID] || [])
 
   useEffect(() => {
     analyticsHelper.page('LogPage')
@@ -30,7 +28,7 @@ export const LogPage: React.FC = () => {
             <Icon name="stream" size="lg" />
             <Title>Raw Connection Log</Title>
             <Tooltip title="Clear log">
-              <IconButton onClick={() => dispatch.logs.clear(id)}>
+              <IconButton onClick={() => dispatch.logs.clear(serviceID)}>
                 <Icon name="trash-alt" size="md" fixedWidth />
               </IconButton>
             </Tooltip>

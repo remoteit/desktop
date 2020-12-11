@@ -25,7 +25,7 @@ class Controller {
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.io = io
     this.pool = pool
-    EventBus.on(server.EVENTS.authenticated, this.openSockets)
+    EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOut)
 

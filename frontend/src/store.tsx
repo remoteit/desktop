@@ -6,7 +6,7 @@ import logger from 'redux-logger'
 let middlewares: any[] = []
 let immerInstance: any = immer
 
-if (process.env.NODE_ENV !== 'test') middlewares.push(logger)
+// if (process.env.NODE_ENV !== 'test') middlewares.push(logger)
 
 export const store = init({ models, plugins: [immerInstance()], redux: { middlewares } })
 

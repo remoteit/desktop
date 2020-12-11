@@ -25,7 +25,7 @@ class Server {
   private app: Express
 
   EVENTS = {
-    authenticated: 'authenticated',
+    ready: 'ready',
   }
 
   constructor() {
@@ -137,7 +137,7 @@ class Server {
   postAuthenticate = (socket: SocketIO.Socket) => {
     this.socket = socket
     Logger.info('POST AUTHENTICATE')
-    EventBus.emit(this.EVENTS.authenticated)
+    EventBus.emit(this.EVENTS.ready)
   }
 
   disconnect = (socket: SocketIO.Socket) => {
