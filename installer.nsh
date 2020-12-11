@@ -1,6 +1,7 @@
 !include FileFunc.nsh
 !include x64.nsh
 !include LogicLib.nsh
+!define REMOTEIT_BACKUP "$APPDATA\remoteit-backup"
 
 !macro customInstall
     WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -45,10 +46,38 @@
     FileClose $installLog
 !macroend
 
+
+#Post Install success
+Function .onInstSuccess
+    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+    backup_found:
+        ;MessageBox MB_OK "backup found on install!"
+        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
+        goto backupEnd
+    backup_not_found:
+        ;MessageBox MB_OK "backup not found on install!" 
+        CreateDirectory "${REMOTEIT_BACKUP}"
+        goto backupEnd
+    backupEnd:
+FunctionEnd
+
 Section "Uninstall"
     Var /GLOBAL ps_command_uninstall
     Var /GLOBAL uninstallLog
     Var /GLOBAL path_u
+
+    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+
+    backup_found:
+        ;MessageBox MB_OK "backup found!"
+        goto backupEnd
+    backup_not_found:
+        ;MessageBox MB_OK "backup not found!" 
+        CreateDirectory "${REMOTEIT_BACKUP}"
+        goto backupEnd
+    backupEnd:
+    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
+
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
         FileOpen $uninstallLog "$TEMP\remoteit.log" a 
