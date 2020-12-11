@@ -48,18 +48,18 @@
 
 
 #Post Install success
-Function .onInstSuccess
-    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
-    backup_found:
-        ;MessageBox MB_OK "backup found on install!"
-        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
-        goto backupEnd
-    backup_not_found:
-        ;MessageBox MB_OK "backup not found on install!" 
-        CreateDirectory "${REMOTEIT_BACKUP}"
-        goto backupEnd
-    backupEnd:
-FunctionEnd
+#Function .onInstSuccess
+#    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+#    backup_found:
+#        ;MessageBox MB_OK "backup found on install!"
+#        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
+#        goto backupEnd
+#    backup_not_found:
+#        ;MessageBox MB_OK "backup not found on install!" 
+#        CreateDirectory "${REMOTEIT_BACKUP}"
+#        goto backupEnd
+#    backupEnd:
+#FunctionEnd
 
 Section "Uninstall"
     Var /GLOBAL ps_command_uninstall
