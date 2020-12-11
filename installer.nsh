@@ -4,18 +4,11 @@
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 
 !macro customInit
-    ; Check for backup direcory and create
-    IfFileExists "${REMOTEIT_BACKUP}\*.*" backup_found backup_not_found
-    backup_found:
-        ; MessageBox MB_OK "backup found!"
-        goto backupEnd
-    backup_not_found:
-        ; MessageBox MB_OK "backup not found!" 
-        CreateDirectory "${REMOTEIT_BACKUP}"
-        goto backupEnd
-    backupEnd:
+    ; create backup directory
+    CreateDirectory "${REMOTEIT_BACKUP}"
+    ClearErrors
 
-    ; stop the agent    
+    ; stop the agent
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent stop'
     nsExec::ExecToStack /OEM $ps_command
 
@@ -90,17 +83,16 @@
     Var /GLOBAL uninstallLog
     Var /GLOBAL path_u
 
-    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+    ; create backup directory
+    CreateDirectory "${REMOTEIT_BACKUP}"
+    ClearErrors
 
-    backup_found:
-        ;MessageBox MB_OK "backup found!"
-        goto backupEnd
-    backup_not_found:
-        ;MessageBox MB_OK "backup not found!" 
-        CreateDirectory "${REMOTEIT_BACKUP}"
-        goto backupEnd
-    backupEnd:
-    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
+    ; stop the agent
+    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent stop'
+    nsExec::ExecToStack /OEM $ps_command
+
+    ; copy the config file to backup location
+    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
 
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
