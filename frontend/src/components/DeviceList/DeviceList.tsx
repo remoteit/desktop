@@ -62,7 +62,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
                 device={device}
                 connections={connections[device.id]}
                 setContextMenu={setContextMenu}
-                restore={restore && isOffline(device)}
+                restore={restore && isOffline(device) && !device.shared}
               />
             )
         )}

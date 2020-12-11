@@ -71,6 +71,7 @@ export default createModel<RootModel>()({
       state.setupBusy = false
       state.setupAddingService = false
       state.setupServiceBusy = undefined
+      state.restoring = false
       return state
     },
   },
