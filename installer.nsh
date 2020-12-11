@@ -3,9 +3,17 @@
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 
-
 !macro customInit
-    ; SAVE CONFIG TO BACKUP
+    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+    backup_found:
+        ;MessageBox MB_OK "backup found!"
+        goto backupEnd
+    backup_not_found:
+        ;MessageBox MB_OK "backup not found!" 
+        CreateDirectory "${REMOTEIT_BACKUP}"
+        goto backupEnd
+    backupEnd:
+    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
 !macroend
 
 !macro customInstall
@@ -38,20 +46,20 @@
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent uninstall'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
-    Pop $
+    Pop $1
     
     ; RESTORE CONFIG FROM BACKUP
 
-#    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
-#    backup_found:
-#        ;MessageBox MB_OK "backup found on install!"
-#        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
-#        goto backupEnd
-#    backup_not_found:
-#        ;MessageBox MB_OK "backup not found on install!" 
-#        CreateDirectory "${REMOTEIT_BACKUP}"
-#        goto backupEnd
-#    backupEnd:
+    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+    backup_found:
+        ;MessageBox MB_OK "backup found on install!"
+        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
+        goto backupEnd
+    backup_not_found:
+        ;MessageBox MB_OK "backup not found on install!" 
+        CreateDirectory "${REMOTEIT_BACKUP}"
+        goto backupEnd
+    backupEnd:
 
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
@@ -60,12 +68,11 @@
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
     
-
     FileWrite $installLog "$\n***** End Install ******$\r$\n"
     FileClose $installLog
 !macroend
 
-!macro customUninstall
+!macro customRemoveFiles
     Var /GLOBAL ps_command_uninstall
     Var /GLOBAL uninstallLog
     Var /GLOBAL path_u
@@ -98,12 +105,14 @@
          StrCpy $path_u '$INSTDIR\resources\x86'
      ${EndIf} 
 
+     FileWrite $uninstallLog "$\nCustom Remove Files$\r$\n"
+
      ${GetOptions} $R0 "--update" $R1
          ${IfNot} ${Errors}
             ; This is UPDATE
             ; MessageBox MB_OK "This is a UPDATE!" 
-             FileWrite $uninstallLog "$\nUpdate (${__DATE__} ${__TIME__}): $\r$\n"
-             FileWrite $uninstallLog "-----------------------------$\r$\n"
+            FileWrite $uninstallLog "$\nUpdate (${__DATE__} ${__TIME__}): $\r$\n"
+            FileWrite $uninstallLog "-----------------------------$\r$\n"
          ${Else}
             FileWrite $uninstallLog "$\nUninstall (${__DATE__} ${__TIME__}): $\r$\n"
             FileWrite $uninstallLog "-----------------------------$\r$\n"
@@ -154,14 +163,14 @@
             nsExec::ExecToStack /OEM $ps_command_uninstall
             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
 
-            RMDir /r "$APPDATA\remoteit"
-            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
+            ; RMDir /r "$APPDATA\remoteit"
+            ; FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
 
-            RMDir /r "$PROFILE\AppData\Local\remoteit"
-            FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+            ; RMDir /r "$PROFILE\AppData\Local\remoteit"
+            ; FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
 
-            RMDir /r "$INSTDIR"
-            FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
+            ; RMDir /r "$INSTDIR"
+            ; FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
 
             FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
             FileClose $uninstallLog 
