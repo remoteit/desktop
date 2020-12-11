@@ -3,6 +3,11 @@
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 
+
+!macro customInit
+    ; SAVE CONFIG TO BACKUP
+!macroend
+
 !macro customInstall
     ; WriteUninstaller "$INSTDIR\Uninstall.exe"
     Var /GLOBAL ps_command
@@ -33,7 +38,21 @@
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent uninstall'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
-    Pop $1
+    Pop $
+    
+    ; RESTORE CONFIG FROM BACKUP
+
+#    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+#    backup_found:
+#        ;MessageBox MB_OK "backup found on install!"
+#        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
+#        goto backupEnd
+#    backup_not_found:
+#        ;MessageBox MB_OK "backup not found on install!" 
+#        CreateDirectory "${REMOTEIT_BACKUP}"
+#        goto backupEnd
+#    backupEnd:
+
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
@@ -46,22 +65,6 @@
     FileClose $installLog
 !macroend
 
-
-#Post Install success
-#Function .onInstSuccess
-#    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
-#    backup_found:
-#        ;MessageBox MB_OK "backup found on install!"
-#        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
-#        goto backupEnd
-#    backup_not_found:
-#        ;MessageBox MB_OK "backup not found on install!" 
-#        CreateDirectory "${REMOTEIT_BACKUP}"
-#        goto backupEnd
-#    backupEnd:
-#FunctionEnd
-
-; Section "Uninstall"
 !macro customUninstall
     Var /GLOBAL ps_command_uninstall
     Var /GLOBAL uninstallLog
@@ -165,4 +168,3 @@
          ${endif}
 
 !macroend
-; SectionEnd
