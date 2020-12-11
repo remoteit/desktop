@@ -4,16 +4,23 @@
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 
 !macro customInit
-    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
+    ; Check for backup direcory and create
+    IfFileExists "${REMOTEIT_BACKUP}\*.*" backup_found backup_not_found
     backup_found:
-        ;MessageBox MB_OK "backup found!"
+        ; MessageBox MB_OK "backup found!"
         goto backupEnd
     backup_not_found:
-        ;MessageBox MB_OK "backup not found!" 
+        ; MessageBox MB_OK "backup not found!" 
         CreateDirectory "${REMOTEIT_BACKUP}"
         goto backupEnd
     backupEnd:
-    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
+
+    ; stop the agent    
+    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent stop'
+    nsExec::ExecToStack /OEM $ps_command
+
+    ; move the config file to backup location
+    Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
 !macroend
 
 !macro customInstall
@@ -21,7 +28,9 @@
     Var /GLOBAL ps_command
     Var /GLOBAL path_
     Var /GLOBAL installLog
+
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
+
     file_found:
         FileOpen $installLog "$TEMP\remoteit.log" a 
         FileSeek $installLog 0 END
@@ -29,39 +38,43 @@
     file_not_found:
         FileOpen $installLog "$TEMP\remoteit.log" w 
     end_of_test:
+
     FileWrite $installLog "$\nInstall (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $installLog "-----------------------------$\r$\n"
+
     ${If} ${RunningX64}
         FileWrite $installLog "- Platform X64$\r$\n"
         StrCpy $path_ '$INSTDIR\resources\x64'
     ${Else}
         FileWrite $installLog "- Platform X86$\r$\n"
         StrCpy $path_ '$INSTDIR\resources\x86'
-    ${EndIf} 
+    ${EndIf}
+
+    ; Add to PATH
     StrCpy $ps_command 'powershell [Environment]::SetEnvironmentVariable("$\'"Path$\'",[Environment]::GetEnvironmentVariable("$\'"Path$\'", [EnvironmentVariableTarget]::"$\'"Machine$\'") + "$\'";$path_$\'",[EnvironmentVariableTarget]::"$\'"Machine$\'")'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
+
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent uninstall'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
-    
+    FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
+
     ; RESTORE CONFIG FROM BACKUP
 
     IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
     backup_found:
         ;MessageBox MB_OK "backup found on install!"
-        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
+        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\config.json"
         goto backupEnd
     backup_not_found:
         ;MessageBox MB_OK "backup not found on install!" 
-        CreateDirectory "${REMOTEIT_BACKUP}"
         goto backupEnd
     backupEnd:
 
-    FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
@@ -97,6 +110,7 @@
     file_not_found_u:
         FileOpen $uninstallLog "$TEMP\remoteit.log" w 
     end_of_test_u:
+
      ${If} ${RunningX64}
         FileWrite $uninstallLog "- Platform X64$\r$\n"
         StrCpy $path_u '$INSTDIR\resources\x64'
@@ -117,6 +131,7 @@
             FileWrite $uninstallLog "$\nUninstall (${__DATE__} ${__TIME__}): $\r$\n"
             FileWrite $uninstallLog "-----------------------------$\r$\n"
             IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
+
             config_found:
                 StrCpy $ps_command_uninstall 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.createdtimestamp'
                 nsExec::ExecToStack /OEM $ps_command_uninstall
@@ -135,6 +150,13 @@
                             StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
                 
                             MessageBox MB_OK "Your device was unregistered!" 
+
+                            RMDir /r "$APPDATA\remoteit"
+                            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
+
+                            RMDir /r "$PROFILE\AppData\Local\remoteit"
+                            FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+
                             Goto next
                         false:
                             Goto next
@@ -143,9 +165,10 @@
                 done:
                 goto end_of_config
             config_not_found:
-                ;config.json not found
+                ; config.json not found
                 ; MessageBox MB_OK "not found" 
             end_of_config:
+
             StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j reset --yes'
             nsExec::ExecToStack /OEM $ps_command_uninstall 
             Pop $0
@@ -158,19 +181,12 @@
             Pop $1      
             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
             
-            
             StrCpy $ps_command_uninstall 'powershell [System.Environment]::SetEnvironmentVariable("$\'"PATH$\'",((([System.Environment]::GetEnvironmentVariable("$\'"PATH$\'","$\'"Machine$\'")).Split("$\'";$\'") | Where-Object { $$_ -ne "$\'"C:\Program Files\remoteit\resources\x64$\'" }) -join "$\'";$\'"),"$\'"Machine$\'") ' 
             nsExec::ExecToStack /OEM $ps_command_uninstall
             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
 
-            ; RMDir /r "$APPDATA\remoteit"
-            ; FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
-
-            ; RMDir /r "$PROFILE\AppData\Local\remoteit"
-            ; FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
-
-            ; RMDir /r "$INSTDIR"
-            ; FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
+            RMDir /r $INSTDIR
+            FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
 
             FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
             FileClose $uninstallLog 
