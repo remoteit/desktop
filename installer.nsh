@@ -14,6 +14,7 @@
 
     ; move the config file to backup location
     Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
+    ClearErrors
 !macroend
 
 !macro customInstall
@@ -56,18 +57,9 @@
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    ; RESTORE CONFIG FROM BACKUP
-
-    IfFileExists "${REMOTEIT_BACKUP}\config.json" backup_found backup_not_found
-    backup_found:
-        ;MessageBox MB_OK "backup found on install!"
-        CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\config.json"
-        goto backupEnd
-    backup_not_found:
-        ;MessageBox MB_OK "backup not found on install!" 
-        goto backupEnd
-    backupEnd:
-
+    ; restore config from backup
+    CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
+    
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
@@ -93,6 +85,7 @@
 
     ; copy the config file to backup location
     CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
+    ClearErrors
 
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
@@ -125,7 +118,7 @@
             IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
 
             config_found:
-                StrCpy $ps_command_uninstall 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.createdtimestamp'
+                StrCpy $ps_command_uninstall 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid'
                 nsExec::ExecToStack /OEM $ps_command_uninstall
                 Pop $0
                 Pop $1
