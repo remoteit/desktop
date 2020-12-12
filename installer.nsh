@@ -156,12 +156,6 @@
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
-            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j reset --yes'
-            nsExec::ExecToStack /OEM $ps_command_uninstall 
-            Pop $0
-            Pop $1      
-            FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
-
             StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent uninstall'
             nsExec::ExecToStack /OEM $ps_command_uninstall 
             Pop $0
