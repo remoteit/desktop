@@ -4,12 +4,19 @@
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
 
 !macro customInit
+    Var /GLOBAL path_i
+
+    ${If} ${RunningX64}
+        StrCpy $path_i '$INSTDIR\resources\x64'
+    ${Else}
+        StrCpy $path_i '$INSTDIR\resources\x86'
+    ${EndIf}
+
     ; create backup directory
     CreateDirectory "${REMOTEIT_BACKUP}"
 
     ; stop the agent
-    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent stop'
-    nsExec::ExecToStack /OEM $ps_command
+    nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent stop'
 
     ; move the config file to backup location
     Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
@@ -73,16 +80,6 @@
     Var /GLOBAL uninstallLog
     Var /GLOBAL path_u
 
-    ; create backup directory
-    CreateDirectory "${REMOTEIT_BACKUP}"
-
-    ; stop the agent
-    StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent stop'
-    nsExec::ExecToStack /OEM $ps_command
-
-    ; copy the config file to backup location
-    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
-
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
         FileOpen $uninstallLog "$TEMP\remoteit.log" a 
@@ -92,17 +89,26 @@
         FileOpen $uninstallLog "$TEMP\remoteit.log" w 
     end_of_test_u:
 
-     ${If} ${RunningX64}
+    ${If} ${RunningX64}
         FileWrite $uninstallLog "- Platform X64$\r$\n"
         StrCpy $path_u '$INSTDIR\resources\x64'
-     ${Else}
-         FileWrite $uninstallLog "- Platform X86$\r$\n"
-         StrCpy $path_u '$INSTDIR\resources\x86'
-     ${EndIf} 
+    ${Else}
+        FileWrite $uninstallLog "- Platform X86$\r$\n"
+        StrCpy $path_u '$INSTDIR\resources\x86'
+    ${EndIf} 
 
-     FileWrite $uninstallLog "$\nCustom Remove Files$\r$\n"
+    FileWrite $uninstallLog "$\nCustom Remove Files$\r$\n"
 
-     ${GetOptions} $R0 "--update" $R1
+    ; create backup directory
+    CreateDirectory "${REMOTEIT_BACKUP}"
+
+    ; stop the agent
+    nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent stop'
+
+    ; copy the config file to backup location
+    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
+
+    ${GetOptions} $R0 "--update" $R1
          ${IfNot} ${Errors}
             ; This is UPDATE
             ; MessageBox MB_OK "This is a UPDATE!" 
