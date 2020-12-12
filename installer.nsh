@@ -6,7 +6,6 @@
 !macro customInit
     ; create backup directory
     CreateDirectory "${REMOTEIT_BACKUP}"
-    ClearErrors
 
     ; stop the agent
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent stop'
@@ -14,7 +13,6 @@
 
     ; move the config file to backup location
     Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
-    ClearErrors
 !macroend
 
 !macro customInstall
@@ -58,7 +56,7 @@
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
     ; restore config from backup
-    CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
+    CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
     
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
@@ -77,15 +75,13 @@
 
     ; create backup directory
     CreateDirectory "${REMOTEIT_BACKUP}"
-    ClearErrors
 
     ; stop the agent
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent stop'
     nsExec::ExecToStack /OEM $ps_command
 
     ; copy the config file to backup location
-    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
-    ClearErrors
+    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
 
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
@@ -170,7 +166,7 @@
             nsExec::ExecToStack /OEM $ps_command_uninstall
             FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
 
-            RMDir /r $INSTDIR
+            RMDir /r "$INSTDIR"
             FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
 
             FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
