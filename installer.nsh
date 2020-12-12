@@ -22,8 +22,23 @@
     Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
 !macroend
 
+; !macro customUnInit
+;     Var /GLOBAL path_ui
+
+;     ${If} ${RunningX64}
+;         StrCpy $path_ui '$INSTDIR\resources\x64'
+;     ${Else}
+;         StrCpy $path_ui '$INSTDIR\resources\x86'
+;     ${EndIf}
+
+;     ; restore config from backup
+;     CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
+
+;     ; start the agent
+;     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_ui\remoteit.exe$\'" -j agent stop'
+; !macroend
+
 !macro customInstall
-    ; WriteUninstaller "$INSTDIR\Uninstall.exe"
     Var /GLOBAL ps_command
     Var /GLOBAL path_
     Var /GLOBAL installLog
@@ -63,8 +78,8 @@
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
     ; restore config from backup
-    CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit"
-    
+    CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
+
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
@@ -107,7 +122,7 @@
     CreateDirectory "${REMOTEIT_BACKUP}"
 
     ; copy the config file to backup location
-    CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
+    CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\"
 
     ; detects auto-update
     ${GetOptions} $R0 "--update" $R1
@@ -122,14 +137,15 @@
             IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
 
             config_found:
-                StrCpy $get_uid 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid'
+                StrCpy $get_uid 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length'
                 nsExec::ExecToStack /OEM $get_uid
                 Pop $0
                 Pop $1
-                FileWrite $uninstallLog "-$get_uid     [$0]  $1$\r$\n"
-                StrCmp "$1" "" notDevice thereIsDevice
+                FileWrite $uninstallLog "- $get_uid     [$0]  [$1]$\r$\n"
+                IntCmp $1 0 notDevice notDevice thereIsDevice
                     notDevice:
                         ;MessageBox MB_OK "Not device installed"
+                        FileWrite $uninstallLog "- Device not registered$\r$\n"
                         Goto done
                     thereIsDevice:
                         MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
@@ -137,14 +153,21 @@
                             FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
 
                             StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
+                            nsExec::ExecToStack /OEM $ps_command_uninstall 
+                            Pop $0
+                            Pop $1
+                            FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
+
+                            ; wait for unregister
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j status'
 
                             MessageBox MB_OK "Your device was unregistered!"
 
                             RMDir /r "$APPDATA\remoteit"
                             FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
 
-                        RMDir /r "${REMOTEIT_BACKUP}"
-                        FileWrite $uninstallLog "- RMDir ${REMOTEIT_BACKUP}$\r$\n"
+                            RMDir /r "${REMOTEIT_BACKUP}"
+                            FileWrite $uninstallLog "- RMDir ${REMOTEIT_BACKUP}$\r$\n"
 
                             RMDir /r "$PROFILE\AppData\Local\remoteit"
                             FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
@@ -157,7 +180,7 @@
                 done:
                 goto end_of_config
             config_not_found:
-                ; config.json not found
+                FileWrite $uninstallLog "- Device config not found$\r$\n"
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
@@ -165,11 +188,13 @@
             nsExec::ExecToStack /OEM $ps_command_uninstall 
             Pop $0
             Pop $1      
-            FileWrite $uninstallLog "$ps_command_uninstall     [$0]  $1$\r$\n"
+            FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
             
             StrCpy $ps_command_uninstall 'powershell [System.Environment]::SetEnvironmentVariable("$\'"PATH$\'",((([System.Environment]::GetEnvironmentVariable("$\'"PATH$\'","$\'"Machine$\'")).Split("$\'";$\'") | Where-Object { $$_ -ne "$\'"C:\Program Files\remoteit\resources\x64$\'" }) -join "$\'";$\'"),"$\'"Machine$\'") ' 
             nsExec::ExecToStack /OEM $ps_command_uninstall
-            FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
+            Pop $0
+            Pop $1
+            FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  [$1]$\r$\n"
 
             RMDir /r "$INSTDIR"
             FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
