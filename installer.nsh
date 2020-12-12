@@ -143,6 +143,9 @@
                             RMDir /r "$APPDATA\remoteit"
                             FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
 
+                            RMDir /r "$REMOTEIT_BACKUP"
+                            FileWrite $uninstallLog "- RMDir $REMOTEIT_BACKUP$\r$\n"
+
                             RMDir /r "$PROFILE\AppData\Local\remoteit"
                             FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
 
