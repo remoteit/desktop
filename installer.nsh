@@ -76,6 +76,7 @@
 !macroend
 
 !macro customRemoveFiles
+    Var /GLOBAL get_uid
     Var /GLOBAL ps_command_uninstall
     Var /GLOBAL uninstallLog
     Var /GLOBAL path_u
