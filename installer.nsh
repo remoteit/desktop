@@ -127,30 +127,34 @@
                 Pop $0
                 Pop $1
                 FileWrite $uninstallLog "-$get_uid     [$0]  $1$\r$\n"
+                StrCmp "$1" "" notDevice thereIsDevice
+                    notDevice:
+                        ;MessageBox MB_OK "Not device installed"
+                        Goto done
+                    thereIsDevice:
+                        MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
+                        true:
+                            FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
 
-                ${If} $1 != ""
-                    MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
-                    true:
-                        FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
+                            StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
 
-                        StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
+                            MessageBox MB_OK "Your device was unregistered!"
 
-                        MessageBox MB_OK "Your device was unregistered!"
-
-                        RMDir /r "$APPDATA\remoteit"
-                        FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
+                            RMDir /r "$APPDATA\remoteit"
+                            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
 
                         RMDir /r "${REMOTEIT_BACKUP}"
                         FileWrite $uninstallLog "- RMDir ${REMOTEIT_BACKUP}$\r$\n"
 
-                        RMDir /r "$PROFILE\AppData\Local\remoteit"
-                        FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+                            RMDir /r "$PROFILE\AppData\Local\remoteit"
+                            FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
 
-                        Goto next
-                    false:
-                        Goto next
-                    next:
-                ${EndIf}
+                            Goto next
+                        false:
+                            Goto next
+                        next:
+                        Goto done
+                done:
                 goto end_of_config
             config_not_found:
                 ; config.json not found
