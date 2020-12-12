@@ -99,15 +99,16 @@
 
     FileWrite $uninstallLog "$\nCustom Remove Files$\r$\n"
 
-    ; create backup directory
-    CreateDirectory "${REMOTEIT_BACKUP}"
-
     ; stop the agent
     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent stop'
 
-    ; copy the config file to backup location
-    CopyFiles "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
+    ; create backup directory
+    CreateDirectory "${REMOTEIT_BACKUP}"
 
+    ; copy the config file to backup location
+    CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}"
+
+    ; detects auto-update
     ${GetOptions} $R0 "--update" $R1
          ${IfNot} ${Errors}
             ; This is UPDATE
@@ -120,12 +121,12 @@
             IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
 
             config_found:
-                StrCpy $ps_command_uninstall 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid'
-                nsExec::ExecToStack /OEM $ps_command_uninstall
+                StrCpy $get_uid 'powershell  (Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid'
+                nsExec::ExecToStack /OEM $get_uid
                 Pop $0
                 Pop $1
                 FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
-                IntCmp $1 0 notDevice thereIsDevice
+                StrCmp $1 "" notDevice thereIsDevice
                     notDevice:
                         ;MessageBox MB_OK "Not device installed"
                         Goto done
