@@ -39,12 +39,12 @@ export const DeviceSetupItem: React.FC = () => {
 
   const registered = !!targetDevice.uid
   let title = 'Set up remote access'
-  let subTitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
+  let subtitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
 
   if (registered) {
     if (thisDevice) {
       title = attributeName(thisDevice) || targetDevice.name || ''
-      subTitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
+      subtitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
     } else {
       return (
         <ListItem>
@@ -59,19 +59,15 @@ export const DeviceSetupItem: React.FC = () => {
       <ListItemIcon>
         <Icon name="hdd" size="md" type="light" />
       </ListItemIcon>
-      <ListItemText primary={title} secondary={subTitle} />
+      <ListItemText primary={title} secondary={subtitle} />
       <ListItemSecondaryAction>
         {restore ? (
-          <>
-            <Typography variant="body2" color="textSecondary">
-              Select a device or
-              <Link onClick={() => ui.set({ restore: false })}>cancel</Link>
-            </Typography>
-          </>
+          <Typography variant="body2" color="textSecondary">
+            Select a device or
+            <Link onClick={() => ui.set({ restore: false })}>cancel</Link>
+          </Typography>
         ) : (
-          <Button color="primary" size="small" onClick={() => ui.set({ restore: true })}>
-            Restore Device
-          </Button>
+          <Link onClick={() => ui.set({ restore: true })}>Restore Device</Link>
         )}
       </ListItemSecondaryAction>
     </ListItemLocation>

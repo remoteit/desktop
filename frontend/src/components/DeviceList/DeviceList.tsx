@@ -54,18 +54,19 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
             <Divider />
           </>
         )}
-        {devices?.map(
-          device =>
-            device.id !== myDevice?.id && (
-              <DeviceListItem
-                key={device.id}
-                device={device}
-                connections={connections[device.id]}
-                setContextMenu={setContextMenu}
-                restore={restore && isOffline(device) && !device.shared}
-              />
-            )
-        )}
+        {devices?.map(device => {
+          const canRestore = isOffline(device) && !device.shared
+          if (device.id === myDevice?.id || (restore && !canRestore)) return
+          return (
+            <DeviceListItem
+              key={device.id}
+              device={device}
+              connections={connections[device.id]}
+              setContextMenu={setContextMenu}
+              restore={restore && canRestore}
+            />
+          )
+        })}
       </List>
       <LoadMore />
       <ServiceContextualMenu
