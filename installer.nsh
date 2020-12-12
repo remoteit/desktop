@@ -128,7 +128,7 @@
                 Pop $1
                 FileWrite $uninstallLog "-$get_uid     [$0]  $1$\r$\n"
 
-                ${If} $1 != ""
+                ${If} $1 <> ""
                     MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
                     true:
                         FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
