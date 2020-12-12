@@ -126,7 +126,7 @@
                 nsExec::ExecToStack /OEM $get_uid
                 Pop $0
                 Pop $1
-                FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  $1$\r$\n"
+                FileWrite $uninstallLog "-$get_uid     [$0]  $1$\r$\n"
                 StrCmp $1 "" notDevice thereIsDevice
                     notDevice:
                         ;MessageBox MB_OK "Not device installed"
