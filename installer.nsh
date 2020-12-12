@@ -18,25 +18,10 @@
     ; stop the agent
     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent stop'
 
-    ; move the config file to backup location
+    ; move the config file and connections to backup location (protect against 2.9.2 uninstall bug)
     Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
+    Rename "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections"
 !macroend
-
-; !macro customUnInit
-;     Var /GLOBAL path_ui
-
-;     ${If} ${RunningX64}
-;         StrCpy $path_ui '$INSTDIR\resources\x64'
-;     ${Else}
-;         StrCpy $path_ui '$INSTDIR\resources\x86'
-;     ${EndIf}
-
-;     ; restore config from backup
-;     CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
-
-;     ; start the agent
-;     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_ui\remoteit.exe$\'" -j agent stop'
-; !macroend
 
 !macro customInstall
     Var /GLOBAL ps_command
@@ -79,6 +64,7 @@
 
     ; restore config from backup
     CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
+    CopyFiles "${REMOTEIT_BACKUP}\connections" "$PROFILE\AppData\Local\remoteit\" 
 
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
@@ -123,6 +109,7 @@
 
     ; copy the config file to backup location
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\"
+    CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\"
 
     ; detects auto-update
     ${GetOptions} $R0 "--update" $R1
@@ -157,9 +144,6 @@
                             Pop $0
                             Pop $1
                             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
-
-                            ; wait for unregister
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j status'
 
                             MessageBox MB_OK "Your device was unregistered!"
 
