@@ -10,6 +10,8 @@ type UIState = UIParams & {
   routingLock?: IRouteType
   routingMessage?: string
   filterMenu: boolean
+  restore: boolean
+  restoring: boolean
   scanEnabled: boolean
   scanLoading: { [interfaceName: string]: boolean }
   scanTimestamp: { [interfaceName: string]: number }
@@ -32,6 +34,8 @@ const state: UIState = {
   routingLock: undefined,
   routingMessage: undefined,
   filterMenu: false,
+  restore: false,
+  restoring: false,
   scanEnabled: true,
   scanLoading: {},
   scanTimestamp: {},
@@ -67,6 +71,7 @@ export default createModel<RootModel>()({
       state.setupBusy = false
       state.setupAddingService = false
       state.setupServiceBusy = undefined
+      state.restoring = false
       return state
     },
   },

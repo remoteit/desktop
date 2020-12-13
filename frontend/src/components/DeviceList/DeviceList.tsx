@@ -5,7 +5,8 @@ import { getAccountId, getOwnDevices } from '../../models/accounts'
 import { DeviceSetupItem } from '../DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
-import { List, Divider, ListItem, makeStyles, createStyles } from '@material-ui/core'
+import { List, Divider, ListItem } from '@material-ui/core'
+import { isOffline } from '../../models/devices'
 import { LoadMore } from '../LoadMore'
 import { Notice } from '../Notice'
 
@@ -16,10 +17,11 @@ export interface DeviceListProps {
 
 export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {} }) => {
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
-  const { myDevice, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
+  const { myDevice, loggedInUser, registeredId, restore } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
     loggedInUser: getAccountId(state) === state.auth.user?.id,
     myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
+    restore: state.ui.restore,
   }))
 
   return (
@@ -52,17 +54,19 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
             <Divider />
           </>
         )}
-        {devices?.map(
-          device =>
-            device.id !== myDevice?.id && (
-              <DeviceListItem
-                key={device.id}
-                device={device}
-                connections={connections[device.id]}
-                setContextMenu={setContextMenu}
-              />
-            )
-        )}
+        {devices?.map(device => {
+          const canRestore = isOffline(device) && !device.shared
+          if (device.id === myDevice?.id || (restore && !canRestore)) return
+          return (
+            <DeviceListItem
+              key={device.id}
+              device={device}
+              connections={connections[device.id]}
+              setContextMenu={setContextMenu}
+              restore={restore && canRestore}
+            />
+          )
+        })}
       </List>
       <LoadMore />
       <ServiceContextualMenu

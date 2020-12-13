@@ -8,9 +8,17 @@ type Props = {
   link?: string
   gutterBottom?: boolean
   fullWidth?: boolean
+  loading?: boolean
 }
 
-export const Notice: React.FC<Props> = ({ severity = 'info', link, fullWidth = false, gutterBottom, children }) => {
+export const Notice: React.FC<Props> = ({
+  severity = 'info',
+  link,
+  fullWidth = false,
+  gutterBottom,
+  loading,
+  children,
+}) => {
   const css = useStyles({ fullWidth, gutterBottom })()
   let icon, color
 
@@ -30,7 +38,7 @@ export const Notice: React.FC<Props> = ({ severity = 'info', link, fullWidth = f
       style={{ backgroundColor: lighten(color, 0.9), color: darken(color, 0.2) }}
       className={css.notice}
     >
-      <Icon name={icon} size="md" type="regular" />
+      {loading ? <Icon name="spinner-third" spin size="md" /> : <Icon name={icon} size="md" type="regular" />}
       <Box>{children}</Box>
       {link && (
         <Button color="primary" variant="contained" href={link} size="small" target="_blank">
@@ -53,7 +61,7 @@ const useStyles = ({ fullWidth, gutterBottom }) =>
       fontWeight: 500,
       '& .MuiBox-root': { flexGrow: 1 },
       '& .MuiButton-root': { minWidth: 90, marginLeft: spacing.md },
-      '& .far': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
+      '& .far, & .fal': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
       '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
     },
   })
