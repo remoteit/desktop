@@ -239,6 +239,10 @@ export function selectDevice(state: ApplicationState, deviceId: string) {
   return getAllDevices(state).find(d => d.id === deviceId)
 }
 
+export function selectDevices(state: ApplicationState, deviceIds: string[]) {
+  return getAllDevices(state).filter(d => deviceIds.includes(d.id))
+}
+
 export function selectService(state: ApplicationState, serviceId: string) {
   return findService(getAllDevices(state), serviceId)
 }

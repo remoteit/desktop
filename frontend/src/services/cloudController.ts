@@ -3,6 +3,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import { EventEmitter } from 'events'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
+import { selectDevices } from '../models/devices'
 
 function encode(data) {
   return Buffer.from(JSON.stringify(data)).toString('base64')
@@ -76,7 +77,29 @@ class CloudController extends EventEmitter {
       case 'DEVICE_CONNECT':
       case 'DEVICE_SHARE':
     }
-    store.dispatch.ui.set({ noticeMessage: `Device ${event.type} went ${event.state}` })
+    store.dispatch.ui.set({ noticeMessage: this.getMessage(event) })
+  }
+
+  getMessage(event: ICloudEvent) {
+    // const state = store.getState()
+    // const targets = selectDevices(
+    //   state,
+    //   event.target.map(t => t.id)
+    // )
+    const actions = {
+      active: 'came online',
+      inactive: 'went offline',
+      connected: 'connected',
+      disconnected: 'disconnected',
+    }
+    let message: string
+
+    if (event.target.length > 1) {
+      message = `${event.target.map(t => t.name).join(', ')} went ${actions[event.state]}`
+    } else {
+      message = `${event.target[0].name} ${actions[event.state]}`
+    }
+    return message
   }
 }
 

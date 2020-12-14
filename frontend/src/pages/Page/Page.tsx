@@ -77,7 +77,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           open={!!noticeMessage}
           message={noticeMessage}
           onClose={() => ui.set({ noticeMessage: '' })}
-          autoHideDuration={5000}
+          autoHideDuration={20000}
         />
         <Snackbar
           key={successMessage}
