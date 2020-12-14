@@ -38,7 +38,11 @@ export const Notice: React.FC<Props> = ({
       style={{ backgroundColor: lighten(color, 0.9), color: darken(color, 0.2) }}
       className={css.notice}
     >
-      {loading ? <Icon name="spinner-third" spin size="md" /> : <Icon name={icon} size="md" type="regular" />}
+      {loading ? (
+        <Icon name="spinner-third" spin size="md" fixedWidth />
+      ) : (
+        <Icon name={icon} size="md" type="regular" />
+      )}
       <Box>{children}</Box>
       {link && (
         <Button color="primary" variant="contained" href={link} size="small" target="_blank">
