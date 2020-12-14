@@ -31,11 +31,11 @@
     IfFileExists "$TEMP\remoteit.log" file_found file_not_found
 
     file_found:
-        FileOpen $installLog "$TEMP\remoteit.log" a 
+        FileOpen $installLog "$TEMP\remoteit.log" a
         FileSeek $installLog 0 END
         goto end_of_test ;<== important for not continuing on the else branch
     file_not_found:
-        FileOpen $installLog "$TEMP\remoteit.log" w 
+        FileOpen $installLog "$TEMP\remoteit.log" w
     end_of_test:
 
     FileWrite $installLog "$\nInstall (${__DATE__} ${__TIME__}): $\r$\n"
@@ -63,8 +63,8 @@
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
     ; restore config from backup
-    CopyFiles "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
-    CopyFiles "${REMOTEIT_BACKUP}\connections" "$PROFILE\AppData\Local\remoteit\" 
+    CopyFiles /SILENT "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
+    CopyFiles /SILENT "${REMOTEIT_BACKUP}\connections" "$PROFILE\AppData\Local\remoteit\"
 
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
@@ -84,11 +84,11 @@
 
     IfFileExists "$TEMP\remoteit.log" file_found_u file_not_found_u
     file_found_u:
-        FileOpen $uninstallLog "$TEMP\remoteit.log" a 
+        FileOpen $uninstallLog "$TEMP\remoteit.log" a
         FileSeek $uninstallLog 0 END
         goto end_of_test_u ;<== important for not continuing on the else branch
     file_not_found_u:
-        FileOpen $uninstallLog "$TEMP\remoteit.log" w 
+        FileOpen $uninstallLog "$TEMP\remoteit.log" w
     end_of_test_u:
 
     ${If} ${RunningX64}
@@ -99,7 +99,7 @@
         StrCpy $path_u '$INSTDIR\resources\x86'
     ${EndIf} 
 
-    FileWrite $uninstallLog "$\nCustom Remove Files$\r$\n"
+    FileWrite $uninstallLog "$\n***** Remove Files *****$\r$\n"
 
     ; stop the agent
     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent stop'
@@ -144,6 +144,9 @@
                             Pop $0
                             Pop $1
                             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
+
+                            ; Waits for unregister to complete
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -jj status'
 
                             MessageBox MB_OK "Your device was unregistered!"
 
