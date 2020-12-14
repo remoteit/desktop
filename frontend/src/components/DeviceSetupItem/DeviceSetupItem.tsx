@@ -1,4 +1,5 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Link, Typography } from '@material-ui/core'
@@ -12,6 +13,7 @@ import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
+  const history = useHistory()
   const { thisDevice, targetDevice, os, links, canRestore, restore, restoring } = useSelector(
     (state: ApplicationState) => ({
       thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
@@ -19,8 +21,9 @@ export const DeviceSetupItem: React.FC = () => {
       os: state.backend.environment.os,
       links: getLinks(state),
       canRestore:
-        state.devices.total > state.devices.size ||
-        !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared),
+        !state.backend.device.uid &&
+        (state.devices.total > state.devices.size ||
+          !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
       restore: state.ui.restore,
       restoring: state.ui.restoring,
     })
@@ -64,7 +67,14 @@ export const DeviceSetupItem: React.FC = () => {
               <Link onClick={() => ui.set({ restore: false })}>cancel</Link>
             </Typography>
           ) : (
-            <Link onClick={() => ui.set({ restore: true })}>Restore Device</Link>
+            <Link
+              onClick={() => {
+                ui.set({ restore: true })
+                history.push('/devices')
+              }}
+            >
+              Restore Device
+            </Link>
           )}
         </ListItemSecondaryAction>
       )}
