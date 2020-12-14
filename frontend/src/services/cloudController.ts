@@ -18,7 +18,7 @@ class CloudController extends EventEmitter {
     let socket = new WebSocket('wss://ws.remote.it/beta')
 
     socket.onopen = event => {
-      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!! SOCKET OPEN', event)
+      console.log('\n-------------------------> SOCKET OPEN\n\n', event)
       socket.send(
         JSON.stringify({
           action: 'subscribe',
@@ -40,40 +40,45 @@ class CloudController extends EventEmitter {
       )
     }
 
-    socket.onmessage = event => {
-      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!! SOCKET MESSAGE', JSON.parse(event.data))
+    socket.onmessage = response => {
+      console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data)
+      // const example = {
+      //   type: 'DEVICE_CONNECT',
+      //   timestamp: '2020-12-13T18:12:01.000Z',
+      //   target: [{ id: '80:00:00:00:01:04:02:B2', name: 'AWS admin panel' }],
+      //   state: 'disconnected',
+      // }
+      const event = this.parse(response)
+      if (event) this.notify(event)
     }
-
-    // const send = (payload) => {
-
-    //   socket.send()
-    // }
-
-    // socket.on('connect', (result: any) => {
-    //   console.log('connect', result)
-    // })
-    // socket.on('DEVICE_STATE', (result: any) => {
-    //   console.log('DEVICE_STATE', result)
-    // })
-    // socket.on('DEVICE_CONNECT', (result: any) => {
-    //   console.log('DEVICE_CONNECT', result)
-    // })
-    // socket.on('DEVICE_SHARE', (result: any) => {
-    //   console.log('DEVICE_SHARE', result)
-    // })
   }
 
-  // on(eventName: SocketEvent, handler: (...args: any[]) => void) {
-  //   socket?.on(eventName, handler)
-  //   return this
-  // }
+  parse(response): ICloudEvent | undefined {
+    let event
+    try {
+      event = JSON.parse(response.data).data.event
+      return {
+        type: event.type,
+        state: event.state,
+        timestamp: new Date(event.timestamp),
+        target: event.target || [],
+      }
+    } catch (error) {
+      console.warn('Event parsing error', { event, error })
+    }
+  }
 
-  // off(eventName: SocketEvent) {
-  //   socket?.off(eventName)
-  //   return this
-  // }
+  notify(event: ICloudEvent) {
+    switch (event.type) {
+      case 'DEVICE_STATE':
+        // new Notification('To do list', { body: text, icon: img });
+        new Notification(`Device ${event.type}`, { body: event.state })
+      case 'DEVICE_CONNECT':
+      case 'DEVICE_SHARE':
+    }
+    store.dispatch.ui.set({ noticeMessage: `Device ${event.type} went ${event.state}` })
+  }
 }
 
 const cloudController = new CloudController()
 export default cloudController
-export const emit = cloudController.emit

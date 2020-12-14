@@ -1,14 +1,7 @@
-import { DeviceState, ServiceState } from 'remote.it'
 import { AnalyticsJS } from 'segment-analytics'
 
 declare global {
-  // @FIXME this should only be connection state info, not overloading device / service state
-  type ConnectionState = DeviceState | ServiceState | 'connecting' | 'disconnected' | 'unknown'
-  // | 'active''
-  // | 'inactive
-  // | 'connecting'
-  // | 'connected'
-  // | 'restricted'
+  type ConnectionState = IService['state'] | 'connecting' | 'disconnected' | 'unknown'
 
   type Tab = 'connections' | 'devices'
 

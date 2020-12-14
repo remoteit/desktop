@@ -17,16 +17,16 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { backend, ui } = useDispatch<Dispatch>()
-  const { connected, successMessage, globalError, backendAuthenticated, os } = useSelector(
+  const { connected, successMessage, noticeMessage, globalError, backendAuthenticated, os } = useSelector(
     (state: ApplicationState) => ({
       connected: state.ui.connected,
       successMessage: state.ui.successMessage,
+      noticeMessage: state.ui.noticeMessage,
       globalError: state.backend.globalError,
       backendAuthenticated: state.auth.backendAuthenticated,
       os: state.backend.environment.os,
     })
   )
-
   const largeScreen = useMediaQuery('(min-width:600px)')
   const css = useStyles()
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
@@ -71,6 +71,13 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
             </IconButton>
           }
           onClose={clearGlobalError}
+        />
+        <Snackbar
+          key={noticeMessage || 'notice'}
+          open={!!noticeMessage}
+          message={noticeMessage}
+          onClose={() => ui.set({ noticeMessage: '' })}
+          autoHideDuration={5000}
         />
         <Snackbar
           key={successMessage}

@@ -26,6 +26,7 @@ type UIState = UIParams & {
   setupServicesNew: boolean
   setupServicesLimit: number
   successMessage: string
+  noticeMessage: string
 }
 
 const state: UIState = {
@@ -50,6 +51,7 @@ const state: UIState = {
   setupServicesNew: true,
   setupServicesLimit: 10,
   successMessage: '',
+  noticeMessage: '',
 }
 
 export default createModel<RootModel>()({
