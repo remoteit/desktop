@@ -3,7 +3,8 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import { EventEmitter } from 'events'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
-import { selectDevices } from '../models/devices'
+import { selectService } from '../models/devices'
+import { connectionName, setConnection } from '../helpers/connectionHelper'
 
 function encode(data) {
   return Buffer.from(JSON.stringify(data)).toString('base64')
@@ -19,7 +20,7 @@ class CloudController extends EventEmitter {
     let socket = new WebSocket('wss://ws.remote.it/beta')
 
     socket.onopen = event => {
-      console.log('\n-------------------------> SOCKET OPEN\n\n', event)
+      console.log('\n-------------------------> SOCKET OPEN\n\n')
       socket.send(
         JSON.stringify({
           action: 'subscribe',
@@ -28,12 +29,12 @@ class CloudController extends EventEmitter {
           {
             event {
               type
+              state
               timestamp
               target {
                 id
                 name
               }
-              state
             }
           }`,
           // "variables": {}
@@ -42,64 +43,104 @@ class CloudController extends EventEmitter {
     }
 
     socket.onmessage = response => {
-      console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data)
-      // const example = {
-      //   type: 'DEVICE_CONNECT',
-      //   timestamp: '2020-12-13T18:12:01.000Z',
-      //   target: [{ id: '80:00:00:00:01:04:02:B2', name: 'AWS admin panel' }],
-      //   state: 'disconnected',
-      // }
       const event = this.parse(response)
-      if (event) this.notify(event)
+      console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
+      if (event) this.handleEvent(event)
     }
   }
 
   parse(response): ICloudEvent | undefined {
+    const state = store.getState()
     let event
     try {
       event = JSON.parse(response.data).data.event
-      return {
+      return this.parseState({
         type: event.type,
         state: event.state,
         timestamp: new Date(event.timestamp),
-        target: event.target || [],
-      }
+        target: event.target.map(t => {
+          const [service, device] = selectService(state, t.id)
+          return {
+            id: t.id,
+            name: connectionName(service, device) || t.name,
+            connection: state.backend.connections.find(c => c.id === t.id),
+            service,
+            device,
+          }
+        }),
+      })
     } catch (error) {
       console.warn('Event parsing error', { event, error })
     }
   }
 
-  notify(event: ICloudEvent) {
+  parseState(event: ICloudEvent) {
     switch (event.type) {
       case 'DEVICE_STATE':
-        // new Notification('To do list', { body: text, icon: img });
-        new Notification(`Device ${event.type}`, { body: event.state })
+        // active | inactive
+        const state = event.state === 'active' ? 'active' : 'inactive'
+        event.target.forEach(target => {
+          if (target.device?.id === target.id) {
+            target.device.state = state
+          } else {
+            target.device?.services.find(service => {
+              if (service.id === target.service?.id) {
+                service.state = state
+              }
+            })
+          }
+        })
+        break
+
       case 'DEVICE_CONNECT':
+        // connected | disconnected
+        event.target.forEach(target => {
+          if (target.connection) target.connection.active = event.state === 'connected'
+        })
+        break
+
       case 'DEVICE_SHARE':
+      // @TODO parse and display notice
     }
-    store.dispatch.ui.set({ noticeMessage: this.getMessage(event) })
+    return event
+  }
+
+  handleEvent(event: ICloudEvent) {
+    const { accounts, ui } = store.dispatch
+    switch (event.type) {
+      case 'DEVICE_STATE':
+        event.target.forEach(target => {
+          if (target.connection) setConnection(target.connection)
+        })
+        ui.set({ noticeMessage: this.getMessage(event) })
+        break
+
+      case 'DEVICE_CONNECT':
+        // new Notification('To do list', { body: text, icon: img });
+        event.target.forEach(target => {
+          accounts.setDevice({ id: target.id, device: target.device })
+        })
+        ui.set({ noticeMessage: this.getMessage(event) })
+        break
+
+      case 'DEVICE_SHARE':
+      // @TODO parse and display notice
+    }
   }
 
   getMessage(event: ICloudEvent) {
-    // const state = store.getState()
-    // const targets = selectDevices(
-    //   state,
-    //   event.target.map(t => t.id)
-    // )
     const actions = {
       active: 'came online',
       inactive: 'went offline',
       connected: 'connected',
       disconnected: 'disconnected',
     }
-    let message: string
 
     if (event.target.length > 1) {
-      message = `${event.target.map(t => t.name).join(', ')} went ${actions[event.state]}`
-    } else {
-      message = `${event.target[0].name} ${actions[event.state]}`
+      return `${event.target.map(t => t.name).join(', ')} ${actions[event.state]}`
     }
-    return message
+
+    return `${event.target[0].name} ${actions[event.state]}`
   }
 }
 

@@ -181,7 +181,7 @@ declare global {
     id: string
     name: string
     owner: IUser
-    state: 'active' | 'inactive' | 'connected'
+    state: 'active' | 'inactive'
     hardwareID?: string
     lastReported: Date
     externalAddress: ipAddress
@@ -220,7 +220,7 @@ declare global {
     id: string
     name: string
     lastReported: Date
-    state: IDevice['state'] | 'restricted'
+    state: IDevice['state']
     type: string
     deviceID: string
     connection?: IConnection
@@ -294,11 +294,14 @@ declare global {
 
   interface ICloudEvent {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
-    state: IDevice['state']
+    state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
     target: {
       id: string
       name: string
+      device?: IDevice
+      service?: IService
+      connection?: IConnection
     }[]
   }
 

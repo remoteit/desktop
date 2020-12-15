@@ -149,7 +149,7 @@ export default createModel<RootModel>()({
     },
     async setDevice({ id, accountId, device }: { id: string; accountId?: string; device?: IDevice }, globalState) {
       const { setDevices } = dispatch.accounts
-      const devices = getDevices(globalState, accountId)
+      const devices = accountId ? getDevices(globalState, accountId) : getAllDevices(globalState)
 
       let exists = false
       devices.forEach((d, index) => {
