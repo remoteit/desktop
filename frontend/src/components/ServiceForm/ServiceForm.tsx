@@ -11,6 +11,7 @@ import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
 import { Columns } from '../Columns'
 import { spacing } from '../../styling'
+import { CheckService } from '../CheckService'
 
 type IServiceForm = ITarget & {
   name: string
@@ -27,13 +28,16 @@ type Props = {
 
 export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
   const { service: serviceDispatch } = useDispatch<Dispatch>()
-  const { applicationTypes, setupBusy, setupAdded, deleting, isValid } = useSelector((state: ApplicationState) => ({
-    applicationTypes: state.applicationTypes.all,
-    setupBusy: state.ui.setupBusy,
-    setupAdded: state.ui.setupAdded,
-    deleting: state.ui.setupServiceBusy === target?.uid,
-    isValid: state.service.isValid,
-  }))
+  const { applicationTypes, setupBusy, setupAdded, deleting, isValid, loading } = useSelector(
+    (state: ApplicationState) => ({
+      applicationTypes: state.applicationTypes.all,
+      setupBusy: state.ui.setupBusy,
+      setupAdded: state.ui.setupAdded,
+      deleting: state.ui.setupServiceBusy === target?.uid,
+      isValid: state.service.isValid,
+      loading: state.service.loading,
+    })
+  )
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<ITarget & IServiceForm>(() => {
@@ -112,8 +116,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => setForm({ ...form, port: +event.target.value })}
               />
-
-              {/* isValid show ok icon */}
+              <CheckService isValid={isValid} loading={loading} />
             </ListItem>
             <ListItem className={css.fieldWide}>
               <TextField
@@ -124,7 +127,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
               />
-              {/* isValid show ok icon */}
+              <CheckService isValid={isValid} loading={loading} />
               <Typography variant="caption">
                 Local network IP address or fully qualified domain name to host this service. Leave blank for this
                 system to host.
@@ -200,12 +203,14 @@ const useStyles = makeStyles({
   field: {
     paddingLeft: 75,
     paddingRight: spacing.xl,
-    '& .MuiFormControl-root': { minWidth: 200, marginRight: 100 + spacing.lg },
+    '& .MuiFormControl-root': { minWidth: 200, marginRight: 95 },
   },
   fieldWide: {
     paddingLeft: 75,
     paddingRight: spacing.xl,
-    '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
+    '& .MuiFormControl-root': {
+      minWidth: 300,
+    },
   },
   fieldSub: {
     padding: `0 ${spacing.xl}px 0 75px`,

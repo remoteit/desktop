@@ -18,6 +18,7 @@ import server from './server'
 import user, { User } from './User'
 import PortScanner from './PortScanner'
 import launch, { openCMDforWindows } from './launch'
+import services, { checkHostAndPort } from './services'
 
 class Controller {
   private io: SocketIO.Server
@@ -42,6 +43,7 @@ class Controller {
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
       ...Object.values(launch.EVENTS),
+      ...Object.values(services.EVENTS),
     ]
 
     new EventRelay(eventNames, EventBus, this.io.sockets)
@@ -66,6 +68,7 @@ class Controller {
     socket.on('service/forget', this.pool.forget)
     socket.on('service/check-host-port', this.checkHostAndPort)
     socket.on('binaries/install', this.installBinaries)
+    socket.on('service/check-host-port', checkHostAndPort)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)

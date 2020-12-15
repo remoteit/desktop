@@ -82,6 +82,7 @@ declare global {
     | 'service/version'
     | 'service/unknown-event'
     | 'service/putty/required'
+    | 'service/check-response'
 
     // binary
     | 'binary/install/start'
@@ -440,8 +441,8 @@ declare global {
     port: number
     host: string
     isValid?: boolean
+    loading?: boolean
   }
-
 }
 
 export {}
