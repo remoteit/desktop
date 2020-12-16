@@ -195,7 +195,6 @@ export default createModel<RootModel>()({
       device.services[index].attributes = service.attributes
       graphQLSetAttributes(service.attributes, service.id)
       dispatch.accounts.setDevice({ id: device.id, device })
-      emit('service/forget', service) // clear connection since state changed?
     },
 
     async destroy(device: IDevice, globalState: any) {
@@ -227,7 +226,7 @@ export default createModel<RootModel>()({
   },
 })
 
-const isIService = (instance: any): instance is IService => !!instance.license
+const isIService = (instance: any): instance is IService => !!instance?.license
 
 export function isOffline(instance?: IDevice | IService, connection?: IConnection) {
   const inactive = instance?.state !== 'active' && !connection?.active

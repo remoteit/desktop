@@ -205,14 +205,14 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
     const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
     const result = sorted.reduce((sessions: IUser[], e: any) => {
       if (
-        (loginId !== e.user?.id || e.endpoint.platform === 5) && // show your portal connections
-        !sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint.platform)
+        (loginId !== e.user?.id || e.endpoint?.platform === 5) && // show your portal connections
+        !sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform)
       )
         sessions.push({
           id: e.user?.id,
           timestamp: e.timestamp,
           email: e.user?.email,
-          platform: e.endpoint.platform,
+          platform: e.endpoint?.platform,
         })
       return sessions
     }, [])
