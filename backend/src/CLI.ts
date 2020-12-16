@@ -116,29 +116,28 @@ export default class CLI {
       autoStart: c.retry,
       failover: c.failover,
     }))
-    await this.updateConnectionStatus()
   }
 
   private readFile() {
     return this.configFile.read() || {}
   }
 
-  async updateConnectionStatus() {
-    if (!this.data.connections.length) return
-    const json = await this.status()
-    if (!json?.connections?.length) return
-    this.data.connections = this.data.connections.map(c => {
-      const status = json?.connections?.find(s => s.id === c.id)
-      if (status) {
-        c.active = status.state === 'connected'
-        c.connecting = status.state === 'connecting'
-        c.isP2P = status.state === 'connected' ? status.isP2P : undefined
-        if (status.error) c.error = { message: status.error.message, code: status.error.code }
-        d('UPDATE STATUS', { c, status: status.state })
-      }
-      return c
-    })
-  }
+  // async updateConnectionStatus() {
+  //   if (!this.data.connections.length) return
+  //   const json = await this.status()
+  //   if (!json?.connections?.length) return
+  //   this.data.connections = this.data.connections.map(c => {
+  //     const status = json?.connections?.find(s => s.id === c.id)
+  //     if (status) {
+  //       c.active = status.state === 'connected'
+  //       c.connecting = status.state === 'connecting'
+  //       c.isP2P = status.state === 'connected' ? status.isP2P : undefined
+  //       if (status.error) c.error = { message: status.error.message, code: status.error.code }
+  //       d('UPDATE STATUS', { c, status: status.state })
+  //     }
+  //     return c
+  //   })
+  // }
 
   async agentRunning() {
     const result = await this.exec({

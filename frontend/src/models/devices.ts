@@ -227,7 +227,7 @@ export default createModel<RootModel>()({
   },
 })
 
-const isIService = (instance: any): instance is IService => !!instance.license
+const isIService = (instance: any): instance is IService => !!instance?.license
 
 export function isOffline(instance?: IDevice | IService, connection?: IConnection) {
   const inactive = instance?.state !== 'active' && !connection?.active
@@ -239,24 +239,36 @@ export function selectDevice(state: ApplicationState, deviceId: string) {
   return getAllDevices(state).find(d => d.id === deviceId)
 }
 
-export function selectDevices(state: ApplicationState, deviceIds: string[]) {
-  return getAllDevices(state).filter(d => deviceIds.includes(d.id))
-}
-
 export function selectService(state: ApplicationState, serviceId: string) {
   return findService(getAllDevices(state), serviceId)
 }
 
+// export function findService(devices: IDevice[], id: string) {
+//   return devices.reduce(
+//     (all, d) => {
+//       const service = d?.services?.find(s => s.id === id)
+//       if (service) {
+//         all[0] = service
+//         all[1] = d
+//       }
+//       return all
+//     },
+//     [undefined, undefined] as [IService | undefined, IDevice | undefined]
+//   )
+// }
+
 export function findService(devices: IDevice[], id: string) {
-  return devices.reduce(
-    (all, d) => {
-      const service = d?.services?.find(s => s.id === id)
-      if (service) {
-        all[0] = service
-        all[1] = d
-      }
-      return all
-    },
-    [undefined, undefined] as [IService | undefined, IDevice | undefined]
+  let service: IService | undefined
+  const device = devices.find(
+    d =>
+      d.id === id ||
+      d?.services?.find(s => {
+        if (s.id === id) {
+          service = s
+          return true
+        }
+        return false
+      })
   )
+  return [service, device] as [IService | undefined, IDevice | undefined]
 }

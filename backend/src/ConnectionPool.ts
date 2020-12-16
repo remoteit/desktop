@@ -51,8 +51,6 @@ export default class ConnectionPool {
   check = async () => {
     if (binaryInstaller.uninstallInitiated || !user.signedIn) return
 
-    await cli.updateConnectionStatus()
-
     // move connections: cli -> desktop
     cli.data.connections.forEach(async c => {
       const connection = this.find(c.id)?.params

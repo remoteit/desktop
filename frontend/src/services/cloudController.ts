@@ -1,7 +1,7 @@
 import io from 'socket.io-client'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { EventEmitter } from 'events'
-import { getToken } from '../services/remote.it'
+import { emit } from './Controller'
+import { getToken } from './remote.it'
 import { store } from '../store'
 import { selectService } from '../models/devices'
 import { connectionName, setConnection } from '../helpers/connectionHelper'
@@ -10,7 +10,7 @@ function encode(data) {
   return Buffer.from(JSON.stringify(data)).toString('base64')
 }
 
-class CloudController extends EventEmitter {
+class CloudController {
   async init() {
     console.log('CLOUD CONTROLLER INIT')
 
@@ -37,14 +37,25 @@ class CloudController extends EventEmitter {
               }
             }
           }`,
+          // actor {
+          //   email
+          // }
+          // users {
+          //   email
+          // }
           // "variables": {}
         })
       )
     }
 
+    // TO REQUEST:
+    //    isDevice field on target
+
     socket.onmessage = response => {
       const event = this.parse(response)
       console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
+      // {"data":{"event":{"type":"DEVICE_STATE","state":"active","timestamp":"2020-12-16T00:24:56.000Z","target":[{"id":"80:00:00:00:01:07:C2:36","name":"remoteit admin"}]}}}
+      // {"data":{"event":{"type":"DEVICE_STATE","state":"inactive","timestamp":"2020-12-16T00:24:46.000Z","target":[{"id":"80:00:00:00:01:07:C2:3E","name":"chat04"}]}}}
       if (event) this.handleEvent(event)
     }
   }
@@ -82,10 +93,12 @@ class CloudController extends EventEmitter {
         event.target.forEach(target => {
           if (target.device?.id === target.id) {
             target.device.state = state
+            console.log('DEVICE STATE', target.device.name, target.device.state)
           } else {
             target.device?.services.find(service => {
               if (service.id === target.service?.id) {
                 service.state = state
+                console.log('SERVICE STATE', service.name, service.state)
               }
             })
           }
@@ -95,7 +108,11 @@ class CloudController extends EventEmitter {
       case 'DEVICE_CONNECT':
         // connected | disconnected
         event.target.forEach(target => {
-          if (target.connection) target.connection.active = event.state === 'connected'
+          if (target.connection) {
+            target.connection.active = event.state === 'connected'
+            target.connection.connecting = false
+          }
+          console.log('CONNECTION STATE', target.connection?.name, target.connection?.active)
         })
         break
 
@@ -107,20 +124,24 @@ class CloudController extends EventEmitter {
 
   handleEvent(event: ICloudEvent) {
     const { accounts, ui } = store.dispatch
+
+    event.title = 'remote.it notice'
+    event.body = this.getMessage(event)
+
     switch (event.type) {
       case 'DEVICE_STATE':
         event.target.forEach(target => {
-          if (target.connection) setConnection(target.connection)
+          if (target.device) accounts.setDevice({ id: target.device.id, device: target.device })
+          if (!target.service) new Notification(event.title || '', { body: event.body })
         })
-        ui.set({ noticeMessage: this.getMessage(event) })
         break
 
       case 'DEVICE_CONNECT':
-        // new Notification('To do list', { body: text, icon: img });
+        new Notification(event.title, { body: event.body })
         event.target.forEach(target => {
-          accounts.setDevice({ id: target.id, device: target.device })
+          if (target.connection) setConnection(target.connection)
         })
-        ui.set({ noticeMessage: this.getMessage(event) })
+        ui.set({ noticeMessage: event.body })
         break
 
       case 'DEVICE_SHARE':

@@ -15,7 +15,7 @@ const LOG_SELECT_FOR_DEVICE = `
         actor {
           email
         }
-        services {
+        target {
           id
           name
         }

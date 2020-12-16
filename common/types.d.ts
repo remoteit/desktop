@@ -129,6 +129,7 @@ declare global {
     failover?: boolean // allow proxy failover
     proxyOnly?: boolean // disabled p2p
     connecting?: boolean
+    session?: string //the connection session id
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template
     commandTemplate?: string // command line launch template
@@ -296,6 +297,9 @@ declare global {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
+
+    title?: string
+    body?: string
     target: {
       id: string
       name: string
@@ -324,7 +328,7 @@ declare global {
     timestamp: Date
     type: string
     actor?: IUser
-    services?: IService[]
+    target?: (IService | IDevice)[]
     users?: IUser[]
     action: string
   }
