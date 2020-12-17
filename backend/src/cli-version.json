@@ -1,10 +1,10 @@
 {
-  "cli": "1.6.24",
-  "connectd": "4.10",
+  "cli": "1.6.27",
+  "connectd": "4.10.1",
   "muxer": "0.3-alpha",
   "demuxer": "0.3-alpha",
+  "cliUrl": "https://downloads.remote.it/cli/v",
+  "connectdUrl": "https://downloads.remote.it/connectd/v",
   "muxerUrl": "https://downloads.remote.it/multiport/v",
-  "demuxerUrl": "https://downloads.remote.it/multiport/v",
-  "cliUrl": "https://dev-cli.s3-us-west-2.amazonaws.com/v",
-  "connectdUrl": "https://github.com/remoteit/connectd/releases/download/v"
+  "demuxerUrl": "https://downloads.remote.it/multiport/v"
 }

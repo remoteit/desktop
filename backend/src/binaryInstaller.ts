@@ -62,7 +62,7 @@ export class BinaryInstaller {
 
       if (!(environment.isWindows || environment.isHeadless)) {
         this.binaries.map(binary => {
-          if (existsSync(environment.symlinkPath)) commands.push(`ln -sf ${binary.path} ${environment.symlinkPath}`)
+          if (existsSync(environment.symlinkPath)) commands.push(`ln -sf ${binary.path} ${binary.symlink}`)
         })
       }
 

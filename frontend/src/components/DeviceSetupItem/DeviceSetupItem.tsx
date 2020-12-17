@@ -1,7 +1,8 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Link, Typography } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
@@ -11,21 +12,38 @@ import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC = () => {
-  const { thisDevice, targetDevice, os, links } = useSelector((state: ApplicationState) => ({
-    thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-    targetDevice: state.backend.device,
-    os: state.backend.environment.os,
-    links: getLinks(state),
-  }))
+  const { ui } = useDispatch<Dispatch>()
+  const history = useHistory()
+  const { thisDevice, targetDevice, os, links, canRestore, restore, restoring } = useSelector(
+    (state: ApplicationState) => ({
+      thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+      targetDevice: state.backend.device,
+      os: state.backend.environment.os,
+      links: getLinks(state),
+      canRestore:
+        !state.backend.device.uid &&
+        (state.devices.total > state.devices.size ||
+          !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
+      restore: state.ui.restore,
+      restoring: state.ui.restoring,
+    })
+  )
+
+  if (restoring)
+    return (
+      <ListItem>
+        <Notice loading={true}>Restoring device.</Notice>
+      </ListItem>
+    )
 
   const registered = !!targetDevice.uid
   let title = 'Set up remote access'
-  let subTitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
+  let subtitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
 
   if (registered) {
     if (thisDevice) {
       title = attributeName(thisDevice) || targetDevice.name || ''
-      subTitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
+      subtitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
     } else {
       return (
         <ListItem>
@@ -40,7 +58,26 @@ export const DeviceSetupItem: React.FC = () => {
       <ListItemIcon>
         <Icon name="hdd" size="md" type="light" />
       </ListItemIcon>
-      <ListItemText primary={title} secondary={subTitle} />
+      <ListItemText primary={title} secondary={subtitle} />
+      {canRestore && (
+        <ListItemSecondaryAction>
+          {restore ? (
+            <Typography variant="body2" color="textSecondary">
+              Select a device or
+              <Link onClick={() => ui.set({ restore: false })}>cancel</Link>
+            </Typography>
+          ) : (
+            <Link
+              onClick={() => {
+                ui.set({ restore: true })
+                history.push('/devices')
+              }}
+            >
+              Restore Device
+            </Link>
+          )}
+        </ListItemSecondaryAction>
+      )}
     </ListItemLocation>
   )
 }

@@ -68,6 +68,7 @@ export default createModel<RootModel>()({
       const { device } = globalState.backend
 
       if (targetDevice?.uid !== device.uid) {
+        // register
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
           const result = await devices.fetchSingle({ deviceId: targetDevice.uid })
           if (!result) {
@@ -79,6 +80,8 @@ export default createModel<RootModel>()({
             setupRegisteringDevice: false,
             successMessage: 'Device registered successfully!',
           })
+
+          // deleting
         } else if (globalState.ui.setupDeletingDevice) {
           const result = await devices.fetchSingle({ deviceId: device.uid })
           if (result) {
@@ -88,6 +91,13 @@ export default createModel<RootModel>()({
           ui.set({
             setupDeletingDevice: false,
             successMessage: 'Device unregistered successfully!',
+          })
+
+          // restoring
+        } else if (globalState.ui.restoring) {
+          ui.set({
+            restoring: false,
+            successMessage: 'Device restored successfully!',
           })
         }
       }

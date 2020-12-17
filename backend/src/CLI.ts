@@ -232,6 +232,11 @@ export default class CLI {
     await this.readConnections()
   }
 
+  async restore(deviceId: string) {
+    await this.exec({ cmds: [strings.restore(deviceId)], admin: true })
+    await this.read()
+  }
+
   async reset() {
     await this.exec({ cmds: [strings.reset()], checkAuthHash: true })
   }
