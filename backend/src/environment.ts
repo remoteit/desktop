@@ -147,6 +147,7 @@ export class Environment {
       manufacturerDetails.product.platform = this.getPlatformCode()
     }
 
+    manufacturerDetails.product.platform = +manufacturerDetails.product.platform // cast platform to number
     manufacturerDetails.product.appCode = MANUFACTURE_ID_HEADLESS // Default to headless, update later if not
     return manufacturerDetails
   }

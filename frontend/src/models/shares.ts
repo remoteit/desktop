@@ -72,7 +72,11 @@ export default createModel<RootModel>()({
 
       const newUsers: IUser[] = emails.map(email => ({ email, id: '', scripting }))
       if (isNew) {
-        device.access = device.access.concat(newUsers)
+        const access = device.access.filter(i => emails.includes(i.email))
+        device.access =
+          access.length === 0
+            ? device.access.concat(newUsers)
+            : device.access.map(_ac => (access.find(i => i.email === _ac.email) ? { ..._ac, scripting } : { ..._ac }))
       } else {
         device.access = device.access.map(_ac => ({ ..._ac, scripting }))
       }
