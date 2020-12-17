@@ -15,6 +15,7 @@ import { ContactCard } from '../../components/ContactCard'
 import { SharingDetails } from '../../components/SharingForm'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
+import { getPermissions } from '../../helpers/userHelper'
 
 export const SharePage = () => {
   const { email = '', deviceID = '', serviceID = '' } = useParams<{
@@ -40,7 +41,13 @@ export const SharePage = () => {
     user: state.devices.contacts.find(c => c.email === email),
   }))
   const [selected, setSelected] = React.useState<string[]>([])
+  const [userSelected, setUserSelected] = React.useState<IUserRef | undefined>(user)
   const [changed, setChanged] = useState(false)
+  const permissions = device && getPermissions(device, userSelected?.email)
+  const [selectedServices, setSelectedServices] = useState(permissions?.services.map(s => s.id) || [])
+  const [indeterminate, setIndeterminate] = React.useState<string[]>([])
+  const [scripts, setScripts] = useState(permissions?.scripting || false)
+  const [scriptIndeterminate, setScriptIndeterminate] = useState(false)
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
@@ -62,6 +69,40 @@ export const SharePage = () => {
       shares.updateDeviceState({ device, emails: shareData.email, scripting, services, isNew })
     }
     goToNext()
+  }
+
+  //everything happend here
+  let intersection: string[] = []
+  const selectContacts = (emails: string[]) => {
+    let userSelectedServices: string[][] = emails.map(email => {
+      return device ? getPermissions(device, email).services.map(s => s.id) : []
+    })
+    let userSelectedScript: boolean[] = emails.map(email => {
+      return device ? getPermissions(device, email).scripting : false
+    })
+    const match = userSelectedServices.map((services, index) => {
+      intersection = index === 0 ? services : intersection.filter(value => services.includes(value))
+      return intersection
+    })
+    const matchServices = match[match.length - 1]
+    const indeterminateServices = userSelectedServices
+      .flat() // get one array of indeterminate
+      .filter((v, i, a) => a.indexOf(v) === i) // filter duplicates
+      .filter(value => !matchServices.includes(value)) // get just indeterminate value
+
+    const unique: any = new Set(userSelectedScript)
+    if ([...Array.from(unique)].length > 1) {
+      setScriptIndeterminate(true)
+      setScripts(false)
+    } else {
+      setScripts(userSelectedScript.find(script => script === true) || false)
+      setScriptIndeterminate(false)
+    }
+
+    setSelectedServices(matchServices)
+    setIndeterminate(indeterminateServices)
+    setUserSelected(contacts.find(c => emails.includes(c.email)))
+    setSelected(emails)
   }
 
   const goToNext = () =>
@@ -86,6 +127,15 @@ export const SharePage = () => {
         services,
         email,
       }
+    }
+  }
+
+  const handleSetScript = newValue => {
+    if (scriptIndeterminate) {
+      setScripts(true)
+      setScriptIndeterminate(false)
+    } else {
+      setScripts(newValue)
     }
   }
 
@@ -114,7 +164,7 @@ export const SharePage = () => {
                 <ContactSelector
                   contacts={contacts}
                   selected={contacts.filter(c => device.access.find(s => s.email === c.email))}
-                  onChange={setSelected}
+                  onChange={selectContacts}
                 />
               )
             )}
@@ -125,11 +175,17 @@ export const SharePage = () => {
       {device && (
         <ContactCard
           device={device}
-          user={user}
+          user={email === '' ? userSelected : user}
           selected={selected}
           onShare={handleShare}
           changed={changed}
-          setChanged={setChanged}
+          onChanged={setChanged}
+          scripts={scripts}
+          onScripts={handleSetScript}
+          indeterminateScript={scriptIndeterminate}
+          selectedServices={selectedServices}
+          indeterminateServices={indeterminate}
+          onSelectedServices={setSelectedServices}
         />
       )}
     </Container>
