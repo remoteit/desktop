@@ -2,6 +2,7 @@
 !include x64.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
+!define PKGVERSION "2.9.5"
 
 !macro customInit
     Var /GLOBAL path_i
@@ -19,13 +20,9 @@
     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent stop'
 
     ; move the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
-    ; Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
-    ; Rename "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections"
+    Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config${PKGVERSION}.json"
+    Rename "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections${PKGVERSION}"
 
-    ; copy the config file and connections to backup location
-    CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\"
-    CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\"
-    
     ; MessageBox MB_OK "Init: moved files" 
 
 !macroend
@@ -45,7 +42,7 @@
         FileOpen $installLog "$TEMP\remoteit.log" w
     end_of_test:
 
-    FileWrite $installLog "$\nInstall (${__DATE__} ${__TIME__}): $\r$\n"
+    FileWrite $installLog "$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $installLog "-----------------------------$\r$\n"
 
     ${If} ${RunningX64}
@@ -72,8 +69,8 @@
 
     ; restore config from backup - question: should this always happen? Could be error prone.
     ; MessageBox MB_OK "Install: will restore files"
-    CopyFiles /SILENT "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
-    CopyFiles /SILENT "${REMOTEIT_BACKUP}\connections" "$PROFILE\AppData\Local\remoteit\"
+    CopyFiles /SILENT "${REMOTEIT_BACKUP}\config${PKGVERSION}.json" "$APPDATA\remoteit\config.json"
+    CopyFiles /SILENT "${REMOTEIT_BACKUP}\connections${PKGVERSION}" "$PROFILE\AppData\Local\remoteit\connections"
     FileWrite $installLog "Restore config files $\r$\n"
 
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
@@ -111,26 +108,15 @@
 
     FileWrite $uninstallLog "$\n***** Remove Files *****$\r$\n"
 
-    ; create backup directory
-    CreateDirectory "${REMOTEIT_BACKUP}"
-
-    ; MessageBox MB_OK "uninstall copy files" 
-    ; copy the config file to backup location - possible enhancements:
-    ; - only copy on user request
-    ; - check for a non empty file before copy
-    ; - remove altogether
-    CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\"
-    CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\"
-
     ; detects auto-update
     ${GetOptions} $R0 "--update" $R1
         ${IfNot} ${Errors}
             ; This is UPDATE
             ; MessageBox MB_OK "This is a UPDATE!" 
-            FileWrite $uninstallLog "$\nUpdate (${__DATE__} ${__TIME__}): $\r$\n"
+            FileWrite $uninstallLog "$\nUpdate ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
             FileWrite $uninstallLog "-----------------------------$\r$\n"
         ${Else}
-            FileWrite $uninstallLog "$\nUninstall (${__DATE__} ${__TIME__}): $\r$\n"
+            FileWrite $uninstallLog "$\nUninstall ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
             FileWrite $uninstallLog "-----------------------------$\r$\n"
             IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
 
