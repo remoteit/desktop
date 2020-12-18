@@ -1,1 +1,1 @@
-export { RemoteSummaryBox } from './ReportSummaryBox'
+export { ReportSummaryBox } from './ReportSummaryBox'

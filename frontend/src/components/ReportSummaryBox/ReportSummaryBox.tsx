@@ -1,28 +1,37 @@
-import React, { useState } from 'react'
-import { Tooltip } from '@material-ui/core'
+import React from 'react'
+import { Typography, Box } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
-import * as assets from '../../assets'
 import { Icon } from '../Icon'
 
-export interface RemoteSummaryBoxProps {
+export interface ReportSummaryBoxProps {
+  iconTitle?: string
   count?: number
   label?: string
   icon?: string
+  total?: number
+  width?: number
 }
-export const RemoteSummaryBox: React.FC<RemoteSummaryBoxProps> = ({ count, label, icon }) => {
+export const ReportSummaryBox: React.FC<ReportSummaryBoxProps> = ({ iconTitle, count, label, icon, total, width }) => {
   const css = useStyles()
   return (
-    <div className={css.remote}>
-      {label}
-      {count}
-      <Icon title="" name="hdd" />
-    </div>
+    <Box boxShadow={3} width={width}>
+      <div className={css.report}>
+        <Icon title={iconTitle} name={icon} size="xxl" />
+        <div>
+          <Typography variant="h1" className={css.report}>
+            {count}
+          </Typography>
+          {total ? `of ${total}` : ''}
+          {label}
+        </div>
+      </div>
+    </Box>
   )
 }
 
 const useStyles = makeStyles({
-  remote: {
+  report: {
     color: colors.white,
     backgroundColor: colors.primary,
   },
