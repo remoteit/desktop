@@ -115,7 +115,10 @@
     CreateDirectory "${REMOTEIT_BACKUP}"
 
     ; MessageBox MB_OK "uninstall copy files" 
-    ; copy the config file to backup location
+    ; copy the config file to backup location - possible enhancements:
+    ; - only copy on user request
+    ; - check for a non empty file before copy
+    ; - remove altogether
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\"
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\"
 
