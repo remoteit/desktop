@@ -242,20 +242,6 @@ export function selectService(state: ApplicationState, serviceId: string) {
   return findService(getAllDevices(state), serviceId)
 }
 
-// export function findService(devices: IDevice[], id: string) {
-//   return devices.reduce(
-//     (all, d) => {
-//       const service = d?.services?.find(s => s.id === id)
-//       if (service) {
-//         all[0] = service
-//         all[1] = d
-//       }
-//       return all
-//     },
-//     [undefined, undefined] as [IService | undefined, IDevice | undefined]
-//   )
-// }
-
 export function findService(devices: IDevice[], id: string) {
   let service: IService | undefined
   const device = devices.find(

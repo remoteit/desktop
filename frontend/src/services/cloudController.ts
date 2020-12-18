@@ -1,5 +1,6 @@
 import io from 'socket.io-client'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { WEBSOCKET_URL } from '../shared/constants'
 import { emit } from './Controller'
 import { getToken } from './remote.it'
 import { store } from '../store'
@@ -17,7 +18,7 @@ class CloudController {
     const token = await getToken()
     console.log('BEARER TOKEN', token)
 
-    let socket = new WebSocket('wss://ws.remote.it/beta')
+    let socket = new WebSocket(WEBSOCKET_URL)
 
     socket.onopen = event => {
       console.log('\n-------------------------> SOCKET OPEN\n\n')
@@ -34,6 +35,7 @@ class CloudController {
               target {
                 id
                 name
+                application
               }
             }
           }`,
@@ -52,11 +54,13 @@ class CloudController {
     //    isDevice field on target
 
     socket.onmessage = response => {
-      const event = this.parse(response)
+      let event = this.parse(response)
+      if (event) event = this.update(event)
+
       console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
       // {"data":{"event":{"type":"DEVICE_STATE","state":"active","timestamp":"2020-12-16T00:24:56.000Z","target":[{"id":"80:00:00:00:01:07:C2:36","name":"remoteit admin"}]}}}
       // {"data":{"event":{"type":"DEVICE_STATE","state":"inactive","timestamp":"2020-12-16T00:24:46.000Z","target":[{"id":"80:00:00:00:01:07:C2:3E","name":"chat04"}]}}}
-      if (event) this.handleEvent(event)
+      if (event) this.notify(event)
     }
   }
 
@@ -65,7 +69,7 @@ class CloudController {
     let event
     try {
       event = JSON.parse(response.data).data.event
-      return this.parseState({
+      return {
         type: event.type,
         state: event.state,
         timestamp: new Date(event.timestamp),
@@ -74,18 +78,19 @@ class CloudController {
           return {
             id: t.id,
             name: connectionName(service, device) || t.name,
+            application: t.application,
             connection: state.backend.connections.find(c => c.id === t.id),
             service,
             device,
           }
         }),
-      })
+      }
     } catch (error) {
       console.warn('Event parsing error', { event, error })
     }
   }
 
-  parseState(event: ICloudEvent) {
+  update(event: ICloudEvent) {
     switch (event.type) {
       case 'DEVICE_STATE':
         // active | inactive
@@ -122,8 +127,8 @@ class CloudController {
     return event
   }
 
-  handleEvent(event: ICloudEvent) {
-    const { accounts, ui } = store.dispatch
+  notify(event: ICloudEvent) {
+    const { accounts } = store.dispatch
 
     event.title = 'remote.it notice'
     event.body = this.getMessage(event)
@@ -132,16 +137,15 @@ class CloudController {
       case 'DEVICE_STATE':
         event.target.forEach(target => {
           if (target.device) accounts.setDevice({ id: target.device.id, device: target.device })
-          if (!target.service) new Notification(event.title || '', { body: event.body })
+          // if (target.application === ) new Notification(event.title || '', { body: event.body })
         })
         break
 
       case 'DEVICE_CONNECT':
-        new Notification(event.title, { body: event.body })
         event.target.forEach(target => {
+          new Notification(event.title || '', { body: event.body })
           if (target.connection) setConnection(target.connection)
         })
-        ui.set({ noticeMessage: event.body })
         break
 
       case 'DEVICE_SHARE':
