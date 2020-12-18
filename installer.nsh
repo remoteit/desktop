@@ -18,9 +18,15 @@
     ; stop the agent
     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent stop'
 
-    ; copy the config file and connections to backup location (protect against 2.9.2 uninstall bug)
+    ; move the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
+    ; Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config.json"
+    ; Rename "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections"
+
+    ; copy the config file and connections to backup location
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\"
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\"
+    
+    ; MessageBox MB_OK "Init: moved files" 
 
 !macroend
 
@@ -57,13 +63,15 @@
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
+    ; removes agent - WILL CREATE EMPTY config.json if one does not exist
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent uninstall'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    ; restore config from backup
+    ; restore config from backup - question: should this always happen? Could be error prone.
+    ; MessageBox MB_OK "Install: will restore files"
     CopyFiles /SILENT "${REMOTEIT_BACKUP}\config.json" "$APPDATA\remoteit\"
     CopyFiles /SILENT "${REMOTEIT_BACKUP}\connections" "$PROFILE\AppData\Local\remoteit\"
     FileWrite $installLog "Restore config files $\r$\n"
@@ -103,12 +111,10 @@
 
     FileWrite $uninstallLog "$\n***** Remove Files *****$\r$\n"
 
-    ; stop the agent
-    nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j agent stop'
-
     ; create backup directory
     CreateDirectory "${REMOTEIT_BACKUP}"
 
+    ; MessageBox MB_OK "uninstall copy files" 
     ; copy the config file to backup location
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\"
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\"
@@ -194,3 +200,6 @@
         ${endif}
 
 !macroend
+
+; test reset:
+; rmdir /s %HOMEPATH%\AppData\Local\remoteit-backup && rmdir /s %HOMEPATH%\AppData\Local\remoteit && rmdir /s \ProgramData\remoteit
