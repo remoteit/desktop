@@ -1,6 +1,6 @@
-import io from 'socket.io-client'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { WEBSOCKET_URL } from '../shared/constants'
+import Sockette from 'sockette'
+import { WEBSOCKET_URL, WEBSOCKET_KEEPALIVE_INTERVAL } from '../shared/constants'
 import { DEVICE_TYPE } from '../shared/applications'
 import { emit } from './Controller'
 import { getToken } from './remote.it'
@@ -13,34 +13,36 @@ function encode(data) {
 }
 
 class CloudController {
-  socket?: WebSocket
+  socket?: Sockette
   token?: string
 
   async init() {
-    console.log('CLOUD CONTROLLER INIT')
     await this.connect()
+    window.setInterval(this.keepAlive, WEBSOCKET_KEEPALIVE_INTERVAL)
   }
 
   connect = async () => {
     this.token = await getToken()
-    console.log('BEARER TOKEN', this.token)
 
-    this.socket = new WebSocket(WEBSOCKET_URL)
-    if (!this.socket) return
-
-    this.socket.onopen = this.onOpen
-    this.socket.onmessage = this.onMessage
-    this.socket.onclose = this.onClose
-    this.socket.onerror = this.onError
+    this.socket = new Sockette(WEBSOCKET_URL, {
+      timeout: 10000,
+      maxAttempts: 30,
+      onopen: this.onOpen,
+      onmessage: this.onMessage,
+      onclose: e => console.log('CLOUD WS closed', e),
+      onerror: e => console.warn('CLOUD WS error', e),
+      onreconnect: e => console.log('CLOUD WS Reconnecting...', e),
+      onmaximum: e => console.warn('CLOUD WS maximum retry limit reached', e),
+    })
   }
 
-  onOpen = () => {
+  onOpen = event => {
     console.log('\n-------------------------> SOCKET OPEN\n\n')
-    this.socket?.send(
-      JSON.stringify({
-        action: 'subscribe',
-        headers: { authorization: this.token },
-        query: `
+    console.log('CLOUD WS opened', event)
+    this.socket?.json({
+      action: 'subscribe',
+      headers: { authorization: this.token },
+      query: `
         {
           event {
             type
@@ -53,15 +55,14 @@ class CloudController {
             }
           }
         }`,
-        // actor {
-        //   email
-        // }
-        // users {
-        //   email
-        // }
-        // "variables": {}
-      })
-    )
+      // actor {
+      //   email
+      // }
+      // users {
+      //   email
+      // }
+      // "variables": {}
+    })
   }
 
   onMessage = response => {
@@ -75,13 +76,9 @@ class CloudController {
     // {"data":{"event":{"type":"DEVICE_STATE","state":"inactive","timestamp":"2020-12-16T00:24:46.000Z","target":[{"id":"80:00:00:00:01:07:C2:3E","name":"chat04"}]}}}
   }
 
-  onClose = () => {
-    this.connect()
-  }
-
-  onError = error => {
-    console.warn('CLOUD WS ERROR', error)
-    this.connect()
+  keepAlive() {
+    console.log('CLOUD WS keep alive ping')
+    this.socket?.send('ping')
   }
 
   parse(response): ICloudEvent | undefined {

@@ -17,6 +17,7 @@ class Heartbeat {
   }
 
   caffeinate() {
+    // DISABLED because we should be getting state updates from the cloudController
     // this.count = 0
     // if (this.interval) window.clearInterval(this.interval)
     // this.interval = window.setInterval(() => {

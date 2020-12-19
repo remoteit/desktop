@@ -47,6 +47,7 @@
     "remote.it": "^0.45.0",
     "screenfull": "^5.0.0",
     "socket.io-client": "^2.3.1",
+    "sockette": "^2.0.6",
     "url": "^0.11.0",
     "use-clipboard-copy": "^0.1.1",
     "yup": "^0.28.0"
