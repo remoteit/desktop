@@ -21,7 +21,7 @@
 
     ; remove old backups so the move can occur
     Delete "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
-    Delete "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
+    RMDir /r  "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
 
     ; move the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
     Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
