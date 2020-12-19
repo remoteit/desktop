@@ -31,6 +31,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const connecting = !!connection?.connecting
 
   const clickHandler = () => {
+    heartbeat.caffeinate()
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
       emit('service/disconnect', connection)
