@@ -13,18 +13,21 @@
         StrCpy $path_i '$INSTDIR\resources\x86'
     ${EndIf}
 
-    ; create backup directory
-    CreateDirectory "${REMOTEIT_BACKUP}"
-
     ; stop the agent
     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent stop'
 
+    ; create backup directory if doesn't exist
+    CreateDirectory "${REMOTEIT_BACKUP}"
+
+    ; remove old backups so the move can occur
+    Delete "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
+    Delete "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
+
     ; move the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
-    Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config${PKGVERSION}.json"
-    Rename "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections${PKGVERSION}"
+    Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
+    Rename "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
 
     ; MessageBox MB_OK "Init: moved files" 
-
 !macroend
 
 !macro customInstall
@@ -60,17 +63,17 @@
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    ; removes agent - WILL CREATE EMPTY config.json if one does not exist
+    ; removes agent
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent uninstall'
     nsExec::ExecToStack /OEM $ps_command
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
 
-    ; restore config from backup - question: should this always happen? Could be error prone.
+    ; restore config from backup
     ; MessageBox MB_OK "Install: will restore files"
-    CopyFiles /SILENT "${REMOTEIT_BACKUP}\config${PKGVERSION}.json" "$APPDATA\remoteit\config.json"
-    CopyFiles /SILENT "${REMOTEIT_BACKUP}\connections${PKGVERSION}" "$PROFILE\AppData\Local\remoteit\connections"
+    CopyFiles /SILENT "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json" "$APPDATA\remoteit\config.json"
+    CopyFiles /SILENT "${REMOTEIT_BACKUP}\connections-${PKGVERSION}" "$PROFILE\AppData\Local\remoteit\connections"
     FileWrite $installLog "Restore config files $\r$\n"
 
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
