@@ -5,6 +5,7 @@ import { hasCredentials } from '../services/remote.it'
 import { RootModel } from './rootModel'
 import { set as setDate, eachDayOfInterval, isSameDay, isEqual } from 'date-fns'
 import { getTimeZone } from '../helpers/dateHelper'
+import { startOfDay } from 'date-fns/esm'
 
 const MAX_DEVICE_LENGTH = 1000
 
@@ -191,8 +192,9 @@ export default createModel<RootModel>()({
       //add to the devices in this period
       const newDeviceTimeseries = deviceTimeseries.map(item => {
         let count = 0
+
         devicelist.map(d => {
-          if (isEqual(item.date, d.createdAt)) {
+          if (isEqual(startOfDay(item.date), startOfDay(d.createdAt))) {
             pastMonthDevices += 1
             return (count += 1)
           }
