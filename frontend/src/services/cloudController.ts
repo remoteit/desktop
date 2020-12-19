@@ -1,6 +1,7 @@
 import io from 'socket.io-client'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { WEBSOCKET_URL } from '../shared/constants'
+import { DEVICE_TYPE } from '../shared/applications'
 import { emit } from './Controller'
 import { getToken } from './remote.it'
 import { store } from '../store'
@@ -12,56 +13,75 @@ function encode(data) {
 }
 
 class CloudController {
+  socket?: WebSocket
+  token?: string
+
   async init() {
     console.log('CLOUD CONTROLLER INIT')
+    await this.connect()
+  }
 
-    const token = await getToken()
-    console.log('BEARER TOKEN', token)
+  connect = async () => {
+    this.token = await getToken()
+    console.log('BEARER TOKEN', this.token)
 
-    let socket = new WebSocket(WEBSOCKET_URL)
+    this.socket = new WebSocket(WEBSOCKET_URL)
+    if (!this.socket) return
 
-    socket.onopen = event => {
-      console.log('\n-------------------------> SOCKET OPEN\n\n')
-      socket.send(
-        JSON.stringify({
-          action: 'subscribe',
-          headers: { authorization: token },
-          query: `
-          {
-            event {
-              type
-              state
-              timestamp
-              target {
-                id
-                name
-                application
-              }
+    this.socket.onopen = this.onOpen
+    this.socket.onmessage = this.onMessage
+    this.socket.onclose = this.onClose
+    this.socket.onerror = this.onError
+  }
+
+  onOpen = () => {
+    console.log('\n-------------------------> SOCKET OPEN\n\n')
+    this.socket?.send(
+      JSON.stringify({
+        action: 'subscribe',
+        headers: { authorization: this.token },
+        query: `
+        {
+          event {
+            type
+            state
+            timestamp
+            target {
+              id
+              name
+              application
             }
-          }`,
-          // actor {
-          //   email
-          // }
-          // users {
-          //   email
-          // }
-          // "variables": {}
-        })
-      )
-    }
+          }
+        }`,
+        // actor {
+        //   email
+        // }
+        // users {
+        //   email
+        // }
+        // "variables": {}
+      })
+    )
+  }
 
-    // TO REQUEST:
-    //    isDevice field on target
+  onMessage = response => {
+    let event = this.parse(response)
+    if (!event) return
 
-    socket.onmessage = response => {
-      let event = this.parse(response)
-      if (event) event = this.update(event)
+    event = this.update(event)
+    this.notify(event)
+    console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
+    // {"data":{"event":{"type":"DEVICE_STATE","state":"active","timestamp":"2020-12-16T00:24:56.000Z","target":[{"id":"80:00:00:00:01:07:C2:36","name":"remoteit admin"}]}}}
+    // {"data":{"event":{"type":"DEVICE_STATE","state":"inactive","timestamp":"2020-12-16T00:24:46.000Z","target":[{"id":"80:00:00:00:01:07:C2:3E","name":"chat04"}]}}}
+  }
 
-      console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
-      // {"data":{"event":{"type":"DEVICE_STATE","state":"active","timestamp":"2020-12-16T00:24:56.000Z","target":[{"id":"80:00:00:00:01:07:C2:36","name":"remoteit admin"}]}}}
-      // {"data":{"event":{"type":"DEVICE_STATE","state":"inactive","timestamp":"2020-12-16T00:24:46.000Z","target":[{"id":"80:00:00:00:01:07:C2:3E","name":"chat04"}]}}}
-      if (event) this.notify(event)
-    }
+  onClose = () => {
+    this.connect()
+  }
+
+  onError = error => {
+    console.warn('CLOUD WS ERROR', error)
+    this.connect()
   }
 
   parse(response): ICloudEvent | undefined {
@@ -78,7 +98,7 @@ class CloudController {
           return {
             id: t.id,
             name: connectionName(service, device) || t.name,
-            application: t.application,
+            typeID: t.application,
             connection: state.backend.connections.find(c => c.id === t.id),
             service,
             device,
@@ -137,7 +157,7 @@ class CloudController {
       case 'DEVICE_STATE':
         event.target.forEach(target => {
           if (target.device) accounts.setDevice({ id: target.device.id, device: target.device })
-          // if (target.application === ) new Notification(event.title || '', { body: event.body })
+          if (target.typeID === DEVICE_TYPE) new Notification(event.title || '', { body: event.body })
         })
         break
 

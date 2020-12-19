@@ -303,6 +303,7 @@ declare global {
     target: {
       id: string
       name: string
+      typeID: IService['typeID']
       device?: IDevice
       service?: IService
       connection?: IConnection

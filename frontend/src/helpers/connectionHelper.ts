@@ -19,6 +19,7 @@ export const DEFAULT_CONNECTION = {
 
 export function connectionName(service?: IService, device?: IDevice) {
   if (!device) return attributeName(service)
+  if (!service) return attributeName(device)
   return `${attributeName(device)} - ${attributeName(service)}`
 }
 
