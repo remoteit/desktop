@@ -82,7 +82,7 @@
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
     
-    FileWrite $installLog "$\n***** End Install ******$\r$\n"
+    FileWrite $installLog "$\nEnd Install --------------------$\r$\n"
     FileClose $installLog
 !macroend
 
@@ -102,14 +102,12 @@
     end_of_test_u:
 
     ${If} ${RunningX64}
-        FileWrite $uninstallLog "- Platform X64$\r$\n"
+        FileWrite $uninstallLog "Platform X64$\r$\n"
         StrCpy $path_u '$INSTDIR\resources\x64'
     ${Else}
-        FileWrite $uninstallLog "- Platform X86$\r$\n"
+        FileWrite $uninstallLog "Platform X86$\r$\n"
         StrCpy $path_u '$INSTDIR\resources\x86'
     ${EndIf} 
-
-    FileWrite $uninstallLog "$\n***** Remove Files *****$\r$\n"
 
     ; detects auto-update
     ${GetOptions} $R0 "--update" $R1
@@ -117,10 +115,10 @@
             ; This is UPDATE
             ; MessageBox MB_OK "This is a UPDATE!" 
             FileWrite $uninstallLog "$\nUpdate ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
-            FileWrite $uninstallLog "-----------------------------$\r$\n"
+            FileWrite $uninstallLog "---------------------------------------------------$\r$\n"
         ${Else}
             FileWrite $uninstallLog "$\nUninstall ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
-            FileWrite $uninstallLog "-----------------------------$\r$\n"
+            FileWrite $uninstallLog "------------------------------------------------------$\r$\n"
             IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
 
             config_found:
@@ -128,16 +126,16 @@
                 nsExec::ExecToStack /OEM $get_uid
                 Pop $0
                 Pop $1
-                FileWrite $uninstallLog "- $get_uid     [$0]  [$1]$\r$\n"
+                FileWrite $uninstallLog "$get_uid     [$0]  [$1]$\r$\n"
                 IntCmp $1 0 notDevice notDevice thereIsDevice
                     notDevice:
                         ;MessageBox MB_OK "Not device installed"
-                        FileWrite $uninstallLog "- Device not registered$\r$\n"
+                        FileWrite $uninstallLog "Device not registered$\r$\n"
                         Goto done
                     thereIsDevice:
                         MessageBox MB_YESNO|MB_DEFBUTTON2 "Would you like to unregister your device?" IDYES true IDNO false
                         true:
-                            FileWrite $uninstallLog "- ...unregister your device: YES$\r$\n"
+                            FileWrite $uninstallLog "...unregister your device: YES$\r$\n"
 
                             StrCpy $ps_command_uninstall 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j unregister --yes'
                             nsExec::ExecToStack /OEM $ps_command_uninstall 
@@ -151,13 +149,13 @@
                             MessageBox MB_OK "Your device was unregistered!"
 
                             RMDir /r "$APPDATA\remoteit"
-                            FileWrite $uninstallLog "- RMDir $APPDATA\remoteit$\r$\n"
+                            FileWrite $uninstallLog "RMDir $APPDATA\remoteit$\r$\n"
 
                             RMDir /r "${REMOTEIT_BACKUP}"
-                            FileWrite $uninstallLog "- RMDir ${REMOTEIT_BACKUP}$\r$\n"
+                            FileWrite $uninstallLog "RMDir ${REMOTEIT_BACKUP}$\r$\n"
 
                             RMDir /r "$PROFILE\AppData\Local\remoteit"
-                            FileWrite $uninstallLog "- RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
+                            FileWrite $uninstallLog "RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
 
                             Goto next
                         false:
@@ -167,7 +165,7 @@
                 done:
                 goto end_of_config
             config_not_found:
-                FileWrite $uninstallLog "- Device config not found$\r$\n"
+                FileWrite $uninstallLog "Device config not found$\r$\n"
                 ; MessageBox MB_OK "not found" 
             end_of_config:
 
@@ -181,12 +179,12 @@
             nsExec::ExecToStack /OEM $ps_command_uninstall
             Pop $0
             Pop $1
-            FileWrite $uninstallLog "-$ps_command_uninstall     [$0]  [$1]$\r$\n"
+            FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
 
             RMDir /r "$INSTDIR"
-            FileWrite $uninstallLog "- RMDir $INSTDIR$\r$\n"
+            FileWrite $uninstallLog "RMDir $INSTDIR$\r$\n"
 
-            FileWrite $uninstallLog "$\n***** End Uninstall ******$\r$\n"
+            FileWrite $uninstallLog "$\nEnd Uninstall --------------------$\r$\n$\r$\n"
             FileClose $uninstallLog 
 
         ${endif}
