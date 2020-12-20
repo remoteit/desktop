@@ -146,6 +146,7 @@ export default createModel<RootModel>()({
       emit('user/sign-out-complete')
       dispatch.auth.setAuthenticated(false)
       analyticsHelper.clearIdentity()
+      cloudController.close()
       Controller.close()
     },
   }),

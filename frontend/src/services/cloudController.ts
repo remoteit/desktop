@@ -36,6 +36,10 @@ class CloudController {
     })
   }
 
+  close = async () => {
+    this.socket?.close()
+  }
+
   onOpen = event => {
     console.log('\n-------------------------> SOCKET OPEN\n\n')
     console.log('CLOUD WS opened', event)
