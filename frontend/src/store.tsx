@@ -1,12 +1,14 @@
 import { init, RematchRootState } from '@rematch/core'
 import { models } from './models/rootModel'
+import { createLogger } from 'redux-logger'
 import immer from '@rematch/immer'
-import logger from 'redux-logger'
 
-let middlewares: any[] = []
+const logger = createLogger({
+  predicate: () => !!(window as any).LOG_STATE,
+})
+
 let immerInstance: any = immer
-
-// if (process.env.NODE_ENV !== 'test') middlewares.push(logger)
+let middlewares = [logger]
 
 export const store = init({ models, plugins: [immerInstance()], redux: { middlewares } })
 

@@ -7,7 +7,6 @@ import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
-import { emit } from '../services/Controller'
 import { RootModel } from './rootModel'
 
 type DeviceParams = { [key: string]: any }

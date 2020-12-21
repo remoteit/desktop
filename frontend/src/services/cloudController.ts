@@ -1,10 +1,10 @@
 import analyticsHelper from '../helpers/analyticsHelper'
 import Sockette from 'sockette'
 import { WEBSOCKET_URL, WEBSOCKET_KEEPALIVE_INTERVAL } from '../shared/constants'
-import { DEVICE_TYPE } from '../shared/applications'
 import { emit } from './Controller'
 import { getToken } from './remote.it'
 import { store } from '../store'
+import { notify } from './Notifications'
 import { selectService } from '../models/devices'
 import { connectionName, setConnection } from '../helpers/connectionHelper'
 
@@ -74,10 +74,30 @@ class CloudController {
     if (!event) return
 
     event = this.update(event)
-    this.notify(event)
+    notify(event)
     console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
     // {"data":{"event":{"type":"DEVICE_STATE","state":"active","timestamp":"2020-12-16T00:24:56.000Z","target":[{"id":"80:00:00:00:01:07:C2:36","name":"remoteit admin"}]}}}
     // {"data":{"event":{"type":"DEVICE_STATE","state":"inactive","timestamp":"2020-12-16T00:24:46.000Z","target":[{"id":"80:00:00:00:01:07:C2:3E","name":"chat04"}]}}}
+    const offline = {
+      data: {
+        event: {
+          type: 'DEVICE_STATE',
+          state: 'inactive',
+          timestamp: '2020-12-20T18:08:27.000Z',
+          target: [{ id: '80:00:00:00:01:09:51:0C', name: 'remoteit admin', application: 42 }],
+        },
+      },
+    }
+    const connect = {
+      data: {
+        event: {
+          type: 'DEVICE_CONNECT',
+          state: 'connected',
+          timestamp: '2020-12-20T18:09:07.000Z',
+          target: [{ id: '80:00:00:00:01:09:2F:69', name: 'smb', application: 34 }],
+        },
+      },
+    }
   }
 
   keepAlive() {
@@ -112,6 +132,8 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
+    const { accounts } = store.dispatch
+
     switch (event.type) {
       case 'DEVICE_STATE':
         // active | inactive
@@ -128,6 +150,9 @@ class CloudController {
               }
             })
           }
+          if (target.device?.id) {
+            accounts.setDevice({ id: target.device.id, device: target.device })
+          }
         })
         break
 
@@ -137,6 +162,7 @@ class CloudController {
           if (target.connection) {
             target.connection.active = event.state === 'connected'
             target.connection.connecting = false
+            setConnection(target.connection)
           }
           console.log('CONNECTION STATE', target.connection?.name, target.connection?.active)
         })
@@ -146,47 +172,6 @@ class CloudController {
       // @TODO parse and display notice
     }
     return event
-  }
-
-  notify(event: ICloudEvent) {
-    const { accounts } = store.dispatch
-
-    event.title = 'remote.it notice'
-    event.body = this.getMessage(event)
-
-    switch (event.type) {
-      case 'DEVICE_STATE':
-        event.target.forEach(target => {
-          if (target.device) accounts.setDevice({ id: target.device.id, device: target.device })
-          if (target.typeID === DEVICE_TYPE) new Notification(event.title || '', { body: event.body })
-        })
-        break
-
-      case 'DEVICE_CONNECT':
-        event.target.forEach(target => {
-          new Notification(event.title || '', { body: event.body })
-          if (target.connection) setConnection(target.connection)
-        })
-        break
-
-      case 'DEVICE_SHARE':
-      // @TODO parse and display notice
-    }
-  }
-
-  getMessage(event: ICloudEvent) {
-    const actions = {
-      active: 'came online',
-      inactive: 'went offline',
-      connected: 'connected',
-      disconnected: 'disconnected',
-    }
-
-    if (event.target.length > 1) {
-      return `${event.target.map(t => t.name).join(', ')} ${actions[event.state]}`
-    }
-
-    return `${event.target[0].name} ${actions[event.state]}`
   }
 }
 

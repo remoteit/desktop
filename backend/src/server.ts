@@ -120,9 +120,7 @@ class Server {
       // User not allowed
       else {
         return callback(
-          new Error(
-            `This device is registered to ${admin.username}. They must clear their credentials to grant access.`
-          ),
+          new Error(`${admin.username} is currently signed in. They must sign out to grant access.`),
           false
         )
       }
