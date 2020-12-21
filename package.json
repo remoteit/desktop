@@ -20,7 +20,7 @@
     "install-frontend": "cd frontend && npm i",
     "install-binaries": "sh scripts/build.sh",
     "postinstall": "run-s install-*",
-    "preversion": "cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && npm run preversion-nsis && git add --all",
+    "preversion": "npm run preversion-nsis && cd frontend && npm version $npm_package_version && cd ../backend && npm version $npm_package_version && git add --all",
     "preversion-nsis": "sed -i '' -e \"s/\\(define PKGVERSION \\\"\\).*\\\"/\\1$npm_package_version\\\"/\" installer.nsh",
     "start": "npm-run-all -l -n -p copy-* watch-*",
     "test": "cd backend && npm run test",
