@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
+import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button, Box } from '@material-ui/core'
 import { Dispatch } from '../../store'
 import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,8 +10,10 @@ import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
 import { Columns } from '../Columns'
-import { spacing } from '../../styling'
-import { CheckService } from '../CheckService'
+import { spacing, colors } from '../../styling'
+import { emit } from '../../services/Controller'
+import { Notice } from '../Notice'
+import { Icon } from '../Icon'
 
 type IServiceForm = ITarget & {
   name: string
@@ -26,16 +28,21 @@ type Props = {
   onCancel: () => void
 }
 
+const NOTICE = {
+  warning: 'No service found running on specified port and hot address',
+  success: 'Service found on port and host address!',
+}
+
 export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
-  const { service: serviceDispatch } = useDispatch<Dispatch>()
+  const { backend } = useDispatch<Dispatch>()
   const { applicationTypes, setupBusy, setupAdded, deleting, isValid, loading } = useSelector(
     (state: ApplicationState) => ({
       applicationTypes: state.applicationTypes.all,
       setupBusy: state.ui.setupBusy,
       setupAdded: state.ui.setupAdded,
       deleting: state.ui.setupServiceBusy === target?.uid,
-      isValid: state.service.isValid,
-      loading: state.service.loading,
+      isValid: state.backend.reachablePort,
+      loading: state.backend.loading,
     })
   )
   const disabled = setupBusy || deleting
@@ -52,15 +59,26 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
 
-  useEffect(() => {
-    if ((form?.port, form?.hostname)) {
-      serviceDispatch.checkService({
-        port: form.port,
-        host: form?.hostname,
-      })
+  const IPAndPort = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
+
+  const checkPort = () => {
+    console.log(IPAndPort.test(`${form.hostname}:${form.port}`))
+    if (IPAndPort.test(`${form.hostname}:${form.port}`)) {
+      backend.set({ loading: true })
+      emit('reachablePort', { port: form.port, host: form?.hostname })
     } else {
-      serviceDispatch.set({ isValid: false })
+      backend.set({ reachablePort: false })
     }
+  }
+
+  const checkIcon = () => {
+    let icon = isValid ? 'check-circle' : 'exclamation-triangle'
+    if (loading) icon = 'spinner-third'
+    return <Icon name={icon} type="light" size="md" color={isValid ? 'success' : 'warning'} spin={loading} fixedWidth />
+  }
+
+  useEffect(() => {
+    checkPort()
   }, [form?.port, form?.hostname])
 
   return (
@@ -115,8 +133,10 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 disabled={disabled}
                 variant="filled"
                 onChange={event => setForm({ ...form, port: +event.target.value })}
+                InputProps={{
+                  endAdornment: checkIcon(),
+                }}
               />
-              <CheckService isValid={isValid} loading={loading} />
             </ListItem>
             <ListItem className={css.fieldWide}>
               <TextField
@@ -126,8 +146,10 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 disabled={disabled}
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
+                InputProps={{
+                  endAdornment: checkIcon(),
+                }}
               />
-              <CheckService isValid={isValid} loading={loading} />
               <Typography variant="caption">
                 Local network IP address or fully qualified domain name to host this service. Leave blank for this
                 system to host.
@@ -135,6 +157,16 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 <i>AWS example:</i>
                 <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
               </Typography>
+            </ListItem>
+            <ListItem className={css.fieldWide}>
+              <Notice fullWidth severity={isValid ? 'success' : 'warning'}>
+                <Box>{isValid ? NOTICE.success : NOTICE.warning} </Box>
+                {!isValid && (
+                  <Button className={css.retry} onClick={checkPort}>
+                    Retry
+                  </Button>
+                )}
+              </Notice>
             </ListItem>
           </List>
           <Divider />
@@ -203,13 +235,14 @@ const useStyles = makeStyles({
   field: {
     paddingLeft: 75,
     paddingRight: spacing.xl,
-    '& .MuiFormControl-root': { minWidth: 200, marginRight: 95 },
+    '& .MuiFormControl-root': { minWidth: 206, marginRight: 140 },
   },
   fieldWide: {
     paddingLeft: 75,
     paddingRight: spacing.xl,
     '& .MuiFormControl-root': {
       minWidth: 300,
+      marginRight: 45,
     },
   },
   fieldSub: {
@@ -221,5 +254,10 @@ const useStyles = makeStyles({
     '& .MuiFormControl-root + .MuiFormControl-root': {
       marginTop: spacing.sm,
     },
+  },
+  retry: {
+    color: colors.primary,
+    height: spacing.lg,
+    paddingTop: spacing.sm,
   },
 })

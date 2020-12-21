@@ -4,7 +4,7 @@ import { spacing, colors, fontSizes } from '../styling'
 import { makeStyles, Paper, Box, Button, lighten, darken } from '@material-ui/core'
 
 type Props = {
-  severity?: 'info' | 'warning'
+  severity?: 'info' | 'warning' | 'success'
   link?: string
   gutterBottom?: boolean
   fullWidth?: boolean
@@ -30,6 +30,11 @@ export const Notice: React.FC<Props> = ({
     case 'warning':
       icon = 'exclamation-triangle'
       color = colors.warning
+      break
+    case 'success':
+      icon = 'check-circle'
+      color = colors.success
+      break
   }
 
   return (
@@ -43,7 +48,7 @@ export const Notice: React.FC<Props> = ({
       ) : (
         <Icon name={icon} size="md" type="regular" />
       )}
-      <Box>{children}</Box>
+      {children}
       {link && (
         <Button color="primary" variant="contained" href={link} size="small" target="_blank">
           Upgrade

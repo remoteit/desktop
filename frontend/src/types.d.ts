@@ -22,7 +22,7 @@ declare global {
     | 'service/updated'
     | 'service/request'
     | 'service/connected'
-    | 'service/check-host-port'
+    | 'reachablePort'
     | 'service/tunnel/opened'
     | 'service/tunnel/closed'
     | 'service/disconnected'

@@ -16,9 +16,7 @@ import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import PortScanner from './PortScanner'
 import launch, { openCMDforWindows } from './launch'
-import services, { checkHostAndPort } from './services'
 
 class Controller {
   private io: SocketIO.Server
@@ -43,7 +41,6 @@ class Controller {
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
       ...Object.values(launch.EVENTS),
-      ...Object.values(services.EVENTS),
     ]
 
     new EventRelay(eventNames, EventBus, this.io.sockets)
@@ -66,9 +63,7 @@ class Controller {
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.pool.forget)
-    socket.on('service/check-host-port', this.checkHostAndPort)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('service/check-host-port', checkHostAndPort)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -77,6 +72,7 @@ class Controller {
     socket.on('scan', this.scan)
     socket.on(lan.EVENTS.interfaces, this.interfaces)
     socket.on('freePort', this.freePort)
+    socket.on('reachablePort', this.isReachablePort)
     socket.on('preferences', preferences.set)
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
@@ -137,6 +133,11 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
   }
 
+  isReachablePort = async (data: IReachablePort) => {
+    const result = await this.pool.reachablePort(data)
+    this.io.emit(ConnectionPool.EVENTS.reachablePort, result)
+  }
+
   initBackend = async () => {
     cli.read()
     this.pool.init()
@@ -152,18 +153,6 @@ class Controller {
 
   connection = async (connection: IConnection) => {
     await this.pool.set(connection, true)
-  }
-
-  checkHostAndPort = async (data: any) => {
-    // send ping
-    try {
-      const { port, host } = data
-      const response = await PortScanner.isPortFree(port, host)
-      // check response
-    } catch {
-      // is not valid
-    }
-    
   }
 
   quit = () => {

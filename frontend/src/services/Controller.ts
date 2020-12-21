@@ -75,7 +75,7 @@ class Controller extends EventEmitter {
 type EventHandlers = { [event: string]: (data?: any) => any }
 
 function getEventHandlers() {
-  const { binaries, auth, backend, logs, ui, service } = store.dispatch
+  const { binaries, auth, backend, logs, ui } = store.dispatch
 
   return {
     connect: () => {
@@ -187,7 +187,9 @@ function getEventHandlers() {
         pathPutty: result.pathPutty,
       })
     },
-    'service/check-response': (isValid: boolean) => service.set({ isValid, loading: false }),
+    reachablePort: (result: boolean) => {
+      backend.set({ reachablePort: result, loading: false })
+    },
   } as EventHandlers
 }
 

@@ -23,7 +23,6 @@ declare global {
 
     // individual actions
     | 'service/connect'
-    | 'service/check-host-port'
     | 'service/disconnect'
     | 'service/forget'
     | 'service/restart'
@@ -49,6 +48,7 @@ declare global {
     | 'uninstall'
     | 'preferences'
     | 'osInfo'
+    | 'reachablePort'
 
   type SocketEvent =
     // built-in events
@@ -70,7 +70,6 @@ declare global {
     // connection events
     | 'service/started'
     | 'service/connected'
-    | 'service/check-host-port'
     | 'service/disconnected'
     | 'service/error'
     | 'service/status'
@@ -437,9 +436,9 @@ declare global {
     }[]
   }
 
-  type IServiceProps = {
+  type IReachablePort = {
     port: number
-    host: string
+    host?: string
     isValid?: boolean
     loading?: boolean
   }
