@@ -27,6 +27,8 @@ export const ReportsPage: React.FC = () => {
     startDate,
     deviceTimeseries,
     connectionTimeseries,
+    deviceTimeseriesMaxCount,
+    connectionTimeseriesMaxCount,
   } = useSelector((state: ApplicationState) => {
     return {
       fetching: state.analytics.fetching,
@@ -37,6 +39,8 @@ export const ReportsPage: React.FC = () => {
       lastMonthConnectionCount: state.analytics.lastMonthConnectionCount,
       deviceTimeseries: state.analytics.deviceTimeseries,
       connectionTimeseries: state.analytics.connectionTimeseries,
+      deviceTimeseriesMaxCount: state.analytics.deviceTimeseriesMaxCount,
+      connectionTimeseriesMaxCount: state.analytics.connectionTimeseriesMaxCount,
     }
   })
   const targetRef = useRef<HTMLDivElement>(null)
@@ -72,11 +76,6 @@ export const ReportsPage: React.FC = () => {
       ) : (
         <>
           <Box display="flex" className={css.container}>
-            <Typography className={css.header} variant="h4">
-              <Title>Activity for the month</Title>
-            </Typography>
-          </Box>
-          <Box display="flex" className={css.container}>
             <Box flexGrow={1} className={css.columnContainer}>
               <div ref={targetRef} className={css.column1}>
                 <ReportSummaryBox
@@ -91,8 +90,9 @@ export const ReportsPage: React.FC = () => {
                   title="Vis Devices"
                   tooltipLabel="devices"
                   timeseriesData={deviceTimeseries}
-                  width={columnWidth}
+                  width={columnWidth - 10}
                   height={300}
+                  maxCount={deviceTimeseriesMaxCount}
                 />
               </div>
             </Box>
@@ -105,6 +105,14 @@ export const ReportsPage: React.FC = () => {
                   iconTitle="Connections"
                 />
                 <br />
+                <ReportTimeSeriesVis
+                  title="Connections"
+                  tooltipLabel="connections"
+                  timeseriesData={connectionTimeseries}
+                  width={columnWidth - 10}
+                  height={300}
+                  maxCount={connectionTimeseriesMaxCount}
+                />
               </div>
             </Box>
           </Box>

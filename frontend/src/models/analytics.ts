@@ -41,6 +41,8 @@ type IAnalyticsState = ILookup<any> & {
   lastMonthDeviceCount: number
   lastMonthConnectionCount: number
   devices: IAnalyticsDevice[]
+  deviceTimeseriesMaxCount: number
+  connectionTimeseriesMaxCount: number
   deviceTimeseries: ITimeSeriesData[]
   connectionTimeseries: ITimeSeriesData[]
 }
@@ -48,7 +50,7 @@ type IAnalyticsState = ILookup<any> & {
 const state: IAnalyticsState = {
   fetching: false,
   from: 0,
-  size: 2,
+  size: MAX_DEVICE_LENGTH,
   startDate: setDate(new Date().setMonth(new Date().getMonth() - 1), {
     date: 1,
     hours: 0,
@@ -56,12 +58,13 @@ const state: IAnalyticsState = {
     seconds: 0,
     milliseconds: 0,
   }),
-  endDate: new Date(),
-  //endDate: setDate(new Date().setDate(0), { hours: 23, minutes: 59, seconds: 59, milliseconds: 999 }),
+  endDate: setDate(new Date().setDate(0), { hours: 23, minutes: 59, seconds: 59, milliseconds: 999 }),
   totalDevices: 0,
   lastMonthDeviceCount: 0,
   lastMonthConnectionCount: 0,
   devices: [],
+  deviceTimeseriesMaxCount: 0,
+  connectionTimeseriesMaxCount: 0,
   deviceTimeseries: [],
   connectionTimeseries: [],
   sortPreference: { sortOrder: 'desc', sortPreferenceKey: 'quality' },
@@ -92,7 +95,6 @@ export default createModel<RootModel>()({
         milliseconds: 0,
       })
       const monthEnd = endDate
-      console.log(globalState)
       if (!isSameDay(startDate, monthStart)) {
         const monthEnd = setDate(new Date().setDate(0), { hours: 23, minutes: 59, seconds: 59, milliseconds: 999 })
         set({
@@ -198,18 +200,21 @@ export default createModel<RootModel>()({
       }
       //iterate over devices to put them in a timeseries & calculate connections
 
-      console.log('analytics.devices', devicelist, devices)
       let pastMonthDevices = 0
+      let deviceTimeseriesMaxCount = 0
       //add to the devices in this period
       const newDeviceTimeseries = deviceTimeseries.map(item => {
         let count = 0
-
         devicelist.map(d => {
           if (isEqual(startOfDay(item.date), startOfDay(d.createdAt))) {
             pastMonthDevices += 1
-            return (count += 1)
+            count += 1
+            return count
           }
         })
+        if (count > deviceTimeseriesMaxCount) {
+          deviceTimeseriesMaxCount = count
+        }
         return { date: item.date, count }
       })
       //need to do an initial sort
@@ -219,6 +224,7 @@ export default createModel<RootModel>()({
         fetching: false,
         lastMonthDeviceCount: pastMonthDevices,
         deviceTimeseries: newDeviceTimeseries,
+        deviceTimeseriesMaxCount,
         connectionTimeseries,
       })
     },
@@ -252,15 +258,18 @@ export default createModel<RootModel>()({
         //go through the services and extract connection time series
         d.services.map(s => {
           //start adding to the connections timeseries
-          if (s.timesSeries && s.timeSeries.data.size > 0) {
+          if (s.timeSeries.data.length > 0) {
             s.timeSeries.data.map((c, i) => {
-              connectionTimeseries[i].count += c
-              lastMonthConnectionCount += c
+              if (c > 0) {
+                connectionTimeseries[i]['count'] += c
+                lastMonthConnectionCount += c
+              }
             })
           }
         })
         return device
       })
+      console.log(connectionTimeseries)
       set({ connectionTimeseries, lastMonthConnectionCount })
       return parsedDevices
     },
