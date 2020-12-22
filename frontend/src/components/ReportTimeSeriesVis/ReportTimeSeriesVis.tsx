@@ -18,7 +18,6 @@ export interface ReportTimeSeriesChartProps {
   tooltipLabel?: string
   width: number
   height: number
-  maxCount: number
 }
 export type TooltipProps = {
   width: number
@@ -48,7 +47,6 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
   tooltipLabel,
   width,
   height,
-  maxCount,
 }) => {
   const { containerRef, containerBounds, TooltipInPortal } = useTooltipInPortal({
     scroll: true,
@@ -72,7 +70,12 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
 
   const yTickValues = () => {
     const min = 0
-    const max = maxCount
+    const max = Math.max.apply(
+      Math,
+      timeseriesData.map(function (d) {
+        return d.count
+      })
+    )
     if (max > 1) {
       return [min, Math.floor(max / 2), max]
     } else {

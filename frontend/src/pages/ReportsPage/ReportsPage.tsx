@@ -92,7 +92,6 @@ export const ReportsPage: React.FC = () => {
                   timeseriesData={deviceTimeseries}
                   width={columnWidth - 10}
                   height={300}
-                  maxCount={deviceTimeseriesMaxCount}
                 />
               </div>
             </Box>
@@ -111,7 +110,6 @@ export const ReportsPage: React.FC = () => {
                   timeseriesData={connectionTimeseries}
                   width={columnWidth - 10}
                   height={300}
-                  maxCount={connectionTimeseriesMaxCount}
                 />
               </div>
             </Box>

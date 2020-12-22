@@ -41,8 +41,6 @@ type IAnalyticsState = ILookup<any> & {
   lastMonthDeviceCount: number
   lastMonthConnectionCount: number
   devices: IAnalyticsDevice[]
-  deviceTimeseriesMaxCount: number
-  connectionTimeseriesMaxCount: number
   deviceTimeseries: ITimeSeriesData[]
   connectionTimeseries: ITimeSeriesData[]
 }
@@ -63,8 +61,6 @@ const state: IAnalyticsState = {
   lastMonthDeviceCount: 0,
   lastMonthConnectionCount: 0,
   devices: [],
-  deviceTimeseriesMaxCount: 0,
-  connectionTimeseriesMaxCount: 0,
   deviceTimeseries: [],
   connectionTimeseries: [],
   sortPreference: { sortOrder: 'desc', sortPreferenceKey: 'quality' },
@@ -217,7 +213,6 @@ export default createModel<RootModel>()({
       }
       //iterate over devices to put them in a timeseries & calculate connections
       let pastMonthDevices = 0
-      let deviceTimeseriesMaxCount = 0
       //add to the devices in this period
       const newDeviceTimeseries = deviceTimeseriesCopy.map(item => {
         let count = 0
@@ -228,9 +223,6 @@ export default createModel<RootModel>()({
             return count
           }
         })
-        if (count > deviceTimeseriesMaxCount) {
-          deviceTimeseriesMaxCount = count
-        }
         return { date: item.date, count }
       })
       //need to do an initial sort
@@ -241,7 +233,6 @@ export default createModel<RootModel>()({
         lastMonthDeviceCount: pastMonthDevices,
         lastMonthConnectionCount: lastMonthConnectionCount,
         deviceTimeseries: newDeviceTimeseries,
-        deviceTimeseriesMaxCount,
       })
     },
     primeGraphTimeseries({ start, end }: IDateOptions) {
@@ -268,6 +259,7 @@ export default createModel<RootModel>()({
           quality: d.endpoint.quality,
           qualitySort,
         }
+
         //go through the services and extract connection time series
         d.services.map(s => {
           //start adding to the connections timeseries
