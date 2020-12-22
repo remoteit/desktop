@@ -274,7 +274,6 @@ export default createModel<RootModel>()({
         })
         return device
       })
-      console.log(connectionTimeSeriesCopy)
       //set({ connectionTimeseries: updatedConnectionTimeseries, lastMonthConnectionCount })
       return {
         parsedDevices: parsedDevices,
