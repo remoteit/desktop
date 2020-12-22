@@ -1,0 +1,1 @@
+export { DialogApp } from './DialogApp'

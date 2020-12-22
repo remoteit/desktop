@@ -16,7 +16,7 @@ import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import launch, { openCMDforWindows } from './launch'
+import launch, { openCMDforWindows, openCMDvnc } from './launch'
 
 class Controller {
   private io: SocketIO.Server
@@ -59,6 +59,7 @@ class Controller {
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.pool.start)
     socket.on('service/launch', openCMDforWindows)
+    socket.on('service/launch/vnc', openCMDvnc)
     socket.on('service/disconnect', this.pool.stop)
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)

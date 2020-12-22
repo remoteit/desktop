@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
 import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
-import { launchPutty } from '../../services/Browser'
+import { launchPutty, launchVNC } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
@@ -22,6 +22,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
+import { DialogApp } from '../../components/DialogApp'
 
 type Props = {
   connection?: IConnection
@@ -31,15 +32,21 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, size = 'md' }) => {
-  const { requireInstallPutty, loading, pathPutty } = useSelector((state: ApplicationState) => ({
-    requireInstallPutty: state.ui.requireInstallPutty,
-    pathPutty: state.ui.pathPutty,
-    loading: state.ui.loading,
-  }))
+  const { requireInstallPutty, requireInstallVNC, loading, pathPutty, pathVNC } = useSelector(
+    (state: ApplicationState) => ({
+      requireInstallPutty: state.ui.requireInstallPutty,
+      requireInstallVNC: state.ui.requireInstallVNC,
+      pathPutty: state.ui.pathPutty,
+      pathVNC: state.ui.pathVNC,
+      loading: state.ui.loading,
+    })
+  )
   const { ui, backend } = useDispatch<Dispatch>()
   const [launch, setLaunch] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
-  const [openPutty, setOpenPutty] = useState<boolean>(false)
+  const [openApp, setOpenApp] = useState<boolean>(false)
+  const [downloadLink, setDownloadLink] = useState<string>('')
+
   const app = useApplication('launch', service, connection)
   const css = useStyles()
 
@@ -48,18 +55,38 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
       app.prompt ? setOpen(true) : launchBrowser()
     }
     if (requireInstallPutty) {
-      setOpenPutty(true)
+      setDownloadLink('https://link.remote.it/download/putty')
+      setOpenApp(true)
       ui.set({ requireInstallPutty: false })
     }
-  }, [requireInstallPutty, launch, app])
+    if (requireInstallVNC) {
+      setDownloadLink('https://www.realvnc.com/es/connect/download/viewer/windows/')
+      setOpenApp(true)
+      ui.set({ requireInstallVNC: false })
+    }
+  }, [requireInstallPutty, requireInstallVNC, launch, app])
 
   if (!connection || !connection.active || !app) return null
 
   const launchBrowser = () => {
     try {
-      launchPutty(service?.typeID)
-        ? emit('service/launch', { command: app.command, pathPutty })
-        : window.open(app.command)
+      switch (service?.type) {
+        case 'SSH':
+          launchPutty(service?.typeID)
+            ? emit('service/launch', { command: app.command, pathPutty })
+            : window.open(app.command)
+          break
+        case 'VNC':
+          launchVNC()
+            ? emit('service/launch/vnc', {
+                port: app.connection?.port,
+                host: app.connection?.host,
+                username: app.connection?.username,
+                pathVNC,
+              })
+            : window.open(app.command)
+          break
+      }
     } catch (error) {
       backend.set({ globalError: `Could not launch ${app.command}. Invalid URL.` })
     }
@@ -70,15 +97,10 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     setConnection({ ...connection, ...tokens })
   }
 
-  const getPutty = () => {
-    window.open('https://link.remote.it/download/putty')
-    closeAll()
-  }
-
   const closeAll = () => {
     setLaunch(false)
     setOpen(false)
-    setOpenPutty(false)
+    setOpenApp(false)
   }
 
   const LaunchIcon = (
@@ -107,17 +129,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
 
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
 
-      <Dialog open={openPutty} onClose={closeAll} maxWidth="xs" fullWidth>
-        <Typography variant="h1">Please install Putty to launch SSH connections.</Typography>
-        <DialogActions>
-          <Button onClick={closeAll} color="primary" size="small" type="button">
-            Cancel
-          </Button>
-          <Button onClick={getPutty} variant="contained" color="primary" size="small" type="button">
-            Download Putty
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />
     </>
   )
 }

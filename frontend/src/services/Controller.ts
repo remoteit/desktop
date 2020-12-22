@@ -187,6 +187,14 @@ function getEventHandlers() {
         pathPutty: result.pathPutty,
       })
     },
+    'service/VNC/required': (result: IVNCValidation) => {
+      console.log({ result })
+      ui.set({
+        requireInstallVNC: result.install,
+        loading: result.loading,
+        pathVNC: result.pathVNC,
+      })
+    },
   } as EventHandlers
 }
 

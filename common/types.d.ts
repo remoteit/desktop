@@ -29,6 +29,7 @@ declare global {
     | 'service/clear'
     | 'service/clear-recent'
     | 'service/launch'
+    | 'service/launch/vnc'
 
     // App/settings
     | 'app/open-on-login'
@@ -343,6 +344,11 @@ declare global {
     pathPutty: string
   }
 
+  interface IVNCValidation {
+    install: boolean
+    loading: boolean
+    pathVNC: string
+  }
   interface ILan {
     oobAvailable: boolean
     oobActive: boolean
