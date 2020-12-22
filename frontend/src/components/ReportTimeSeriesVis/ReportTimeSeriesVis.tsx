@@ -37,7 +37,7 @@ const tooltipStyles = {
   ...defaultStyles,
   minWidth: 60,
   backgroundColor: colors.grayLighter,
-  color: colors.gray,
+  color: colors.grayDark,
 }
 let tooltipTimeout
 
@@ -91,7 +91,9 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
   const yMax = height - margin.top - margin.bottom
   //handle the tooltip
   const handleMouseOver = (event, datum) => {
+    if (tooltipTimeout) clearTimeout(tooltipTimeout)
     const coords = localPoint(event.target.ownerSVGElement, event)
+    console.log('event', event, datum)
     showTooltip({
       tooltipLeft: coords ? coords.x : 0,
       tooltipTop: coords ? coords.y : 0,
@@ -132,7 +134,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
                 x={barX}
                 y={barY}
                 fill={colors.primary}
-                onMouseEnter={() => handleMouseOver}
+                onMouseEnter={e => handleMouseOver(e, { date: label, count: barY })}
                 onMouseOut={() =>
                   (tooltipTimeout = setTimeout(() => {
                     hideTooltip()

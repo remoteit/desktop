@@ -7,7 +7,7 @@ import { set as setDate, eachDayOfInterval, isSameDay, isEqual, set } from 'date
 import { getTimeZone } from '../helpers/dateHelper'
 import { startOfDay } from 'date-fns/esm'
 
-const MAX_DEVICE_LENGTH = 1000
+const MAX_DEVICE_LENGTH = 5
 
 export interface IAnalyticsDevice {
   id: string
