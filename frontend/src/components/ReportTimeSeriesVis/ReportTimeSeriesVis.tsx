@@ -118,7 +118,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
         <Group top={margin.top} left={margin.left}>
           <AxisLeft left={0} scale={yScale} stroke={colors.gray} hideZero={true} tickValues={yTickValues()} />
           <AxisBottom scale={xScale} numTicks={5} top={yMax} stroke={colors.gray} />
-          {timeseriesData.map((d, i) => {
+          {timeseriesData.map(d => {
             const label = getDate(d)
             const barWidth = xScale.bandwidth()
             const yLabel = yScale(getCount(d))
@@ -134,7 +134,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
                 x={barX}
                 y={barY}
                 fill={colors.primary}
-                onMouseEnter={e => handleMouseOver(e, { date: label, count: barY })}
+                onMouseEnter={e => handleMouseOver(e, { date: label, count: d.count })}
                 onMouseOut={() =>
                   (tooltipTimeout = setTimeout(() => {
                     hideTooltip()
