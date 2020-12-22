@@ -1,6 +1,6 @@
 import React from 'react'
 import { selectLicense, lookupLicenseProductId } from '../models/licensing'
-import { ListItem, Link } from '@material-ui/core'
+import { ListItem, Link, Button } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useSelector } from 'react-redux'
@@ -16,7 +16,7 @@ const learnMoreLink = (
 )
 
 export const LicensingNotice: React.FC<Props> = props => {
-  const { noticeType, license, serviceLimit, upgradeUrl } = useSelector((state: ApplicationState) =>
+  const { noticeType, license, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) =>
     selectLicense(state, props.device ? lookupLicenseProductId(props.device) : props.license?.plan.product.id)
   )
 
@@ -24,10 +24,15 @@ export const LicensingNotice: React.FC<Props> = props => {
 
   let notice
   const title = `Your ${license.plan.description} plan of ${license.plan.product.name}`
+  const UpgradeButton = (
+    <Button color="primary" variant="contained" href={upgradeUrl} size="small" target="_blank">
+      Upgrade
+    </Button>
+  )
 
   if (noticeType === 'EXPIRATION_WARNING')
     notice = (
-      <Notice severity="info" link={upgradeUrl}>
+      <Notice severity="info" button={UpgradeButton}>
         {title} will expire on {/* replace with countdown */}
         {license.expiration.toLocaleString(undefined, dateOptions)}.
       </Notice>
@@ -35,7 +40,7 @@ export const LicensingNotice: React.FC<Props> = props => {
 
   if (noticeType === 'LIMIT_EXCEEDED')
     notice = (
-      <Notice severity="warning" link={upgradeUrl}>
+      <Notice severity="warning" button={UpgradeButton}>
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
           You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{learnMoreLink}
@@ -45,7 +50,7 @@ export const LicensingNotice: React.FC<Props> = props => {
 
   if (noticeType === 'EXPIRED')
     notice = (
-      <Notice severity="warning" link={upgradeUrl}>
+      <Notice severity="warning" button={UpgradeButton}>
         {title} has expired.
         <em>Please upgrade your license.{learnMoreLink}</em>
       </Notice>

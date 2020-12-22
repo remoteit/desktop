@@ -1,6 +1,6 @@
 import React from 'react'
 import { selectLicense, lookupLicenseProductId, evaluationDays } from '../models/licensing'
-import { Link } from '@material-ui/core'
+import { Link, Button } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useSelector } from 'react-redux'
@@ -15,9 +15,13 @@ const learnMoreLink = (
 )
 
 export const LicensingServiceNotice: React.FC<Props> = props => {
-  const { noticeType, license, serviceLimit, evaluationLimit, upgradeUrl } = useSelector((state: ApplicationState) =>
-    selectLicense(state, lookupLicenseProductId(props.device))
-  )
+  const {
+    noticeType,
+    license,
+    serviceLimit,
+    evaluationLimit,
+    upgradeUrl = '',
+  } = useSelector((state: ApplicationState) => selectLicense(state, lookupLicenseProductId(props.device)))
 
   if (!license) return null
 
@@ -25,7 +29,14 @@ export const LicensingServiceNotice: React.FC<Props> = props => {
 
   if (noticeType === 'LIMIT_EXCEEDED')
     return (
-      <Notice severity="warning" link={upgradeUrl}>
+      <Notice
+        severity="warning"
+        button={
+          <Button color="primary" variant="contained" href={upgradeUrl} size="small" target="_blank">
+            Upgrade
+          </Button>
+        }
+      >
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
           This service will be accessible for {evaluationDays(evaluationLimit?.value)} days unless you upgrade your

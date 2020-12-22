@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button, Box } from '@material-ui/core'
+import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { Dispatch } from '../../store'
 import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
 import { useDispatch, useSelector } from 'react-redux'
@@ -71,7 +71,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
     }
   }
 
-  const checkIcon = () => {
+  const CheckIcon = () => {
     let icon = isValid ? 'check-circle' : 'exclamation-triangle'
     if (loading) icon = 'spinner-third'
     return <Icon name={icon} type="light" size="md" color={isValid ? 'success' : 'warning'} spin={loading} fixedWidth />
@@ -134,7 +134,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => setForm({ ...form, port: +event.target.value })}
                 InputProps={{
-                  endAdornment: checkIcon(),
+                  endAdornment: <CheckIcon />,
                 }}
               />
             </ListItem>
@@ -147,7 +147,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
                 InputProps={{
-                  endAdornment: checkIcon(),
+                  endAdornment: <CheckIcon />,
                 }}
               />
               <Typography variant="caption">
@@ -159,13 +159,18 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
               </Typography>
             </ListItem>
             <ListItem className={css.fieldWide}>
-              <Notice fullWidth severity={isValid ? 'success' : 'warning'}>
-                <Box>{isValid ? NOTICE.success : NOTICE.warning} </Box>
-                {!isValid && (
-                  <Button className={css.retry} onClick={checkPort}>
-                    Retry
-                  </Button>
-                )}
+              <Notice
+                fullWidth
+                severity={isValid ? 'success' : 'warning'}
+                button={
+                  isValid ? undefined : (
+                    <Button className={css.retry} onClick={checkPort}>
+                      Retry
+                    </Button>
+                  )
+                }
+              >
+                {isValid ? NOTICE.success : NOTICE.warning}
               </Notice>
             </ListItem>
           </List>

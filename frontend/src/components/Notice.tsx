@@ -1,11 +1,11 @@
 import React from 'react'
 import { Icon } from './Icon'
 import { spacing, colors, fontSizes } from '../styling'
-import { makeStyles, Paper, Box, Button, lighten, darken } from '@material-ui/core'
+import { makeStyles, Paper, Box, lighten, darken } from '@material-ui/core'
 
 type Props = {
   severity?: 'info' | 'warning' | 'success'
-  link?: string
+  button?: React.ReactElement
   gutterBottom?: boolean
   fullWidth?: boolean
   loading?: boolean
@@ -13,7 +13,7 @@ type Props = {
 
 export const Notice: React.FC<Props> = ({
   severity = 'info',
-  link,
+  button,
   fullWidth = false,
   gutterBottom,
   loading,
@@ -48,12 +48,8 @@ export const Notice: React.FC<Props> = ({
       ) : (
         <Icon name={icon} size="md" type="regular" />
       )}
-      {children}
-      {link && (
-        <Button color="primary" variant="contained" href={link} size="small" target="_blank">
-          Upgrade
-        </Button>
-      )}
+      <Box>{children}</Box>
+      {button}
     </Paper>
   )
 }
