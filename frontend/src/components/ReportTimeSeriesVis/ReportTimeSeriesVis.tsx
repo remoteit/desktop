@@ -8,6 +8,7 @@ import { ITimeSeriesData } from '../../models/analytics'
 import { scaleBand, scaleLinear } from '@visx/scale'
 import { colors, spacing } from '../../styling'
 import { format as formatDate, max as maxDate, min as minDate } from 'date-fns'
+import { Typography } from '@material-ui/core'
 
 // accessors
 
@@ -28,7 +29,7 @@ export type TooltipProps = {
 type TooltipData = ITimeSeriesData
 
 const positionIndicatorSize = 8
-const formattedDate = (date: Date) => formatDate(date, 'MMM d, yyyy')
+const formattedDate = (date: Date) => formatDate(date, 'MMM d')
 
 const getDate = (d: ITimeSeriesData) => formattedDate(d.date)
 const getCount = (d: ITimeSeriesData) => d.count
@@ -93,7 +94,6 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
   const handleMouseOver = (event, datum) => {
     if (tooltipTimeout) clearTimeout(tooltipTimeout)
     const coords = localPoint(event.target.ownerSVGElement, event)
-    console.log('event', event, datum)
     showTooltip({
       tooltipLeft: coords ? coords.x : 0,
       tooltipTop: coords ? coords.y : 0,
@@ -114,6 +114,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
   })
   return (
     <>
+      <Typography variant="h4">{title}</Typography>
       <svg width={width} height={height} ref={containerRef}>
         <Group top={margin.top} left={margin.left}>
           <AxisLeft left={0} scale={yScale} stroke={colors.gray} hideZero={true} tickValues={yTickValues()} />

@@ -29,7 +29,12 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       marginBottom: theme.spacing(2),
     },
-    table: {},
+    table: {
+      height: 100,
+    },
+    tableBody: {
+      height: 100,
+    },
     visuallyHidden: {
       border: 0,
       clip: 'rect(0 0 0 0)',
@@ -164,10 +169,10 @@ export const ReportDeviceQualityList: React.FC = () => {
   })
   return (
     <>
-      <TableContainer component={Paper}>
-        <Table className={classes.table} aria-label="Device Internet Connectivity">
+      <TableContainer>
+        <Table size="small" className={classes.table} aria-label="Device Internet Connectivity" stickyHeader>
           <EnhancedTableHead classes={classes} order={order} orderBy={orderBy} onRequestSort={handleRequestSort} />
-          <TableBody>
+          <TableBody className={classes.tableBody}>
             {devicesInOrder.map(device => {
               const labelId = `enhanced-table-checkbox-${device.id}`
               return (

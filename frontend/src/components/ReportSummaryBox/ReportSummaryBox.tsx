@@ -47,10 +47,10 @@ const useStyles = makeStyles({
     fontSize: fontSizes.md,
   },
   iconContainer: {
-    padding: `${spacing.md}px  ${spacing.md}px`,
+    padding: `${spacing.md}px ${spacing.md}px ${spacing.xs}px`,
   },
   textContent: {
-    padding: `${spacing.md}px  ${spacing.md}px`,
+    padding: `${spacing.md}px ${spacing.xs}px ${spacing.md}px ${spacing.md}px`,
     flexGrow: 1,
   },
 })

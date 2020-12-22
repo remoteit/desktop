@@ -100,6 +100,16 @@ const jssTheme: ThemeOptions = {
       primary: { lineHeight: 1.4 },
       secondary: { fontSize: fontSizes.xs },
     },
+    MuiTableCell: {
+      root: {
+        borderBottomWidth: 0,
+        paddingLeft: 0,
+        paddingRight: spacing.xs,
+      },
+      head: {
+        borderBottom: 1,
+      },
+    },
     MuiMenu: {
       list: {
         backgroundColor: colors.grayLightest,
