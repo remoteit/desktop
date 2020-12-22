@@ -17,7 +17,7 @@ export function ShareSaveActions({
   return (
     <section>
       <Button color="primary" onClick={onSave} disabled={disabled} variant="contained">
-        Share
+        Save
         {saving ? (
           <Icon name="spinner-third" spin type="regular" inline fixedWidth />
         ) : (

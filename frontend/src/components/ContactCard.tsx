@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { SharingForm, SharingDetails, SharingAccess } from './SharingForm'
-import { getPermissions } from '../helpers/userHelper'
 
 type Props = {
   device: IDevice
@@ -8,23 +7,34 @@ type Props = {
   selected: string[]
   onShare: (access: SharingDetails, isNew: boolean) => void
   changed: boolean
-  setChanged: React.Dispatch<React.SetStateAction<boolean>>
+  onChanged: React.Dispatch<React.SetStateAction<boolean>>
+  scripts: boolean
+  onScripts: React.Dispatch<React.SetStateAction<boolean>>
+  indeterminateServices: string[]
+  indeterminateScript: boolean
+  selectedServices: string[]
+  onSelectedServices: React.Dispatch<React.SetStateAction<string[]>>
 }
 
-export const ContactCard: React.FC<Props> = ({ device, user, selected, onShare, changed, setChanged }) => {
-  const permissions = getPermissions(device, user?.email)
-  const services = permissions.services.map(s => s.id)
-  const [scripts, setScripts] = React.useState<boolean>(permissions.scripting)
-  const [selectedServices, setSelectedServices] = React.useState<string[]>(services)
-
-  useEffect(() => {
-    setSelectedServices(services)
-  }, [])
-
-  const handleChange = (access: SharingAccess) => {
-    setScripts(access.scripting)
-    setSelectedServices(access.services)
-    setChanged(true)
+export const ContactCard: React.FC<Props> = ({
+  device,
+  user,
+  selected,
+  onShare,
+  changed,
+  onChanged,
+  scripts,
+  onScripts,
+  indeterminateServices,
+  indeterminateScript,
+  selectedServices,
+  onSelectedServices,
+}) => {
+  const handleChange = (access: SharingAccess, hasIndeterminate: boolean) => {
+    const updatingScript =  access.scripting !== scripts
+    updatingScript && onScripts(access.scripting)
+    onSelectedServices(access.services)
+    onChanged(!hasIndeterminate && (!indeterminateScript || updatingScript))
   }
 
   const handleSharingUpdate = () => {
@@ -60,9 +70,12 @@ export const ContactCard: React.FC<Props> = ({ device, user, selected, onShare, 
       scripting={scripts}
       onChange={handleChange}
       selectedServices={selectedServices}
+      indeterminateServices={indeterminateServices}
+      indeterminateScript={indeterminateScript}
+      users={selected}
       update={handleSharingUpdate}
       share={handleShare}
-      changed={changed}
+      changed={changed && (selected?.length > 0 || !!user)}
     />
   )
 }

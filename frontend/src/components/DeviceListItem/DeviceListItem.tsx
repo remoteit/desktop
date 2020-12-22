@@ -1,6 +1,7 @@
 import React from 'react'
 import { DeviceLabel } from '../DeviceLabel'
 import { ServiceName } from '../ServiceName'
+import { RestoreButton } from '../../buttons/RestoreButton'
 import { ListItemLocation } from '../ListItemLocation'
 import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
@@ -20,6 +21,7 @@ type Props = {
   device?: IDevice
   connections?: IConnection[]
   thisDevice?: boolean
+  restore?: boolean
   setContextMenu: React.Dispatch<React.SetStateAction<IContextMenu>>
 }
 
@@ -47,7 +49,7 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setConte
   )
 }
 
-export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, setContextMenu }) => {
+export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, setContextMenu, restore }) => {
   const activeConnection = connections && connections.find(c => c.active)
   const largeScreen = useMediaQuery('(min-width:600px)')
 
@@ -63,10 +65,16 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
         primary={<ServiceName device={device} connection={activeConnection} />}
         secondary={thisDevice && 'This system'}
       />
-      {largeScreen && (
+      {restore ? (
         <ListItemSecondaryAction>
-          <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} />
+          <RestoreButton device={device} />
         </ListItemSecondaryAction>
+      ) : (
+        largeScreen && (
+          <ListItemSecondaryAction>
+            <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} />
+          </ListItemSecondaryAction>
+        )
       )}
     </ListItemLocation>
   )

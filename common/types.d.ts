@@ -39,6 +39,7 @@ declare global {
     | 'targets'
     | 'device'
     | 'registration'
+    | 'restore'
     | 'scan'
     | 'oobCheck'
     | 'interfaces'

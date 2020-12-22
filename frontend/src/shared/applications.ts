@@ -8,7 +8,6 @@
 import { replaceHost } from './nameHelper'
 
 export class Application {
-  types: number[] = []
   title: string = 'URL'
   icon: string = 'arrow-right'
   context?: 'copy' | 'launch'
@@ -16,6 +15,7 @@ export class Application {
   defaultCommandTemplate: string = '[host]:[port]'
   defaultTokens: string[] = ['host', 'port', 'id']
   iconRotate: boolean = false
+  localhost?: boolean
 
   connection?: IConnection
   service?: IService
@@ -85,7 +85,7 @@ export class Application {
     let lookup: ILookup<any> = this.connection || {}
     if (this.service) lookup = { ...this.service.attributes, ...lookup }
     for (const key in lookup) if (lookup[key]) template = template.replace(`[${key}]`, encodeURI(lookup[key]))
-    template = replaceHost(template)
+    template = replaceHost(template, this.localhost)
     return template
   }
 
@@ -97,7 +97,6 @@ export class Application {
 }
 
 class DefaultApp extends Application {
-  types = []
   title = 'URL'
   icon = 'arrow-right'
   iconRotate = true
@@ -155,9 +154,9 @@ function getApplication(typeID?: number) {
       break
     case 34:
       app = new Application({
-        types: [34],
         title: 'Samba',
         icon: 'folder',
+        localhost: true,
         defaultLaunchTemplate: 'smb://[host]:[port]',
       })
       break

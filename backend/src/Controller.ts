@@ -68,6 +68,7 @@ class Controller {
     socket.on('targets', this.targets)
     socket.on('device', this.device)
     socket.on('registration', this.registration)
+    socket.on('restore', this.restore)
     socket.on('scan', this.scan)
     socket.on(lan.EVENTS.interfaces, this.interfaces)
     socket.on('freePort', this.freePort)
@@ -106,6 +107,12 @@ class Controller {
 
   registration = async (result: IRegistration) => {
     await cli.set('registration', result)
+    this.io.emit('device', cli.data.device)
+    this.io.emit('targets', cli.data.targets)
+  }
+
+  restore = async (deviceId: string) => {
+    await cli.restore(deviceId)
     this.io.emit('device', cli.data.device)
     this.io.emit('targets', cli.data.targets)
   }

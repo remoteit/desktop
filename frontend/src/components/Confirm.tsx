@@ -12,7 +12,7 @@ export const Confirm: React.FC<{
     open={open}
     maxWidth="xs"
     TransitionComponent={Transition}
-    transitionDuration={300}
+    transitionDuration={200}
     onClose={onDeny}
     fullWidth
   >

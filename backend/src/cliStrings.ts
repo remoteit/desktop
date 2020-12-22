@@ -44,6 +44,10 @@ export default {
     return `-j unregister --yes --authhash ${user.authHash}`
   },
 
+  restore(deviceId: string) {
+    return `-j restore --id ${deviceId}`
+  },
+
   remove(t: ITarget) {
     return `-j remove --id ${t.uid} --authhash ${user.authHash}`
   },
