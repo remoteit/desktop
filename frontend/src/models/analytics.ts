@@ -182,13 +182,19 @@ export default createModel<RootModel>()({
         return
       }
       let deviceTimeseriesCopy = deviceTimeseries
-
       if (deviceTimeseries.length < 1) {
         deviceTimeseriesCopy = primedGraphTimeseries
       }
+      let connectionTimeSeriesCopy = globalState.analytics.connectionTimeseries
+      if (!connectionTimeSeriesCopy || connectionTimeSeriesCopy.length < 1) {
+        connectionTimeSeriesCopy = primeGraphTimeseries({
+          start: globalState.analytics.startDate,
+          end: globalState.analytics.endDate,
+        })
+      }
       const { parsedDevices, updatedConnectionTimeseries, lastMonthConnectionCount } = parseDevices({
         devices: gqlData.devices.items,
-        updatedConnectionTimeSeries: globalState.analytics.connectionTimeseries,
+        connectionTimeSeriesCopy: connectionTimeSeriesCopy,
         lastMonthConnectionCount: globalState.analytics.lastMonthConnectionCount,
       })
       const devicelist: IAnalyticsDevice[] = devices.length < 1 ? parsedDevices : devices.concat(parsedDevices)
@@ -236,7 +242,6 @@ export default createModel<RootModel>()({
         lastMonthConnectionCount: lastMonthConnectionCount,
         deviceTimeseries: newDeviceTimeseries,
         deviceTimeseriesMaxCount,
-        connectionTimeseries: updatedConnectionTimeseries,
       })
     },
     primeGraphTimeseries({ start, end }: IDateOptions) {
@@ -252,14 +257,7 @@ export default createModel<RootModel>()({
         return initTimeSeries
       }
     },
-    parseDevices({ devices, updatedConnectionTimeseries, lastMonthConnectionCount }, globalState) {
-      const { set, primeGraphTimeseries } = dispatch.analytics
-      if (!updatedConnectionTimeseries || updatedConnectionTimeseries.length < 1) {
-        updatedConnectionTimeseries = primeGraphTimeseries({
-          start: globalState.analytics.startDate,
-          end: globalState.analytics.endDate,
-        })
-      }
+    parseDevices({ devices, connectionTimeSeriesCopy, lastMonthConnectionCount }, globalState) {
       const parsedDevices: IAnalyticsDevice[] = devices.map(d => {
         const createdDate = new Date(d.created)
         const qualitySort = getQualityNumber(d.endpoint.quality)
@@ -276,7 +274,7 @@ export default createModel<RootModel>()({
           if (s.timeSeries.data.length > 0) {
             s.timeSeries.data.map((c, i) => {
               if (c > 0) {
-                updatedConnectionTimeseries[i]['count'] += c
+                connectionTimeSeriesCopy[i]['count'] += c
                 lastMonthConnectionCount += c
               }
             })
@@ -284,11 +282,11 @@ export default createModel<RootModel>()({
         })
         return device
       })
-      console.log(updatedConnectionTimeseries)
+      console.log(connectionTimeSeriesCopy)
       //set({ connectionTimeseries: updatedConnectionTimeseries, lastMonthConnectionCount })
       return {
         parsedDevices: parsedDevices,
-        updatedConnectionTimeseries: updatedConnectionTimeseries,
+        updatedConnectionTimeseries: connectionTimeSeriesCopy,
         lastMonthConnectionCount: lastMonthConnectionCount,
       }
     },
