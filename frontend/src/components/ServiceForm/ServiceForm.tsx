@@ -164,7 +164,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 severity={isValid ? 'success' : 'warning'}
                 button={
                   isValid ? undefined : (
-                    <Button className={css.retry} onClick={checkPort}>
+                    <Button size="small" color="primary" onClick={checkPort}>
                       Retry
                     </Button>
                   )
@@ -240,15 +240,12 @@ const useStyles = makeStyles({
   field: {
     paddingLeft: 75,
     paddingRight: spacing.xl,
-    '& .MuiFormControl-root': { minWidth: 206, marginRight: 140 },
+    '& .MuiFormControl-root': { minWidth: 200, marginRight: 100 + spacing.lg },
   },
   fieldWide: {
     paddingLeft: 75,
     paddingRight: spacing.xl,
-    '& .MuiFormControl-root': {
-      minWidth: 300,
-      marginRight: 45,
-    },
+    '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
   fieldSub: {
     padding: `0 ${spacing.xl}px 0 75px`,
@@ -259,10 +256,5 @@ const useStyles = makeStyles({
     '& .MuiFormControl-root + .MuiFormControl-root': {
       marginTop: spacing.sm,
     },
-  },
-  retry: {
-    color: colors.primary,
-    height: spacing.lg,
-    paddingTop: spacing.sm,
   },
 })
