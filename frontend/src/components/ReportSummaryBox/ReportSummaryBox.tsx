@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography, Box } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
+import { colors, spacing, fontSizes } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 
@@ -17,13 +17,15 @@ export const ReportSummaryBox: React.FC<ReportSummaryBoxProps> = ({ iconTitle, c
   return (
     <Box boxShadow={3} width={width}>
       <div className={css.report}>
-        <Icon title={iconTitle} name={icon} size="xxl" />
-        <div>
-          <Typography variant="h1" className={css.report}>
-            {count}
+        <div className={css.textContent}>
+          <Typography className={css.header}>{count}</Typography>
+          <Typography className={css.descriptor}>
+            {total ? `of ${total} ` : ''}
+            {label}
           </Typography>
-          {total ? `of ${total}` : ''}
-          {label}
+        </div>
+        <div className={css.iconContainer}>
+          <Icon title={iconTitle} name={icon} size="xxxl" />
         </div>
       </div>
     </Box>
@@ -34,10 +36,21 @@ const useStyles = makeStyles({
   report: {
     color: colors.white,
     backgroundColor: colors.primary,
+    display: 'flex',
   },
-  icon: {
-    position: 'absolute',
-    height: spacing.lg,
-    right: spacing.md,
+  header: {
+    fontSize: fontSizes.xxl,
+    color: colors.white,
+    padding: `${spacing.xxs} 0px`,
+  },
+  descriptor: {
+    fontSize: fontSizes.md,
+  },
+  iconContainer: {
+    padding: `${spacing.md}px  ${spacing.md}px`,
+  },
+  textContent: {
+    padding: `${spacing.md}px  ${spacing.md}px`,
+    flexGrow: 1,
   },
 })

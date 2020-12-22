@@ -8,6 +8,7 @@ import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { ReportSummaryBox } from '../../components/ReportSummaryBox'
 import { ReportTimeSeriesVis } from '../../components/ReportTimeSeriesVis'
+import { ReportDeviceQualityList } from '../../components/ReportDeviceQualityList'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import { format } from 'date-fns'
 
@@ -79,7 +80,7 @@ export const ReportsPage: React.FC = () => {
             <Box flexGrow={1} className={css.columnContainer}>
               <div ref={targetRef} className={css.column1}>
                 <ReportSummaryBox
-                  label="Devices created"
+                  label="devices created"
                   count={lastMonthDeviceCount}
                   total={totalDevices}
                   icon="hdd"
@@ -100,7 +101,7 @@ export const ReportsPage: React.FC = () => {
                 <ReportSummaryBox
                   label="Connections"
                   count={lastMonthConnectionCount}
-                  icon="hdd"
+                  icon="scrubber"
                   iconTitle="Connections"
                 />
                 <br />
@@ -109,7 +110,12 @@ export const ReportsPage: React.FC = () => {
           </Box>
           <br />
           <Box display="flex" className={css.container}>
-            this is where the device stability will be displayed
+            <Typography className={css.header} variant="h2">
+              <Title>Devices ({totalDevices})</Title>
+            </Typography>
+          </Box>
+          <Box display="flex" className={css.container}>
+            <ReportDeviceQualityList />
           </Box>
         </>
       )}

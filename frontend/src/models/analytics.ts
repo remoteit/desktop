@@ -3,17 +3,24 @@ import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { hasCredentials } from '../services/remote.it'
 import { RootModel } from './rootModel'
-import { set as setDate, eachDayOfInterval, isSameDay, isEqual } from 'date-fns'
+import { set as setDate, eachDayOfInterval, isSameDay, isEqual, set } from 'date-fns'
 import { getTimeZone } from '../helpers/dateHelper'
 import { startOfDay } from 'date-fns/esm'
 
 const MAX_DEVICE_LENGTH = 1000
 
-interface IAnalyticsDevice {
+export interface IAnalyticsDevice {
   id: string
   name: string
   quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
   createdAt: Date
+  qualitySort: number
+}
+export enum QualityType {
+  'GOOD' = 3,
+  'MODERATE' = 2,
+  'POOR' = 1,
+  'UNKNOWN' = 0,
 }
 export interface IDateOptions {
   start: Date
@@ -23,6 +30,7 @@ export interface ITimeSeriesData {
   date: Date
   count: number
 }
+
 type IAnalyticsState = ILookup<any> & {
   fetching: boolean
   startDate?: Date
@@ -48,15 +56,18 @@ const state: IAnalyticsState = {
     seconds: 0,
     milliseconds: 0,
   }),
-  endDate: setDate(new Date().setDate(0), { hours: 23, minutes: 59, seconds: 59, milliseconds: 999 }),
+  endDate: new Date(),
+  //endDate: setDate(new Date().setDate(0), { hours: 23, minutes: 59, seconds: 59, milliseconds: 999 }),
   totalDevices: 0,
   lastMonthDeviceCount: 0,
   lastMonthConnectionCount: 0,
   devices: [],
   deviceTimeseries: [],
   connectionTimeseries: [],
+  sortPreference: { sortOrder: 'desc', sortPreferenceKey: 'quality' },
 }
-type analyticsGQOptions = {
+
+type analyticsGQLOptions = {
   size: number
   from: number
   start: Date
@@ -100,7 +111,7 @@ export default createModel<RootModel>()({
       }
       getAnalytics({ from, size, start: monthStart, end: monthEnd, timeZone })
     },
-    async getAnalytics({ from, size, start, end, timeZone }: analyticsGQOptions) {
+    async getAnalytics({ from, size, start, end, timeZone }: analyticsGQLOptions) {
       const options = { from, size, start, end, timeZone }
       const { parse } = dispatch.analytics
       try {
@@ -201,6 +212,7 @@ export default createModel<RootModel>()({
         })
         return { date: item.date, count }
       })
+      //need to do an initial sort
 
       set({
         totalDevices: gqlData.devices.total,
@@ -224,21 +236,29 @@ export default createModel<RootModel>()({
       }
     },
     parseDevices(devices, globalState) {
-      //let parsedConnections = []
       const { set } = dispatch.analytics
-      let connectionTimeseries = globalState.analytics.connectionTimeseries
+      const connectionTimeseries = globalState.analytics.connectionTimeseries
       let lastMonthConnectionCount = globalState.analytics.lastMonthConnectionCount
       const parsedDevices: IAnalyticsDevice[] = devices.map(d => {
-        //parsedConnections = d.services.
         const createdDate = new Date(d.created)
-        const device: IAnalyticsDevice = { createdAt: createdDate, id: d.id, name: d.name, quality: d.endpoint.quality }
-        //start adding to the connections timeseries
-        if (d.timesSeries && d.timeSeries.data.size > 0) {
-          d.timeSeries.data.map((c, i) => {
-            connectionTimeseries[i].count += c
-            lastMonthConnectionCount += c
-          })
+        const qualitySort = getQualityNumber(d.endpoint.quality)
+        const device: IAnalyticsDevice = {
+          createdAt: createdDate,
+          id: d.id,
+          name: d.name,
+          quality: d.endpoint.quality,
+          qualitySort,
         }
+        //go through the services and extract connection time series
+        d.services.map(s => {
+          //start adding to the connections timeseries
+          if (s.timesSeries && s.timeSeries.data.size > 0) {
+            s.timeSeries.data.map((c, i) => {
+              connectionTimeseries[i].count += c
+              lastMonthConnectionCount += c
+            })
+          }
+        })
         return device
       })
       set({ connectionTimeseries, lastMonthConnectionCount })
@@ -252,3 +272,21 @@ export default createModel<RootModel>()({
     },
   },
 })
+function getQualityNumber(quality: string) {
+  let value
+  switch (quality) {
+    case 'GOOD':
+      value = 3
+      break
+    case 'MODERATE':
+      value = 2
+      break
+    case 'POOR':
+      value = 1
+      break
+    case 'UNKNOWN':
+      value = 0
+      break
+  }
+  return value
+}
