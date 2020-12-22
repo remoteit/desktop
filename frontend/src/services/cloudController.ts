@@ -1,5 +1,5 @@
 import analyticsHelper from '../helpers/analyticsHelper'
-import Sockette from 'sockette'
+import ReconnectingWebSocket from 'reconnecting-websocket'
 import { WEBSOCKET_URL, WEBSOCKET_KEEPALIVE_INTERVAL } from '../shared/constants'
 import { emit } from './Controller'
 import { getToken } from './remote.it'
@@ -13,66 +13,35 @@ function encode(data) {
 }
 
 class CloudController {
-  socket?: Sockette
+  socket?: ReconnectingWebSocket
   token?: string
 
-  async init() {
-    await this.connect()
+  init() {
+    this.connect()
     window.setInterval(this.keepAlive, WEBSOCKET_KEEPALIVE_INTERVAL)
   }
 
-  connect = async () => {
-    this.token = await getToken()
-
-    this.socket = new Sockette(WEBSOCKET_URL, {
-      timeout: 10000,
-      maxAttempts: 30,
-      onopen: this.onOpen,
-      onmessage: this.onMessage,
-      onclose: e => console.log('CLOUD WS closed', e),
-      onerror: e => console.warn('CLOUD WS error', e),
-      onreconnect: e => console.log('CLOUD WS Reconnecting...', e),
-      onmaximum: e => console.warn('CLOUD WS maximum retry limit reached', e),
-    })
+  connect() {
+    this.socket = new ReconnectingWebSocket(WEBSOCKET_URL)
+    this.socket.addEventListener('open', this.onOpen)
+    this.socket.addEventListener('message', this.onMessage)
+    this.socket.addEventListener('close', e => console.log('CLOUD WS closed', e))
+    this.socket.addEventListener('error', e => console.warn('CLOUD WS error', e))
   }
 
-  close = async () => {
+  close() {
     this.socket?.close()
   }
 
   onOpen = event => {
     console.log('\n-------------------------> SOCKET OPEN\n\n')
     console.log('CLOUD WS opened', event)
-    this.socket?.json({
-      action: 'subscribe',
-      headers: { authorization: this.token },
-      query: `
-        {
-          event {
-            type
-            state
-            timestamp
-            target {
-              id
-              name
-              application
-            }
-          }
-        }`,
-      // actor {
-      //   email
-      // }
-      // users {
-      //   email
-      // }
-      // "variables": {}
-    })
+    this.authenticate()
   }
 
   onMessage = response => {
     let event = this.parse(response)
     if (!event) return
-
     event = this.update(event)
     notify(event)
     console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
@@ -100,8 +69,37 @@ class CloudController {
     }
   }
 
+  authenticate = async () => {
+    this.socket?.send(
+      JSON.stringify({
+        action: 'subscribe',
+        headers: { authorization: await getToken() },
+        query: `
+        {
+          event {
+            type
+            state
+            timestamp
+            target {
+              id
+              name
+              application
+            }
+          }
+        }`,
+        // actor {
+        //   email
+        // }
+        // users {
+        //   email
+        // }
+        // "variables": {}
+      })
+    )
+  }
+
   keepAlive() {
-    console.log('CLOUD WS keep alive ping')
+    console.log('CLOUD WS keep alive ping', { readyState: this.socket?.readyState, socket: this.socket })
     this.socket?.send('ping')
   }
 
