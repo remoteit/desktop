@@ -3,7 +3,7 @@ import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { hasCredentials } from '../services/remote.it'
 import { RootModel } from './rootModel'
-import { set as setDate, eachDayOfInterval, isSameDay, isEqual, set } from 'date-fns'
+import { set as setDate, eachDayOfInterval, isEqual } from 'date-fns'
 import { getTimeZone } from '../helpers/dateHelper'
 import { startOfDay } from 'date-fns/esm'
 
@@ -23,8 +23,8 @@ export enum QualityType {
   'UNKNOWN' = 0,
 }
 export interface IDateOptions {
-  start: Date
-  end: Date
+  startDate: Date
+  endDate: Date
 }
 export interface ITimeSeriesData {
   date: Date
@@ -63,57 +63,38 @@ const state: IAnalyticsState = {
   devices: [],
   deviceTimeseries: [],
   connectionTimeseries: [],
-  sortPreference: { sortOrder: 'desc', sortPreferenceKey: 'quality' },
 }
 
 type analyticsGQLOptions = {
   size: number
   from: number
-  start: Date
-  end: Date
-  timeZone: string
 }
-
+type parseDeviceOptions = {
+  devices: any[]
+  connectionTimeseries: ITimeSeriesData[]
+  lastMonthConnectionCount: number
+}
 export default createModel<RootModel>()({
   state,
   effects: (dispatch: any) => ({
     async fetchAnalytics(_: void, globalState: any) {
       if (!hasCredentials()) return
-      const { from, size, startDate, endDate, deviceTimeseries, connectionTimeseries } = globalState.analytics
+      const { from, size, startDate, endDate } = globalState.analytics
       const { getAnalytics, set, primeGraphTimeseries } = dispatch.analytics
-      set({ fetching: true })
+      const primedGraphTimeseries = primeGraphTimeseries({ startDate: startDate, endDate: endDate })
       const timeZone = getTimeZone()
-      const monthStart = setDate(new Date().setMonth(new Date().getMonth() - 1), {
-        date: 1,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-        milliseconds: 0,
+      set({
+        fetching: true,
+        deviceTimeseries: primedGraphTimeseries,
+        connectionTimeseries: primedGraphTimeseries,
       })
-      const monthEnd = endDate
-      const primedGraphTimeseries = primeGraphTimeseries({ start: monthStart, end: monthEnd })
-      if (!isSameDay(startDate, monthStart)) {
-        const monthEnd = setDate(new Date().setDate(0), { hours: 23, minutes: 59, seconds: 59, milliseconds: 999 })
-        const newGraphTimeseries = primeGraphTimeseries({ start: monthStart, end: monthEnd })
-        set({
-          from: 0,
-          startDate: monthStart,
-          endDate: monthEnd,
-          totalDevices: 0,
-          totalConnections: 0,
-          lastMonthDeviceCount: 0,
-          lastMonthConnectionCount: 0,
-          devices: [],
-          connections: [],
-          deviceTimeseries: newGraphTimeseries,
-          connectionTimeseries: newGraphTimeseries,
-        })
-      }
-      getAnalytics({ from, size, start: monthStart, end: monthEnd, timeZone })
+      getAnalytics({ from, size })
     },
-    async getAnalytics({ from, size, start, end, timeZone }: analyticsGQLOptions) {
-      const options = { from, size, start, end, timeZone }
+    async getAnalytics({ from, size }: analyticsGQLOptions, globalState: ApplicationState) {
+      const { startDate, endDate } = globalState.analytics
       const { parse } = dispatch.analytics
+      const options = { ...{ from, size }, start: startDate, end: endDate, timezone: getTimeZone() }
+
       try {
         const result = await graphQLRequest(
           `query($from: Int, $size: Int, $start: DateTime, $end: DateTime, $timezone: String) {
@@ -159,39 +140,19 @@ export default createModel<RootModel>()({
         devices,
         connectionTimeseries,
         deviceTimeseries,
+        lastMonthConnectionCount,
       } = globalState.analytics
-      const { set, primeGraphTimeseries, getAnalytics, parseDevices } = dispatch.analytics
-      const primedGraphTimeseries = primeGraphTimeseries({ start: startDate, end: endDate })
+      const { set, getAnalytics, parseDevices } = dispatch.analytics
       if (!gqlData) {
         const newState = set({
           fetching: false,
-          from: 0,
-          totalDevices: 0,
-          totalConnections: 0,
-          lastMonthDeviceCount: 0,
-          lastMonthConnectionCount: 0,
-          devices: [],
-          connections: [],
-          deviceTimeseries: primedGraphTimeseries,
-          connectionTimeseries: primedGraphTimeseries,
         })
         return
       }
-      let deviceTimeseriesCopy = deviceTimeseries
-      if (deviceTimeseries.length < 1) {
-        deviceTimeseriesCopy = primedGraphTimeseries
-      }
-      let connectionTimeSeriesCopy = globalState.analytics.connectionTimeseries
-      if (!connectionTimeSeriesCopy || connectionTimeSeriesCopy.length < 1) {
-        connectionTimeSeriesCopy = primeGraphTimeseries({
-          start: globalState.analytics.startDate,
-          end: globalState.analytics.endDate,
-        })
-      }
-      const { parsedDevices, updatedConnectionTimeseries, lastMonthConnectionCount } = parseDevices({
+      const { parsedDevices, updatedConnectionTimeseries, updatedLastMonthConnectionCount } = parseDevices({
         devices: gqlData.devices.items,
-        connectionTimeSeriesCopy: connectionTimeSeriesCopy,
-        lastMonthConnectionCount: globalState.analytics.lastMonthConnectionCount,
+        connectionTimeseries: connectionTimeseries,
+        lastMonthConnectionCount: lastMonthConnectionCount,
       })
       const devicelist: IAnalyticsDevice[] = devices.length < 1 ? parsedDevices : devices.concat(parsedDevices)
       let newFromIndex = from
@@ -205,16 +166,16 @@ export default createModel<RootModel>()({
         devices: devicelist,
         totalDevices: gqlData.devices.total,
         connectionTimeseries: updatedConnectionTimeseries,
-        lastMonthConnectionCount,
+        lastMonthConnectionCount: updatedLastMonthConnectionCount,
       })
       if (gqlData.devices.hasMore) {
-        getAnalytics({ from: newFromIndex, size, start: startDate, end: endDate, timeZone })
+        getAnalytics({ from: newFromIndex, size })
         return
       }
       //iterate over devices to put them in a timeseries & calculate connections
       let pastMonthDevices = 0
       //add to the devices in this period
-      const newDeviceTimeseries = deviceTimeseriesCopy.map(item => {
+      const newDeviceTimeseries = deviceTimeseries.map(item => {
         let count = 0
         devicelist.map(d => {
           if (isEqual(startOfDay(item.date), startOfDay(d.createdAt))) {
@@ -225,22 +186,18 @@ export default createModel<RootModel>()({
         })
         return { date: item.date, count }
       })
-      //need to do an initial sort
-
       set({
-        totalDevices: gqlData.devices.total,
         fetching: false,
         lastMonthDeviceCount: pastMonthDevices,
-        lastMonthConnectionCount: lastMonthConnectionCount,
         deviceTimeseries: newDeviceTimeseries,
       })
     },
-    primeGraphTimeseries({ start, end }: IDateOptions) {
+    primeGraphTimeseries({ startDate, endDate }: IDateOptions) {
       //make an array of graph objects for each day in the month
-      if (start && end) {
+      if (startDate && endDate) {
         const daysInMonth = eachDayOfInterval({
-          start,
-          end,
+          start: startDate,
+          end: endDate,
         })
         const initTimeSeries = daysInMonth.map(d => {
           return { date: d, count: 0 }
@@ -248,7 +205,8 @@ export default createModel<RootModel>()({
         return initTimeSeries
       }
     },
-    parseDevices({ devices, connectionTimeSeriesCopy, lastMonthConnectionCount }, globalState) {
+    parseDevices({ devices, connectionTimeseries, lastMonthConnectionCount }: parseDeviceOptions, globalState) {
+      let updatedLastMonthConnectionCount = lastMonthConnectionCount
       const parsedDevices: IAnalyticsDevice[] = devices.map(d => {
         const createdDate = new Date(d.created)
         const qualitySort = getQualityNumber(d.endpoint.quality)
@@ -266,19 +224,18 @@ export default createModel<RootModel>()({
           if (s.timeSeries.data.length > 0) {
             s.timeSeries.data.map((c, i) => {
               if (c > 0) {
-                connectionTimeSeriesCopy[i]['count'] += c
-                lastMonthConnectionCount += c
+                connectionTimeseries[i]['count'] += c
+                updatedLastMonthConnectionCount += c
               }
             })
           }
         })
         return device
       })
-      //set({ connectionTimeseries: updatedConnectionTimeseries, lastMonthConnectionCount })
       return {
         parsedDevices: parsedDevices,
-        updatedConnectionTimeseries: connectionTimeSeriesCopy,
-        lastMonthConnectionCount: lastMonthConnectionCount,
+        updatedConnectionTimeseries: connectionTimeseries,
+        updatedLastMonthConnectionCount: updatedLastMonthConnectionCount,
       }
     },
   }),

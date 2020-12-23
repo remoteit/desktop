@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { Typography, Divider, Box } from '@material-ui/core'
+import { Typography, Box } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
@@ -27,8 +27,6 @@ export const ReportsPage: React.FC = () => {
     startDate,
     deviceTimeseries,
     connectionTimeseries,
-    deviceTimeseriesMaxCount,
-    connectionTimeseriesMaxCount,
   } = useSelector((state: ApplicationState) => {
     return {
       fetching: state.analytics.fetching,
@@ -39,8 +37,6 @@ export const ReportsPage: React.FC = () => {
       lastMonthConnectionCount: state.analytics.lastMonthConnectionCount,
       deviceTimeseries: state.analytics.deviceTimeseries,
       connectionTimeseries: state.analytics.connectionTimeseries,
-      deviceTimeseriesMaxCount: state.analytics.deviceTimeseriesMaxCount,
-      connectionTimeseriesMaxCount: state.analytics.connectionTimeseriesMaxCount,
     }
   })
   const targetRef = useRef<HTMLDivElement>(null)
@@ -53,7 +49,7 @@ export const ReportsPage: React.FC = () => {
   }
   useEffect(() => {
     analyticsHelper.page('ReportPage')
-    if (devices.length == 0 || devices.length < totalDevices) {
+    if (!fetching && (devices.length == 0 || devices.length < totalDevices)) {
       fetchAnalytics()
     }
   }, [])
