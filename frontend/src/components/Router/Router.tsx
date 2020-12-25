@@ -1,7 +1,7 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { Switch, Route, Redirect } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
 import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
 import { SetupDevice } from '../../pages/SetupDevice'
@@ -27,7 +27,10 @@ import { getLinks } from '../../helpers/routeHelper'
 import { LogPage } from '../../pages/LogPage'
 
 export const Router: React.FC = () => {
-  const { targetDevice, targets, registered, os, links } = useSelector((state: ApplicationState) => ({
+  const history = useHistory()
+  const { ui } = useDispatch<Dispatch>()
+  const { redirect, targetDevice, targets, registered, os, links } = useSelector((state: ApplicationState) => ({
+    redirect: state.ui.redirect,
     targetDevice: state.backend.device,
     targets: state.backend.targets,
     registered: !!state.backend.device.uid,
@@ -35,6 +38,14 @@ export const Router: React.FC = () => {
     os: state.backend.environment.os,
     links: getLinks(state),
   }))
+
+  useEffect(() => {
+    if (redirect) {
+      console.log('UI REDIRECT', redirect)
+      history.push(redirect)
+      ui.set({ redirect: undefined })
+    }
+  }, [redirect])
 
   return (
     <Switch>
