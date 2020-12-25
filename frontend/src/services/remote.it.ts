@@ -12,7 +12,7 @@ export const r3 = setup(
 )
 
 export async function getToken(): Promise<string> {
-  const { auth, backend } = store.dispatch
+  const { auth, ui } = store.dispatch
 
   try {
     const currentSession = await store.getState().auth.authService?.currentCognitoSession()
@@ -20,7 +20,7 @@ export async function getToken(): Promise<string> {
     return token
   } catch (err) {
     if (err.code === 'NetworkError') {
-      backend.set({ globalError: err.message })
+      ui.set({ errorMessage: err.message })
     } else {
       auth.signInError('Session Expired')
     }
@@ -29,13 +29,13 @@ export async function getToken(): Promise<string> {
 }
 
 export async function hasCredentials() {
-  const { auth, backend } = store.dispatch
+  const { auth, ui } = store.dispatch
   try {
     await store.getState().auth.authService?.currentCognitoSession()
     return true
   } catch (err) {
     if (err.code === 'NetworkError') {
-      backend.set({ globalError: err.message })
+      ui.set({ errorMessage: err.message })
     } else {
       auth.signInError('Session Expired')
     }

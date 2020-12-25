@@ -16,13 +16,13 @@ export interface Props {
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
-  const { backend, ui } = useDispatch<Dispatch>()
-  const { connected, successMessage, noticeMessage, globalError, backendAuthenticated, os } = useSelector(
+  const { ui } = useDispatch<Dispatch>()
+  const { connected, successMessage, noticeMessage, errorMessage, backendAuthenticated, os } = useSelector(
     (state: ApplicationState) => ({
       connected: state.ui.connected,
       successMessage: state.ui.successMessage,
       noticeMessage: state.ui.noticeMessage,
-      globalError: state.backend.globalError,
+      errorMessage: state.ui.errorMessage,
       backendAuthenticated: state.auth.backendAuthenticated,
       os: state.backend.environment.os,
     })
@@ -30,7 +30,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const largeScreen = useMediaQuery('(min-width:600px)')
   const css = useStyles()
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
-  const clearGlobalError = () => backend.set({ globalError: undefined })
+  const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
 
   let remoteCss = ''
@@ -57,20 +57,20 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           }
         />
         <Snackbar
-          key={globalError}
-          open={!!globalError}
+          key={errorMessage || 'error'}
+          open={!!errorMessage}
           message={
             <>
               <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
-              {globalError}
+              {errorMessage}
             </>
           }
           action={
-            <IconButton onClick={clearGlobalError}>
+            <IconButton onClick={clearErrorMessage}>
               <Icon name="times" size="md" color="white" fixedWidth />
             </IconButton>
           }
-          onClose={clearGlobalError}
+          onClose={clearErrorMessage}
         />
         <Snackbar
           key={noticeMessage || 'notice'}
@@ -80,7 +80,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           autoHideDuration={20000}
         />
         <Snackbar
-          key={successMessage}
+          key={successMessage || 'success'}
           open={!!successMessage}
           message={
             <>

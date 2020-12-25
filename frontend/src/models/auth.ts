@@ -79,13 +79,13 @@ export default createModel<RootModel>()({
       }
     },
     async checkSession(_: void, rootState: any) {
-      const { backend } = store.dispatch
+      const { ui } = store.dispatch
       const result = await rootState.auth.authService.checkSignIn()
       if (result.authUser) {
         await dispatch.auth.handleSignInSuccess(result.cognitoUser)
       } else {
         if (result.error.code === 'NetworkError') {
-          backend.set({ globalError: result.error.message })
+          ui.set({ errorMessage: result.error.message })
         } else {
           dispatch.auth.signInError('Session Expired')
         }

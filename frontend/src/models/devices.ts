@@ -177,7 +177,7 @@ export default createModel<RootModel>()({
         await r3.post(`/device/name/`, { deviceaddress: id, devicealias: name })
         await dispatch.devices.fetch()
       } catch (error) {
-        dispatch.backend.set({ globalError: error.message })
+        dispatch.ui.set({ errorMessage: error.message })
         console.warn(error)
       }
     },
@@ -210,7 +210,7 @@ export default createModel<RootModel>()({
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
         await dispatch.devices.fetch()
       } catch (error) {
-        dispatch.backend.set({ globalError: error.message })
+        dispatch.ui.set({ errorMessage: error.message })
         console.warn(error)
       }
       dispatch.devices.set({ destroying: false })

@@ -36,7 +36,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     pathPutty: state.ui.pathPutty,
     loading: state.ui.loading,
   }))
-  const { ui, backend } = useDispatch<Dispatch>()
+  const { ui } = useDispatch<Dispatch>()
   const [launch, setLaunch] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
   const [openPutty, setOpenPutty] = useState<boolean>(false)
@@ -61,7 +61,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
         ? emit('service/launch', { command: app.command, pathPutty })
         : window.open(app.command)
     } catch (error) {
-      backend.set({ globalError: `Could not launch ${app.command}. Invalid URL.` })
+      ui.set({ errorMessage: `Could not launch ${app.command}. Invalid URL.` })
     }
     closeAll()
   }

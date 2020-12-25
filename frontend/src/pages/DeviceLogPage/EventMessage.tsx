@@ -11,15 +11,14 @@ export const EventState = {
 }
 
 export function EventMessage({
-  props,
+  item,
   device,
   loggedInUser,
 }: {
-  props: IEvent
+  item: IEvent
   device: IDevice
   loggedInUser: IUser | undefined
 }): JSX.Element {
-  const item = props
   const serviceName = (item.target?.map(service => service.name) || []).join(' + ')
   let message: JSX.Element | string = ''
 

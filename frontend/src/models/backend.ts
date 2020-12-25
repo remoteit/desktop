@@ -17,7 +17,6 @@ type IBackendState = ILookup<any> & {
   error: boolean
   freePort?: number
   update?: string
-  globalError?: string
   dataReady: boolean
   environment: {
     os?: Ios
@@ -43,7 +42,6 @@ const state: IBackendState = {
   error: false,
   freePort: undefined,
   update: undefined,
-  globalError: undefined,
   dataReady: false,
   environment: {
     os: undefined,

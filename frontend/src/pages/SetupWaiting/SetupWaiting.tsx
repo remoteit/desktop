@@ -16,8 +16,8 @@ import styles from '../../styling'
 type Props = { os?: Ios; targetDevice: ITargetDevice }
 
 export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
-  const { globalError, device, links } = useSelector((state: ApplicationState) => ({
-    globalError: state.backend.globalError,
+  const { errorMessage, device, links } = useSelector((state: ApplicationState) => ({
+    errorMessage: state.ui.errorMessage,
     device: getDevices(state).find(d => d.id === targetDevice.uid),
     links: getLinks(state, targetDevice.uid),
   }))
@@ -28,7 +28,7 @@ export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
     if (device) history.push(links.edit)
   }, [device])
 
-  if (globalError) history.push(links.setup)
+  if (errorMessage) history.push(links.setup)
 
   return (
     <Container header={<Breadcrumbs />} integrated>
