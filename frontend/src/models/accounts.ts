@@ -86,7 +86,7 @@ export default createModel<RootModel>()({
       const { access } = globalState.accounts as ApplicationState['accounts']
       try {
         const result = await graphQLLinkAccount(emails, 'ADD')
-        const errors = await graphQLGetErrors(result)
+        const errors = graphQLGetErrors(result)
         if (!errors?.length) {
           analyticsHelper.track('addAccess')
           dispatch.accounts.set({ access: [...access, ...emails.map(email => ({ email, created: new Date() }))] })
@@ -105,7 +105,7 @@ export default createModel<RootModel>()({
       const { access } = globalState.accounts as ApplicationState['accounts']
       try {
         const result = await graphQLLinkAccount([email], 'REMOVE')
-        const errors = await graphQLGetErrors(result)
+        const errors = graphQLGetErrors(result)
         if (!errors?.length) {
           analyticsHelper.track('removedAccess')
           dispatch.accounts.set({ access: access.filter(user => user.email !== email) })
@@ -119,7 +119,7 @@ export default createModel<RootModel>()({
       const { member } = globalState.accounts as ApplicationState['accounts']
       try {
         const result = await graphQLLinkAccount([email], 'LEAVE')
-        const errors = await graphQLGetErrors(result)
+        const errors = graphQLGetErrors(result)
         if (!errors?.length) {
           analyticsHelper.track('leaveMembership')
           dispatch.accounts.set({ member: member.filter(user => user.email !== email) })

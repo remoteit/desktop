@@ -1,16 +1,12 @@
 import analyticsHelper from '../helpers/analyticsHelper'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { WEBSOCKET_URL, WEBSOCKET_KEEPALIVE_INTERVAL } from '../shared/constants'
-import { emit } from './Controller'
 import { getToken } from './remote.it'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectService } from '../models/devices'
 import { connectionName, setConnection } from '../helpers/connectionHelper'
-
-function encode(data) {
-  return Buffer.from(JSON.stringify(data)).toString('base64')
-}
+import { graphQLGetErrors } from './graphQL'
 
 class CloudController {
   socket?: ReconnectingWebSocket
@@ -18,7 +14,7 @@ class CloudController {
 
   init() {
     this.connect()
-    window.setInterval(this.keepAlive, WEBSOCKET_KEEPALIVE_INTERVAL)
+    // window.setInterval(this.keepAlive, WEBSOCKET_KEEPALIVE_INTERVAL)
   }
 
   connect() {
@@ -33,40 +29,63 @@ class CloudController {
     this.socket?.close()
   }
 
+  // keepAlive() {
+  //   console.log('CLOUD WS keep alive ping', { readyState: this.socket?.readyState, socket: this.socket })
+  //   this.socket?.send('ping')
+  // }
+
   onOpen = event => {
     console.log('\n-------------------------> SOCKET OPEN\n\n')
     console.log('CLOUD WS opened', event)
     this.authenticate()
-  }
-
-  onMessage = response => {
-    let event = this.parse(response)
-    if (!event) return
-    event = this.update(event)
-    notify(event)
-    console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data, event)
-    // {"data":{"event":{"type":"DEVICE_STATE","state":"active","timestamp":"2020-12-16T00:24:56.000Z","target":[{"id":"80:00:00:00:01:07:C2:36","name":"remoteit admin"}]}}}
-    // {"data":{"event":{"type":"DEVICE_STATE","state":"inactive","timestamp":"2020-12-16T00:24:46.000Z","target":[{"id":"80:00:00:00:01:07:C2:3E","name":"chat04"}]}}}
-    const offline = {
-      data: {
-        event: {
-          type: 'DEVICE_STATE',
-          state: 'inactive',
-          timestamp: '2020-12-20T18:08:27.000Z',
-          target: [{ id: '80:00:00:00:01:09:51:0C', name: 'remoteit admin', application: 42 }],
-        },
-      },
-    }
-    const connect = {
-      data: {
-        event: {
-          type: 'DEVICE_CONNECT',
-          state: 'connected',
-          timestamp: '2020-12-20T18:09:07.000Z',
-          target: [{ id: '80:00:00:00:01:09:2F:69', name: 'smb', application: 34 }],
-        },
-      },
-    }
+    // const unshare = {
+    //   data: {
+    //     event: {
+    //       type: 'DEVICE_SHARE',
+    //       state: null,
+    //       timestamp: '2020-12-24T00:47:47.000Z',
+    //       target: [
+    //         {
+    //           id: '80:00:00:00:01:09:62:19',
+    //           name: 'ubuntu vm',
+    //           application: 35,
+    //           platform: 1120,
+    //           owner: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
+    //         },
+    //       ],
+    //       actor: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
+    //       users: [{ id: 'C3DEBA49-1019-4571-AA34-4F2D58B69A7F', email: 'jamie@remote.it' }],
+    //       scripting: false,
+    //     },
+    //   },
+    // }
+    // const share = {
+    //   data: {
+    //     event: {
+    //       type: 'DEVICE_SHARE',
+    //       state: null,
+    //       timestamp: '2020-12-24T00:44:15.000Z',
+    //       actor: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
+    //       users: [{ id: 'C3DEBA49-1019-4571-AA34-4F2D58B69A7F', email: 'jamie@remote.it' }],
+    //       target: [
+    //         {
+    //           id: '80:00:00:00:01:09:62:19',
+    //           name: 'ubuntu vm',
+    //           application: 35,
+    //           platform: 1120,
+    //           owner: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
+    //         },
+    //         {
+    //           id: '80:00:00:00:01:09:62:1B',
+    //           name: 'remoteit admin',
+    //           application: 42,
+    //           platform: 1120,
+    //           owner: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
+    //         },
+    //       ],
+    //     },
+    //   },
+    // }
   }
 
   authenticate = async () => {
@@ -84,40 +103,65 @@ class CloudController {
               id
               name
               application
+              platform
+              owner {
+                id
+                email
+              }
+            }
+            ... on DeviceShareEvent {
+              actor {
+                id
+                email
+              }
+              users {
+                id
+                email
+              }  
+              scripting
             }
           }
         }`,
-        // actor {
-        //   email
-        // }
-        // users {
-        //   email
-        // }
         // "variables": {}
       })
     )
   }
 
-  keepAlive() {
-    console.log('CLOUD WS keep alive ping', { readyState: this.socket?.readyState, socket: this.socket })
-    this.socket?.send('ping')
+  onMessage = response => {
+    console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data)
+    let event = this.parse(response)
+    console.log('EVENT', event)
+    if (!event) return
+    event = this.update(event)
+    notify(event)
+    console.log(event)
+  }
+
+  errors(data) {
+    const errors = graphQLGetErrors({ data })
+    return !!errors?.length
   }
 
   parse(response): ICloudEvent | undefined {
     const state = store.getState()
-    let event
     try {
-      event = JSON.parse(response.data).data.event
+      const json = JSON.parse(response.data)
+      if (this.errors(json)) return
+      let event = json.data.event
       return {
         type: event.type,
         state: event.state,
         timestamp: new Date(event.timestamp),
+        actor: event.actor,
+        users: event.users,
         target: event.target.map(t => {
           const [service, device] = selectService(state, t.id)
           return {
             id: t.id,
             name: connectionName(service, device) || t.name,
+            owner: t.owner,
             typeID: t.application,
+            targetPlatform: t.platform,
             connection: state.backend.connections.find(c => c.id === t.id),
             service,
             device,
@@ -125,7 +169,7 @@ class CloudController {
         }),
       }
     } catch (error) {
-      console.warn('Event parsing error', { event, error })
+      console.warn('Event parsing error', response, error)
     }
   }
 

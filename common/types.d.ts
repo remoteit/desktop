@@ -297,13 +297,14 @@ declare global {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
-
-    title?: string
-    body?: string
+    actor: IUserRef
+    users: IUserRef[]
     target: {
       id: string
       name: string
+      owner: IUserRef
       typeID: IService['typeID']
+      targetPlatform: IDevice['targetPlatform']
       device?: IDevice
       service?: IService
       connection?: IConnection

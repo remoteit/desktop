@@ -22,14 +22,14 @@ const state: IShareState = {
 
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch) => ({
+  effects: dispatch => ({
     async delete(userDevice: { deviceId: string; email: string }) {
       const { deviceId, email } = userDevice
       const { set } = dispatch.shares
       set({ deleting: true })
       try {
         const response = await graphQLUnShareDevice({ deviceId, email: [email] })
-        const errors = await graphQLGetErrors(response)
+        const errors = graphQLGetErrors(response)
         if (!errors) {
           await dispatch.devices.fetchSingle({ deviceId })
           dispatch.ui.set({ successMessage: `${email} successfully removed.` })
@@ -47,7 +47,7 @@ export default createModel<RootModel>()({
       set({ sharing: true })
       try {
         const response = await graphQLShareDevice(data)
-        const errors = await graphQLGetErrors(response)
+        const errors = graphQLGetErrors(response)
         if (!errors)
           dispatch.ui.set({
             successMessage:
