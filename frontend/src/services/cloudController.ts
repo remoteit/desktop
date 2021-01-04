@@ -109,11 +109,11 @@ class CloudController {
                 email
               }
             }
+            actor {
+              id
+              email
+            }
             ... on DeviceShareEvent {
-              actor {
-                id
-                email
-              }
               users {
                 id
                 email
@@ -134,7 +134,6 @@ class CloudController {
     if (!event) return
     event = this.update(event)
     notify(event)
-    console.log(event)
   }
 
   errors(data) {

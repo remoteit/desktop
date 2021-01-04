@@ -12,8 +12,11 @@ const actions = {
 export function notify(event: ICloudEvent) {
   switch (event.type) {
     case 'DEVICE_STATE':
+      stateNotification(event)
+      break
+
     case 'DEVICE_CONNECT':
-      simpleNotification(event)
+      connectNotification(event)
       break
 
     case 'DEVICE_SHARE':
@@ -23,23 +26,45 @@ export function notify(event: ICloudEvent) {
 
 /* 
   My laptop came online
-  Your device
+  Windows - otheruser@email.com
 */
-function simpleNotification(event: ICloudEvent) {
+function stateNotification(event: ICloudEvent) {
   const state = store.getState()
 
   event.target.forEach(target => {
     // notify if device changes state only
     if (target.typeID === DEVICE_TYPE) {
-      const notification = new Notification(`${target.name} ${actions[event.state]}`, {
+      createNotification({
+        title: `${target.name} ${actions[event.state]}`,
         body:
           TARGET_PLATFORMS[target.targetPlatform] +
           (state.auth.user?.id === target.owner.id ? '' : ' - ' + target.owner.email),
+        id: target.id,
       })
-      notification.onclick = () => store.dispatch.ui.set({ redirect: `/devices/${target.id}` })
-      notification.onclose = e => e.preventDefault()
     }
   })
+}
+
+/* 
+  You connected
+  To connection name
+*/
+function connectNotification(event: ICloudEvent) {
+  const state = store.getState()
+
+  event.target.forEach(target => {
+    createNotification({
+      title: (state.auth.user?.id === event.actor.id ? 'You ' : target.owner.email + ' ') + actions[event.state],
+      body: `To ${target.name}`,
+      id: target.id,
+    })
+  })
+}
+
+function createNotification({ title, body, id }: { title: string; body: string; id: string }) {
+  const notification = new Notification(title, { body })
+  notification.onclick = () => store.dispatch.ui.set({ redirect: `/devices/${id}` })
+  notification.onclose = e => e.preventDefault()
 }
 
 // if (event.target.length > 1) {

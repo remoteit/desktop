@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Dispatch } from '../../store'
-import { useDispatch } from 'react-redux'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
@@ -25,8 +23,6 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   autoConnect,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const [started, setStarted] = useState<boolean>(false)
-  const { devices } = useDispatch<Dispatch>()
   const hidden = connection?.active || !service || service.state !== 'active'
   const connecting = !!connection?.connecting
 
@@ -46,12 +42,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       setAutoStart(false)
       clickHandler()
     }
-    setStarted(!!connection?.active)
   })
-
-  useEffect(() => {
-    if (started && connection && !connection?.active) devices.fetchSingle({ deviceId: connection.deviceID })
-  }, [started, connection])
 
   let title = 'Connect'
   let disabled = false
