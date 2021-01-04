@@ -66,7 +66,3 @@ function createNotification({ title, body, id }: { title: string; body: string; 
   notification.onclick = () => store.dispatch.ui.set({ redirect: `/devices/${id}` })
   notification.onclose = e => e.preventDefault()
 }
-
-// if (event.target.length > 1) {
-//   title = `${event.target.map(t => t.name).join(', ')} ${actions[event.state]}
-// }

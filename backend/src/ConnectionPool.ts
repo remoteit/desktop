@@ -88,7 +88,6 @@ export default class ConnectionPool {
     let instance = this.find(connection.id)
     if (instance) {
       if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
-        Logger.info('CONNECTION SET', connection)
         instance.set(connection, setCLI)
         this.updated()
       }
