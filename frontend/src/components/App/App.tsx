@@ -112,8 +112,8 @@ export const App: React.FC = () => {
     { label: 'This Device', path: '/configure', icon: 'hdd', show: remoteUI },
     { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
     { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
-    { label: 'Settings', path: '/settings', icon: 'cog', badge: noticeCount, show: true },
     { label: 'Reports', path: '/reports', icon: 'chart-line', show: showReports },
+    { label: 'Settings', path: '/settings', icon: 'cog', badge: noticeCount, show: true },
   ]
 
   return (

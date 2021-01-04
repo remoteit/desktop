@@ -93,7 +93,7 @@ export default createModel<RootModel>()({
     async getAnalytics({ from, size }: analyticsGQLOptions, globalState: ApplicationState) {
       const { startDate, endDate } = globalState.analytics
       const { parse } = dispatch.analytics
-      const options = { ...{ from, size }, start: startDate, end: endDate, timezone: getTimeZone() }
+      const options = { from, size, start: startDate, end: endDate, timezone: getTimeZone() }
 
       try {
         const result = await graphQLRequest(
