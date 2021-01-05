@@ -10,7 +10,7 @@ import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
 import { Columns } from '../Columns'
-import { spacing, colors } from '../../styling'
+import { spacing } from '../../styling'
 import { emit } from '../../services/Controller'
 import { Notice } from '../Notice'
 import { Icon } from '../Icon'
@@ -35,16 +35,13 @@ const NOTICE = {
 
 export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
   const { backend } = useDispatch<Dispatch>()
-  const { applicationTypes, setupBusy, setupAdded, deleting, isValid, loading } = useSelector(
-    (state: ApplicationState) => ({
-      applicationTypes: state.applicationTypes.all,
-      setupBusy: state.ui.setupBusy,
-      setupAdded: state.ui.setupAdded,
-      deleting: state.ui.setupServiceBusy === target?.uid,
-      isValid: state.backend.reachablePort,
-      loading: state.backend.reachablePortLoading,
-    })
-  )
+  const { applicationTypes, setupBusy, setupAdded, deleting, isValid } = useSelector((state: ApplicationState) => ({
+    applicationTypes: state.applicationTypes.all,
+    setupBusy: state.ui.setupBusy,
+    setupAdded: state.ui.setupAdded,
+    deleting: state.ui.setupServiceBusy === target?.uid,
+    isValid: state.backend.reachablePort,
+  }))
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<ITarget & IServiceForm>(() => {
@@ -59,12 +56,15 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
 
-  const IPAndPort = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
+  const ValidIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
+  const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):[0-9]+$/
 
   const checkPort = () => {
-    console.log(IPAndPort.test(`${form.hostname}:${form.port}`))
-    if (IPAndPort.test(`${form.hostname}:${form.port}`)) {
-      backend.set({ loading: true })
+    if (
+      ValidIpAddressRegex.test(`${form.hostname}:${form.port}`) ||
+      ValidHostnameRegex.test(`${form.hostname}:${form.port}`)
+    ) {
+      backend.set({ reachablePortLoading: true })
       emit('reachablePort', { port: form.port, host: form?.hostname })
     } else {
       backend.set({ reachablePort: false })
@@ -72,9 +72,8 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   }
 
   const CheckIcon = () => {
-    let icon = isValid ? 'check-circle' : 'exclamation-triangle'
-    if (loading) icon = 'spinner-third'
-    return <Icon name={icon} type="light" size="md" color={isValid ? 'success' : 'warning'} spin={loading} fixedWidth />
+    const icon = isValid ? 'check-circle' : 'exclamation-triangle'
+    return <Icon name={icon} type="light" size="md" color={isValid ? 'success' : 'warning'} fixedWidth />
   }
 
   useEffect(() => {
