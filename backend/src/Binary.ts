@@ -56,7 +56,7 @@ export default class Binary {
   }
 
   get path() {
-    return environment.isHeadless ? cliBinary.name : path.join(environment.binPath, this.fileName)
+    return environment.isHeadless ? cliBinary.name : path.resolve(environment.binPath, this.fileName)
   }
 
   get fileName() {
