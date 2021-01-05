@@ -42,7 +42,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
       setupAdded: state.ui.setupAdded,
       deleting: state.ui.setupServiceBusy === target?.uid,
       isValid: state.backend.reachablePort,
-      loading: state.backend.loading,
+      loading: state.backend.reachablePortLoading,
     })
   )
   const disabled = setupBusy || deleting

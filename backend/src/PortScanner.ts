@@ -1,7 +1,7 @@
 import net from 'net'
 import debug from 'debug'
 import Logger from './Logger'
-const isPortReachable = require('is-port-reachable')
+import isPortReachable from 'is-port-reachable'
 
 const d = debug('r3:desktop:PortScanner')
 
