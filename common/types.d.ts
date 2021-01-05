@@ -81,7 +81,6 @@ declare global {
     | 'service/version'
     | 'service/unknown-event'
     | 'service/putty/required'
-    | 'service/check-response'
 
     // binary
     | 'binary/install/start'
@@ -90,13 +89,14 @@ declare global {
     | 'binary/installed'
     | 'binary/not-installed'
 
-    // jump
+    // backend
     | 'targets'
     | 'device'
     | 'scan'
     | 'interfaces'
     | 'privateIP'
     | 'preferences'
+    | 'reachablePort'
 
   type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
 

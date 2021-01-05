@@ -1,6 +1,5 @@
 import net from 'net'
 import debug from 'debug'
-import Logger from './Logger'
 import isPortReachable from 'is-port-reachable'
 
 const d = debug('r3:desktop:PortScanner')
@@ -62,9 +61,9 @@ export default class PortScanner {
     let isReachable = false
     try {
       isReachable = await isPortReachable(port, { host })
-      Logger.info('IS PORT REACHABLE?', { isReachable })
+      d('IS PORT REACHABLE?', { isReachable })
     } catch (error) {
-      Logger.info('NOT VALID PORT', { error })
+      d('NOT VALID PORT', { error })
       isReachable = false
     }
     return isReachable

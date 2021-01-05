@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react'
+import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
+import { useHistory, useLocation } from 'react-router-dom'
 import { Dispatch } from '../../store'
-import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
-import { useDispatch, useSelector } from 'react-redux'
-import { DEFAULT_TARGET } from '../../shared/constants'
+import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
+import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
+import { useDispatch, useSelector } from 'react-redux'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
 import { Columns } from '../Columns'
 import { spacing } from '../../styling'
-import { emit } from '../../services/Controller'
 import { Notice } from '../Notice'
+import { emit } from '../../services/Controller'
 import { Icon } from '../Icon'
 
 type IServiceForm = ITarget & {
@@ -28,20 +30,20 @@ type Props = {
   onCancel: () => void
 }
 
-const NOTICE = {
-  warning: 'No service found running on specified port and hot address',
-  success: 'Service found on port and host address!',
-}
-
 export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
   const { backend } = useDispatch<Dispatch>()
-  const { applicationTypes, setupBusy, setupAdded, deleting, isValid } = useSelector((state: ApplicationState) => ({
-    applicationTypes: state.applicationTypes.all,
-    setupBusy: state.ui.setupBusy,
-    setupAdded: state.ui.setupAdded,
-    deleting: state.ui.setupServiceBusy === target?.uid,
-    isValid: state.backend.reachablePort,
-  }))
+  const history = useHistory()
+  const location = useLocation()
+  const { applicationTypes, setupBusy, setupAdded, deleting, isValid, scanEnabled } = useSelector(
+    (state: ApplicationState) => ({
+      applicationTypes: state.applicationTypes.all,
+      setupBusy: state.ui.setupBusy,
+      setupAdded: state.ui.setupAdded,
+      deleting: state.ui.setupServiceBusy === target?.uid,
+      isValid: state.backend.reachablePort,
+      scanEnabled: state.ui.scanEnabled,
+    })
+  )
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<ITarget & IServiceForm>(() => {
@@ -56,25 +58,27 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
 
-  const ValidIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
-  const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):[0-9]+$/
-
   const checkPort = () => {
     if (
-      ValidIpAddressRegex.test(`${form.hostname}:${form.port}`) ||
-      ValidHostnameRegex.test(`${form.hostname}:${form.port}`)
+      REGEX_VALID_IP.test(`${form.hostname}:${form.port}`) ||
+      REGEX_VALID_HOSTNAME.test(`${form.hostname}:${form.port}`)
     ) {
       backend.set({ reachablePortLoading: true })
-      emit('reachablePort', { port: form.port, host: form?.hostname })
+      emit('reachablePort', { port: form.port, host: form.hostname })
     } else {
       backend.set({ reachablePort: false })
     }
   }
 
-  const CheckIcon = () => {
-    const icon = isValid ? 'check-circle' : 'exclamation-triangle'
-    return <Icon name={icon} type="light" size="md" color={isValid ? 'success' : 'warning'} fixedWidth />
-  }
+  const CheckIcon = () => (
+    <Icon
+      name={isValid ? 'check-circle' : 'exclamation-triangle'}
+      type="light"
+      size="md"
+      color={isValid ? 'success' : 'warning'}
+      fixedWidth
+    />
+  )
 
   useEffect(() => {
     checkPort()
@@ -169,7 +173,14 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                   )
                 }
               >
-                {isValid ? NOTICE.success : NOTICE.warning}
+                {isValid ? (
+                  'Service found on port and host address!'
+                ) : (
+                  <>
+                    No service found running on port and host address.
+                    <AddFromNetwork deviceId={target.uid} thisDevice={thisDevice} />
+                  </>
+                )}
               </Notice>
             </ListItem>
           </List>
