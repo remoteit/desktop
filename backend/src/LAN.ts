@@ -87,7 +87,7 @@ class LAN {
     } catch (error) {
       Logger.warn('SCAN error', { error })
       this.data[interfaceName] = { timestamp: Date.now(), data: [] }
-      EventBus.emit(cli.EVENTS.error, 'Scanning failed. Please check you that have a network connection.')
+      EventBus.emit(cli.EVENTS.error, 'Scanning failed. Please check that you have a network connection.')
     }
   }
 
