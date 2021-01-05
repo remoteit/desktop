@@ -263,7 +263,6 @@ declare global {
     protocol: 'TCP' | 'UDP'
     description: string
   }
-
   type ILimit = {
     name: string
     value: any

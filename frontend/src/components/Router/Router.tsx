@@ -25,6 +25,7 @@ import { ServiceEditPage } from '../../pages/ServiceEditPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
 import { getLinks } from '../../helpers/routeHelper'
 import { LogPage } from '../../pages/LogPage'
+import { ReportsPage } from '../../pages/ReportsPage'
 
 export const Router: React.FC = () => {
   const { targetDevice, targets, registered, os, links } = useSelector((state: ApplicationState) => ({
@@ -125,6 +126,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices">
         <DevicesPage />
+      </Route>
+      <Route path="/reports">
+        <ReportsPage />
       </Route>
       <Route path="/">
         <Redirect to={links.home} />

@@ -41,6 +41,7 @@ export const DeviceLogPage = () => {
 
   useEffect(() => {
     fetchLogs({ id: deviceID, from: 0 })
+    console.log('Fetching Logs')
   }, [deviceID])
 
   const dispatch = useDispatch<Dispatch>()
