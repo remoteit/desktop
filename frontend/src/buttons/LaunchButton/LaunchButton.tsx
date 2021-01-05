@@ -32,15 +32,11 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, size = 'md' }) => {
-  const { requireInstallPutty, requireInstallVNC, loading, pathPutty, pathVNC } = useSelector(
-    (state: ApplicationState) => ({
-      requireInstallPutty: state.ui.requireInstallPutty,
-      requireInstallVNC: state.ui.requireInstallVNC,
-      pathPutty: state.ui.pathPutty,
-      pathVNC: state.ui.pathVNC,
-      loading: state.ui.loading,
-    })
-  )
+  const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
+    requireInstall: state.ui.requireInstall,
+    path: state.ui.path,
+    loading: state.ui.loading,
+  }))
   const { ui, backend } = useDispatch<Dispatch>()
   const [launch, setLaunch] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
@@ -54,39 +50,50 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     if (launch) {
       app.prompt ? setOpen(true) : launchBrowser()
     }
-    if (requireInstallPutty) {
-      setDownloadLink('https://link.remote.it/download/putty')
-      setOpenApp(true)
-      ui.set({ requireInstallPutty: false })
+    switch (requireInstall) {
+      case 'putty':
+        setDownloadLink('https://link.remote.it/download/putty')
+        setOpenApp(true)
+        ui.set({ requireInstall: 'none' })
+        break
+      case 'vncviewer':
+        setDownloadLink('https://www.realvnc.com/en/connect/download/viewer/windows/')
+        setOpenApp(true)
+        ui.set({ requireInstall: 'none' })
+        break
     }
-    if (requireInstallVNC) {
-      setDownloadLink('https://www.realvnc.com/es/connect/download/viewer/windows/')
-      setOpenApp(true)
-      ui.set({ requireInstallVNC: false })
-    }
-  }, [requireInstallPutty, requireInstallVNC, launch, app])
+  }, [requireInstall, launch, app])
 
   if (!connection || !connection.active || !app) return null
 
   const launchBrowser = () => {
+    let launchApp = {}
+    let launch = true
     try {
       switch (service?.type) {
         case 'SSH':
           launchPutty(service?.typeID)
-            ? emit('service/launch', { command: app.command, pathPutty })
-            : window.open(app.command)
+            ? (launchApp = {
+                port: app.connection?.port,
+                host: app.connection?.host,
+                path,
+                application: 'putty',
+              })
+            : (launch = false)
           break
         case 'VNC':
           launchVNC()
-            ? emit('service/launch/vnc', {
+            ? (launchApp = {
                 port: app.connection?.port,
                 host: app.connection?.host,
                 username: app.connection?.username,
-                pathVNC,
+                path,
+                application: 'vncviewer',
               })
-            : window.open(app.command)
+            : (launch = false)
           break
       }
+      launch ? emit('launch/app', launchApp) : window.open(app.command)
     } catch (error) {
       backend.set({ globalError: `Could not launch ${app.command}. Invalid URL.` })
     }

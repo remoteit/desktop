@@ -28,8 +28,7 @@ declare global {
     | 'service/restart'
     | 'service/clear'
     | 'service/clear-recent'
-    | 'service/launch'
-    | 'service/launch/vnc'
+    | 'launch/app'
 
     // App/settings
     | 'app/open-on-login'
@@ -81,6 +80,7 @@ declare global {
     | 'service/version'
     | 'service/unknown-event'
     | 'service/putty/required'
+    | 'required/app'
 
     // binary
     | 'binary/install/start'
@@ -338,17 +338,13 @@ declare global {
     targets: ITarget[]
   }
 
-  interface IPuttyValidation {
-    install: boolean
+  interface IAppValidation {
+    install: string
     loading: boolean
-    pathPutty: string
+    path: string
+    application: string
   }
 
-  interface IVNCValidation {
-    install: boolean
-    loading: boolean
-    pathVNC: string
-  }
   interface ILan {
     oobAvailable: boolean
     oobActive: boolean
