@@ -54,7 +54,7 @@ function connectNotification(event: ICloudEvent) {
 
   event.target.forEach(target => {
     createNotification({
-      title: (state.auth.user?.id === event.actor.id ? 'You ' : target.owner.email + ' ') + actions[event.state],
+      title: (state.auth.user?.id === event.actor.id ? 'You ' : event.actor.email + ' ') + actions[event.state],
       body: `To ${target.name}`,
       id: target.id,
     })
