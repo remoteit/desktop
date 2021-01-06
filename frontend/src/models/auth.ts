@@ -1,7 +1,7 @@
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { emit } from '../services/Controller'
-import { AuthUser, CognitoUser } from '@remote.it/types'
+import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { Dispatch } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'

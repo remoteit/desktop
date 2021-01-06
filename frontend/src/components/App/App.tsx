@@ -19,6 +19,7 @@ import styles from '../../styling'
 
 export const App: React.FC = () => {
   const {
+    showReports,
     authInitialized,
     backendAuthenticated,
     initialized,
@@ -28,6 +29,7 @@ export const App: React.FC = () => {
     remoteUI,
     noticeCount,
   } = useSelector((state: ApplicationState) => ({
+    showReports: state.auth.user?.email.includes('@remote.it'),
     authInitialized: state.auth.initialized,
     backendAuthenticated: state.auth.backendAuthenticated,
     initialized: state.devices.initialized,
@@ -110,6 +112,7 @@ export const App: React.FC = () => {
     { label: 'This Device', path: '/configure', icon: 'hdd', show: remoteUI },
     { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
     { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
+    { label: 'Reports', path: '/reports', icon: 'chart-line', show: showReports },
     { label: 'Settings', path: '/settings', icon: 'cog', badge: noticeCount, show: true },
   ]
 
