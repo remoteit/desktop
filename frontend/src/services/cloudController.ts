@@ -113,11 +113,10 @@ class CloudController {
               id
               email
             }
+            ... on DeviceConnectEvent {
+              platform
+            }
             ... on DeviceShareEvent {
-              users {
-                id
-                email
-              }  
               scripting
             }
           }
@@ -153,6 +152,8 @@ class CloudController {
         timestamp: new Date(event.timestamp),
         actor: event.actor,
         users: event.users,
+        authUserId: state.auth.user?.id || '',
+        platform: event.platform,
         target: event.target.map(t => {
           const [service, device] = selectService(state, t.id)
           return {
@@ -199,12 +200,31 @@ class CloudController {
 
       case 'DEVICE_CONNECT':
         // connected | disconnected
+        const isYou = event.authUserId === event.actor.id
         event.target.forEach(target => {
-          if (target.connection) {
+          // You have changed connection state
+          if (isYou && target.connection) {
             target.connection.active = event.state === 'connected'
             target.connection.connecting = false
             setConnection(target.connection)
           }
+
+          // connection state for other users
+          else {
+            target.device?.services.find(service => {
+              if (service.id === target.service?.id) {
+                const i = service.sessions.findIndex(s => s.id === event.actor.id)
+                if (i) service.sessions.splice(i, 1)
+                service.sessions.push({
+                  id: event.actor.id,
+                  timestamp: event.timestamp,
+                  email: event.actor.email,
+                  platform: event.platform,
+                })
+              }
+            })
+          }
+
           console.log('CONNECTION STATE', target.connection?.name, target.connection?.active)
         })
         break

@@ -29,8 +29,6 @@ export function notify(event: ICloudEvent) {
   Windows - otheruser@email.com
 */
 function stateNotification(event: ICloudEvent) {
-  const state = store.getState()
-
   event.target.forEach(target => {
     // notify if device changes state only
     if (target.typeID === DEVICE_TYPE) {
@@ -38,7 +36,7 @@ function stateNotification(event: ICloudEvent) {
         title: `${target.name} ${actions[event.state]}`,
         body:
           TARGET_PLATFORMS[target.targetPlatform] +
-          (state.auth.user?.id === target.owner.id ? '' : ' - ' + target.owner.email),
+          (event.authUserId === target.owner.id ? '' : ' - ' + target.owner.email),
         id: target.id,
       })
     }
@@ -50,11 +48,9 @@ function stateNotification(event: ICloudEvent) {
   To connection name
 */
 function connectNotification(event: ICloudEvent) {
-  const state = store.getState()
-
   event.target.forEach(target => {
     createNotification({
-      title: (state.auth.user?.id === event.actor.id ? 'You ' : event.actor.email + ' ') + actions[event.state],
+      title: (event.authUserId === event.actor.id ? 'You ' : event.actor.email + ' ') + actions[event.state],
       body: `To ${target.name}`,
       id: target.id,
     })

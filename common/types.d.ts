@@ -299,6 +299,8 @@ declare global {
     timestamp: Date
     actor: IUserRef
     users: IUserRef[]
+    platform: IUser['platform']
+    authUserId: string
     target: {
       id: string
       name: string
