@@ -214,15 +214,21 @@ class CloudController {
             target.device?.services.find(service => {
               if (service.id === target.service?.id) {
                 const i = service.sessions.findIndex(s => s.id === event.actor.id)
-                if (i) service.sessions.splice(i, 1)
-                service.sessions.push({
-                  id: event.actor.id,
-                  timestamp: event.timestamp,
-                  email: event.actor.email,
-                  platform: event.platform,
-                })
+                if (i > -1) service.sessions.splice(i, 1)
+                console.log(service.sessions)
+                if (event.state === 'connected') {
+                  service.sessions.push({
+                    id: event.actor.id,
+                    timestamp: event.timestamp,
+                    email: event.actor.email,
+                    platform: event.platform,
+                  })
+                }
               }
             })
+            if (target.device?.id) {
+              accounts.setDevice({ id: target.device.id, device: target.device })
+            }
           }
 
           console.log('CONNECTION STATE', target.connection?.name, target.connection?.active)
