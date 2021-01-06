@@ -16,3 +16,5 @@ declare global {
     details: string[]
   }
 }
+
+declare module 'is-port-reachable';

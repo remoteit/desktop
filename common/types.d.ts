@@ -48,6 +48,7 @@ declare global {
     | 'uninstall'
     | 'preferences'
     | 'osInfo'
+    | 'reachablePort'
 
   type SocketEvent =
     // built-in events
@@ -88,13 +89,14 @@ declare global {
     | 'binary/installed'
     | 'binary/not-installed'
 
-    // jump
+    // backend
     | 'targets'
     | 'device'
     | 'scan'
     | 'interfaces'
     | 'privateIP'
     | 'preferences'
+    | 'reachablePort'
 
   type BinaryName = 'remoteit' | 'connectd' | 'muxer' | 'demuxer'
 
@@ -431,6 +433,13 @@ declare global {
       serviceId: string
       action: 'ADD' | 'REMOVE' | string
     }[]
+  }
+
+  type IReachablePort = {
+    port: number
+    host?: string
+    isValid?: boolean
+    loading?: boolean
   }
 }
 

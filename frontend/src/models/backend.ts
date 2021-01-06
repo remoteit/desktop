@@ -32,6 +32,8 @@ type IBackendState = ILookup<any> & {
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
+  reachablePort: boolean
+  reachablePortLoading: boolean
 }
 
 const state: IBackendState = {
@@ -58,6 +60,8 @@ const state: IBackendState = {
   },
   preferences: {},
   deferredAttributes: undefined,
+  reachablePort: true,
+  reachablePortLoading: false,
 }
 
 export default createModel<RootModel>()({

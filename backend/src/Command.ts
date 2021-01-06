@@ -87,7 +87,11 @@ export default class Command {
         params: { type: 'COMMAND ERROR', exec: this.toString() },
         error,
       })
-      this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorMessage: error.message }, 'error')
+      this.log(
+        `EXEC CAUGHT *** ERROR ***`,
+        { error, errorMessage: error.message, errorCode: error.code, errorStack: error.stack },
+        'error'
+      )
       result = this.parseCliErrors(error.message)
       this.onError(new Error(result))
     }

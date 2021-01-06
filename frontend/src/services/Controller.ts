@@ -187,6 +187,9 @@ function getEventHandlers() {
         pathPutty: result.pathPutty,
       })
     },
+    reachablePort: (result: boolean) => {
+      backend.set({ reachablePort: result, loading: false })
+    },
   } as EventHandlers
 }
 

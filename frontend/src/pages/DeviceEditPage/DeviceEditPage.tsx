@@ -24,7 +24,7 @@ import { AddServiceButton } from '../../buttons/AddServiceButton'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { ServiceMiniState } from '../../components/ServiceMiniState'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
-import { AddFromNetworkButton } from '../../buttons/AddFromNetworkButton'
+import { AddFromNetwork } from '../../components/AddFromNetwork'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { AdminPanelConnect } from '../../components/AdminPanelConnect'
 import { LicensingNotice } from '../../components/LicensingNotice'
@@ -113,7 +113,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         <>
           <Typography variant="subtitle1">
             <Title>Services</Title>
-            <AddFromNetworkButton device={device} thisDevice={thisDevice} link={links.scan} />
+            <AddFromNetwork deviceId={device?.id} thisDevice={thisDevice} button />
             <AddServiceButton device={device} thisDevice={thisDevice} link={links.add} />
           </Typography>
           <List>

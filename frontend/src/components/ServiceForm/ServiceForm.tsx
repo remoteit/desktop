@@ -1,15 +1,21 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
-import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
-import { useSelector } from 'react-redux'
-import { DEFAULT_TARGET } from '../../shared/constants'
+import { useHistory, useLocation } from 'react-router-dom'
+import { Dispatch } from '../../store'
+import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
+import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
+import { useDispatch, useSelector } from 'react-redux'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
 import { Columns } from '../Columns'
 import { spacing } from '../../styling'
+import { Notice } from '../Notice'
+import { emit } from '../../services/Controller'
+import { Icon } from '../Icon'
 
 type IServiceForm = ITarget & {
   name: string
@@ -25,12 +31,19 @@ type Props = {
 }
 
 export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
-  const { applicationTypes, setupBusy, setupAdded, deleting } = useSelector((state: ApplicationState) => ({
-    applicationTypes: state.applicationTypes.all,
-    setupBusy: state.ui.setupBusy,
-    setupAdded: state.ui.setupAdded,
-    deleting: state.ui.setupServiceBusy === target?.uid,
-  }))
+  const { backend } = useDispatch<Dispatch>()
+  const history = useHistory()
+  const location = useLocation()
+  const { applicationTypes, setupBusy, setupAdded, deleting, isValid, scanEnabled } = useSelector(
+    (state: ApplicationState) => ({
+      applicationTypes: state.applicationTypes.all,
+      setupBusy: state.ui.setupBusy,
+      setupAdded: state.ui.setupAdded,
+      deleting: state.ui.setupServiceBusy === target?.uid,
+      isValid: state.backend.reachablePort,
+      scanEnabled: state.ui.scanEnabled,
+    })
+  )
   const disabled = setupBusy || deleting
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<ITarget & IServiceForm>(() => {
@@ -44,6 +57,32 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
   })
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
+
+  const checkPort = () => {
+    if (
+      REGEX_VALID_IP.test(`${form.hostname}:${form.port}`) ||
+      REGEX_VALID_HOSTNAME.test(`${form.hostname}:${form.port}`)
+    ) {
+      backend.set({ reachablePortLoading: true })
+      emit('reachablePort', { port: form.port, host: form.hostname })
+    } else {
+      backend.set({ reachablePort: false })
+    }
+  }
+
+  const CheckIcon = () => (
+    <Icon
+      name={isValid ? 'check-circle' : 'exclamation-triangle'}
+      type="light"
+      size="md"
+      color={isValid ? 'success' : 'warning'}
+      fixedWidth
+    />
+  )
+
+  useEffect(() => {
+    checkPort()
+  }, [form?.port, form?.hostname])
 
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
@@ -97,6 +136,9 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 disabled={disabled}
                 variant="filled"
                 onChange={event => setForm({ ...form, port: +event.target.value })}
+                InputProps={{
+                  endAdornment: <CheckIcon />,
+                }}
               />
             </ListItem>
             <ListItem className={css.fieldWide}>
@@ -107,6 +149,9 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 disabled={disabled}
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
+                InputProps={{
+                  endAdornment: <CheckIcon />,
+                }}
               />
               <Typography variant="caption">
                 Local network IP address or fully qualified domain name to host this service. Leave blank for this
@@ -115,6 +160,28 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 <i>AWS example:</i>
                 <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
               </Typography>
+            </ListItem>
+            <ListItem className={css.fieldWide}>
+              <Notice
+                fullWidth
+                severity={isValid ? 'success' : 'warning'}
+                button={
+                  isValid ? undefined : (
+                    <Button size="small" color="primary" onClick={checkPort}>
+                      Retry
+                    </Button>
+                  )
+                }
+              >
+                {isValid ? (
+                  'Service found on port and host address!'
+                ) : (
+                  <>
+                    No service found running on port and host address.
+                    <AddFromNetwork deviceId={target.uid} thisDevice={thisDevice} />
+                  </>
+                )}
+              </Notice>
             </ListItem>
           </List>
           <Divider />

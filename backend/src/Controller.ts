@@ -72,6 +72,7 @@ class Controller {
     socket.on('scan', this.scan)
     socket.on(lan.EVENTS.interfaces, this.interfaces)
     socket.on('freePort', this.freePort)
+    socket.on('reachablePort', this.isReachablePort)
     socket.on('preferences', preferences.set)
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
@@ -130,6 +131,11 @@ class Controller {
   freePort = async () => {
     await this.pool.nextFreePort()
     this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
+  }
+
+  isReachablePort = async (data: IReachablePort) => {
+    const result = await this.pool.reachablePort(data)
+    this.io.emit(ConnectionPool.EVENTS.reachablePort, result)
   }
 
   initBackend = async () => {
