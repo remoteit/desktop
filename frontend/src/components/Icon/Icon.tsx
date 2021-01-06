@@ -4,8 +4,10 @@ import { fal, IconName, IconPrefix } from '@fortawesome/pro-light-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
+import { far } from '@fortawesome/pro-regular-svg-icons'
+import { fas } from '@fortawesome/pro-solid-svg-icons'
 
-library.add(fal, fab)
+library.add(fal, fab, far, fas)
 export interface IconProps {
   className?: string
   color?: Color
@@ -45,6 +47,14 @@ export function Icon({
   switch (type) {
     case 'brands': {
       fontType = 'fab'
+      break
+    }
+    case 'regular': {
+      fontType = 'far'
+      break
+    }
+    case 'solid': {
+      fontType = 'fas'
       break
     }
   }
