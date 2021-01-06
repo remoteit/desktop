@@ -215,7 +215,6 @@ class CloudController {
               if (service.id === target.service?.id) {
                 const i = service.sessions.findIndex(s => s.id === event.actor.id)
                 if (i > -1) service.sessions.splice(i, 1)
-                console.log(service.sessions)
                 if (event.state === 'connected') {
                   service.sessions.push({
                     id: event.actor.id,
