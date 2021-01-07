@@ -56,7 +56,7 @@ export default class Binary {
   }
 
   get path() {
-    return environment.isHeadless ? cliBinary.name : path.join(environment.binPath, this.fileName)
+    return environment.isHeadless ? cliBinary.name : path.resolve(environment.binPath, this.fileName)
   }
 
   get fileName() {
@@ -64,7 +64,7 @@ export default class Binary {
   }
 
   get symlink() {
-    return path.join(environment.symlinkPath, this.fileName)
+    return path.resolve(environment.symlinkPath, this.fileName)
   }
 
   toJSON(): InstallationInfo {
