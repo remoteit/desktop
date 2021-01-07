@@ -24,7 +24,7 @@ export interface IconProps {
 
 export type Ref = HTMLSpanElement
 
-export function Icon({
+export const Icon = React.forwardRef(({
   className,
   color,
   fixedWidth = false,
@@ -35,7 +35,7 @@ export function Icon({
   inline,
   inlineLeft,
   ...props
-}: IconProps): JSX.Element {
+}: IconProps): JSX.Element => {
   const styles: any = {}
   if (color) styles.color = colors[color]
   if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md
@@ -60,4 +60,4 @@ export function Icon({
   }
 
   return <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} spin={spin} />
-}
+})
