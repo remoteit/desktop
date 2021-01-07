@@ -251,7 +251,6 @@ export function findService(devices: IDevice[], id: string) {
           service = s
           return true
         }
-        return false
       })
   )
   return [service, device] as [IService | undefined, IDevice | undefined]
