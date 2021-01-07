@@ -58,7 +58,7 @@ class Controller {
     socket.on('user/sign-out-complete', this.signOutComplete)
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.pool.start)
-    socket.on('service/launch', openCMDforWindows)
+    socket.on('launch/app', openCMDforWindows)
     socket.on('service/disconnect', this.pool.stop)
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)

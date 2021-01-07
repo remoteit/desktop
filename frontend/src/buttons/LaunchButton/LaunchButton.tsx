@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
 import { useApplication } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
-import { launchPutty } from '../../services/Browser'
+import { launchPutty, launchVNC } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
@@ -22,6 +22,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
+import { DialogApp } from '../../components/DialogApp'
 
 type Props = {
   connection?: IConnection
@@ -31,15 +32,17 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, size = 'md' }) => {
-  const { requireInstallPutty, loading, pathPutty } = useSelector((state: ApplicationState) => ({
-    requireInstallPutty: state.ui.requireInstallPutty,
-    pathPutty: state.ui.pathPutty,
+  const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
+    requireInstall: state.ui.requireInstall,
+    path: state.ui.path,
     loading: state.ui.loading,
   }))
   const { ui } = useDispatch<Dispatch>()
   const [launch, setLaunch] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(false)
-  const [openPutty, setOpenPutty] = useState<boolean>(false)
+  const [openApp, setOpenApp] = useState<boolean>(false)
+  const [downloadLink, setDownloadLink] = useState<string>('')
+
   const app = useApplication('launch', service, connection)
   const css = useStyles()
 
@@ -47,19 +50,50 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     if (launch) {
       app.prompt ? setOpen(true) : launchBrowser()
     }
-    if (requireInstallPutty) {
-      setOpenPutty(true)
-      ui.set({ requireInstallPutty: false })
+    switch (requireInstall) {
+      case 'putty':
+        setDownloadLink('https://link.remote.it/download/putty')
+        setOpenApp(true)
+        ui.set({ requireInstall: 'none' })
+        break
+      case 'vncviewer':
+        setDownloadLink('https://www.realvnc.com/en/connect/download/viewer/windows/')
+        setOpenApp(true)
+        ui.set({ requireInstall: 'none' })
+        break
     }
-  }, [requireInstallPutty, launch, app])
+  }, [requireInstall, launch, app])
 
   if (!connection || !connection.active || !app) return null
 
   const launchBrowser = () => {
+    let launchApp = {}
+    let launch = true
     try {
-      launchPutty(service?.typeID)
-        ? emit('service/launch', { command: app.command, pathPutty })
-        : window.open(app.command)
+      switch (service?.type) {
+        case 'SSH':
+          launchPutty(service?.typeID)
+            ? (launchApp = {
+                port: app.connection?.port,
+                host: app.connection?.host,
+                path,
+                application: 'putty',
+              })
+            : (launch = false)
+          break
+        case 'VNC':
+          launchVNC()
+            ? (launchApp = {
+                port: app.connection?.port,
+                host: app.connection?.host,
+                username: app.connection?.username,
+                path,
+                application: 'vncviewer',
+              })
+            : (launch = false)
+          break
+      }
+      launch ? emit('launch/app', launchApp) : window.open(app.command)
     } catch (error) {
       ui.set({ errorMessage: `Could not launch ${app.command}. Invalid URL.` })
     }
@@ -70,15 +104,10 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     setConnection({ ...connection, ...tokens })
   }
 
-  const getPutty = () => {
-    window.open('https://link.remote.it/download/putty')
-    closeAll()
-  }
-
   const closeAll = () => {
     setLaunch(false)
     setOpen(false)
-    setOpenPutty(false)
+    setOpenApp(false)
   }
 
   const LaunchIcon = (
@@ -107,17 +136,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
 
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
 
-      <Dialog open={openPutty} onClose={closeAll} maxWidth="xs" fullWidth>
-        <Typography variant="h1">Please install Putty to launch SSH connections.</Typography>
-        <DialogActions>
-          <Button onClick={closeAll} color="primary" size="small" type="button">
-            Cancel
-          </Button>
-          <Button onClick={getPutty} variant="contained" color="primary" size="small" type="button">
-            Download Putty
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />
     </>
   )
 }

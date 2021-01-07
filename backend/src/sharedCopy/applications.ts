@@ -122,7 +122,7 @@ function getApplication(typeID?: number) {
       app = new Application({
         title: 'VNC',
         icon: 'desktop',
-        defaultLaunchTemplate: 'vnc://[host]:[port]',
+        defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
       })
       break
     case 28:

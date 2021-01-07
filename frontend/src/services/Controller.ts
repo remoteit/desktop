@@ -178,13 +178,11 @@ function getEventHandlers() {
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: BinaryName) => binaries.notInstalled(binary),
-
-    'service/putty/required': (result: IPuttyValidation) => {
-      console.log({ result })
+    'required/app': (result: IAppValidation) => {
       ui.set({
-        requireInstallPutty: result.install,
+        requireInstall: result.install,
         loading: result.loading,
-        pathPutty: result.pathPutty,
+        path: result.path,
       })
     },
     reachablePort: (result: boolean) => {
