@@ -131,6 +131,7 @@ declare global {
     failover?: boolean // allow proxy failover
     proxyOnly?: boolean // disabled p2p
     connecting?: boolean
+    session?: string //the connection session id
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template
     commandTemplate?: string // command line launch template
@@ -183,7 +184,7 @@ declare global {
     id: string
     name: string
     owner: IUser
-    state: DeviceState
+    state: 'active' | 'inactive'
     hardwareID?: string
     lastReported: Date
     externalAddress: ipAddress
@@ -222,7 +223,7 @@ declare global {
     id: string
     name: string
     lastReported: Date
-    state: ServiceState
+    state: IDevice['state']
     type: string
     deviceID: string
     connection?: IConnection
@@ -293,6 +294,26 @@ declare global {
     }
   }
 
+  interface ICloudEvent {
+    type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
+    state: IDevice['state'] | 'connected' | 'disconnected'
+    timestamp: Date
+    actor: IUserRef
+    users: IUserRef[]
+    platform: IUser['platform']
+    authUserId: string
+    target: {
+      id: string
+      name: string
+      owner: IUserRef
+      typeID: IService['typeID']
+      targetPlatform: IDevice['targetPlatform']
+      device?: IDevice
+      service?: IService
+      connection?: IConnection
+    }[]
+  }
+
   interface IRoute {
     key: IRouteType
     icon: string
@@ -312,7 +333,7 @@ declare global {
     timestamp: Date
     type: string
     actor?: IUser
-    services?: IService[]
+    target?: (IService | IDevice)[]
     users?: IUser[]
     action: string
   }

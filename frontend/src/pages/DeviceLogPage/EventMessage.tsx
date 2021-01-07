@@ -11,23 +11,22 @@ export const EventState = {
 }
 
 export function EventMessage({
-  props,
+  item,
   device,
   loggedInUser,
 }: {
-  props: IEvent
+  item: IEvent
   device: IDevice
   loggedInUser: IUser | undefined
 }): JSX.Element {
-  const item = props
-  const serviceName = (item.services?.map(service => service.name) || []).join(' + ')
+  const serviceName = (item.target?.map(service => service.name) || []).join(' + ')
   let message: JSX.Element | string = ''
 
   switch (item.type) {
     case EventType.device_state:
       message = (
         <>
-          <b> {item.services && serviceName !== device?.name ? serviceName : device?.name} </b>
+          <b> {item.target && serviceName !== device?.name ? serviceName : device?.name} </b>
           {item.state === EventState.active ? 'went online' : 'went offline'}
         </>
       )

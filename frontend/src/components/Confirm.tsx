@@ -1,4 +1,4 @@
-import { Slide, Button, Dialog, DialogTitle, DialogActions, DialogContent, Typography } from '@material-ui/core'
+import { Slide, Button, Dialog, DialogTitle, DialogActions, DialogContent } from '@material-ui/core'
 import { TransitionProps } from '@material-ui/core/transitions'
 import React from 'react'
 

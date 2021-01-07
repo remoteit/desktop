@@ -17,6 +17,12 @@ export const DEFAULT_CONNECTION = {
   autoStart: true,
 }
 
+export function connectionName(service?: IService, device?: IDevice) {
+  if (!device) return attributeName(service)
+  if (!service) return attributeName(device)
+  return `${attributeName(device)} - ${attributeName(service)}`
+}
+
 export function newConnection(service?: IService | null, port?: number) {
   const state = store.getState()
   const accountId = getAccountId(state)
@@ -38,7 +44,7 @@ export function newConnection(service?: IService | null, port?: number) {
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
-    if (device) connection.name = `${attributeName(device)} - ${attributeName(service)}`
+    if (device) connection.name = connectionName(service, device)
   }
 
   return connection

@@ -16,21 +16,21 @@ export interface Props {
 }
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
-  const { backend, ui } = useDispatch<Dispatch>()
-  const { connected, successMessage, globalError, backendAuthenticated, os } = useSelector(
+  const { ui } = useDispatch<Dispatch>()
+  const { connected, successMessage, noticeMessage, errorMessage, backendAuthenticated, os } = useSelector(
     (state: ApplicationState) => ({
       connected: state.ui.connected,
       successMessage: state.ui.successMessage,
-      globalError: state.backend.globalError,
+      noticeMessage: state.ui.noticeMessage,
+      errorMessage: state.ui.errorMessage,
       backendAuthenticated: state.auth.backendAuthenticated,
       os: state.backend.environment.os,
     })
   )
-
   const largeScreen = useMediaQuery('(min-width:600px)')
   const css = useStyles()
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
-  const clearGlobalError = () => backend.set({ globalError: undefined })
+  const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
 
   let remoteCss = ''
@@ -57,23 +57,30 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           }
         />
         <Snackbar
-          key={globalError}
-          open={!!globalError}
+          key={errorMessage || 'error'}
+          open={!!errorMessage}
           message={
             <>
               <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
-              {globalError}
+              {errorMessage}
             </>
           }
           action={
-            <IconButton onClick={clearGlobalError}>
+            <IconButton onClick={clearErrorMessage}>
               <Icon name="times" size="md" color="white" fixedWidth />
             </IconButton>
           }
-          onClose={clearGlobalError}
+          onClose={clearErrorMessage}
         />
         <Snackbar
-          key={successMessage}
+          key={noticeMessage || 'notice'}
+          open={!!noticeMessage}
+          message={noticeMessage}
+          onClose={() => ui.set({ noticeMessage: '' })}
+          autoHideDuration={20000}
+        />
+        <Snackbar
+          key={successMessage || 'success'}
           open={!!successMessage}
           message={
             <>

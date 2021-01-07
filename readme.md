@@ -97,6 +97,7 @@ Windows  C:/Program Files/remoteit/resources
 Mac      ~/.remoteit/
 Linux    ~/.remoteit/
 Windows  C:\Users\%username%\AppData\Local\remoteit\
+         C:\Users\%username%\AppData\Temp\remoteit.log
 ```
 
 **CLI config files**
@@ -146,6 +147,22 @@ To use the fontawesome fonts:
 npm config set "@fortawesome:registry" https://npm.fontawesome.com/
 npm config set "//npm.fontawesome.com/:_authToken" [FONT_AWESOME_TOKEN]
 ```
+
+### Building
+On windows:
+Will need to Install:
+  - NodeJS 11.6 or higher
+  - Git Bash
+  - VS Code (recommended)
+
+To build the whole app for production: `npm run build`
+- But this requires the physical signing key.
+To build without signing you must remove the signing credentials from `package.json`
+  - Remove these two attributes under Build > Win: `certificateSubjectName` and  `certificateSha1`
+  - Then run `npm run build`
+To build only for the `installer.nsh` you can run `npm run copy-install && npm run build-electron`
+The final build will be produced in the `dist` directory
+
 
 ### Packaging
 

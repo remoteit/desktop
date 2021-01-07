@@ -17,7 +17,6 @@ type IBackendState = ILookup<any> & {
   error: boolean
   freePort?: number
   update?: string
-  globalError?: string
   dataReady: boolean
   environment: {
     os?: Ios
@@ -45,7 +44,6 @@ const state: IBackendState = {
   error: false,
   freePort: undefined,
   update: undefined,
-  globalError: undefined,
   dataReady: false,
   environment: {
     os: undefined,
@@ -175,7 +173,6 @@ export default createModel<RootModel>()({
       connections.forEach(connection => {
         // data missing from cli if our connections file is lost
         if (!connection.owner) {
-          console.log('CONNECTION DATA MISSING', connection.id)
           const [service] = selectService(globalState, connection.id)
           if (service) {
             connection = { ...newConnection(service), ...connection }

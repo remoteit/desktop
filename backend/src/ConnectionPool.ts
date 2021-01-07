@@ -87,9 +87,15 @@ export default class ConnectionPool {
   set = (connection: IConnection, setCLI?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
-    if (instance) instance.set(connection, setCLI)
-    else instance = this.add(connection)
-    this.updated()
+    if (instance) {
+      if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
+        instance.set(connection, setCLI)
+        this.updated()
+      }
+    } else {
+      instance = this.add(connection)
+      this.updated()
+    }
     return instance
   }
 

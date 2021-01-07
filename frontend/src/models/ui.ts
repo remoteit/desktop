@@ -10,6 +10,7 @@ type UIState = UIParams & {
   routingLock?: IRouteType
   routingMessage?: string
   filterMenu: boolean
+  redirect?: string
   restore: boolean
   restoring: boolean
   scanEnabled: boolean
@@ -26,6 +27,8 @@ type UIState = UIParams & {
   setupServicesNew: boolean
   setupServicesLimit: number
   successMessage: string
+  noticeMessage: string
+  errorMessage: string
 }
 
 const state: UIState = {
@@ -34,6 +37,7 @@ const state: UIState = {
   routingLock: undefined,
   routingMessage: undefined,
   filterMenu: false,
+  redirect: undefined,
   restore: false,
   restoring: false,
   scanEnabled: true,
@@ -50,6 +54,8 @@ const state: UIState = {
   setupServicesNew: true,
   setupServicesLimit: 10,
   successMessage: '',
+  noticeMessage: '',
+  errorMessage: '',
 }
 
 export default createModel<RootModel>()({

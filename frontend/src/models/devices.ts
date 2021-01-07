@@ -7,7 +7,6 @@ import { graphQLSetAttributes } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
-import { emit } from '../services/Controller'
 import { RootModel } from './rootModel'
 
 type DeviceParams = { [key: string]: any }
@@ -178,7 +177,7 @@ export default createModel<RootModel>()({
         await r3.post(`/device/name/`, { deviceaddress: id, devicealias: name })
         await dispatch.devices.fetch()
       } catch (error) {
-        dispatch.backend.set({ globalError: error.message })
+        dispatch.ui.set({ errorMessage: error.message })
         console.warn(error)
       }
     },
@@ -211,7 +210,7 @@ export default createModel<RootModel>()({
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
         await dispatch.devices.fetch()
       } catch (error) {
-        dispatch.backend.set({ globalError: error.message })
+        dispatch.ui.set({ errorMessage: error.message })
         console.warn(error)
       }
       dispatch.devices.set({ destroying: false })
@@ -243,15 +242,16 @@ export function selectService(state: ApplicationState, serviceId: string) {
 }
 
 export function findService(devices: IDevice[], id: string) {
-  return devices.reduce(
-    (all, d) => {
-      const service = d?.services?.find(s => s.id === id)
-      if (service) {
-        all[0] = service
-        all[1] = d
-      }
-      return all
-    },
-    [undefined, undefined] as [IService | undefined, IDevice | undefined]
+  let service: IService | undefined
+  const device = devices.find(
+    d =>
+      d.id === id ||
+      d?.services?.find(s => {
+        if (s.id === id) {
+          service = s
+          return true
+        }
+      })
   )
+  return [service, device] as [IService | undefined, IDevice | undefined]
 }

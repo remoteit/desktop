@@ -10,7 +10,6 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
   service?: IService
   device?: IDevice
-  state?: ConnectionState
   mini?: boolean
   thisDevice?: boolean
 }
@@ -19,7 +18,6 @@ export function ConnectionStateIcon({
   connection,
   service,
   device,
-  state,
   mini,
   thisDevice,
   ...props
@@ -32,8 +30,7 @@ export function ConnectionStateIcon({
   let colorName: Color = 'warning'
   let showQuality = device?.quality === 'POOR' || device?.quality === 'MODERATE'
   let element: any
-
-  state = state || instance?.state
+  let state = instance?.state || ''
 
   if (connection) {
     if (connection.active) state = 'connected'

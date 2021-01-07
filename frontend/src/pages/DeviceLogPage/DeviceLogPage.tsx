@@ -28,14 +28,14 @@ const TIME = 1000 * 60 * 60 * 24
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { device, fetchingMore, fetching, user, logsToShow } = useSelector((state: ApplicationState) => {
+  const { device, fetchingMore, fetching, user, items } = useSelector((state: ApplicationState) => {
     const device = getOwnDevices(state).find(d => d.id === deviceID)
     return {
       device,
       fetchingMore: state.logs.fetchingMore,
       fetching: state.logs.fetching,
       user: state.auth.user,
-      logsToShow: device?.events.items,
+      items: device?.events.items,
     }
   })
 
@@ -105,8 +105,7 @@ export const DeviceLogPage = () => {
       }
     >
       <List className={css.item}>
-        {!fetching &&
-          logsToShow?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
+        {!fetching && items?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
       </List>
 
       <Box className={css.box}>
@@ -146,7 +145,7 @@ export function EventCell({ item, device, user }: { item: IEvent; device: IDevic
       <ListItemIcon>
         <EventIcon {...item} />
       </ListItemIcon>
-      <EventMessage props={item} device={device} loggedInUser={user} />
+      <EventMessage item={item} device={device} loggedInUser={user} />
     </ListItem>
   )
 }

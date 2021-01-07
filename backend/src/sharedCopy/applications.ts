@@ -7,6 +7,8 @@
 
 import { replaceHost } from './nameHelper'
 
+export const DEVICE_TYPE = 35
+
 export class Application {
   title: string = 'URL'
   icon: string = 'arrow-right'

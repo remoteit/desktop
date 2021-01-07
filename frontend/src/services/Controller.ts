@@ -153,8 +153,8 @@ function getEventHandlers() {
 
     // AutoUpdate
     'cli/error': error => {
-      backend.set({ globalError: '' }) // So we re-trigger a new error if one exists
-      backend.set({ globalError: error })
+      ui.set({ errorMessage: '' }) // So we re-trigger a new error if one exists
+      ui.set({ errorMessage: error })
       ui.reset()
     },
 

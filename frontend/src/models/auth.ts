@@ -1,11 +1,12 @@
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
+import cloudController from '../services/cloudController'
 import { emit } from '../services/Controller'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { Dispatch } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
-import { CLIENT_ID, DEVELOPER_KEY, CALLBACK_URL } from '../shared/constants'
+import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { getRedirectUrl, isElectron } from '../services/Browser'
 import { createModel } from '@rematch/core'
 import { store } from '../store'
@@ -78,13 +79,13 @@ export default createModel<RootModel>()({
       }
     },
     async checkSession(_: void, rootState: any) {
-      const { backend } = store.dispatch
+      const { ui } = store.dispatch
       const result = await rootState.auth.authService.checkSignIn()
       if (result.authUser) {
         await dispatch.auth.handleSignInSuccess(result.cognitoUser)
       } else {
         if (result.error.code === 'NetworkError') {
-          backend.set({ globalError: result.error.message })
+          ui.set({ errorMessage: result.error.message })
         } else {
           dispatch.auth.signInError('Session Expired')
         }
@@ -100,9 +101,10 @@ export default createModel<RootModel>()({
         dispatch.auth.fetchUser()
       }
     },
-    async authenticated(_: void, rootState: any) {
+    async authenticated(_: void, rootState) {
       if (rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
+        await cloudController.init()
         await dispatch.licensing.fetch()
         await dispatch.accounts.init()
         await dispatch.devices.fetch()
@@ -144,6 +146,7 @@ export default createModel<RootModel>()({
       emit('user/sign-out-complete')
       dispatch.auth.setAuthenticated(false)
       analyticsHelper.clearIdentity()
+      cloudController.close()
       Controller.close()
     },
   }),

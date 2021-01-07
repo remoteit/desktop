@@ -47,7 +47,7 @@
 
     FileWrite $installLog "$\nInstall ${PKGVERSION} (${__DATE__} ${__TIME__}): $\r$\n"
     FileWrite $installLog "-----------------------------$\r$\n"
-
+    
     ${If} ${RunningX64}
         FileWrite $installLog "- Platform X64$\r$\n"
         StrCpy $path_ '$INSTDIR\resources\x64'
