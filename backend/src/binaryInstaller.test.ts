@@ -5,6 +5,7 @@ import rimraf from 'rimraf'
 import Binary from './Binary'
 import preferences from './preferences'
 import EventBus from './EventBus'
+import path from 'path'
 import cli from './cliInterface'
 import fs from 'fs'
 
@@ -64,7 +65,8 @@ describe('backend/binaryInstaller', () => {
     let lstatSpy: jest.SpyInstance
 
     beforeAll(() => {
-      environment.symlinkPath = '../jest/symlink/'
+      environment.symlinkPath = path.resolve('../jest/symlink/')
+      environment.binPath = path.resolve('../jest/bin/')
       installSpy = jest.spyOn(rimraf, 'sync').mockImplementation()
       commandSpy = jest.spyOn(Command.prototype, 'push').mockImplementation()
       existsSpy = jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
@@ -84,11 +86,14 @@ describe('backend/binaryInstaller', () => {
 
       await binaryInstaller.uninstall()
 
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit" -j agent uninstall')
-      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/remoteit')
-      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/connectd')
-      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/muxer')
-      expect(commandSpy).toBeCalledWith('rm -f ../jest/symlink/demuxer')
+      console.log('__dirname')
+      console.log(__dirname)
+
+      expect(commandSpy).toBeCalledWith(`"${environment.binPath}/remoteit" -j agent uninstall`)
+      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/remoteit`)
+      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/connectd`)
+      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/muxer`)
+      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/demuxer`)
       expect(commandSpy).toHaveBeenCalledTimes(5)
     })
 
@@ -106,7 +111,7 @@ describe('backend/binaryInstaller', () => {
       environment.isHeadless = false
 
       await binaryInstaller.uninstall()
-      expect(commandSpy).toBeCalledWith('"../jest/bin/remoteit.exe" -j agent uninstall')
+      expect(commandSpy).toBeCalledWith(`"${environment.binPath}/remoteit.exe" -j agent uninstall`)
       expect(commandSpy).toHaveBeenCalledTimes(1)
     })
   })

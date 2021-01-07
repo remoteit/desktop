@@ -64,7 +64,7 @@ export default class Binary {
   }
 
   get symlink() {
-    return path.join(environment.symlinkPath, this.fileName)
+    return path.resolve(environment.symlinkPath, this.fileName)
   }
 
   toJSON(): InstallationInfo {
