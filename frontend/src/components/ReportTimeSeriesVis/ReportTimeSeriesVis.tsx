@@ -1,5 +1,5 @@
-import React, { MouseEvent, useCallback } from 'react'
-import { useTooltip, useTooltipInPortal, TooltipWithBounds, defaultStyles } from '@visx/tooltip'
+import React from 'react'
+import { useTooltip, useTooltipInPortal, defaultStyles } from '@visx/tooltip'
 import { localPoint } from '@visx/event'
 import { Bar } from '@visx/shape'
 import { Group } from '@visx/group'
@@ -31,7 +31,7 @@ const positionIndicatorSize = 8
 const formattedDate = (date: Date) => formatDate(date, 'MMM d')
 
 const getDate = (d: ITimeSeriesData) => formattedDate(d.date)
-const getCount = (d: ITimeSeriesData) => d.count
+const getCount = (d: ITimeSeriesData) => Math.round(d.count)
 
 const tooltipStyles = {
   ...defaultStyles,
@@ -68,18 +68,19 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
     tooltipData: { date: new Date(), count: 0 },
   })
 
-  const yTickValues = () => {
-    const min = 0
-    const max = Math.max.apply(
+  const maxYTick = Math.round(
+    Math.max.apply(
       Math,
       timeseriesData.map(function (d) {
         return d.count
       })
     )
-    if (max > 1) {
-      return [min, Math.floor(max / 2), max]
+  )
+  const yTickValues = () => {
+    if (maxYTick > 1) {
+      return [0, Math.round(maxYTick / 2), Math.round(maxYTick)]
     } else {
-      return [min, max]
+      return [0, 1]
     }
   }
 
@@ -91,8 +92,8 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
     left: spacing.lg,
     right: 0,
   }
-  const xMax = width - margin.left - margin.right
-  const yMax = height - margin.top - margin.bottom
+  const xMax = width - margin.left - margin.right - 10
+  const yMax = Math.round(height - margin.top - margin.bottom)
   //handle the tooltip
   const handleMouseOver = (event, datum) => {
     if (tooltipTimeout) clearTimeout(tooltipTimeout)
@@ -103,6 +104,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
       tooltipData: datum,
     })
   }
+
   // scales, memoize for performance
   const xScale = scaleBand({
     range: [0, xMax],
@@ -113,14 +115,22 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
     range: [yMax, 0],
     round: true,
     nice: true,
-    domain: [0, Math.max(...timeseriesData.map(getCount))],
+    domain: [0, Math.max(2, maxYTick)],
   })
+  console.log('yScale', yScale)
   return (
     <>
       <Typography variant="h4">{title}</Typography>
       <svg width={width} height={height} ref={containerRef}>
         <Group top={margin.top} left={margin.left}>
-          <AxisLeft left={0} scale={yScale} stroke={colors.gray} hideZero={true} tickValues={yTickValues()} />
+          <AxisLeft
+            left={0}
+            scale={yScale}
+            stroke={colors.gray}
+            hideZero={false}
+            tickValues={yTickValues()}
+            tickFormat={d => (+d).toString()}
+          />
           <AxisBottom scale={xScale} numTicks={5} top={yMax} stroke={colors.gray} />
           {timeseriesData.map(d => {
             const label = getDate(d)
