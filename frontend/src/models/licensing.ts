@@ -3,6 +3,8 @@ import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
 import { RootModel } from './rootModel'
 
+const upgradeUrl = 'https://link.remote.it/aws-marketplace/saas'
+
 type ILicenseLookup = { productId: string; platform: number }
 
 export const LicenseLookup: ILicenseLookup[] = [
@@ -120,8 +122,6 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-const upgradeUrl = 'https://link.remote.it/aws-marketplace/byol'
 
 export function lookupLicenseProductId(device?: IDevice) {
   const lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
