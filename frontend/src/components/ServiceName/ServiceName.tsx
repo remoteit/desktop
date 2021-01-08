@@ -17,7 +17,7 @@ type Props = {
   children?: any
 }
 
-export const ServiceName: React.FC<Props> = ({ connection, service, device, children }) => {
+export const ServiceName: React.FC<Props> = ({ connection, service, device, inline, children }) => {
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
@@ -36,7 +36,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, chil
   if (connection?.name && menu && menu[0] === '/connections') name = connection.name
 
   return (
-    <Title offline={offline}>
+    <Title offline={offline} inline={inline}>
       {name || 'No device found'}
       {!!targetPlatformId && (
         <sup>

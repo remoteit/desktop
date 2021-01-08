@@ -36,7 +36,7 @@ export const AccountMembershipPage: React.FC = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="list-ul" size="lg" />
-            <Title>Manage Device Lists</Title>
+            <Title inline>Manage Device Lists</Title>
           </Typography>
         </>
       }

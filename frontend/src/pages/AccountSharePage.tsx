@@ -38,7 +38,7 @@ export const AccountSharePage = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="user-plus" size="lg" />
-            <Title>Add Users</Title>
+            <Title inline>Add Users</Title>
           </Typography>
         </>
       }

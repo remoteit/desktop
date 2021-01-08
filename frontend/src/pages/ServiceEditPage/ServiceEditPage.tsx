@@ -52,7 +52,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
-            <Title>Edit service</Title>
+            <Title inline>Edit service</Title>
             <UnregisterServiceButton target={target} />
           </Typography>
         </>

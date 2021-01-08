@@ -44,7 +44,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
-            <Title>Add service</Title>
+            <Title inline>Add service</Title>
           </Typography>
           <LicensingServiceNotice device={device} />
         </>
