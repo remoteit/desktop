@@ -2,7 +2,15 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Link, Typography } from '@material-ui/core'
+import {
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Link,
+  Button,
+  Typography,
+} from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
@@ -67,14 +75,16 @@ export const DeviceSetupItem: React.FC = () => {
               <Link onClick={() => ui.set({ restore: false })}>cancel</Link>
             </Typography>
           ) : (
-            <Link
+            <Button
+              variant="outlined"
+              size="small"
               onClick={() => {
                 ui.set({ restore: true })
                 history.push('/devices')
               }}
             >
               Restore Device
-            </Link>
+            </Button>
           )}
         </ListItemSecondaryAction>
       )}

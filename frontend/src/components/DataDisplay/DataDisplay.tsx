@@ -43,7 +43,7 @@ const useStyles = makeStyles({
       minWidth: 142,
       textTransform: 'capitalize',
     },
-    '& .fal': {
+    '& svg': {
       color: colors.grayDarker,
     },
   },

@@ -61,6 +61,6 @@ const useStyles = makeStyles({
   title: {
     display: 'flex',
     alignItems: 'flex-end',
-    '& > span:not(.fal)': { width: '50%' },
+    '& > span': { width: '50%' },
   },
 })

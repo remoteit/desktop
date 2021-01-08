@@ -17,7 +17,7 @@ type IValues = {
 const sortFilters = [
   { value: 'name', filterName: 'Name' },
   { value: 'state', filterName: 'State' },
-  { value: 'color', filterName: 'Color' },
+  { value: 'attributes.$remoteit.color', filterName: 'Color' },
 ]
 const deviceFilters = [
   { value: 'all', filterName: 'All' },

@@ -178,7 +178,6 @@ const jssTheme: ThemeOptions = {
         minHeight: 50,
         color: colors.grayDarkest,
         letterSpacing: -0.2,
-        '& svg + span': { marginLeft: spacing.lg },
       },
       h2: {
         fontSize: fontSizes.md,

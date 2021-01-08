@@ -79,7 +79,7 @@ export const DeviceLogPage = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="file-alt" color="grayDarker" size="lg" />
-            <Title>Device Logs</Title>
+            <Title inline>Device Logs</Title>
           </Typography>
           <List className={css.header}>
             <ListItem dense>

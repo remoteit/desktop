@@ -33,7 +33,7 @@ export const DeviceDetailPage = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="info-circle" color="grayDarker" size="lg" />
-            <Title>Details</Title>
+            <Title inline>Details</Title>
           </Typography>
         </>
       }

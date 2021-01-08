@@ -148,7 +148,7 @@ export const SharePage = () => {
             {email ? (
               <>
                 <Icon name={email === '' ? 'user-plus' : 'user'} size="lg" />
-                <Title>{email || 'Share'}</Title>
+                <Title inline>{email || 'Share'}</Title>
                 {deleting ? (
                   <CircularProgress className={css.loading} size={styles.fontSizes.md} />
                 ) : (

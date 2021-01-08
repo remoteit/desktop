@@ -26,7 +26,7 @@ export const LogPage: React.FC = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="stream" size="lg" />
-            <Title>Raw Connection Log</Title>
+            <Title inline>Raw Connection Log</Title>
             <Tooltip title="Clear log">
               <IconButton onClick={() => dispatch.logs.clear(serviceID)}>
                 <Icon name="trash-alt" size="md" fixedWidth />

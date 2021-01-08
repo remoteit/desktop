@@ -54,7 +54,7 @@ export const ServiceDetailPage = () => {
           <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="info-circle" size="lg" />
-            <Title>Service details</Title>
+            <Title inline>Service details</Title>
           </Typography>
         </>
       }

@@ -83,7 +83,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
           {remoteUI || <Breadcrumbs />}
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
-            <Title>Edit device</Title>
+            <Title inline>Edit device</Title>
             {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
             <RefreshButton device={device} />
           </Typography>
