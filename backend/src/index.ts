@@ -25,6 +25,7 @@ process
     d('Uncaught exception', error)
     AirBrake.notify({
       params: { type: 'UNCAUGHT EXCEPTION' },
+      context: { version: environment.version },
       error,
     })
     Logger.warn('UNCAUGHT EXCEPTION', { error, details: error.toString(), trace: error.stack })
@@ -33,6 +34,7 @@ process
     d('Caught exception', reason, promise)
     AirBrake.notify({
       params: { type: 'UNHANDLED PROMISE REJECTION', promise },
+      context: { version: environment.version },
       error: reason,
     })
     Logger.warn('UNHANDLED PROMISE REJECTION', {
