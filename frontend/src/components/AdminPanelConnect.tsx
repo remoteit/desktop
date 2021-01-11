@@ -15,8 +15,8 @@ export const AdminPanelConnect: React.FC<Props> = ({ device, connections }) => {
   if (!service) return null
 
   const messages = [
-    "This device has additional options that can be accessed remotely via it's admin panel.",
-    "Access this device's full configuration options by connecting through it's admin panel.",
+    'This device has additional options that can be accessed remotely via its admin panel.',
+    "Access this device's full configuration options by connecting through its admin panel.",
   ]
   const message = messages[Math.floor(Math.random() * 2)]
 
