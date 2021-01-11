@@ -1,6 +1,6 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
-import { getAccountId, getDevices, getAllDevices } from './accounts'
+import { getAccountId, getAllDevices } from './accounts'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { platformConfiguration } from '../services/platformConfiguration'
 import { graphQLSetAttributes } from '../services/graphQLMutation'
@@ -66,7 +66,6 @@ export default createModel<RootModel>()({
       const { setDevices, appendDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched } = globalState.devices
       const { user } = globalState.auth
-      const all = getDevices(globalState)
       const options: gqlOptions = {
         size,
         from,
@@ -87,8 +86,9 @@ export default createModel<RootModel>()({
       else set({ total })
 
       // awaiting setDevices is critical for accurate initialized state
-      if (append) await setDevices({ devices: [...all, ...devices], accountId })
-      else {
+      if (append) {
+        await appendDevices({ devices, accountId })
+      } else {
         await setDevices({ devices, accountId })
         await appendDevices({ devices: connections, accountId: user?.id })
       }
@@ -159,7 +159,7 @@ export default createModel<RootModel>()({
     },
 
     async renameService(service: IService, globalState: any) {
-      let device = getDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
+      let device = getAllDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].name = service.name
@@ -188,7 +188,7 @@ export default createModel<RootModel>()({
     },
 
     async setServiceAttributes(service: IService, globalState: any) {
-      let device = getDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
+      let device = getAllDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].attributes = service.attributes
