@@ -6,21 +6,22 @@ import { PortSetting } from '../../components/PortSetting'
 import { NameSetting } from '../../components/NameSetting'
 import { ServiceName } from '../../components/ServiceName'
 import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { HostSetting } from '../../components/HostSetting'
 import { ProxySetting } from '../../components/ProxySetting'
 import { selectService } from '../../models/devices'
-import { CustomAttributeSettings } from '../../components/CustomAttributeSettings'
 import { LicensingNotice } from '../../components/LicensingNotice'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { ServiceConnected } from '../../components/ServiceConnected'
 import { AutoStartSetting } from '../../components/AutoStartSetting'
+import { CustomAttributeSettings } from '../../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
+import { InlineTemplateSetting } from '../../components/InlineTemplateSetting'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { UnauthorizedPage } from '../UnauthorizedPage'
 import { LanShareSelect } from '../../components/LanShareSelect'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { InlineTemplateSetting } from '../../components/InlineTemplateSetting'
 import { AddUserButton } from '../../buttons/AddUserButton'
 import { ConnectButton } from '../../buttons/ConnectButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
@@ -87,6 +88,7 @@ export const ServicePage: React.FC = () => {
         <List>
           <NameSetting connection={connection} service={service} />
           <PortSetting connection={connection} service={service} />
+          <HostSetting connection={connection} service={service} />
           <InlineTemplateSetting connection={connection} service={service} context="launch" />
           <InlineTemplateSetting connection={connection} service={service} context="copy" />
           <CustomAttributeSettings connection={connection} service={service} />

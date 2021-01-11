@@ -36,8 +36,8 @@ export function ServiceListItem({ connection, service, indent, dense, secondary 
 
   secondary = secondary || (
     <span className={css.details}>
-      {connection && hostName(connection)}
-      {lanShared(connection) && <span className={css.restriction}> {lanShareRestriction(connection)} </span>}
+      {hostName(connection) && <span>{hostName(connection)}</span>}
+      {lanShared(connection) && <span className={css.restriction}>{lanShareRestriction(connection)}</span>}
       {otherUser && (
         <span>
           <Icon name="user" size="bug" type="solid" inlineLeft />
@@ -69,7 +69,7 @@ export function ServiceListItem({ connection, service, indent, dense, secondary 
 
 const useStyles = makeStyles({
   indent: { paddingLeft: 57 },
-  details: { '& > span': { marginLeft: spacing.sm } },
+  details: { '& > span': { marginRight: spacing.sm } },
   restriction: { color: colors.grayDarker },
   evaluation: { color: colors.warning },
 })
