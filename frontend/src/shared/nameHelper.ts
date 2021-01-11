@@ -34,7 +34,8 @@ export function replaceHost(url: string, localhost?: boolean) {
   return url
 }
 
-export function hostName(connection: IConnection) {
+export function hostName(connection?: IConnection) {
+  if (!connection) return ''
   const { host = '', port } = connection
   if (!port) return ''
   return `${replaceHost(host)}:${port}`

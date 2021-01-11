@@ -23,7 +23,7 @@ export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
       <ListItemText
         primary="Local Network Sharing"
         secondaryTypographyProps={{ color }}
-        secondary={(shared ? 'On -' : '') + lanShareRestriction(connection)}
+        secondary={(shared ? 'On - ' : '') + lanShareRestriction(connection)}
       />
     </ListItemLocation>
   )

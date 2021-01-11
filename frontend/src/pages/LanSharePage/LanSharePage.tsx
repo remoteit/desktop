@@ -20,12 +20,14 @@ type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
-  const privateIP = useSelector((state: ApplicationState) => state.backend.environment.privateIP)
-  const connection = useSelector((state: ApplicationState) => {
-    let c = state.backend.connections.find(c => c.id === serviceID)
-    if (c) return c
+  const { service, privateIP, connection } = useSelector((state: ApplicationState) => {
+    let connection = state.backend.connections.find(c => c.id === serviceID)
     const [service] = findService(getDevices(state), serviceID)
-    return newConnection(service)
+    return {
+      service,
+      privateIP: state.backend.environment.privateIP,
+      connection: connection || newConnection(service, state.backend.freePort),
+    }
   })
 
   // prettier-ignore
@@ -54,7 +56,7 @@ export const LanSharePage: React.FC = () => {
   const history = useHistory()
   const css = useStyles()
 
-  if (!connection) return null
+  if (!connection || !service) return null
 
   const getSelectionValue = () => {
     if (!enabled) return IP_OPEN
@@ -95,6 +97,7 @@ export const LanSharePage: React.FC = () => {
           <>
             <TextField
               select
+              size="small"
               className={css.textField}
               variant="filled"
               label="Local Network Security"
