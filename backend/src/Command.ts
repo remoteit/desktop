@@ -71,7 +71,8 @@ export default class Command {
       if (stderr) {
         this.log(`EXEC *** ERROR ***`, { stderr: stderr.toString().trim() }, 'error')
         AirBrake.notify({
-         params: { type: 'COMMAND STDERR', exec: this.toString(), version: environment.version },
+          params: { type: 'COMMAND STDERR', exec: this.toString() },
+          context: { version: environment.version },
           error: stderr.toString(),
         })
         result = this.parseCliErrors(stderr)
@@ -84,7 +85,8 @@ export default class Command {
       }
     } catch (error) {
       AirBrake.notify({
-        params: { type: 'COMMAND ERROR', exec: this.toString(), version: environment.version},
+        params: { type: 'COMMAND ERROR', exec: this.toString() },
+        context: { version: environment.version },
         error,
       })
       this.log(
