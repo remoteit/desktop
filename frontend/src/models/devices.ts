@@ -96,7 +96,7 @@ export default createModel<RootModel>()({
       if (!error) cleanOrphanConnections()
       platformConfiguration()
 
-      // @TODO pull contacts out into it's own model / request on page load
+      // @TODO pull contacts out into its own model / request on page load
       set({ initialized: true, fetching: false, append: false, contacts })
     },
 
