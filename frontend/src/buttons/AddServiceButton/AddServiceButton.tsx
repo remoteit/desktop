@@ -3,14 +3,12 @@ import { useHistory } from 'react-router-dom'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 
-export const AddServiceButton: React.FC<{ device?: IDevice; thisDevice?: boolean; link: string }> = ({
-  device,
-  thisDevice,
-  link,
-}) => {
+type Props = { device?: IDevice; editable?: boolean; link: string }
+
+export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) => {
   const history = useHistory()
 
-  if (!device || !thisDevice) return null
+  if (!device || !editable) return null
 
   return (
     <Tooltip title="Add Service">

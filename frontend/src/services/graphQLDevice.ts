@@ -149,6 +149,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       name: d.name,
       owner: d.owner,
       state: d.state,
+      legacy: d.platform !== 34304, // not cloud shift
       hardwareID: d.hardwareId,
       createdAt: new Date(d.created),
       contactedAt: new Date(d.endpoint?.timestamp),

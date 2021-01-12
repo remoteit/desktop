@@ -66,6 +66,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   if (!device) return null
 
   const thisDevice = device.id === targetDevice.uid
+  const editable = thisDevice || !device.legacy
 
   function host(service: IService) {
     const target = targets.find(t => t.uid === service.id)
@@ -84,7 +85,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title inline>Edit device</Title>
-            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
+            {editable ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
             <RefreshButton device={device} />
           </Typography>
         </>
@@ -108,17 +109,17 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         )} */}
       </List>
       <Divider />
-      {!thisDevice && <AdminPanelConnect device={device} connections={connections} />}
+      {!editable && <AdminPanelConnect device={device} connections={connections} />}
       {!device.shared && (
         <>
           <Typography variant="subtitle1">
             <Title>Services</Title>
             <AddFromNetwork deviceId={device?.id} thisDevice={thisDevice} button />
-            <AddServiceButton device={device} thisDevice={thisDevice} link={links.add} />
+            <AddServiceButton device={device} editable={editable} link={links.add} />
           </Typography>
           <List>
-            {thisDevice && <LicensingNotice device={device} />}
-            {thisDevice && setupAddingService && (
+            {editable && <LicensingNotice device={device} />}
+            {editable && setupAddingService && (
               <ListItem disabled button dense>
                 <ListItemIcon>
                   <CircularProgress color="inherit" size={fontSizes.md} />

@@ -6,11 +6,13 @@ import { useSelector } from 'react-redux'
 import { getLinks } from '../helpers/routeHelper'
 import { Icon } from './Icon'
 
-export const AddFromNetwork: React.FC<{
+type Props = {
   deviceId?: string
   thisDevice?: boolean
   button?: boolean
-}> = ({ deviceId, thisDevice, button }) => {
+}
+
+export const AddFromNetwork: React.FC<Props> = ({ deviceId, thisDevice, button }) => {
   const { scanEnabled, links } = useSelector((state: ApplicationState) => ({
     scanEnabled: state.ui.scanEnabled,
     links: getLinks(state, deviceId),

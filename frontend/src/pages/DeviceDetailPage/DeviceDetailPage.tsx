@@ -57,6 +57,7 @@ export const DeviceDetailPage = () => {
             { label: 'Internal IP address', value: device.internalAddress },
             { label: 'Device ID', value: device.id },
             { label: 'Hardware ID', value: device.hardwareID },
+            { label: 'Daemon version', value: device.version },
             ...LEGACY_ATTRIBUTES.map(label => ({ label, value: device.attributes[label] })),
           ]}
         />

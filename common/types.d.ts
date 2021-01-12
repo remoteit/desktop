@@ -207,6 +207,7 @@ declare global {
     contactedAt: Date
     shared: boolean
     services: IService[]
+    legacy: boolean
     hidden?: boolean
     access: IUser[]
     attributes: ILookup<any> & {

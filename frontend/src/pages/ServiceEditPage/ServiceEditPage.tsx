@@ -23,10 +23,14 @@ type Props = {
 export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
   const { serviceID = '', deviceID } = useParams<{ serviceID: string; deviceID: string }>()
-  const { service, links } = useSelector((state: ApplicationState) => ({
-    service: selectService(state, serviceID)[0],
-    links: getLinks(state, deviceID),
-  }))
+  const { device, service, links } = useSelector((state: ApplicationState) => {
+    const [service, device] = selectService(state, serviceID)
+    return {
+      device,
+      service,
+      links: getLinks(state, deviceID),
+    }
+  })
   const target = targets?.find(t => t.uid === serviceID)
   const thisDevice = service?.deviceID === targetDevice.uid
   const location = useLocation()
@@ -62,6 +66,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
         service={service}
         target={target}
         thisDevice={thisDevice}
+        editable={thisDevice || !device?.legacy}
         onCancel={exit}
         onSubmit={form => {
           // for local cli config update

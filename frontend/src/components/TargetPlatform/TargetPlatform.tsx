@@ -45,6 +45,11 @@ export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: 
     case 1200:
       name = 'linux'
       break
+    case 34304:
+      name = 'cloud-rainbow'
+      type = 'regular'
+      if (size === 'xxs') size = 'xs'
+      break
   }
 
   if (!name || !id) return null

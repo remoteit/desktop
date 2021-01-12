@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
-import { useHistory, useLocation } from 'react-router-dom'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
@@ -26,14 +25,20 @@ type Props = {
   service?: IService
   target?: ITarget
   thisDevice: boolean
-  onSubmit: (IServiceForm) => void
+  editable: boolean
+  onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
+export const ServiceForm: React.FC<Props> = ({
+  service,
+  target = DEFAULT_TARGET,
+  thisDevice,
+  editable,
+  onSubmit,
+  onCancel,
+}) => {
   const { backend } = useDispatch<Dispatch>()
-  const history = useHistory()
-  const location = useLocation()
   const { applicationTypes, setupBusy, setupAdded, deleting, isValid, scanEnabled } = useSelector(
     (state: ApplicationState) => ({
       applicationTypes: state.applicationTypes.all,
@@ -86,7 +91,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
 
   return (
     <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
-      {thisDevice && (
+      {editable && (
         <>
           <List>
             <ListItem className={css.field}>
@@ -178,7 +183,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 ) : (
                   <>
                     No service found running on port and host address.
-                    <AddFromNetwork deviceId={target.uid} thisDevice={thisDevice} />
+                    {scanEnabled && <AddFromNetwork deviceId={target.uid} thisDevice={thisDevice} />}
                   </>
                 )}
               </Notice>
@@ -218,7 +223,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
           setAttributes={attributes => setForm({ ...form, attributes })}
         />
       </List>
-      {thisDevice && (
+      {editable && (
         <>
           <Divider />
           <List>

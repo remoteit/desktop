@@ -17,9 +17,10 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
+  targetDevice: ITargetDevice
 }
 
-export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
+export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { setupServicesLimit, device, links } = useSelector((state: ApplicationState) => ({
     ...state.ui,
@@ -58,7 +59,8 @@ export const ServiceAddPage: React.FC<Props> = ({ targets }) => {
         </Body>
       ) : (
         <ServiceForm
-          thisDevice={true}
+          thisDevice={device.id === targetDevice.uid}
+          editable={!device.legacy}
           onSubmit={async form => {
             await ui.set({ setupAdded: undefined })
             await backend.addTargetService(form)
