@@ -131,11 +131,14 @@ export function lookupLicenseProductId(device?: IDevice) {
 export function selectLicense(state: ApplicationState, productId?: string) {
   const license = state.licensing.licenses.find(l => l.plan.product.id === productId)
   const limits = state.licensing.limits
+  const ownDevices = state.accounts.devices[state.auth.user?.id || ''] || []
+  const device = (ownDevices && ownDevices.find(device => device.id === state.backend.device.uid)) || {}
+  const owner = device.owner && device.owner.id === state.auth.user.id
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
 
-  if (!license) return {}
+  if (!license || !owner) return {}
 
   let noticeType
   let warnDate = new Date()
