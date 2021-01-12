@@ -6,7 +6,7 @@ import { LicensingTitle } from './LicensingTitle'
 import { useSelector } from 'react-redux'
 import { Notice } from './Notice'
 
-type Props = { device?: IDevice }
+type Props = { device?: IDevice; license?: ILicense }
 
 const learnMoreLink = (
   <Link href="https://link.remote.it/documentation-aws/setup" target="_blank">
@@ -15,13 +15,14 @@ const learnMoreLink = (
 )
 
 export const LicensingServiceNotice: React.FC<Props> = props => {
-  const {
-    noticeType,
-    license,
-    serviceLimit,
-    evaluationLimit,
-    upgradeUrl = '',
-  } = useSelector((state: ApplicationState) => selectLicense(state, lookupLicenseProductId(props.device)))
+  const { noticeType, license, serviceLimit, evaluationLimit, upgradeUrl = '' } = useSelector(
+    (state: ApplicationState) => {
+      let productId = props.license?.plan.product.id
+      if (props.device && state.auth.user?.id === props.device.owner.id)
+        productId = lookupLicenseProductId(props.device)
+      return selectLicense(state, productId)
+    }
+  )
 
   if (!license) return null
 
