@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { useApplication, Application } from '../shared/applications'
+import { Application } from '../shared/applications'
+import { useApplication } from '../hooks/useApplication'
 import { setConnection } from '../helpers/connectionHelper'
 import { useClipboard } from 'use-clipboard-copy'
 import { PromptModal } from '../components/PromptModal'

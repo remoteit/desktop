@@ -2,7 +2,8 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { ApplicationState } from '../../store'
-import { useApplication, Application } from '../../shared/applications'
+import { Application } from '../../shared/applications'
+import { useApplication } from '../../hooks/useApplication'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Tooltip } from '@material-ui/core'
@@ -23,8 +24,10 @@ export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, co
       label={
         <>
           {app.contextTitle}
-          <Tooltip title={`Replacement Tokens ${app.tokens}`} placement="top" arrow>
-            <Icon name="question-circle" size="sm" type="regular" inline />
+          <Tooltip title={`Replacement tokens: ${app.allTokens.join(', ')}`} placement="top" arrow>
+            <span style={{ zIndex: 10 }}>
+              <Icon name="question-circle" size="sm" type="regular" inline />
+            </span>
           </Tooltip>
         </>
       }

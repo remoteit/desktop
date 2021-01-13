@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
-import { useApplication } from '../../shared/applications'
+import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
 import { launchPutty, launchVNC } from '../../services/Browser'
 import { useSelector } from 'react-redux'
@@ -10,18 +10,7 @@ import { Dispatch } from '../../store'
 import { FontSize } from '../../styling'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
-import {
-  makeStyles,
-  IconButton,
-  Tooltip,
-  Typography,
-  Dialog,
-  DialogActions,
-  Button,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-} from '@material-ui/core'
+import { makeStyles, IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { DialogApp } from '../../components/DialogApp'
 
 type Props = {

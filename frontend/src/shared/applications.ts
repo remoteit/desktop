@@ -56,6 +56,10 @@ export class Application {
     return this.extractTokens(this.launchTemplate + this.commandTemplate)
   }
 
+  get allTokens() {
+    return this.defaultTokens.concat(this.customTokens)
+  }
+
   get customTokens() {
     return this.tokens.filter(token => !this.defaultTokens.includes(token))
   }
@@ -86,7 +90,14 @@ export class Application {
   private parse(template: string = '') {
     let lookup: ILookup<any> = this.connection || {}
     if (this.service) lookup = { ...this.service.attributes, ...lookup }
-    for (const key in lookup) if (lookup[key]) template = template.replace(`[${key}]`, encodeURI(lookup[key]))
+
+    this.tokens.forEach(token => {
+      if (lookup[token]) {
+        const search = new RegExp(`\\[${token}\\]`, 'g')
+        template = template.replace(search, encodeURI(lookup[token]))
+      }
+    })
+
     template = replaceHost(template, this.localhost)
     return template
   }
@@ -104,8 +115,8 @@ class DefaultApp extends Application {
   iconRotate = true
 }
 
-export function useApplication(context: Application['context'], service?: IService, connection?: IConnection) {
-  const app = getApplication(service?.typeID || connection?.typeID)
+export function getApplication(context: Application['context'], service?: IService, connection?: IConnection) {
+  const app = getApplicationType(service?.typeID || connection?.typeID)
 
   app.context = context
   app.service = service
@@ -114,7 +125,7 @@ export function useApplication(context: Application['context'], service?: IServi
   return app
 }
 
-function getApplication(typeID?: number) {
+function getApplicationType(typeID?: number) {
   let app: Application
 
   switch (typeID) {
