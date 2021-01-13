@@ -16,9 +16,11 @@ const learnMoreLink = (
 )
 
 export const LicensingNotice: React.FC<Props> = props => {
-  const { noticeType, license, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) =>
-    selectLicense(state, props.device ? lookupLicenseProductId(props.device) : props.license?.plan.product.id)
-  )
+  const { noticeType, license, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) => {
+    let productId = props.license?.plan.product.id
+    if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
+    return selectLicense(state, productId)
+  })
 
   if (!license || !noticeType) return null
 
