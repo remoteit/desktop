@@ -136,20 +136,23 @@ export default class ElectronApp {
       }
     })
 
-    this.window.on('maximize', () => {
-      setTimeout(() => {
-        if (!this.window) return 
-        const window = this.window.getBounds()
-        const screen = electron.screen.getDisplayMatching(window).bounds  
-        this.window.setMaximumSize(screen.width, screen.height)
-        this.window.setSize(screen.width, screen.height, true)
-      }, 0)
-    })
+    if (environment.isWindows) {
+      // Handle Windows fullscreen
+      this.window.on('maximize', () => {
+        setTimeout(() => {
+          if (!this.window) return
+          const window = this.window.getBounds()
+          const screen = electron.screen.getDisplayMatching(window).bounds
+          this.window.setMaximumSize(screen.width, screen.height)
+          this.window.setSize(screen.width, screen.height, true)
+        }, 0)
+      })
 
-    this.window.on('unmaximize', () => {
-      if (!this.window) return 
-      this.window.setMaximumSize(1000, 9999)
-    })
+      this.window.on('unmaximize', () => {
+        if (!this.window) return
+        this.window.setMaximumSize(1000, 9999)
+      })
+    }
 
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()
