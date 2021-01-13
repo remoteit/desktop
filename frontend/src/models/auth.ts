@@ -107,9 +107,11 @@ export default createModel<RootModel>()({
         await cloudController.init()
         await dispatch.licensing.fetch()
         await dispatch.accounts.init()
-        await dispatch.devices.fetch()
         dispatch.applicationTypes.fetch()
       }
+      // always fetch on connect
+      console.log('DEVICE FETCH ON AUTH / CONNECT')
+      await dispatch.devices.fetch()
     },
     async disconnect(_: void, rootState: any) {
       console.log('DISCONNECT')
