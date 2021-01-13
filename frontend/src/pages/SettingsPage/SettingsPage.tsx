@@ -135,6 +135,12 @@ export const SettingsPage: React.FC = () => {
             }}
           />
         )}
+        <ListItemSetting
+          label="System notifications"
+          icon="megaphone"
+          toggle={preferences.showNotifications}
+          onClick={() => emit('preferences', { ...preferences, showNotifications: !preferences.showNotifications })}
+        />
         {(os === 'mac' || os === 'windows') && (
           <ListItemSetting
             label="Auto update"
