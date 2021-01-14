@@ -130,7 +130,7 @@ class CloudController {
   }
 
   errors(data) {
-    const errors = graphQLGetErrors({ data })
+    const errors = graphQLGetErrors({ data }, true)
     return !!errors?.length
   }
 
@@ -138,7 +138,9 @@ class CloudController {
     const state = store.getState()
     try {
       const json = JSON.parse(response.data)
-      if (this.errors(json)) return
+      if (this.errors(json)) {
+        return
+      }
       let event = json.data.event
       return {
         type: event.type,

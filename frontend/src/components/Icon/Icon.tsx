@@ -24,40 +24,41 @@ export interface IconProps {
 
 export type Ref = HTMLSpanElement
 
-export const Icon = React.forwardRef(({
-  className,
-  color,
-  fixedWidth = false,
-  name,
-  size,
-  spin,
-  type = 'light',
-  inline,
-  inlineLeft,
-  ...props
-}: IconProps): JSX.Element => {
-  const styles: any = {}
-  if (color) styles.color = colors[color]
-  if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md
-  if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 2 : spacing.md
-  if (size) styles.fontSize = fontSizes[size]
+export const Icon = React.forwardRef(
+  ({
+    color,
+    fixedWidth = false,
+    name,
+    size,
+    spin,
+    type = 'light',
+    inline,
+    inlineLeft,
+    ...props
+  }: IconProps): JSX.Element => {
+    const styles: any = {}
+    if (color) styles.color = colors[color]
+    if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md
+    if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 2 : spacing.md
+    if (size) styles.fontSize = fontSizes[size]
 
-  let fontType: IconPrefix = 'fal'
+    let fontType: IconPrefix = 'fal'
 
-  switch (type) {
-    case 'brands': {
-      fontType = 'fab'
-      break
+    switch (type) {
+      case 'brands': {
+        fontType = 'fab'
+        break
+      }
+      case 'regular': {
+        fontType = 'far'
+        break
+      }
+      case 'solid': {
+        fontType = 'fas'
+        break
+      }
     }
-    case 'regular': {
-      fontType = 'far'
-      break
-    }
-    case 'solid': {
-      fontType = 'fas'
-      break
-    }
+
+    return <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} spin={spin} />
   }
-
-  return <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} spin={spin} />
-})
+)
