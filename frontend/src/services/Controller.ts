@@ -159,9 +159,6 @@ function getEventHandlers() {
     },
 
     // Connections --- TODO validate we need these three channels
-    'reachable/error': error => {
-      ui.set({ errorMessage: error.message })
-    },
     'service/connected': (msg: ConnectionMessage) => {
       logs.add({ id: msg.connection.id, log: msg.raw })
       backend.updateConnection(msg.connection)

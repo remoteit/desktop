@@ -53,7 +53,6 @@ export default class CLI {
 
   EVENTS = {
     error: 'cli/error',
-    reachableError: 'reachable/error',
   }
 
   constructor() {
