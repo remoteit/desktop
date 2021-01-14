@@ -1,7 +1,7 @@
-import analyticsHelper from '../helpers/analyticsHelper'
 import ReconnectingWebSocket from 'reconnecting-websocket'
-import { WEBSOCKET_URL, WEBSOCKET_KEEPALIVE_INTERVAL } from '../shared/constants'
+import { WEBSOCKET_URL, WEBSOCKET_BETA_URL } from '../shared/constants'
 import { getToken } from './remote.it'
+import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectService } from '../models/devices'
@@ -14,11 +14,10 @@ class CloudController {
 
   init() {
     this.connect()
-    // window.setInterval(this.keepAlive, WEBSOCKET_KEEPALIVE_INTERVAL)
   }
 
   connect() {
-    this.socket = new ReconnectingWebSocket(WEBSOCKET_URL)
+    this.socket = new ReconnectingWebSocket(version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL)
     this.socket.addEventListener('open', this.onOpen)
     this.socket.addEventListener('message', this.onMessage)
     this.socket.addEventListener('close', e => console.log('CLOUD WS closed', e))
@@ -28,11 +27,6 @@ class CloudController {
   close() {
     this.socket?.close()
   }
-
-  // keepAlive() {
-  //   console.log('CLOUD WS keep alive ping', { readyState: this.socket?.readyState, socket: this.socket })
-  //   this.socket?.send('ping')
-  // }
 
   onOpen = event => {
     console.log('\n-------------------------> SOCKET OPEN\n\n')

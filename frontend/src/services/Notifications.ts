@@ -10,6 +10,8 @@ const actions = {
 }
 
 export function notify(event: ICloudEvent) {
+  if (!store.getState().backend.preferences.showNotifications) return
+
   switch (event.type) {
     case 'DEVICE_STATE':
       stateNotification(event)

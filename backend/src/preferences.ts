@@ -11,6 +11,7 @@ export class Preferences {
     openAtLogin: true,
     remoteUIOverride: false,
     disableLocalNetwork: false,
+    showNotifications: true,
   }
 
   private file: JSONFile<IPreferences>

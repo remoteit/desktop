@@ -415,6 +415,7 @@ declare global {
     openAtLogin?: boolean
     remoteUIOverride?: boolean
     disableLocalNetwork?: boolean
+    showNotifications?: boolean
   }
 
   type SegmentContext = {
