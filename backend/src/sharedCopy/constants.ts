@@ -17,8 +17,8 @@ export const CALLBACK_URL =
   process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || process.env.NODE_ENV === 'development'
     ? 'https://dev-auth.internal.remote.it/v1/callback'
     : 'https://auth.api.remote.it/v1/callback'
-export const WEBSOCKET_URL = 'wss://ws.remote.it/beta'
-export const WEBSOCKET_KEEPALIVE_INTERVAL = 1000 * 60 * 5 // 5 MIN
+export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://ws.remote.it/v1'
+export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL || 'wss://ws.remote.it/beta'
 
 export const PORT = process.env.REACT_APP_PORT || 29999
 export const HEARTBEAT_INTERVAL = 1000 * 15 // 15 SEC

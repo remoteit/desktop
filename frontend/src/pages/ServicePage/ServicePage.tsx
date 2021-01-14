@@ -39,7 +39,7 @@ export const ServicePage: React.FC = () => {
   const css = useStyles()
   const location = useLocation()
   const { serviceID = '' } = useParams<{ serviceID: string }>()
-  const [showError, setShowError] = useState<boolean>(false)
+  const [showError, setShowError] = useState<boolean>(true)
   const { devices } = useDispatch<Dispatch>()
   const { connection, service, device, thisDevice, fetching } = useSelector((state: ApplicationState) => {
     const connection = state.backend.connections.find(c => c.id === serviceID)
@@ -70,8 +70,8 @@ export const ServicePage: React.FC = () => {
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
             <EditButton device={device} service={service} connection={connection} />
-            <AddUserButton device={device} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
+            <AddUserButton device={device} />
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />

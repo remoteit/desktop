@@ -15,12 +15,12 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   return await axios.request(request)
 }
 
-export function graphQLGetErrors(response: any) {
+export function graphQLGetErrors(response: any, silent?: boolean) {
   const errors: undefined | { message: string }[] = response?.data?.errors
 
   if (errors) {
     errors.forEach(error => console.warn('graphQL error:', error))
-    store.dispatch.ui.set({ errorMessage: 'GraphQL: ' + errors[0].message })
+    if (!silent) store.dispatch.ui.set({ errorMessage: 'GraphQL: ' + errors[0].message })
   }
 
   return errors
