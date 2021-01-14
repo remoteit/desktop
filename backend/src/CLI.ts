@@ -10,6 +10,7 @@ import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
 import user from './User'
+import { REACHABLE_ERROR_CODE } from './constants'
 
 const d = debug('CLI')
 
@@ -36,6 +37,7 @@ type IConnectionStatus = {
   isFailover?: boolean
   isP2P?: boolean
   error?: ISimpleError
+  reachable: boolean
 }
 
 export default class CLI {
@@ -133,7 +135,18 @@ export default class CLI {
         c.active = status.state === 'connected'
         c.connecting = status.state === 'connecting'
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined
-        if (status.error) c.error = { message: status.error.message, code: status.error.code }
+        c.reachable = status.reachable
+
+        if (status.reachable === false) {
+          c.error = { message: "This connection didn't detect a running service", code: REACHABLE_ERROR_CODE }
+        } else if (status.reachable === true) {
+          if (c.error && c.error.code === REACHABLE_ERROR_CODE) c.error = { code: 0, message: '' }
+        }
+
+        if (status.error?.message) {
+          c.error = { message: status.error.message, code: status.error.code }
+        }
+
         d('UPDATE STATUS', { c, status: status.state })
       }
       return c

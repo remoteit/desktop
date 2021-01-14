@@ -62,7 +62,8 @@ export default class ConnectionPool {
         !connection ||
         connection.startTime !== c.startTime ||
         connection.active !== c.active ||
-        connection.connecting !== c.connecting
+        connection.connecting !== c.connecting ||
+        connection.reachable !== c.reachable
       ) {
         d('CONNECTION DIFF', {
           connection: !connection,
