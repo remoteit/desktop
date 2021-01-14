@@ -25,7 +25,7 @@ export function attributeName(instance?: IDevice | IService) {
 
 export function replaceHost(url: string, localhost?: boolean) {
   if (localhost && url.includes(IP_PRIVATE)) {
-    return url.replace(IP_PRIVATE, 'localhost')
+    return url.replace(new RegExp(IP_PRIVATE, 'g'), 'localhost')
   }
   if (url.includes(IP_OPEN)) {
     const { privateIP } = getEnvironment()

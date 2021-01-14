@@ -4,7 +4,7 @@ import debug from 'debug'
 import AirBrake from './AirBrake'
 import Application from './Application'
 import preferences from './preferences'
-import { useApplication } from './sharedCopy/applications'
+import { getApplication } from './sharedCopy/applications'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import EventBus from './EventBus'
@@ -50,7 +50,7 @@ export default new Application()
 // To support Electron wrapper
 export { EVENTS } from './electronInterface'
 export {
-  useApplication,
+  getApplication,
   ConnectionPool,
   environment,
   EventBus,

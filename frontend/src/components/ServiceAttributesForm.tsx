@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Typography, TextField, ListItem, MenuItem } from '@material-ui/core'
-import { useApplication } from '../shared/applications'
+import { useApplication } from '../hooks/useApplication'
 import { ApplicationState } from '../store'
 import { TemplateSetting } from './TemplateSetting'
 import { ROUTES } from '../shared/constants'

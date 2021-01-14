@@ -2,7 +2,7 @@ import React from 'react'
 import { REGEX_NAME_SAFE } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { useApplication } from '../shared/applications'
+import { useApplication } from '../hooks/useApplication'
 
 type Props = { service: IService; connection?: IConnection }
 
