@@ -81,6 +81,10 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
               })
             : (launch = false)
           break
+        case 'HTTP':
+        case 'HTTPS':
+          launch = false
+          break
       }
       launch ? emit('launch/app', launchApp) : window.open(app.command)
     } catch (error) {
