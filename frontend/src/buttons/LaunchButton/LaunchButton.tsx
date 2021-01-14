@@ -94,7 +94,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
           break
         case 'HTTP':
         case 'HTTPS':
-          window.open(`${service.type}://${app.connection?.host}:${app.connection?.port}`)
+          launch = false
           break
       }
       launch ? emit('launch/app', launchApp) : window.open(app.command)
