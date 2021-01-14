@@ -110,8 +110,7 @@ export default createModel<RootModel>()({
         dispatch.applicationTypes.fetch()
       }
       // always fetch on connect
-      console.log('DEVICE FETCH ON AUTH / CONNECT')
-      await dispatch.devices.fetch()
+      dispatch.devices.fetch()
     },
     async disconnect(_: void, rootState: any) {
       console.log('DISCONNECT')
