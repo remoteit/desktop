@@ -3,8 +3,9 @@ import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { RefreshButton } from '../../buttons/RefreshButton'
+import { RegisterButton } from '../../buttons/RegisterButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
+import { RefreshButton } from '../../buttons/RefreshButton'
 import { AccountSelect } from '../../components/AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
@@ -39,6 +40,7 @@ export const DevicesPage = () => {
           <div className={css.header}>
             <SearchField />
             <AccountSelect />
+            <RegisterButton />
             <RefreshButton />
             <FilterButton />
           </div>
