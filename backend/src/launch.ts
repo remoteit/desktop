@@ -7,7 +7,11 @@ const EVENTS = {
   minimizeWindows: 'windows/minimize',
 }
 
-export const openCMDforWindows = (launchApp: any) => {
+/* 
+  @FIXME - these commands should all use the Command.ts class
+*/
+
+export const openCMDforWindows = (launchApp: ILaunchApp) => {
   if (launchApp.path) return launchApplication(launchApp.path, launchApp)
 
   EventBus.emit(EVENTS.notInstalled, { install: 'none', loading: true })
@@ -43,7 +47,7 @@ export const openCMDforWindows = (launchApp: any) => {
   )
 }
 
-function launchApplication(cwd: string, launchApp: any) {
+function launchApplication(cwd: string, launchApp: ILaunchApp) {
   let command = ''
   switch (launchApp.application) {
     case 'putty':

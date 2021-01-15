@@ -56,40 +56,25 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   if (!connection || !connection.active || !app) return null
 
   const launchBrowser = () => {
-    let launchApp = {}
-    let launch = true
-    try {
-      switch (service?.type) {
-        case 'SSH':
-          launchPutty(service?.typeID)
-            ? (launchApp = {
-                port: app.connection?.port,
-                host: app.connection?.host,
-                path,
-                application: 'putty',
-              })
-            : (launch = false)
-          break
-        case 'VNC':
-          launchVNC()
-            ? (launchApp = {
-                port: app.connection?.port,
-                host: app.connection?.host,
-                username: app.connection?.username,
-                path,
-                application: 'vncviewer',
-              })
-            : (launch = false)
-          break
-        case 'HTTP':
-        case 'HTTPS':
-          launch = false
-          break
+    let launchApp: ILaunchApp | undefined
+    if (launchPutty(service?.typeID)) {
+      launchApp = {
+        port: app.connection?.port,
+        host: app.connection?.host,
+        path,
+        application: 'putty',
       }
-      launch ? emit('launch/app', launchApp) : window.open(app.command)
-    } catch (error) {
-      ui.set({ errorMessage: `Could not launch ${app.command}. Invalid URL.` })
     }
+    if (launchVNC(service?.typeID)) {
+      launchApp = {
+        port: app.connection?.port,
+        host: app.connection?.host,
+        username: app.connection?.username,
+        path,
+        application: 'vncviewer',
+      }
+    }
+    launchApp ? emit('launch/app', launchApp) : window.open(app.command)
     closeAll()
   }
 
