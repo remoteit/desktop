@@ -1,44 +1,85 @@
 import React, { useState } from 'react'
-import { Tooltip, IconButton } from '@material-ui/core'
+import {
+  makeStyles,
+  Tooltip,
+  Typography,
+  IconButton,
+  Popover,
+  List,
+  ListItem,
+  TextField,
+  Button,
+} from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
-import { Confirm } from '../components/Confirm'
-import { PromptModal } from '../components/PromptModal'
+import { spacing } from '../styling'
+import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
 export const RegisterButton: React.FC = () => {
-  const [open, setOpen] = useState<boolean>(false)
+  const css = useStyles()
+  const [el, setEl] = useState<HTMLButtonElement | null>(null)
   const { user } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
   }))
-  const { ui } = useDispatch<Dispatch>()
 
   if (!user?.email.includes('remote.it')) return null
 
-  const onClick = () => {}
+  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => setEl(event.currentTarget)
+  const handleClose = () => setEl(null)
 
   return (
     <>
-      <Tooltip title="Enter Registration">
-        <div>
-          <IconButton onClick={onClick}>
-            <Icon name="plus" size="sm" type="regular" />
-          </IconButton>
-        </div>
+      <Tooltip title="Device Registration">
+        <IconButton onClick={handleOpen}>
+          <Icon name="plus" size="sm" type="regular" />
+        </IconButton>
       </Tooltip>
-
-      {/* <Confirm
-        open={open}
-        onConfirm={() => {
-          ui.set({ restoring: true, restore: false })
-          emit('restore', device.id)
+      <Popover
+        open={!!el}
+        onClose={handleClose}
+        anchorEl={el}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
         }}
-        onDeny={() => setOpen(false)}
-        title="Restore device from Cloud"
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
       >
-        We will attempt to restore this device's configuration. Please note this may not completely restore services
-        that have custom host information.
-      </Confirm> */}
+        <Body center className={css.popover}>
+          <Typography variant="body1">Enter your registration code to claim a new device.</Typography>
+          <List>
+            <ListItem>
+              <TextField
+                size="small"
+                label="Service Port"
+                variant="filled"
+                onChange={() => {} /* event => setForm({ ...form, port: +event.target.value }) */}
+                fullWidth
+              />
+            </ListItem>
+            <ListItem>
+              <Button type="submit" variant="contained" color="primary" fullWidth disabled={false /* !!error */}>
+                Register
+              </Button>
+            </ListItem>
+            <ListItem>
+              <Button onClick={() => {} /* onCancel */} fullWidth>
+                Cancel
+              </Button>
+            </ListItem>
+          </List>
+        </Body>
+      </Popover>
     </>
   )
 }
+
+const useStyles = makeStyles({
+  popover: {
+    padding: spacing.xl,
+    '& .MuiList-root': { width: '100%' },
+  },
+})
