@@ -103,6 +103,6 @@ export default {
   },
 
   version() {
-    return 'version'
+    return '-j version'
   },
 }

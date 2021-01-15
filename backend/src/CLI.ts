@@ -275,7 +275,11 @@ export default class CLI {
 
   async version() {
     const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true })
-    return result.toString().trim()
+    try {
+      return JSON.parse(result).version
+    } catch (error) {
+      Logger.warn('VERSION PARSE ERROR', { result, errorMessage: error.message })
+    }
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
