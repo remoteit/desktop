@@ -5,7 +5,7 @@ import { emit } from '../services/Controller'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { Dispatch } from '../store'
-import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { getRedirectUrl, isElectron } from '../services/Browser'
 import { createModel } from '@rematch/core'
@@ -75,7 +75,7 @@ export default createModel<RootModel>()({
           created: data.created,
         })
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async checkSession(_: void, rootState: any) {

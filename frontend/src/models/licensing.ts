@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { RootModel } from './rootModel'
 
 const upgradeUrl = 'https://link.remote.it/aws-marketplace/saas'
@@ -65,7 +65,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         dispatch.licensing.parse(result?.data?.data?.login)
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async parse(data: any) {

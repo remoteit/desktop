@@ -1,9 +1,9 @@
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
-import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getAccountId, getAllDevices } from './accounts'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { platformConfiguration } from '../services/platformConfiguration'
-import { graphQLSetAttributes } from '../services/graphQLMutation'
+import { graphQLSetAttributes, graphQLClaimDevice } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
@@ -120,7 +120,7 @@ export default createModel<RootModel>()({
         const loginId = gqlResponse?.data?.data?.login?.id
         result = gqlDevice ? graphQLAdaptor(gqlDevice, loginId, accountId, hidden)[0] : undefined
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
 
       await dispatch.accounts.setDevice({ id: deviceId, accountId, device: result })
@@ -141,7 +141,7 @@ export default createModel<RootModel>()({
         await parseAccounts(gqlResponse)
         return { devices, connections, total, contacts, error }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
         return { devices: [], total: 0, error }
       }
     },
@@ -194,6 +194,24 @@ export default createModel<RootModel>()({
       device.services[index].attributes = service.attributes
       graphQLSetAttributes(service.attributes, service.id)
       dispatch.accounts.setDevice({ id: device.id, device })
+    },
+
+    async claimDevice(code: string) {
+      console.log('CLAIM DEVICE CODE', code)
+      const result = await graphQLClaimDevice(code)
+      try {
+        const id = result?.data?.data?.claimDevice?.id
+        if (id) {
+          const device = await dispatch.devices.fetchSingle({ deviceId: id })
+          dispatch.ui.set({ successMessage: `Your device was successfully registered! (${device.name})` })
+        } else {
+          dispatch.ui.set({ noticeMessage: `Your device (${code}) could not be found.` })
+        }
+        dispatch.ui.set({ claiming: false })
+      } catch (error) {
+        dispatch.ui.set({ errorMessage: `An error occurred registering your device. (${error.message})` })
+        console.error(error)
+      }
     },
 
     async destroy(device: IDevice, globalState: any) {

@@ -4,6 +4,16 @@ import { store } from '../store'
 import { version } from '../../package.json'
 import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 
+export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
+  try {
+    const response = await graphQLRequest(query, variables)
+    await graphQLGetErrors(response)
+    return response
+  } catch (error) {
+    await graphQLCatchError(error)
+  }
+}
+
 export async function graphQLRequest(query: String, variables: ILookup<any> = {}) {
   const request = {
     url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
@@ -26,7 +36,7 @@ export function graphQLGetErrors(response: any, silent?: boolean) {
   return errors
 }
 
-export async function graphQLHandleError(error: AxiosError) {
+export async function graphQLCatchError(error: AxiosError) {
   const { auth, ui } = store.dispatch
   console.error('GraphQL fetch error:', error, error?.response?.status)
   if (error?.response?.status === 401) {

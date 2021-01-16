@@ -7,6 +7,7 @@ type UIParams = { [key: string]: any }
 type UIState = UIParams & {
   connected: boolean
   uninstalling: boolean
+  claiming: boolean
   routingLock?: IRouteType
   routingMessage?: string
   filterMenu: boolean
@@ -34,6 +35,7 @@ type UIState = UIParams & {
 const state: UIState = {
   connected: false,
   uninstalling: false,
+  claiming: false,
   routingLock: undefined,
   routingMessage: undefined,
   filterMenu: false,

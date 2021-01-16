@@ -1,4 +1,5 @@
-import { graphQLRequest } from './graphQL'
+import { graphQLBasicRequest } from './graphQL'
+import { DEVICE_SELECT } from './graphQLDevice'
 
 const SET_ATTRIBUTES = `
 mutation query($attributes: Object!, $serviceId: String) {
@@ -28,18 +29,30 @@ mutation query($emails: [String!]!, $action: SharingAction) {
 }
 `
 
+const CLAIM_DEVICE = `
+mutation query($code: String!) {
+  claimDevice(code: $code) {
+    ${DEVICE_SELECT}
+  }
+}
+`
+
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId: String) {
-  return await graphQLRequest(SET_ATTRIBUTES, { attributes: { $remoteit: attributes }, serviceId })
+  return await graphQLBasicRequest(SET_ATTRIBUTES, { attributes: { $remoteit: attributes }, serviceId })
 }
 
 export async function graphQLUnShareDevice(params: IShareProps) {
-  return await graphQLRequest(UNSHARE_DEVICE, params)
+  return await graphQLBasicRequest(UNSHARE_DEVICE, params)
 }
 
 export async function graphQLShareDevice(params: IShareProps) {
-  return await graphQLRequest(SHARE_DEVICE, params)
+  return await graphQLBasicRequest(SHARE_DEVICE, params)
 }
 
 export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMOVE' | 'LEAVE') {
-  return await graphQLRequest(SHARE_ACCOUNT, { emails, action })
+  return await graphQLBasicRequest(SHARE_ACCOUNT, { emails, action })
+}
+
+export async function graphQLClaimDevice(code: string) {
+  return await graphQLBasicRequest(CLAIM_DEVICE, { code })
 }

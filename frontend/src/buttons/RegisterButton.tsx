@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   makeStyles,
   Tooltip,
@@ -18,15 +18,25 @@ import { Icon } from '../components/Icon'
 
 export const RegisterButton: React.FC = () => {
   const css = useStyles()
+  const { devices, ui } = useDispatch<Dispatch>()
   const [el, setEl] = useState<HTMLButtonElement | null>(null)
-  const { user } = useSelector((state: ApplicationState) => ({
+  const [code, setCode] = useState<string>('')
+  const { user, claiming } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
+    claiming: state.ui.claiming,
   }))
+
+  useEffect(() => {
+    if (!claiming) handleClose()
+  }, [claiming])
 
   if (!user?.email.includes('remote.it')) return null
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => setEl(event.currentTarget)
-  const handleClose = () => setEl(null)
+  const handleClose = () => {
+    setEl(null)
+    setCode('')
+  }
 
   return (
     <>
@@ -50,27 +60,35 @@ export const RegisterButton: React.FC = () => {
       >
         <Body center className={css.popover}>
           <Typography variant="body1">Enter your registration code to claim a new device.</Typography>
-          <List>
-            <ListItem>
-              <TextField
-                size="small"
-                label="Service Port"
-                variant="filled"
-                onChange={() => {} /* event => setForm({ ...form, port: +event.target.value }) */}
-                fullWidth
-              />
-            </ListItem>
-            <ListItem>
-              <Button type="submit" variant="contained" color="primary" fullWidth disabled={false /* !!error */}>
-                Register
-              </Button>
-            </ListItem>
-            <ListItem>
-              <Button onClick={() => {} /* onCancel */} fullWidth>
-                Cancel
-              </Button>
-            </ListItem>
-          </List>
+          <form
+            onSubmit={e => {
+              e.preventDefault()
+              ui.set({ claiming: true })
+              devices.claimDevice(code)
+            }}
+          >
+            <List>
+              <ListItem>
+                <TextField
+                  autoFocus
+                  size="small"
+                  label="Registration Code"
+                  value={code}
+                  variant="filled"
+                  onChange={event => setCode(event.target.value)}
+                  fullWidth
+                />
+              </ListItem>
+              <ListItem>
+                <Button type="submit" variant="contained" color="primary" disabled={claiming} fullWidth>
+                  {claiming ? 'Registering...' : 'Register'}
+                </Button>
+                <Button onClick={handleClose} fullWidth>
+                  Cancel
+                </Button>
+              </ListItem>
+            </List>
+          </form>
         </Body>
       </Popover>
     </>
@@ -80,6 +98,7 @@ export const RegisterButton: React.FC = () => {
 const useStyles = makeStyles({
   popover: {
     padding: spacing.xl,
-    '& .MuiList-root': { width: '100%' },
+    paddingBottom: spacing.lg,
+    '& .MuiList-root, & form': { width: '100%' },
   },
 })

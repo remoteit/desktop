@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { RootModel } from './rootModel'
 
@@ -58,7 +58,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         await dispatch.accounts.parse(result)
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async parse(gqlResponse: any, globalState: ApplicationState) {
@@ -98,7 +98,7 @@ export default createModel<RootModel>()({
           })
         }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async removeAccess(email: string, globalState) {
@@ -112,7 +112,7 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ successMessage: `${email} successfully removed.` })
         }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async leaveMembership(email: string, globalState) {
@@ -126,7 +126,7 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ successMessage: `You have successfully left ${email}'s device list.` })
         }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {

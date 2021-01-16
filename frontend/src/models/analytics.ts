@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { hasCredentials } from '../services/remote.it'
 import { RootModel } from './rootModel'
 import { set as setDate, eachDayOfInterval, isEqual } from 'date-fns'
@@ -126,7 +126,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         parse(result)
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async parse(gqlResponse: any, globalState: ApplicationState) {
