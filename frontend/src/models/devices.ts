@@ -200,10 +200,10 @@ export default createModel<RootModel>()({
       console.log('CLAIM DEVICE CODE', code)
       const result = await graphQLClaimDevice(code)
       try {
-        const id = result?.data?.data?.claimDevice?.id
-        if (id) {
-          const device = await dispatch.devices.fetchSingle({ deviceId: id })
-          dispatch.ui.set({ successMessage: `Your device was successfully registered! (${device.name})` })
+        const device = result?.data?.data?.claimDevice
+        if (device?.id) {
+          await dispatch.devices.fetch() // fetch all so that the sorting is correct
+          dispatch.ui.set({ successMessage: `'${device.name}' was successfully registered!` })
         } else {
           dispatch.ui.set({ noticeMessage: `Your device (${code}) could not be found.` })
         }

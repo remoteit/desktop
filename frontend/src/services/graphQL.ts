@@ -43,10 +43,7 @@ export async function graphQLCatchError(error: AxiosError) {
     auth.signInError('Session Expired')
   } else if (error?.response?.status === 403) {
     auth.checkSession()
-    ui.set({ errorMessage: error.message })
-  } else if (error.message === 'Network Error') {
-    // hide network disconnected error
-  } else {
+  } else if (error.message !== 'Network Error') {
     ui.set({ errorMessage: error.message })
   }
 }

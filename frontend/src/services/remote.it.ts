@@ -20,9 +20,7 @@ export async function getToken(): Promise<string> {
     return token
   } catch (error) {
     console.error('GET TOKEN ERROR', error.message, error)
-    if (error.code === 'NetworkError') {
-      ui.set({ errorMessage: error.message })
-    } else {
+    if (error.code !== 'NetworkError') {
       auth.signInError('Session Expired')
     }
     return ''

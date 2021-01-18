@@ -3,7 +3,7 @@ import { removeDeviceName } from '../shared/nameHelper'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
-export const DEVICE_SELECT = `
+const DEVICE_SELECT = `
   id
   name
   state

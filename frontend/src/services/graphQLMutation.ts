@@ -1,5 +1,4 @@
 import { graphQLBasicRequest } from './graphQL'
-import { DEVICE_SELECT } from './graphQLDevice'
 
 const SET_ATTRIBUTES = `
 mutation query($attributes: Object!, $serviceId: String) {
@@ -32,7 +31,8 @@ mutation query($emails: [String!]!, $action: SharingAction) {
 const CLAIM_DEVICE = `
 mutation query($code: String!) {
   claimDevice(code: $code) {
-    ${DEVICE_SELECT}
+    id
+    name
   }
 }
 `

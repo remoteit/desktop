@@ -16,11 +16,14 @@ import { spacing } from '../styling'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
+const CLAIM_CODE_LENGTH = 8
+
 export const RegisterButton: React.FC = () => {
   const css = useStyles()
   const { devices, ui } = useDispatch<Dispatch>()
   const [el, setEl] = useState<HTMLButtonElement | null>(null)
   const [code, setCode] = useState<string>('')
+  const [valid, setValid] = useState<boolean>(false)
   const { user, claiming } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     claiming: state.ui.claiming,
@@ -32,10 +35,23 @@ export const RegisterButton: React.FC = () => {
 
   if (!user?.email.includes('remote.it')) return null
 
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => setEl(event.currentTarget)
+  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setEl(event.currentTarget)
+  }
   const handleClose = () => {
     setEl(null)
+    setValid(false)
     setCode('')
+  }
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let { value } = event.target
+    if (value.length >= CLAIM_CODE_LENGTH) {
+      value = value.substring(0, CLAIM_CODE_LENGTH)
+      setValid(true)
+    } else {
+      setValid(false)
+    }
+    setCode(value)
   }
 
   return (
@@ -75,12 +91,19 @@ export const RegisterButton: React.FC = () => {
                   label="Registration Code"
                   value={code}
                   variant="filled"
-                  onChange={event => setCode(event.target.value)}
+                  onChange={handleChange}
                   fullWidth
+                  InputProps={{
+                    endAdornment: claiming ? (
+                      <Icon name="spinner-third" size="sm" spin type="regular" />
+                    ) : (
+                      valid && <Icon name="check" color="primary" size="sm" type="regular" />
+                    ),
+                  }}
                 />
               </ListItem>
               <ListItem>
-                <Button type="submit" variant="contained" color="primary" disabled={claiming} fullWidth>
+                <Button type="submit" variant="contained" color="primary" disabled={claiming || !valid} fullWidth>
                   {claiming ? 'Registering...' : 'Register'}
                 </Button>
                 <Button onClick={handleClose} fullWidth>
