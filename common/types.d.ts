@@ -466,6 +466,14 @@ declare global {
     isValid?: boolean
     loading?: boolean
   }
+
+  type ILaunchApp = {
+    port?: number
+    host?: string
+    username?: string
+    path: string
+    application: string
+  }
 }
 
 export {}

@@ -84,6 +84,7 @@ export default createModel<RootModel>()({
       if (result.authUser) {
         await dispatch.auth.handleSignInSuccess(result.cognitoUser)
       } else {
+        console.error('SESSION ERROR', result.error)
         if (result.error.code === 'NetworkError') {
           ui.set({ errorMessage: result.error.message })
         } else {

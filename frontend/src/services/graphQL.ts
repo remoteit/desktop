@@ -38,7 +38,7 @@ export function graphQLGetErrors(response: any, silent?: boolean) {
 
 export async function graphQLCatchError(error: AxiosError) {
   const { auth, ui } = store.dispatch
-  console.error('GraphQL fetch error:', error, error?.response?.status)
+  console.error('GRAPHQL FETCH ERROR:', error, error?.response?.status)
   if (error?.response?.status === 401) {
     auth.signInError('Session Expired')
   } else if (error?.response?.status === 403) {

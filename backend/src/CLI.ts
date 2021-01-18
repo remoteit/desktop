@@ -138,7 +138,10 @@ export default class CLI {
         c.reachable = status.reachable
 
         if (status.reachable === false) {
-          c.error = { message: "This connection didn't detect a running service", code: REACHABLE_ERROR_CODE }
+          c.error = {
+            message: 'remote.it connected, but there is no service running on the remote machine.',
+            code: REACHABLE_ERROR_CODE,
+          }
         } else if (status.reachable === true) {
           if (c.error && c.error.code === REACHABLE_ERROR_CODE) c.error = { code: 0, message: '' }
         }
@@ -275,7 +278,11 @@ export default class CLI {
 
   async version() {
     const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true })
-    return result.toString().trim()
+    try {
+      return JSON.parse(result).version
+    } catch (error) {
+      Logger.warn('VERSION PARSE ERROR', { result, errorMessage: error.message })
+    }
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {

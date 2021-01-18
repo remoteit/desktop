@@ -18,9 +18,10 @@ export async function getToken(): Promise<string> {
     const currentSession = await store.getState().auth.authService?.currentCognitoSession()
     const token = 'Bearer ' + currentSession?.getAccessToken().getJwtToken()
     return token
-  } catch (err) {
-    if (err.code === 'NetworkError') {
-      ui.set({ errorMessage: err.message })
+  } catch (error) {
+    console.error('GET TOKEN ERROR', error.message, error)
+    if (error.code === 'NetworkError') {
+      ui.set({ errorMessage: error.message })
     } else {
       auth.signInError('Session Expired')
     }
