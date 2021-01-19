@@ -16,7 +16,7 @@ type IGetDevice = {
   hidden?: boolean
 }
 
-type IDeviceState = DeviceParams & {
+type IDeviceState = {
   initialized: boolean
   total: number
   results: number

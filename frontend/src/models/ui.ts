@@ -3,8 +3,7 @@ import { RootModel } from './rootModel'
 
 export const DEFAULT_INTERFACE = 'searching'
 
-type UIParams = { [key: string]: any }
-type UIState = UIParams & {
+type UIState = {
   connected: boolean
   uninstalling: boolean
   routingLock?: IRouteType
@@ -29,6 +28,9 @@ type UIState = UIParams & {
   successMessage: string
   noticeMessage: string
   errorMessage: string
+  launchLoading: boolean
+  launchPath: string
+  requireInstall: string
 }
 
 const state: UIState = {
@@ -56,6 +58,9 @@ const state: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
+  launchLoading: false,
+  launchPath: '',
+  requireInstall: ''
 }
 
 export default createModel<RootModel>()({
@@ -69,7 +74,7 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: UIState, params: UIParams) {
+    set(state: UIState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

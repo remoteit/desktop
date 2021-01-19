@@ -13,7 +13,7 @@ export function ShareSaveActions({
   onSave: () => void
   disabled: boolean
 }): JSX.Element {
-  const { saving } = useSelector((state: ApplicationState) => state.shares)
+  const { sharing: saving } = useSelector((state: ApplicationState) => state.shares)
   return (
     <section>
       <Button color="primary" onClick={onSave} disabled={disabled} variant="contained">

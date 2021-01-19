@@ -7,9 +7,7 @@ import { RootModel } from './rootModel'
 
 const MAX_LOG_LENGTH = 1000
 
-type LogParams = { [key: string]: any }
-
-type ILogState = LogParams & {
+type ILogState = {
   total: number
   fetching: boolean
   fetchingMore: boolean
@@ -88,7 +86,7 @@ export default createModel<RootModel>()({
       state[id].push(log)
       return state
     },
-    set(state: ILogState, params: LogParams) {
+    set(state: ILogState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
