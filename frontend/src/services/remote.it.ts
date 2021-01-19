@@ -32,10 +32,9 @@ export async function hasCredentials() {
   try {
     await store.getState().auth.authService?.currentCognitoSession()
     return true
-  } catch (err) {
-    if (err.code === 'NetworkError') {
-      ui.set({ errorMessage: err.message })
-    } else {
+  } catch (error) {
+    console.error('HAS CREDENTIALS ERROR', error.message, error)
+    if (error.code !== 'NetworkError') {
       auth.signInError('Session Expired')
     }
     return false
