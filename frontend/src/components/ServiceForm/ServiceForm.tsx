@@ -36,7 +36,7 @@ export const ServiceForm: React.FC<Props> = ({
   const { backend, ui } = useDispatch<Dispatch>()
   const { applicationTypes, disabled, setupAdded, isValid } = useSelector((state: ApplicationState) => ({
     applicationTypes: state.applicationTypes.all,
-    disabled: state.ui.setupBusy || state.ui.setupServiceBusy === service?.id,
+    disabled: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
     setupAdded: state.ui.setupAdded,
     isValid: state.backend.reachablePort,
   }))
