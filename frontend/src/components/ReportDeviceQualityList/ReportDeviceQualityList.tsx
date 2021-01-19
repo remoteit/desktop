@@ -166,6 +166,7 @@ export const ReportDeviceQualityList: React.FC = () => {
         return 1
       }
     }
+    return 0
   })
   return (
     <>

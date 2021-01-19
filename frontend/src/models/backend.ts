@@ -8,7 +8,7 @@ import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
 
-type IBackendState = ILookup<any> & {
+type IBackendState = {
   connections: IConnection[]
   device: ITargetDevice
   targets: ITarget[]

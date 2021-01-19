@@ -31,9 +31,9 @@ export interface ITimeSeriesData {
   count: number
 }
 
-type IAnalyticsState = ILookup<any> & {
+type IAnalyticsState = {
   fetching: boolean
-  startDate?: Date
+  startDate: Date
   endDate?: Date
   from: number
   size: number
@@ -43,6 +43,7 @@ type IAnalyticsState = ILookup<any> & {
   devices: IAnalyticsDevice[]
   deviceTimeseries: ITimeSeriesData[]
   connectionTimeseries: ITimeSeriesData[]
+  timeZone?: string
 }
 
 const state: IAnalyticsState = {

@@ -14,7 +14,7 @@ export const LicenseLookup: ILicenseLookup[] = [
   },
 ]
 
-type ILicensing = ILookup<any> & {
+type ILicensing = {
   licenses: ILicense[]
   limits: ILimit[]
 }

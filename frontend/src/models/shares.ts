@@ -8,7 +8,7 @@ import { RootModel } from './rootModel'
 
 type ShareParams = { [key: string]: any }
 
-type IShareState = ShareParams & {
+type IShareState = {
   deleting: boolean
   updating: boolean
   sharing: boolean

@@ -7,7 +7,7 @@ import { RootModel } from './rootModel'
 
 const ACCOUNT_KEY = 'account'
 
-export type IAccountsState = ILookup<any> & {
+export type IAccountsState = {
   member: IUser[]
   access: IUser[]
   activeId?: string // user.id
