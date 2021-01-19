@@ -21,7 +21,9 @@ export const ShareDetails: React.FC<Props> = ({ user, device, connected }) => {
     <ListItemSecondaryAction className={css.indicators}>
       {scripting && (
         <Tooltip title="Allow scripting" arrow placement="top">
-          <Icon name="scroll" size="sm" type="regular" color="grayDark" />
+          <span>
+            <Icon name="scroll" size="sm" type="regular" color="grayDark" />
+          </span>
         </Tooltip>
       )}
       {!!services.length && services.map(s => <ServiceMiniState key={s.id} service={s} showConnected={!!connected} />)}
@@ -33,6 +35,6 @@ const useStyles = makeStyles({
   indicators: {
     display: 'flex',
     alignItems: 'center',
-    '& > .far': { marginRight: spacing.sm },
+    '& svg': { marginRight: spacing.sm },
   },
 })
