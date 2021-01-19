@@ -181,8 +181,8 @@ function getEventHandlers() {
     'required/app': (result: IAppValidation) => {
       ui.set({
         requireInstall: result.install,
-        loading: result.loading,
-        path: result.path,
+        launchLoading: result.loading,
+        launchPath: result.path,
       })
     },
     reachablePort: (result: boolean) => {

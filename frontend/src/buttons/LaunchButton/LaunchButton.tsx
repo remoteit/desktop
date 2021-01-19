@@ -23,8 +23,8 @@ type Props = {
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, size = 'md' }) => {
   const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
-    path: state.ui.path,
-    loading: state.ui.loading,
+    path: state.ui.launchPath,
+    loading: state.ui.launchLoading,
   }))
   const { ui } = useDispatch<Dispatch>()
   const [launch, setLaunch] = useState<boolean>(false)

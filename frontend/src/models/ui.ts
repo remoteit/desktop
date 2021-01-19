@@ -28,8 +28,8 @@ type UIState = {
   successMessage: string
   noticeMessage: string
   errorMessage: string
-  loading: boolean
-  path: string
+  launchLoading: boolean
+  launchPath: string
   requireInstall: string
 }
 
@@ -58,8 +58,8 @@ const state: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  loading: false,
-  path: '',
+  launchLoading: false,
+  launchPath: '',
   requireInstall: ''
 }
 
