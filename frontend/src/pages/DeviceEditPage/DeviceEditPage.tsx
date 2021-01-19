@@ -66,7 +66,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   if (!device) return null
 
   const thisDevice = device.id === targetDevice.uid
-  const editable = thisDevice || !device.legacy
+  const editable = thisDevice || device.configurable
 
   function host(service: IService) {
     const target = targets.find(t => t.uid === service.id)
@@ -114,7 +114,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         <>
           <Typography variant="subtitle1">
             <Title>Services</Title>
-            <AddFromNetwork deviceId={device?.id} thisDevice={thisDevice} button />
+            <AddFromNetwork allowScanning={thisDevice} button />
             <AddServiceButton device={device} editable={editable} link={links.add} />
           </Typography>
           <List>

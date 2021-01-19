@@ -23,6 +23,7 @@ type UIState = UIParams & {
   setupRegisteringDevice: boolean
   setupDeletingDevice: boolean
   setupAddingService: boolean
+  setupDeletingService?: string
   setupServiceBusy?: string
   setupServicesCount: number
   setupServicesNew: boolean
@@ -51,6 +52,7 @@ const state: UIState = {
   setupRegisteringDevice: false,
   setupDeletingDevice: false,
   setupServiceBusy: undefined,
+  setupDeletingService: undefined,
   setupAddingService: false,
   setupServicesCount: 0,
   setupServicesNew: true,

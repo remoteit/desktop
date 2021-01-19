@@ -47,7 +47,7 @@ export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: 
       break
     case 34304:
       name = 'cloud-rainbow'
-      type = 'regular'
+      type = 'solid'
       if (size === 'xxs') size = 'xs'
       break
   }
@@ -59,7 +59,7 @@ export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: 
   if (tooltip)
     return (
       <Tooltip title={TARGET_PLATFORMS[id]} placement="top" arrow>
-        {icon}
+        <span>{icon}</span>
       </Tooltip>
     )
 

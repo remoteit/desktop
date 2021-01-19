@@ -125,7 +125,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
                             setupAdded: {
                               ...DEFAULT_TARGET,
                               type: getTypeId(applicationTypes, port[0]),
-                              hostname: ip[0] === privateIP ? '' : ip[0],
+                              hostname: ip[0] === privateIP ? IP_PRIVATE : ip[0],
                               port: port[0],
                               name: (ip[0] === privateIP ? '' : 'Forwarded ') + port[1].replace(REGEX_NAME_SAFE, ''),
                             },

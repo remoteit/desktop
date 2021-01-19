@@ -1,9 +1,15 @@
+import {
+  graphQLSetAttributes,
+  graphQLClaimDevice,
+  graphQLAddService,
+  graphQLUpdateService,
+  graphQLRemoveService,
+} from '../services/graphQLMutation'
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
+import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getAccountId, getAllDevices } from './accounts'
-import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { platformConfiguration } from '../services/platformConfiguration'
-import { graphQLSetAttributes, graphQLClaimDevice } from '../services/graphQLMutation'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
@@ -23,7 +29,7 @@ type IDeviceState = DeviceParams & {
   searched: boolean
   fetching: boolean
   fetchingMore: boolean
-  destroying: boolean
+  destroying: boolean // fixme - move to ui model
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
@@ -187,13 +193,57 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async setServiceAttributes(service: IService, globalState: any) {
+    async setServiceAttributes(service: IService, globalState) {
       let device = getAllDevices(globalState).find((d: IDevice) => d.id === service.deviceID)
       if (!device) return
       const index = device.services.findIndex((s: IService) => s.id === service.id)
       device.services[index].attributes = service.attributes
       graphQLSetAttributes(service.attributes, service.id)
       dispatch.accounts.setDevice({ id: device.id, device })
+    },
+
+    async cloudAddService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
+      console.log('CLOUD ADD SERVICE', form)
+      dispatch.ui.set({ setupServiceBusy: form.uid, setupAddingService: true })
+      const result = await graphQLAddService({
+        deviceId,
+        name: form.name,
+        application: form.type,
+        host: form.hostname,
+        port: form.port,
+        enabled: !form.disabled,
+      })
+      console.log('CLOUD RESULT', result)
+      const id = result?.data?.data?.addService?.id
+      if (id) {
+        await graphQLSetAttributes(form.attributes, id)
+        await dispatch.devices.fetchSingle({ deviceId })
+      }
+      dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
+    },
+
+    async cloudUpdateService({ form, deviceId }: { form: IServiceForm; deviceId: string }) {
+      console.log('CLOUD UPDATE SERVICE', form)
+      dispatch.ui.set({ setupServiceBusy: form.uid })
+      await graphQLUpdateService({
+        id: form.uid,
+        name: form.name,
+        application: form.type,
+        host: form.hostname,
+        port: form.port,
+        enabled: !form.disabled,
+      })
+      await graphQLSetAttributes(form.attributes, form.uid)
+      await dispatch.devices.fetchSingle({ deviceId })
+      dispatch.ui.set({ setupServiceBusy: undefined })
+    },
+
+    async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId?: string }) {
+      console.log('REMOVING SERVICE', serviceId, deviceId)
+      dispatch.ui.set({ setupServiceBusy: serviceId, setupDeletingService: serviceId })
+      await graphQLRemoveService(serviceId)
+      await dispatch.devices.fetchSingle({ deviceId })
+      dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
     },
 
     async claimDevice(code: string) {
@@ -214,12 +264,12 @@ export default createModel<RootModel>()({
       }
     },
 
-    async destroy(device: IDevice, globalState: any) {
+    async destroy(device: IDevice, globalState) {
       const { auth } = globalState
       dispatch.devices.set({ destroying: true })
       try {
         device.shared
-          ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email)}`, {
+          ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email || '')}`, {
               devices: device.id,
               emails: auth.user?.email,
               state: 'off',

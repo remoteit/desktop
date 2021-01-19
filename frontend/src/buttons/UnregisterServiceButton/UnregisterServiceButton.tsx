@@ -12,13 +12,13 @@ type Props = {
 }
 
 export const UnregisterServiceButton: React.FC<Props> = ({ target }) => {
+  const css = useStyles()
   const [open, setOpen] = useState<boolean>(false)
   const { backend } = useDispatch<Dispatch>()
   const { setupBusy, deleting } = useSelector((state: ApplicationState) => ({
     setupBusy: state.ui.setupBusy,
     deleting: state.ui.setupServiceBusy === target?.uid,
   }))
-  const css = useStyles()
 
   if (!target) return null
 
@@ -27,9 +27,11 @@ export const UnregisterServiceButton: React.FC<Props> = ({ target }) => {
   ) : (
     <>
       <Tooltip title="Unregister Service">
-        <IconButton onClick={() => setOpen(true)} disabled={setupBusy}>
-          <Icon name="trash-alt" size="md" fixedWidth />
-        </IconButton>
+        <span>
+          <IconButton disabled={setupBusy} onClick={() => setOpen(true)}>
+            <Icon name="trash-alt" size="md" fixedWidth />
+          </IconButton>
+        </span>
       </Tooltip>
       <Confirm
         open={open}

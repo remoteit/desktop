@@ -22,12 +22,12 @@ type Props = {
 
 export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
+  const { backend, applicationTypes, devices } = useDispatch<Dispatch>()
   const { setupServicesLimit, device, links } = useSelector((state: ApplicationState) => ({
     ...state.ui,
     device: getAllDevices(state).find(d => d.id === deviceID),
     links: getLinks(state, deviceID),
   }))
-  const { backend, ui, applicationTypes } = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
 
@@ -59,14 +59,16 @@ export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
         </Body>
       ) : (
         <ServiceForm
-          thisDevice={device.id === targetDevice.uid}
-          editable={!device.legacy}
+          thisDevice={device?.id === targetDevice.uid}
+          editable={device?.configurable || device?.id === targetDevice.uid}
           onSubmit={async form => {
-            await ui.set({ setupAdded: undefined })
-            await backend.addTargetService(form)
-
-            // set route attributes via deferred update
-            await backend.set({ deferredAttributes: form.attributes })
+            if (device?.configurable) {
+              // CloudShift
+              devices.cloudAddService({ form, deviceId: device?.id })
+            } else {
+              await backend.addTargetService(form)
+              await backend.set({ deferredAttributes: form.attributes }) // set route attributes via deferred update
+            }
             history.push(links.edit)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
