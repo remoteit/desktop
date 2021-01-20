@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
-import { useHistory, useLocation } from 'react-router-dom'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
@@ -17,39 +16,41 @@ import { Notice } from '../Notice'
 import { emit } from '../../services/Controller'
 import { Icon } from '../Icon'
 
-type IServiceForm = ITarget & {
-  name: string
-  attributes: IService['attributes']
-}
-
 type Props = {
   service?: IService
   target?: ITarget
   thisDevice: boolean
-  onSubmit: (IServiceForm) => void
+  editable: boolean
+  onSubmit: (form: IServiceForm) => void
   onCancel: () => void
 }
 
-export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET, thisDevice, onSubmit, onCancel }) => {
-  const { backend } = useDispatch<Dispatch>()
-  const history = useHistory()
-  const location = useLocation()
-  const { applicationTypes, setupBusy, setupAdded, deleting, isValid, scanEnabled } = useSelector(
-    (state: ApplicationState) => ({
-      applicationTypes: state.applicationTypes.all,
-      setupBusy: state.ui.setupBusy,
-      setupAdded: state.ui.setupAdded,
-      deleting: state.ui.setupServiceBusy === target?.uid,
-      isValid: state.backend.reachablePort,
-      scanEnabled: state.ui.scanEnabled,
-    })
-  )
-  const disabled = setupBusy || deleting
+export const ServiceForm: React.FC<Props> = ({
+  service,
+  target = DEFAULT_TARGET,
+  thisDevice,
+  editable,
+  onSubmit,
+  onCancel,
+}) => {
+  const { backend, ui } = useDispatch<Dispatch>()
+  const { applicationTypes, disabled, setupAdded, isValid } = useSelector((state: ApplicationState) => ({
+    applicationTypes: state.applicationTypes.all,
+    disabled: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
+    setupAdded: state.ui.setupAdded,
+    isValid: state.backend.reachablePort,
+  }))
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<ITarget & IServiceForm>(() => {
     const defaultAppType = findType(applicationTypes, target.type)
     return {
-      ...target,
+      hostname: service?.host || target.hostname,
+      hardwareID: target.hardwareID,
+      uid: service?.id || target.uid,
+      secret: target.secret,
+      port: service?.port || target.port,
+      type: service?.typeID || target.type,
+      disabled: service?.enabled === undefined ? target.disabled : !service?.enabled,
       name: service?.name || serviceNameValidation(defaultAppType.description).value,
       attributes: service?.attributes || {},
       ...setupAdded,
@@ -82,11 +83,17 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
 
   useEffect(() => {
     checkPort()
+    if (setupAdded) ui.set({ setupAdded: undefined })
   }, [form?.port, form?.hostname])
 
   return (
-    <form onSubmit={() => onSubmit({ ...form, port: form.port || 1 })}>
-      {thisDevice && (
+    <form
+      onSubmit={event => {
+        event.preventDefault()
+        onSubmit({ ...form, port: form.port || 1 })
+      }}
+    >
+      {editable && (
         <>
           <List>
             <ListItem className={css.field}>
@@ -135,9 +142,12 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 value={form.port}
                 disabled={disabled}
                 variant="filled"
-                onChange={event => setForm({ ...form, port: +event.target.value })}
+                onChange={event => {
+                  const port = Math.max(0, Math.min(+event.target.value, 65535))
+                  setForm({ ...form, port: isNaN(port) ? 0 : port })
+                }}
                 InputProps={{
-                  endAdornment: <CheckIcon />,
+                  endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
             </ListItem>
@@ -150,7 +160,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
                 InputProps={{
-                  endAdornment: <CheckIcon />,
+                  endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
               <Typography variant="caption">
@@ -161,28 +171,30 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
                 <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
               </Typography>
             </ListItem>
-            <ListItem className={css.fieldWide}>
-              <Notice
-                fullWidth
-                severity={isValid ? 'success' : 'warning'}
-                button={
-                  isValid ? undefined : (
-                    <Button size="small" color="primary" onClick={checkPort}>
-                      Retry
-                    </Button>
-                  )
-                }
-              >
-                {isValid ? (
-                  'Service found on port and host address!'
-                ) : (
-                  <>
-                    No service found running on port and host address.
-                    <AddFromNetwork deviceId={target.uid} thisDevice={thisDevice} />
-                  </>
-                )}
-              </Notice>
-            </ListItem>
+            {thisDevice && (
+              <ListItem className={css.fieldWide}>
+                <Notice
+                  fullWidth
+                  severity={isValid ? 'success' : 'warning'}
+                  button={
+                    isValid ? undefined : (
+                      <Button size="small" color="primary" onClick={checkPort}>
+                        Retry
+                      </Button>
+                    )
+                  }
+                >
+                  {isValid ? (
+                    'Service found on port and host address!'
+                  ) : (
+                    <>
+                      No service found running on port and host address.
+                      <AddFromNetwork allowScanning={thisDevice} />
+                    </>
+                  )}
+                </Notice>
+              </ListItem>
+            )}
           </List>
           <Divider />
         </>
@@ -218,7 +230,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
           setAttributes={attributes => setForm({ ...form, attributes })}
         />
       </List>
-      {thisDevice && (
+      {editable && (
         <>
           <Divider />
           <List>
@@ -226,7 +238,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
               checked={!form.disabled}
               label={form.disabled ? 'Service disabled' : 'Service enabled'}
               subLabel="Disabling your service will take it offline."
-              disabled={setupBusy}
+              disabled={disabled}
               onClick={() => {
                 setForm({ ...form, disabled: !form.disabled })
               }}
@@ -236,7 +248,7 @@ export const ServiceForm: React.FC<Props> = ({ service, target = DEFAULT_TARGET,
       )}
       <Columns inset count={1}>
         <span>
-          <Button type="submit" variant="contained" color="primary" disabled={setupBusy || !!error}>
+          <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
             Save
           </Button>
           <Button onClick={onCancel}>Cancel</Button>

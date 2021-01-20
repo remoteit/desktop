@@ -6,6 +6,7 @@ export const DEFAULT_INTERFACE = 'searching'
 type UIState = {
   connected: boolean
   uninstalling: boolean
+  claiming: boolean
   routingLock?: IRouteType
   routingMessage?: string
   filterMenu: boolean
@@ -21,6 +22,7 @@ type UIState = {
   setupRegisteringDevice: boolean
   setupDeletingDevice: boolean
   setupAddingService: boolean
+  setupDeletingService?: string
   setupServiceBusy?: string
   setupServicesCount: number
   setupServicesNew: boolean
@@ -36,6 +38,7 @@ type UIState = {
 const state: UIState = {
   connected: false,
   uninstalling: false,
+  claiming: false,
   routingLock: undefined,
   routingMessage: undefined,
   filterMenu: false,
@@ -51,6 +54,7 @@ const state: UIState = {
   setupRegisteringDevice: false,
   setupDeletingDevice: false,
   setupServiceBusy: undefined,
+  setupDeletingService: undefined,
   setupAddingService: false,
   setupServicesCount: 0,
   setupServicesNew: true,

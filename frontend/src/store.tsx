@@ -11,12 +11,12 @@ console.log(`
   | |    | ____|| | | || |_| | | |_ | ____| _ | |  | |_   ( (_| || ____||___ ||  _ (   | |_| |_| || |_| |
   |_|    |_____)|_|_|_| \\___/   \\__)|_____)(_)|_|   \\__)   \\____||_____)(___/ |_| \\_)   \\__)\\___/ |  __/ 
                                                                                                   |_|    
-  set window.LOG_STATE = true to enable redux state logging
+  set window.stateLogging = true to enable redux state logging
 
   `)
 
 const logger = createLogger({
-  predicate: () => !!(window as any).LOG_STATE,
+  predicate: () => !!(window as any).stateLogging,
 })
 
 let immerInstance: any = immer

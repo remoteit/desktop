@@ -1,4 +1,4 @@
-import { graphQLHandleError } from '../services/graphQL'
+import { graphQLCatchError } from '../services/graphQL'
 import { getDevices } from './accounts'
 import { hasCredentials } from '../services/remote.it'
 import { createModel } from '@rematch/core'
@@ -49,7 +49,7 @@ export default createModel<RootModel>()({
           })
         dispatch.accounts.setDevice({ id, device: device[0] })
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
       from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
     },
@@ -64,7 +64,7 @@ export default createModel<RootModel>()({
         const { eventsUrl } = device[0]
         set({ eventsUrl: eventsUrl })
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
   }),

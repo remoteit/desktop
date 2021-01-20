@@ -1,7 +1,7 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
 import { attributeName } from '../shared/nameHelper'
-import { getAllDevices, getAccountId } from '../models/accounts'
+import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
 
@@ -25,7 +25,7 @@ export function connectionName(service?: IService, device?: IDevice) {
 
 export function newConnection(service?: IService | null, port?: number) {
   const state = store.getState()
-  const accountId = getAccountId(state)
+  const accountId = getActiveAccountId(state)
   const user = [...state.accounts.member, state.auth.user].find(u => u?.id === accountId)
 
   let connection: IConnection = {

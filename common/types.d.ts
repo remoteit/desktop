@@ -195,6 +195,7 @@ declare global {
     instability: number
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
+    configurable: boolean // cloudshift device
     accountId: string
     geo: {
       connectionType?: string
@@ -224,12 +225,14 @@ declare global {
     id: string
     name: string
     lastReported: Date
+    enabled?: boolean
     state: IDevice['state']
     type: string
     deviceID: string
     connection?: IConnection
     typeID?: number
     port?: number
+    host?: ipAddress
     protocol?: string
     sessions: IUser[]
     access: IUser[]
@@ -387,6 +390,29 @@ declare global {
     name: string
     port: number
     protocol: string
+  }
+
+  type IServiceForm = ITarget & {
+    name: string
+    attributes: IService['attributes']
+  }
+
+  type ICloudAddService = {
+    deviceId: string
+    name: string
+    application: number
+    host: string
+    port: number
+    enabled: boolean
+  }
+
+  type ICloudUpdateService = {
+    id: string
+    name: string
+    application: number
+    host: string
+    port: number
+    enabled: boolean
   }
 
   type ISimpleError = { code?: number; message: string }

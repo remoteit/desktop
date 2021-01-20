@@ -88,7 +88,9 @@ export function ConnectionStateIcon({
         )}
       </span>
     )
-  else element = <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+  else {
+    element = <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+  }
 
   if (showQuality && device) {
     name = (
@@ -107,6 +109,7 @@ export function ConnectionStateIcon({
     )
     element = (
       <IconButton
+        className={css.button}
         onClick={event => {
           event.stopPropagation()
           history.push(`/devices/${device.id}/details`)
@@ -149,4 +152,5 @@ const useStyles = makeStyles({
   },
   moderate: { backgroundColor: colors.warning },
   poor: { backgroundColor: colors.danger },
+  button: { margin: `${-spacing.sm}px ${-spacing.sm}px` },
 })

@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
-import { graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { attributeName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { getDevices } from './accounts'
@@ -35,7 +35,7 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ successMessage: `${email} successfully removed.` })
         }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
       set({ deleting: false })
     },
@@ -56,7 +56,7 @@ export default createModel<RootModel>()({
                 : `${data.email[0]} successfully shared to ${attributeName(device)}.`,
           })
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
       set({ sharing: false })
     },

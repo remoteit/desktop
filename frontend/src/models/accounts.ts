@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLHandleError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { RootModel } from './rootModel'
 
@@ -58,7 +58,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         await dispatch.accounts.parse(result)
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async parse(gqlResponse: any, globalState: ApplicationState) {
@@ -98,7 +98,7 @@ export default createModel<RootModel>()({
           })
         }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async removeAccess(email: string, globalState) {
@@ -112,7 +112,7 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ successMessage: `${email} successfully removed.` })
         }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
     async leaveMembership(email: string, globalState) {
@@ -126,19 +126,15 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ successMessage: `You have successfully left ${email}'s device list.` })
         }
       } catch (error) {
-        await graphQLHandleError(error)
+        await graphQLCatchError(error)
       }
     },
-    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
+    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId: string }, globalState: any) {
       const allDevices = globalState.accounts.devices
-      accountId = accountId || getAccountId(globalState)
-
-      if (accountId) {
-        allDevices[accountId] = devices
-        dispatch.accounts.set({ devices: allDevices })
-      }
+      allDevices[accountId] = devices
+      dispatch.accounts.set({ devices: allDevices })
     },
-    async appendDevices({ devices, accountId }: { devices?: IDevice[]; accountId?: string }, globalState: any) {
+    async appendDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, globalState: any) {
       if (!devices) return
       const existingDevices = getDevices(globalState, accountId)
       devices = devices.filter(d => !existingDevices.find(e => e.id === d.id))
@@ -178,12 +174,12 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getAccountId(state: ApplicationState) {
+export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
 export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
-  return state.accounts.devices[accountId || getAccountId(state)] || []
+  return state.accounts.devices[accountId || getActiveAccountId(state)] || []
 }
 
 export function getOwnDevices(state: ApplicationState): IDevice[] {

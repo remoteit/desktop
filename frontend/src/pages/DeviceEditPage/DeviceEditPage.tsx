@@ -66,6 +66,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
   if (!device) return null
 
   const thisDevice = device.id === targetDevice.uid
+  const editable = thisDevice || device.configurable
 
   function host(service: IService) {
     const target = targets.find(t => t.uid === service.id)
@@ -108,17 +109,17 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
         )} */}
       </List>
       <Divider />
-      {!thisDevice && <AdminPanelConnect device={device} connections={connections} />}
+      {!editable && <AdminPanelConnect device={device} connections={connections} />}
       {!device.shared && (
         <>
           <Typography variant="subtitle1">
             <Title>Services</Title>
-            <AddFromNetwork deviceId={device?.id} thisDevice={thisDevice} button />
-            <AddServiceButton device={device} thisDevice={thisDevice} link={links.add} />
+            <AddFromNetwork allowScanning={thisDevice} button />
+            <AddServiceButton device={device} editable={editable} link={links.add} />
           </Typography>
           <List>
-            {thisDevice && <LicensingNotice device={device} />}
-            {thisDevice && setupAddingService && (
+            {editable && <LicensingNotice device={device} />}
+            {editable && setupAddingService && (
               <ListItem disabled button dense>
                 <ListItemIcon>
                   <CircularProgress color="inherit" size={fontSizes.md} />

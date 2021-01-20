@@ -12,6 +12,7 @@ const DEVICE_SELECT = `
   hardwareId
   platform
   version
+  configurable
   attributes
   ${LEGACY_ATTRIBUTES.join('\n')}
   access {
@@ -44,10 +45,12 @@ const DEVICE_SELECT = `
     name
     state
     title
+    enabled
     application
     created
     lastReported
     port
+    host
     type
     protocol
     license
@@ -149,6 +152,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       name: d.name,
       owner: d.owner,
       state: d.state,
+      configurable: d.configurable,
       hardwareID: d.hardwareId,
       createdAt: new Date(d.created),
       contactedAt: new Date(d.endpoint?.timestamp),
@@ -167,6 +171,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
         (s: any): IService => ({
           id: s.id,
           type: s.title,
+          enabled: s.enabled,
           typeID: s.application,
           state: s.state,
           deviceID: d.id,
@@ -177,6 +182,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
           attributes: processServiceAttributes(s),
           name: removeDeviceName(d.name, s.name),
           port: s.port,
+          host: s.host,
           protocol: s.protocol,
           access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
           sessions: processSessions(s.sessions, loginId),

@@ -102,7 +102,7 @@ const useStyles = makeStyles({
       paddingRight: 3,
       marginLeft: 2,
       marginRight: 2,
-      '& .fas': { marginRight: 2 },
+      '& svg': { marginRight: 2 },
     },
   },
   hasMenu: {

@@ -43,26 +43,33 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
           <TargetPlatform id={targetPlatformId} tooltip />
         </sup>
       )}
+      {device?.configurable && (
+        <Tooltip title="CloudShift Configurable" placement="top" arrow>
+          <sup>
+            <Icon name="pencil" size="xxs" type="solid" fixedWidth />
+          </sup>
+        </Tooltip>
+      )}
       {device?.shared && (
-        <sup>
-          <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
+        <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
+          <sup>
             <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
-          </Tooltip>
-        </sup>
+          </sup>
+        </Tooltip>
       )}
       {proxy && (
-        <sup>
-          <Tooltip title="Proxy connection" placement="top" arrow>
+        <Tooltip title="Proxy connection" placement="top" arrow>
+          <sup>
             <Icon name="cloud" size="xxxs" type="solid" fixedWidth />
-          </Tooltip>
-        </sup>
+          </sup>
+        </Tooltip>
       )}
       {accessDisabled && (
-        <sup>
-          <Tooltip title="Shared access disabled" placement="top" arrow>
+        <Tooltip title="Shared access disabled" placement="top" arrow>
+          <sup>
             <Icon name="do-not-enter" size="xxxs" type="solid" fixedWidth />
-          </Tooltip>
-        </sup>
+          </sup>
+        </Tooltip>
       )}
       {children && <>{` ${children}`}</>}
     </Title>

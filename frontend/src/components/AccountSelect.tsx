@@ -3,7 +3,7 @@ import { makeStyles, TextField, MenuItem, Divider } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
-import { getAccountId } from '../models/accounts'
+import { getActiveAccountId } from '../models/accounts'
 import { spacing, colors } from '../styling'
 // import { Avatar } from './Avatar'
 import classnames from 'classnames'
@@ -15,7 +15,7 @@ export const AccountSelect: React.FC = () => {
   const { signedInUser, fetching, options, activeId } = useSelector((state: ApplicationState) => ({
     signedInUser: state.auth.user,
     fetching: state.devices.fetching,
-    activeId: getAccountId(state),
+    activeId: getActiveAccountId(state),
     options: [state.auth.user, ...state.accounts.member].sort(),
   }))
 

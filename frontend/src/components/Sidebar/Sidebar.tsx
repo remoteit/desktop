@@ -115,7 +115,7 @@ const useStyles = makeStyles({
     height: '100%',
     position: 'relative',
     '& section': { padding: `${spacing.xl}px ${spacing.lg}px ${spacing.xl}px ${spacing.xl}px` },
-    '& .fab': { marginBottom: spacing.lg },
+    '& svg': { marginBottom: spacing.lg },
     '& hr': { opacity: 0.3 },
     '& span': { color: colors.white },
     '& h2': { fontSize: fontSizes.lg },
