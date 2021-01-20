@@ -357,6 +357,7 @@ declare global {
     sort?: string
     name?: string
     ids?: string[]
+    platform?: number
   }
 
   interface IRegistration {
