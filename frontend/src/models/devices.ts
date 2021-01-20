@@ -8,7 +8,7 @@ import {
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { getAccountId, getAllDevices } from './accounts'
+import { getActiveAccountId, getAllDevices } from './accounts'
 import { platformConfiguration } from '../services/platformConfiguration'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
@@ -67,7 +67,7 @@ export default createModel<RootModel>()({
       GraphQL search query for all device data
     */
     async fetch(optionalAccountId?: string, globalState?) {
-      const accountId: string = optionalAccountId || getAccountId(globalState)
+      const accountId: string = optionalAccountId || getActiveAccountId(globalState)
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, appendDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched } = globalState.devices
@@ -86,6 +86,7 @@ export default createModel<RootModel>()({
       if (!(await hasCredentials())) return
 
       set({ fetching: true })
+      console.log('FETCHING', accountId)
       const { devices, connections, total, contacts, error } = await graphQLFetchProcessor(options)
 
       if (searched) set({ results: total })
@@ -93,6 +94,7 @@ export default createModel<RootModel>()({
 
       // awaiting setDevices is critical for accurate initialized state
       if (append) {
+        console.log('APPENDING', accountId)
         await appendDevices({ devices, accountId })
       } else {
         await setDevices({ devices, accountId })
@@ -112,7 +114,7 @@ export default createModel<RootModel>()({
     async fetchSingle({ deviceId, hidden }: IGetDevice, globalState: any): Promise<IDevice | undefined> {
       const { set } = dispatch.devices
       const device = selectDevice(globalState, deviceId)
-      const accountId = device?.accountId || getAccountId(globalState)
+      const accountId = device?.accountId || getActiveAccountId(globalState)
 
       let result: IDevice | undefined
 

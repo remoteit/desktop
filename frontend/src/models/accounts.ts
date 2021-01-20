@@ -129,16 +129,12 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, globalState: any) {
+    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId: string }, globalState: any) {
       const allDevices = globalState.accounts.devices
-      accountId = accountId || getAccountId(globalState)
-
-      if (accountId) {
-        allDevices[accountId] = devices
-        dispatch.accounts.set({ devices: allDevices })
-      }
+      allDevices[accountId] = devices
+      dispatch.accounts.set({ devices: allDevices })
     },
-    async appendDevices({ devices, accountId }: { devices?: IDevice[]; accountId?: string }, globalState: any) {
+    async appendDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, globalState: any) {
       if (!devices) return
       const existingDevices = getDevices(globalState, accountId)
       devices = devices.filter(d => !existingDevices.find(e => e.id === d.id))
@@ -178,12 +174,12 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getAccountId(state: ApplicationState) {
+export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
 export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
-  return state.accounts.devices[accountId || getAccountId(state)] || []
+  return state.accounts.devices[accountId || getActiveAccountId(state)] || []
 }
 
 export function getOwnDevices(state: ApplicationState): IDevice[] {
