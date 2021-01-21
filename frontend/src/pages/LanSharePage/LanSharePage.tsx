@@ -55,6 +55,7 @@ export const LanSharePage: React.FC = () => {
   const selected = selections[selection] || {}
   const history = useHistory()
   const css = useStyles()
+  const currentHost = (connection && connection.host) || IP_PRIVATE
 
   if (!connection || !service) return null
 
@@ -88,8 +89,14 @@ export const LanSharePage: React.FC = () => {
       </List>
 
       <div className={css.indent}>
-        <Typography variant="caption">Your local IP address</Typography>
-        <Typography variant="h2">{privateIP}</Typography>
+        <div className={css.typography}>
+          <Typography variant="caption">Your local IP address</Typography>
+          <Typography variant="h2">{privateIP}</Typography>
+        </div>
+        <div className={css.typography}>
+          <Typography variant="caption">Bind IP Address</Typography>
+          <Typography variant="h2">{currentHost}</Typography>
+        </div>
         <div className={css.note}>
           Allow users to connect to your remote device through your IP address using a custom port.
         </div>
@@ -162,5 +169,8 @@ const useStyles = makeStyles({
     fontStyle: 'italic',
     fontSize: fontSizes.sm,
     marginLeft: spacing.sm,
+  },
+  typography: {
+    marginTop: spacing.md,
   },
 })
