@@ -39,7 +39,6 @@ export const REGEX_VALID_IP = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]
 export const REGEX_VALID_HOSTNAME = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):[0-9]+$/
 
 export const FRONTEND_RETRY_DELAY = 20000
-export const TARGET_SERVICES_LIMIT = 10
 export const MAX_NAME_LENGTH = 100
 
 export const LEGACY_ATTRIBUTES = [
