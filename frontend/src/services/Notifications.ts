@@ -1,5 +1,5 @@
 import { DEVICE_TYPE } from '../shared/applications'
-import { TARGET_PLATFORMS } from '../helpers/platformHelper'
+import { getTargetPlatform } from '../helpers/platformHelper'
 import { store } from '../store'
 
 const actions = {
@@ -37,7 +37,7 @@ function stateNotification(event: ICloudEvent) {
       createNotification({
         title: `${target.name} ${actions[event.state]}`,
         body:
-          TARGET_PLATFORMS[target.targetPlatform] +
+          getTargetPlatform(target.targetPlatform) +
           (event.authUserId === target.owner.id ? '' : ' - ' + target.owner.email),
         id: target.id,
       })

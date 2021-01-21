@@ -7,7 +7,7 @@ export function platformConfiguration() {
   const all = getOwnDevices(state)
   const targetDevice: ITargetDevice = state.backend.device
   const thisDevice = all.find(d => d.id === targetDevice.uid)
-  const targetPlatform = getTargetPlatform(thisDevice)
+  const targetPlatform = getTargetPlatform(thisDevice?.targetPlatform)
 
   if (targetPlatform === 'AWS') {
     store.dispatch.ui.set({
