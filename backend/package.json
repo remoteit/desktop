@@ -35,7 +35,7 @@
     "remote.it": "^0.44.1",
     "rimraf": "^3.0.0",
     "semver": "^7.1.3",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "socketio-auth": "^0.1.1",
     "sudo-prompt": "^9.2.1",
     "tmp": "^0.1.0",
