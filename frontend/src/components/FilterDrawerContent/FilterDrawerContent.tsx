@@ -132,9 +132,9 @@ const useStyles = makeStyles({
     height: '100%',
     // position: 'relative',
 
-    maxWidth: 180,
+    maxWidth: 200,
     transition: 'max-width 200ms ease-out',
-    '& > *': { minWidth: 180 },
+    '& > *': { minWidth: 200 },
   },
   drawerClose: {
     maxWidth: 0,
