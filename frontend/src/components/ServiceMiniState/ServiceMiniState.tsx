@@ -41,7 +41,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       colorName = 'danger'
       break
     case 'active':
-      colorName = 'success'
+      colorName = 'grayDarkest'
       if (service.license === 'EVALUATION') colorName = 'warning'
       break
     case 'inactive':
@@ -81,7 +81,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
             setOpenTooltip(false)
           }}
         >
-          <span style={{ color, backgroundColor: lighten(color, 0.9) }}>
+          <span style={{ color, backgroundColor: lighten(color, 0.94) }}>
             {connected && <Icon name="user" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {failover && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}

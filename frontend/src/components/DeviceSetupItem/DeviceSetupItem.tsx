@@ -64,7 +64,7 @@ export const DeviceSetupItem: React.FC = () => {
   return (
     <ListItemLocation pathname={links.setup}>
       <ListItemIcon>
-        <Icon name="hdd" size="md" type="light" />
+        <Icon name="hdd" size="md" type="regular" />
       </ListItemIcon>
       <ListItemText primary={title} secondary={subtitle} />
       {canRestore && (
