@@ -94,14 +94,14 @@ export const ReportsPage: React.FC = () => {
             <Box flexGrow={1} className={css.columnContainer}>
               <div className={css.column2}>
                 <ReportSummaryBox
-                  label="Connections Made to Your Devices"
+                  label="connections to your devices"
                   count={lastMonthConnectionCount}
                   icon="scrubber"
                   iconTitle="Connections"
                 />
                 <br />
                 <ReportTimeSeriesVis
-                  title="Connections Made to Your Devices"
+                  title="Connections to Your Devices"
                   tooltipLabel="connections"
                   timeseriesData={connectionTimeseries}
                   width={columnWidth - 10}
