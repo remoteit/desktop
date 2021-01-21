@@ -227,7 +227,7 @@ export const ServiceForm: React.FC<Props> = ({
           }}
           disabled={disabled}
           attributes={form.attributes}
-          setAttributes={attributes => setForm({ ...form, attributes })}
+          onUpdate={attributes => setForm({ ...form, attributes })}
         />
       </List>
       {editable && (

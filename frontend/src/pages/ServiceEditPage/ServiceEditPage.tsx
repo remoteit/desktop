@@ -58,8 +58,11 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title inline>Edit service</Title>
-            <UnregisterServiceButton target={target} />
-            <DeleteServiceButton device={device} service={service} />
+            {thisDevice ? (
+              <UnregisterServiceButton target={target} />
+            ) : (
+              <DeleteServiceButton device={device} service={service} />
+            )}
           </Typography>
         </>
       }

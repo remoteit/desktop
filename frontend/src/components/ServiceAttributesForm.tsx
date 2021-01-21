@@ -14,7 +14,7 @@ type Props = IService['attributes'] & {
   connection?: IConnection
   disabled: boolean
   attributes: IService['attributes']
-  setAttributes: (attributes: IService['attributes']) => void
+  onUpdate: (attributes: IService['attributes']) => void
 }
 
 export const ServiceAttributesForm: React.FC<Props> = ({
@@ -23,7 +23,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   disabled,
   connection,
   attributes,
-  setAttributes,
+  onUpdate,
 }) => {
   const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
   const copyApp = useApplication('copy', undefined, connection)
@@ -37,6 +37,11 @@ export const ServiceAttributesForm: React.FC<Props> = ({
     launchTemplate: attributes.launchTemplate || launchApp.template,
   }
 
+  React.useEffect(() => {
+    // ensure defaults are passed
+    onUpdate(attributes)
+  }, [])
+
   return (
     <>
       <ListItem className={className}>
@@ -48,7 +53,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           disabled={!!routingLock || disabled}
           variant="filled"
           onChange={event => {
-            setAttributes({ ...attributes, route: event.target.value as IRouteType })
+            onUpdate({ ...attributes, route: event.target.value as IRouteType })
           }}
         >
           {ROUTES.map(route => (
@@ -66,7 +71,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         label={`${launchApp.contextTitle} Template`}
         value={attributes.launchTemplate}
         disabled={disabled}
-        onChange={value => setAttributes({ ...attributes, launchTemplate: value })}
+        onChange={value => onUpdate({ ...attributes, launchTemplate: value })}
       >
         Replacement tokens <b>{launchApp.tokens.join(', ')}</b>
         <br />
@@ -77,7 +82,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         label={`${copyApp.contextTitle} Template`}
         value={attributes.commandTemplate}
         disabled={disabled}
-        onChange={value => setAttributes({ ...attributes, commandTemplate: value })}
+        onChange={value => onUpdate({ ...attributes, commandTemplate: value })}
       >
         Replacement tokens <b>{copyApp.tokens.join(', ')}</b>
         <br />
@@ -95,7 +100,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                 value={attributes[token] || ''}
                 disabled={disabled}
                 variant="filled"
-                onChange={event => setAttributes({ ...attributes, [token]: event.target.value })}
+                onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
               />
             ))}
           </Quote>
