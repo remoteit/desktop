@@ -110,7 +110,7 @@ const jssTheme: ThemeOptions = {
         paddingRight: 9,
       },
       button: {
-        '&:hover, &:focus': { backgroundColor: colors.grayLightest },
+        '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
       },
       container: {
         '& .MuiListItemSecondaryAction-root': {},
@@ -152,7 +152,8 @@ const jssTheme: ThemeOptions = {
     MuiMenuItem: {
       root: {
         '& .MuiListItemIcon-root': { minWidth: 50 },
-        '&:hover, &:focus': { backgroundColor: colors.grayLighter },
+        // '&:hover, &:focus': { backgroundColor: colors.grayLighter },
+        '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
       },
     },
     MuiInput: {
@@ -193,7 +194,7 @@ const jssTheme: ThemeOptions = {
       root: { padding: `${spacing.xs}px ${spacing.xs}px` },
       underlineHover: {
         '&:hover': {
-          backgroundColor: colors.grayLightest,
+          backgroundColor: colors.primaryHighlight,
           borderRadius: 10,
           textDecoration: 'none',
           cursor: 'pointer',

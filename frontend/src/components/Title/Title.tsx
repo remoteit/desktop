@@ -15,7 +15,7 @@ const useStyles = inline =>
       textOverflow: 'ellipsis',
       marginLeft: inline ? spacing.lg : 0,
       '& sup': { marginLeft: spacing.xs, marginRight: spacing.xxs, color: colors.grayDark },
-      '&.offline': { color: colors.grayDark },
-      '&.offline sup': { color: colors.gray },
+      '&.offline': { color: colors.gray },
+      '&.offline sup': { color: colors.grayLight },
     },
   })
