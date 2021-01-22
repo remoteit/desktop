@@ -210,12 +210,13 @@ export default createModel<RootModel>()({
       let updatedLastMonthConnectionCount = lastMonthConnectionCount
       const parsedDevices: IAnalyticsDevice[] = devices.map(d => {
         const createdDate = new Date(d.created)
-        const qualitySort = getQualityNumber(d.endpoint.quality)
+        const deviceQuality = d.endpoint?.quality
+        const qualitySort = getQualityNumber(deviceQuality)
         const device: IAnalyticsDevice = {
           createdAt: createdDate,
           id: d.id,
           name: d.name,
-          quality: d.endpoint.quality,
+          quality: deviceQuality,
           qualitySort,
         }
 
