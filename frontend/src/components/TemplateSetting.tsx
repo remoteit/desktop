@@ -18,6 +18,7 @@ export const TemplateSetting: React.FC<Props> = ({ label, value, disabled, onCha
         value={value}
         disabled={disabled}
         variant="filled"
+        InputProps={{ disableUnderline: true }}
         onChange={event => onChange(event.target.value)}
         multiline={true}
       />

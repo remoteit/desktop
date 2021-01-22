@@ -42,6 +42,7 @@ export const PromptModal: React.FC<{
                 label={token}
                 value={tokens[token]}
                 error={token === error}
+                InputProps={{ disableUnderline: true }}
                 onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
               />
             ))}

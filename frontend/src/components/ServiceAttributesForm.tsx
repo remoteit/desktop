@@ -52,6 +52,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           value={attributes.route}
           disabled={!!routingLock || disabled}
           variant="filled"
+          InputProps={{ disableUnderline: true }}
           onChange={event => {
             onUpdate({ ...attributes, route: event.target.value as IRouteType })
           }}
@@ -100,6 +101,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                 value={attributes[token] || ''}
                 disabled={disabled}
                 variant="filled"
+                InputProps={{ disableUnderline: true }}
                 onChange={event => onUpdate({ ...attributes, [token]: event.target.value })}
               />
             ))}
