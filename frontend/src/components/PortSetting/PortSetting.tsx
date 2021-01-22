@@ -7,7 +7,7 @@ import { ApplicationState } from '../../store'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 export const PortSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  const currentPort = connection && connection.port
+  const currentPort = connection?.port || service.attributes?.defaultPort
   const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
 
   useEffect(() => {
