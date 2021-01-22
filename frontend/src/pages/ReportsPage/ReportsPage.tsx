@@ -74,13 +74,7 @@ export const ReportsPage: React.FC = () => {
           <Box display="flex" className={css.container}>
             <Box flexGrow={1} className={css.columnContainer}>
               <div ref={targetRef} className={css.column1}>
-                <ReportSummaryBox
-                  label="devices created"
-                  count={lastMonthDeviceCount}
-                  total={totalDevices}
-                  icon="hdd"
-                  iconTitle="Devices"
-                />
+                <ReportSummaryBox label="devices created" count={lastMonthDeviceCount} icon="hdd" iconTitle="Devices" />
                 <br />
                 <ReportTimeSeriesVis
                   title="Devices Created"
