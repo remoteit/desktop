@@ -51,13 +51,13 @@ export function SharingForm({
   }
 
   useEffect(() => {
+    handleChangeScripting(false)
+  }, [hasIndeterminate])
+
+  useEffect(() => {
     const crumbs = location.pathname.substr(1).split('/')
     crumbs[2] !== 'users' && handleChangeServices([crumbs[2]])
   }, [])
-
-  useEffect(() => {
-    handleChangeScripting(false)
-  }, [hasIndeterminate])
 
   const handleChangeScripting = (revertScripting = true) => {
     onChange(
