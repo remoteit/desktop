@@ -26,8 +26,8 @@
     "test-watch": "cd backend && npm run test-watch",
     "watch-backend": "cd backend && npm run watch",
     "watch-images": "onchange 'src/images/**/*' -- npm run copy-images",
-    "watch-electron": "onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron",
-    "watch-build": "tsc --watch"
+    "watch-build": "tsc --watch",
+    "watch-electron": "sleep 5 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
   },
   "dependencies": {
     "electron-updater": "^4.3.5",

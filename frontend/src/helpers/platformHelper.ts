@@ -24,7 +24,7 @@ export function getTargetPlatform(targetPlatformId?: number) {
 }
 
 export function getTargetPlatformIcon(id?: number) {
-  let type: IconType = 'brands'
+  let type: IconType = 'solid'
   let name: string = 'hdd'
   let size: FontSize = 'xxs'
 
@@ -33,9 +33,11 @@ export function getTargetPlatformIcon(id?: number) {
     case 5:
     case 10:
       name = 'windows'
+      type = 'brands'
       break
     case 256:
       name = 'apple'
+      type = 'brands'
       break
     case 768:
       name = 'union'
@@ -43,22 +45,27 @@ export function getTargetPlatformIcon(id?: number) {
       break
     case 769:
       name = 'linux'
+      type = 'brands'
       break
     case 1072:
     case 1075:
     case 1076:
       name = 'raspberry-pi'
+      type = 'brands'
       size = 'xs'
       break
     case 1120:
       name = 'ubuntu'
+      type = 'brands'
       break
     case 1185:
       name = 'aws'
+      type = 'brands'
       size = 'xs'
       break
     case 1200:
       name = 'linux'
+      type = 'brands'
       break
     case 34304:
       name = 'cloud-rainbow'

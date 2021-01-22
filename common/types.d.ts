@@ -140,6 +140,7 @@ declare global {
     startTime?: number // unix timestamp connection start time
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
+    log?: boolean // if cli should log the connectd stdout to file
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
@@ -500,6 +501,8 @@ declare global {
     path: string
     application: string
   }
+
+  type IShowFolderType = 'logs' | 'connections'
 }
 
 export {}

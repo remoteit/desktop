@@ -27,6 +27,8 @@ export class Environment {
   adminPath: string
   binPath: string
   symlinkPath: string
+  logPath: string
+  connectionLogPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   oobAvailable: boolean
@@ -70,6 +72,8 @@ export class Environment {
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
+    this.logPath = path.resolve(this.userPath, 'log')
+    this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()
     this.oobAvailable = this.getOobAvailable()
   }

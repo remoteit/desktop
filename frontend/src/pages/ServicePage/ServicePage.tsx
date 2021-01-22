@@ -18,6 +18,7 @@ import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../../components/InlineTemplateSetting'
+import { ConnectionLogSetting } from '../../components/ConnectionLogSetting'
 import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { UnauthorizedPage } from '../UnauthorizedPage'
 import { LanShareSelect } from '../../components/LanShareSelect'
@@ -107,6 +108,7 @@ export const ServicePage: React.FC = () => {
         <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
         <LanShareSelect connection={connection} service={service} />
+        <ConnectionLogSetting connection={connection} service={service} />
       </List>
       <Divider />
       <List>

@@ -15,6 +15,7 @@ type Props = {
   confirmMessage?: string
   confirmTitle?: string
   onClick?: () => void
+  onButtonClick?: () => void
 }
 
 export const ListItemSetting: React.FC<Props> = ({
@@ -24,6 +25,7 @@ export const ListItemSetting: React.FC<Props> = ({
   button,
   toggle,
   onClick,
+  onButtonClick,
   disabled,
   confirm,
   confirmMessage = 'Are you sure?',
@@ -55,17 +57,14 @@ export const ListItemSetting: React.FC<Props> = ({
           <Icon name={icon} size="md" type="light" />
         </ListItemIcon>
         <ListItemText primary={label} secondary={subLabel} />
-        {(showToggle || showButton) && (
-          <ListItemSecondaryAction>
-            {showButton ? (
-              <Button onClick={onClick} color="secondary">
-                {button}
-              </Button>
-            ) : (
-              <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={onClick} />
-            )}
-          </ListItemSecondaryAction>
-        )}
+        <ListItemSecondaryAction>
+          {showButton && (
+            <Button onClick={onButtonClick} size="small">
+              {button}
+            </Button>
+          )}
+          {showToggle && <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={onClick} />}
+        </ListItemSecondaryAction>
       </ListItem>
       {confirm && onClick && (
         <Confirm open={open} onConfirm={handleConfirm} onDeny={() => setOpen(false)} title={confirmTitle}>
