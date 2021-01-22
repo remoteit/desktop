@@ -98,66 +98,68 @@ export const ServiceForm: React.FC<Props> = ({
         onSubmit({ ...form, port: form.port || 1 })
       }}
     >
-      {editable && (
-        <>
-          <List>
-            <ListItem className={css.field}>
-              <TextField
-                select
-                size="small"
-                label="Service Type"
-                value={form.type}
-                disabled={disabled}
-                variant="filled"
-                InputProps={{ disableUnderline: true }}
-                onChange={event => {
-                  const type = Number(event.target.value)
-                  const updatedAppType = findType(applicationTypes, type)
-                  setForm({
-                    ...form,
-                    type,
-                    port: findType(applicationTypes, type).port || 0,
-                    name: serviceNameValidation(updatedAppType.description).value,
-                    attributes: {
-                      ...form.attributes,
-                      commandTemplate: undefined,
-                      launchTemplate: undefined,
-                    },
-                  })
-                }}
-              >
-                {applicationTypes.map(type => (
-                  <MenuItem value={type.id} key={type.id}>
-                    {type.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <Typography variant="caption">
-                {appType.description}
-                <br />
-                <em>
-                  {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
-                </em>
-              </Typography>
-            </ListItem>
-            <ListItem className={css.field}>
-              <TextField
-                size="small"
-                label="Service Name"
-                value={form.name}
-                disabled={disabled}
-                error={!!error}
-                variant="filled"
-                helperText={error || ''}
-                placeholder={appType.description}
-                InputProps={{ disableUnderline: true }}
-                onChange={event => {
-                  const validation = serviceNameValidation(event.target.value)
-                  setForm({ ...form, name: validation.value })
-                  validation.error ? setError(validation.error) : setError(undefined)
-                }}
-              />
-            </ListItem>
+      <List>
+        {editable && (
+          <ListItem className={css.field}>
+            <TextField
+              select
+              size="small"
+              label="Service Type"
+              value={form.type}
+              disabled={disabled}
+              variant="filled"
+              InputProps={{ disableUnderline: true }}
+              onChange={event => {
+                const type = Number(event.target.value)
+                const updatedAppType = findType(applicationTypes, type)
+                setForm({
+                  ...form,
+                  type,
+                  port: findType(applicationTypes, type).port || 0,
+                  name: serviceNameValidation(updatedAppType.description).value,
+                  attributes: {
+                    ...form.attributes,
+                    commandTemplate: undefined,
+                    launchTemplate: undefined,
+                  },
+                })
+              }}
+            >
+              {applicationTypes.map(type => (
+                <MenuItem value={type.id} key={type.id}>
+                  {type.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Typography variant="caption">
+              {appType.description}
+              <br />
+              <em>
+                {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
+              </em>
+            </Typography>
+          </ListItem>
+        )}
+        <ListItem className={css.field}>
+          <TextField
+            size="small"
+            label="Service Name"
+            value={form.name}
+            disabled={disabled}
+            error={!!error}
+            variant="filled"
+            helperText={error || ''}
+            placeholder={appType.description}
+            InputProps={{ disableUnderline: true }}
+            onChange={event => {
+              const validation = serviceNameValidation(event.target.value)
+              setForm({ ...form, name: validation.value })
+              validation.error ? setError(validation.error) : setError(undefined)
+            }}
+          />
+        </ListItem>
+        {editable && (
+          <>
             <ListItem className={css.field}>
               <TextField
                 size="small"
@@ -217,10 +219,11 @@ export const ServiceForm: React.FC<Props> = ({
                 </Notice>
               </ListItem>
             )}
-          </List>
-          <Divider />
-        </>
-      )}
+          </>
+        )}
+      </List>
+      <Divider />
+
       <Typography variant="subtitle1">Connection defaults</Typography>
       <List>
         <ListItem className={css.field}>
