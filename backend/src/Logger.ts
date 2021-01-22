@@ -9,7 +9,7 @@ const ENV = process.env.NODE_ENV
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
 const MAX_LOG_FILES = 5
 
-if (!fs.existsSync(environment.connectionLogPath)) fs.mkdirSync(environment.connectionLogPath)
+if (!fs.existsSync(environment.connectionLogPath)) fs.mkdirSync(environment.connectionLogPath, { recursive: true })
 
 const { combine, printf } = winston.format
 const consoleFormat = printf(p => {
