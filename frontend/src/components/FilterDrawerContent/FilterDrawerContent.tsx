@@ -115,7 +115,7 @@ export const FilterDrawerContent: React.FC = () => {
             subtitle="Platform"
             icon="check"
             value={values.platform?.toString() || 'all'}
-            onSelect={value => setValues({ ...values, platform: parseInt(value) })}
+            onSelect={value => setValues({ ...values, platform: parseInt(value) || undefined })}
             filterList={platformFilter}
           />
         </List>
