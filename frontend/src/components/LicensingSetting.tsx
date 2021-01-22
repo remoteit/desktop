@@ -43,7 +43,7 @@ export const LicensingSetting: React.FC = () => {
               />
               <ListItemSecondaryAction>
                 <Button color="primary" href={upgradeUrl} size="small" target="_blank">
-                  Change Plan
+                  Manage Subscription
                 </Button>
               </ListItemSecondaryAction>
             </ListItem>
