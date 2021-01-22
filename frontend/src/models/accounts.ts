@@ -132,12 +132,10 @@ export default createModel<RootModel>()({
     },
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId: string }, globalState: any) {
       const allDevices = globalState.accounts.devices
-      if (!accountId) debugger
       allDevices[accountId] = devices
       dispatch.accounts.set({ devices: allDevices })
     },
     async appendDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, globalState: any) {
-      if (!accountId) debugger
       if (!devices) return
       const existingDevices = getDevices(globalState, accountId)
       devices = devices.filter(d => !existingDevices.find(e => e.id === d.id))
