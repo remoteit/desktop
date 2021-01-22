@@ -67,6 +67,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
             margin="dense"
             value={scanInterface}
             variant="filled"
+            InputProps={{ disableUnderline: true }}
             onChange={event => ui.set({ scanInterface: event.target.value as string })}
           >
             {interfaces.length ? (

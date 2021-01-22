@@ -239,7 +239,7 @@ declare global {
     license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
-      username?: string
+      defaultPort?: number
       route?: IRouteType // p2p with failover | p2p | proxy
       launchTemplate?: string
       commandTemplate?: string

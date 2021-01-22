@@ -47,7 +47,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   }, [loading])
 
   useEffect(() => {
-    // Refresh device data
+    // Refresh target device data
     emit('device')
   }, [])
 
@@ -89,7 +89,10 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
               }}
               onFocus={event => event.target.select()}
               helperText={nameError}
-              inputProps={{ 'data-lpignore': 'true' }}
+              inputProps={{
+                'data-lpignore': 'true',
+                disableUnderline: true,
+              }}
             />
             <Button
               className={css.button}

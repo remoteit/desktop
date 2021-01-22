@@ -2,8 +2,9 @@ import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLLinkAccount } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import analyticsHelper from '../helpers/analyticsHelper'
+import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
+import analyticsHelper from '../helpers/analyticsHelper'
 
 const ACCOUNT_KEY = 'account'
 
@@ -32,11 +33,11 @@ const state: IAccountsState = {
 
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
+  effects: dispatch => ({
     async init() {
       let activeId = window.localStorage.getItem(ACCOUNT_KEY)
       activeId = activeId && JSON.parse(activeId)
-      dispatch.accounts.setActive(activeId)
+      if (activeId) dispatch.accounts.setActive(activeId)
       await dispatch.accounts.fetchMembers()
     },
     async fetchMembers() {
@@ -61,7 +62,7 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async parse(gqlResponse: any, globalState: ApplicationState) {
+    async parse(gqlResponse: AxiosResponse<any>, globalState) {
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts
@@ -144,8 +145,9 @@ export default createModel<RootModel>()({
       })
     },
     async setDevice({ id, accountId, device }: { id: string; accountId?: string; device?: IDevice }, globalState) {
-      const { setDevices } = dispatch.accounts
-      const devices = accountId ? getDevices(globalState, accountId) : getAllDevices(globalState)
+      accountId = accountId || device?.accountId
+      if (!accountId) return console.warn('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
+      const devices = getDevices(globalState, accountId)
 
       let exists = false
       devices.forEach((d, index) => {
@@ -158,7 +160,7 @@ export default createModel<RootModel>()({
 
       // Add if new
       if (!exists && device) devices.push(device)
-      await setDevices({ devices, accountId })
+      await dispatch.accounts.setDevices({ devices, accountId })
     },
   }),
   reducers: {

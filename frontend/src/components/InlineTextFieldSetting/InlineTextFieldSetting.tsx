@@ -55,6 +55,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         value={editValue}
         variant="filled"
         helperText={error}
+        InputProps={{ disableUnderline: true }}
         onChange={event => {
           let { value } = event.target
           value = filter ? value.replace(filter, '') : value

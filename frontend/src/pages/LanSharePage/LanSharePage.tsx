@@ -102,6 +102,7 @@ export const LanSharePage: React.FC = () => {
               variant="filled"
               label="Local Network Security"
               value={selection.toString()}
+              InputProps={{ disableUnderline: true }}
               onChange={event => setSelection(parseInt(event.target.value as string))}
             >
               {selections.map((option, key) => (
@@ -121,6 +122,7 @@ export const LanSharePage: React.FC = () => {
                   value={address}
                   variant="filled"
                   label="IP address"
+                  InputProps={{ disableUnderline: true }}
                   onChange={event => setAddress(event.target.value.replace(REGEX_IP_SAFE, ''))}
                 />
               </Quote>

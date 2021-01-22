@@ -140,12 +140,13 @@ const jssTheme: ThemeOptions = {
         letterSpacing: 0.5,
         fontWeight: 500,
         textTransform: 'uppercase',
+        pointerEvents: 'auto',
       },
-      filled: { pointerEvents: 'auto' },
     },
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,
+        borderRadius: spacing.xs,
         '&$focused': { backgroundColor: colors.primaryHighlight },
         '&.Mui-disabled': { backgroundColor: colors.grayLightest },
         '&:hover': { backgroundColor: colors.primaryHighlight },

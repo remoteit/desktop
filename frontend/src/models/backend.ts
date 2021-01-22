@@ -120,11 +120,13 @@ export default createModel<RootModel>()({
       const { deferredAttributes, targets } = globalState.backend
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
-        let [service] = selectService(globalState, last.uid)
-        if (service) {
-          service.attributes = { ...service.attributes, ...deferredAttributes }
-          dispatch.devices.setServiceAttributes(service)
-          dispatch.devices.set({ deferredAttributes: undefined })
+        if (last) {
+          let [service] = selectService(globalState, last.uid)
+          if (service) {
+            service.attributes = { ...service.attributes, ...deferredAttributes }
+            dispatch.devices.setServiceAttributes(service)
+            dispatch.devices.set({ deferredAttributes: undefined })
+          }
         }
       }
     },

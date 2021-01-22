@@ -71,6 +71,11 @@ export const ServiceForm: React.FC<Props> = ({
     }
   }
 
+  const validPort = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    const port = Math.max(0, Math.min(+event.target.value, 65535))
+    return isNaN(port) ? 0 : port
+  }
+
   const CheckIcon = () => (
     <Icon
       name={isValid ? 'check-circle' : 'exclamation-triangle'}
@@ -93,65 +98,83 @@ export const ServiceForm: React.FC<Props> = ({
         onSubmit({ ...form, port: form.port || 1 })
       }}
     >
-      {editable && (
-        <>
-          <List>
-            <ListItem className={css.field}>
-              <TextField
-                select
-                autoFocus
-                size="small"
-                label="Service Type"
-                value={form.type}
-                disabled={disabled}
-                variant="filled"
-                onChange={event => {
-                  const type = Number(event.target.value)
-                  const updatedAppType = findType(applicationTypes, type)
-                  setForm({
-                    ...form,
-                    type,
-                    port: findType(applicationTypes, type).port || 0,
-                    name: serviceNameValidation(updatedAppType.description).value,
-                    attributes: {
-                      ...form.attributes,
-                      commandTemplate: undefined,
-                      launchTemplate: undefined,
-                    },
-                  })
-                }}
-              >
-                {applicationTypes.map(type => (
-                  <MenuItem value={type.id} key={type.id}>
-                    {type.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <Typography variant="caption">
-                {appType.description}
-                <br />
-                <em>
-                  {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
-                </em>
-              </Typography>
-            </ListItem>
+      <List>
+        {editable && (
+          <ListItem className={css.field}>
+            <TextField
+              select
+              size="small"
+              label="Service Type"
+              value={form.type}
+              disabled={disabled}
+              variant="filled"
+              InputProps={{ disableUnderline: true }}
+              onChange={event => {
+                const type = Number(event.target.value)
+                const updatedAppType = findType(applicationTypes, type)
+                setForm({
+                  ...form,
+                  type,
+                  port: findType(applicationTypes, type).port || 0,
+                  name: serviceNameValidation(updatedAppType.description).value,
+                  attributes: {
+                    ...form.attributes,
+                    commandTemplate: undefined,
+                    launchTemplate: undefined,
+                  },
+                })
+              }}
+            >
+              {applicationTypes.map(type => (
+                <MenuItem value={type.id} key={type.id}>
+                  {type.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Typography variant="caption">
+              {appType.description}
+              <br />
+              <em>
+                {appType.protocol} protocol {appType.proxy && ' - reverse proxy'}
+              </em>
+            </Typography>
+          </ListItem>
+        )}
+        <ListItem className={css.field}>
+          <TextField
+            size="small"
+            label="Service Name"
+            value={form.name}
+            disabled={disabled}
+            error={!!error}
+            variant="filled"
+            helperText={error || ''}
+            placeholder={appType.description}
+            InputProps={{ disableUnderline: true }}
+            onChange={event => {
+              const validation = serviceNameValidation(event.target.value)
+              setForm({ ...form, name: validation.value })
+              validation.error ? setError(validation.error) : setError(undefined)
+            }}
+          />
+        </ListItem>
+        {editable && (
+          <>
             <ListItem className={css.field}>
               <TextField
                 size="small"
                 label="Service Port"
-                value={form.port}
+                value={form.port || ''}
                 disabled={disabled}
                 variant="filled"
-                onChange={event => {
-                  const port = Math.max(0, Math.min(+event.target.value, 65535))
-                  setForm({ ...form, port: isNaN(port) ? 0 : port })
-                }}
+                onChange={event => setForm({ ...form, port: validPort(event) })}
                 InputProps={{
+                  disableUnderline: true,
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
             </ListItem>
-            <ListItem className={css.fieldWide}>
+            <ListItem className={css.field}>
               <TextField
                 size="small"
                 label="Service Host Address"
@@ -160,6 +183,7 @@ export const ServiceForm: React.FC<Props> = ({
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
                 InputProps={{
+                  disableUnderline: true,
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
@@ -172,7 +196,7 @@ export const ServiceForm: React.FC<Props> = ({
               </Typography>
             </ListItem>
             {thisDevice && (
-              <ListItem className={css.fieldWide}>
+              <ListItem className={css.field}>
                 <Notice
                   fullWidth
                   severity={isValid ? 'success' : 'warning'}
@@ -195,30 +219,29 @@ export const ServiceForm: React.FC<Props> = ({
                 </Notice>
               </ListItem>
             )}
-          </List>
-          <Divider />
-        </>
-      )}
+          </>
+        )}
+      </List>
+      <Divider />
+
+      <Typography variant="subtitle1">Connection defaults</Typography>
       <List>
-        <ListItem className={css.fieldWide}>
+        <ListItem className={css.field}>
           <TextField
             size="small"
-            label="Service Name"
-            value={form.name}
+            label="Default Connection Port"
+            value={form.attributes.defaultPort || ''}
             disabled={disabled}
-            error={!!error}
             variant="filled"
-            helperText={error || ''}
-            placeholder={appType.description}
+            InputProps={{ disableUnderline: true }}
             onChange={event => {
-              const validation = serviceNameValidation(event.target.value)
-              setForm({ ...form, name: validation.value })
-              validation.error ? setError(validation.error) : setError(undefined)
+              form.attributes.defaultPort = validPort(event)
+              setForm({ ...form })
             }}
           />
         </ListItem>
         <ServiceAttributesForm
-          className={css.fieldWide}
+          className={css.field}
           subClassName={css.fieldSub}
           connection={{
             ...DEFAULT_CONNECTION,
@@ -227,7 +250,7 @@ export const ServiceForm: React.FC<Props> = ({
           }}
           disabled={disabled}
           attributes={form.attributes}
-          setAttributes={attributes => setForm({ ...form, attributes })}
+          onUpdate={attributes => setForm({ ...form, attributes })}
         />
       </List>
       {editable && (
@@ -260,11 +283,6 @@ export const ServiceForm: React.FC<Props> = ({
 
 const useStyles = makeStyles({
   field: {
-    paddingLeft: 75,
-    paddingRight: spacing.xl,
-    '& .MuiFormControl-root': { minWidth: 200, marginRight: 100 + spacing.lg },
-  },
-  fieldWide: {
     paddingLeft: 75,
     paddingRight: spacing.xl,
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
