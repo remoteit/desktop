@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import environment from './environment'
 import { ENVIRONMENT } from './constants'
@@ -8,9 +9,9 @@ const ENV = process.env.NODE_ENV
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
 const MAX_LOG_FILES = 5
 
-export const LOG_DIR = path.join(environment.userPath, 'log')
+if (!fs.existsSync(environment.connectionLogPath)) fs.mkdirSync(environment.connectionLogPath)
 
-const { combine, timestamp, label, printf } = winston.format
+const { combine, printf } = winston.format
 const consoleFormat = printf(p => {
   const { timestamp, level, message } = p
   delete p.timestamp
@@ -21,7 +22,7 @@ const consoleFormat = printf(p => {
 
 const transports = [
   new winston.transports.File({
-    filename: path.join(LOG_DIR, 'error.log'),
+    filename: path.join(environment.logPath, 'error.log'),
     format: consoleFormat,
     level: 'error',
     maxsize: MAX_LOG_SIZE_BYTES, // in bytes
@@ -30,7 +31,7 @@ const transports = [
     silent: ENV === 'test',
   }),
   new winston.transports.File({
-    filename: path.join(LOG_DIR, 'combined.log'),
+    filename: path.join(environment.logPath, 'combined.log'),
     format: consoleFormat,
     maxsize: MAX_LOG_SIZE_BYTES, // in bytes
     maxFiles: MAX_LOG_FILES,

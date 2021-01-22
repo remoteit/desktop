@@ -59,7 +59,7 @@ export default {
       c.restriction
     } --retry ${!!c.autoStart} --failover ${!!c.failover} --p2p ${!c.proxyOnly} --servicetype ${c.typeID} --authhash ${
       user.authHash
-    } --manufacture-id ${environment.appCode}`
+    } --log ${c.log} --logfolder "${environment.connectionLogPath}" --manufacture-id ${environment.appCode}`
   },
 
   disconnect(c: IConnection) {

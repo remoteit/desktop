@@ -1,4 +1,5 @@
 import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
+import { LOG_DIR } from './Logger'
 import isElectron from 'is-electron'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
@@ -27,6 +28,8 @@ export class Environment {
   adminPath: string
   binPath: string
   symlinkPath: string
+  logPath: string
+  connectionLogPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   oobAvailable: boolean
@@ -70,6 +73,8 @@ export class Environment {
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
+    this.logPath = path.resolve(this.userPath, 'log')
+    this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()
     this.oobAvailable = this.getOobAvailable()
   }

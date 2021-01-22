@@ -77,7 +77,7 @@ class Controller {
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
-    socket.on('showFolder', showFolder.openLogs)
+    socket.on('showFolder', this.showFolder)
 
     this.initBackend()
     this.check()
@@ -153,6 +153,11 @@ class Controller {
 
   connection = async (connection: IConnection) => {
     await this.pool.set(connection, true)
+  }
+
+  showFolder = (type: IShowFolderType) => {
+    Logger.info('SHOW FOLDER', { type })
+    showFolder.show(type)
   }
 
   quit = () => {

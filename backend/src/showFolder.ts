@@ -1,16 +1,19 @@
 import Command from './Command'
 import environment from './environment'
-import { LOG_DIR } from './Logger'
 
 class ShowFolder {
-  openLogs = () => {
+  show = (folder: IShowFolderType) => {
+    const folders = {
+      logs: [environment.adminPath, environment.logPath],
+      connections: [environment.connectionLogPath],
+    }
+
     const commands = new Command({})
-    commands.push(this.open(environment.adminPath))
-    commands.push(this.open(LOG_DIR))
+    folders[folder].forEach(path => commands.push(this.command(path)))
     commands.exec()
   }
 
-  open(path: string) {
+  command(path: string) {
     return environment.isWindows ? `start "" "${path}"` : environment.isMac ? `open ${path}` : `nautilus ${path}`
   }
 }
