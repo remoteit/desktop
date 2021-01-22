@@ -64,6 +64,7 @@ const jssTheme: ThemeOptions = {
         fontWeight: 500,
         lineHeight: '40px',
       },
+      sticky: { zIndex: 2 },
     },
     MuiListItem: {
       root: {

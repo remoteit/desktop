@@ -35,6 +35,7 @@ type IDeviceState = {
   filter: 'all' | 'active' | 'inactive'
   sort: 'name' | '-name' | 'state' | '-state' | 'color' | '-color'
   owner: 'all' | 'me' | 'others'
+  platform?: number
   size: number
   from: number
   contacts: IUserRef[]
@@ -54,6 +55,7 @@ export const state: IDeviceState = {
   filter: 'all',
   sort: 'name',
   owner: 'all',
+  platform: undefined,
   size: 50,
   from: 0,
   contacts: [],
@@ -70,7 +72,7 @@ export default createModel<RootModel>()({
       const accountId: string = optionalAccountId || getActiveAccountId(globalState)
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, appendDevices } = dispatch.accounts
-      const { query, sort, owner, filter, size, from, append, searched } = globalState.devices
+      const { query, sort, owner, filter, size, from, append, searched, platform } = globalState.devices
       const { user } = globalState.auth
       const options: gqlOptions = {
         size,
@@ -81,6 +83,7 @@ export default createModel<RootModel>()({
         ids: append ? undefined : getConnectionIds(globalState),
         sort,
         owner: owner === 'all' ? undefined : owner === 'me',
+        platform,
       }
 
       if (!(await hasCredentials())) return

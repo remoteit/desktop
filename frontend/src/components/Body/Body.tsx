@@ -7,14 +7,14 @@ type Props = {
   inset?: boolean
   center?: boolean
   className?: string
-  maxHeight?: number
+  maxHeight?: string
 }
 
 export const Body: React.FC<Props> = ({ inset, center, maxHeight, className = '', children }) => {
   const css = useStyles()
   const [hover, setHover] = useState<boolean>(true)
   className = classnames(className, css.body, center && css.center, inset && css.inset, hover && css.showScroll)
-  let style = maxHeight ? { maxHeight: `${maxHeight}px` } : {}
+  let style = maxHeight ? { maxHeight } : {}
   return (
     <div className={className} style={style} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {children}

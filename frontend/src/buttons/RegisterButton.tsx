@@ -29,6 +29,12 @@ export const RegisterButton: React.FC = () => {
     claiming: state.ui.claiming,
   }))
 
+  const handleClose = () => {
+    setEl(null)
+    setValid(false)
+    setCode('')
+  }
+
   useEffect(() => {
     if (!claiming) handleClose()
   }, [claiming])
@@ -38,11 +44,7 @@ export const RegisterButton: React.FC = () => {
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setEl(event.currentTarget)
   }
-  const handleClose = () => {
-    setEl(null)
-    setValid(false)
-    setCode('')
-  }
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let { value } = event.target
     if (value.length >= CLAIM_CODE_LENGTH) {
