@@ -344,6 +344,7 @@ declare global {
     actor: IUserRef
     users: IUserRef[]
     platform: IUser['platform']
+    sessionId: string
     authUserId: string
     geo?: IGeo
     target: {
