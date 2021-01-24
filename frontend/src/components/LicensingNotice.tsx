@@ -32,7 +32,7 @@ export const LicensingNotice: React.FC<Props> = props => {
     </Button>
   )
 
-  if (noticeType === 'EXPIRATION_WARNING')
+  if (noticeType === 'EXPIRATION_WARNING' && license.expiration)
     notice = (
       <Notice severity="info" button={UpgradeButton}>
         {title} will expire on {/* replace with countdown */}
