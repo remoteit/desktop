@@ -132,7 +132,7 @@ declare global {
     failover?: boolean // allow proxy failover
     proxyOnly?: boolean // disabled p2p
     connecting?: boolean
-    session?: string //the connection session id
+    sessionId?: string //the connection session id
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template
     commandTemplate?: string // command line launch template
@@ -306,6 +306,7 @@ declare global {
     actor: IUserRef
     users: IUserRef[]
     platform: IUser['platform']
+    sessionId: string
     authUserId: string
     target: {
       id: string
