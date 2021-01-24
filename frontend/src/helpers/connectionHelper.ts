@@ -17,6 +17,10 @@ export const DEFAULT_CONNECTION = {
   autoStart: true,
 }
 
+export function findLocalConnection(state: ApplicationState, id: string, sessionId: string) {
+  return state.backend.connections.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
+}
+
 export function connectionName(service?: IService, device?: IDevice) {
   if (!device) return attributeName(service)
   if (!service) return attributeName(device)
@@ -97,6 +101,11 @@ export function selectMyConnections(state: ApplicationState) {
   }
 
   return { services, connections }
+}
+
+export function getConnectionSessionIds() {
+  const { connections } = store.getState().backend
+  return connections.map(c => c.sessionId)
 }
 
 export function updateConnections(devices: IDevice[]) {

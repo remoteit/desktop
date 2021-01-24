@@ -5,7 +5,7 @@ import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectService } from '../models/devices'
-import { connectionName, setConnection } from '../helpers/connectionHelper'
+import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
 
 class CloudController {
@@ -154,9 +154,7 @@ class CloudController {
         sessionId: event.session,
         target: event.target.map(t => {
           const [service, device] = selectService(state, t.id)
-          const connection = state.backend.connections.find(
-            c => c.id === t.id && (c.sessionId === event.session || (c.connecting && !event.session))
-          )
+          const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
             name: connectionName(service, device) || t.name,
@@ -201,10 +199,9 @@ class CloudController {
 
       case 'DEVICE_CONNECT':
         // connected | disconnected
-        const isYou = event.authUserId === event.actor.id
         event.target.forEach(target => {
-          // You have changed connection state
-          if (isYou && target.connection) {
+          // Local connection state
+          if (target.connection) {
             target.connection.active = event.state === 'connected'
             target.connection.connecting = false
             setConnection(target.connection)
