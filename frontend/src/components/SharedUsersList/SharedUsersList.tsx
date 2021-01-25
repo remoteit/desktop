@@ -18,7 +18,7 @@ const sort = (users: IUser[]) => users.sort((a, b) => (a.email > b.email ? 1 : b
 export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users = [] }) => {
   const { access } = useSelector((state: ApplicationState) => state.accounts)
   const filtered = sort(users.filter(user => !connected.find(_u => _u.email === user.email)))
-  const listUserLinked = sort(users.filter(user => access.find(_u => _u.email === user.email)))
+  const listUserLinked = sort(access.filter(user => !connected.find(_u => _u.email === user.email)))
   const css = useStyles()
 
   if (!users?.length) return null
