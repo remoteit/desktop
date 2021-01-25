@@ -282,7 +282,7 @@ declare global {
     id: string
     created: Date
     updated: Date
-    expiration: Date
+    expiration?: Date
     valid: boolean
     value: object
     plan: {
