@@ -18,7 +18,7 @@ const sort = (users: IUser[]) => users.sort((a, b) => (a.email > b.email ? 1 : b
 export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users = [] }) => {
   const { access } = useSelector((state: ApplicationState) => state.accounts)
   const filtered = sort(users.filter(user => !connected.find(_u => _u.email === user.email)))
-  const listUserLinked = sort(users.filter(user => access.find(_u => _u.email === user.email)))
+  const listUserLinked = sort(access.filter(user => !connected.find(_u => _u.email === user.email)))
   const css = useStyles()
 
   if (!users?.length) return null
@@ -37,15 +37,18 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
           </UserListItem>
         ))}
         {!!connected.length && <Divider />}
-        {!!listUserLinked.length && <Typography variant="subtitle1">Device List Shared</Typography>}
-        {listUserLinked.map(user => (
-          <UserListItem key={user.email} user={user} isUserLinked={true}>
+        {!!listUserLinked.length && !!filtered.length && (
+          <Typography variant="subtitle1"> Single Device Shared</Typography>
+        )}
+        {filtered.map(user => (
+          <UserListItem key={user.email} user={user}>
             <ShareDetails user={user} device={device} />
           </UserListItem>
         ))}
-        {!!listUserLinked.length && <Divider className={css.divider} />}
-        {filtered.map(user => (
-          <UserListItem key={user.email} user={user}>
+        {!!filtered.length && <Divider className={css.divider} />}
+        {!!listUserLinked.length && <Typography variant="subtitle1">Device List Shared</Typography>}
+        {listUserLinked.map(user => (
+          <UserListItem key={user.email} user={user} isUserLinked={true}>
             <ShareDetails user={user} device={device} />
           </UserListItem>
         ))}
