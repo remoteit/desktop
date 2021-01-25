@@ -37,6 +37,9 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
           </UserListItem>
         ))}
         {!!connected.length && <Divider />}
+        {!!listUserLinked.length && !!filtered.length && (
+          <Typography variant="subtitle1"> Single Device Shared</Typography>
+        )}
         {filtered.map(user => (
           <UserListItem key={user.email} user={user}>
             <ShareDetails user={user} device={device} />
