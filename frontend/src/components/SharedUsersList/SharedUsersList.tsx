@@ -42,7 +42,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
             <ShareDetails user={user} device={device} />
           </UserListItem>
         ))}
-        {!!listUserLinked.length && <Divider className={css.divider} />}
+        {!!filtered.length && <Divider className={css.divider} />}
         {!!listUserLinked.length && <Typography variant="subtitle1">Device List Shared</Typography>}
         {listUserLinked.map(user => (
           <UserListItem key={user.email} user={user} isUserLinked={true}>
