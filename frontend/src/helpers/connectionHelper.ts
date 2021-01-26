@@ -27,10 +27,11 @@ export function connectionName(service?: IService, device?: IDevice) {
   return `${attributeName(device)} - ${attributeName(service)}`
 }
 
-export function newConnection(service?: IService | null, port?: number) {
+export function newConnection(service?: IService | null) {
   const state = store.getState()
   const accountId = getActiveAccountId(state)
   const user = [...state.accounts.member, state.auth.user].find(u => u?.id === accountId)
+  const port = service?.attributes.defaultPort || state.backend.freePort
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,

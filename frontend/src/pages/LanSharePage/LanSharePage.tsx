@@ -26,7 +26,7 @@ export const LanSharePage: React.FC = () => {
     return {
       service,
       privateIP: state.backend.environment.privateIP,
-      connection: connection || newConnection(service, state.backend.freePort),
+      connection: connection || newConnection(service),
     }
   })
 

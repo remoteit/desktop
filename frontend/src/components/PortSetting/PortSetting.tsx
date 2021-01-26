@@ -7,15 +7,16 @@ import { ApplicationState } from '../../store'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 export const PortSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  const currentPort = connection?.port || service.attributes?.defaultPort
-  const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
+  const defaultPort = useSelector(
+    (state: ApplicationState) => service.attributes?.defaultPort || state.backend.freePort
+  )
 
   useEffect(() => {
-    if (!connection || !freePort || freePort !== connection.port) emit('freePort', connection)
-  }, [freePort, connection])
+    if (!connection || !connection.port) emit('freePort', connection)
+  }, [connection])
 
   if (!service) return null
-  if (!connection) connection = newConnection(service, freePort)
+  if (!connection) connection = newConnection(service)
 
   const disabled = connection.active || connection.connecting
   const save = (port?: number) =>
@@ -27,11 +28,11 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
 
   return (
     <InlineTextFieldSetting
-      value={currentPort || freePort}
+      value={connection.port}
       label="Port"
       disabled={disabled}
       filter={REGEX_PORT_SAFE}
-      resetValue={freePort}
+      resetValue={defaultPort}
       onSave={port => save(+port)}
     />
   )
