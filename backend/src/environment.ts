@@ -31,6 +31,7 @@ export class Environment {
   connectionLogPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
+  graphQLUrl?: string
   oobAvailable: boolean
   version: string
 
@@ -89,6 +90,7 @@ export class Environment {
       privateIP: this.privateIP,
       hostname: os.hostname(),
       oobAvailable: this.oobAvailable,
+      graphQLUrl: this.graphQLUrl,
     }
   }
 

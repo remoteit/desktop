@@ -5,6 +5,7 @@ declare global {
     device?: ITargetDevice | undefined
     services?: ITarget[]
     auth?: UserCredentials | undefined
+    graphqlapiurl?: string
   } & { [key: string]: any }
 
   type ManufacturerFile = {
@@ -17,4 +18,4 @@ declare global {
   }
 }
 
-declare module 'is-port-reachable';
+declare module 'is-port-reachable'

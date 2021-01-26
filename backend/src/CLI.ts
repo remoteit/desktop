@@ -72,6 +72,7 @@ export default class CLI {
   }
 
   read() {
+    this.readConfig()
     this.readUser()
     this.readDevice()
     this.readTargets()
@@ -120,6 +121,11 @@ export default class CLI {
       failover: c.failover,
     }))
     await this.updateConnectionStatus()
+  }
+
+  async readConfig() {
+    const config = this.readFile()
+    environment.graphQLUrl = config.graphqlapiurl
   }
 
   private readFile() {
