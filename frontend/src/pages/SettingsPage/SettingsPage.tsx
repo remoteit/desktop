@@ -3,12 +3,13 @@ import { emit } from '../../services/Controller'
 import { version } from '../../../package.json'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
-import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { LicensingSetting } from '../../components/LicensingSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
+import { DeviceSetupItem } from '../../components/DeviceSetupItem'
+import { NoticesSetting } from '../../components/NoticesSetting'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { getOwnDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
@@ -69,6 +70,10 @@ export const SettingsPage: React.FC = () => {
         <DeviceSetupItem />
       </List>
       <Divider />
+      <List>
+        <NoticesSetting />
+      </List>
+      <Divider />
       <Typography variant="subtitle1">User</Typography>
       <List>
         <ListItemSetting
@@ -84,7 +89,7 @@ export const SettingsPage: React.FC = () => {
           }
         />
         <ListItemSetting
-          label={'Sign out'}
+          label="Sign out"
           subLabel="Allow this device to be transferred or another user to sign in. Will stop all connections."
           icon="sign-out"
           onClick={() => {
