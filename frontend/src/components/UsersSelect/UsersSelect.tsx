@@ -9,12 +9,15 @@ import { Icon } from '../Icon'
 type Props = {
   device?: IDevice
   service?: IService
+  access: IUser[]
 }
 
-export const UsersSelect: React.FC<Props> = ({ device, service }) => {
+export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
   const location = useLocation()
   const connected = service ? getConnected([service]).length : getConnected(device?.services).length
-  const total = service ? service.access.length : device?.access.length
+  const users = (service ? service.access : device?.access) || []
+  const usersLinked = access.filter(user => !users.find(_u => _u.email === user.email))
+  const total = users.length + usersLinked.length
 
   if (device?.shared) return null
 

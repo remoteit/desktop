@@ -22,17 +22,20 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const ServicesPage: React.FC = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { devices } = useDispatch<Dispatch>()
-  const { connections, device, searched, query, thisDeviceId, fetching } = useSelector((state: ApplicationState) => {
-    const [_, device] = selectService(state, deviceID) // handles redirects that only have the service id
-    return {
-      device,
-      connections: state.backend.connections,
-      searched: state.devices.searched,
-      query: state.devices.query,
-      thisDeviceId: state.backend.device.uid,
-      fetching: state.devices.fetching,
+  const { connections, device, searched, query, thisDeviceId, fetching, access } = useSelector(
+    (state: ApplicationState) => {
+      const [_, device] = selectService(state, deviceID) // handles redirects that only have the service id
+      return {
+        device,
+        connections: state.backend.connections,
+        searched: state.devices.searched,
+        query: state.devices.query,
+        thisDeviceId: state.backend.device.uid,
+        fetching: state.devices.fetching,
+        access: state.accounts.access,
+      }
     }
-  })
+  )
   const [loaded, setLoaded] = useState<boolean>(false)
   const thisDevice = deviceID === thisDeviceId
   const history = useHistory()
@@ -79,7 +82,7 @@ export const ServicesPage: React.FC = () => {
       <Divider />
       <List>
         <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} dense />
-        <UsersSelect device={device} />
+        <UsersSelect device={device} access={access} />
         <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} dense />
         <ListItemLocation title="Device Logs" icon="file-alt" pathname={location.pathname + '/logs'} dense />
       </List>
