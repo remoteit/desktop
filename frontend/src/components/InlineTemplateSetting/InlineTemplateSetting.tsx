@@ -12,8 +12,7 @@ import { Icon } from '../Icon'
 type Props = { service: IService; connection?: IConnection; context: Application['context'] }
 
 export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, context }) => {
-  const freePort = useSelector((state: ApplicationState) => state.backend.freePort)
-  if (!connection) connection = newConnection(service, freePort)
+  if (!connection) connection = newConnection(service)
   const app = useApplication(context, service, connection)
 
   return (

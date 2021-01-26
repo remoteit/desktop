@@ -247,6 +247,7 @@ export const ServiceForm: React.FC<Props> = ({
             ...DEFAULT_CONNECTION,
             ...form.attributes,
             typeID: form.type,
+            port: form.attributes.defaultPort,
           }}
           disabled={disabled}
           attributes={form.attributes}
