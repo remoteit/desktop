@@ -5,7 +5,7 @@ import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectService } from '../models/devices'
-import { connectionName, setConnection } from '../helpers/connectionHelper'
+import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
 
 class CloudController {
@@ -83,41 +83,42 @@ class CloudController {
   }
 
   authenticate = async () => {
-    this.socket?.send(
-      JSON.stringify({
-        action: 'subscribe',
-        headers: { authorization: await getToken() },
-        query: `
-        {
-          event {
-            type
-            state
-            timestamp
-            target {
-              id
-              name
-              application
-              platform
-              owner {
-                id
-                email
-              }
-            }
-            actor {
+    const message = JSON.stringify({
+      action: 'subscribe',
+      headers: { authorization: await getToken() },
+      query: `
+      {
+        event {
+          type
+          state
+          timestamp
+          target {
+            id
+            name
+            application
+            platform
+            owner {
               id
               email
             }
-            ... on DeviceConnectEvent {
-              platform
-            }
-            ... on DeviceShareEvent {
-              scripting
-            }
           }
-        }`,
-        // "variables": {}
-      })
-    )
+          actor {
+            id
+            email
+          }
+          ... on DeviceConnectEvent {
+            platform
+            session
+          }
+          ... on DeviceShareEvent {
+            scripting
+          }
+        }
+      }`,
+      // "variables": {}
+    })
+    // console.log('SUBSCRIBE', message)
+    this.socket?.send(message)
   }
 
   onMessage = response => {
@@ -150,15 +151,17 @@ class CloudController {
         users: event.users,
         authUserId: state.auth.user?.id || '',
         platform: event.platform,
+        sessionId: event.session,
         target: event.target.map(t => {
           const [service, device] = selectService(state, t.id)
+          const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
             name: connectionName(service, device) || t.name,
             owner: t.owner,
             typeID: t.application,
             targetPlatform: t.platform,
-            connection: state.backend.connections.find(c => c.id === t.id),
+            connection,
             service,
             device,
           }
@@ -196,10 +199,9 @@ class CloudController {
 
       case 'DEVICE_CONNECT':
         // connected | disconnected
-        const isYou = event.authUserId === event.actor.id
         event.target.forEach(target => {
-          // You have changed connection state
-          if (isYou && target.connection) {
+          // Local connection state
+          if (target.connection) {
             target.connection.active = event.state === 'connected'
             target.connection.connecting = false
             setConnection(target.connection)

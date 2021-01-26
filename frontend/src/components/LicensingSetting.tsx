@@ -39,7 +39,9 @@ export const LicensingSetting: React.FC = () => {
               </ListItemIcon>
               <ListItemText
                 primary={`${license.plan.product.description} ${license.plan.description} plan`}
-                secondary={`Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`}
+                secondary={
+                  license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
+                }
               />
               <ListItemSecondaryAction>
                 <Button color="primary" href={upgradeUrl} size="small" target="_blank">

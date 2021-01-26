@@ -75,7 +75,7 @@ export default createModel<RootModel>()({
           ...l,
           created: new Date(l.created),
           updated: new Date(l.updated),
-          expiration: new Date(l.expiration),
+          expiration: l.expiration && new Date(l.expiration),
         })),
         limits: data.limits,
         // licenses: [
@@ -141,7 +141,8 @@ export function selectLicense(state: ApplicationState, productId?: string) {
   let warnDate = new Date()
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
-  if (warnDate > license.expiration && license.plan.name === 'TRIAL') noticeType = 'EXPIRATION_WARNING'
+  if (license.expiration && warnDate > license.expiration && license.plan.name === 'TRIAL')
+    noticeType = 'EXPIRATION_WARNING'
   if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value) noticeType = 'LIMIT_EXCEEDED'
   if (!license.valid) noticeType = 'EXPIRED'
 
