@@ -23,6 +23,7 @@ type IGetDevice = {
 }
 
 type IDeviceState = {
+  all: { [accountId: string]: IDevice[] }
   initialized: boolean
   total: number
   results: number
@@ -43,6 +44,7 @@ type IDeviceState = {
 }
 
 export const state: IDeviceState = {
+  all: {},
   initialized: false,
   total: 0,
   results: 0,
@@ -64,16 +66,18 @@ export const state: IDeviceState = {
 
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
+  effects: dispatch => ({
     /* 
       GraphQL search query for all device data
     */
     async fetch(optionalAccountId?: string, globalState?) {
       const accountId: string = optionalAccountId || getActiveAccountId(globalState)
+      const userId = globalState.auth.user?.id
+      if (!userId) return console.error('NO AUTH USER ID')
+      if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
       const { set, graphQLFetchProcessor } = dispatch.devices
-      const { setDevices, appendDevices } = dispatch.accounts
+      const { setDevices, appendUniqueDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched, platform } = globalState.devices
-      const { user } = globalState.auth
       const options: gqlOptions = {
         size,
         from,
@@ -89,7 +93,6 @@ export default createModel<RootModel>()({
       if (!(await hasCredentials())) return
 
       set({ fetching: true })
-      console.log('FETCHING', accountId)
       const { devices, connections, total, contacts, error } = await graphQLFetchProcessor(options)
 
       if (searched) set({ results: total })
@@ -97,11 +100,10 @@ export default createModel<RootModel>()({
 
       // awaiting setDevices is critical for accurate initialized state
       if (append) {
-        console.log('APPENDING', accountId)
-        await appendDevices({ devices, accountId })
+        await appendUniqueDevices({ devices, accountId })
       } else {
         await setDevices({ devices, accountId })
-        await appendDevices({ devices: connections, accountId: user?.id })
+        await appendUniqueDevices({ devices: connections, accountId: userId })
       }
 
       if (!error) cleanOrphanConnections()
@@ -142,7 +144,7 @@ export default createModel<RootModel>()({
     },
 
     async graphQLFetchProcessor(options: gqlOptions) {
-      const { graphQLMetadata } = dispatch.devices
+      const { graphQLMetadata } = dispatch.devices as any
       const parseAccounts = dispatch.accounts.parse
       try {
         const gqlResponse = await graphQLFetchDevices(options)
@@ -243,7 +245,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
-    async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId?: string }) {
+    async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId: string }) {
       console.log('REMOVING SERVICE', serviceId, deviceId)
       dispatch.ui.set({ setupServiceBusy: serviceId, setupDeletingService: serviceId })
       await graphQLRemoveService(serviceId)

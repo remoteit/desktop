@@ -12,7 +12,6 @@ export type IAccountsState = {
   member: IUser[]
   access: IUser[]
   activeId?: string // user.id
-  devices: { [accountId: string]: IDevice[] }
 }
 
 type IGraphQLAccount = {
@@ -24,15 +23,14 @@ type IGraphQLAccount = {
   }
 }
 
-const state: IAccountsState = {
+const accountsState: IAccountsState = {
   member: [],
   access: [],
   activeId: undefined,
-  devices: {},
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: accountsState,
   effects: dispatch => ({
     async init() {
       let activeId = window.localStorage.getItem(ACCOUNT_KEY)
@@ -62,14 +60,14 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async parse(gqlResponse: AxiosResponse<any>, globalState) {
+    async parse(gqlResponse: AxiosResponse<any>, state) {
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts
       const member: IUser[] = await parseAccounts(gqlData.member)
       const access: IUser[] = await parseAccounts(gqlData.access)
       dispatch.accounts.set({ member, access })
-      if (!member.find(m => m.id === globalState.accounts.activeId)) {
+      if (!member.find(m => m.id === state.accounts.activeId)) {
         dispatch.accounts.setActive('')
       }
     },
@@ -83,8 +81,8 @@ export default createModel<RootModel>()({
       }))
     },
     //@TODO - switch to using account ID instead of emails
-    async addAccess(emails: string[], globalState) {
-      const { access } = globalState.accounts as ApplicationState['accounts']
+    async addAccess(emails: string[], state) {
+      const { access } = state.accounts as ApplicationState['accounts']
       try {
         const result = await graphQLLinkAccount(emails, 'ADD')
         const errors = graphQLGetErrors(result)
@@ -102,8 +100,8 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async removeAccess(email: string, globalState) {
-      const { access } = globalState.accounts as ApplicationState['accounts']
+    async removeAccess(email: string, state) {
+      const { access } = state.accounts as ApplicationState['accounts']
       try {
         const result = await graphQLLinkAccount([email], 'REMOVE')
         const errors = graphQLGetErrors(result)
@@ -116,8 +114,8 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async leaveMembership(email: string, globalState) {
-      const { member } = globalState.accounts as ApplicationState['accounts']
+    async leaveMembership(email: string, state) {
+      const { member } = state.accounts as ApplicationState['accounts']
       try {
         const result = await graphQLLinkAccount([email], 'LEAVE')
         const errors = graphQLGetErrors(result)
@@ -130,24 +128,28 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId: string }, globalState: any) {
-      const allDevices = globalState.accounts.devices
-      allDevices[accountId] = devices
-      dispatch.accounts.set({ devices: allDevices })
+    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {
+      accountId = accountId || devices[0]?.accountId
+      if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
+      const all = state.devices.all
+      all[accountId] = devices
+      dispatch.devices.set({ all })
     },
-    async appendDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, globalState: any) {
+    async appendUniqueDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
-      const existingDevices = getDevices(globalState, accountId)
+      accountId = accountId || devices[0]?.accountId
+      if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
+      const existingDevices = getDevices(state, accountId)
       devices = devices.filter(d => !existingDevices.find(e => e.id === d.id))
       dispatch.accounts.setDevices({
         devices: [...existingDevices, ...devices],
         accountId,
       })
     },
-    async setDevice({ id, accountId, device }: { id: string; accountId?: string; device?: IDevice }, globalState) {
+    async setDevice({ id, accountId, device }: { id: string; accountId?: string; device?: IDevice }, state) {
       accountId = accountId || device?.accountId
-      if (!accountId) return console.warn('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
-      const devices = getDevices(globalState, accountId)
+      if (!accountId) return console.error('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
+      const devices = getDevices(state, accountId)
 
       let exists = false
       devices.forEach((d, index) => {
@@ -181,16 +183,16 @@ export function getActiveAccountId(state: ApplicationState) {
 }
 
 export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
-  return state.accounts.devices[accountId || getActiveAccountId(state)] || []
+  return state.devices.all[accountId || getActiveAccountId(state)] || []
 }
 
 export function getOwnDevices(state: ApplicationState): IDevice[] {
-  return state.accounts.devices[state.auth.user?.id || ''] || []
+  return state.devices.all[state.auth.user?.id || ''] || []
 }
 
 export function getAllDevices(state: ApplicationState) {
-  return Object.keys(state.accounts.devices).reduce(
-    (all: IDevice[], accountId) => all.concat(state.accounts.devices[accountId]),
+  return Object.keys(state.devices.all).reduce(
+    (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
     []
   )
 }
