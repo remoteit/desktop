@@ -21,7 +21,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
   const listUserLinked = sort(access.filter(user => !connected.find(_u => _u.email === user.email)))
   const css = useStyles()
 
-  if (!users?.length) return null
+  if (!users?.length && !access.length) return null
 
   return (
     <>

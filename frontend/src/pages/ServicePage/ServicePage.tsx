@@ -42,7 +42,7 @@ export const ServicePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { devices } = useDispatch<Dispatch>()
-  const { connection, service, device, thisDevice, fetching } = useSelector((state: ApplicationState) => {
+  const { connection, service, device, thisDevice, fetching, access } = useSelector((state: ApplicationState) => {
     const connection = state.backend.connections.find(c => c.id === serviceID)
     const [service, device] = selectService(state, serviceID)
     return {
@@ -51,6 +51,7 @@ export const ServicePage: React.FC = () => {
       connection,
       thisDevice: state.backend.device?.uid === device?.id,
       fetching: state.devices.fetching,
+      access: state.accounts.access,
     }
   })
 
@@ -115,7 +116,7 @@ export const ServicePage: React.FC = () => {
         {!device.shared && (
           <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} dense />
         )}
-        <UsersSelect service={service} device={device} />
+        <UsersSelect service={service} device={device} access={access} />
         <ListItemLocation title="Service Details" icon="info-circle" pathname={location.pathname + '/details'} dense />
       </List>
     </Container>
