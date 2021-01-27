@@ -15,14 +15,10 @@ export const UpdateSetting: React.FC = () => {
       label={updateAvailable ? 'New version available' : 'About'}
       subLabel={`Version ${version} ${environment() === 'development' ? 'Development' : ''} —  © remot3.it inc.`}
       icon="info"
-      onClick={
-        updateAvailable
-          ? () => {
-              emit('restart')
-              analyticsHelper.track('update')
-            }
-          : undefined
-      }
+      onButtonClick={() => {
+        emit('restart')
+        analyticsHelper.track('update')
+      }}
       button={updateAvailable ? 'Restart' : undefined}
     />
   )
