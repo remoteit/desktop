@@ -37,7 +37,7 @@ export const DeleteServiceButton: React.FC<Props> = ({ device, service }) => {
       <Confirm
         open={open}
         onConfirm={() => {
-          devices.cloudRemoveService({ serviceId: service.id, deviceId: device?.id })
+          if (device) devices.cloudRemoveService({ serviceId: service.id, deviceId: device.id })
           setOpen(false)
         }}
         onDeny={() => setOpen(false)}

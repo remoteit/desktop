@@ -26,9 +26,9 @@ export const SessionsList: React.FC<Props> = ({ sessions }) => {
           <RefreshButton />
         </Typography>
       )}
-      {sessions.map(s => (
+      {sessions.map((s, i) => (
         <ListItem
-          key={s.service.id + s.user.email}
+          key={i}
           onClick={() => history.push(`/connections/${s.service.id}/users/${s.user.email}`)}
           button
           dense
