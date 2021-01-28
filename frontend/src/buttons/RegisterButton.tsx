@@ -77,7 +77,9 @@ export const RegisterButton: React.FC = () => {
         }}
       >
         <Body center className={css.popover}>
-          <Typography variant="body1">Enter your registration code to claim a new device.</Typography>
+          <Typography variant="body2" color="textSecondary">
+            Enter your registration code to claim a new device.
+          </Typography>
           <form
             onSubmit={e => {
               e.preventDefault()
@@ -123,8 +125,8 @@ export const RegisterButton: React.FC = () => {
 
 const useStyles = makeStyles({
   popover: {
-    padding: spacing.xl,
-    paddingBottom: spacing.lg,
+    padding: spacing.lg,
+    paddingBottom: spacing.md,
     '& .MuiList-root, & form': { width: '100%' },
   },
 })

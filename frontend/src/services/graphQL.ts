@@ -21,7 +21,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
     headers: { Authorization: await getToken() },
     data: { query, variables },
   }
-  console.log('GRAPHQL REQUEST', request)
+  console.log('GRAPHQL REQUEST', { query, variables, url: request.url })
   return await axios.request(request)
 }
 

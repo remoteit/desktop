@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 
 type INotificationsState = ILookup<INotice[]> & {
@@ -22,36 +23,43 @@ type INotice = {
 
 type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION'
 
-const state: INotificationsState = {
+const noticesState: INotificationsState = {
   all: [],
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: noticesState,
   effects: dispatch => ({
     async fetch() {
       const result = await graphQLBasicRequest(
         ` {
-              notices {
-                id
-                type
-                stage
-                title
-                preview
-                body
-                modified
-                enabled
-                read
-                from
-                until
-              }
-            }`
+            notices {
+              id
+              type
+              stage
+              title
+              preview
+              body
+              modified
+              enabled
+              read
+              from
+              until
+            }
+          }`
       )
+
       const all = await dispatch.notices.parse(result)
-      dispatch.applicationTypes.set({ all })
+      dispatch.notices.set({ all })
     },
-    async parse(result: any) {
-      const all = result?.data?.data?.notices
+    async parse(result: AxiosResponse<any> | undefined, state) {
+      console.log('NOTICES RESULT', result, state)
+      const all = result?.data?.data?.notices as INotice[]
+      console.log('NOTICES', all)
+      return all || []
+    },
+    async read(id: string) {
+      //
     },
   }),
   reducers: {
