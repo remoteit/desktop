@@ -37,7 +37,8 @@ const platformFilter = [{ value: 'all', name: 'All' }].concat(
   Object.keys(TARGET_PLATFORMS)
     .map(p => ({ value: p, name: TARGET_PLATFORMS[p] }))
     .sort(
-      (a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0) // only to sort
+      (a, b) =>
+        a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : b.name?.toLowerCase() > a.name?.toLowerCase() ? -1 : 0 // only to sort
     )
 )
 
