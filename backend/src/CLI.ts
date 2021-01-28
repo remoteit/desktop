@@ -137,7 +137,7 @@ export default class CLI {
         c.connecting = status.state === 'connecting'
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined
         c.reachable = status.reachable
-        c.sessionId = status.sessionID
+        c.sessionId = status.sessionID.toLowerCase()
 
         if (status.reachable === false) {
           c.error = {
