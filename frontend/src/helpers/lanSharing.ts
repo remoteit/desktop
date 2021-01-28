@@ -31,10 +31,13 @@ export function maskIPClass(privateIP: ipAddress, type: ipClass) {
   switch (type) {
     case 'A':
       parts[1] = '0'
+      break
     case 'B':
       parts[2] = '0'
+      break
     case 'C':
       parts[3] = '0'
+      break
   }
   return parts.join('.')
 }
