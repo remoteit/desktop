@@ -13,9 +13,6 @@
         StrCpy $path_i '$INSTDIR\resources\x86'
     ${EndIf}
 
-    ; stop the agent
-    nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent stop'
-
     ; create backup directory if doesn't exist
     CreateDirectory "${REMOTEIT_BACKUP}"
 
@@ -23,9 +20,9 @@
     Delete "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
     RMDir /r  "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
 
-    ; move the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
-    Rename "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
-    Rename "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
+    ; copy the config file and connections to backup location ONLY MOVES IF EMPTY (protect against 2.9.2 uninstall bug)
+    CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
+    CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
 
     ; MessageBox MB_OK "Init: moved files" 
 !macroend
