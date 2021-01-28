@@ -43,6 +43,17 @@ const jssTheme: ThemeOptions = {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
       anchorOriginBottomCenter: { bottom: '80px !important' },
     },
+    MuiCardHeader: {
+      root: {
+        paddingTop: spacing.xxs,
+        paddingBottom: spacing.xxs,
+      },
+      title: {
+        fontSize: fontSizes.sm,
+        color: colors.white,
+        letterSpacing: 3,
+      },
+    },
     MuiList: {
       root: {
         '&.collapseList .MuiListItem-dense': {
