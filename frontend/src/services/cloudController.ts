@@ -7,6 +7,7 @@ import { notify } from './Notifications'
 import { selectService } from '../models/devices'
 import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
+import { emit } from './Controller'
 
 class CloudController {
   socket?: ReconnectingWebSocket
@@ -128,6 +129,7 @@ class CloudController {
     if (!event) return
     event = this.update(event)
     notify(event)
+    emit('heartbeat')
   }
 
   errors(data) {
