@@ -24,7 +24,7 @@
     CopyFiles /SILENT "$APPDATA\remoteit\config.json" "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json"
     CopyFiles /SILENT "$PROFILE\AppData\Local\remoteit\connections" "${REMOTEIT_BACKUP}\connections-${PKGVERSION}"
 
-    ; MessageBox MB_OK "Init: moved files" 
+    ; MessageBox MB_OK "Init: copied files" 
 !macroend
 
 !macro customInstall
@@ -66,12 +66,6 @@
     Pop $0
     Pop $1
     FileWrite $installLog "$ps_command     [$0]  $1$\r$\n"
-
-    ; restore config from backup
-    ; MessageBox MB_OK "Install: will restore files"
-    CopyFiles /SILENT "${REMOTEIT_BACKUP}\config-${PKGVERSION}.json" "$APPDATA\remoteit\config.json"
-    CopyFiles /SILENT "${REMOTEIT_BACKUP}\connections-${PKGVERSION}" "$PROFILE\AppData\Local\remoteit\connections"
-    FileWrite $installLog "Restore config files $\r$\n"
 
     StrCpy $ps_command 'powershell "& " "$\'"$path_\remoteit.exe$\'" -j agent install'
     nsExec::ExecToStack /OEM $ps_command
