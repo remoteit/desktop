@@ -45,13 +45,19 @@ const jssTheme: ThemeOptions = {
     },
     MuiCardHeader: {
       root: {
-        paddingTop: spacing.xxs,
-        paddingBottom: spacing.xxs,
+        paddingTop: 'initial',
+        paddingBottom: 'initial',
+        backgroundColor: colors.primary,
       },
       title: {
         fontSize: fontSizes.sm,
         color: colors.white,
-        letterSpacing: 3,
+        // fontWeight: 500,
+        // letterSpacing: 1,
+      },
+      action: {
+        marginTop: 'initial',
+        '& .MuiIconButton-root': { padding: spacing.xs },
       },
     },
     MuiList: {
@@ -64,6 +70,14 @@ const jssTheme: ThemeOptions = {
       padding: {
         paddingTop: spacing.sm,
         paddingBottom: spacing.sm,
+      },
+    },
+    MuiBadge: {
+      badge: {
+        fontSize: fontSizes.xxs,
+        height: 16,
+        minWidth: 16,
+        padding: spacing.xxs,
       },
     },
     MuiListSubheader: {

@@ -109,7 +109,7 @@ export default createModel<RootModel>()({
         await dispatch.licensing.fetch()
         await dispatch.accounts.init()
         dispatch.applicationTypes.fetch()
-        dispatch.notices.fetch()
+        dispatch.announcements.fetch()
       }
       // always fetch on connect
       dispatch.devices.fetch()

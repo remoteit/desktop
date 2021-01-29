@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Snackbar, IconButton, makeStyles, useMediaQuery } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
-import { NoticeSnackbar } from '../../components/NoticeSnackbar'
+import { AnnouncementCard } from '../../components/AnnouncementCard'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
 import { Sidebar } from '../../components/Sidebar'
@@ -97,7 +97,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
           onClose={clearSuccessMessage}
         />
         <UpdateNotice />
-        <NoticeSnackbar />
       </div>
     </div>
   )

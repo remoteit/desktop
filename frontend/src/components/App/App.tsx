@@ -28,6 +28,7 @@ export const App: React.FC = () => {
     uninstalling,
     remoteUI,
     noticeCount,
+    unreadAnnouncements,
   } = useSelector((state: ApplicationState) => ({
     showReports: state.auth.user?.email.includes('@remote.it'),
     authInitialized: state.auth.initialized,
@@ -36,8 +37,9 @@ export const App: React.FC = () => {
     installed: state.binaries.installed,
     signedOut: state.auth.initialized && !state.auth.authenticated,
     uninstalling: state.ui.uninstalling,
+    noticeCount: state.announcements.all.length || selectLicenseIndicator(state),
+    unreadAnnouncements: !!state.announcements.all.length,
     remoteUI: isRemoteUI(state),
-    noticeCount: selectLicenseIndicator(state),
   }))
 
   const css = useStyles()
@@ -113,7 +115,13 @@ export const App: React.FC = () => {
     { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
     { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
     { label: 'Reports', path: '/reports', icon: 'chart-line', show: showReports },
-    { label: 'Settings', path: '/settings', icon: 'cog', badge: noticeCount, show: true },
+    {
+      label: 'Menu',
+      path: unreadAnnouncements ? '/settings/announcements' : '/settings',
+      icon: 'bars',
+      badge: noticeCount,
+      show: true,
+    },
   ]
 
   return (
@@ -132,7 +140,7 @@ export const App: React.FC = () => {
                 value={m.path}
                 icon={
                   m.badge ? (
-                    <Badge variant="dot" color="primary">
+                    <Badge variant={noticeCount > 1 ? undefined : 'dot'} badgeContent={noticeCount} color="error">
                       <Icon name={m.icon} size="lg" />
                     </Badge>
                   ) : (

@@ -6,10 +6,10 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
+import { AnnouncementsSetting } from '../../components/AnnouncementsSetting'
 import { LicensingSetting } from '../../components/LicensingSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
-import { NoticesSetting } from '../../components/NoticesSetting'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { getOwnDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
@@ -71,7 +71,7 @@ export const SettingsPage: React.FC = () => {
       </List>
       <Divider />
       <List>
-        <NoticesSetting />
+        <AnnouncementsSetting />
       </List>
       <Divider />
       <Typography variant="subtitle1">User</Typography>
@@ -142,7 +142,7 @@ export const SettingsPage: React.FC = () => {
         )}
         <ListItemSetting
           label="System notifications"
-          icon="megaphone"
+          icon="bell"
           toggle={preferences.showNotifications}
           onClick={() => emit('preferences', { ...preferences, showNotifications: !preferences.showNotifications })}
         />
