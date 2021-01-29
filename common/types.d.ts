@@ -253,7 +253,7 @@ declare global {
     authHash?: string
     yoicsId?: string
     created?: Date
-    platform?: number
+    platform?: number // fixme - unconfuse IUser with ISessionFixme
     timestamp?: Date
     scripting?: boolean
   }
@@ -261,6 +261,14 @@ declare global {
   type IUserRef = {
     id: string
     email: string
+  }
+
+  type ISessionFixme = {
+    id: string // user id
+    sessionId: string // FIXME this should be the id
+    timestamp: Date
+    email: string // user email FIXME this should be a IUserRef
+    platform: number
   }
 
   type IApplicationType = {

@@ -222,13 +222,14 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
   function processSessions(response: any, loginId: string, sessionIds: IConnection['sessionId'][]): IUser[] {
     const dates = response.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
     const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
-    const result = sorted.reduce((sessions: IUser[], e: any) => {
+    const result = sorted.reduce((sessions: ISessionFixme[], e: any) => {
       const localConnection = sessionIds.includes(e.id)
       if (localConnection) {
         // @TODO set state in local connections model
       } else if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
         sessions.push({
           id: e.user?.id,
+          sessionId: e.id,
           timestamp: e.timestamp,
           email: e.user?.email,
           platform: e.endpoint?.platform,
