@@ -42,13 +42,11 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   }
 
   // only show one message at a time
-  let snackbar = errorMessage
-    ? 'error'
-    : successMessage
-    ? 'success'
-    : noticeMessage
-    ? 'notice'
-    : backendAuthenticated && !connected && 'offline'
+  let snackbar = ''
+  if (noticeMessage) snackbar = 'notice'
+  if (successMessage) snackbar = 'success'
+  if (errorMessage) snackbar = 'error'
+  if (backendAuthenticated && !connected) snackbar = 'offline'
 
   return (
     <div className={remoteCss}>
