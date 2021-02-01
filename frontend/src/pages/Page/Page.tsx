@@ -41,6 +41,13 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     remoteCss = classnames(css.full, css.default)
   }
 
+  // only show one message at a time
+  let snackbar = ''
+  if (noticeMessage) snackbar = 'notice'
+  if (successMessage) snackbar = 'success'
+  if (errorMessage) snackbar = 'error'
+  if (backendAuthenticated && !connected) snackbar = 'offline'
+
   return (
     <div className={remoteCss}>
       <RemoteHeader os={os} />
@@ -48,7 +55,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         {largeScreen && <Sidebar />}
         <div className={css.pageBody}>{children}</div>
         <Snackbar
-          open={backendAuthenticated && !connected}
+          open={snackbar === 'offline'}
           message="Webserver connection lost. Retrying..."
           action={
             <IconButton onClick={reconnect}>
@@ -58,7 +65,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         />
         <Snackbar
           key={errorMessage || 'error'}
-          open={!!errorMessage}
+          open={snackbar === 'error'}
           message={
             <>
               <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
@@ -74,14 +81,14 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         />
         <Snackbar
           key={noticeMessage || 'notice'}
-          open={!!noticeMessage}
+          open={snackbar === 'notice'}
           message={noticeMessage}
           onClose={() => ui.set({ noticeMessage: '' })}
           autoHideDuration={20000}
         />
         <Snackbar
           key={successMessage || 'success'}
-          open={!!successMessage}
+          open={snackbar === 'success'}
           message={
             <>
               <Icon name="check" size="md" color="success" type="regular" fixedWidth inlineLeft />
