@@ -1,42 +1,28 @@
-import React, { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
-import { Typography, Button } from '@material-ui/core'
+import React from 'react'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../store'
+import { Typography } from '@material-ui/core'
+import { selectAnnouncements } from '../models/announcements'
 import { AnnouncementCard } from '../components/AnnouncementCard'
-import { Breadcrumbs } from '../components/Breadcrumbs'
 import { Container } from '../components/Container'
-import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
-import { useHistory } from 'react-router-dom'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AnnouncementsPage = () => {
-  // const { announcements } = useDispatch<Dispatch>()
-  const visible = useSelector((state: ApplicationState) => state.announcements.all.filter(n => n.enabled))
-  const location = useLocation()
-  const history = useHistory()
-
-  useEffect(() => {
-    // announcements.read(announcement.id)
-  }, [])
+  const enabled = useSelector((state: ApplicationState) => selectAnnouncements(state))
 
   return (
     <Container
-      inset
+      bodyProps={{ inset: true, flex: true }}
       header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="megaphone" size="lg" />
-            <Title inline>Announcements</Title>
-          </Typography>
-        </>
+        <Typography variant="h1">
+          <Icon name="megaphone" size="lg" />
+          <Title inline>Announcements</Title>
+        </Typography>
       }
     >
-      {visible.map((announcement, index) => (
-        <AnnouncementCard key={index} announcement={announcement} />
+      {enabled.map((announcement, index) => (
+        <AnnouncementCard key={index} data={announcement} />
       ))}
     </Container>
   )

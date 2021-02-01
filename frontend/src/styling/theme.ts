@@ -2,7 +2,6 @@ import { colors, spacing, fontSizes } from './'
 import { createMuiTheme, ThemeOptions } from '@material-ui/core'
 
 const gutters = 32
-const titlePadding = `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`
 const jssTheme: ThemeOptions = {
   palette: {
     primary: { main: colors.primary },
@@ -45,19 +44,26 @@ const jssTheme: ThemeOptions = {
     },
     MuiCardHeader: {
       root: {
-        paddingTop: 'initial',
-        paddingBottom: 'initial',
-        backgroundColor: colors.primary,
+        paddingTop: spacing.xs,
+        paddingBottom: spacing.xs,
+        color: colors.white,
       },
       title: {
         fontSize: fontSizes.sm,
-        color: colors.white,
-        // fontWeight: 500,
-        // letterSpacing: 1,
       },
       action: {
-        marginTop: 'initial',
-        '& .MuiIconButton-root': { padding: spacing.xs },
+        fontSize: fontSizes.xxs,
+        marginTop: 2,
+        marginRight: 'initial',
+        // '& .MuiIconButton-root': { padding: spacing.xs },
+      },
+    },
+    MuiCardActions: {
+      spacing: {
+        paddingTop: 0,
+        marginTop: -spacing.sm,
+        paddingBottom: spacing.sm,
+        justifyContent: 'flex-end',
       },
     },
     MuiList: {
@@ -199,10 +205,6 @@ const jssTheme: ThemeOptions = {
       h1: {
         fontSize: fontSizes.lg,
         fontWeight: 400,
-        display: 'flex',
-        alignItems: 'center',
-        padding: titlePadding,
-        minHeight: 50,
         color: colors.grayDarkest,
         letterSpacing: -0.2,
       },
@@ -224,7 +226,7 @@ const jssTheme: ThemeOptions = {
         display: 'flex',
         alignItems: 'flex-end',
         minHeight: 50,
-        padding: titlePadding,
+        padding: `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`,
         textTransform: 'uppercase',
         letterSpacing: 3,
         fontWeight: 500,

@@ -64,8 +64,8 @@ export const Router: React.FC = () => {
       <Route path="/settings/access">
         <AccountAccessPage />
       </Route>
-      <Route path="/settings/announcements">
-        <AnnouncementsPage />
+      <Route path="/settings/reports">
+        <ReportsPage />
       </Route>
       <Route path={links.waiting}>
         <SetupWaiting os={os} targetDevice={targetDevice} />
@@ -142,8 +142,8 @@ export const Router: React.FC = () => {
       <Route path="/devices">
         <DevicesPage />
       </Route>
-      <Route path="/reports">
-        <ReportsPage />
+      <Route path="/announcements">
+        <AnnouncementsPage />
       </Route>
       <Route path="/">
         <Redirect to={links.home} />

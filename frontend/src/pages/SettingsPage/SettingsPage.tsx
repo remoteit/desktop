@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
-import { AnnouncementsSetting } from '../../components/AnnouncementsSetting'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { LicensingSetting } from '../../components/LicensingSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
@@ -24,8 +24,9 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
-  const { os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
+  const { showReports, os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
+      showReports: state.auth.user?.email.includes('@remote.it'),
       os: state.backend.environment.os,
       user: state.auth.user,
       installing: state.binaries.installing,
@@ -70,10 +71,6 @@ export const SettingsPage: React.FC = () => {
         <DeviceSetupItem />
       </List>
       <Divider />
-      <List>
-        <AnnouncementsSetting />
-      </List>
-      <Divider />
       <Typography variant="subtitle1">User</Typography>
       <List>
         <ListItemSetting
@@ -111,6 +108,14 @@ export const SettingsPage: React.FC = () => {
         />
       </List>
       <Divider />
+      {showReports && (
+        <>
+          <List>
+            <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
+          </List>
+          <Divider />
+        </>
+      )}
       {remoteUI || (
         <>
           <Typography variant="subtitle1">Sharing</Typography>

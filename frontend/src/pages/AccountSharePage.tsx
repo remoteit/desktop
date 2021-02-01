@@ -32,7 +32,7 @@ export const AccountSharePage = () => {
 
   return (
     <Container
-      inset
+      bodyProps={{ inset: true }}
       header={
         <>
           <Breadcrumbs />

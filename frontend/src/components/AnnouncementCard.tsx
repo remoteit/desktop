@@ -1,19 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import React, { useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../store'
+import { dateOptions } from './Duration/Duration'
 import {
   makeStyles,
-  Button,
   Card,
-  CardActionArea,
   CardContent,
-  CardActions,
   CardMedia,
   CardHeader,
-  IconButton,
+  CardActions,
+  Button,
   Typography,
 } from '@material-ui/core'
-import { Icon } from './Icon'
 import { colors, spacing } from '../styling'
 
 const types = {
@@ -23,45 +21,59 @@ const types = {
   COMMUNICATION: 'Announcement',
 }
 
-export const AnnouncementCard: React.FC<{ announcement: IAnnouncement }> = ({ announcement }) => {
+export const AnnouncementCard: React.FC<{ data: IAnnouncement }> = ({ data }) => {
+  const { announcements } = useDispatch<Dispatch>()
   const css = useStyles()
 
-  // const announcement = unread[0]
-  if (!announcement) return null
+  useEffect(() => {
+    // TODO only call read if announcement is in view
+    if (!data.read) setTimeout(() => announcements.read(data.id), 1000)
+  }, [data.read])
+
+  if (!data) return null
+
+  const unread = !(data.read && data.read < new Date())
+  const date = data.read && data.read.toLocaleString(undefined, dateOptions)
 
   return (
-    <Card className={css.notice} elevation={1}>
-      <CardHeader title={types[announcement.type]} />
-      {announcement.image && <CardMedia className={css.media} image={announcement.image} title={announcement.title} />}
-      <CardActionArea>
-        <CardContent>
-          <Typography variant="h2" gutterBottom>
-            {announcement.title}
-          </Typography>
-          <Typography variant="caption" dangerouslySetInnerHTML={{ __html: announcement.preview }} />
-        </CardContent>
-      </CardActionArea>
-      {/* <CardActions>
-        <Button color="primary" size="small" onClick={read}>
-          Learn More
-        </Button>
-      </CardActions> */}
+    <Card className={css.card} elevation={1}>
+      <CardHeader
+        className={css.header}
+        title={types[data.type]}
+        style={{ backgroundColor: unread ? colors.success : colors.primary }}
+        action={unread ? 'New' : date}
+      />
+      {data.image && <CardMedia className={css.media} image={data.image} title={data.title} />}
+      <CardContent>
+        <Typography variant="h1" gutterBottom>
+          {data.title}
+        </Typography>
+        <Typography variant="body2" color="textSecondary" dangerouslySetInnerHTML={{ __html: data.body }} />
+      </CardContent>
+      {data.link && (
+        <CardActions>
+          <Button color="primary" href={data.link} size="small" target="_blank">
+            Learn more
+          </Button>
+        </CardActions>
+      )}
     </Card>
   )
 }
 
 const useStyles = makeStyles({
-  notice: {
-    // position: 'absolute',
-    // right: spacing.lg,
-    // bottom: 62 + spacing.lg,
-    // maxWidth: 300,
-    // zIndex: 5,
+  card: {
+    width: 500,
     overflow: 'hidden',
+    marginTop: spacing.md,
+    marginRight: spacing.md,
     backgroundColor: colors.grayLightest,
   },
+  header: {
+    transition: 'background-color 1s',
+  },
   media: {
-    height: 130,
-    backgroundColor: colors.primaryHighlight,
+    height: 150,
+    backgroundColor: colors.primaryLight,
   },
 })

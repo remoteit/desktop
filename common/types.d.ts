@@ -312,7 +312,7 @@ declare global {
     type: INoticeType
     stage: string
     title: string
-    preview: string
+    link: string
     image: string
     body: string
     modified?: Date
@@ -321,6 +321,8 @@ declare global {
     from?: Date
     until?: Date
   }
+
+  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION'
 
   interface ICloudEvent {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'

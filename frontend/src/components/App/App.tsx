@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { useHistory, useLocation } from 'react-router-dom'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
+import { selectAnnouncements } from '../../models/announcements'
 import { BottomNavigation, BottomNavigationAction, Badge } from '@material-ui/core'
 import { selectLicenseIndicator } from '../../models/licensing'
 import { InstallationNotice } from '../InstallationNotice'
@@ -19,7 +20,6 @@ import styles from '../../styling'
 
 export const App: React.FC = () => {
   const {
-    showReports,
     authInitialized,
     backendAuthenticated,
     initialized,
@@ -27,18 +27,17 @@ export const App: React.FC = () => {
     signedOut,
     uninstalling,
     remoteUI,
-    noticeCount,
+    licenseIndicator,
     unreadAnnouncements,
   } = useSelector((state: ApplicationState) => ({
-    showReports: state.auth.user?.email.includes('@remote.it'),
     authInitialized: state.auth.initialized,
     backendAuthenticated: state.auth.backendAuthenticated,
     initialized: state.devices.initialized,
     installed: state.binaries.installed,
     signedOut: state.auth.initialized && !state.auth.authenticated,
     uninstalling: state.ui.uninstalling,
-    noticeCount: state.announcements.all.length || selectLicenseIndicator(state),
-    unreadAnnouncements: !!state.announcements.all.length,
+    licenseIndicator: selectLicenseIndicator(state),
+    unreadAnnouncements: selectAnnouncements(state, true).length,
     remoteUI: isRemoteUI(state),
   }))
 
@@ -114,14 +113,8 @@ export const App: React.FC = () => {
     { label: 'This Device', path: '/configure', icon: 'hdd', show: remoteUI },
     { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
     { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
-    { label: 'Reports', path: '/reports', icon: 'chart-line', show: showReports },
-    {
-      label: 'Menu',
-      path: unreadAnnouncements ? '/settings/announcements' : '/settings',
-      icon: 'bars',
-      badge: noticeCount,
-      show: true,
-    },
+    { label: 'Announcements', path: '/announcements', icon: 'megaphone', badge: unreadAnnouncements, show: !remoteUI },
+    { label: 'Settings', path: '/settings', icon: 'cog', badge: licenseIndicator, show: true },
   ]
 
   return (
@@ -140,7 +133,7 @@ export const App: React.FC = () => {
                 value={m.path}
                 icon={
                   m.badge ? (
-                    <Badge variant={noticeCount > 1 ? undefined : 'dot'} badgeContent={noticeCount} color="error">
+                    <Badge variant={m.badge > 1 ? undefined : 'dot'} badgeContent={m.badge} color="error">
                       <Icon name={m.icon} size="lg" />
                     </Badge>
                   ) : (
