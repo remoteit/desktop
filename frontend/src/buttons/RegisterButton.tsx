@@ -77,9 +77,7 @@ export const RegisterButton: React.FC = () => {
         }}
       >
         <Body center className={css.popover}>
-          <Typography variant="body2" color="textSecondary">
-            Enter your registration code to claim a new device.
-          </Typography>
+          <Typography variant="body1">Enter your code to register a new device.</Typography>
           <form
             onSubmit={e => {
               e.preventDefault()
