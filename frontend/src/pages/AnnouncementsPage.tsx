@@ -9,7 +9,7 @@ import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const AnnouncementsPage = () => {
-  const enabled = useSelector((state: ApplicationState) => selectAnnouncements(state))
+  const announcements = useSelector((state: ApplicationState) => selectAnnouncements(state))
 
   return (
     <Container
@@ -21,7 +21,7 @@ export const AnnouncementsPage = () => {
         </Typography>
       }
     >
-      {enabled.map((announcement, index) => (
+      {announcements.map((announcement, index) => (
         <AnnouncementCard key={index} data={announcement} />
       ))}
     </Container>
