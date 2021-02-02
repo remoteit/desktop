@@ -1,4 +1,5 @@
 export { default as accounts } from './accounts'
+export { default as announcements } from './announcements'
 export { default as applicationTypes } from './applicationTypes'
 export { default as auth } from './auth'
 export { default as backend } from './backend'

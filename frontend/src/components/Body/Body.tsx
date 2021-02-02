@@ -6,14 +6,22 @@ import { makeStyles } from '@material-ui/core/styles'
 type Props = {
   inset?: boolean
   center?: boolean
+  flex?: boolean
   className?: string
   maxHeight?: string
 }
 
-export const Body: React.FC<Props> = ({ inset, center, maxHeight, className = '', children }) => {
+export const Body: React.FC<Props> = ({ inset, center, flex, maxHeight, className = '', children }) => {
   const css = useStyles()
   const [hover, setHover] = useState<boolean>(true)
-  className = classnames(className, css.body, center && css.center, inset && css.inset, hover && css.showScroll)
+  className = classnames(
+    className,
+    css.body,
+    flex && css.flex,
+    center && css.center,
+    inset && css.inset,
+    hover && css.showScroll
+  )
   let style = maxHeight ? { maxHeight } : {}
   return (
     <div className={className} style={style} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
@@ -39,6 +47,12 @@ const useStyles = makeStyles({
   },
   inset: {
     padding: `${spacing.sm}px ${spacing.xl}px`,
+  },
+  flex: {
+    display: 'flex',
+    alignContent: 'flex-start',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   center: {
     display: 'flex',

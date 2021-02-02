@@ -2,7 +2,6 @@ import { colors, spacing, fontSizes } from './'
 import { createMuiTheme, ThemeOptions } from '@material-ui/core'
 
 const gutters = 32
-const titlePadding = `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`
 const jssTheme: ThemeOptions = {
   palette: {
     primary: { main: colors.primary },
@@ -43,6 +42,30 @@ const jssTheme: ThemeOptions = {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
       anchorOriginBottomCenter: { bottom: '80px !important' },
     },
+    MuiCardHeader: {
+      root: {
+        paddingTop: spacing.xs,
+        paddingBottom: spacing.xs,
+        color: colors.white,
+      },
+      title: {
+        fontSize: fontSizes.sm,
+      },
+      action: {
+        fontSize: fontSizes.xxs,
+        marginTop: 2,
+        marginRight: 'initial',
+        // '& .MuiIconButton-root': { padding: spacing.xs },
+      },
+    },
+    MuiCardActions: {
+      spacing: {
+        paddingTop: 0,
+        marginTop: -spacing.sm,
+        paddingBottom: spacing.sm,
+        justifyContent: 'flex-end',
+      },
+    },
     MuiList: {
       root: {
         '&.collapseList .MuiListItem-dense': {
@@ -53,6 +76,14 @@ const jssTheme: ThemeOptions = {
       padding: {
         paddingTop: spacing.sm,
         paddingBottom: spacing.sm,
+      },
+    },
+    MuiBadge: {
+      badge: {
+        fontSize: fontSizes.xxs,
+        height: 16,
+        minWidth: 16,
+        padding: spacing.xxs,
       },
     },
     MuiListSubheader: {
@@ -174,10 +205,6 @@ const jssTheme: ThemeOptions = {
       h1: {
         fontSize: fontSizes.lg,
         fontWeight: 400,
-        display: 'flex',
-        alignItems: 'center',
-        padding: titlePadding,
-        minHeight: 50,
         color: colors.grayDarkest,
         letterSpacing: -0.2,
       },
@@ -199,7 +226,7 @@ const jssTheme: ThemeOptions = {
         display: 'flex',
         alignItems: 'flex-end',
         minHeight: 50,
-        padding: titlePadding,
+        padding: `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`,
         textTransform: 'uppercase',
         letterSpacing: 3,
         fontWeight: 500,

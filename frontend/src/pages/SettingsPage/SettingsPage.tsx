@@ -3,12 +3,13 @@ import { emit } from '../../services/Controller'
 import { version } from '../../../package.json'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
-import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
+import { ListItemLocation } from '../../components/ListItemLocation'
 import { LicensingSetting } from '../../components/LicensingSetting'
 import { ListItemSetting } from '../../components/ListItemSetting'
+import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { getOwnDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
@@ -23,8 +24,9 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
-  const { os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
+  const { showReports, os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
+      showReports: state.auth.user?.email.includes('@remote.it'),
       os: state.backend.environment.os,
       user: state.auth.user,
       installing: state.binaries.installing,
@@ -84,7 +86,7 @@ export const SettingsPage: React.FC = () => {
           }
         />
         <ListItemSetting
-          label={'Sign out'}
+          label="Sign out"
           subLabel="Allow this device to be transferred or another user to sign in. Will stop all connections."
           icon="sign-out"
           onClick={() => {
@@ -106,6 +108,14 @@ export const SettingsPage: React.FC = () => {
         />
       </List>
       <Divider />
+      {showReports && (
+        <>
+          <List>
+            <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
+          </List>
+          <Divider />
+        </>
+      )}
       {remoteUI || (
         <>
           <Typography variant="subtitle1">Sharing</Typography>
@@ -137,7 +147,7 @@ export const SettingsPage: React.FC = () => {
         )}
         <ListItemSetting
           label="System notifications"
-          icon="megaphone"
+          icon="bell"
           toggle={preferences.showNotifications}
           onClick={() => emit('preferences', { ...preferences, showNotifications: !preferences.showNotifications })}
         />

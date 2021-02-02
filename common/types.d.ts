@@ -307,6 +307,19 @@ declare global {
     }
   }
 
+  type IAnnouncement = {
+    id: string
+    type: INoticeType
+    title: string
+    link: string
+    image: string
+    body: string
+    modified?: Date
+    read?: Date
+  }
+
+  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION'
+
   interface ICloudEvent {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
     state: IDevice['state'] | 'connected' | 'disconnected'

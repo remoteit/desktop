@@ -9,12 +9,14 @@ import devices from './devices'
 import labels from './labels'
 import licensing from './licensing'
 import logs from './logs'
+import announcements from './announcements'
 import shares from './shares'
 import ui from './ui'
 
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts
   analytics: typeof analytics
+  announcements: typeof announcements
   applicationTypes: typeof applicationTypes
   auth: typeof auth
   backend: typeof backend
@@ -30,6 +32,7 @@ export interface RootModel extends Models<RootModel> {
 export const models: RootModel = {
   accounts,
   analytics,
+  announcements,
   applicationTypes,
   auth,
   backend,

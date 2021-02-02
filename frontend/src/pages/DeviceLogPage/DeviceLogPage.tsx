@@ -73,7 +73,7 @@ export const DeviceLogPage = () => {
 
   return (
     <Container
-      inset
+      bodyProps={{ inset: true }}
       header={
         <>
           <Breadcrumbs />

@@ -123,8 +123,8 @@ export const RegisterButton: React.FC = () => {
 
 const useStyles = makeStyles({
   popover: {
-    padding: spacing.xl,
-    paddingBottom: spacing.lg,
+    padding: spacing.lg,
+    paddingBottom: spacing.md,
     '& .MuiList-root, & form': { width: '100%' },
   },
 })

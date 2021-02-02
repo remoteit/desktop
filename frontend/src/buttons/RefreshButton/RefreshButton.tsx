@@ -6,7 +6,7 @@ import { Icon } from '../../components/Icon'
 
 export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { fetching } = useSelector((state: ApplicationState) => state.devices)
-  const { devices, licensing } = useDispatch<Dispatch>()
+  const { devices, licensing, announcements } = useDispatch<Dispatch>()
 
   const onClick = () => {
     if (device) {
@@ -14,8 +14,9 @@ export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
     } else {
       devices.set({ from: 0 })
       devices.fetch()
+      licensing.fetch()
+      announcements.fetch()
     }
-    licensing.fetch()
   }
 
   return (

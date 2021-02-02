@@ -18,6 +18,7 @@ import { LanSharePage } from '../../pages/LanSharePage'
 import { UsersPageService } from '../../pages/UsersPageService'
 import { UsersPageDevice } from '../../pages/UsersPageDevice'
 import { AccountSharePage } from '../../pages/AccountSharePage'
+import { AnnouncementsPage } from '../../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../../pages/AccountAccessPage'
 import { AccountMembershipPage } from '../../pages/AccountMembershipPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage'
@@ -62,6 +63,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/settings/access">
         <AccountAccessPage />
+      </Route>
+      <Route path="/settings/reports">
+        <ReportsPage />
       </Route>
       <Route path={links.waiting}>
         <SetupWaiting os={os} targetDevice={targetDevice} />
@@ -138,8 +142,8 @@ export const Router: React.FC = () => {
       <Route path="/devices">
         <DevicesPage />
       </Route>
-      <Route path="/reports">
-        <ReportsPage />
+      <Route path="/announcements">
+        <AnnouncementsPage />
       </Route>
       <Route path="/">
         <Redirect to={links.home} />

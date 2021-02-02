@@ -1,16 +1,16 @@
 import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
-import { emit } from '../services/Controller'
+import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { getRedirectUrl, isElectron } from '../services/Browser'
+import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
-import { Dispatch } from '../store'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
-import { getRedirectUrl, isElectron } from '../services/Browser'
 import { createModel } from '@rematch/core'
-import { store } from '../store'
 import { RootModel } from './rootModel'
+import { Dispatch } from '../store'
+import { store } from '../store'
+import { emit } from '../services/Controller'
 
 const USER_KEY = 'user'
 
@@ -36,7 +36,7 @@ const state: AuthState = {
 
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
+  effects: dispatch => ({
     async init(_: void, rootState: any) {
       let { user } = rootState.auth
       console.log('AUTH INIT', { user })
@@ -109,6 +109,7 @@ export default createModel<RootModel>()({
         await dispatch.licensing.fetch()
         await dispatch.accounts.init()
         dispatch.applicationTypes.fetch()
+        dispatch.announcements.fetch()
       }
       // always fetch on connect
       dispatch.devices.fetch()

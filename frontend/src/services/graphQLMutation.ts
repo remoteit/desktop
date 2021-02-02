@@ -97,3 +97,12 @@ export async function graphQLRemoveService(id: string) {
     { id }
   )
 }
+
+export async function graphQLReadNotice(id: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($id: String!) {
+        readNotice(id: $id)
+      }`,
+    { id }
+  )
+}
