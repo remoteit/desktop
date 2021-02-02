@@ -310,16 +310,12 @@ declare global {
   type IAnnouncement = {
     id: string
     type: INoticeType
-    stage: string
     title: string
     link: string
     image: string
     body: string
     modified?: Date
-    enabled: boolean
     read?: Date
-    from?: Date
-    until?: Date
   }
 
   type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION'

@@ -21,16 +21,13 @@ export default createModel<RootModel>()({
         ` {
             notices {
               id
-              type
-              stage
               title
               body
               image
+              link
+              type
               modified
-              enabled
               read
-              from
-              until
             }
           }`
       )
@@ -43,17 +40,13 @@ export default createModel<RootModel>()({
       console.log('NOTICES', all)
       return all.map(n => ({
         id: n.id,
-        enabled: n.enabled,
         title: n.title,
         body: n.body,
         image: n.image,
         link: n.link,
         type: n.type,
-        stage: n.stage,
         modified: new Date(n.modified),
-        from: n.from ? new Date(n.from) : undefined,
         read: n.read ? new Date(n.read) : undefined,
-        until: n.until ? new Date(n.until) : undefined,
       }))
     },
     async read(id: string, state) {
@@ -77,10 +70,7 @@ export default createModel<RootModel>()({
 })
 
 export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
-  const today = new Date()
-  return state.announcements.all.filter(
-    a => (!unread || !a.read) && a.enabled && (!a.from || today > a.from) && (!a.until || today < a.until)
-  )
+  return state.announcements.all.filter(a => !unread || !a.read)
 }
 
 const TEST_DATA: any = [
