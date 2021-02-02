@@ -20,6 +20,7 @@
   "dependencies": {
     "@airbrake/node": "^1.4.2",
     "@types/plist": "^3.0.2",
+    "astral-regex": "^2.0.0",
     "command-exists": "^1.2.9",
     "cors": "^2.8.5",
     "debug": "4.3.1",
@@ -30,6 +31,7 @@
     "is-electron": "^2.2.0",
     "is-elevated": "^3.0.0",
     "is-port-reachable": "^3.0.0",
+    "lolex": "^6.0.0",
     "netmask": "^1.0.6",
     "network": "^0.5.0",
     "plist": "^3.0.1",
