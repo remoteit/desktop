@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLBasicRequest } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { graphQLReadNotice } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -17,8 +17,9 @@ export default createModel<RootModel>()({
   state: announcementState,
   effects: dispatch => ({
     async fetch() {
-      const result = await graphQLBasicRequest(
-        ` {
+      try {
+        const result = await graphQLRequest(
+          ` {
             notices {
               id
               title
@@ -30,9 +31,13 @@ export default createModel<RootModel>()({
               read
             }
           }`
-      )
-      const all = await dispatch.announcements.parse(result)
-      dispatch.announcements.set({ all })
+        )
+        const all = await dispatch.announcements.parse(result)
+        dispatch.announcements.set({ all })
+        graphQLGetErrors(result)
+      } catch (error) {
+        await graphQLCatchError(error)
+      }
     },
     async parse(result: AxiosResponse<any> | undefined): Promise<IAnnouncement[]> {
       const all = result?.data?.data?.notices
