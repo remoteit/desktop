@@ -40,9 +40,9 @@ export default createModel<RootModel>()({
       }
     },
     async parse(result: AxiosResponse<any> | undefined): Promise<IAnnouncement[]> {
-      const all = result?.data?.data?.notices
-      // const all = TEST_DATA
-      console.log('NOTICES', all)
+      // const all = result?.data?.data?.notices
+      const all = TEST_DATA
+      console.log('ANNOUNCEMENTS', all)
       return all.map(n => ({
         id: n.id,
         title: n.title,
@@ -80,40 +80,25 @@ export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
 
 const TEST_DATA: any = [
   {
-    title: 'remote.it for AWS Released',
-    image: '',
-    body: `
-      <div>You can now use remote.it to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div>
-      <ul>
-        <li>Eliminate cumbersome IP Whitelists</li>
-        <li>Close vulnerable open ports</li>
-        <li>No more full VPC access: isolate resource access</li>
-        <li>Harden existing security measures or use as a standalone solution</li>                                                
-      </ul>
-    `,
+    body:
+      '<div>You can now use remote.it to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div><ul>  <li>Eliminate cumbersome IP Whitelists</li>  <li>Close vulnerable open ports</li>  <li>No more full VPC access: isolate resource access</li>  <li>Harden existing security measures or use as a standalone solution</li>                                                </ul>',
+    id: 'ac6da898-64e2-11eb-8cce-02fe4f7c5a93',
+    image: 'https://downloads.remote.it/images/aws-marketplace-photo.png',
     link: 'https://remote.it/aws/',
-    enabled: true,
-    from: null,
-    id: 'c21a9fc6-5c70-11eb-8872-063ce187bcd8',
-    modified: '2021-01-22T05:25:06.845Z',
+    modified: '2021-02-01T23:57:23.920Z',
     read: null,
-    stage: 'beta',
+    title: 'remote.it for AWS Released',
     type: 'COMMUNICATION',
-    until: null,
   },
   {
-    title: 'Device List Sharing',
-    image: null,
     body:
       'With Device List Sharing, you can quickly share your device list to other remote.it users. This would provide them with shared access to all the devices you own and allow them to connect to the services.',
+    id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5a93',
+    image: null,
     link: 'https://support.remote.it/hc/en-us/articles/360053354671-Device-Service-Sharing',
-    enabled: true,
-    from: null,
-    id: 'c21a9fc6-5c70-11eb-8872-063ce187bcd7',
-    modified: '2021-01-22T05:25:06.845Z',
+    modified: '2021-02-01T23:57:07.420Z',
     read: null,
-    stage: 'beta',
+    title: 'Device List Sharing',
     type: 'RELEASE',
-    until: null,
   },
 ]
