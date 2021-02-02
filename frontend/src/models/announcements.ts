@@ -40,8 +40,8 @@ export default createModel<RootModel>()({
       }
     },
     async parse(result: AxiosResponse<any> | undefined): Promise<IAnnouncement[]> {
-      // const all = result?.data?.data?.notices
-      const all = TEST_DATA
+      const all = result?.data?.data?.notices
+      // const all = TEST_DATA
       console.log('ANNOUNCEMENTS', all)
       return all.map(n => ({
         id: n.id,
