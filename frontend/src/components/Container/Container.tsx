@@ -3,10 +3,18 @@ import { makeStyles } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { Body } from '../Body'
 
-type Props = { header: any; sidebar?: any; footer?: any; integrated?: boolean; bodyProps?: any }
+type Props = {
+  header: any
+  sidebar?: any
+  footer?: any
+  integrated?: boolean
+  bodyProps?: any
+  bodyRef?: React.RefObject<HTMLDivElement>
+}
 
-export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated, bodyProps, children }) => {
+export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated, bodyProps, bodyRef, children }) => {
   const css = useStyles()
+
   return (
     <div className={css.container}>
       <div className={integrated ? undefined : css.header}>{header}</div>
@@ -16,7 +24,9 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
           <div className={css.sideContent}>{sidebar}</div>
         </div>
       ) : (
-        <Body {...bodyProps}>{children}</Body>
+        <Body bodyRef={bodyRef} {...bodyProps}>
+          {children}
+        </Body>
       )}
       {footer && <div>{footer}</div>}
     </div>

@@ -7,11 +7,12 @@ type Props = {
   inset?: boolean
   center?: boolean
   flex?: boolean
+  bodyRef?: React.RefObject<HTMLDivElement>
   className?: string
   maxHeight?: string
 }
 
-export const Body: React.FC<Props> = ({ inset, center, flex, maxHeight, className = '', children }) => {
+export const Body: React.FC<Props> = ({ inset, center, flex, bodyRef, maxHeight, className = '', children }) => {
   const css = useStyles()
   const [hover, setHover] = useState<boolean>(true)
   className = classnames(
@@ -24,7 +25,13 @@ export const Body: React.FC<Props> = ({ inset, center, flex, maxHeight, classNam
   )
   let style = maxHeight ? { maxHeight } : {}
   return (
-    <div className={className} style={style} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+    <div
+      ref={bodyRef}
+      className={className}
+      style={style}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
       {children}
     </div>
   )
