@@ -36,7 +36,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
     analyticsHelper.page('ServiceAddPage')
   }, [])
 
-  const maxReached = targets.length + 1 > setupServicesLimit
+  const maxReached = device && device.services.length >= setupServicesLimit
 
   return (
     <Container

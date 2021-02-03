@@ -89,7 +89,11 @@ export function ConnectionStateIcon({
       </span>
     )
   else {
-    element = <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+    element = (
+      <span>
+        <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+      </span>
+    )
   }
 
   if (showQuality && device) {
