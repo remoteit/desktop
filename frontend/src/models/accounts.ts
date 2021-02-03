@@ -138,7 +138,7 @@ export default createModel<RootModel>()({
     async appendUniqueDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
       accountId = accountId || devices[0]?.accountId
-      if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
+      if (!accountId) return console.error('APPEND DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
       const existingDevices = getDevices(state, accountId)
       devices = devices.filter(d => !existingDevices.find(e => e.id === d.id))
       dispatch.accounts.setDevices({

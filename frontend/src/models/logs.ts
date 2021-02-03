@@ -32,25 +32,25 @@ type eventLogs = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetchLogs(data: eventLogs, globalState: any) {
-      const { id, from, maxDate } = data
+    async fetchLogs({ id, from, maxDate }: eventLogs, globalState) {
       const { set } = dispatch.logs
       const all = getDevices(globalState)
-      if (!hasCredentials()) return
+
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
+
       try {
         const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
         const { events } = gqlResponse?.data?.data?.login?.device[0] || {}
-        const device: IDevice[] = all
-          .filter((d: IDevice) => d.id === id)
-          .map((_d: IDevice) => {
-            const items = from === 0 ? events.items : _d.events.items.concat(events.items)
-            return { ..._d, events: { ...events, items } }
-          })
-        dispatch.accounts.setDevice({ id, device: device[0] })
+        let device = all.find(d => d.id === id)
+        if (device) {
+          const items = from === 0 ? events.items : device.events.items.concat(events.items)
+          device.events = { ...events, items }
+          dispatch.accounts.setDevice({ id, device })
+        }
       } catch (error) {
         await graphQLCatchError(error)
       }
+
       from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
     },
     async getEventsURL(data: eventLogs) {
