@@ -1,5 +1,6 @@
 import debug from 'debug'
 import cli from './cliInterface'
+import { WEB_PORT } from './constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
 import environment from './environment'
@@ -203,10 +204,13 @@ export default class ConnectionPool {
   }
 
   private get usedPorts() {
-    return this.pool.reduce((result: number[], c) => {
-      if (c.params.port) result.push(c.params.port)
-      return result
-    }, [])
+    return this.pool.reduce(
+      (result: number[], c) => {
+        if (c.params.port) result.push(c.params.port)
+        return result
+      },
+      [WEB_PORT]
+    )
   }
 
   private migrateLegacyFile() {

@@ -57,13 +57,13 @@ class Controller {
     socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
     socket.on('user/quit', this.quit)
-    socket.on('service/connect', this.pool.start)
-    socket.on('launch/app', openCMDforWindows)
-    socket.on('service/disconnect', this.pool.stop)
+    socket.on('service/connect', this.connect)
+    socket.on('service/disconnect', this.disconnect)
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)
-    socket.on('service/forget', this.pool.forget)
+    socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
+    socket.on('launch/app', openCMDforWindows)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -93,6 +93,21 @@ class Controller {
     this.pool.check()
     lan.check()
     app.check()
+  }
+
+  connect = async (connection: IConnection) => {
+    await this.pool.start(connection)
+    this.freePort()
+  }
+
+  disconnect = async (connection: IConnection) => {
+    await this.pool.stop(connection)
+    this.freePort()
+  }
+
+  forget = async (connection: IConnection) => {
+    await this.pool.forget(connection)
+    this.freePort()
   }
 
   targets = async (result: ITarget[]) => {
@@ -148,6 +163,7 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
+    this.freePort()
     this.io.emit('dataReady', true)
   }
 
