@@ -22,14 +22,14 @@ import { EventMessage } from './EventMessage'
 import { EventIcon } from './EventIcon'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../../components/DatePicker/DatePicker'
-import { getOwnDevices } from '../../models/accounts'
+import { getAllDevices } from '../../models/accounts'
 
 const TIME = 1000 * 60 * 60 * 24
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { device, fetchingMore, fetching, user, items } = useSelector((state: ApplicationState) => {
-    const device = getOwnDevices(state).find(d => d.id === deviceID)
+    const device = getAllDevices(state).find(d => d.id === deviceID)
     return {
       device,
       fetchingMore: state.logs.fetchingMore,
@@ -38,17 +38,16 @@ export const DeviceLogPage = () => {
       items: device?.events.items,
     }
   })
-
-  useEffect(() => {
-    fetchLogs({ id: deviceID, from: 0 })
-    console.log('Fetching Logs')
-  }, [deviceID])
-
   const dispatch = useDispatch<Dispatch>()
   const [planUpgrade, setPlanUpgrade] = useState(false)
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
   const { fetchLogs } = dispatch.logs
   const freePlan = 90
+
+  useEffect(() => {
+    fetchLogs({ id: deviceID, from: 0 })
+    console.log('Fetching Logs')
+  }, [deviceID])
 
   const limitDays = () => {
     const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
