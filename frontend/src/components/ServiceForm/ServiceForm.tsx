@@ -260,8 +260,16 @@ export const ServiceForm: React.FC<Props> = ({
           <List>
             <ListItemCheckbox
               checked={!form.disabled}
-              label={form.disabled ? 'Service disabled' : 'Service enabled'}
-              subLabel="Disabling your service will take it offline."
+              label="Enable service"
+              subLabel={
+                <>
+                  Disabling your service will take it offline.{' '}
+                  <i>
+                    Service is
+                    {form.disabled ? ' disabled' : ' enabled'}
+                  </i>
+                </>
+              }
               disabled={disabled}
               onClick={() => {
                 setForm({ ...form, disabled: !form.disabled })
