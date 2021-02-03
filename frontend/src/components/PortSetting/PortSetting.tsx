@@ -11,10 +11,6 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
     (state: ApplicationState) => service.attributes?.defaultPort || state.backend.freePort
   )
 
-  useEffect(() => {
-    if (!connection || !connection.port) emit('freePort', connection)
-  }, [connection])
-
   if (!service) return null
   if (!connection) connection = newConnection(service)
 
