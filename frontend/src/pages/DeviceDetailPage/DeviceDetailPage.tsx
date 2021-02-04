@@ -18,7 +18,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const DeviceDetailPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const devices = useSelector((state: ApplicationState) => getAllDevices(state))
-  const device = devices.find((d: IDevice) => d.id === deviceID && !d.hidden)
+  const device = devices.find(d => d.id === deviceID)
 
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')
