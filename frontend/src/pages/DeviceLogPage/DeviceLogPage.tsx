@@ -24,7 +24,7 @@ import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../../components/DatePicker/DatePicker'
 import { getAllDevices } from '../../models/accounts'
 
-const TIME = 1000 * 60 * 60 * 24
+const DAY = 1000 * 60 * 60 * 24
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
@@ -51,11 +51,11 @@ export const DeviceLogPage = () => {
 
   const limitDays = () => {
     const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
-    return Math.floor((new Date().getTime() - createAt.getTime()) / TIME)
+    return Math.floor((new Date().getTime() - createAt.getTime()) / DAY)
     // return user?.plan.name === 'free' && createAt_days > freePlan ? freePlan : createAt_days
   }
 
-  const minDay = new Date(new Date().getTime() - TIME * limitDays())
+  const minDay = new Date(new Date().getTime() - DAY * limitDays())
 
   const css = useStyles()
 
