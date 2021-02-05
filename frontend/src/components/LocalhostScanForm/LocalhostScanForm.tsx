@@ -10,11 +10,11 @@ import { makeStyles } from '@material-ui/core/styles'
 import { spacing } from '../../styling'
 
 type Props = {
-  setSelected: (targets: ITarget[]) => void
+  onSelect: (targets: ITarget[]) => void
   loading?: boolean
 }
 
-export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => {
+export const LocalhostScanForm: React.FC<Props> = ({ onSelect, loading }) => {
   const [state, setState] = useState<boolean[]>([])
   const css = useStyles()
   const { applicationTypes, scanData } = useSelector((state: ApplicationState) => {
@@ -36,9 +36,9 @@ export const LocalhostScanForm: React.FC<Props> = ({ setSelected, loading }) => 
   const updateTargets = useCallback(
     checked => {
       const selected = scanData.filter((_, key) => checked[key])
-      setSelected(selected)
+      onSelect(selected)
     },
-    [scanData, setSelected]
+    [scanData, onSelect]
   )
 
   if (scanData && scanData.length !== state.length) {

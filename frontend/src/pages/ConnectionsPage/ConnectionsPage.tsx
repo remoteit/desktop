@@ -7,7 +7,6 @@ import { ApplicationState } from '../../store'
 import { ConnectionsList } from '../../components/ConnectionsList'
 import { SessionsList } from '../../components/SessionsList'
 import { useSelector } from 'react-redux'
-import { getAllDevices } from '../../models/accounts'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
@@ -15,25 +14,10 @@ import styles from '../../styling'
 export const ConnectionsPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
-  const { connections, services, sessions } = useSelector((state: ApplicationState) => {
-    const devices = getAllDevices(state)
-    return {
-      ...selectMyConnections(state),
-      sessions: devices.reduce((sessions: ISession[], d) => {
-        if (!d.hidden)
-          d.services.forEach(s =>
-            s.sessions.forEach(u => {
-              sessions.push({
-                device: d,
-                service: s,
-                user: u,
-              })
-            })
-          )
-        return sessions
-      }, []),
-    }
-  })
+  const { connections, services, sessions } = useSelector((state: ApplicationState) => ({
+    ...selectMyConnections(state),
+    sessions: state.sessions.all,
+  }))
 
   useEffect(() => {
     heartbeat.beat()

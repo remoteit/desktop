@@ -198,11 +198,8 @@ declare global {
     version: number // daemon version
     configurable: boolean // cloudshift device
     accountId: string
-    geo: {
+    geo: IGeo & {
       connectionType?: string
-      countryName?: string
-      stateName?: string
-      city?: string
       isp?: string
     }
     createdAt: Date
@@ -217,7 +214,7 @@ declare global {
       label?: string
       accessDisabled?: boolean
     }
-    events: IEventList
+    events?: IEventList
   }
 
   interface IService {
@@ -235,13 +232,12 @@ declare global {
     port?: number
     host?: ipAddress
     protocol?: string
-    sessions: IUser[]
     access: IUser[]
     license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
-      defaultPort?: number
       route?: IRouteType // p2p with failover | p2p | proxy
+      defaultPort?: number
       launchTemplate?: string
       commandTemplate?: string
     }
@@ -253,14 +249,34 @@ declare global {
     authHash?: string
     yoicsId?: string
     created?: Date
-    platform?: number // fixme - unconfuse IUser with ISessionFixme
+    // platform?: number // fixme - unconfuse IUser with ISessionFixme
     timestamp?: Date
-    scripting?: boolean
+    scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
   }
 
   type IUserRef = {
     id: string
     email: string
+  }
+
+  type IGeo = {
+    countryName: string
+    stateName: string
+    city: string
+  }
+
+  type ISession = {
+    id: string
+    timestamp: Date
+    platform: number
+    user: IUserRef
+    geo?: IGeo
+    target: {
+      id: string
+      deviceId: string
+      platform: number
+      name: string // combined service + device names
+    }
   }
 
   type ISessionFixme = {
@@ -321,20 +337,22 @@ declare global {
   type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION'
 
   interface ICloudEvent {
+    sessionId: string
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
     actor: IUserRef
     users: IUserRef[]
     platform: IUser['platform']
-    sessionId: string
     authUserId: string
+    geo?: IGeo
     target: {
       id: string
       name: string
       owner: IUserRef
       typeID: IService['typeID']
-      targetPlatform: IDevice['targetPlatform']
+      platform: IDevice['targetPlatform']
+      deviceId: string
       device?: IDevice
       service?: IService
       connection?: IConnection
@@ -349,8 +367,6 @@ declare global {
   }
 
   type IRouteType = 'failover' | 'p2p' | 'proxy'
-
-  type ISession = { device: IDevice; service: IService; user: IUser }
 
   interface IEvent {
     shared: any

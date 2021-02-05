@@ -102,6 +102,10 @@ class CloudController {
               id
               email
             }
+            device {
+              id
+              name
+            }
           }
           actor {
             id
@@ -110,6 +114,12 @@ class CloudController {
           ... on DeviceConnectEvent {
             platform
             session
+            sourceGeo {
+              city
+              stateName
+              countryName
+            }
+  
           }
           ... on DeviceShareEvent {
             scripting
@@ -154,15 +164,17 @@ class CloudController {
         authUserId: state.auth.user?.id || '',
         platform: event.platform,
         sessionId: event.session,
+        geo: event.sourceGeo,
         target: event.target.map(t => {
           const [service, device] = selectService(state, t.id)
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
-            name: connectionName(service, device) || t.name,
+            name: connectionName(t, t.device),
             owner: t.owner,
             typeID: t.application,
-            targetPlatform: t.platform,
+            platform: t.platform,
+            deviceId: t.device.id,
             connection,
             service,
             device,
@@ -175,7 +187,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts } = store.dispatch
+    const { accounts, sessions } = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -211,20 +223,23 @@ class CloudController {
 
           // connection state for other users
           else {
-            target.device?.services.find(service => {
-              if (service.id === target.service?.id) {
-                const i = service.sessions.findIndex(s => s.id === event.actor.id)
-                if (i > -1) service.sessions.splice(i, 1)
-                if (event.state === 'connected') {
-                  service.sessions.push({
-                    id: event.actor.id,
-                    timestamp: event.timestamp,
-                    email: event.actor.email,
-                    platform: event.platform,
-                  })
-                }
-              }
-            })
+            if (event.state === 'connected') {
+              sessions.setSession({
+                id: event.sessionId,
+                timestamp: event.timestamp,
+                platform: event.platform,
+                user: event.actor,
+                geo: event.geo,
+                target: {
+                  id: target.id,
+                  deviceId: target.deviceId,
+                  platform: target.platform,
+                  name: target.name,
+                },
+              })
+            } else {
+              sessions.removeSession(event.sessionId)
+            }
             if (target.device?.id) {
               accounts.setDevice({ id: target.device.id, device: target.device })
             }

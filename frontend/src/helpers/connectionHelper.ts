@@ -24,7 +24,9 @@ export function findLocalConnection(state: ApplicationState, id: string, session
 export function connectionName(service?: IService, device?: IDevice) {
   if (!device) return attributeName(service)
   if (!service) return attributeName(device)
-  return `${attributeName(device)} - ${attributeName(service)}`
+  const deviceName = `${attributeName(device)} - `
+  const serviceName = attributeName(service)
+  return deviceName + serviceName.replace(deviceName, '')
 }
 
 export function newConnection(service?: IService | null) {
@@ -78,7 +80,6 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
-  const id = state.auth.user?.id
   return state.backend.connections.filter(c => !!c.startTime)
 }
 

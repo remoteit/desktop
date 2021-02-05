@@ -1,6 +1,9 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { makeStyles, Box, lighten } from '@material-ui/core'
 import { spacing, colors, fontSizes, Color } from '../../styling'
+import { selectSessionsByService } from '../../models/sessions'
+import { ApplicationState } from '../../store'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
 import classnames from 'classnames'
@@ -14,8 +17,11 @@ interface Props {
 
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu, showConnected = true }) => {
   const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
+  const sessions = useSelector((state: ApplicationState) =>
+    selectSessionsByService(state, service?.id || connection?.id)
+  )
+  const connected = showConnected && !!sessions.length
   const css = useStyles()
-  const connected = showConnected && !!service?.sessions.length
 
   let colorName: Color = 'warning'
   let state = service ? service.state : 'unknown'
@@ -60,7 +66,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
 
   return (
     <>
-      <SessionsTooltip service={service} open={openTooltip} placement="top" arrow label>
+      <SessionsTooltip service={service} open={openTooltip} sessions={sessions} placement="top" arrow label>
         <Box
           component="span"
           className={classnames(setContextMenu && css.hasMenu, css.indicator)}
