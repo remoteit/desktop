@@ -18,7 +18,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch() {
       try {
-        const result = await graphQLRequest(
+        const response = await graphQLRequest(
           ` {
             notices {
               id
@@ -32,15 +32,15 @@ export default createModel<RootModel>()({
             }
           }`
         )
-        const all = await dispatch.announcements.parse(result)
+        graphQLGetErrors(response)
+        const all = await dispatch.announcements.parse(response)
         dispatch.announcements.set({ all })
-        graphQLGetErrors(result)
       } catch (error) {
         await graphQLCatchError(error)
       }
     },
-    async parse(result: AxiosResponse<any> | undefined): Promise<IAnnouncement[]> {
-      const all = result?.data?.data?.notices
+    async parse(response: AxiosResponse<any> | undefined): Promise<IAnnouncement[]> {
+      const all = response?.data?.data?.notices
       // const all = TEST_DATA
       console.log('ANNOUNCEMENTS', all)
       return all.map(n => ({

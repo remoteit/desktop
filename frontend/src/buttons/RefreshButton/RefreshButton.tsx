@@ -6,14 +6,15 @@ import { Icon } from '../../components/Icon'
 
 export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { fetching } = useSelector((state: ApplicationState) => state.devices)
-  const { devices, licensing, announcements } = useDispatch<Dispatch>()
+  const { devices, licensing, announcements, sessions } = useDispatch<Dispatch>()
 
-  const onClick = () => {
+  const onClick = async () => {
     if (device) {
       devices.fetchSingle({ deviceId: device.id })
     } else {
       devices.set({ from: 0 })
-      devices.fetch()
+      await devices.fetch()
+      sessions.fetch()
       licensing.fetch()
       announcements.fetch()
     }

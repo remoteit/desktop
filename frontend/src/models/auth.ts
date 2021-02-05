@@ -112,7 +112,8 @@ export default createModel<RootModel>()({
         dispatch.announcements.fetch()
       }
       // always fetch on connect
-      dispatch.devices.fetch()
+      await dispatch.devices.fetch()
+      dispatch.sessions.fetch()
     },
     async disconnect(_: void, rootState: any) {
       console.log('DISCONNECT')
@@ -143,6 +144,7 @@ export default createModel<RootModel>()({
       dispatch.accounts.set({ devices: [] })
       dispatch.backend.set({ connections: [] })
       dispatch.devices.set({ query: '', filter: 'all', initialized: false })
+      dispatch.sessions.set({ all: [] })
       dispatch.logs.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''

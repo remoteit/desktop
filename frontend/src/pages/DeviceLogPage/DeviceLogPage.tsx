@@ -35,7 +35,7 @@ export const DeviceLogPage = () => {
       fetchingMore: state.logs.fetchingMore,
       fetching: state.logs.fetching,
       user: state.auth.user,
-      items: device?.events.items,
+      items: device?.events?.items,
     }
   })
   const dispatch = useDispatch<Dispatch>()
@@ -65,7 +65,7 @@ export const DeviceLogPage = () => {
   }
 
   const fetchMore = () => {
-    fetchLogs({ id: deviceID, from: device?.events.items.length, maxDate: `${selectedDate} 23:59:59` })
+    fetchLogs({ id: deviceID, from: device?.events?.items.length, maxDate: `${selectedDate} 23:59:59` })
   }
 
   if (!device) return null
@@ -108,7 +108,7 @@ export const DeviceLogPage = () => {
       </List>
 
       <Box className={css.box}>
-        {device.events.hasMore || fetching ? (
+        {device?.events?.hasMore || fetching ? (
           <Button color="primary" onClick={fetchMore} disabled={planUpgrade || fetchingMore || fetching}>
             {fetchingMore || fetching ? `Loading ...` : 'Load More'}
           </Button>

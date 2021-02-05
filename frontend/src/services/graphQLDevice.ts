@@ -1,7 +1,7 @@
 import { graphQLRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
 import { LEGACY_ATTRIBUTES } from '../shared/constants'
-import { updateConnections, getConnectionSessionIds } from '../helpers/connectionHelper'
+import { updateConnections } from '../helpers/connectionHelper'
 
 const DEVICE_SELECT = `
   id
@@ -56,17 +56,6 @@ const DEVICE_SELECT = `
     license
     attributes
     access {
-      user {
-        id
-        email
-      }
-    }
-    sessions {
-      id
-      timestamp
-      endpoint {
-        platform
-      }
       user {
         id
         email
@@ -158,7 +147,6 @@ export async function graphQLFetchDevice(id: string) {
 
 export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
-  const sessionIds = getConnectionSessionIds()
   let data: IDevice[] = gqlDevices?.map(
     (d: any): IDevice => ({
       id: d.id,
@@ -198,7 +186,6 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
           host: s.host,
           protocol: s.protocol,
           access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
-          sessions: processSessions(s.sessions, loginId, sessionIds),
         })
       ),
       access: d.access.map((e: any) => ({
@@ -208,36 +195,9 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       })),
       accountId,
       hidden,
-      events: d.events || [],
     })
   )
   return updateConnections(data)
-
-  /* 
-    Sort and filter session data
-      - Sort by timestamp
-      - Filter out this user's sessions
-      - Combine same user sessions
-  */
-  function processSessions(response: any, loginId: string, sessionIds: IConnection['sessionId'][]): IUser[] {
-    const dates = response.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
-    const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
-    const result = sorted.reduce((sessions: ISessionFixme[], e: any) => {
-      const localConnection = sessionIds.includes(e.id)
-      if (localConnection) {
-        // @TODO set state in local connections model
-      } else if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
-        sessions.push({
-          id: e.user?.id,
-          sessionId: e.id,
-          timestamp: e.timestamp,
-          email: e.user?.email,
-          platform: e.endpoint?.platform,
-        })
-      return sessions
-    }, [])
-    return result
-  }
 }
 
 function processDeviceAttributes(response: any): IDevice['attributes'] {

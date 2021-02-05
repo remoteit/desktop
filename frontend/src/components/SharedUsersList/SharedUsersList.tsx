@@ -36,7 +36,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
             <ShareDetails user={user} device={device} connected />
           </UserListItem>
         ))}
-        {!!connected.length && <Divider />}
+        {!!connected.length && <Divider className={css.divider} />}
         {!!listUserLinked.length && !!filtered.length && (
           <Typography variant="subtitle1"> Single Device Shared</Typography>
         )}
@@ -59,7 +59,6 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
 
 const useStyles = makeStyles({
   divider: {
-    marginBottom: spacing.md,
     marginTop: spacing.sm,
   },
 })

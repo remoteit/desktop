@@ -89,10 +89,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
               }}
               onFocus={event => event.target.select()}
               helperText={nameError}
-              inputProps={{
-                'data-lpignore': 'true',
-                disableUnderline: true,
-              }}
+              InputProps={{ disableUnderline: true }}
             />
             <Button
               className={css.button}
@@ -106,7 +103,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
               <Icon name="check" type="regular" inline />
             </Button>
           </section>
-          <LocalhostScanForm setSelected={setSelected} loading={loading} />
+          <LocalhostScanForm onSelect={setSelected} loading={loading} />
         </form>
       </Body>
     </Container>

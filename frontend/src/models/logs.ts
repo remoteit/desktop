@@ -43,7 +43,10 @@ export default createModel<RootModel>()({
         const { events } = gqlResponse?.data?.data?.login?.device[0] || {}
         let device = all.find(d => d.id === id)
         if (device) {
-          const items = from === 0 ? events.items : device.events.items.concat(events.items)
+          let items
+          if (from === 0) items = events.items
+          else if (device.events) items = device.events.items.concat(events.items)
+          else items = events.items
           device.events = { ...events, items }
           dispatch.accounts.setDevice({ id, device })
         }
