@@ -3,14 +3,11 @@ import { Icon } from '../Icon'
 import { Title } from '../Title'
 import { Duration } from '../Duration'
 import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { ServiceName } from '../ServiceName'
+import { LocationPin } from '../LocationPin'
 import { TargetPlatform } from '../TargetPlatform'
 import { RefreshButton } from '../../buttons/RefreshButton'
-import { ApplicationState } from '../../store'
 import { InitiatorPlatform } from '../InitiatorPlatform'
-import { getAllDevices } from '../../models/accounts'
-import { makeStyles, Typography, Tooltip, List, ListItem, ListItemText, ListItemIcon } from '@material-ui/core'
+import { makeStyles, Typography, List, ListItem, ListItemText, ListItemIcon } from '@material-ui/core'
 
 export interface Props {
   sessions: ISession[]
@@ -45,11 +42,7 @@ export const SessionsList: React.FC<Props> = ({ sessions }) => {
                 <span>
                   <Title>{s.user.email}</Title>
                   <Typography variant="caption" display="block">
-                    <Tooltip title={`${s.geo?.city}, ${s.geo?.stateName} - ${s.geo?.countryName}`}>
-                      <span>
-                        <Icon name="map-marker" type="regular" size="xs" inlineLeft />
-                      </span>
-                    </Tooltip>
+                    <LocationPin session={s} />
                     <Duration startTime={s.timestamp?.getTime()} ago />
                   </Typography>
                 </span>
