@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import { emit } from '../../services/Controller'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { REGEX_PORT_SAFE } from '../../shared/constants'

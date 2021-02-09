@@ -1,7 +1,5 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { ApplicationState } from '../../store'
 import { Application } from '../../shared/applications'
 import { useApplication } from '../../hooks/useApplication'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
@@ -30,7 +28,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, co
           </Tooltip>
         </>
       }
-      resetValue={app.template}
+      resetValue={app.defaultTemplate}
       onSave={template =>
         connection &&
         setConnection({

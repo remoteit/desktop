@@ -4,7 +4,6 @@ import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import { emit } from '../../services/Controller'
-import heartbeat from '../../services/Heartbeat'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {

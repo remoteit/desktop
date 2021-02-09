@@ -40,6 +40,10 @@ export class Application {
     return this.context === 'copy' ? 'Copy Command' : 'Launch URL'
   }
 
+  get defaultTemplate() {
+    return this.context === 'copy' ? this.resolvedDefaultCommandTemplate : this.resolvedDefaultLaunchTemplate
+  }
+
   get template() {
     return this.context === 'copy' ? this.commandTemplate : this.launchTemplate
   }
@@ -74,17 +78,20 @@ export class Application {
     return this.extractTokens(this.parse(this.template)) || []
   }
 
+  private get resolvedDefaultLaunchTemplate() {
+    return this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
+  }
+
+  private get resolvedDefaultCommandTemplate() {
+    return this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
+  }
+
   private get launchTemplate() {
-    return this.connection?.launchTemplate || this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
+    return this.connection?.launchTemplate || this.resolvedDefaultLaunchTemplate
   }
 
   private get commandTemplate() {
-    return (
-      this.connection?.commandTemplate ||
-      this.service?.attributes.commandTemplate ||
-      this.defaultCommandTemplate ||
-      this.defaultLaunchTemplate
-    )
+    return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
   }
 
   private parse(template: string = '') {

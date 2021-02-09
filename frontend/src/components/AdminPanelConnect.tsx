@@ -1,8 +1,6 @@
 import React from 'react'
-import { Notice } from './Notice'
-import { Columns } from './Columns'
 import { ServiceListItem } from './ServiceListItem'
-import { List, Typography, Divider } from '@material-ui/core'
+import { List, Divider } from '@material-ui/core'
 
 export type Props = {
   device?: IDevice
