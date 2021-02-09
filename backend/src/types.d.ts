@@ -12,9 +12,9 @@ declare global {
   }
 
   type CliStderr = {
-    status: 1 | 0 | -1
-    details: string[]
+    code: number
+    message: string
   }
 }
 
-declare module 'is-port-reachable';
+declare module 'is-port-reachable'

@@ -128,10 +128,10 @@ export default class CLI {
 
   async updateConnectionStatus() {
     if (!this.data.connections.length) return
-    const json = await this.status()
-    if (!json?.connections?.length) return
+    const connections = await this.connectionStatus()
+    if (!connections?.length) return
     this.data.connections = this.data.connections.map(c => {
-      const status = json?.connections?.find(s => s.id === c.id)
+      const status = connections?.find(s => s.id === c.id)
       if (status) {
         c.active = status.state === 'connected'
         c.connecting = status.state === 'connecting'
@@ -158,41 +158,29 @@ export default class CLI {
     })
   }
 
-  async agentRunning() {
-    const result = await this.exec({
-      cmds: [strings.agentStatus()],
-      checkAuthHash: true,
-      skipSignInCheck: true,
-      quiet: true,
-    })
-    let running = false,
-      data: { status: 0 | 1 }
-    try {
-      if (result) {
-        data = JSON.parse(result)
-        running = data.status === 0
-      }
-    } catch (error) {
-      Logger.warn('CLI AGENT STATUS PARSE ERROR', { result, errorMessage: error.message })
-    }
-    Logger.info('CLI AGENT STATUS', { running })
-    return running
-  }
-
-  async status() {
-    const result = await this.exec({
+  async connectionStatus() {
+    const data = await this.exec({
       cmds: [strings.status()],
       checkAuthHash: true,
       skipSignInCheck: true,
       quiet: true,
     })
-    let data: { connections?: IConnectionStatus[] } = {}
-    try {
-      if (result) data = JSON.parse(result)
-    } catch (error) {
-      Logger.warn('CLI STATUS PARSE ERROR', { result, errorMessage: error.message })
-    }
-    return data
+    return data.connections as IConnectionStatus[]
+  }
+
+  async agentRunning() {
+    let running = false
+
+    const data = await this.exec({
+      cmds: [strings.agentStatus()],
+      checkAuthHash: true,
+      skipSignInCheck: true,
+      quiet: true,
+    })
+
+    if (data) running = data.running
+    Logger.info('CLI AGENT STATUS', { running })
+    return running
   }
 
   async addTarget(t: ITarget) {
@@ -274,17 +262,12 @@ export default class CLI {
   }
 
   async scan(ipMask?: string) {
-    const result = await this.exec({ cmds: [strings.scan(ipMask)], skipSignInCheck: true })
-    return JSON.parse(result)
+    return await this.exec({ cmds: [strings.scan(ipMask)], skipSignInCheck: true })
   }
 
   async version() {
     const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true })
-    try {
-      return JSON.parse(result).version
-    } catch (error) {
-      Logger.warn('VERSION PARSE ERROR', { result, errorMessage: error.message })
-    }
+    return result.version
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
@@ -303,6 +286,17 @@ export default class CLI {
         binaryInstaller.check()
       }
 
-    return await commands.exec()
+    const result = await commands.exec()
+
+    if (result) {
+      try {
+        const parsed = JSON.parse(result)
+        if (parsed.code === 0) parsed.message && Logger.info('CLI EXEC MESSAGE', parsed.message)
+        else throw new Error(parsed)
+        return parsed.data
+      } catch (error) {
+        Logger.warn('CLI PARSE ERROR', { result, errorMessage: error.message.toString() })
+      }
+    }
   }
 }
