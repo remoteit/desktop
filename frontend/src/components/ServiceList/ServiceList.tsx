@@ -3,6 +3,7 @@ import { List, Typography } from '@material-ui/core'
 import { ServiceListItem } from '../ServiceListItem'
 import { makeStyles } from '@material-ui/core/styles'
 import { spacing } from '../../styling'
+import { Body } from '../Body'
 
 export interface ServiceListProps {
   services: IService[]
@@ -11,7 +12,12 @@ export interface ServiceListProps {
 
 export const ServiceList = ({ services = [], connections }: ServiceListProps) => {
   const css = useStyles()
-  if (!services.length) return <Typography variant="h1">No services</Typography>
+  if (!services.length)
+    return (
+      <Body inset>
+        <Typography variant="h2">No services</Typography>
+      </Body>
+    )
   return (
     <List className={css.list}>
       {services.map((service, key) => (

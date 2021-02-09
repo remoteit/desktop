@@ -31,20 +31,24 @@ export default class Command {
 
   log(message: string, params: ILookup<string | boolean>, type: 'info' | 'warn' | 'error' = 'info') {
     if (this.quiet) return
+    Logger[type](message, this.sanitize(params))
+  }
+
+  sanitize(params: ILookup<string | boolean>) {
     if (user.authHash) {
       Object.keys(params).forEach(key => {
         if (typeof params[key] === 'string' && params[key].toString().includes(user.authHash))
           params[key] = params[key].toString().replace(new RegExp(user.authHash, 'g'), '[CLEARED]')
       })
     }
-    Logger[type](message, params)
+    return params
   }
 
-  parseCliErrors(error: string) {
+  parseJSONError(error: string) {
     const jsonError = error.match(/{.*}/)
     if (jsonError) {
-      const { details }: CliStderr = JSON.parse(jsonError[0])
-      return details.join('\n')
+      const { message }: CliStderr = JSON.parse(jsonError[0])
+      return message
     }
     return error
   }
@@ -69,13 +73,13 @@ export default class Command {
           : await execPromise(this.toString())
 
       if (stderr) {
-        this.log(`EXEC *** ERROR ***`, { stderr: stderr.toString().trim() }, 'error')
+        this.log(`EXEC *** ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error')
         AirBrake.notify({
           params: { type: 'COMMAND STDERR', exec: this.toString() },
           context: { version: environment.version },
           error: stderr.toString(),
         })
-        result = this.parseCliErrors(stderr)
+        result = this.parseJSONError(stderr)
         this.onError(new Error(result))
       }
 
@@ -94,7 +98,7 @@ export default class Command {
         { error, errorMessage: error.message, errorCode: error.code, errorStack: error.stack },
         'error'
       )
-      result = this.parseCliErrors(error.message)
+      result = this.parseJSONError(error.message)
       this.onError(new Error(result))
     }
 
