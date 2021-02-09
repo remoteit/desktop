@@ -55,7 +55,7 @@ export const LanSharePage: React.FC = () => {
   const selected = selections[selection] || {}
   const history = useHistory()
   const css = useStyles()
-  const currentHost = (connection && connection.host) || IP_PRIVATE
+  const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
 
   if (!connection || !service) return null
 
@@ -83,7 +83,10 @@ export const LanSharePage: React.FC = () => {
         <ListItemSetting
           icon="network-wired"
           toggle={enabled}
-          onClick={() => setEnabled(!enabled)}
+          onClick={() => {
+            setCurrentHost(enabled ? IP_PRIVATE : IP_OPEN)
+            setEnabled(!enabled)
+          }}
           label="Enable local sharing"
         />
       </List>
