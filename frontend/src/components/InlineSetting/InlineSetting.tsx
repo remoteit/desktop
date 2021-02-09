@@ -151,7 +151,7 @@ const useStyles = makeStyles({
     position: 'absolute',
     zIndex: 1,
     right: 'auto',
-    left: spacing.md,
+    left: spacing.lg,
     marginTop: spacing.xs,
   },
 })
