@@ -30,6 +30,8 @@ type Props = {
   onShowEdit: () => void
 }
 
+let canceled = false
+
 export const InlineSetting: React.FC<Props> = ({
   label,
   icon,
@@ -46,7 +48,6 @@ export const InlineSetting: React.FC<Props> = ({
   children,
 }) => {
   const css = useStyles()
-  const [focusTimeout, setFocusTimeout] = useState<NodeJS.Timeout>()
   const [edit, setEdit] = useState<boolean>(false)
 
   function triggerEdit() {
@@ -55,10 +56,7 @@ export const InlineSetting: React.FC<Props> = ({
   }
 
   function cancelBlur() {
-    if (focusTimeout) {
-      clearTimeout(focusTimeout)
-      setFocusTimeout(undefined)
-    }
+    canceled = true
   }
 
   useEffect(() => {
@@ -66,7 +64,8 @@ export const InlineSetting: React.FC<Props> = ({
     if (edit) {
       fieldRef.current.focus()
       fieldRef.current.onblur = () => {
-        setFocusTimeout(setTimeout(() => setEdit(false), 200))
+        if (!canceled) setTimeout(() => setEdit(false), 200)
+        canceled = false
       }
     }
   }, [edit])
@@ -80,14 +79,14 @@ export const InlineSetting: React.FC<Props> = ({
           onSubmit={e => {
             e.preventDefault()
             onSubmit()
-            fieldRef.current?.blur()
+            setEdit(false)
           }}
         >
           {children}
           {resetValue != null && (
             <ResetButton
+              onMouseDown={cancelBlur}
               onClick={() => {
-                cancelBlur()
                 onResetClick()
                 fieldRef.current?.focus()
               }}
@@ -100,7 +99,7 @@ export const InlineSetting: React.FC<Props> = ({
               </IconButton>
             </Tooltip>
             <Tooltip title="Save">
-              <IconButton color="primary" type="submit">
+              <IconButton color="primary" type="submit" onMouseDown={cancelBlur}>
                 <Icon name="check" size="md" fixedWidth />
               </IconButton>
             </Tooltip>
