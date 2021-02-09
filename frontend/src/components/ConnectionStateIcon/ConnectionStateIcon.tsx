@@ -3,7 +3,7 @@ import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { makeStyles, IconButton, Badge, Box } from '@material-ui/core'
+import { makeStyles, IconButton, Badge } from '@material-ui/core'
 import { colors, spacing, Color } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {

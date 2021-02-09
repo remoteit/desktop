@@ -1,5 +1,5 @@
 import React from 'react'
-import { colors, spacing, Spacing } from '../styling'
+import { colors, spacing } from '../styling'
 import { makeStyles, Box } from '@material-ui/core'
 
 export const Quote: React.FC<{ margin?: number }> = ({ children, margin = spacing.lg }) => {
