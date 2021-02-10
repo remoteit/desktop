@@ -12,7 +12,6 @@ import { Header } from '../Header'
 import { Router } from '../Router'
 import { Body } from '../Body'
 import { Page } from '../../pages/Page'
-import { colors } from '../../styling'
 
 export const App: React.FC = () => {
   const { authInitialized, backendAuthenticated, initialized, installed, signedOut, uninstalling } = useSelector(
@@ -27,14 +26,10 @@ export const App: React.FC = () => {
   )
 
   const css = useStyles()
-
-  // const location = useLocation()
-  // const [navigation, setNavigation] = useState<{ [menu: string]: string }>({})
   const [pageWidth, setPageWidth] = useState<number>(window.innerWidth)
-  // const match = location.pathname.match(REGEX_FIRST_PATH)
-  // const menu = match ? match[0] : '/'
 
   const updateWidth = () => setPageWidth(window.innerWidth)
+  const largeWidth = pageWidth > 800
 
   useEffect(() => {
     window.addEventListener('resize', updateWidth)
@@ -42,12 +37,6 @@ export const App: React.FC = () => {
       window.removeEventListener('resize', updateWidth)
     }
   })
-
-  // useEffect(() => {
-  //   if (navigation[menu] !== location.pathname) {
-  //     setNavigation({ ...navigation, [menu]: location.pathname })
-  //   }
-  // }, [navigation, location, menu])
 
   if (uninstalling)
     return (
@@ -99,22 +88,18 @@ export const App: React.FC = () => {
 
   return (
     <Page>
-      {pageWidth > 800 ? (
-        <Box className={css.panels}>
+      {largeWidth ? (
+        <Box className={css.columns}>
           <Sidebar />
-          {/* <Body>
-              <Router panel={1} />
-            </Body> */}
-          {/* <Divider orientation="vertical" /> */}
-          <Body>
+          <Box className={css.rows}>
             <Header />
             <Router /* panel={2}  */ />
-          </Body>
+          </Box>
         </Box>
       ) : (
         <>
+          <Header menuOverlaps={true} />
           <Body>
-            <Header />
             <Router />
           </Body>
           <FooterNav />
@@ -133,7 +118,7 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     flexWrap: 'nowrap',
   },
-  panels: {
+  columns: {
     flexGrow: 1,
     position: 'relative',
     display: 'flex',
@@ -141,8 +126,13 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     alignItems: 'start',
     justifyContent: 'start',
-    '& > *:second-child:hover': {
-      borderRight: `2px solid ${colors.primary}`,
-    },
+    // '& > *:second-child:hover': {
+    //   borderRight: `2px solid ${colors.primary}`,
+    // },
+  },
+  rows: {
+    flexGrow: 1,
+    flexDirection: 'column',
+    height: '100%',
   },
 })

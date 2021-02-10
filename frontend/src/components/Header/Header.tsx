@@ -2,18 +2,19 @@ import React, { useEffect, useState } from 'react'
 import { ApplicationState } from '../../store'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
+import { isElectron } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import styles from '../../styling'
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) => {
   const { device } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
   }))
 
-  const [hasFocus, setHasFocus] = useState<boolean>(false)
-  const css = useStyles(hasFocus)()
+  const [hasFocus, setHasFocus] = useState<boolean>(true)
+  const css = useStyles(hasFocus, menuOverlaps && isElectron())()
 
   const focus = () => setHasFocus(true)
   const blur = () => setHasFocus(false)
@@ -34,10 +35,11 @@ export const Header: React.FC = () => {
   )
 }
 
-const useStyles = hasFocus =>
+const useStyles = (hasFocus, moveMenu) =>
   makeStyles({
     header: {
       padding: `${styles.spacing.xxs}px ${styles.spacing.md}px`,
+      marginTop: moveMenu ? 30 : 0,
       display: 'flex',
       justifyContent: 'flex-start',
       alignItems: 'center',
