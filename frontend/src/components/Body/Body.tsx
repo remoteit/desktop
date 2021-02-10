@@ -39,8 +39,9 @@ export const Body: React.FC<Props> = ({ inset, center, flex, bodyRef, maxHeight,
 
 const useStyles = makeStyles({
   body: {
-    overflowY: 'auto',
     flexGrow: 1,
+    height: '100%',
+    overflowY: 'auto',
     position: 'relative',
     '-webkit-overflow-scrolling': 'touch',
     '& section': { padding: spacing.xl },
@@ -66,7 +67,6 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
-    height: '100%',
     padding: `${spacing.md}px ${spacing.md}px`,
   },
   hideScroll: {

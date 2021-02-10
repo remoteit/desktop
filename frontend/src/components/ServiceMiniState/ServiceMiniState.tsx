@@ -41,7 +41,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       colorName = 'danger'
       break
     case 'active':
-      colorName = 'grayDarkest'
+      colorName = 'grayDarker'
       if (service.license === 'EVALUATION') colorName = 'warning'
       break
     case 'inactive':
@@ -51,7 +51,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       colorName = 'primary'
       break
     case 'connecting':
-      colorName = 'grayLight'
+      colorName = 'grayDarkest'
       break
     case 'restricted':
       colorName = 'danger'

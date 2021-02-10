@@ -1,55 +1,53 @@
-import React from 'react'
-import { Typography } from '@material-ui/core'
-import { isElectron, isMac } from '../../services/Browser'
-import { getOwnDevices } from '../../models/accounts'
+import React, { useEffect, useState } from 'react'
 import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
-import { makeStyles } from '@material-ui/core/styles'
+import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
+import { useSelector } from 'react-redux'
+import { Typography } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
 import styles from '../../styling'
 
 export const Header: React.FC = () => {
-  const css = useStyles()
-  const { email, device } = useSelector((state: ApplicationState) => ({
-    email: false, //state.auth.user?.email,
+  const { device } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
   }))
 
-  if (!isMac() && isElectron()) return null
+  const [hasFocus, setHasFocus] = useState<boolean>(false)
+  const css = useStyles(hasFocus)()
+
+  const focus = () => setHasFocus(true)
+  const blur = () => setHasFocus(false)
+
+  useEffect(() => {
+    window.addEventListener('focus', focus)
+    window.addEventListener('blur', blur)
+    return function cleanup() {
+      window.removeEventListener('focus', focus)
+      window.removeEventListener('blur', blur)
+    }
+  })
 
   return (
     <div className={css.header}>
-      <Typography variant="body2">
-        {device ? attributeName(device) : 'remote.it'} {email && <span className={css.email}>- {email}</span>}
-      </Typography>
+      <Typography variant="body2">{device ? attributeName(device) : 'remote.it'}</Typography>
     </div>
   )
 }
 
-const useStyles = makeStyles({
-  header: {
-    position: 'relative',
-    backgroundColor: styles.colors.white,
-    padding: `${styles.spacing.xxs}px ${styles.spacing.sm}px`,
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    minHeight: 40,
-    '-webkit-user-select': 'none',
-    '-webkit-app-region': 'drag',
-    '& img': { width: 120 },
-    '& .MuiButtonBase-root': {
-      position: 'absolute',
-      left: styles.spacing.xs,
-    },
-    '& .MuiTypography-root': {
-      color: styles.colors.grayDark,
-      textAlign: 'center',
+const useStyles = hasFocus =>
+  makeStyles({
+    header: {
+      padding: `${styles.spacing.xxs}px ${styles.spacing.md}px`,
+      display: 'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      minHeight: 40,
+      position: 'relative',
       width: '100%',
-      margin: 0,
+      '-webkit-user-select': 'none',
+      '-webkit-app-region': 'drag',
+      '& .MuiTypography-root': {
+        color: hasFocus ? styles.colors.grayDark : styles.colors.grayLight,
+      },
     },
-  },
-  email: {
-    color: styles.colors.gray,
-  },
-})
+  })

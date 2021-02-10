@@ -1,41 +1,73 @@
 import React, { useState } from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { isElectron } from '../../services/Browser'
 import * as screenfull from 'screenfull'
 import * as assets from '../../assets'
+import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 import { Logo } from '../Logo'
+import classnames from 'classnames'
 
-export const RemoteHeader: React.FC<{ os?: Ios }> = ({ os }) => {
+type Props = { os?: Ios; color?: string; children: React.ReactNode }
+
+export const RemoteHeader: React.FC<Props> = ({ os, color, children }) => {
   const css = useStyles()
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
 
-  if (isElectron()) return null
-
+  const showFrame = !isElectron()
   const toggleFullscreen = () => {
     setFullscreen(!fullscreen)
     if (screenfull.isEnabled) screenfull.toggle()
   }
 
+  let remoteCss = ''
+  let pageCss = classnames(css.page, css.full)
+
+  if (showFrame) {
+    pageCss = classnames(pageCss, css.inset)
+    remoteCss = classnames(css.full, css.default)
+  }
+
   return (
-    <div className={css.remote}>
-      {fullscreenEnabled && (
-        <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
-          <IconButton onClick={toggleFullscreen}>
-            <Icon name={fullscreen ? 'compress' : 'expand'} size="md" />
-          </IconButton>
-        </Tooltip>
+    <div className={remoteCss} style={{ backgroundColor: color }}>
+      {showFrame && (
+        <div className={css.remote}>
+          {fullscreenEnabled && (
+            <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
+              <IconButton onClick={toggleFullscreen}>
+                <Icon name={fullscreen ? 'compress' : 'expand'} size="md" />
+              </IconButton>
+            </Tooltip>
+          )}
+          {os && <img className={css.icon} src={assets[os]} alt={os} />}
+          <Logo width={80} margin="auto" white />
+        </div>
       )}
-      {os && <img className={css.icon} src={assets[os]} alt={os} />}
-      <Logo width={80} margin="auto" white />
+      <div className={pageCss}>{children}</div>
     </div>
   )
 }
 
 const useStyles = makeStyles({
+  full: { top: 0, left: 0, right: 0, bottom: 0, position: 'fixed' },
+  page: {
+    overflow: 'hidden',
+    display: 'flex',
+    flexFlow: 'column',
+    backgroundColor: colors.white,
+    maxWidth: 1400,
+    margin: 'auto',
+  },
+  inset: {
+    top: spacing.xl,
+    left: spacing.sm,
+    right: spacing.sm,
+    bottom: spacing.sm,
+    borderRadius: spacing.sm,
+  },
+  default: { backgroundColor: colors.primary, padding: spacing.xs },
   remote: {
     color: colors.white,
     textAlign: 'center',
