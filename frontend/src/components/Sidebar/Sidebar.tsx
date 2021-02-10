@@ -28,6 +28,8 @@ const useStyles = addSpace =>
       height: '100%',
       zIndex: -1,
       paddingTop: addSpace ? 40 : 0,
+      '-webkit-app-region': 'drag',
+      // '-webkit-user-select': 'none',
       // boxShadow: 'inset -5px 0px 3px -4px rgba(0,0,0,0.1)',
     },
   })
