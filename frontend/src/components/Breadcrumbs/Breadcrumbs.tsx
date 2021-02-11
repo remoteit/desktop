@@ -48,9 +48,9 @@ export const Breadcrumbs: React.FC = () => {
 
   return (
     <div className={css.header}>
-      <IconButton onClick={() => history.push(parentPath)}>
+      {/* <IconButton onClick={() => history.push(parentPath)}>
         <Icon name="chevron-left" size="md" fixedWidth />
-      </IconButton>
+      </IconButton> */}
       {crumbs.reduce((result: any[], crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
