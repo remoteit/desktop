@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { makeStyles, IconButton } from '@material-ui/core'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { ApplicationState } from '../../store'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
@@ -14,10 +14,7 @@ export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) =
   const [hasFocus, setHasFocus] = useState<boolean>(true)
 
   const history = useHistory()
-  const location = useLocation()
   const color = hasFocus ? 'grayDark' : 'grayLight'
-
-  console.log('HISTORY', history, location)
 
   const css = useStyles(styles.colors[color], menuOverlaps && isElectron())()
   const { device } = useSelector((state: ApplicationState) => ({
@@ -54,8 +51,8 @@ export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) =
 const useStyles = (color, moveMenu) =>
   makeStyles({
     header: {
-      padding: `${styles.spacing.xxs}px ${styles.spacing.md}px`,
-      marginTop: moveMenu ? 30 : 0,
+      padding: `${styles.spacing.xs}px ${styles.spacing.md}px`,
+      paddingTop: moveMenu ? 30 : styles.spacing.xs,
       display: 'flex',
       justifyContent: 'flex-start',
       alignItems: 'center',
