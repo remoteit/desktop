@@ -334,7 +334,7 @@ declare global {
     read?: Date
   }
 
-  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION'
+  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
 
   interface ICloudEvent {
     sessionId: string

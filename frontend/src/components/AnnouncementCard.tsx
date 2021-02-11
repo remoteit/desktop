@@ -19,6 +19,7 @@ const types = {
   GENERIC: 'Notice',
   SYSTEM: 'System Update',
   RELEASE: 'New',
+  SECURITY: 'Security Notice',
   COMMUNICATION: 'Announcement',
 }
 
