@@ -4,14 +4,14 @@ import { ApplicationState } from '../store'
 import { useHistory, useLocation } from 'react-router-dom'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { selectAnnouncements } from '../models/announcements'
-import { BottomNavigation, BottomNavigationAction, Badge, Divider, Box } from '@material-ui/core'
+import { BottomNavigation, BottomNavigationAction, Badge, Tabs, Tab, Divider, Box } from '@material-ui/core'
 import { selectLicenseIndicator } from '../models/licensing'
 import { makeStyles } from '@material-ui/core/styles'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { Icon } from './Icon'
 import { colors } from '../styling'
 
-export const FooterNav: React.FC = () => {
+export const FooterNav: React.FC<{ orientation?: 'horizontal' | 'vertical' }> = ({ orientation = 'horizontal' }) => {
   const { remoteUI, licenseIndicator, unreadAnnouncements } = useSelector((state: ApplicationState) => ({
     licenseIndicator: selectLicenseIndicator(state),
     unreadAnnouncements: selectAnnouncements(state, true).length,
@@ -47,11 +47,11 @@ export const FooterNav: React.FC = () => {
   ]
 
   return (
-    <BottomNavigation className={css.footer} value={menu} onChange={changeNavigation} showLabels>
+    <Tabs className={css.footer} value={menu} onChange={changeNavigation} orientation={orientation}>
       {menuItems.reduce((items: JSX.Element[], m) => {
         if (m.show)
           items.push(
-            <BottomNavigationAction
+            <Tab
               key={m.path}
               label={m.label}
               value={m.path}
@@ -68,7 +68,7 @@ export const FooterNav: React.FC = () => {
           )
         return items
       }, [])}
-    </BottomNavigation>
+    </Tabs>
   )
 }
 
