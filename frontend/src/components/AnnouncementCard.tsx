@@ -51,7 +51,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
 
   return (
     <Card ref={cardRef} className={css.card} elevation={unread ? 3 : 1}>
-      <CardHeader className={css.header} title={types[data.type]} action={unread ? undefined : date} />
+      <CardHeader className={css.header} title={types[data.type] || types.GENERIC} action={unread ? undefined : date} />
       {data.image && <CardMedia className={css.media} image={data.image} title={data.title} />}
       <CardContent>
         <Typography variant="h1" gutterBottom>
