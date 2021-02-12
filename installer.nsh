@@ -2,7 +2,7 @@
 !include x64.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "2.11.0-alpha.1"
+!define PKGVERSION "2.11.1"
 
 !macro customInit
     Var /GLOBAL path_i
