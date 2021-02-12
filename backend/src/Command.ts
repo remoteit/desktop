@@ -74,11 +74,13 @@ export default class Command {
 
       if (stderr) {
         this.log(`EXEC *** ERROR ***`, this.sanitize({ stderr: stderr.toString().trim() }), 'error')
-        AirBrake.notify({
-          params: { type: 'COMMAND STDERR', exec: this.toString() },
-          context: { version: environment.version },
-          error: stderr.toString(),
-        })
+        if (this.isErrorReportable(stderr)) {
+          AirBrake.notify({
+            params: { type: 'COMMAND STDERR', exec: this.toString() },
+            context: { version: environment.version },
+            error: stderr.toString(),
+          })
+        }
         result = this.parseJSONError(stderr)
         this.onError(new Error(result))
       }
@@ -88,11 +90,13 @@ export default class Command {
         result = stdout.toString()
       }
     } catch (error) {
-      AirBrake.notify({
-        params: { type: 'COMMAND ERROR', exec: this.toString() },
-        context: { version: environment.version },
-        error,
-      })
+      if (this.isErrorReportable(error)) {
+        AirBrake.notify({
+          params: { type: 'COMMAND ERROR', exec: this.toString() },
+          context: { version: environment.version },
+          error,
+        })
+      }
       this.log(
         `EXEC CAUGHT *** ERROR ***`,
         { error, errorMessage: error.message, errorCode: error.code, errorStack: error.stack },
@@ -103,5 +107,9 @@ export default class Command {
     }
 
     return result
+  }
+
+  isErrorReportable(stderr: string) {
+    return !stderr.toString().includes('read-only file system')
   }
 }
