@@ -43,11 +43,11 @@ export function ConnectionStateIcon({
 
   switch (state) {
     case 'active':
-      colorName = 'grayDark'
+      colorName = 'grayDarker'
       title = 'online'
       break
     case 'inactive':
-      colorName = 'grayLight'
+      colorName = 'grayLighter'
       title = 'offline'
       showQuality = false
       break

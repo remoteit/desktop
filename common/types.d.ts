@@ -542,6 +542,14 @@ declare global {
   }
 
   type IShowFolderType = 'logs' | 'connections'
+
+  type INavigation = {
+    label: string
+    path: string
+    icon: string
+    show: boolean
+    badge?: number
+  }
 }
 
 export {}

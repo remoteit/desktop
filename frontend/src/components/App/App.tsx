@@ -29,7 +29,7 @@ export const App: React.FC = () => {
   const [pageWidth, setPageWidth] = useState<number>(window.innerWidth)
 
   const updateWidth = () => setPageWidth(window.innerWidth)
-  const largeWidth = pageWidth > 800
+  const largeWidth = pageWidth > 1000
 
   useEffect(() => {
     window.addEventListener('resize', updateWidth)
