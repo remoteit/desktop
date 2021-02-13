@@ -18,17 +18,15 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { isRemote } from '../../services/Browser'
 import { spacing } from '../../styling'
-import { Avatar } from '../../components/Avatar'
 import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
-  const { showReports, os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
+  const { showReports, os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       showReports: state.auth.user?.email.includes('@remote.it'),
       os: state.backend.environment.os,
-      user: state.auth.user,
       installing: state.binaries.installing,
       cliVersion: state.binaries.installedVersion || '(loading...)',
       preferences: state.backend.preferences,
@@ -59,10 +57,6 @@ export const SettingsPage: React.FC = () => {
               </Tooltip>
             </Title>
             <OutOfBand inline />
-            <Typography className={css.user} variant="caption">
-              {user?.email}
-            </Typography>
-            <Avatar email={user?.email} button />
           </Typography>
         </>
       }
@@ -223,5 +217,4 @@ export const SettingsPage: React.FC = () => {
 
 const useStyles = makeStyles({
   logo: { marginBottom: spacing.xs },
-  user: { marginRight: spacing.sm, fontFamily: 'Roboto Mono' },
 })

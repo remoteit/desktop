@@ -4,6 +4,7 @@ import { RootModel } from './rootModel'
 export const DEFAULT_INTERFACE = 'searching'
 
 type UIState = {
+  navigation: ILookup<string>
   connected: boolean
   uninstalling: boolean
   claiming: boolean
@@ -36,6 +37,7 @@ type UIState = {
 }
 
 const state: UIState = {
+  navigation: {},
   connected: false,
   uninstalling: false,
   claiming: false,
@@ -64,7 +66,7 @@ const state: UIState = {
   errorMessage: '',
   launchLoading: false,
   launchPath: '',
-  requireInstall: ''
+  requireInstall: '',
 }
 
 export default createModel<RootModel>()({

@@ -15,6 +15,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => 
   const css = useStyles()
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
   const style = { height: size, width: size, backgroundColor: colors.primary }
+
   const avatar = (
     <span className={label && css.label}>
       <MuiAvatar component="span" className={button ? css.avatar : ''} alt={email} style={style} src={url}>
