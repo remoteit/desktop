@@ -57,8 +57,8 @@ const useStyles = makeStyles({
     display: 'flex',
     flexFlow: 'column',
     backgroundColor: colors.white,
-    maxWidth: 1400,
     margin: 'auto',
+    '-webkit-app-region': 'drag',
   },
   inset: {
     top: spacing.xl,

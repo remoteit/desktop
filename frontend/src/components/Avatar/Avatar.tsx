@@ -16,21 +16,13 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => 
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
   const style = { height: size, width: size, backgroundColor: colors.primary }
 
-  const avatar = (
+  return (
     <span className={label && css.label}>
       <MuiAvatar component="span" className={button ? css.avatar : ''} alt={email} style={style} src={url}>
         <img src={fallbackImage} alt={email} style={style} />
       </MuiAvatar>
       {label && email}
     </span>
-  )
-
-  return button ? (
-    <Tooltip title="Account options">
-      <ButtonBase onClick={() => window.open('https://link.remote.it/portal/account')}>{avatar}</ButtonBase>
-    </Tooltip>
-  ) : (
-    avatar
   )
 }
 

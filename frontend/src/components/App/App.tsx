@@ -41,7 +41,6 @@ export const App: React.FC = () => {
   if (uninstalling)
     return (
       <Page>
-        <Header />
         <LoadingMessage message="Please wait, uninstalling..." />
       </Page>
     )
@@ -49,7 +48,6 @@ export const App: React.FC = () => {
   if (!authInitialized)
     return (
       <Page>
-        <Header />
         <LoadingMessage message="Checking Authentication..." logo />
       </Page>
     )
@@ -57,7 +55,6 @@ export const App: React.FC = () => {
   if (signedOut)
     return (
       <Page>
-        <Header />
         <SignInPage />
       </Page>
     )
@@ -65,7 +62,6 @@ export const App: React.FC = () => {
   if (!backendAuthenticated)
     return (
       <Page>
-        <Header />
         <LoadingMessage message="Signing in..." logo />
       </Page>
     )
@@ -73,7 +69,6 @@ export const App: React.FC = () => {
   if (!installed)
     return (
       <Page>
-        <Header />
         <InstallationNotice />
       </Page>
     )
@@ -81,7 +76,6 @@ export const App: React.FC = () => {
   if (!initialized)
     return (
       <Page>
-        <Header />
         <LoadingMessage message="Starting up..." logo />
       </Page>
     )
@@ -132,7 +126,10 @@ const useStyles = makeStyles({
   },
   rows: {
     flexGrow: 1,
+    display: 'flex',
     flexDirection: 'column',
     height: '100%',
+    overflow: 'hidden',
+    position: 'relative',
   },
 })

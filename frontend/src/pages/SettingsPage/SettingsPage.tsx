@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
-import { version } from '../../../package.json'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -63,43 +62,6 @@ export const SettingsPage: React.FC = () => {
     >
       <List>
         <DeviceSetupItem />
-      </List>
-      <Divider />
-      <Typography variant="subtitle1">User</Typography>
-      <List>
-        <ListItemSetting
-          label="Help documentation"
-          icon="books"
-          onClick={() => window.open('https://link.remote.it/documentation-desktop/overview')}
-        />
-        <ListItemSetting
-          label="Send feedback"
-          icon="envelope"
-          onClick={() =>
-            (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
-          }
-        />
-        <ListItemSetting
-          label="Sign out"
-          subLabel="Allow this device to be transferred or another user to sign in. Will stop all connections."
-          icon="sign-out"
-          onClick={() => {
-            emit('user/sign-out')
-            analyticsHelper.track('signOut')
-          }}
-        />
-        <ListItemSetting
-          confirm
-          label="Lock application"
-          subLabel="Sign out and prevent others from signing in."
-          icon="lock"
-          confirmTitle="Are you sure?"
-          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
-          onClick={() => {
-            emit('user/lock')
-            analyticsHelper.track('signOutLock')
-          }}
-        />
       </List>
       <Divider />
       {showReports && (

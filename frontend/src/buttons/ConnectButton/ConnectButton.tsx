@@ -18,7 +18,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'secondary',
+  color = 'primary',
   autoConnect,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
