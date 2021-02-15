@@ -18,6 +18,10 @@ export const ComboButton: React.FC<Props> = ({ connection, service, className })
       <ConnectButton connection={connection} service={service} size="small" />
       <DisconnectButton connection={connection} service={service} size="small" />
       <OfflineButton connection={connection} service={service} />
+      {connection?.connecting && 'connecting '}
+      {connection?.enabled && 'enabled '}
+      {connection?.connected && 'connected '}
+      {connection?.disconnecting && 'disconnecting'}
     </div>
   )
 }

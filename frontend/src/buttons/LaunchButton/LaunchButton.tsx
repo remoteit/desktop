@@ -53,7 +53,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     }
   }, [requireInstall, launch, app])
 
-  if (!connection || !connection.active || !app) return null
+  if (!connection || !connection.connected || !app) return null
 
   const launchBrowser = () => {
     let launchApp: ILaunchApp | undefined

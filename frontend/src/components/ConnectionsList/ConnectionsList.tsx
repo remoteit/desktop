@@ -13,8 +13,8 @@ export interface Props {
 
 export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   const css = useStyles()
-  const connected = connections.filter(c => c.active)
-  const recent = connections.filter(c => !c.active)
+  const connected = connections.filter(c => c.connected)
+  const recent = connections.filter(c => !c.connected)
 
   return (
     <List>

@@ -26,7 +26,7 @@ export const ServiceDetailPage = () => {
 
   if (!service || !device) return null
 
-  if (connection && connection.active) {
+  if (connection && connection.connected) {
     data = data.concat([
       { label: 'Host', value: connection.host },
       { label: 'Port', value: connection.port },

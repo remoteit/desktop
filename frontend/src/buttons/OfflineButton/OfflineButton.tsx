@@ -8,7 +8,7 @@ type Props = {
 }
 
 export const OfflineButton: React.FC<Props> = ({ service, connection }) => {
-  const hidden = service?.state === 'active' || connection?.active
+  const hidden = service?.state === 'active' || connection?.connected
   return (
     <Fade in={!hidden} timeout={600}>
       <div>

@@ -22,7 +22,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   autoConnect,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const hidden = connection?.active || !service || service.state !== 'active'
+  const hidden = connection?.connected || !service || service.state !== 'active'
   const connecting = !!connection?.connecting
 
   const clickHandler = () => {

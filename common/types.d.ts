@@ -123,7 +123,8 @@ declare global {
     deviceID: string
     online: boolean // online if service is online
     port?: number
-    active?: boolean // active if connected
+    connected?: boolean
+    enabled?: boolean // if the connection is active
     host?: ipAddress // Bind address
     typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address

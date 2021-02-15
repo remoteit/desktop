@@ -19,7 +19,7 @@ export const EditButton: React.FC<Props> = ({ onClick, device, service, connecti
   if (service) title += ' Service'
   else if (device) title += ' Device'
 
-  if ((service && device?.shared) || connection?.active) return null
+  if ((service && device?.shared) || connection?.connected) return null
   if (instance) onClick = () => history.push(location.pathname + '/edit')
 
   return (

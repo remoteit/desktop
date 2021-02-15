@@ -69,7 +69,7 @@ export default {
   setConnect(c: IConnection) {
     return `-j connection modify --id ${c.id} --name "${c.name}" --port ${c.port} --hostname ${c.host} --restrict ${
       c.restriction
-    } --retry ${!!c.autoStart} --failover ${!!c.failover} --p2p ${!c.proxyOnly} --enable ${!!c.active} --servicetype ${
+    } --retry ${!!c.autoStart} --failover ${!!c.failover} --p2p ${!c.proxyOnly} --enable ${!!c.enabled} --servicetype ${
       c.typeID
     } --authhash ${user.authHash} --manufacture-id ${environment.appCode}`
   },

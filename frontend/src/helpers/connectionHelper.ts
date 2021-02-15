@@ -63,6 +63,7 @@ export function setConnection(connection: IConnection) {
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
+  console.log('SET CONNECTION', connection.name, connection.enabled)
   emit('connection', connection)
 }
 

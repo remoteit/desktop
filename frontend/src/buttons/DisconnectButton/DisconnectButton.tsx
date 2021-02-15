@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const DisconnectButton: React.FC<Props> = ({ service, size = 'medium', color = 'primary', connection }) => {
-  const hidden = !connection || !connection.active
+  const hidden = !connection || !connection.connected
   const connecting = !!connection?.connecting
   return (
     <Fade in={!hidden} timeout={600}>

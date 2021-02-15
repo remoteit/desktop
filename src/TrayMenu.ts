@@ -84,10 +84,10 @@ export default class TrayMenu {
 
   private connectionsMenu() {
     let menu = []
-    const active = this.pool.filter(c => c.active)
-    const recent = this.pool.filter(c => !c.active)
-    if (active.length) menu.push({ label: 'Active connections', enabled: false }, ...this.connectionsList(active))
-    if (active.length && recent.length) menu.push({ type: 'separator' })
+    const connected = this.pool.filter(c => c.connected)
+    const recent = this.pool.filter(c => !c.connected)
+    if (connected.length) menu.push({ label: 'Active connections', enabled: false }, ...this.connectionsList(connected))
+    if (connected.length && recent.length) menu.push({ type: 'separator' })
     if (recent.length)
       menu.push(
         { label: 'Recent connections', enabled: false },
@@ -113,9 +113,9 @@ export default class TrayMenu {
       if (connection.startTime) {
         result.push({
           label: connection.name,
-          icon: connection.active ? iconConnected : connection.online ? iconOnline : iconOffline,
+          icon: connection.connected ? iconConnected : connection.online ? iconOnline : iconOffline,
           submenu: [
-            connection.active
+            connection.connected
               ? { label: 'Disconnect', click: () => this.disconnect(connection) }
               : connection.online
               ? { label: 'Connect', click: () => this.connect(connection) }
@@ -124,7 +124,7 @@ export default class TrayMenu {
             { label: hostName(connection), enabled: false },
             { label: 'Copy to clipboard', click: () => this.copy(connection) },
             connection.online
-              ? { label: 'Launch', enabled: connection.active, click: () => this.launch(connection) }
+              ? { label: 'Launch', enabled: connection.connected, click: () => this.launch(connection) }
               : { label: 'Remove', click: () => EventBus.emit(EVENTS.clear, connection) },
           ],
         })

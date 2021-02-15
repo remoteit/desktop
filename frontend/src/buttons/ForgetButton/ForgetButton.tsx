@@ -14,7 +14,7 @@ export const ForgetButton: React.FC<Props> = ({ disabled = false, connection }) 
   const history = useHistory()
   const location = useLocation()
 
-  if (!connection || connection.active) return null
+  if (!connection || connection.connected) return null
 
   const forget = () => {
     emit('service/forget', connection)

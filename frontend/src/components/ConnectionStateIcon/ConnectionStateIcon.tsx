@@ -33,7 +33,7 @@ export function ConnectionStateIcon({
   let state = instance?.state || ''
 
   if (connection) {
-    if (connection.active) state = 'connected'
+    if (connection.connected) state = 'connected'
     if (connection.connecting) state = 'connecting'
   }
 
