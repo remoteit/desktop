@@ -111,9 +111,8 @@ export default class ElectronApp {
     if (this.window) return
 
     this.window = new electron.BrowserWindow({
-      width: 800,
-      height: 700,
-      maxWidth: 1400,
+      width: 1200,
+      height: 900,
       minWidth: 525,
       minHeight: 325,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
@@ -135,24 +134,6 @@ export default class ElectronApp {
         this.closeWindow()
       }
     })
-
-    if (environment.isWindows) {
-      // Handle Windows fullscreen
-      this.window.on('maximize', () => {
-        setTimeout(() => {
-          if (!this.window) return
-          const window = this.window.getBounds()
-          const screen = electron.screen.getDisplayMatching(window).bounds
-          this.window.setMaximumSize(screen.width, screen.height)
-          this.window.setSize(screen.width, screen.height, true)
-        }, 0)
-      })
-
-      this.window.on('unmaximize', () => {
-        if (!this.window) return
-        this.window.setMaximumSize(1000, 9999)
-      })
-    }
 
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()

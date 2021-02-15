@@ -40,6 +40,7 @@ const useStyles = makeStyles({
     flexFlow: 'column',
     height: '100%',
     position: 'relative',
+    overflow: 'hidden',
   },
   header: {
     backgroundColor: colors.white,

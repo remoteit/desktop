@@ -41,7 +41,6 @@ export const DevicesPage = () => {
             <SearchField />
             <AccountSelect />
             <RegisterButton />
-            <RefreshButton />
             <FilterButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}

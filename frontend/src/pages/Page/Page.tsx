@@ -3,9 +3,9 @@ import Controller from '../../services/Controller'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Snackbar, IconButton } from '@material-ui/core'
+import { getOwnDevices } from '../../models/accounts'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
-import { getOwnDevices } from '../../models/accounts'
 import { Icon } from '../../components/Icon'
 
 export interface Props {
