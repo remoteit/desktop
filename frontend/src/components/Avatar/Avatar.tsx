@@ -29,6 +29,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => 
 const useStyles = makeStyles({
   label: {
     display: 'flex',
+    borderRadius: '50%',
   },
   avatar: {
     borderWidth: 3,

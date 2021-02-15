@@ -74,15 +74,19 @@ export const SettingsPage: React.FC = () => {
       )}
       {remoteUI || (
         <>
-          <Typography variant="subtitle1">Sharing</Typography>
+          {/* <Typography variant="subtitle1">Sharing</Typography> */}
           <List>
             <AccountLinkingSettings />
           </List>
           <Divider />
         </>
       )}
-      <LicensingSetting />
-      <Typography variant="subtitle1">Application</Typography>
+      {/* <Typography variant="subtitle1">Licensing</Typography> */}
+      <List>
+        <LicensingSetting />
+      </List>
+      <Divider />
+      <Typography variant="subtitle1">Settings</Typography>
       <List>
         {isRemote() && (
           <ListItemSetting
@@ -121,16 +125,6 @@ export const SettingsPage: React.FC = () => {
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
-        {remoteUI || (
-          <ListItemSetting
-            confirm
-            label="Quit"
-            icon="power-off"
-            confirmTitle="Are you sure?"
-            confirmMessage="Quitting will not close your connections."
-            onClick={() => emit('user/quit')}
-          />
-        )}
         <UpdateSetting />
       </List>
       {remoteUI || (
