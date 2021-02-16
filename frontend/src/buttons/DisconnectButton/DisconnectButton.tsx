@@ -14,15 +14,16 @@ type Props = {
 
 export const DisconnectButton: React.FC<Props> = ({ service, size = 'medium', color = 'primary', connection }) => {
   const hidden = !connection || !connection.connected
-  const connecting = !!connection?.connecting
+  const disconnecting = !connection?.enabled && !!connection?.connected
   return (
     <Fade in={!hidden} timeout={600}>
       <div>
         <DynamicButton
-          title={connecting ? 'Connecting' : 'Disconnect'}
+          title={disconnecting ? 'Stopping' : 'Disconnect'}
           icon="ban"
-          loading={connecting}
-          color={connecting ? 'grayDark' : color}
+          disabled={disconnecting}
+          loading={disconnecting}
+          color={disconnecting ? 'grayDark' : color}
           size={size}
           onClick={() => {
             analyticsHelper.trackConnect('connectionClosed', service)

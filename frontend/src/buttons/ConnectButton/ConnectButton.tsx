@@ -22,8 +22,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   autoConnect,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const hidden = connection?.connected || !service || service.state !== 'active'
+  const hidden = connection?.connected || service?.state !== 'active'
   const connecting = !!connection?.connecting
+  const listening = connection?.enabled && !connection.connected
 
   const clickHandler = () => {
     if (connecting) {
@@ -58,6 +59,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     variant = 'text'
   }
 
+  if (listening) {
+    title = 'Listening'
+  }
+
   return (
     <Fade in={!hidden} timeout={600}>
       <div>
@@ -66,7 +71,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
           icon="exchange"
           variant={variant}
           loading={connecting}
-          color={connecting ? undefined : color}
+          color={connecting ? 'gray' : color}
           size={size}
           onClick={clickHandler}
           disabled={disabled}

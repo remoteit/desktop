@@ -164,7 +164,6 @@ export default createModel<RootModel>()({
       const state = globalState.backend
       state.connections.some((c, index) => {
         if (c.id === connection.id) {
-          console.log('UPDATE CONNECTION', connection.name, connection.enabled)
           state.connections[index] = connection
           dispatch.backend.set({ connections: state.connections })
           if (connection) return true
@@ -174,7 +173,6 @@ export default createModel<RootModel>()({
     },
     async updateConnections(connections: IConnection[], globalState) {
       connections.forEach(connection => {
-        console.log('UPDATE CONNECTIONS', connection.name, connection.enabled)
         // data missing from cli if our connections file is lost
         if (!connection.owner) {
           const [service] = selectService(globalState, connection.id)

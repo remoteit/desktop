@@ -30,7 +30,6 @@ export default class Connection extends EventEmitter {
   start() {
     this.params.enabled = true
     this.params.connecting = true
-    this.params.disconnecting = false
     this.params.startTime = Date.now()
     this.params.error = undefined
     // if (cli.data.connections.find(c => c.id === this.params.id)) cli.setConnection(this.params, this.error) else
@@ -41,7 +40,6 @@ export default class Connection extends EventEmitter {
   stop() {
     this.params.enabled = false
     this.params.connecting = false
-    this.params.disconnecting = true
     this.params.endTime = Date.now()
     cli.setConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
@@ -50,7 +48,6 @@ export default class Connection extends EventEmitter {
   async clear() {
     this.params.enabled = false
     this.params.connecting = false
-    this.params.disconnecting = false
     this.params.startTime = undefined
     this.params.error = undefined
     await cli.removeConnection(this.params, this.error)
