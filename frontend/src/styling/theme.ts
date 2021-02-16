@@ -34,6 +34,14 @@ const jssTheme: ThemeOptions = {
         padding: `${spacing.xxs}px ${spacing.md}px`,
       },
     },
+    MuiTouchRipple: {
+      ripple: { color: colors.primary },
+    },
+    // MuiButtonBase: {
+    //   root: {
+    //     color: colors.primary,
+    //   },
+    // },
     MuiChip: {
       root: { borderRadius: spacing.sm, backgroundColor: colors.grayLightest },
       sizeSmall: { fontSize: fontSizes.xs },
@@ -115,12 +123,14 @@ const jssTheme: ThemeOptions = {
         paddingRight: 9,
       },
       button: {
-        '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
+        // '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
+        '&:hover': { backgroundColor: colors.primaryHighlight },
       },
       container: {
         '& .MuiListItemSecondaryAction-root': {},
         '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
-        '&:hover, &:focus': {
+        // '&:hover, &:focus': {
+        '&:hover': {
           '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
           '& .hoverHide': { display: 'none' },
         },
