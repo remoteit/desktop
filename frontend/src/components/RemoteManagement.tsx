@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux'
 import { isRemote } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { attributeName } from '../shared/nameHelper'
-import { TargetPlatform } from '../components/TargetPlatform'
 import { getOwnDevices } from '../models/accounts'
 import { isRemoteUI } from '../helpers/uiHelper'
 import onLanGraphic from '../assets/remote-on-lan.svg'
@@ -18,10 +17,9 @@ export const RemoteManagement: React.FC = () => {
   const { hostname } = window.location
   const isLocalhost = hostname === 'localhost' || hostname === IP_PRIVATE
 
-  const { name, device, remoteUI } = useSelector((state: ApplicationState) => {
+  const { name, remoteUI } = useSelector((state: ApplicationState) => {
     const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
     return {
-      device,
       label: state.labels.find(l => l.id === device?.attributes.color),
       name: attributeName(device),
       remoteUI: isRemoteUI(state),
@@ -47,7 +45,6 @@ export const RemoteManagement: React.FC = () => {
   return (
     <Box className={css.container}>
       <section>
-        <TargetPlatform id={device?.targetPlatform} size="max" />
         <Typography variant="h2">
           You are managing <br />a remote device
         </Typography>
@@ -56,9 +53,6 @@ export const RemoteManagement: React.FC = () => {
             Any connections you create will be to <em>{name}</em>, not your local machine.
           </Typography>
         )}
-      </section>
-      <Divider />
-      <section>
         <Box className={css.graphic}>
           <img src={graphic} alt="From remote network graphic" />
           <List>
@@ -76,17 +70,15 @@ export const RemoteManagement: React.FC = () => {
 
 const useStyles = makeStyles({
   container: {
-    '& section': { padding: `${spacing.xl}px ${spacing.lg}px ${spacing.xl}px ${spacing.xl}px` },
     '& svg': { marginBottom: spacing.lg },
     '& hr': { opacity: 0.3 },
-    // '& span': { color: colors.white },
     '& h2': { fontSize: fontSizes.lg },
-    // '& h2, & p': { color: colors.white },
     '& section > p': { marginTop: spacing.lg },
     '& section > div': { marginBottom: spacing.xl },
   },
   graphic: {
     display: 'flex',
+    marginTop: spacing.lg,
     '& ul': {
       padding: 0,
       display: 'flex',

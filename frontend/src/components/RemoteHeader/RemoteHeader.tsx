@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { isElectron } from '../../services/Browser'
+import { TargetPlatform } from '../TargetPlatform'
 import * as screenfull from 'screenfull'
 import * as assets from '../../assets'
 import { spacing, colors } from '../../styling'
@@ -9,9 +10,9 @@ import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 import classnames from 'classnames'
 
-type Props = { os?: Ios; color?: string; children: React.ReactNode }
+type Props = { device?: IDevice; color?: string; children: React.ReactNode }
 
-export const RemoteHeader: React.FC<Props> = ({ os, color, children }) => {
+export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
   const css = useStyles()
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
@@ -41,7 +42,9 @@ export const RemoteHeader: React.FC<Props> = ({ os, color, children }) => {
               </IconButton>
             </Tooltip>
           )}
-          {os && <img className={css.icon} src={assets[os]} alt={os} />}
+          <span className={css.icon}>
+            <TargetPlatform id={device?.targetPlatform} size="xl" />
+          </span>
           <Logo width={80} margin="auto" white />
         </div>
       )}

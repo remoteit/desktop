@@ -26,10 +26,10 @@ export const SidebarNav: React.FC = () => {
               <ListItemIcon>
                 {m.badge ? (
                   <Badge variant={m.badge > 1 ? undefined : 'dot'} badgeContent={m.badge} color="error">
-                    <Icon name={m.icon} />
+                    <Icon size="md" type="regular" name={m.icon} color={menu === m.path ? 'black' : 'grayDark'} />
                   </Badge>
                 ) : (
-                  <Icon name={m.icon} />
+                  <Icon size="md" type="regular" name={m.icon} color={menu === m.path ? 'black' : 'grayDark'} />
                 )}
               </ListItemIcon>
               <ListItemText primary={m.label} />
@@ -44,9 +44,14 @@ export const SidebarNav: React.FC = () => {
 const useStyles = makeStyles({
   list: {
     // borderTop: `1px solid ${colors.grayLight}`,
+    '& .MuiListItemText-primary': { color: colors.grayDark },
+    '& .MuiListItem-button:hover .MuiListItemText-primary': { color: colors.black },
+    '& .MuiListItem-button:hover path': { color: colors.grayDarkest },
   },
   active: {
     backgroundColor: colors.white,
-    borderRadius: spacing.xxs,
+    '& .MuiListItemText-primary': {
+      color: colors.black,
+    },
   },
 })
