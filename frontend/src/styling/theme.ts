@@ -15,7 +15,7 @@ const jssTheme: ThemeOptions = {
     MuiButton: {
       root: {
         color: colors.grayDark,
-        borderRadius: spacing.xs,
+        borderRadius: spacing.sm,
         padding: `${spacing.sm - spacing.xxs}px ${spacing.md}px`,
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
         '&+.MuiButton-root': { marginLeft: spacing.sm },
@@ -35,7 +35,7 @@ const jssTheme: ThemeOptions = {
       },
     },
     MuiChip: {
-      root: { borderRadius: 4, backgroundColor: colors.grayLightest },
+      root: { borderRadius: spacing.sm, backgroundColor: colors.grayLightest },
       sizeSmall: { fontSize: fontSizes.xs },
     },
     MuiSnackbar: {
@@ -104,6 +104,11 @@ const jssTheme: ThemeOptions = {
         paddingRight: spacing.sm,
         paddingTop: 5,
         paddingBottom: 5,
+        marginLeft: spacing.sm,
+        marginTop: 1,
+        marginBottom: 1,
+        borderRadius: spacing.xs,
+        width: `calc(100% - ${spacing.sm * 2}px)`,
       },
       gutters: {
         paddingLeft: 9,
@@ -178,7 +183,7 @@ const jssTheme: ThemeOptions = {
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,
-        borderRadius: spacing.xs,
+        borderRadius: spacing.sm,
         '&$focused': { backgroundColor: colors.primaryHighlight },
         '&.Mui-disabled': { backgroundColor: colors.grayLightest },
         '&:hover': { backgroundColor: colors.primaryHighlight },
@@ -195,7 +200,7 @@ const jssTheme: ThemeOptions = {
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.primaryHighlight,
-          borderRadius: 10,
+          borderRadius: spacing.sm,
           textDecoration: 'none',
           cursor: 'pointer',
         },

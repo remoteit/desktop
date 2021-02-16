@@ -14,10 +14,11 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
-  const { connected, successMessage, noticeMessage, errorMessage, backendAuthenticated, os, label } = useSelector(
+  const { device, connected, successMessage, noticeMessage, errorMessage, backendAuthenticated, label } = useSelector(
     (state: ApplicationState) => {
       const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
       return {
+        device,
         connected: state.ui.connected,
         successMessage: state.ui.successMessage,
         noticeMessage: state.ui.noticeMessage,
@@ -41,7 +42,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   if (backendAuthenticated && !connected) snackbar = 'offline'
 
   return (
-    <RemoteHeader os={os} color={label?.id ? label.color : undefined}>
+    <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
       {children}
       <Snackbar
         open={snackbar === 'offline'}

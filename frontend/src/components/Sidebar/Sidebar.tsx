@@ -14,7 +14,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <Box className={css.sidebar}>
-      <section>
+      <section className={css.header}>
         <AvatarMenu />
         <RefreshButton />
         {/* <Typography variant="h2">Sidebar</Typography> */}
@@ -32,13 +32,17 @@ const useStyles = addSpace =>
       width: SIDEBAR_WIDTH,
       minWidth: SIDEBAR_WIDTH,
       height: '100%',
-      paddingTop: addSpace ? 40 : 0,
+      paddingTop: addSpace ? spacing.md : 0,
       '-webkit-app-region': 'drag',
       // '-webkit-user-select': 'none',
       // boxShadow: 'inset -5px 0px 3px -4px rgba(0,0,0,0.1)',
       // zIndex: -1,
       '& section': {
-        padding: spacing.lg,
+        margin: spacing.lg,
       },
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
     },
   })
