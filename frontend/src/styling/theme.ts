@@ -15,8 +15,12 @@ const jssTheme: ThemeOptions = {
     MuiButton: {
       root: {
         color: colors.grayDark,
-        borderRadius: spacing.sm,
-        padding: `${spacing.sm - spacing.xxs}px ${spacing.md}px`,
+        borderRadius: spacing.xs,
+        fontWeight: 600,
+        letterSpacing: 1,
+        whiteSpace: 'nowrap',
+        // fontSize: fontSizes.sm,
+        padding: `${spacing.sm - spacing.xxs}px ${spacing.xl}px`,
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
         '&+.MuiButton-root': { marginLeft: spacing.sm },
       },
@@ -27,23 +31,16 @@ const jssTheme: ThemeOptions = {
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
       sizeSmall: {
+        borderRadius: spacing.sm,
         fontSize: fontSizes.xs,
-        fontWeight: 500,
-        letterSpacing: 1,
-        whiteSpace: 'nowrap',
         padding: `${spacing.xxs}px ${spacing.md}px`,
       },
     },
     MuiTouchRipple: {
       ripple: { color: colors.primary },
     },
-    // MuiButtonBase: {
-    //   root: {
-    //     color: colors.primary,
-    //   },
-    // },
     MuiChip: {
-      root: { borderRadius: spacing.sm, backgroundColor: colors.grayLightest },
+      root: { borderRadius: spacing.xs, backgroundColor: colors.grayLightest },
       sizeSmall: { fontSize: fontSizes.xs },
     },
     MuiSnackbar: {
@@ -193,7 +190,7 @@ const jssTheme: ThemeOptions = {
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,
-        borderRadius: spacing.sm,
+        borderRadius: spacing.xs,
         '&$focused': { backgroundColor: colors.primaryHighlight },
         '&.Mui-disabled': { backgroundColor: colors.grayLightest },
         '&:hover': { backgroundColor: colors.primaryHighlight },
@@ -210,7 +207,7 @@ const jssTheme: ThemeOptions = {
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.primaryHighlight,
-          borderRadius: spacing.sm,
+          borderRadius: spacing.xs,
           textDecoration: 'none',
           cursor: 'pointer',
         },
