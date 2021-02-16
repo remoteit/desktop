@@ -31,7 +31,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const app = useApplication(context, service, connection)
 
-  if (!connection || (!show && (!connection.active || !app))) return null
+  if (!connection || (!show && (!connection.connected || !app))) return null
 
   const check = event => {
     event.preventDefault()

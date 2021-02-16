@@ -12,7 +12,7 @@ type Props = {
 
 export const ClearButton: React.FC<Props> = ({ disabled = false, connection, all }) => {
   const location = useLocation()
-  if (!all && (!connection || connection.active || !connection.startTime)) return null
+  if (!all && (!connection || connection.connected || !connection.startTime)) return null
   if (!location.pathname.includes('connections')) return null
 
   const forget = () => {

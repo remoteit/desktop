@@ -216,7 +216,7 @@ class CloudController {
         event.target.forEach(target => {
           // Local connection state
           if (target.connection) {
-            target.connection.active = event.state === 'connected'
+            target.connection.connected = event.state === 'connected'
             target.connection.connecting = false
             setConnection(target.connection)
           }
@@ -245,7 +245,7 @@ class CloudController {
             }
           }
 
-          console.log('CONNECTION STATE', target.connection?.name, target.connection?.active)
+          console.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)
         })
         break
 

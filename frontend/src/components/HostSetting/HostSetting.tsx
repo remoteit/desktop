@@ -9,7 +9,7 @@ export const HostSetting: React.FC<{ service: IService; connection?: IConnection
   if (!connection) connection = newConnection(service)
 
   const currentHost = (connection && connection.host) || IP_PRIVATE
-  const disabled = connection.active || connection.connecting
+  const disabled = connection.connected || connection.connecting
 
   return (
     <InlineTextFieldSetting

@@ -40,7 +40,7 @@ export const ServicesPage: React.FC = () => {
   const thisDevice = deviceID === thisDeviceId
   const history = useHistory()
   const location = useLocation()
-  const activeConnection = connections.find(c => c.deviceID === deviceID && c.active)
+  const connected = connections.find(c => c.deviceID === deviceID && c.connected)
   const serviceConnections = connections.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
@@ -67,8 +67,8 @@ export const ServicesPage: React.FC = () => {
         <>
           <Breadcrumbs />
           <Typography variant="h1">
-            <ConnectionStateIcon device={device} connection={activeConnection} thisDevice={thisDevice} size="lg" />
-            <ServiceName device={device} connection={activeConnection} inline />
+            <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" />
+            <ServiceName device={device} connection={connected} inline />
             <EditButton device={device} />
             <AddUserButton device={device} />
             <RefreshButton device={device} />

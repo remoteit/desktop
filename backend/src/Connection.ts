@@ -28,6 +28,7 @@ export default class Connection extends EventEmitter {
   }
 
   start() {
+    this.params.enabled = true
     this.params.connecting = true
     this.params.startTime = Date.now()
     this.params.error = undefined
@@ -37,14 +38,15 @@ export default class Connection extends EventEmitter {
   }
 
   stop() {
-    d('Stopping service:', this.params.id)
-    this.params.active = false
+    this.params.enabled = false
+    this.params.connecting = false
     this.params.endTime = Date.now()
     cli.setConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
   }
 
   async clear() {
+    this.params.enabled = false
     this.params.connecting = false
     this.params.startTime = undefined
     this.params.error = undefined
@@ -53,7 +55,7 @@ export default class Connection extends EventEmitter {
 
   error = (e: Error) => {
     this.params.error = { message: e.message }
-    this.params.active = false
+    this.params.connected = false
     this.params.endTime = Date.now()
     EventBus.emit(Connection.EVENTS.error, { ...this.params.error, connection: this.params } as ConnectionErrorMessage)
   }

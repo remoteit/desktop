@@ -12,7 +12,7 @@ type Props = {
 }
 
 export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
-  const visible = connection?.active
+  const visible = connection?.connected
 
   return (
     <Collapse in={visible} timeout={800}>

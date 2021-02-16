@@ -50,7 +50,7 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setConte
 }
 
 export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, setContextMenu, restore }) => {
-  const activeConnection = connections && connections.find(c => c.active)
+  const connected = connections && connections.find(c => c.connected)
   const largeScreen = useMediaQuery('(min-width:600px)')
 
   if (!device) return null
@@ -59,10 +59,10 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
     <ListItemLocation pathname={`/devices/${device.id}`}>
       <DeviceLabel device={device} />
       <ListItemIcon>
-        <ConnectionStateIcon device={device} connection={activeConnection} size="lg" thisDevice={thisDevice} />
+        <ConnectionStateIcon device={device} connection={connected} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
       <ListItemText
-        primary={<ServiceName device={device} connection={activeConnection} />}
+        primary={<ServiceName device={device} connection={connected} />}
         secondary={thisDevice && 'This system'}
       />
       {restore ? (

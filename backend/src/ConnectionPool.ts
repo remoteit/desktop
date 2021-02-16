@@ -31,7 +31,8 @@ export default class ConnectionPool {
     this.file = new JSONFile<IConnection[]>(path.join(environment.userPath, `connections/${user.id}.json`))
     this.migrateLegacyFile()
 
-    const connections: IConnection[] = this.file.read() || []
+    let connections: IConnection[] = this.file.read() || []
+    connections = this.migrateConnectionData(connections)
 
     Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
@@ -61,25 +62,20 @@ export default class ConnectionPool {
       d('SYNC CLI CONNECTION', { connection, c })
       if (
         !connection ||
+        connection.enabled !== c.enabled ||
         connection.startTime !== c.startTime ||
-        connection.active !== c.active ||
+        connection.connected !== c.connected ||
         connection.connecting !== c.connecting ||
         connection.reachable !== c.reachable ||
         connection.sessionId !== c.sessionId
       ) {
-        d('CONNECTION DIFF', {
-          connection: !connection,
-          startTime: connection?.startTime !== c.startTime,
-          active: connection?.active !== c.active,
-          connecting: connection?.connecting !== c.connecting,
-        })
         this.set({ ...connection, ...c })
       }
     })
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
       const cliConnection = cli.data.connections.find(c => c.id === connection.params.id)
-      if (!cliConnection && connection.params.active) {
+      if (!cliConnection && connection.params.connected) {
         Logger.info('SYNC START CONNECTION', { connection: connection.params })
         connection.start()
       }
@@ -152,7 +148,7 @@ export default class ConnectionPool {
 
   clearRecent = () => {
     this.pool = this.pool.filter(async connection => {
-      if (connection.params.active) return true
+      if (connection.params.connected) return true
       await connection.clear()
       return false
     })
@@ -177,8 +173,8 @@ export default class ConnectionPool {
       .map(c => c.params)
       .sort((a, b) => {
         return (
-          this.sort(a.active, b.active) ||
-          (a.active ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime))
+          this.sort(a.connected, b.connected) ||
+          (a.connected ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime))
         )
       })
   }
@@ -224,5 +220,14 @@ export default class ConnectionPool {
       this.file.write(data)
       legacyFile.remove()
     }
+  }
+
+  private migrateConnectionData(connections: IConnection[]) {
+    // migrate active to enabled and connected
+    return connections.map(c => {
+      const enabled = c.active
+      delete c.active
+      return { ...c, enabled, connected: enabled }
+    })
   }
 }

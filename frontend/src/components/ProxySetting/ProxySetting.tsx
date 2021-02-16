@@ -8,7 +8,7 @@ export const ProxySetting: React.FC<{ service: IService; connection?: IConnectio
   if (!service) return null
   if (!connection) connection = newConnection(service)
 
-  const disabled = connection.active || connection.connecting || service.state !== 'active'
+  const disabled = connection.connected || connection.connecting || service.state !== 'active'
   const connectionRoute: IRouteType = connection.proxyOnly ? 'proxy' : connection.failover ? 'failover' : 'p2p'
   const route = ROUTES.find(r => r.key === connectionRoute)
 
