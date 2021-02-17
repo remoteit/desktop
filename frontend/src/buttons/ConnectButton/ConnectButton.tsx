@@ -60,7 +60,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (listening) {
-    title = 'Listening'
+    title = 'Waiting'
     color = 'primary'
   }
 
