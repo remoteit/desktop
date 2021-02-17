@@ -59,7 +59,6 @@ export default class ConnectionPool {
     // move connections: cli -> desktop
     cli.data.connections.forEach(async c => {
       const connection = this.find(c.id)?.params
-      d('SYNC CLI CONNECTION', { connection, c })
       if (
         !connection ||
         connection.enabled !== c.enabled ||
@@ -69,6 +68,7 @@ export default class ConnectionPool {
         connection.reachable !== c.reachable ||
         connection.sessionId !== c.sessionId
       ) {
+        // Logger.info('SYNC CLI CONNECTION', { connection, c })
         this.set({ ...connection, ...c })
       }
     })

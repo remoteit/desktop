@@ -167,7 +167,7 @@ export default class CLI {
       skipSignInCheck: true,
       quiet: true,
     })
-    return data.connections as IConnectionStatus[]
+    return data?.connections as IConnectionStatus[]
   }
 
   async agentRunning() {
@@ -273,6 +273,7 @@ export default class CLI {
   }
 
   async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
+    if (binaryInstaller.inProgress) return ''
     if (!skipSignInCheck && !binaryInstaller.uninstallInitiated) await this.checkSignIn()
     if (checkAuthHash && !user.signedIn) return ''
 
