@@ -84,10 +84,10 @@ export default class TrayMenu {
 
   private connectionsMenu() {
     let menu = []
-    const connected = this.pool.filter(c => c.connected)
-    const recent = this.pool.filter(c => !c.connected)
-    if (connected.length) menu.push({ label: 'Active connections', enabled: false }, ...this.connectionsList(connected))
-    if (connected.length && recent.length) menu.push({ type: 'separator' })
+    const enabled = this.pool.filter(c => c.enabled)
+    const recent = this.pool.filter(c => !c.enabled)
+    if (enabled.length) menu.push({ label: 'Active connections', enabled: false }, ...this.connectionsList(enabled))
+    if (enabled.length && recent.length) menu.push({ type: 'separator' })
     if (recent.length)
       menu.push(
         { label: 'Recent connections', enabled: false },
@@ -113,7 +113,7 @@ export default class TrayMenu {
       if (connection.startTime) {
         result.push({
           label: connection.name,
-          icon: connection.connected ? iconConnected : connection.online ? iconOnline : iconOffline,
+          icon: connection.enabled ? iconConnected : connection.online ? iconOnline : iconOffline,
           submenu: [
             connection.connected
               ? { label: 'Disconnect', click: () => this.disconnect(connection) }

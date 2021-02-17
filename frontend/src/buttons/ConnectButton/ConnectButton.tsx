@@ -61,6 +61,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (listening) {
     title = 'Listening'
+    color = 'primary'
   }
 
   return (
