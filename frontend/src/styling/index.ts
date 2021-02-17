@@ -42,7 +42,7 @@ export type Color =
   | 'rpi'
 
 export const colors: { [key in Color]: string } = {
-  primary: '#0096e7',
+  primary: '#009cdc',
   primaryLight: '#9ed3f0',
   primaryLighter: '#e7f2f9',
   primaryHighlight: '#edf8ff',
@@ -79,6 +79,8 @@ export const spacing: { [key in Spacing]: number } = {
   xl: 36,
   xxl: 48,
 }
+
+export const radius: number = 8
 
 export const page = {
   marginVertical: 30,

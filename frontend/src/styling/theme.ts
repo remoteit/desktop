@@ -1,4 +1,4 @@
-import { colors, spacing, fontSizes } from './'
+import { colors, spacing, radius, fontSizes } from './'
 import { createMuiTheme, ThemeOptions } from '@material-ui/core'
 
 const gutters = 32
@@ -15,24 +15,25 @@ const jssTheme: ThemeOptions = {
     MuiButton: {
       root: {
         color: colors.grayDark,
-        borderRadius: spacing.xs,
+        borderRadius: radius,
         fontWeight: 600,
-        letterSpacing: 1,
+        letterSpacing: 1.5,
         whiteSpace: 'nowrap',
-        // fontSize: fontSizes.sm,
-        padding: `${spacing.sm - spacing.xxs}px ${spacing.xl}px`,
+        fontSize: fontSizes.sm,
+        padding: `${spacing.sm}px ${spacing.xl}px`,
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
         '&+.MuiButton-root': { marginLeft: spacing.sm },
       },
       contained: {
         '&:hover': { backgroundColor: colors.grayDark },
         '&, &.Mui-disabled': { backgroundColor: colors.gray, color: colors.white },
+        boxShadow: 'none',
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
       sizeSmall: {
         borderRadius: spacing.sm,
-        fontSize: fontSizes.xs,
+        fontSize: fontSizes.xxs,
         padding: `${spacing.xxs}px ${spacing.md}px`,
       },
     },
@@ -40,7 +41,7 @@ const jssTheme: ThemeOptions = {
       ripple: { color: colors.primary },
     },
     MuiChip: {
-      root: { borderRadius: spacing.xs, backgroundColor: colors.grayLightest },
+      root: { borderRadius: radius, backgroundColor: colors.grayLightest },
       sizeSmall: { fontSize: fontSizes.xs },
     },
     MuiSnackbar: {
@@ -112,7 +113,7 @@ const jssTheme: ThemeOptions = {
         marginLeft: spacing.sm,
         marginTop: 1,
         marginBottom: 1,
-        borderRadius: spacing.xs,
+        borderRadius: radius,
         width: `calc(100% - ${spacing.sm * 2}px)`,
       },
       gutters: {
@@ -190,7 +191,7 @@ const jssTheme: ThemeOptions = {
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,
-        borderRadius: spacing.xs,
+        borderRadius: radius,
         '&$focused': { backgroundColor: colors.primaryHighlight },
         '&.Mui-disabled': { backgroundColor: colors.grayLightest },
         '&:hover': { backgroundColor: colors.primaryHighlight },
@@ -207,7 +208,7 @@ const jssTheme: ThemeOptions = {
       underlineHover: {
         '&:hover': {
           backgroundColor: colors.primaryHighlight,
-          borderRadius: spacing.xs,
+          borderRadius: radius,
           textDecoration: 'none',
           cursor: 'pointer',
         },
