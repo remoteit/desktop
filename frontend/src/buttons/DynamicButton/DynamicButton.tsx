@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles, IconButton, Tooltip, Button, darken, lighten } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
 import { Color, colors } from '../../styling'
+import { Icon } from '../../components/Icon'
 
 type Props = {
   icon: string

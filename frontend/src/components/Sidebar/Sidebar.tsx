@@ -1,6 +1,6 @@
 import React from 'react'
 import { SIDEBAR_WIDTH } from '../../shared/constants'
-import { makeStyles, Typography, Box } from '@material-ui/core'
+import { makeStyles, Button, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { RemoteManagement } from '../RemoteManagement'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -18,6 +18,11 @@ export const Sidebar: React.FC = () => {
         <AvatarMenu />
         <RefreshButton />
         {/* <Typography variant="h2">Sidebar</Typography> */}
+      </section>
+      <section>
+        <Button className={css.button} variant="contained" onClick={console.log} color="primary" fullWidth>
+          New Connection
+        </Button>
       </section>
       <SidebarNav />
       <RemoteManagement />
@@ -38,11 +43,13 @@ const useStyles = addSpace =>
       // boxShadow: 'inset -5px 0px 3px -4px rgba(0,0,0,0.1)',
       // zIndex: -1,
       '& section': {
-        margin: spacing.lg,
+        margin: spacing.sm,
       },
     },
     header: {
       display: 'flex',
       justifyContent: 'space-between',
+      padding: spacing.sm,
     },
+    button: {},
   })
