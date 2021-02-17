@@ -80,16 +80,17 @@ export default createModel<RootModel>()({
     },
     async checkSession(_: void, rootState: any) {
       const { ui } = store.dispatch
-      const result = await rootState.auth.authService.checkSignIn()
-      if (result.authUser) {
-        await dispatch.auth.handleSignInSuccess(result.cognitoUser)
-      } else {
-        console.error('SESSION ERROR', result.error)
-        if (result.error.code === 'NetworkError') {
-          ui.set({ errorMessage: result.error.message })
+      try {
+        const result = await rootState.auth.authService.checkSignIn()
+        if (result.authUser) {
+          await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
-          dispatch.auth.signInError('Session Expired')
+          console.error('SESSION ERROR', result.error)
+          ui.set({ errorMessage: result.error.message })       
         }
+      } catch (err) {
+        console.log('check sign in error:')
+        console.log(err)
       }
     },
     async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
