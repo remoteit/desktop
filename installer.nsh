@@ -14,6 +14,7 @@
     ${EndIf}
 
     ; stop the agent
+    MessageBox MB_OK "Please wait while we stop the remote.it system services for installation"
     nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent uninstall'
 
     ; create backup directory if doesn't exist
