@@ -13,6 +13,9 @@
         StrCpy $path_i '$INSTDIR\resources\x86'
     ${EndIf}
 
+    ; stop the agent
+    nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_i\remoteit.exe$\'" -j agent uninstall'
+
     ; create backup directory if doesn't exist
     CreateDirectory "${REMOTEIT_BACKUP}"
 
