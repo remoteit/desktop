@@ -13,20 +13,20 @@ export interface Props {
 
 export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
   const css = useStyles()
-  const connected = connections.filter(c => c.connected)
-  const recent = connections.filter(c => !c.connected)
+  const enabled = connections.filter(c => c.enabled)
+  const recent = connections.filter(c => !c.enabled)
 
   return (
     <List>
-      {!!connected.length && (
+      {!!enabled.length && (
         <Typography variant="subtitle1">
           <Title>Connected</Title>
         </Typography>
       )}
-      {connected.map(c => (
+      {enabled.map(c => (
         <ServiceListItem key={c.id || 0} connection={c} service={services.find(s => s.id === c.id)} />
       ))}
-      {!!recent.length && !!connected.length && <Divider className={css.divider} />}
+      {!!recent.length && !!enabled.length && <Divider className={css.divider} />}
       {!!recent.length && (
         <Typography variant="subtitle1">
           <Title>Recent</Title>
