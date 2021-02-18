@@ -28,14 +28,15 @@ const DAY = 1000 * 60 * 60 * 24
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { device, fetchingMore, fetching, user, items } = useSelector((state: ApplicationState) => {
+  const { device, events, fetchingMore, fetching, user, items } = useSelector((state: ApplicationState) => {
     const device = getAllDevices(state).find(d => d.id === deviceID)
     return {
       device,
+      events: state.logs.events,
       fetchingMore: state.logs.fetchingMore,
       fetching: state.logs.fetching,
       user: state.auth.user,
-      items: device?.events?.items,
+      items: state.logs?.events?.deviceId !== deviceID ? state.logs?.events?.items : [],
     }
   })
   const dispatch = useDispatch<Dispatch>()
@@ -65,7 +66,7 @@ export const DeviceLogPage = () => {
   }
 
   const fetchMore = () => {
-    fetchLogs({ id: deviceID, from: device?.events?.items.length, maxDate: `${selectedDate} 23:59:59` })
+    fetchLogs({ id: deviceID, from: items?.length, maxDate: `${selectedDate} 23:59:59` })
   }
 
   if (!device) return null
@@ -108,7 +109,7 @@ export const DeviceLogPage = () => {
       </List>
 
       <Box className={css.box}>
-        {device?.events?.hasMore || fetching ? (
+        {events?.hasMore || fetching ? (
           <Button color="primary" onClick={fetchMore} disabled={planUpgrade || fetchingMore || fetching}>
             {fetchingMore || fetching ? `Loading ...` : 'Load More'}
           </Button>

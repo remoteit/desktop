@@ -215,7 +215,6 @@ declare global {
       label?: string
       accessDisabled?: boolean
     }
-    events?: IEventList
   }
 
   interface IService {
@@ -386,6 +385,7 @@ declare global {
     total: number
     items: IEvent[]
     hasMore: boolean
+    deviceId: string
   }
 
   type gqlOptions = {

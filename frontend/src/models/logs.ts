@@ -13,6 +13,7 @@ type ILogState = {
   fetchingMore: boolean
   from: number
   eventsUrl: string
+  events?: IEventList
 }
 
 const state: ILogState = {
@@ -21,6 +22,7 @@ const state: ILogState = {
   fetchingMore: false,
   from: 0,
   eventsUrl: '',
+  events: undefined
 }
 
 type eventLogs = {
@@ -34,22 +36,15 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetchLogs({ id, from, maxDate }: eventLogs, globalState) {
       const { set } = dispatch.logs
-      const all = getDevices(globalState)
 
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
 
       try {
         const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
-        const { events } = gqlResponse?.data?.data?.login?.device[0] || {}
-        let device = all.find(d => d.id === id)
-        if (device) {
-          let items
-          if (from === 0) items = events.items
-          else if (device.events) items = device.events.items.concat(events.items)
-          else items = events.items
-          device.events = { ...events, items }
-          dispatch.accounts.setDevice({ id, device })
-        }
+        const {items} = globalState.logs.events?.deviceId === id ?  globalState.logs.events : {items: []}
+        const { device } = gqlResponse?.data?.data?.login || {}
+        const { events } = device[0]
+        set({events: items?.length ? events : {...events, items: events.items.concat(items)}})
       } catch (error) {
         await graphQLCatchError(error)
       }
