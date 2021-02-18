@@ -20,7 +20,7 @@ export async function getToken(): Promise<string> {
     return token
   } catch (error) {
     console.error('GET TOKEN ERROR', error.message, error.code, error)
-    if (error.code && error.code !== 'NetworkError') {
+    if (error.code && error.code == 'NotAuthorizedException') {
       auth.signInError('Session Expired')
     }
     return ''
@@ -34,7 +34,7 @@ export async function hasCredentials() {
     return true
   } catch (error) {
     console.error('HAS CREDENTIALS ERROR', error.message, error)
-    if (error.code && error.code !== 'NetworkError') {
+    if (error.code && error.code == 'NotAuthorizedException') {
       auth.signInError('Session Expired')
     }
     return false
