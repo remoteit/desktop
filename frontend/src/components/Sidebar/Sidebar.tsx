@@ -20,7 +20,7 @@ export const Sidebar: React.FC = () => {
         {/* <Typography variant="h2">Sidebar</Typography> */}
       </section>
       <section>
-        <Button className={css.button} variant="contained" onClick={console.log} color="primary" fullWidth>
+        <Button className={css.button} variant="contained" onClick={console.log} color="primary" size="large" fullWidth>
           New Connection
         </Button>
       </section>
@@ -39,17 +39,11 @@ const useStyles = addSpace =>
       height: '100%',
       paddingTop: addSpace ? spacing.md : 0,
       '-webkit-app-region': 'drag',
-      // '-webkit-user-select': 'none',
-      // boxShadow: 'inset -5px 0px 3px -4px rgba(0,0,0,0.1)',
-      // zIndex: -1,
-      '& section': {
-        margin: spacing.sm,
-      },
+      '& section': { margin: `${spacing.xl}px ${spacing.md}px` },
     },
     header: {
       display: 'flex',
       justifyContent: 'space-between',
-      padding: spacing.sm,
     },
     button: {},
   })
