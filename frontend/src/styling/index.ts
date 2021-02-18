@@ -42,7 +42,7 @@ export type Color =
   | 'rpi'
 
 export const colors: { [key in Color]: string } = {
-  primary: '#009cdc',
+  primary: '#0096e7',
   primaryLight: '#9ed3f0',
   primaryLighter: '#e7f2f9',
   primaryHighlight: '#edf8ff',

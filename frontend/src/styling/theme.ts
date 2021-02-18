@@ -19,8 +19,8 @@ const jssTheme: ThemeOptions = {
         fontWeight: 600,
         letterSpacing: 1.5,
         whiteSpace: 'nowrap',
-        fontSize: fontSizes.sm,
-        padding: `${spacing.sm}px ${spacing.xl}px`,
+        fontSize: fontSizes.xs,
+        padding: `${spacing.sm}px ${spacing.md}px`,
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
         '&+.MuiButton-root': { marginLeft: spacing.sm },
       },
@@ -31,6 +31,10 @@ const jssTheme: ThemeOptions = {
       },
       text: { padding: `${spacing.sm}px ${spacing.md}px` },
       outlined: { borderColor: colors.grayLighter },
+      sizeLarge: {
+        fontSize: fontSizes.sm,
+        padding: `${spacing.sm}px ${spacing.xl}px`,
+      },
       sizeSmall: {
         borderRadius: spacing.sm,
         fontSize: fontSizes.xxs,
@@ -110,11 +114,11 @@ const jssTheme: ThemeOptions = {
         paddingRight: spacing.sm,
         paddingTop: 5,
         paddingBottom: 5,
-        marginLeft: spacing.sm,
+        marginLeft: spacing.md,
         marginTop: 1,
         marginBottom: 1,
         borderRadius: radius,
-        width: `calc(100% - ${spacing.sm * 2}px)`,
+        width: `calc(100% - ${spacing.md * 2}px)`,
       },
       gutters: {
         paddingLeft: 9,
@@ -139,7 +143,7 @@ const jssTheme: ThemeOptions = {
       },
     },
     MuiListItemSecondaryAction: { root: { right: gutters, zIndex: 2 } },
-    MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 65 } },
+    MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 60 } },
     MuiListItemText: {
       root: { zIndex: 1 },
       primary: { lineHeight: 1.4 },
@@ -158,6 +162,11 @@ const jssTheme: ThemeOptions = {
     MuiMenu: {
       list: {
         backgroundColor: colors.grayLightest,
+        '& .MuiListItem-dense': {
+          marginLeft: spacing.xs,
+          width: `calc(100% - ${spacing.xs * 2}px)`,
+          whiteSpace: 'nowrap',
+        },
         '& .MuiMenuItem-dense': { paddingTop: '2px !important', paddingBottom: '2px !important' },
         '& > .MuiList-padding': { padding: 0 },
       },
