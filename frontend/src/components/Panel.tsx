@@ -2,51 +2,70 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import { colors, spacing } from '../styling'
 import { Header } from './Header'
-import { Body } from './Body'
+// import { Body } from './Body'
 
 type Props = {
   primary?: boolean
   secondary?: boolean
 }
-export const Container: React.FC<Props> = ({ primary, secondary, children }) => {
+
+export const Panel: React.FC<Props> = ({ primary, secondary, children }) => {
+  const [width, setWidth] = React.useState<number>(400)
+  const [grab, setGrab] = React.useState<boolean>(false)
   const css = useStyles()
 
-  return <div className={css.primary}>{primary && <Header />}</div>
+  const onMove = event => grab && setWidth(width - event.movementX * 2)
+  const onDown = () => setGrab(true)
+  const onUp = () => setGrab(false)
+
+  React.useEffect(() => {
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return function cleanup() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  })
+
+  return (
+    <>
+      {secondary && (
+        <div className={css.handle} onMouseDown={onDown}>
+          <div className={grab ? 'active' : undefined} />
+        </div>
+      )}
+      <div className={css.panel} style={{ width }}>
+        {primary && <Header />}
+        {children}
+      </div>
+    </>
+  )
 }
 
 const useStyles = makeStyles({
-  primary: {},
-  container: {
-    display: 'flex',
-    alignItems: 'stretch',
-    flexFlow: 'column',
-    height: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  header: {
-    backgroundColor: colors.white,
-    position: 'relative',
-    boxShadow: `0 1px 2px ${colors.darken}`,
-    zIndex: 3,
-    '& .MuiTypography-h1': {
-      display: 'flex',
-      alignItems: 'center',
-      padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
-      minHeight: 50,
-    },
-  },
-  sidebar: {
-    display: 'flex',
-    flexFlow: 'row',
+  panel: {
     flexGrow: 1,
-    overflow: 'hidden',
-    position: 'relative',
   },
-  sideContent: {
-    boxShadow: `-1px 0 2px ${colors.darken}`,
-    backgroundColor: colors.white,
-    position: 'relative',
-    zIndex: 2,
+  handle: {
+    height: '100%',
+    padding: `${0} ${spacing.sm}px`,
+    '-webkit-app-region': 'no-drag',
+    '&:hover': {
+      cursor: 'col-resize',
+    },
+    '& > div': {
+      width: 1,
+      marginLeft: 1,
+      marginRight: 1,
+      height: '100%',
+      backgroundColor: colors.grayLighter,
+      transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
+    },
+    '&:hover > div, & .active': {
+      width: 3,
+      marginLeft: 0,
+      marginRight: 0,
+      backgroundColor: colors.primary,
+    },
   },
 })
