@@ -67,7 +67,6 @@ export const ServicePage: React.FC = () => {
     <Container
       header={
         <>
-          <Breadcrumbs />
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
