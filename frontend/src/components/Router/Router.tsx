@@ -28,7 +28,7 @@ import { getLinks } from '../../helpers/routeHelper'
 import { LogPage } from '../../pages/LogPage'
 import { ReportsPage } from '../../pages/ReportsPage'
 
-export const Router: React.FC = () => {
+export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
   const { redirect, targetDevice, targets, registered, os, links } = useSelector((state: ApplicationState) => ({
@@ -49,24 +49,8 @@ export const Router: React.FC = () => {
     }
   }, [redirect])
 
-  return (
-    <Switch>
-      <Redirect
-        from={'/connect/:serviceID'}
-        to={{
-          pathname: '/connections/:serviceID',
-          state: { autoConnect: true },
-        }}
-      />
-      <Route path={['/settings/membership/share', '/settings/access/share']}>
-        <AccountSharePage />
-      </Route>
-      <Route path="/settings/access">
-        <AccountAccessPage />
-      </Route>
-      <Route path="/settings/reports">
-        <ReportsPage />
-      </Route>
+  const routes = (
+    <>
       <Route path={links.waiting}>
         <SetupWaiting os={os} targetDevice={targetDevice} />
       </Route>
@@ -75,9 +59,6 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices/membership">
         <AccountMembershipPage />
-      </Route>
-      <Route path="/settings">
-        <SettingsPage />
       </Route>
       <Route
         path={[
@@ -127,12 +108,27 @@ export const Router: React.FC = () => {
       <Route path={links.edit}>
         <DeviceEditPage targetDevice={targetDevice} targets={targets} />
       </Route>
-      <Route path={['/devices/:deviceID/:serviceID', '/connections/:serviceID']}>
+      {/* <Route path={['/devices/:deviceID/:serviceID', '/connections/:serviceID']}>
         <ServicePage />
-      </Route>
+      </Route> */}
+      {/* <Route path="/devices/:deviceID">
+        <ServicesPage />
+      </Route> */}
+    </>
+  )
+
+  return (
+    <Switch>
+      {/* Devices page */}
       <Route path="/devices/:deviceID">
         <ServicesPage />
+        <Switch>
+          <Route path="/devices/:deviceID/:serviceID">
+            <ServicePage />
+          </Route>
+        </Switch>
       </Route>
+      {/* Common Routes */}
       <Route path="/connections">
         <ConnectionsPage />
       </Route>
@@ -141,6 +137,25 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/devices">
         <DevicesPage />
+      </Route>
+      <Redirect
+        from={'/connect/:serviceID'}
+        to={{
+          pathname: '/connections/:serviceID',
+          state: { autoConnect: true },
+        }}
+      />
+      <Route path={['/settings/membership/share', '/settings/access/share']}>
+        <AccountSharePage />
+      </Route>
+      <Route path="/settings/access">
+        <AccountAccessPage />
+      </Route>
+      <Route path="/settings/reports">
+        <ReportsPage />
+      </Route>
+      <Route path="/settings">
+        <SettingsPage />
       </Route>
       <Route path="/announcements">
         <AnnouncementsPage />
