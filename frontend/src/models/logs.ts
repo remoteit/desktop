@@ -22,7 +22,7 @@ const state: ILogState = {
   fetchingMore: false,
   from: 0,
   eventsUrl: '',
-  events: undefined
+  events: undefined,
 }
 
 type eventLogs = {
@@ -41,10 +41,10 @@ export default createModel<RootModel>()({
 
       try {
         const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
-        const {items} = globalState.logs.events?.deviceId === id ?  globalState.logs.events : {items: []}
+        const { items } = globalState.logs.events?.deviceId === id ? globalState.logs.events : { items: [] }
         const { device } = gqlResponse?.data?.data?.login || {}
-        const { events } = device[0]
-        set({events: items?.length ? events : {...events, items: events.items.concat(items)}})
+        const events = { ...device[0].events, deviceId: id }
+        set({ events: from === 0 ? events : { ...events, items: items.concat(events.items) } })
       } catch (error) {
         await graphQLCatchError(error)
       }

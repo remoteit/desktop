@@ -36,7 +36,7 @@ export const DeviceLogPage = () => {
       fetchingMore: state.logs.fetchingMore,
       fetching: state.logs.fetching,
       user: state.auth.user,
-      items: state.logs?.events?.deviceId !== deviceID ? state.logs?.events?.items : [],
+      items: state.logs?.events?.deviceId === deviceID ? state.logs?.events?.items : [],
     }
   })
   const dispatch = useDispatch<Dispatch>()
