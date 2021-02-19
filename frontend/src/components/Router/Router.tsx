@@ -21,12 +21,13 @@ import { AccountSharePage } from '../../pages/AccountSharePage'
 import { AnnouncementsPage } from '../../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../../pages/AccountAccessPage'
 import { AccountMembershipPage } from '../../pages/AccountMembershipPage'
-import { DeviceEditPage } from '../../pages/DeviceEditPage'
 import { ServiceEditPage } from '../../pages/ServiceEditPage'
+import { DeviceEditPage } from '../../pages/DeviceEditPage'
+import { ReportsPage } from '../../pages/ReportsPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
 import { getLinks } from '../../helpers/routeHelper'
 import { LogPage } from '../../pages/LogPage'
-import { ReportsPage } from '../../pages/ReportsPage'
+import { Panel } from '../Panel'
 
 export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
   const history = useHistory()
@@ -121,10 +122,14 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
     <Switch>
       {/* Devices page */}
       <Route path="/devices/:deviceID">
-        <ServicesPage />
+        <Panel primary>
+          <ServicesPage />
+        </Panel>
         <Switch>
           <Route path="/devices/:deviceID/:serviceID">
-            <ServicePage />
+            <Panel secondary>
+              <ServicePage />
+            </Panel>
           </Route>
         </Switch>
       </Route>

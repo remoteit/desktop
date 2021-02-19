@@ -89,7 +89,7 @@ export const App: React.FC = () => {
         </Box>
       ) : (
         <>
-          <Header menuOverlaps={true} />
+          <Header menuOverlaps />
           <Body>
             <Router />
           </Body>
