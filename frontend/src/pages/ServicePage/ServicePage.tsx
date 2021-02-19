@@ -54,7 +54,7 @@ export const ServicePage: React.FC = () => {
       access: state.accounts.access,
     }
   })
-
+  console.log('--------->> service id ' + serviceID)
   useEffect(() => {
     analyticsHelper.page('ServicePage')
     if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })

@@ -85,10 +85,7 @@ export const App: React.FC = () => {
       {largeWidth ? (
         <Box className={css.columns}>
           <Sidebar />
-          <Box className={css.rows}>
-            <Header />
-            <Router /* panel={2}  */ />
-          </Box>
+          <Router largeWidth />
         </Box>
       ) : (
         <>

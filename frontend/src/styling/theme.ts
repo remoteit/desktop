@@ -110,8 +110,8 @@ const jssTheme: ThemeOptions = {
     MuiListItem: {
       root: {
         opacity: 1,
-        paddingLeft: spacing.sm,
-        paddingRight: spacing.sm,
+        paddingLeft: 0,
+        paddingRight: 0,
         paddingTop: 5,
         paddingBottom: 5,
         marginLeft: spacing.md,
@@ -121,8 +121,8 @@ const jssTheme: ThemeOptions = {
         width: `calc(100% - ${spacing.md * 2}px)`,
       },
       gutters: {
-        paddingLeft: 9,
-        paddingRight: 9,
+        paddingLeft: spacing.xxs,
+        paddingRight: spacing.xxs,
       },
       button: {
         // '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
