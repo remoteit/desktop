@@ -135,13 +135,28 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
       </Route>
       {/* Common Routes */}
       <Route path="/connections">
-        <ConnectionsPage />
+        <Panel primary>
+          <ConnectionsPage />
+        </Panel>
+        <Switch>
+          <Route path="/connections/:serviceID">
+            <Panel secondary>{/* <ConnectionPage /> */}Connection page</Panel>
+          </Route>
+        </Switch>
       </Route>
       <Route path="/configure">
-        {registered ? <Redirect to={`/configure/${targetDevice.uid}`} /> : <SetupDevice os={os} />}
+        {registered ? (
+          <Redirect to={`/configure/${targetDevice.uid}`} />
+        ) : (
+          <Panel primary>
+            <SetupDevice os={os} />
+          </Panel>
+        )}
       </Route>
       <Route path="/devices">
-        <DevicesPage />
+        <Panel primary>
+          <DevicesPage />
+        </Panel>
       </Route>
       <Redirect
         from={'/connect/:serviceID'}
@@ -151,19 +166,29 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
         }}
       />
       <Route path={['/settings/membership/share', '/settings/access/share']}>
-        <AccountSharePage />
+        <Panel primary>
+          <AccountSharePage />
+        </Panel>
       </Route>
       <Route path="/settings/access">
-        <AccountAccessPage />
+        <Panel primary>
+          <AccountAccessPage />
+        </Panel>
       </Route>
       <Route path="/settings/reports">
-        <ReportsPage />
+        <Panel primary>
+          <ReportsPage />
+        </Panel>
       </Route>
       <Route path="/settings">
-        <SettingsPage />
+        <Panel primary>
+          <SettingsPage />
+        </Panel>
       </Route>
       <Route path="/announcements">
-        <AnnouncementsPage />
+        <Panel primary>
+          <AnnouncementsPage />
+        </Panel>
       </Route>
       <Route path="/">
         <Redirect to={links.home} />

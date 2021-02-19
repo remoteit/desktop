@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react'
 import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
-import { makeStyles, Typography, Divider, Link } from '@material-ui/core'
-import { selectMyConnections } from '../../helpers/connectionHelper'
+import { makeStyles, Typography, List, Link } from '@material-ui/core'
+import { selectConnections } from '../../helpers/connectionHelper'
+import { selectService } from '../../models/devices'
 import { ApplicationState } from '../../store'
-import { ConnectionsList } from '../../components/ConnectionsList'
+import { RefreshButton } from '../../buttons/RefreshButton'
+import { ClearButton } from '../../buttons/ClearButton'
 import { SessionsList } from '../../components/SessionsList'
 import { useSelector } from 'react-redux'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -14,17 +16,49 @@ import styles from '../../styling'
 export const ConnectionsPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
-  const { connections, services, sessions } = useSelector((state: ApplicationState) => ({
-    ...selectMyConnections(state),
-    sessions: state.sessions.all,
-  }))
+  const { local, other, recent } = useSelector((state: ApplicationState) => {
+    const allConnections = selectConnections(state)
+
+    let local: ISession[] = []
+    let other: ISession[] = []
+    let recent: ISession[] = []
+
+    for (const session of state.sessions.all) {
+      const index = allConnections.findIndex(c => c.sessionId === session.id)
+      if (index > -1) {
+        local.push(session)
+        allConnections.splice(index, 1)
+      } else {
+        other.push(session)
+      }
+    }
+
+    for (const connection of allConnections) {
+      const [service, device] = selectService(state, connection.id)
+      recent.push({
+        id: state.backend.device.uid,
+        timestamp: new Date(connection.startTime || 0),
+        platform: state.backend.environment.manufacturerDetails?.product.platform || 0,
+        user: state.auth.user,
+        geo: undefined,
+        target: {
+          id: connection.id,
+          deviceId: device?.id || '',
+          platform: device?.targetPlatform || 0,
+          name: connection.name,
+        },
+      })
+    }
+
+    return { local, other, recent }
+  })
 
   useEffect(() => {
     heartbeat.beat()
     analyticsHelper.page('ConnectionsPage')
   }, [])
 
-  if (!connections.length && !sessions.length) {
+  if (!local.length && !other.length && !recent.length) {
     return (
       <Body center>
         <Typography className={css.message} variant="h2" align="center">
@@ -40,11 +74,11 @@ export const ConnectionsPage: React.FC = () => {
   }
 
   return (
-    <>
-      <ConnectionsList connections={connections} services={services} />
-      {!!connections.length && !!sessions.length && <Divider />}
-      <SessionsList sessions={sessions} />
-    </>
+    <List>
+      <SessionsList title="This device" sessions={local} />
+      <SessionsList title="Others" sessions={other} action={<RefreshButton />} />
+      <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} />
+    </List>
   )
 }
 

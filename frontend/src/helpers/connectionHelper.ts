@@ -84,28 +84,6 @@ export function selectConnections(state: ApplicationState) {
   return state.backend.connections.filter(c => !!c.startTime)
 }
 
-export function selectMyConnections(state: ApplicationState) {
-  const devices = getAllDevices(state)
-  const allConnections = selectConnections(state)
-
-  let services: IService[] = []
-  let connections: IConnection[] = []
-
-  for (const device of devices) {
-    for (const service of device.services) {
-      const index = allConnections.findIndex(c => c.id === service.id)
-
-      if (index > -1) {
-        connections.push(allConnections[index])
-        services.push(service)
-        allConnections.splice(index, 1)
-      }
-    }
-  }
-
-  return { services, connections }
-}
-
 export function getConnectionSessionIds() {
   const { connections } = store.getState().backend
   return connections.map(c => c.sessionId)

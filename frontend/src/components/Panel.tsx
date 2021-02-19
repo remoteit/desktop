@@ -45,6 +45,7 @@ export const Panel: React.FC<Props> = ({ primary, secondary, children }) => {
 const useStyles = makeStyles({
   panel: {
     flexGrow: 1,
+    height: '100%',
   },
   handle: {
     height: '100%',
