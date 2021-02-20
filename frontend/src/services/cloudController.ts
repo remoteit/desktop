@@ -221,28 +221,26 @@ class CloudController {
             setConnection(target.connection)
           }
 
-          // connection state for other users
-          else {
-            if (event.state === 'connected') {
-              sessions.setSession({
-                id: event.sessionId,
-                timestamp: event.timestamp,
-                platform: event.platform,
-                user: event.actor,
-                geo: event.geo,
-                target: {
-                  id: target.id,
-                  deviceId: target.deviceId,
-                  platform: target.platform,
-                  name: target.name,
-                },
-              })
-            } else {
-              sessions.removeSession(event.sessionId)
-            }
-            if (target.device?.id) {
-              accounts.setDevice({ id: target.device.id, device: target.device })
-            }
+          // session state
+          if (event.state === 'connected') {
+            sessions.setSession({
+              id: event.sessionId,
+              timestamp: event.timestamp,
+              platform: event.platform,
+              user: event.actor,
+              geo: event.geo,
+              target: {
+                id: target.id,
+                deviceId: target.deviceId,
+                platform: target.platform,
+                name: target.name,
+              },
+            })
+          } else {
+            sessions.removeSession(event.sessionId)
+          }
+          if (target.device?.id) {
+            accounts.setDevice({ id: target.device.id, device: target.device })
           }
 
           console.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)

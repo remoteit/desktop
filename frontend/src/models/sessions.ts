@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { getConnectionSessionIds, connectionName } from '../helpers/connectionHelper'
+import { connectionName } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -70,20 +70,20 @@ export default createModel<RootModel>()({
       const dates = data.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
       return sorted.reduce((sessions: ISession[], e: any) => {
-        if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
-          sessions.push({
-            id: e.id,
-            timestamp: new Date(e.timestamp),
-            platform: e.endpoint?.platform,
-            user: e.user,
-            geo: e.endpoint?.geo,
-            target: {
-              id: e.target.id,
-              deviceId: e.target.device.id,
-              platform: e.target.platform,
-              name: connectionName(e.target, e.target.device),
-            },
-          })
+        // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
+        sessions.push({
+          id: e.id,
+          timestamp: new Date(e.timestamp),
+          platform: e.endpoint?.platform,
+          user: e.user,
+          geo: e.endpoint?.geo,
+          target: {
+            id: e.target.id,
+            deviceId: e.target.device.id,
+            platform: e.target.platform,
+            name: connectionName(e.target, e.target.device),
+          },
+        })
         return sessions
       }, [])
     },

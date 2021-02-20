@@ -35,7 +35,7 @@ export const ConnectionsPage: React.FC = () => {
 
     for (const connection of allConnections) {
       const [service, device] = selectService(state, connection.id)
-      recent.push({
+      const session = {
         id: state.backend.device.uid,
         timestamp: new Date(connection.startTime || 0),
         platform: state.backend.environment.manufacturerDetails?.product.platform || 0,
@@ -47,7 +47,9 @@ export const ConnectionsPage: React.FC = () => {
           platform: device?.targetPlatform || 0,
           name: connection.name,
         },
-      })
+      }
+      if (connection.enabled) local.push(session)
+      else recent.push(session)
     }
 
     return { local, other, recent }
@@ -76,7 +78,7 @@ export const ConnectionsPage: React.FC = () => {
   return (
     <List>
       <SessionsList title="This device" sessions={local} />
-      <SessionsList title="Others" sessions={other} action={<RefreshButton />} />
+      <SessionsList title="Others" sessions={other} />
       <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} />
     </List>
   )
