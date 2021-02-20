@@ -30,7 +30,6 @@ export const DeviceDetailPage = () => {
     <Container
       header={
         <>
-          <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="info-circle" color="grayDarker" size="lg" />
             <Title inline>Details</Title>

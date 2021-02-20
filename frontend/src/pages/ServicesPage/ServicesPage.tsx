@@ -81,10 +81,10 @@ export const ServicesPage: React.FC = () => {
       <ServiceList services={device.services} connections={serviceConnections} />
       <Divider />
       <List>
-        <ListItemLocation title="Edit Device" icon="pen" pathname={location.pathname + '/edit'} dense />
+        {/* <ListItemLocation title="Edit Device" icon="pen" pathname={`/devices/${deviceID}/edit`} dense /> */}
         <UsersSelect device={device} access={access} />
-        <ListItemLocation title="Device Details" icon="info-circle" pathname={location.pathname + '/details'} dense />
-        <ListItemLocation title="Device Logs" icon="file-alt" pathname={location.pathname + '/logs'} dense />
+        <ListItemLocation title="Device Details" icon="info-circle" pathname={`/devices/${deviceID}/details`} dense />
+        <ListItemLocation title="Device Logs" icon="file-alt" pathname={`/devices/${deviceID}/logs`} dense />
       </List>
     </Container>
   )

@@ -47,6 +47,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
     return null
   }
 
+  console.log('SERVICE ID', serviceID)
   const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
@@ -54,7 +55,6 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
       header={
         <>
           <OutOfBand />
-          <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title inline>Edit service</Title>

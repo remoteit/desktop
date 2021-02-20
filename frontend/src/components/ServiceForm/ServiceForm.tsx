@@ -40,8 +40,7 @@ export const ServiceForm: React.FC<Props> = ({
     setupAdded: state.ui.setupAdded,
     isValid: state.backend.reachablePort,
   }))
-  const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget & IServiceForm>(() => {
+  const initForm = () => {
     const defaultAppType = findType(applicationTypes, target.type)
     return {
       hostname: service?.host || target.hostname,
@@ -55,9 +54,20 @@ export const ServiceForm: React.FC<Props> = ({
       attributes: service?.attributes || {},
       ...setupAdded,
     }
-  })
+  }
+  const [error, setError] = useState<string>()
+  const [form, setForm] = useState<ITarget & IServiceForm>(initForm)
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
+
+  useEffect(() => {
+    setForm(initForm())
+  }, [service])
+
+  useEffect(() => {
+    checkPort()
+    if (setupAdded) ui.set({ setupAdded: undefined })
+  }, [form?.port, form?.hostname])
 
   const checkPort = () => {
     if (
@@ -85,11 +95,6 @@ export const ServiceForm: React.FC<Props> = ({
       fixedWidth
     />
   )
-
-  useEffect(() => {
-    checkPort()
-    if (setupAdded) ui.set({ setupAdded: undefined })
-  }, [form?.port, form?.hostname])
 
   return (
     <form

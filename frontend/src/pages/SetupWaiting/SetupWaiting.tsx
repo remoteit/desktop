@@ -31,23 +31,21 @@ export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
   if (errorMessage) history.push(links.setup)
 
   return (
-    <Container header={<Breadcrumbs />} integrated>
-      <Body center={true}>
-        <CircularProgress thickness={1.5} size={60} />
-        <section>
-          <Typography className={css.title} variant="h2" align="center">
-            Your {osName(os)} is being registered with remote.it
-          </Typography>
-          <Typography variant="body2" align="center" color="textSecondary">
-            This may take up to a minute to complete.
-          </Typography>
-        </section>
-        <div className={css.divider}>
-          <Divider />
-        </div>
-        <DocsLinks os={os} />
-      </Body>
-    </Container>
+    <Body center={true}>
+      <CircularProgress thickness={1.5} size={60} />
+      <section>
+        <Typography className={css.title} variant="h2" align="center">
+          Your {osName(os)} is being registered with remote.it
+        </Typography>
+        <Typography variant="body2" align="center" color="textSecondary">
+          This may take up to a minute to complete.
+        </Typography>
+      </section>
+      <div className={css.divider}>
+        <Divider />
+      </div>
+      <DocsLinks os={os} />
+    </Body>
   )
 }
 

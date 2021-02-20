@@ -15,10 +15,10 @@ export function getLinks(state: ApplicationState, deviceID?: string) {
     home: '/devices',
     setup: '/devices/setup',
     waiting: '/devices/setupWaiting',
-    edit: '/devices/:deviceID/edit',
-    add: '/devices/:deviceID/edit/add-service',
-    scan: '/devices/:deviceID/edit/add-service/network',
-    service: '/devices/:deviceID/edit/:serviceID',
+    edit: '/devices/:deviceID',
+    add: '/devices/:deviceID/add',
+    scan: '/devices/:deviceID/add/scan',
+    service: '/devices/:deviceID/:serviceID',
   }
 
   let links = isRemoteUI(state) ? remoteUILinks : fullUILinks
