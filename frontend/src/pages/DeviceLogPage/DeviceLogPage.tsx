@@ -76,7 +76,6 @@ export const DeviceLogPage = () => {
       bodyProps={{ inset: true }}
       header={
         <>
-          <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="file-alt" color="grayDarker" size="lg" />
             <Title inline>Device Logs</Title>

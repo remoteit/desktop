@@ -54,13 +54,14 @@ export const ServicePage: React.FC = () => {
       access: state.accounts.access,
     }
   })
-  console.log('--------->> service id ' + serviceID)
-  useEffect(() => {
-    analyticsHelper.page('ServicePage')
-    if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
-  }, [])
 
-  if (!device && fetching) return <LoadingMessage message="Fetching data..." />
+  // useEffect(() => {
+  //   analyticsHelper.page('ServicePage')
+  //   if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
+  // }, [])
+
+  // if (!device && fetching) return <LoadingMessage message="Fetching data..." />
+
   if (!service || !device) return <UnauthorizedPage />
 
   return (
@@ -73,7 +74,6 @@ export const ServicePage: React.FC = () => {
             <EditButton device={device} service={service} connection={connection} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <AddUserButton device={device} />
-            <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />
           </Typography>
@@ -84,37 +84,11 @@ export const ServicePage: React.FC = () => {
         </>
       }
     >
-      <ServiceConnected connection={connection} service={service} />
-      <Columns center>
-        <List>
-          <NameSetting connection={connection} service={service} />
-          <PortSetting connection={connection} service={service} />
-          <HostSetting connection={connection} service={service} />
-          <InlineTemplateSetting connection={connection} service={service} context="launch" />
-          <InlineTemplateSetting connection={connection} service={service} context="copy" />
-          <CustomAttributeSettings connection={connection} service={service} />
-        </List>
-        <div className={css.actions}>
-          <ConnectButton
-            connection={connection}
-            service={service}
-            autoConnect={location.state?.autoConnect}
-            size="medium"
-          />
-        </div>
-      </Columns>
-      <Divider />
+      This page should be replaced by the service overview and details page
       <List>
-        <ProxySetting connection={connection} service={service} />
-        <AutoStartSetting connection={connection} service={service} />
-        <LanShareSelect connection={connection} service={service} />
-        <ConnectionLogSetting connection={connection} service={service} />
-      </List>
-      <Divider />
-      <List>
-        {!device.shared && (
+        {/* {!device.shared && (
           <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} dense />
-        )}
+        )} */}
         <UsersSelect service={service} device={device} access={access} />
         <ListItemLocation title="Service Details" icon="info-circle" pathname={location.pathname + '/details'} dense />
       </List>
@@ -123,11 +97,5 @@ export const ServicePage: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  actions: {
-    marginRight: spacing.md,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   errorMessage: { padding: 0 },
 })

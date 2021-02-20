@@ -51,17 +51,10 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
     }
   }, [redirect])
 
+  console.log('URL', window.location.href)
+
   const routes = (
     <>
-      <Route path={links.waiting}>
-        <SetupWaiting os={os} targetDevice={targetDevice} />
-      </Route>
-      <Route path="/devices/setup">
-        {registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}
-      </Route>
-      <Route path="/devices/membership">
-        <AccountMembershipPage />
-      </Route>
       <Route
         path={[
           '/connections/:serviceID/users/:email',
@@ -77,9 +70,6 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
       >
         <SharePage />
       </Route>
-      <Route path={links.scan}>
-        <NetworkPage />
-      </Route>
       <Route path={['/devices/:deviceID/:serviceID/lan', '/connections/:serviceID/lan']}>
         <LanSharePage />
       </Route>
@@ -92,24 +82,12 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
       <Route path={['/devices/:deviceID/:serviceID/details', '/connections/:serviceID/details']}>
         <ServiceDetailPage />
       </Route>
-      <Route path={links.add}>
-        <ServiceAddPage targetDevice={targetDevice} targets={targets} />
-      </Route>
-      <Route path={[links.service, '/devices/:deviceID/:serviceID/edit', '/connections/:serviceID/edit']}>
+      {/* <Route path={[links.service, '/devices/:deviceID/:serviceID/edit', '/connections/:serviceID/edit']}>
         <ServiceEditPage targetDevice={targetDevice} targets={targets} />
-      </Route>
-      <Route path="/devices/:deviceID/users">
-        <UsersPageDevice />
-      </Route>
-      <Route path="/devices/:deviceID/details">
-        <DeviceDetailPage />
-      </Route>
-      <Route path="/devices/:deviceID/logs">
-        <DeviceLogPage />
-      </Route>
-      <Route path={links.edit}>
+      </Route> */}
+      {/* <Route path={links.edit}>
         <DeviceEditPage targetDevice={targetDevice} targets={targets} />
-      </Route>
+      </Route> */}
       {/* <Route path={['/devices/:deviceID/:serviceID', '/connections/:serviceID']}>
         <ServicePage />
       </Route> */}
@@ -121,18 +99,54 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
 
   return (
     <Switch>
+      <Route path="/devices/setup">
+        <Panel primary>
+          {registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}
+        </Panel>
+      </Route>
+
+      <Route path="/devices/membership">
+        <Panel primary>
+          <AccountMembershipPage />
+        </Panel>
+      </Route>
+
+      <Route path={links.waiting}>
+        <Panel primary>
+          <SetupWaiting os={os} targetDevice={targetDevice} />
+        </Panel>
+      </Route>
+
       {/* Devices page */}
       <Route path="/devices/:deviceID">
         <Panel primary>
-          <ServicesPage />
+          <DeviceEditPage targetDevice={targetDevice} targets={targets} />
         </Panel>
-        <Switch>
-          <Route path="/devices/:deviceID/:serviceID">
-            <Panel secondary>
-              <ServicePage />
-            </Panel>
-          </Route>
-        </Switch>
+        <Panel secondary>
+          <Switch>
+            <Route path={links.scan}>
+              <NetworkPage />
+            </Route>
+            <Route path={links.add}>
+              <ServiceAddPage targetDevice={targetDevice} targets={targets} />
+            </Route>
+            <Route path="/devices/:deviceID/users">
+              <UsersPageDevice />
+            </Route>
+            <Route path="/devices/:deviceID/details">
+              <DeviceDetailPage />
+            </Route>
+            <Route path="/devices/:deviceID/logs">
+              <DeviceLogPage />
+            </Route>
+            <Route path="/devices/:deviceID/:serviceID">
+              <ServiceEditPage targetDevice={targetDevice} targets={targets} />
+            </Route>
+            <Route path="/devices/:deviceID">
+              <DeviceDetailPage />
+            </Route>
+          </Switch>
+        </Panel>
       </Route>
 
       {/* Common Routes */}
@@ -140,14 +154,14 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
         <Panel primary>
           <ConnectionsPage />
         </Panel>
-        <Switch>
-          <Route path="/connections/:serviceID">
-            <Panel secondary>
+        <Panel secondary>
+          <Switch>
+            <Route path="/connections/:serviceID">
               {/* <ConnectionPage /> */}
               <ConnectionPage />
-            </Panel>
-          </Route>
-        </Switch>
+            </Route>
+          </Switch>
+        </Panel>
       </Route>
 
       <Route path="/configure">

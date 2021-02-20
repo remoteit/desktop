@@ -11,7 +11,6 @@ export const SharedUsersHeader: React.FC<{ device?: IDevice; title?: string }> =
 }) => {
   return (
     <>
-      <Breadcrumbs />
       <Typography variant="h1">
         <Icon name="user-friends" size="lg" />
         <Title inline>{title}</Title>

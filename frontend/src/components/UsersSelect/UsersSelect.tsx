@@ -26,7 +26,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
   if (device?.shared) return null
 
   return (
-    <ListItemLocation pathname={`${location.pathname}/${total ? 'users' : 'share'}`} dense>
+    <ListItemLocation pathname={`/devices/${device?.id}/${total ? 'users' : 'share'}`} dense>
       <ListItemIcon>
         <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
       </ListItemIcon>

@@ -46,6 +46,8 @@ const useStyles = makeStyles({
   panel: {
     flexGrow: 1,
     height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
   },
   handle: {
     height: '100%',
