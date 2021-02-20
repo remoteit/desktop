@@ -10,6 +10,7 @@ export const Title: React.FC<{ offline?: boolean; inline?: boolean }> = ({ child
 const useStyles = inline =>
   makeStyles({
     title: {
+      display: 'block',
       flexGrow: 1,
       overflow: 'hidden',
       textOverflow: 'ellipsis',

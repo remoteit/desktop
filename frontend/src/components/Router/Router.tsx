@@ -2,8 +2,9 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
-import { SettingsPage } from '../../pages/SettingsPage'
 import { ConnectionsPage } from '../../pages/ConnectionsPage'
+import { ConnectionPage } from '../../pages/ConnectionPage'
+import { SettingsPage } from '../../pages/SettingsPage'
 import { SetupDevice } from '../../pages/SetupDevice'
 import { SetupWaiting } from '../../pages/SetupWaiting'
 import { NetworkPage } from '../../pages/NetworkPage'
@@ -133,6 +134,7 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
           </Route>
         </Switch>
       </Route>
+
       {/* Common Routes */}
       <Route path="/connections">
         <Panel primary>
@@ -140,10 +142,14 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
         </Panel>
         <Switch>
           <Route path="/connections/:serviceID">
-            <Panel secondary>{/* <ConnectionPage /> */}Connection page</Panel>
+            <Panel secondary>
+              {/* <ConnectionPage /> */}
+              <ConnectionPage />
+            </Panel>
           </Route>
         </Switch>
       </Route>
+
       <Route path="/configure">
         {registered ? (
           <Redirect to={`/configure/${targetDevice.uid}`} />
@@ -153,11 +159,13 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
           </Panel>
         )}
       </Route>
+
       <Route path="/devices">
         <Panel primary>
           <DevicesPage />
         </Panel>
       </Route>
+
       <Redirect
         from={'/connect/:serviceID'}
         to={{
@@ -165,31 +173,37 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
           state: { autoConnect: true },
         }}
       />
+
       <Route path={['/settings/membership/share', '/settings/access/share']}>
         <Panel primary>
           <AccountSharePage />
         </Panel>
       </Route>
+
       <Route path="/settings/access">
         <Panel primary>
           <AccountAccessPage />
         </Panel>
       </Route>
+
       <Route path="/settings/reports">
         <Panel primary>
           <ReportsPage />
         </Panel>
       </Route>
+
       <Route path="/settings">
         <Panel primary>
           <SettingsPage />
         </Panel>
       </Route>
+
       <Route path="/announcements">
         <Panel primary>
           <AnnouncementsPage />
         </Panel>
       </Route>
+
       <Route path="/">
         <Redirect to={links.home} />
       </Route>

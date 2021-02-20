@@ -17,7 +17,6 @@ export const SessionListItem: React.FC<Props> = ({ session }) => {
   const css = useStyles()
 
   if (!session) return null
-  console.log('SESSION', session.target.name, session.platform, session.target.platform)
 
   return (
     <ListItemLocation pathname={`/connections/${session.target.id}`} dense>
@@ -29,7 +28,10 @@ export const SessionListItem: React.FC<Props> = ({ session }) => {
         primary={
           <>
             <span>
-              <Title>{session.user?.email}</Title>
+              <Title>
+                {session.user?.email}
+                {/* {session.id} */}
+              </Title>
               <Typography variant="caption" display="block">
                 <LocationPin session={session} />
                 <Duration startTime={session.timestamp?.getTime()} ago />
@@ -53,7 +55,7 @@ const useStyles = makeStyles({
   title: {
     display: 'flex',
     alignItems: 'flex-start',
-    '& > span': { width: '50%' },
+    '& > span': { width: '50%', overflow: 'hidden' },
     '& > svg': { marginTop: spacing.xs, marginRight: spacing.lg, marginLeft: spacing.lg },
   },
 })
