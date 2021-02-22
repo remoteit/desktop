@@ -25,6 +25,7 @@ import { ListItemLocation } from '../../components/ListItemLocation'
 import { ServiceMiniState } from '../../components/ServiceMiniState'
 import { DeviceNameSetting } from '../../components/DeviceNameSetting'
 import { AddFromNetwork } from '../../components/AddFromNetwork'
+import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 import { UnregisterDeviceButton } from '../../buttons/UnregisterDeviceButton'
 import { AdminPanelConnect } from '../../components/AdminPanelConnect'
 import { LicensingNotice } from '../../components/LicensingNotice'
@@ -32,6 +33,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { AddUserButton } from '../../buttons/AddUserButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { UsersSelect } from '../../components/UsersSelect'
+import { ServiceName } from '../../components/ServiceName'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { getLinks } from '../../helpers/routeHelper'
 import { Title } from '../../components/Title'
@@ -62,6 +64,21 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
     }
   )
 
+  // useEffect(() => {
+  //   analyticsHelper.page('ServicesPage')
+  //   if (!device && !fetching) {
+  //     if (loaded) history.push('/devices')
+  //     else fetch()
+  //   }
+  // }, [device, loaded, history])
+
+  // async function fetch() {
+  //   await devices.fetchSingle({ deviceId: deviceID, hidden: true })
+  //   setLoaded(true)
+  // }
+
+  // if (!device || fetching) return <LoadingMessage message="Fetching data..." />
+
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')
     // check that target device is registered and don't redirect
@@ -72,6 +89,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
 
   const thisDevice = device.id === targetDevice.uid
   const editable = thisDevice || device.configurable
+  const connected = connections.find(c => c.deviceID === deviceID && c.connected)
 
   function host(service: IService) {
     const target = targets.find(t => t.uid === service.id)
@@ -88,11 +106,10 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets }) => {
           <OutOfBand />
           {remoteUI || <Breadcrumbs />}
           <Typography variant="h1">
-            <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
-            <Title inline>Edit device</Title>
+            <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" />
+            <ServiceName device={device} connection={connected} inline />
             {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
             <AddUserButton device={device} />
-            <RefreshButton device={device} />
           </Typography>
         </>
       }

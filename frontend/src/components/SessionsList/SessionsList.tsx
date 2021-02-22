@@ -14,9 +14,10 @@ export interface Props {
   sessions: ISession[]
   title: string
   action?: React.ReactElement
+  recent?: boolean
 }
 
-export const SessionsList: React.FC<Props> = ({ sessions, title, action }) => {
+export const SessionsList: React.FC<Props> = ({ sessions, title, action, recent }) => {
   if (!sessions.length) return null
 
   return (
@@ -26,7 +27,7 @@ export const SessionsList: React.FC<Props> = ({ sessions, title, action }) => {
         {action}
       </Typography>
       {sessions.map((s, i) => (
-        <SessionListItem session={s} key={i} />
+        <SessionListItem session={s} key={i} recent={recent} />
       ))}
     </>
   )

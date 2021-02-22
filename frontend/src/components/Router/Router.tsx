@@ -13,7 +13,6 @@ import { ServiceAddPage } from '../../pages/ServiceAddPage'
 import { DeviceDetailPage } from '../../pages/DeviceDetailPage'
 import { DeviceLogPage } from '../../pages/DeviceLogPage'
 import { ServiceDetailPage } from '../../pages/ServiceDetailPage'
-import { ServicesPage } from '../../pages/ServicesPage'
 import { ServicePage } from '../../pages/ServicePage'
 import { LanSharePage } from '../../pages/LanSharePage'
 import { UsersPageService } from '../../pages/UsersPageService'
@@ -26,8 +25,10 @@ import { ServiceEditPage } from '../../pages/ServiceEditPage'
 import { DeviceEditPage } from '../../pages/DeviceEditPage'
 import { ReportsPage } from '../../pages/ReportsPage'
 import { SharePage } from '../../pages/SharePage/SharePage'
-import { getLinks } from '../../helpers/routeHelper'
+import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { LogPage } from '../../pages/LogPage'
+import { Container } from '../../components/Container'
+import { getLinks } from '../../helpers/routeHelper'
 import { Panel } from '../Panel'
 
 export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
@@ -55,11 +56,8 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
 
   const routes = (
     <>
-      <Route
+      {/* <Route
         path={[
-          '/connections/:serviceID/users/:email',
-          '/connections/:serviceID/users/share',
-          '/connections/:serviceID/share',
           '/devices/:deviceID/:serviceID/users/share',
           '/devices/:deviceID/:serviceID/users/:email',
           '/devices/:deviceID/:serviceID/share',
@@ -69,19 +67,19 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
         ]}
       >
         <SharePage />
-      </Route>
-      <Route path={['/devices/:deviceID/:serviceID/lan', '/connections/:serviceID/lan']}>
+      </Route> */}
+      {/* <Route path={['/devices/:deviceID/:serviceID/lan', '/connections/:serviceID/lan']}>
         <LanSharePage />
-      </Route>
-      <Route path={['/devices/:deviceID/:serviceID/log', '/connections/:serviceID/log']}>
+      </Route> */}
+      {/* <Route path={['/devices/:deviceID/:serviceID/log', '/connections/:serviceID/log']}>
         <LogPage />
-      </Route>
-      <Route path={['/devices/:deviceID/:serviceID/users', '/connections/:serviceID/users']}>
+      </Route> */}
+      {/* <Route path={['/devices/:deviceID/:serviceID/users', '/connections/:serviceID/users']}>
         <UsersPageService />
-      </Route>
-      <Route path={['/devices/:deviceID/:serviceID/details', '/connections/:serviceID/details']}>
+      </Route> */}
+      {/* <Route path={['/devices/:deviceID/:serviceID/details', '/connections/:serviceID/details']}>
         <ServiceDetailPage />
-      </Route>
+      </Route> */}
       {/* <Route path={[links.service, '/devices/:deviceID/:serviceID/edit', '/connections/:serviceID/edit']}>
         <ServiceEditPage targetDevice={targetDevice} targets={targets} />
       </Route> */}
@@ -130,6 +128,11 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
             <Route path={links.add}>
               <ServiceAddPage targetDevice={targetDevice} targets={targets} />
             </Route>
+            <Route
+              path={['/devices/:deviceID/users/share', '/devices/:deviceID/users/:email', '/devices/:deviceID/share']}
+            >
+              <SharePage />
+            </Route>
             <Route path="/devices/:deviceID/users">
               <UsersPageDevice />
             </Route>
@@ -140,7 +143,31 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
               <DeviceLogPage />
             </Route>
             <Route path="/devices/:deviceID/:serviceID">
-              <ServiceEditPage targetDevice={targetDevice} targets={targets} />
+              <Container header={<ServiceHeaderMenu />}>
+                <Switch>
+                  <Route
+                    path={[
+                      '/devices/:deviceID/:serviceID/users/share',
+                      '/devices/:deviceID/:serviceID/users/:email',
+                      '/devices/:deviceID/:serviceID/share',
+                    ]}
+                  >
+                    <SharePage />
+                  </Route>
+                  <Route path="/devices/:deviceID/:serviceID/users">
+                    <UsersPageService />
+                  </Route>
+                  <Route path="/devices/:deviceID/:serviceID/log">
+                    <LogPage />
+                  </Route>
+                  <Route path="/devices/:deviceID/:serviceID/edit">
+                    <ServiceEditPage targetDevice={targetDevice} targets={targets} />
+                  </Route>
+                  <Route path="/devices/:deviceID/:serviceID">
+                    <ServiceDetailPage />
+                  </Route>
+                </Switch>
+              </Container>
             </Route>
             <Route path="/devices/:deviceID">
               <DeviceDetailPage />
@@ -156,8 +183,10 @@ export const Router: React.FC<{ largeWidth?: boolean }> = ({ largeWidth }) => {
         </Panel>
         <Panel secondary>
           <Switch>
+            <Route path="/connections/:serviceID/lan">
+              <LanSharePage />
+            </Route>
             <Route path="/connections/:serviceID">
-              {/* <ConnectionPage /> */}
               <ConnectionPage />
             </Route>
           </Switch>
