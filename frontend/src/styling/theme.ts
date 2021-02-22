@@ -194,7 +194,7 @@ const jssTheme: ThemeOptions = {
         letterSpacing: 0.5,
         fontWeight: 500,
         textTransform: 'uppercase',
-        pointerEvents: 'auto',
+        // pointerEvents: 'auto',
       },
     },
     MuiFilledInput: {

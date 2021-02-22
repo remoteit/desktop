@@ -11,16 +11,20 @@ import { spacing } from '../styling'
 
 export interface Props {
   session: ISession
+  other?: boolean
   recent?: boolean
 }
 
-export const SessionListItem: React.FC<Props> = ({ session, recent }) => {
+export const SessionListItem: React.FC<Props> = ({ session, other, recent }) => {
   const css = useStyles()
+  const pathname = other
+    ? `/devices/${session.target.deviceId}/${session.target.id}/users/${session.user?.email}`
+    : `/connections/${session.target.id}`
 
   if (!session) return null
 
   return (
-    <ListItemLocation pathname={`/connections/${session.target.id}`} dense>
+    <ListItemLocation pathname={pathname} dense>
       <ListItemIcon>
         <InitiatorPlatform id={session.platform} connected={!recent} />
       </ListItemIcon>

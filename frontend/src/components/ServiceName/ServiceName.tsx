@@ -35,7 +35,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   if (connection?.name && menu && menu[0] === '/connections') name = connection.name
 
   return (
-    <Title offline={offline} inline={inline}>
+    <Title enabled={connection?.enabled} offline={offline} inline={inline}>
       {name || 'No device found'}
       {/* {!!targetPlatformId && (
         <sup>
