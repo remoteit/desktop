@@ -84,24 +84,20 @@ export const ConnectionPage: React.FC = () => {
       }
     >
       <ServiceConnected connection={connection} service={service} />
-      <Columns center>
-        <List>
-          <NameSetting connection={connection} service={service} />
-          <PortSetting connection={connection} service={service} />
-          <HostSetting connection={connection} service={service} />
-          <InlineTemplateSetting connection={connection} service={service} context="launch" />
-          <InlineTemplateSetting connection={connection} service={service} context="copy" />
-          <CustomAttributeSettings connection={connection} service={service} />
-        </List>
-        <div className={css.actions}>
-          <ConnectButton
-            connection={connection}
-            service={service}
-            autoConnect={location.state?.autoConnect}
-            size="medium"
-          />
-        </div>
-      </Columns>
+      <ConnectButton
+        connection={connection}
+        service={service}
+        autoConnect={location.state?.autoConnect}
+        size="medium"
+      />
+      <List>
+        <NameSetting connection={connection} service={service} />
+        <PortSetting connection={connection} service={service} />
+        <HostSetting connection={connection} service={service} />
+        <InlineTemplateSetting connection={connection} service={service} context="launch" />
+        <InlineTemplateSetting connection={connection} service={service} context="copy" />
+        <CustomAttributeSettings connection={connection} service={service} />
+      </List>
       <Divider />
       <List>
         <ProxySetting connection={connection} service={service} />

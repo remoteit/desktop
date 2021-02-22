@@ -71,7 +71,6 @@ export const ServicePage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
-            <EditButton device={device} service={service} connection={connection} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <AddUserButton device={device} />
             <LaunchButton connection={connection} service={service} />
@@ -86,9 +85,9 @@ export const ServicePage: React.FC = () => {
     >
       This page should be replaced by the service overview and details page
       <List>
-        {/* {!device.shared && (
+        {!device.shared && (
           <ListItemLocation title="Edit Service" icon="pen" pathname={location.pathname + '/edit'} dense />
-        )} */}
+        )}
         <UsersSelect service={service} device={device} access={access} />
         <ListItemLocation title="Service Details" icon="info-circle" pathname={location.pathname + '/details'} dense />
       </List>

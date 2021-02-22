@@ -82,7 +82,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
           }}
         >
           <span style={{ color, backgroundColor: lighten(color, 0.94) }}>
-            {connected && <Icon name="user" type="solid" size="xxxs" color={colorName} fixedWidth />}
+            {connected && <Icon name="user" type="solid" size="xxxs" color="primary" fixedWidth />}
             {failover && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}
           </span>

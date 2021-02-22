@@ -11,9 +11,10 @@ import { spacing } from '../styling'
 
 export interface Props {
   session: ISession
+  recent?: boolean
 }
 
-export const SessionListItem: React.FC<Props> = ({ session }) => {
+export const SessionListItem: React.FC<Props> = ({ session, recent }) => {
   const css = useStyles()
 
   if (!session) return null
@@ -21,7 +22,7 @@ export const SessionListItem: React.FC<Props> = ({ session }) => {
   return (
     <ListItemLocation pathname={`/connections/${session.target.id}`} dense>
       <ListItemIcon>
-        <InitiatorPlatform id={session.platform} connected={true} />
+        <InitiatorPlatform id={session.platform} connected={!recent} />
       </ListItemIcon>
       <ListItemText
         classes={{ primary: css.title }}
@@ -37,7 +38,7 @@ export const SessionListItem: React.FC<Props> = ({ session }) => {
                 <Duration startTime={session.timestamp?.getTime()} ago />
               </Typography>
             </span>
-            <Icon name="arrow-right" color="primary" size="md" type="regular" fixedWidth />
+            <Icon name="arrow-right" color={recent ? 'gray' : 'primary'} size="md" type="regular" fixedWidth />
             <Title>
               {session.target.name}
               <sup>
