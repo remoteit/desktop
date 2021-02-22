@@ -83,16 +83,16 @@ export const InlineSetting: React.FC<Props> = ({
           }}
         >
           {children}
-          {resetValue != null && (
-            <ResetButton
-              onMouseDown={cancelBlur}
-              onClick={() => {
-                onResetClick()
-                fieldRef.current?.focus()
-              }}
-            />
-          )}
           <ListItemSecondaryAction>
+            {resetValue != null && (
+              <ResetButton
+                onMouseDown={cancelBlur}
+                onClick={() => {
+                  onResetClick()
+                  fieldRef.current?.focus()
+                }}
+              />
+            )}
             <Tooltip title="Cancel">
               <IconButton onClick={onCancel}>
                 <Icon name="times" size="md" fixedWidth />

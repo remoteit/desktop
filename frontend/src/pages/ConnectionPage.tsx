@@ -5,12 +5,10 @@ import { makeStyles } from '@material-ui/core/styles'
 import { PortSetting } from '../components/PortSetting'
 import { NameSetting } from '../components/NameSetting'
 import { ServiceName } from '../components/ServiceName'
-import { Breadcrumbs } from '../components/Breadcrumbs'
 import { HostSetting } from '../components/HostSetting'
 import { ProxySetting } from '../components/ProxySetting'
 import { selectService } from '../models/devices'
 import { LicensingNotice } from '../components/LicensingNotice'
-import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceConnected } from '../components/ServiceConnected'
 import { AutoStartSetting } from '../components/AutoStartSetting'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
@@ -32,7 +30,6 @@ import { ErrorButton } from '../buttons/ErrorButton'
 import { EditButton } from '../buttons/EditButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { Container } from '../components/Container'
-import { Columns } from '../components/Columns'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -62,6 +59,7 @@ export const ConnectionPage: React.FC = () => {
 
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <UnauthorizedPage />
+
   return (
     <Container
       header={
