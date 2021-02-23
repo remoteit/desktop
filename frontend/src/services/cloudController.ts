@@ -4,7 +4,7 @@ import { getToken } from './remote.it'
 import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
-import { selectService } from '../models/devices'
+import { selectById } from '../models/devices'
 import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
 import { emit } from './Controller'
@@ -166,7 +166,7 @@ class CloudController {
         sessionId: event.session,
         geo: event.sourceGeo,
         target: event.target.map(t => {
-          const [service, device] = selectService(state, t.id)
+          const [service, device] = selectById(state, t.id)
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,

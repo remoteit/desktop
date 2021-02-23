@@ -18,14 +18,14 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 type Props = {
   targets: ITarget[]
   targetDevice: ITargetDevice
+  device?: IDevice
 }
 
-export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
+export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice, device }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { backend, applicationTypes, devices } = useDispatch<Dispatch>()
-  const { setupServicesLimit, device, links } = useSelector((state: ApplicationState) => ({
+  const { setupServicesLimit, links } = useSelector((state: ApplicationState) => ({
     ...state.ui,
-    device: getAllDevices(state).find(d => d.id === deviceID),
     links: getLinks(state, deviceID),
   }))
   const location = useLocation()

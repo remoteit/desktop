@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles, Divider } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { Body } from '../Body'
 
@@ -17,7 +17,10 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
 
   return (
     <div className={css.container}>
-      <div className={integrated ? undefined : css.header}>{header}</div>
+      <div className={integrated ? undefined : css.header}>
+        {header}
+        <Divider variant="inset" />
+      </div>
       {sidebar ? (
         <div className={css.sidebar}>
           <Body {...bodyProps}>{children}</Body>
@@ -45,7 +48,6 @@ const useStyles = makeStyles({
   header: {
     backgroundColor: colors.white,
     position: 'relative',
-    boxShadow: `0 1px 2px ${colors.darken}`,
     zIndex: 3,
     '& .MuiTypography-h1': {
       display: 'flex',

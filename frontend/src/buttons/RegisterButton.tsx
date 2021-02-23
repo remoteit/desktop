@@ -60,7 +60,7 @@ export const RegisterButton: React.FC = () => {
     <>
       <Tooltip title="Device Registration">
         <IconButton onClick={handleOpen}>
-          <Icon name="plus" size="sm" type="regular" />
+          <Icon name="plus" size="sm" type="regular" fixedWidth />
         </IconButton>
       </Tooltip>
       <Popover

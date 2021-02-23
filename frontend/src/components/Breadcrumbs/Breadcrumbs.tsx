@@ -47,7 +47,7 @@ export const Breadcrumbs: React.FC = () => {
   let breadcrumb: string = ''
 
   return (
-    <div className={css.header}>
+    <span className={css.header}>
       {/* <IconButton onClick={() => history.push(parentPath)}>
         <Icon name="chevron-left" size="md" fixedWidth />
       </IconButton> */}
@@ -61,7 +61,7 @@ export const Breadcrumbs: React.FC = () => {
         )
         return result
       }, [])}
-    </div>
+    </span>
   )
 }
 

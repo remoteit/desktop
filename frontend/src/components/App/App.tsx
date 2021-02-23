@@ -9,7 +9,7 @@ import { SignInPage } from '../../pages/SignInPage'
 import { FooterNav } from '../FooterNav'
 import { Sidebar } from '../Sidebar'
 import { Header } from '../Header'
-import { Router } from '../Router'
+import { Router } from '../../routers/Router'
 import { Body } from '../Body'
 import { Page } from '../../pages/Page'
 
@@ -85,11 +85,10 @@ export const App: React.FC = () => {
       {largeWidth ? (
         <Box className={css.columns}>
           <Sidebar />
-          <Router largeWidth />
+          <Router />
         </Box>
       ) : (
         <>
-          <Header menuOverlaps />
           <Body>
             <Router />
           </Body>

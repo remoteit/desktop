@@ -12,33 +12,26 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
 } from '@material-ui/core'
-import { useParams } from 'react-router-dom'
+import { colors, fontSizes, spacing } from '../../styling'
+import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
+import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
+import { EventMessage } from './EventMessage'
+import { DatePicker } from '../../components/DatePicker'
 import { Container } from '../../components/Container'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
+import { EventIcon } from './EventIcon'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
-import { colors, fontSizes, spacing } from '../../styling'
-import { EventMessage } from './EventMessage'
-import { EventIcon } from './EventIcon'
-import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
-import { DatePicker } from '../../components/DatePicker/DatePicker'
-import { getAllDevices } from '../../models/accounts'
 
 const DAY = 1000 * 60 * 60 * 24
 
-export const DeviceLogPage = () => {
-  const { deviceID } = useParams<{ deviceID: string }>()
-  const { device, events, fetchingMore, fetching, user, items } = useSelector((state: ApplicationState) => {
-    const device = getAllDevices(state).find(d => d.id === deviceID)
-    return {
-      device,
-      events: state.logs.events,
-      fetchingMore: state.logs.fetchingMore,
-      fetching: state.logs.fetching,
-      user: state.auth.user,
-      items: state.logs?.events?.deviceId !== deviceID ? state.logs?.events?.items : [],
-    }
-  })
+export const DeviceLogPage: React.FC<{ device?: IDevice }> = ({ device }) => {
+  const { events, fetchingMore, fetching, user, items } = useSelector((state: ApplicationState) => ({
+    events: state.logs.events,
+    fetchingMore: state.logs.fetchingMore,
+    fetching: state.logs.fetching,
+    user: state.auth.user,
+    items: state.logs?.events?.deviceId !== device?.id ? state.logs?.events?.items : [],
+  }))
   const dispatch = useDispatch<Dispatch>()
   const [planUpgrade, setPlanUpgrade] = useState(false)
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
@@ -46,9 +39,11 @@ export const DeviceLogPage = () => {
   const freePlan = 90
 
   useEffect(() => {
-    fetchLogs({ id: deviceID, from: 0 })
-    console.log('Fetching Logs')
-  }, [deviceID])
+    if (device) {
+      fetchLogs({ id: device.id, from: 0 })
+      console.log('Fetching Logs')
+    }
+  }, [device?.id])
 
   const limitDays = () => {
     const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
@@ -60,27 +55,23 @@ export const DeviceLogPage = () => {
 
   const css = useStyles()
 
+  if (!device) return null
+
   const onChange = (date: any) => {
     setSelectedDate(date)
-    fetchLogs({ id: deviceID, from: 0, maxDate: `${date}` })
+    fetchLogs({ id: device.id, from: 0, maxDate: `${date}` })
   }
 
   const fetchMore = () => {
-    fetchLogs({ id: deviceID, from: items?.length, maxDate: `${selectedDate} 23:59:59` })
+    fetchLogs({ id: device.id, from: items?.length, maxDate: `${selectedDate} 23:59:59` })
   }
 
-  if (!device) return null
-
   return (
-    <Container
-      bodyProps={{ inset: true }}
-      header={
-        <>
-          <Typography variant="h1">
-            <Icon name="file-alt" color="grayDarker" size="lg" />
-            <Title inline>Device Logs</Title>
-          </Typography>
-          <List className={css.header}>
+    <DeviceHeaderMenu device={device}>
+      <Container
+        bodyProps={{ inset: true }}
+        header={
+          <List>
             <ListItem dense>
               <ListItemIcon>
                 <Icon name={fetching ? 'spinner-third' : 'calendar-day'} size="md" spin={fetching} fixedWidth />
@@ -94,38 +85,38 @@ export const DeviceLogPage = () => {
               />
               <ListItemSecondaryAction>
                 <CSVDownloadButton
-                  deviceID={deviceID}
+                  deviceID={device.id}
                   maxDate={selectedDate?.toDateString() || new Date().toString()}
                 />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
-        </>
-      }
-    >
-      <List className={css.item}>
-        {!fetching && items?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
-      </List>
+        }
+      >
+        <List className={css.item}>
+          {!fetching && items?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
+        </List>
 
-      <Box className={css.box}>
-        {events?.hasMore || fetching ? (
-          <Button color="primary" onClick={fetchMore} disabled={planUpgrade || fetchingMore || fetching}>
-            {fetchingMore || fetching ? `Loading ...` : 'Load More'}
-          </Button>
-        ) : (
-          <Typography variant="body2" align="center" color="textSecondary">
-            End of Logs
-          </Typography>
-        )}
+        <Box className={css.box}>
+          {events?.hasMore || fetching ? (
+            <Button color="primary" onClick={fetchMore} disabled={planUpgrade || fetchingMore || fetching}>
+              {fetchingMore || fetching ? `Loading ...` : 'Load More'}
+            </Button>
+          ) : (
+            <Typography variant="body2" align="center" color="textSecondary">
+              End of Logs
+            </Typography>
+          )}
 
-        {planUpgrade && (
-          <Typography variant="body2" align="center" color="textSecondary">
-            Plan upgrade required to view logs past 90 days <br />
-            <Link onClick={() => window.open('https://link.remote.it/licensing/plans')}>Learn more</Link>
-          </Typography>
-        )}
-      </Box>
-    </Container>
+          {planUpgrade && (
+            <Typography variant="body2" align="center" color="textSecondary">
+              Plan upgrade required to view logs past 90 days <br />
+              <Link onClick={() => window.open('https://link.remote.it/licensing/plans')}>Learn more</Link>
+            </Typography>
+          )}
+        </Box>
+      </Container>
+    </DeviceHeaderMenu>
   )
 }
 
@@ -150,9 +141,6 @@ export function EventCell({ item, device, user }: { item: IEvent; device: IDevic
 }
 
 const useStyles = makeStyles({
-  header: {
-    paddingTop: 0,
-  },
   textField: {
     display: 'block',
     marginLeft: spacing.sm,

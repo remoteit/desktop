@@ -10,7 +10,10 @@ const jssTheme: ThemeOptions = {
   },
   typography: { fontFamily: 'Roboto, san-serif' },
   overrides: {
-    MuiDivider: { root: { backgroundColor: colors.grayLighter } },
+    MuiDivider: {
+      root: { backgroundColor: colors.grayLighter },
+      inset: { marginRight: spacing.md, marginLeft: spacing.md },
+    },
     MuiFormHelperText: { root: { fontSize: 10 } },
     MuiButton: {
       root: {
@@ -226,8 +229,8 @@ const jssTheme: ThemeOptions = {
     MuiTypography: {
       gutterBottom: { marginBottom: spacing.md },
       h1: {
-        fontSize: fontSizes.lg,
-        fontWeight: 400,
+        fontSize: fontSizes.xl,
+        fontWeight: 100,
         color: colors.grayDarkest,
         letterSpacing: -0.2,
       },
