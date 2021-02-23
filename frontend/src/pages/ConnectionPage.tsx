@@ -7,7 +7,7 @@ import { NameSetting } from '../components/NameSetting'
 import { ServiceName } from '../components/ServiceName'
 import { HostSetting } from '../components/HostSetting'
 import { ProxySetting } from '../components/ProxySetting'
-import { selectService } from '../models/devices'
+import { selectById } from '../models/devices'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceConnected } from '../components/ServiceConnected'
 import { AutoStartSetting } from '../components/AutoStartSetting'
@@ -41,7 +41,7 @@ export const ConnectionPage: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
   const { connection, service, device, thisDevice, fetching, access } = useSelector((state: ApplicationState) => {
     const connection = state.backend.connections.find(c => c.id === serviceID)
-    const [service, device] = selectService(state, serviceID)
+    const [service, device] = selectById(state, serviceID)
     return {
       service,
       device,

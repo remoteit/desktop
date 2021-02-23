@@ -21,7 +21,7 @@ export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
   }
 
   return (
-    <Tooltip title="Refresh device">
+    <Tooltip title={device ? 'Refresh device' : 'Refresh data'}>
       <div>
         <IconButton onClick={onClick} disabled={fetching}>
           <Icon name="sync" size="sm" type="regular" spin={fetching} />

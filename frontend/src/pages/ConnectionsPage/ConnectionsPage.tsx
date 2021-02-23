@@ -3,7 +3,7 @@ import { Body } from '../../components/Body'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, Typography, List, Link } from '@material-ui/core'
 import { selectConnections } from '../../helpers/connectionHelper'
-import { selectService } from '../../models/devices'
+import { selectById } from '../../models/devices'
 import { ApplicationState } from '../../store'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { ClearButton } from '../../buttons/ClearButton'
@@ -34,7 +34,7 @@ export const ConnectionsPage: React.FC = () => {
     }
 
     for (const connection of allConnections) {
-      const [service, device] = selectService(state, connection.id)
+      const [service, device] = selectById(state, connection.id)
       const session = {
         id: state.backend.device.uid,
         timestamp: new Date(connection.startTime || 0),

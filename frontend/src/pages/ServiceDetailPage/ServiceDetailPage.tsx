@@ -1,30 +1,25 @@
 import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
-import { useParams } from 'react-router-dom'
+import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ApplicationState } from '../../store'
-import { Container } from '../../components/Container'
-import { Columns } from '../../components/Columns'
-import { Title } from '../../components/Title'
+import { useSelector } from 'react-redux'
 import { DataDisplay } from '../../components/DataDisplay'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { findService } from '../../models/devices'
-import { getDevices } from '../../models/accounts'
-import { Icon } from '../../components/Icon'
+import { useParams } from 'react-router-dom'
+import { Columns } from '../../components/Columns'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const ServiceDetailPage = () => {
-  const { serviceID = '' } = useParams<{ serviceID: string }>()
+export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
+  const { serviceID } = useParams<{ serviceID: string }>()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
-  const [service, device] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
-
-  let data: IDataDisplay[] = []
+  const service = device?.services.find(s => s.id === serviceID)
+  const target = targets.find(t => t.uid === serviceID)
 
   useEffect(() => {
     analyticsHelper.page('ServiceDetailPage')
   }, [])
 
   if (!service || !device) return null
+
+  let data: IDataDisplay[] = []
 
   if (connection && connection.connected) {
     data = data.concat([
@@ -45,23 +40,11 @@ export const ServiceDetailPage = () => {
     { label: 'Service ID', value: service.id },
   ])
 
-  if (!device || !service) return null
-
   return (
-    <Container
-      header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="info-circle" size="lg" />
-            <Title inline>Service details</Title>
-          </Typography>
-        </>
-      }
-    >
+    <ServiceHeaderMenu device={device} service={service} target={target}>
       <Columns count={1} inset>
         <DataDisplay data={data} />
       </Columns>
-    </Container>
+    </ServiceHeaderMenu>
   )
 }

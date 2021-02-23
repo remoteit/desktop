@@ -4,6 +4,8 @@ import { ApplicationState } from '../../store'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { useSelector } from 'react-redux'
+import { Breadcrumbs } from '../Breadcrumbs'
+import { isRemoteUI } from '../../helpers/uiHelper'
 import { useHistory } from 'react-router-dom'
 import { isElectron } from '../../services/Browser'
 import { Typography } from '@material-ui/core'
@@ -14,11 +16,11 @@ export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) =
   const [hasFocus, setHasFocus] = useState<boolean>(true)
 
   const history = useHistory()
-  const color = hasFocus ? 'grayDark' : 'grayLight'
 
-  const css = useStyles(styles.colors[color], menuOverlaps && isElectron())()
-  const { device } = useSelector((state: ApplicationState) => ({
+  const css = useStyles(hasFocus, menuOverlaps && isElectron())()
+  const { device, remoteUI } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+    remoteUI: isRemoteUI(state),
   }))
 
   const focus = () => setHasFocus(true)
@@ -35,20 +37,21 @@ export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) =
 
   return (
     <div className={css.header}>
-      <Typography variant="body2">
+      <Typography variant="body2" color="textSecondary">
         <IconButton onClick={() => history.goBack()}>
-          <Icon name="chevron-left" size="md" type="regular" color={color} fixedWidth />
+          <Icon name="chevron-left" size="md" type="regular" color="grayDark" fixedWidth />
         </IconButton>
         <IconButton onClick={() => history.goForward()}>
-          <Icon name="chevron-right" size="md" type="regular" color={color} fixedWidth />
+          <Icon name="chevron-right" size="md" type="regular" color="grayDark" fixedWidth />
         </IconButton>
         {device ? attributeName(device) : 'remote.it'}
+        {remoteUI || <Breadcrumbs />}
       </Typography>
     </div>
   )
 }
 
-const useStyles = (color, moveMenu) =>
+const useStyles = (hasFocus, moveMenu) =>
   makeStyles({
     header: {
       padding: `${styles.spacing.xs}px ${styles.spacing.md}px`,
@@ -59,10 +62,8 @@ const useStyles = (color, moveMenu) =>
       minHeight: 40,
       position: 'relative',
       width: '100%',
+      opacity: hasFocus ? 1 : 0.2,
       '-webkit-user-select': 'none',
       '-webkit-app-region': 'drag',
-      '& .MuiTypography-root': {
-        color,
-      },
     },
   })
