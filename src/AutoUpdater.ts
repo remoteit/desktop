@@ -1,8 +1,11 @@
 import electron from 'electron'
-import { EventBus, Logger, EVENTS, preferences } from 'remoteit-headless'
+import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
+import axios from 'axios'
+import { ENVIRONMENT } from 'remoteit-headless/build/constants'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
+export const RELEASES = `https://api.github.com/repos/remoteit/desktop/releases/latest`
 
 export default class AppUpdater {
   nextCheck: number = 0
@@ -32,8 +35,21 @@ export default class AppUpdater {
     this.autoUpdate = !!preferences.get().autoUpdate
   }
 
-  check(force?: boolean) {
+  async check(force?: boolean) {
     try {
+      if (process.platform !== 'win32' && process.platform !== 'darwin' && ENVIRONMENT !== 'development') {
+        Logger.info('ENVIRONMENT', { ENVIRONMENT })
+        try {
+          const response = await axios.get(RELEASES)
+          Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })
+          const latest = response.data.tag_name
+          if (preferences.get().version !== latest) {
+            EventBus.emit(EVENTS.downloaded, latest.substring(1))
+          }
+        } catch (error) {
+          Logger.error('LATEST VERSION ERROR', { error })
+        }
+      }
       if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
         autoUpdater.checkForUpdatesAndNotify()
         this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL

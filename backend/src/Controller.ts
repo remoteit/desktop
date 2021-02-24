@@ -181,9 +181,9 @@ class Controller {
     app.quit()
   }
 
-  restart = () => {
+  restart = (update?: string) => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
-    app.restart()
+    app.restart(update)
   }
 
   signOut = async () => {

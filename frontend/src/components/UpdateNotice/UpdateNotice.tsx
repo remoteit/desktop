@@ -26,7 +26,7 @@ export const UpdateNotice: React.FC = () => {
           size="small"
           onClick={() => {
             analyticsHelper.track('update')
-            emit('restart')
+            emit('restart', update)
           }}
         >
           Restart
