@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Divider, Box } from '@material-ui/core'
+import { Box } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
@@ -8,9 +8,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { SignInPage } from '../../pages/SignInPage'
 import { FooterNav } from '../FooterNav'
 import { Sidebar } from '../Sidebar'
-import { Header } from '../Header'
 import { Router } from '../../routers/Router'
-import { Body } from '../Body'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
@@ -89,16 +87,16 @@ export const App: React.FC = () => {
         </Box>
       ) : (
         <>
-          <Body>
+          <Box className={css.columns}>
             <Router />
-          </Body>
+          </Box>
           <FooterNav />
         </>
       )}
     </Page>
   )
 }
-
+// neuter
 const useStyles = makeStyles({
   main: {
     flexGrow: 1,

@@ -34,6 +34,8 @@ type UIState = {
   launchLoading: boolean
   launchPath: string
   requireInstall: string
+  devicesPanelWidth: number
+  connectionsPanelWidth: number
 }
 
 const state: UIState = {
@@ -67,6 +69,8 @@ const state: UIState = {
   launchLoading: false,
   launchPath: '',
   requireInstall: '',
+  devicesPanelWidth: 480,
+  connectionsPanelWidth: 660,
 }
 
 export default createModel<RootModel>()({

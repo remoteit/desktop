@@ -80,7 +80,7 @@ const useStyles = makeStyles({
       padding: `${spacing.xxs}px ${spacing.xs}px`,
       marginLeft: spacing.xs,
       marginRight: spacing.xs,
-      letterSpacing: 2,
+      // letterSpacing: 2,
     },
   },
 })

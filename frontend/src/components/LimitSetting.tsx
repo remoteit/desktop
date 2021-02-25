@@ -40,6 +40,10 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
         </Typography>
       )
       break
+    case 'log-limit':
+      Limit = (
+        <Typography variant="caption">Log history is available for {evaluationDays(limit.value)} days.</Typography>
+      )
   }
 
   return Limit ? Limit : null
