@@ -10,7 +10,7 @@ type Props = {
   resize?: 'devices' | 'connections'
 }
 
-const MIN_WIDTH = 400
+const MIN_WIDTH = 300
 
 export const Panel: React.FC<Props> = ({ primary, resize, children }) => {
   const { ui } = useDispatch<Dispatch>()
@@ -23,7 +23,7 @@ export const Panel: React.FC<Props> = ({ primary, resize, children }) => {
 
   const onMove = (event: MouseEvent) => {
     handleRef.current += event.movementX
-    if (handleRef.current > MIN_WIDTH && handleRef.current < window.document.body.offsetWidth - 800) {
+    if (handleRef.current > MIN_WIDTH && handleRef.current < window.document.body.offsetWidth - 400) {
       setWidth(handleRef.current)
     }
   }
@@ -62,11 +62,12 @@ export const Panel: React.FC<Props> = ({ primary, resize, children }) => {
 const useStyles = (primary, resize) =>
   makeStyles({
     panel: {
+      width: '50%',
       flexGrow: resize ? undefined : 1,
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      marginTop: primary ? undefined : spacing.xl,
+      paddingTop: primary ? undefined : spacing.xl,
     },
     handle: {
       height: '100%',

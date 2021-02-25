@@ -247,7 +247,6 @@ const jssTheme: ThemeOptions = {
       },
       subtitle1: {
         fontSize: fontSizes.xxs,
-        // fontFamily: 'Roboto Mono',
         color: colors.grayDarker,
         display: 'flex',
         alignItems: 'flex-end',

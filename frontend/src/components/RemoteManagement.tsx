@@ -45,11 +45,11 @@ export const RemoteManagement: React.FC = () => {
   return (
     <Box className={css.container}>
       <section>
-        <Typography variant="h2">
+        <Typography variant="h2" gutterBottom>
           You are managing <br />a remote device
         </Typography>
         {!remoteUI && name && (
-          <Typography variant="body2">
+          <Typography variant="body2" color="textSecondary">
             Any connections you create will be to <em>{name}</em>, not your local machine.
           </Typography>
         )}
@@ -57,7 +57,7 @@ export const RemoteManagement: React.FC = () => {
           <img src={graphic} alt="From remote network graphic" />
           <List>
             {diagram.map((i: NetworkType, key) => (
-              <ListItem key={key}>
+              <ListItem key={key} disableGutters>
                 <ListItemText primary={i.primary} secondary={i.secondary} />
               </ListItem>
             ))}
@@ -70,11 +70,7 @@ export const RemoteManagement: React.FC = () => {
 
 const useStyles = makeStyles({
   container: {
-    '& svg': { marginBottom: spacing.lg },
-    '& hr': { opacity: 0.3 },
-    '& h2': { fontSize: fontSizes.lg },
-    '& section > p': { marginTop: spacing.lg },
-    '& section > div': { marginBottom: spacing.xl },
+    padding: spacing.sm,
   },
   graphic: {
     display: 'flex',
@@ -86,11 +82,8 @@ const useStyles = makeStyles({
       flexDirection: 'column',
       justifyContent: 'space-between',
     },
-    '& li': { padding: `0 0 0 ${spacing.md}px` },
     '& li > div': { justifyContent: 'left', minWidth: 45 },
-    '& li > div span': { fontSize: fontSizes.base },
+    '& li > div span': { fontSize: fontSizes.base, color: colors.grayDarker },
     '& li > div + div': { flexGrow: 1 },
-    '& path': { fill: colors.grayDark, color: colors.grayDark },
-    '& line': { stroke: colors.grayDark },
   },
 })
