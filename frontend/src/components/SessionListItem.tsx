@@ -32,15 +32,15 @@ export const SessionListItem: React.FC<Props> = ({ session, other, recent }) => 
         classes={{ primary: css.title }}
         primary={
           <>
-            <span>
+            <span className={css.from}>
               <Title>
                 {session.user?.email}
                 {/* {session.id} */}
               </Title>
-              <Typography variant="caption" display="block">
+              {/* <Typography variant="caption" display="block">
                 <LocationPin session={session} />
                 <Duration startTime={session.timestamp?.getTime()} ago />
-              </Typography>
+              </Typography> */}
             </span>
             <Icon name="arrow-right" color={recent ? 'gray' : 'primary'} size="md" type="regular" fixedWidth />
             <Title>
@@ -60,7 +60,8 @@ const useStyles = makeStyles({
   title: {
     display: 'flex',
     alignItems: 'flex-start',
-    '& > span': { width: '50%', overflow: 'hidden' },
+    '& > span': { overflow: 'hidden' },
     '& > svg': { marginTop: spacing.xs, marginRight: spacing.lg, marginLeft: spacing.lg },
   },
+  from: { width: '30%' },
 })

@@ -46,7 +46,7 @@ export const DeviceRouter: React.FC = () => {
 
   return (
     <>
-      <Panel primary resize>
+      <Panel primary resize="devices">
         <DevicePage targetDevice={targetDevice} targets={targets} device={device} />
       </Panel>
       <Panel>

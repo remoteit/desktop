@@ -56,7 +56,7 @@ export const Router: React.FC = () => {
 
       {/* Connections */}
       <Route path="/connections">
-        <Panel primary resize>
+        <Panel primary resize="connections">
           <ConnectionsPage />
         </Panel>
         <Panel>
