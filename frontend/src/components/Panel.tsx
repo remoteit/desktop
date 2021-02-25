@@ -19,7 +19,7 @@ export const Panel: React.FC<Props> = ({ primary, resize, children }) => {
   const panelRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState<number>(handleRef.current)
   const [grab, setGrab] = useState<boolean>(false)
-  const css = useStyles(primary)()
+  const css = useStyles(primary, resize)()
 
   const onMove = (event: MouseEvent) => {
     handleRef.current += event.movementX
@@ -59,10 +59,10 @@ export const Panel: React.FC<Props> = ({ primary, resize, children }) => {
   )
 }
 
-const useStyles = primary =>
+const useStyles = (primary, resize) =>
   makeStyles({
     panel: {
-      flexGrow: primary ? undefined : 1,
+      flexGrow: resize ? undefined : 1,
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
