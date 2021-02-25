@@ -170,7 +170,7 @@ class CloudController {
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
-            name: connectionName(t, t.device),
+            name: connectionName(t.device),
             owner: t.owner,
             typeID: t.application,
             platform: t.platform,
