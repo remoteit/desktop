@@ -18,9 +18,8 @@ export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) =
   const history = useHistory()
 
   const css = useStyles(hasFocus, menuOverlaps && isElectron())()
-  const { device, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { device } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-    remoteUI: isRemoteUI(state),
   }))
 
   const focus = () => setHasFocus(true)
@@ -37,15 +36,15 @@ export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) =
 
   return (
     <div className={css.header}>
+      <IconButton onClick={() => history.goBack()}>
+        <Icon name="chevron-left" size="lg" color="grayDark" />
+      </IconButton>
+      <IconButton onClick={() => history.goForward()}>
+        <Icon name="chevron-right" size="lg" color="grayDark" />
+      </IconButton>
       <Typography variant="body2" color="textSecondary">
-        <IconButton onClick={() => history.goBack()}>
-          <Icon name="chevron-left" size="md" type="regular" color="grayDark" fixedWidth />
-        </IconButton>
-        <IconButton onClick={() => history.goForward()}>
-          <Icon name="chevron-right" size="md" type="regular" color="grayDark" fixedWidth />
-        </IconButton>
         {device ? attributeName(device) : 'remote.it'}
-        {remoteUI || <Breadcrumbs />}
+        {/*  <Breadcrumbs /> */}
       </Typography>
     </div>
   )
@@ -65,5 +64,6 @@ const useStyles = (hasFocus, moveMenu) =>
       opacity: hasFocus ? 1 : 0.2,
       '-webkit-user-select': 'none',
       '-webkit-app-region': 'drag',
+      '& .MuiTypography-root': { marginLeft: styles.spacing.md },
     },
   })

@@ -9,7 +9,7 @@ export const fontSizes: { [key in FontSize]: number } = {
   base: 14,
   md: 16,
   lg: 19,
-  xl: 24,
+  xl: 28,
   xxl: 36,
   xxxl: 48,
   max: 64,

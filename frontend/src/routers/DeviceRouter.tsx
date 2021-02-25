@@ -16,9 +16,9 @@ import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
 import { LogPage } from '../pages/LogPage'
 import { getLinks } from '../helpers/routeHelper'
-import { Panel } from '../components/Panel'
+import { DynamicPanel } from '../components/DynamicPanel'
 
-export const DeviceRouter: React.FC = () => {
+export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
   const { device, targetDevice, targets, links } = useSelector((state: ApplicationState) => ({
     device: selectDevice(state, deviceID),
@@ -45,11 +45,9 @@ export const DeviceRouter: React.FC = () => {
   // if (!device || fetching) return <LoadingMessage message="Fetching data..." />
 
   return (
-    <>
-      <Panel primary resize="devices">
-        <DevicePage targetDevice={targetDevice} targets={targets} device={device} />
-      </Panel>
-      <Panel>
+    <DynamicPanel
+      primary={<DevicePage targetDevice={targetDevice} targets={targets} device={device} />}
+      secondary={
         <Switch>
           <Route path={links.scan}>
             <NetworkPage />
@@ -96,7 +94,9 @@ export const DeviceRouter: React.FC = () => {
             <DeviceDetailPage device={device} />
           </Route>
         </Switch>
-      </Panel>
-    </>
+      }
+      resize="devices"
+      single={singlePanel}
+    />
   )
 }

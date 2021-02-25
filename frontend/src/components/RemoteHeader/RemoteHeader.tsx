@@ -70,7 +70,7 @@ const useStyles = makeStyles({
     bottom: spacing.sm,
     borderRadius: spacing.sm,
   },
-  default: { backgroundColor: colors.primary, padding: spacing.xs },
+  default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
   remote: {
     color: colors.white,
     textAlign: 'center',

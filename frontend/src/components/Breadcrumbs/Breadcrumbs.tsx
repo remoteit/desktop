@@ -68,7 +68,7 @@ export const Breadcrumbs: React.FC = () => {
 const useStyles = makeStyles({
   header: {
     marginLeft: spacing.md,
-    marginBottom: -spacing.xs,
+    marginBottom: spacing.xs,
     color: colors.grayDark,
     position: 'relative',
     zIndex: 2,

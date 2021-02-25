@@ -27,7 +27,7 @@ export const App: React.FC = () => {
   const [pageWidth, setPageWidth] = useState<number>(window.innerWidth)
 
   const updateWidth = () => setPageWidth(window.innerWidth)
-  const largeWidth = pageWidth > 1000
+  const singlePanel = pageWidth < 1000
 
   useEffect(() => {
     window.addEventListener('resize', updateWidth)
@@ -80,18 +80,18 @@ export const App: React.FC = () => {
 
   return (
     <Page>
-      {largeWidth ? (
+      {singlePanel ? (
+        <>
+          <Box className={css.columns}>
+            <Router singlePanel />
+          </Box>
+          <FooterNav />
+        </>
+      ) : (
         <Box className={css.columns}>
           <Sidebar />
           <Router />
         </Box>
-      ) : (
-        <>
-          <Box className={css.columns}>
-            <Router />
-          </Box>
-          <FooterNav />
-        </>
       )}
     </Page>
   )

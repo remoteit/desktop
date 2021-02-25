@@ -14,11 +14,12 @@ import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
 import { AccountMembershipPage } from '../pages/AccountMembershipPage'
+import { DynamicPanel } from '../components/DynamicPanel'
 import { ReportsPage } from '../pages/ReportsPage'
 import { getLinks } from '../helpers/routeHelper'
 import { Panel } from '../components/Panel'
 
-export const Router: React.FC = () => {
+export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
   const { redirect, targetDevice, registered, os, links } = useSelector((state: ApplicationState) => ({
@@ -51,23 +52,30 @@ export const Router: React.FC = () => {
 
       {/* Device */}
       <Route path="/devices/:deviceID/:serviceID?">
-        <DeviceRouter />
+        <DeviceRouter singlePanel={singlePanel} />
       </Route>
 
       {/* Connections */}
+      <Route path="/connections/:serviceID">
+        <DynamicPanel
+          primary={<ConnectionsPage />}
+          secondary={
+            <Switch>
+              <Route path="/connections/:serviceID/lan">
+                <LanSharePage />
+              </Route>
+              <Route path="/connections/:serviceID">
+                <ConnectionPage />
+              </Route>
+            </Switch>
+          }
+          resize="connections"
+          single={singlePanel}
+        />
+      </Route>
       <Route path="/connections">
-        <Panel primary resize="connections">
-          <ConnectionsPage />
-        </Panel>
         <Panel>
-          <Switch>
-            <Route path="/connections/:serviceID/lan">
-              <LanSharePage />
-            </Route>
-            <Route path="/connections/:serviceID">
-              <ConnectionPage />
-            </Route>
-          </Switch>
+          <ConnectionsPage />
         </Panel>
       </Route>
 
@@ -76,7 +84,7 @@ export const Router: React.FC = () => {
         {registered ? (
           <Redirect to={`/configure/${targetDevice.uid}`} />
         ) : (
-          <Panel primary>
+          <Panel>
             <SetupDevice os={os} />
           </Panel>
         )}
@@ -84,55 +92,53 @@ export const Router: React.FC = () => {
 
       {/* Devices */}
       <Route path="/devices/setup">
-        <Panel primary>
-          {registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}
-        </Panel>
+        <Panel>{registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}</Panel>
       </Route>
 
       <Route path="/devices/membership">
-        <Panel primary>
+        <Panel>
           <AccountMembershipPage />
         </Panel>
       </Route>
 
       <Route path={links.waiting}>
-        <Panel primary>
+        <Panel>
           <SetupWaiting os={os} targetDevice={targetDevice} />
         </Panel>
       </Route>
 
       <Route path="/devices">
-        <Panel primary>
+        <Panel>
           <DevicesPage />
         </Panel>
       </Route>
 
       <Route path={['/settings/membership/share', '/settings/access/share']}>
-        <Panel primary>
+        <Panel>
           <AccountSharePage />
         </Panel>
       </Route>
 
       <Route path="/settings/access">
-        <Panel primary>
+        <Panel>
           <AccountAccessPage />
         </Panel>
       </Route>
 
       <Route path="/settings/reports">
-        <Panel primary>
+        <Panel>
           <ReportsPage />
         </Panel>
       </Route>
 
       <Route path="/settings">
-        <Panel primary>
+        <Panel>
           <SettingsPage />
         </Panel>
       </Route>
 
       <Route path="/announcements">
-        <Panel primary>
+        <Panel>
           <AnnouncementsPage />
         </Panel>
       </Route>
