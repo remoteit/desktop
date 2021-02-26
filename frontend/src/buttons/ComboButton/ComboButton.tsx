@@ -9,15 +9,16 @@ type Props = {
   connection?: IConnection
   service?: IService
   className?: string
+  size?: 'icon' | 'medium' | 'small'
 }
 
-export const ComboButton: React.FC<Props> = ({ connection, service, className }) => {
+export const ComboButton: React.FC<Props> = ({ connection, service, className, size = 'small' }) => {
   const css = useStyles()
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
-      <ConnectButton connection={connection} service={service} size="small" />
-      <DisconnectButton connection={connection} service={service} size="small" />
-      <OfflineButton connection={connection} service={service} />
+      <ConnectButton connection={connection} service={service} size={size} />
+      <DisconnectButton connection={connection} service={service} size={size} />
+      <OfflineButton connection={connection} service={service} size={size} />
     </div>
   )
 }

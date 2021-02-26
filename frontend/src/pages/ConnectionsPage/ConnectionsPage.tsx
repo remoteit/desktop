@@ -77,8 +77,8 @@ export const ConnectionsPage: React.FC = () => {
 
   return (
     <List>
-      <SessionsList title="This device" sessions={local} />
-      <SessionsList title="Others" sessions={other} other />
+      <SessionsList title="Connected" sessions={local} />
+      <SessionsList title="From Others" sessions={other} other />
       <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
     </List>
   )

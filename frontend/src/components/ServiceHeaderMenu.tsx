@@ -7,16 +7,17 @@ import { ServiceName } from './ServiceName'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
-import { Typography, Divider, List } from '@material-ui/core'
+import { Typography, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { UnregisterServiceButton } from '../buttons/UnregisterServiceButton'
 import { DeleteServiceButton } from '../buttons/DeleteServiceButton'
-import { ConnectionStateIcon } from './ConnectionStateIcon'
+import { ComboButton } from '../buttons/ComboButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { Container } from './Container'
+import { Gutters } from './Gutters'
 
 export const ServiceHeaderMenu: React.FC<{ device?: IDevice; service?: IService; target?: ITarget }> = ({
   device,
@@ -59,6 +60,12 @@ export const ServiceHeaderMenu: React.FC<{ device?: IDevice; service?: IService;
             )}
           </Typography>
           <List>
+            <ListItemLocation
+              title="Service Details"
+              icon="info-circle"
+              pathname={`/devices/${device.id}/${serviceID}/details`}
+              dense
+            />
             {!device.shared && (
               <ListItemLocation
                 title="Edit Service"
@@ -68,18 +75,17 @@ export const ServiceHeaderMenu: React.FC<{ device?: IDevice; service?: IService;
               />
             )}
             <UsersSelect service={service} device={device} access={access} />
-            <ListItemLocation
-              title="Service Details"
-              icon="info-circle"
-              pathname={`/devices/${device.id}/${serviceID}/details`}
-              dense
-            />
           </List>
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
         </>
+      }
+      footer={
+        <Gutters>
+          <ComboButton connection={connection} service={service} size="medium" />
+        </Gutters>
       }
     >
       {children}

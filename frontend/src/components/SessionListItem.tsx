@@ -33,7 +33,7 @@ export const SessionListItem: React.FC<Props> = ({ session, other, recent }) => 
         primary={
           <>
             <span className={css.from}>
-              <Title>
+              <Title enabled={!recent}>
                 {session.user?.email}
                 {/* {session.id} */}
               </Title>
@@ -43,7 +43,7 @@ export const SessionListItem: React.FC<Props> = ({ session, other, recent }) => 
               </Typography> */}
             </span>
             <Icon name="arrow-right" color={recent ? 'gray' : 'primary'} size="md" type="regular" fixedWidth />
-            <Title>
+            <Title enabled={!recent}>
               {session.target.name}
               <sup>
                 <TargetPlatform id={session.target.platform} tooltip />

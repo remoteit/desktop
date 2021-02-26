@@ -25,8 +25,7 @@ import { ServiceName } from '../components/ServiceName'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { getLinks } from '../helpers/routeHelper'
 import { Title } from '../components/Title'
-import { Icon } from '../components/Icon'
-import { fontSizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -69,16 +68,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
     <Container
       header={
         <List>
-          <ListItemLocation
-            pathname={`/devices/${device.id}/details`}
-            selected={[
-              `/devices/${device.id}/details`,
-              `/devices/${device.id}/edit`,
-              `/devices/${device.id}/users`,
-              `/devices/${device.id}/logs`,
-            ]}
-            dense
-          >
+          <ListItemLocation pathname={`/devices/${device.id}/details`} dense>
             <ListItemIcon>
               <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" />
             </ListItemIcon>
@@ -110,9 +100,8 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         )}
         {device.services.map(s => (
           <ListItemLocation key={s.id} pathname={links.service.replace(':serviceID', s.id)} dense>
-            <ListItemIcon></ListItemIcon>
-            <ListItemText primary={s.name} secondary={host(s)} />
-            <ListItemSecondaryAction className={css.actions}>
+            <ListItemText className={css.service} primary={s.name} secondary={host(s)} />
+            <ListItemSecondaryAction>
               <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
             </ListItemSecondaryAction>
           </ListItemLocation>
@@ -123,5 +112,5 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
 }
 
 const useStyles = makeStyles({
-  actions: { right: 70 },
+  service: { marginLeft: spacing.sm },
 })

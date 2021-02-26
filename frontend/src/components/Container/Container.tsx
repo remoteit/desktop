@@ -31,7 +31,12 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
           {children}
         </Body>
       )}
-      {footer && <div>{footer}</div>}
+      {footer && (
+        <div className={css.footer}>
+          <Divider variant="inset" />
+          {footer}
+        </div>
+      )}
     </div>
   )
 }
@@ -68,5 +73,10 @@ const useStyles = makeStyles({
     backgroundColor: colors.white,
     position: 'relative',
     zIndex: 2,
+  },
+  footer: {
+    backgroundColor: colors.white,
+    position: 'relative',
+    zIndex: 3,
   },
 })

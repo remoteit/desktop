@@ -24,7 +24,7 @@ export const SessionsList: React.FC<Props> = ({ sessions, title, action, other, 
   return (
     <>
       <Typography variant="subtitle1">
-        <Title>{title}</Title>
+        <Title enabled={!recent}>{title}</Title>
         {action}
       </Typography>
       {sessions.map((s, i) => (
