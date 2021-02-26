@@ -22,6 +22,7 @@ export interface AuthState {
   signInError?: string
   authService?: AuthService
   user?: IUser
+  localUsername?: string
 }
 
 const state: AuthState = {
@@ -32,6 +33,7 @@ const state: AuthState = {
   signInError: undefined,
   user: undefined,
   authService: undefined,
+  localUsername: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -86,7 +88,7 @@ export default createModel<RootModel>()({
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
           console.error('SESSION ERROR', result.error)
-          ui.set({ errorMessage: result.error.message })       
+          ui.set({ errorMessage: result.error.message })
         }
       } catch (err) {
         console.log('check sign in error:')
@@ -95,6 +97,10 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
       if (cognitoUser?.username) {
+        if (cognitoUser?.attributes?.email) {
+          window.localStorage.setItem('username', cognitoUser?.attributes?.email)
+        }
+
         if (cognitoUser?.authProvider === 'Google') {
           window.localStorage.setItem('amplify-signin-with-hostedUI', 'true')
         }
@@ -102,6 +108,10 @@ export default createModel<RootModel>()({
         dispatch.auth.setInitialized()
         dispatch.auth.fetchUser()
       }
+    },
+    async getUsernameLocal() {
+      const localUsername = localStorage.getItem('username')
+      dispatch.auth.setUsername(localUsername || undefined)
     },
     async authenticated(_: void, rootState) {
       if (rootState.auth.authenticated) {
@@ -201,6 +211,10 @@ export default createModel<RootModel>()({
     },
     setAuthService(state: AuthState, authService: AuthService) {
       state.authService = authService
+      return state
+    },
+    setUsername(state: AuthState, username?: string) {
+      state.localUsername = username
       return state
     },
   },
