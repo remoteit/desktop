@@ -58,7 +58,10 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
       <div className={css.handle} onMouseDown={onDown}>
         <div className={grab ? 'active' : undefined} />
       </div>
-      <div className={classnames(css.panel, css.secondary)}>{secondary}</div>
+      <div className={classnames(css.panel, css.secondary)}>
+        <div className={css.header} />
+        {secondary}
+      </div>
     </>
   )
 }
@@ -72,7 +75,11 @@ const useStyles = makeStyles({
   secondary: {
     flexGrow: 1,
     flexShrink: 10,
-    paddingTop: spacing.xl,
+  },
+  header: {
+    height: spacing.xl,
+    '-webkit-user-select': 'none',
+    '-webkit-app-region': 'drag',
   },
   handle: {
     height: '100%',
