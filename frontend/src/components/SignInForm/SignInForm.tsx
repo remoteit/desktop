@@ -6,9 +6,13 @@ import { CognitoAuth } from '@remote.it/components'
 import theme from '../../styling/theme'
 
 export function SignInForm() {
-  const { signInError, authService } = useSelector((state: ApplicationState) => state.auth)
+  const { signInError, authService, localUsername } = useSelector((state: ApplicationState) => state.auth)
   const [successUser, setSuccessUser] = useState<CognitoUser>()
   const { auth } = useDispatch<Dispatch>()
+
+  useEffect(() => {
+    auth.getUsernameLocal()
+  }, [])
 
   useEffect(() => {
     if (successUser) auth.handleSignInSuccess(successUser)
@@ -21,6 +25,7 @@ export function SignInForm() {
       errorMessage={signInError}
       authService={authService}
       hideCaptcha={true}
+      inputEmail={localUsername}
     />
   )
 }
