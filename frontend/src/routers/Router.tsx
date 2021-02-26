@@ -51,7 +51,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       />
 
       {/* Device */}
-      <Route path="/devices/:deviceID/:serviceID?">
+      <Route path="/devices/:deviceID">
         <DeviceRouter singlePanel={singlePanel} />
       </Route>
 
@@ -71,6 +71,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           }
           resize="connections"
           single={singlePanel}
+          root="/connections"
         />
       </Route>
       <Route path="/connections">

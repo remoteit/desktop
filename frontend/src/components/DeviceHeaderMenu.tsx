@@ -47,7 +47,12 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
           <List>
             <ListItemLocation title="Edit Device" icon="pen" pathname={`/devices/${device.id}/edit`} dense />
             <UsersSelect device={device} access={access} />
-            <ListItemLocation title="Device Details" icon="info-circle" pathname={`/devices/${device.id}`} dense />
+            <ListItemLocation
+              title="Device Details"
+              icon="info-circle"
+              pathname={`/devices/${device.id}/details`}
+              dense
+            />
             <ListItemLocation title="Device Logs" icon="file-alt" pathname={`/devices/${device.id}/logs`} dense />
           </List>
         </>

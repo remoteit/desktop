@@ -69,6 +69,9 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Route path="/devices/:deviceID/logs">
             <DeviceLogPage device={device} />
           </Route>
+          <Route path="/devices/:deviceID/details">
+            <DeviceDetailPage device={device} />
+          </Route>
           <Route
             path={[
               '/devices/:deviceID/:serviceID/users/share',
@@ -97,6 +100,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       }
       resize="devices"
       single={singlePanel}
+      root="/devices/:deviceID"
     />
   )
 }

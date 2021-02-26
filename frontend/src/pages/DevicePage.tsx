@@ -15,7 +15,6 @@ import {
 } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../components/Container'
-// import { ListItemSetting } from '../../components/ListItemSetting'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
@@ -70,7 +69,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
     <Container
       header={
         <>
-          <ListItemLocation pathname={`/devices/${device.id}`} dense>
+          <ListItemLocation pathname={`/devices/${device.id}/details`} dense>
             <ListItemIcon>
               <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" />
             </ListItemIcon>
