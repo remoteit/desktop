@@ -1,17 +1,12 @@
 import React, { useEffect } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { selectById } from '../../models/devices'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { REGEX_LAST_PATH } from '../../shared/constants'
-import { Typography } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceForm } from '../../components/ServiceForm'
 import { getLinks } from '../../helpers/routeHelper'
-import { Title } from '../../components/Title'
-import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {

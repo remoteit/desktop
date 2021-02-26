@@ -5,6 +5,8 @@ import { useSelector } from 'react-redux'
 import { DataDisplay } from '../../components/DataDisplay'
 import { useParams } from 'react-router-dom'
 import { Columns } from '../../components/Columns'
+import { ComboButton } from '../../buttons/ComboButton'
+import { Gutters } from '../../components/Gutters'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
@@ -41,7 +43,16 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   ])
 
   return (
-    <ServiceHeaderMenu device={device} service={service} target={target}>
+    <ServiceHeaderMenu
+      device={device}
+      service={service}
+      target={target}
+      footer={
+        <Gutters>
+          <ComboButton connection={connection} service={service} size="medium" />
+        </Gutters>
+      }
+    >
       <Columns count={1} inset>
         <DataDisplay data={data} />
       </Columns>

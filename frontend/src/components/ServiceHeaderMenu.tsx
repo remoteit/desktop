@@ -11,20 +11,18 @@ import { Typography, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { UnregisterServiceButton } from '../buttons/UnregisterServiceButton'
 import { DeleteServiceButton } from '../buttons/DeleteServiceButton'
-import { ComboButton } from '../buttons/ComboButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { Container } from './Container'
-import { Gutters } from './Gutters'
 
-export const ServiceHeaderMenu: React.FC<{ device?: IDevice; service?: IService; target?: ITarget }> = ({
-  device,
-  service,
-  target,
-  children,
-}) => {
+export const ServiceHeaderMenu: React.FC<{
+  device?: IDevice
+  service?: IService
+  target?: ITarget
+  footer?: React.ReactElement
+}> = ({ device, service, target, footer, children }) => {
   const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
@@ -82,11 +80,7 @@ export const ServiceHeaderMenu: React.FC<{ device?: IDevice; service?: IService;
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
         </>
       }
-      footer={
-        <Gutters>
-          <ComboButton connection={connection} service={service} size="medium" />
-        </Gutters>
-      }
+      footer={footer}
     >
       {children}
     </Container>
