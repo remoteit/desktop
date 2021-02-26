@@ -68,8 +68,17 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
   return (
     <Container
       header={
-        <>
-          <ListItemLocation pathname={`/devices/${device.id}/details`} dense>
+        <List>
+          <ListItemLocation
+            pathname={`/devices/${device.id}/details`}
+            selected={[
+              `/devices/${device.id}/details`,
+              `/devices/${device.id}/edit`,
+              `/devices/${device.id}/users`,
+              `/devices/${device.id}/logs`,
+            ]}
+            dense
+          >
             <ListItemIcon>
               <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" />
             </ListItemIcon>
@@ -81,7 +90,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
               }
             />
           </ListItemLocation>
-        </>
+        </List>
       }
     >
       <Typography variant="subtitle1">

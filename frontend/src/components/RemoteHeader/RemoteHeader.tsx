@@ -61,7 +61,7 @@ const useStyles = makeStyles({
     flexFlow: 'column',
     backgroundColor: colors.white,
     margin: 'auto',
-    '-webkit-app-region': 'drag',
+    // '-webkit-app-region': 'drag',
   },
   inset: {
     top: spacing.xl,

@@ -20,7 +20,7 @@ export const DeleteServiceButton: React.FC<Props> = ({ device, service }) => {
     userId: state.auth.user?.id,
     deleting: state.ui.setupDeletingService === service?.id,
   }))
-  console.log('SERVICE DELTE BUGGON', device?.accountId)
+
   if (!service || device?.accountId !== userId) return null
 
   if (deleting) return <CircularProgress className={css.loading} size={styles.fontSizes.md} />

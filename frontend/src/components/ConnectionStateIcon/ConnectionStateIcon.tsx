@@ -33,7 +33,7 @@ export function ConnectionStateIcon({
   let showQuality = device?.quality === 'POOR' || device?.quality === 'MODERATE'
   let element: any
   let opacity: number = 1
-  let title: any = 'Unknown'
+  let title: any = 'Online'
 
   if (connection) {
     if (connection.enabled) {
