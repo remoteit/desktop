@@ -197,7 +197,6 @@ const jssTheme: ThemeOptions = {
         letterSpacing: 0.5,
         fontWeight: 500,
         textTransform: 'uppercase',
-        // pointerEvents: 'auto',
       },
     },
     MuiFilledInput: {
@@ -208,6 +207,9 @@ const jssTheme: ThemeOptions = {
         '&.Mui-disabled': { backgroundColor: colors.grayLightest },
         '&:hover': { backgroundColor: colors.primaryHighlight },
         '&:focused': { backgroundColor: colors.primaryHighlight },
+      },
+      underline: {
+        '&:before, &:after': { display: 'none' },
       },
     },
     MuiFormControl: {

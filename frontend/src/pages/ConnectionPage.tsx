@@ -25,7 +25,6 @@ import { AddUserButton } from '../buttons/AddUserButton'
 import { ConnectButton } from '../buttons/ConnectButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { ForgetButton } from '../buttons/ForgetButton'
-import { UsersSelect } from '../components/UsersSelect'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { EditButton } from '../buttons/EditButton'
 import { CopyButton } from '../buttons/CopyButton'
@@ -51,7 +50,7 @@ export const ConnectionPage: React.FC = () => {
       access: state.accounts.access,
     }
   })
-
+  console.log('SERVICE ID FOR CONNECTION PAGE', serviceID)
   useEffect(() => {
     analyticsHelper.page('ServicePage')
     if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
@@ -67,12 +66,6 @@ export const ConnectionPage: React.FC = () => {
           <Typography variant="h1">
             <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
             <ServiceName connection={connection} service={service} inline />
-            <EditButton device={device} service={service} connection={connection} />
-            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-            <AddUserButton device={device} />
-            <ForgetButton connection={connection} />
-            <LaunchButton connection={connection} service={service} />
-            <CopyButton connection={connection} service={service} />
           </Typography>
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
@@ -81,6 +74,12 @@ export const ConnectionPage: React.FC = () => {
         </>
       }
     >
+      <EditButton device={device} service={service} connection={connection} />
+      <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
+      <AddUserButton device={device} />
+      <ForgetButton connection={connection} />
+      <LaunchButton connection={connection} service={service} />
+      <CopyButton connection={connection} service={service} />
       <ServiceConnected connection={connection} service={service} />
       <ConnectButton
         connection={connection}

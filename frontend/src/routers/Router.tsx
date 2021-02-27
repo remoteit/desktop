@@ -56,7 +56,12 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       </Route>
 
       {/* Connections */}
-      <Route path="/connections/:serviceID">
+      <Route path={['/connections', '/connections/new']} exact>
+        <Panel>
+          <ConnectionsPage />
+        </Panel>
+      </Route>
+      <Route path={['/connections/new/:serviceID', '/connections/:serviceID']}>
         <DynamicPanel
           primary={<ConnectionsPage />}
           secondary={
@@ -64,7 +69,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               <Route path="/connections/:serviceID/lan">
                 <LanSharePage />
               </Route>
-              <Route path="/connections/:serviceID">
+              <Route path={['/connections/new/:serviceID', '/connections/:serviceID']}>
                 <ConnectionPage />
               </Route>
             </Switch>
@@ -73,11 +78,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           single={singlePanel}
           root="/connections"
         />
-      </Route>
-      <Route path="/connections">
-        <Panel>
-          <ConnectionsPage />
-        </Panel>
       </Route>
 
       {/* Configure */}

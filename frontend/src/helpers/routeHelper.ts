@@ -9,7 +9,7 @@ export function getLinks(state: ApplicationState, deviceID?: string) {
     edit: '/configure/:deviceID',
     add: '/configure/:deviceID/add',
     scan: '/configure/:deviceID/add/scan',
-    service: '/configure/:deviceID/:serviceID/details',
+    service: '/configure/:deviceID/:serviceID',
   }
   const fullUILinks: ILookup<string> = {
     home: '/devices',
@@ -18,7 +18,7 @@ export function getLinks(state: ApplicationState, deviceID?: string) {
     edit: '/devices/:deviceID',
     add: '/devices/:deviceID/add',
     scan: '/devices/:deviceID/add/scan',
-    service: '/devices/:deviceID/:serviceID/details',
+    service: '/devices/:deviceID/:serviceID',
   }
 
   let links = isRemoteUI(state) ? remoteUILinks : fullUILinks

@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import {
   Typography,
-  Divider,
   List,
   ListItem,
   ListItemIcon,
@@ -68,14 +67,23 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
     <Container
       header={
         <List>
-          <ListItemLocation pathname={`/devices/${device.id}/details`} dense>
+          <ListItemLocation
+            pathname={`/devices/${device.id}/details`}
+            selected={[
+              `/devices/${device.id}/details`,
+              `/devices/${device.id}/edit`,
+              `/devices/${device.id}/users`,
+              `/devices/${device.id}/logs`,
+            ]}
+            dense
+          >
             <ListItemIcon>
               <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" />
             </ListItemIcon>
             <ListItemText
               primary={
                 <Typography variant="h2">
-                  <ServiceName device={device} connection={connected} inline />
+                  <ServiceName device={device} connection={connected} />
                 </Typography>
               }
             />
@@ -99,7 +107,12 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           </ListItem>
         )}
         {device.services.map(s => (
-          <ListItemLocation key={s.id} pathname={links.service.replace(':serviceID', s.id)} dense>
+          <ListItemLocation
+            key={s.id}
+            pathname={links.service.replace(':serviceID', s.id) + '/details'}
+            selected={links.service.replace(':serviceID', s.id)}
+            dense
+          >
             <ListItemText className={css.service} primary={s.name} secondary={host(s)} />
             <ListItemSecondaryAction>
               <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />

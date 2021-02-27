@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react'
 import { Body } from '../../components/Body'
-import { useHistory } from 'react-router-dom'
-import { makeStyles, Typography, List, Link } from '@material-ui/core'
+import { matchPath, useHistory, useLocation } from 'react-router-dom'
+import { makeStyles, Typography, Collapse, List, Link } from '@material-ui/core'
 import { selectConnections } from '../../helpers/connectionHelper'
-import { selectById } from '../../models/devices'
 import { ApplicationState } from '../../store'
-import { RefreshButton } from '../../buttons/RefreshButton'
-import { ClearButton } from '../../buttons/ClearButton'
+import { NewConnection } from '../../components/NewConnection'
 import { SessionsList } from '../../components/SessionsList'
+import { ClearButton } from '../../buttons/ClearButton'
 import { useSelector } from 'react-redux'
+import { selectById } from '../../models/devices'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
@@ -16,6 +16,7 @@ import styles from '../../styling'
 export const ConnectionsPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
+  const location = useLocation()
   const { local, other, recent } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
 
@@ -55,6 +56,8 @@ export const ConnectionsPage: React.FC = () => {
     return { local, other, recent }
   })
 
+  const showNew = matchPath(location.pathname, { path: '/connections/new' })
+
   useEffect(() => {
     heartbeat.beat()
     analyticsHelper.page('ConnectionsPage')
@@ -76,11 +79,14 @@ export const ConnectionsPage: React.FC = () => {
   }
 
   return (
-    <List>
+    <>
+      <Collapse in={!!showNew} timeout={800}>
+        <NewConnection />
+      </Collapse>
       <SessionsList title="Connected" sessions={local} />
       <SessionsList title="From Others" sessions={other} other />
       <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
-    </List>
+    </>
   )
 }
 

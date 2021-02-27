@@ -297,12 +297,12 @@ export const ServiceForm: React.FC<Props> = ({
 
 const useStyles = makeStyles({
   field: {
-    paddingLeft: 75,
+    paddingLeft: 60,
     paddingRight: spacing.xl,
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
   fieldSub: {
-    padding: `0 ${spacing.xl}px 0 75px`,
+    padding: `0 ${spacing.xl}px 0 60px`,
     '& .MuiFormControl-root': {
       minWidth: 300 - spacing.lg,
       display: 'block',

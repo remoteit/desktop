@@ -83,7 +83,7 @@ const useStyles = makeStyles({
   },
   handle: {
     height: '100%',
-    padding: `${0} ${spacing.xs}px`,
+    padding: `${0} ${spacing.xxs}px`,
     '-webkit-app-region': 'no-drag',
     '&:hover': {
       cursor: 'col-resize',

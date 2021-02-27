@@ -21,11 +21,13 @@ export function findLocalConnection(state: ApplicationState, id: string, session
   return state.backend.connections.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
 
-export function connectionName(service?: IService, device?: IDevice) {
-  if (!device) return attributeName(service)
-  if (!service) return attributeName(device)
-  const deviceName = `${attributeName(device)} - `
-  const serviceName = attributeName(service)
+type nameObj = { name: string }
+
+export function connectionName(service?: nameObj, device?: nameObj): string {
+  if (!device) return service?.name || ''
+  if (!service) return device?.name || ''
+  const deviceName = `${device.name} - `
+  const serviceName = service.name
   return deviceName + serviceName.replace(deviceName, '')
 }
 

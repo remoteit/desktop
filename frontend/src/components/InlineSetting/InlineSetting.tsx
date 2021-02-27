@@ -149,9 +149,12 @@ const useStyles = makeStyles({
   },
   action: {
     position: 'absolute',
+    display: 'flex',
+    minWidth: 60,
+    justifyContent: 'center',
     zIndex: 1,
     right: 'auto',
-    left: 40,
+    left: 20,
     marginTop: spacing.xs,
   },
 })

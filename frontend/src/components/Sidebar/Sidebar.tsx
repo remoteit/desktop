@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { SIDEBAR_WIDTH } from '../../shared/constants'
 import { makeStyles, Button, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
@@ -23,9 +24,11 @@ export const Sidebar: React.FC = () => {
         </span>
       </section>
       <section>
-        <Button className={css.button} variant="contained" onClick={console.log} color="primary" size="large" fullWidth>
-          New Connection
-        </Button>
+        <Link to="/connections/new">
+          <Button className={css.button} variant="contained" color="primary" size="large" fullWidth>
+            New Connection
+          </Button>
+        </Link>
       </section>
       <SidebarNav />
       <RemoteManagement />
