@@ -149,7 +149,10 @@ function getEventHandlers() {
     'signed-out': () => auth.signedOut(),
 
     // AutoUpdate
-    'update/downloaded': version => backend.set({ update: version }),
+    'update/downloaded': version => {
+      console.log('update/downloaded', { version })
+      backend.set({ update: version })
+    },
 
     // AutoUpdate
     'cli/error': error => {

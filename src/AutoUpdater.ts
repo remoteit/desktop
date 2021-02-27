@@ -3,6 +3,7 @@ import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-hea
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
 import { ENVIRONMENT } from 'remoteit-headless/build/constants'
+import semverCompare from 'semver/functions/compare'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 export const RELEASES = `https://api.github.com/repos/remoteit/desktop/releases/latest`
@@ -37,22 +38,26 @@ export default class AppUpdater {
 
   async check(force?: boolean) {
     try {
-      if (process.platform !== 'win32' && process.platform !== 'darwin' && ENVIRONMENT !== 'development') {
-        Logger.info('ENVIRONMENT', { ENVIRONMENT })
-        try {
-          const response = await axios.get(RELEASES)
-          Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })
-          const latest = response.data.tag_name
-          if (preferences.get().version !== latest) {
-            EventBus.emit(EVENTS.downloaded, latest.substring(1))
+      if (ENVIRONMENT !== 'development') {
+        if (environment.isLinux || environment.isHeadless) {
+          try {
+            const response = await axios.get(RELEASES)
+            Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })
+            const latest = response.data.tag_name
+            let desktopVersion = preferences.get().version
+            let current = desktopVersion && semverCompare(desktopVersion, latest) >= 0
+            if (!current) {
+              EventBus.emit(EVENTS.downloaded, latest.substring(1))
+            }
+          } catch (error) {
+            Logger.error('LATEST VERSION ERROR', { error })
           }
-        } catch (error) {
-          Logger.error('LATEST VERSION ERROR', { error })
+        } else if (environment.isWindows || environment.isMac) {
+          if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
+            autoUpdater.checkForUpdatesAndNotify()
+            this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
+          }
         }
-      }
-      if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
-        autoUpdater.checkForUpdatesAndNotify()
-        this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
       }
     } catch (error) {
       Logger.warn('AUTO UPDATE ERROR', { error })
