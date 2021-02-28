@@ -39,7 +39,7 @@ export default class AppUpdater {
   async check(force?: boolean) {
     try {
       if (ENVIRONMENT !== 'development') {
-        if (environment.isLinux || environment.isHeadless) {
+        if (environment.isLinux) {
           try {
             const response = await axios.get(RELEASES)
             Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })

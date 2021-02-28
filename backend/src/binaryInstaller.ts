@@ -9,6 +9,7 @@ import { existsSync, lstatSync } from 'fs'
 import Command from './Command'
 import Binary, { binaries, cliBinary } from './Binary'
 import Logger from './Logger'
+import checkupdateheadless from './CheckUpdateHeadless'
 
 export class BinaryInstaller {
   inProgress = false
@@ -38,6 +39,7 @@ export class BinaryInstaller {
     const serviceStopped = !(await cli.agentRunning())
     const desktopOutdated = !this.isDesktopCurrent()
     Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, desktopOutdated })
+    environment.isHeadless && checkupdateheadless.checkUpdate()
     return binariesOutdated || serviceStopped || desktopOutdated
   }
 

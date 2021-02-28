@@ -16,7 +16,6 @@ import Preferences from './preferences'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 import { IP_PRIVATE, IP_OPEN } from './sharedCopy/constants'
-import checkupdateheadless from './CheckUpdateHeadless'
 
 const d = debug('Server')
 
@@ -49,8 +48,6 @@ class Server {
       Logger.info('SEND SYSTEM INFO', { system })
       response.send(system)
     })
-
-    checkupdateheadless.checkUpdate()
   }
 
   async start() {
