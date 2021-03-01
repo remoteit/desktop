@@ -44,6 +44,10 @@ export function isWindows() {
   return platform.includes('win')
 }
 
+export function isHeadless() {
+  return !isElectron()
+}
+
 export function isDev() {
   return environment() === DEVELOPMENT
 }

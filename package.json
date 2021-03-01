@@ -30,6 +30,7 @@
     "watch-electron": "sleep 5 && onchange -i -k 'build/**/*' 'backend/build/**/*' -- npm run electron"
   },
   "dependencies": {
+    "axios": "^0.19.0",
     "electron-updater": "^4.3.5",
     "keyboardjs": "2.6.4",
     "remoteit-headless": "file:backend"
