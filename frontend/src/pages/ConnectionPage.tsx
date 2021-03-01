@@ -63,7 +63,7 @@ export const ConnectionPage: React.FC = () => {
     <Container
       header={
         <>
-          <Gutters inset>
+          <Gutters className={css.gutters} inset>
             <ComboButton
               connection={connection}
               service={service}
@@ -73,7 +73,6 @@ export const ConnectionPage: React.FC = () => {
             />
             <EditButton device={device} service={service} connection={connection} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-            <AddUserButton device={device} />
             <ForgetButton connection={connection} />
             <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />
@@ -113,4 +112,8 @@ const useStyles = makeStyles({
     justifyContent: 'center',
   },
   errorMessage: { padding: 0 },
+  gutters: {
+    display: 'flex',
+    margin: spacing.lg,
+  },
 })

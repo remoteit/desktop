@@ -73,6 +73,6 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
 const useStyles = makeStyles({
   gutters: {
     display: 'flex',
-    padding: spacing.lg,
+    margin: spacing.lg,
   },
 })
