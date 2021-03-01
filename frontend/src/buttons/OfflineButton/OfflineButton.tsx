@@ -5,7 +5,7 @@ import { Fade } from '@material-ui/core'
 type Props = {
   service?: IService
   connection?: IConnection
-  size?: 'icon' | 'medium' | 'small'
+  size?: 'icon' | 'medium' | 'small' | 'large'
 }
 
 export const OfflineButton: React.FC<Props> = ({ service, connection, size = 'small' }) => {
@@ -13,7 +13,7 @@ export const OfflineButton: React.FC<Props> = ({ service, connection, size = 'sm
   return (
     <Fade in={!hidden} timeout={600}>
       <div>
-        <DynamicButton title="Offline" disabled={true} size={size} icon="none" onClick={() => {}} />
+        <DynamicButton title="Offline" disabled={true} size={size} onClick={() => {}} />
       </div>
     </Fade>
   )

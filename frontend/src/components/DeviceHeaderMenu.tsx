@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
-import { ServiceName } from './ServiceName'
+import { Title } from './Title'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { ApplicationState, Dispatch } from '../store'
@@ -39,7 +39,8 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
         <>
           <Typography variant="h1">
             {/* <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" /> */}
-            <ServiceName device={device} connection={connected} />
+            <Title>{device.name || 'Unknown'}</Title>
+            {/* <ServiceName device={device} connection={connected} /> */}
             <RefreshButton device={device} />
             <AddUserButton device={device} />
             {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}

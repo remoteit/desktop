@@ -111,8 +111,8 @@ export default class ElectronApp {
     if (this.window) return
 
     this.window = new electron.BrowserWindow({
-      width: 1200,
-      height: 900,
+      width: 1280,
+      height: 800,
       minWidth: 525,
       minHeight: 325,
       icon: path.join(__dirname, 'images/icon-64x64.png'),

@@ -1,9 +1,9 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { SIDEBAR_WIDTH } from '../../shared/constants'
-import { makeStyles, Button, Box } from '@material-ui/core'
+import { makeStyles, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { RemoteManagement } from '../RemoteManagement'
+import { NewConnectionButton } from '../../buttons/NewConnectionButton'
 import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { colors, spacing } from '../../styling'
@@ -24,11 +24,7 @@ export const Sidebar: React.FC = () => {
         </span>
       </section>
       <section>
-        <Link to="/connections/new">
-          <Button className={css.button} variant="contained" color="primary" size="large" fullWidth>
-            New Connection
-          </Button>
-        </Link>
+        <NewConnectionButton />
       </section>
       <SidebarNav />
       <RemoteManagement />
@@ -51,5 +47,4 @@ const useStyles = addSpace =>
       display: 'flex',
       justifyContent: 'space-between',
     },
-    button: {},
   })

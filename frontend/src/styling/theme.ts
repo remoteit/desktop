@@ -202,12 +202,16 @@ const jssTheme: ThemeOptions = {
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,
-        borderRadius: radius,
+        borderTopLeftRadius: radius,
+        borderBottomLeftRadius: radius,
+        borderTopRightRadius: radius,
+        borderBottomRightRadius: radius,
         '&$focused': { backgroundColor: colors.primaryHighlight },
         '&.Mui-disabled': { backgroundColor: colors.grayLightest },
         '&:hover': { backgroundColor: colors.primaryHighlight },
         '&:focused': { backgroundColor: colors.primaryHighlight },
       },
+      input: { padding: '22px 12px 10px' },
       underline: {
         '&:before, &:after': { display: 'none' },
       },

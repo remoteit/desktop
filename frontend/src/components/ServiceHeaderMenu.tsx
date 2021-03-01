@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
+import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
 import { ServiceName } from './ServiceName'
@@ -48,7 +49,8 @@ export const ServiceHeaderMenu: React.FC<{
           <OutOfBand />
           <Typography variant="h1">
             {/* <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" /> */}
-            <ServiceName connection={connection} service={service} />
+            {/* <ServiceName connection={connection} service={service} /> */}
+            <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <AddUserButton device={device} />
             {thisDevice ? (

@@ -1,43 +1,13 @@
 import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
-import { replaceHost } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import {
-  Typography,
-  Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  CircularProgress,
-} from '@material-ui/core'
-import { useParams } from 'react-router-dom'
+import { List } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { Container } from '../components/Container'
-import { OutOfBand } from '../components/OutOfBand'
-import { getAllDevices } from '../models/accounts'
-import { Breadcrumbs } from '../components/Breadcrumbs'
-// import { ListItemSetting } from '../../components/ListItemSetting'
-import { AddServiceButton } from '../buttons/AddServiceButton'
-import { ListItemLocation } from '../components/ListItemLocation'
-import { ServiceMiniState } from '../components/ServiceMiniState'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
-import { AddFromNetwork } from '../components/AddFromNetwork'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
-import { UnregisterDeviceButton } from '../buttons/UnregisterDeviceButton'
-import { AdminPanelConnect } from '../components/AdminPanelConnect'
-import { LicensingNotice } from '../components/LicensingNotice'
-import { RefreshButton } from '../buttons/RefreshButton'
-import { AddUserButton } from '../buttons/AddUserButton'
-import { DeleteButton } from '../buttons/DeleteButton'
-import { UsersSelect } from '../components/UsersSelect'
-import { ServiceName } from '../components/ServiceName'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { getLinks } from '../helpers/routeHelper'
-import { Title } from '../components/Title'
-import { Icon } from '../components/Icon'
 import { fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 

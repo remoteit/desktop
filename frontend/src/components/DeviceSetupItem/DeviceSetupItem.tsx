@@ -60,7 +60,7 @@ export const DeviceSetupItem: React.FC = () => {
       )
     }
   }
-
+  console.log('DEVICE SETUP', links.setup)
   return (
     <ListItemLocation pathname={links.setup}>
       <ListItemIcon>

@@ -17,7 +17,10 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 export async function graphQLRequest(query: String, variables: ILookup<any> = {}) {
   const token = await getToken()
 
-  if (!token) throw new Error('Unable to retrieve data')
+  if (!token) {
+    console.warn('Unable to get token for graphQL request.')
+    return {}
+  }
 
   const request = {
     url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,

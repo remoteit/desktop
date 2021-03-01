@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { useParams, Link } from 'react-router-dom'
+import { IconButton, makeStyles } from '@material-ui/core'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
 import { DataDisplay } from '../../components/DataDisplay'
-import { useParams } from 'react-router-dom'
-import { Columns } from '../../components/Columns'
 import { ComboButton } from '../../buttons/ComboButton'
+import { Columns } from '../../components/Columns'
 import { Gutters } from '../../components/Gutters'
+import { spacing } from '../../styling'
+import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
@@ -14,6 +17,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const service = device?.services.find(s => s.id === serviceID)
   const target = targets.find(t => t.uid === serviceID)
+  const css = useStyles()
 
   useEffect(() => {
     analyticsHelper.page('ServiceDetailPage')
@@ -48,8 +52,14 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
       service={service}
       target={target}
       footer={
-        <Gutters>
-          <ComboButton connection={connection} service={service} size="medium" />
+        <Gutters className={css.gutters}>
+          <ComboButton connection={connection} service={service} size="medium" fullWidth />
+          {/* <Icon name="neuter" /> */}
+          <Link to={`/connections/new/${service.id}`}>
+            <IconButton>
+              <Icon name="cog" />
+            </IconButton>
+          </Link>
         </Gutters>
       }
     >
@@ -59,3 +69,10 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
     </ServiceHeaderMenu>
   )
 }
+
+const useStyles = makeStyles({
+  gutters: {
+    display: 'flex',
+    padding: spacing.lg,
+  },
+})

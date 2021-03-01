@@ -70,7 +70,7 @@ const state: UIState = {
   launchPath: '',
   requireInstall: '',
   devicesPanelWidth: 480,
-  connectionsPanelWidth: 660,
+  connectionsPanelWidth: 620,
 }
 
 export default createModel<RootModel>()({

@@ -19,7 +19,7 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
     <div className={css.container}>
       <div className={integrated ? undefined : css.header}>
         {header}
-        <Divider variant="inset" />
+        {integrated || <Divider variant="inset" />}
       </div>
       {sidebar ? (
         <div className={css.sidebar}>

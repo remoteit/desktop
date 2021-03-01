@@ -9,7 +9,7 @@ type Props = {
   secondary?: React.ReactElement
   resize?: 'devices' | 'connections'
   single?: boolean
-  root?: string
+  root?: string | string[]
 }
 
 export const DynamicPanel: React.FC<Props> = ({ single, root, ...props }) => {

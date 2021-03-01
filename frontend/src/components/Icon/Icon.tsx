@@ -9,10 +9,10 @@ import { fas } from '@fortawesome/pro-solid-svg-icons'
 
 library.add(fal, fab, far, fas)
 export interface IconProps {
-  className?: string
+  name: string
   color?: Color
+  className?: string
   fixedWidth?: boolean
-  name?: string
   onClick?: () => void
   size?: FontSize
   spin?: boolean

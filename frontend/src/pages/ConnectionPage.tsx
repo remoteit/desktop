@@ -13,28 +13,28 @@ import { ServiceConnected } from '../components/ServiceConnected'
 import { AutoStartSetting } from '../components/AutoStartSetting'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../store'
-import { Typography, Divider, List } from '@material-ui/core'
+import { Typography, Divider, List, Collapse } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../components/InlineTemplateSetting'
 import { ConnectionLogSetting } from '../components/ConnectionLogSetting'
-import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
-import { UnauthorizedPage } from './UnauthorizedPage'
+import { NoConnectionPage } from './NoConnectionPage'
 import { LanShareSelect } from '../components/LanShareSelect'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { AddUserButton } from '../buttons/AddUserButton'
-import { ConnectButton } from '../buttons/ConnectButton'
+import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { ForgetButton } from '../buttons/ForgetButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { EditButton } from '../buttons/EditButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { Container } from '../components/Container'
+import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionPage: React.FC = () => {
   const css = useStyles()
-  const location = useLocation()
+  const location = useLocation<{ autoConnect: boolean }>()
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { devices } = useDispatch<Dispatch>()
@@ -50,53 +50,52 @@ export const ConnectionPage: React.FC = () => {
       access: state.accounts.access,
     }
   })
-  console.log('SERVICE ID FOR CONNECTION PAGE', serviceID)
+
   useEffect(() => {
     analyticsHelper.page('ServicePage')
     if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
   }, [])
 
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />
-  if (!service || !device) return <UnauthorizedPage />
+  if (!service || !device) return <NoConnectionPage />
 
   return (
     <Container
       header={
         <>
-          <Typography variant="h1">
-            <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" />
-            <ServiceName connection={connection} service={service} inline />
-          </Typography>
+          <Gutters inset>
+            <ComboButton
+              connection={connection}
+              service={service}
+              autoConnect={location.state?.autoConnect}
+              size="large"
+              fullWidth
+            />
+            <EditButton device={device} service={service} connection={connection} />
+            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
+            <AddUserButton device={device} />
+            <ForgetButton connection={connection} />
+            <LaunchButton connection={connection} service={service} />
+            <CopyButton connection={connection} service={service} />
+          </Gutters>
+          <ServiceConnected connection={connection} service={service} />
+          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
-          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
         </>
       }
     >
-      <EditButton device={device} service={service} connection={connection} />
-      <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-      <AddUserButton device={device} />
-      <ForgetButton connection={connection} />
-      <LaunchButton connection={connection} service={service} />
-      <CopyButton connection={connection} service={service} />
-      <ServiceConnected connection={connection} service={service} />
-      <ConnectButton
-        connection={connection}
-        service={service}
-        autoConnect={location.state?.autoConnect}
-        size="medium"
-      />
       <List>
         <NameSetting connection={connection} service={service} />
         <PortSetting connection={connection} service={service} />
         <HostSetting connection={connection} service={service} />
+      </List>
+      <Divider variant="inset" />
+      <List>
         <InlineTemplateSetting connection={connection} service={service} context="launch" />
         <InlineTemplateSetting connection={connection} service={service} context="copy" />
         <CustomAttributeSettings connection={connection} service={service} />
-      </List>
-      <Divider />
-      <List>
         <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
         <LanShareSelect connection={connection} service={service} />

@@ -38,7 +38,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
     }
   }, [redirect])
 
-  console.log('URL', window.location.href)
+  console.log('ROUTER URL', window.location.href)
 
   return (
     <Switch>
@@ -50,33 +50,23 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         }}
       />
 
-      {/* Device */}
-      <Route path="/devices/:deviceID">
-        <DeviceRouter singlePanel={singlePanel} />
-      </Route>
-
       {/* Connections */}
-      <Route path={['/connections', '/connections/new']} exact>
-        <Panel>
-          <ConnectionsPage />
-        </Panel>
-      </Route>
-      <Route path={['/connections/new/:serviceID', '/connections/:serviceID']}>
+      <Route path={['/connections/new/:serviceID?', '/connections']}>
         <DynamicPanel
-          primary={<ConnectionsPage />}
+          primary={<ConnectionsPage singlePanel={singlePanel} />}
           secondary={
             <Switch>
-              <Route path="/connections/:serviceID/lan">
+              <Route path={['/connections/:serviceID/lan', '/connections/new/:serviceID/lan']}>
                 <LanSharePage />
               </Route>
-              <Route path={['/connections/new/:serviceID', '/connections/:serviceID']}>
+              <Route path={['/connections/new/:serviceID', '/connections/:serviceID?']}>
                 <ConnectionPage />
               </Route>
             </Switch>
           }
           resize="connections"
           single={singlePanel}
-          root="/connections"
+          root={['/connections', '/connections/new']}
         />
       </Route>
 
@@ -93,7 +83,13 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
       {/* Devices */}
       <Route path="/devices/setup">
-        <Panel>{registered ? <Redirect to={`/devices/${targetDevice.uid}/edit`} /> : <SetupDevice os={os} />}</Panel>
+        {registered ? (
+          <Redirect to={`/devices/${targetDevice.uid}`} />
+        ) : (
+          <Panel>
+            <SetupDevice os={os} />
+          </Panel>
+        )}
       </Route>
 
       <Route path="/devices/membership">
@@ -106,6 +102,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         <Panel>
           <SetupWaiting os={os} targetDevice={targetDevice} />
         </Panel>
+      </Route>
+
+      <Route path="/devices/:deviceID">
+        <DeviceRouter singlePanel={singlePanel} />
       </Route>
 
       <Route path="/devices">

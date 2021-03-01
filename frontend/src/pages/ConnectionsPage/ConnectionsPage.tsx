@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import { Body } from '../../components/Body'
-import { matchPath, useHistory, useLocation } from 'react-router-dom'
-import { makeStyles, Typography, Collapse, List, Link } from '@material-ui/core'
+import { matchPath, useHistory, useLocation, Link } from 'react-router-dom'
+import { makeStyles, Typography, Collapse } from '@material-ui/core'
+import { NewConnectionButton } from '../../buttons/NewConnectionButton'
 import { selectConnections } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
 import { NewConnection } from '../../components/NewConnection'
@@ -9,11 +10,13 @@ import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
 import { useSelector } from 'react-redux'
 import { selectById } from '../../models/devices'
+import { Container } from '../../components/Container'
+import { Gutters } from '../../components/Gutters'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
 
-export const ConnectionsPage: React.FC = () => {
+export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
   const history = useHistory()
   const location = useLocation()
@@ -71,7 +74,7 @@ export const ConnectionsPage: React.FC = () => {
         </Typography>
         <Typography variant="body2" align="center" color="textSecondary">
           Once you've made a connection to a service from the
-          <Link onClick={() => history.push('/devices')}> Devices </Link> tab, <br />
+          <Link to="/devices"> Devices </Link> tab, <br />
           active and recent connections will appear here.
         </Typography>
       </Body>
@@ -79,14 +82,27 @@ export const ConnectionsPage: React.FC = () => {
   }
 
   return (
-    <>
-      <Collapse in={!!showNew} timeout={800}>
-        <NewConnection />
-      </Collapse>
+    <Container
+      integrated
+      header={
+        <>
+          {singlePanel && (
+            <Collapse in={!showNew} timeout={800}>
+              <Gutters inset>
+                <NewConnectionButton />
+              </Gutters>
+            </Collapse>
+          )}
+          <Collapse in={!!showNew} timeout={800}>
+            <NewConnection />
+          </Collapse>
+        </>
+      }
+    >
       <SessionsList title="Connected" sessions={local} />
       <SessionsList title="From Others" sessions={other} other />
       <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
-    </>
+    </Container>
   )
 }
 

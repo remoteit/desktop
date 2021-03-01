@@ -42,7 +42,6 @@ export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice, device 
     <Container
       header={
         <>
-          <Breadcrumbs />
           <Typography variant="h1">
             <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
             <Title inline>Add service</Title>

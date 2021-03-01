@@ -60,8 +60,8 @@ const useStyles = makeStyles({
   title: {
     display: 'flex',
     alignItems: 'flex-start',
-    '& > span': { overflow: 'hidden' },
+    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
     '& > svg': { marginTop: spacing.xs, marginRight: spacing.lg, marginLeft: spacing.lg },
   },
-  from: { width: '30%' },
+  from: { width: '25%' },
 })

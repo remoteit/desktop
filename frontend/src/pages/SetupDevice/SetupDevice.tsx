@@ -94,12 +94,11 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             className={css.button}
             color="primary"
             variant="contained"
-            size="medium"
+            size="large"
             disabled={!name || disableRegister}
             type="submit"
           >
             Register
-            <Icon name="check" type="regular" inline />
           </Button>
         </section>
         <LocalhostScanForm onSelect={setSelected} loading={loading} />
