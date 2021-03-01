@@ -23,6 +23,7 @@ export const MANUFACTURE_ID_HEADLESS = 33536
 // remote.it Proxy Server = 34048
 
 export const GITHUB_RELEASES = `https://github.com/remoteit/desktop/releases`
+export const LATEST = `https://api.github.com/repos/remoteit/desktop/releases/latest`
 
 // CONNECTD initiator platform tracking codes
 export const PLATFORM_CODES = {

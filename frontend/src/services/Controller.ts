@@ -150,7 +150,6 @@ function getEventHandlers() {
 
     // AutoUpdate
     'update/downloaded': version => {
-      console.log('update/downloaded', { version })
       backend.set({ update: version })
     },
 

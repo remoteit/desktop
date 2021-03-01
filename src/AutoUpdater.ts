@@ -2,11 +2,10 @@ import electron from 'electron'
 import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
-import { ENVIRONMENT } from 'remoteit-headless/build/constants'
+import { ENVIRONMENT, LATEST } from 'remoteit-headless/build/constants'
 import semverCompare from 'semver/functions/compare'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
-export const RELEASES = `https://api.github.com/repos/remoteit/desktop/releases/latest`
 
 export default class AppUpdater {
   nextCheck: number = 0
@@ -41,7 +40,7 @@ export default class AppUpdater {
       if (ENVIRONMENT !== 'development') {
         if (environment.isLinux) {
           try {
-            const response = await axios.get(RELEASES)
+            const response = await axios.get(LATEST)
             Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })
             const latest = response.data.tag_name
             let desktopVersion = preferences.get().version
