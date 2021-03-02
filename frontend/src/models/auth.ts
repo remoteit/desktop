@@ -14,6 +14,8 @@ import { emit } from '../services/Controller'
 
 const USER_KEY = 'user'
 
+export const CHECKBOX_REMEMBER_KEY = 'remember-username'
+
 export interface AuthState {
   initialized: boolean
   signInStarted: boolean
@@ -97,8 +99,10 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
       if (cognitoUser?.username) {
-        if (cognitoUser?.attributes?.email) {
+        if (cognitoUser?.attributes?.email && window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
           window.localStorage.setItem('username', cognitoUser?.attributes?.email)
+        } else if (!window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
+          window.localStorage.removeItem('username')
         }
 
         if (cognitoUser?.authProvider === 'Google') {
