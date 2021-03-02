@@ -55,8 +55,6 @@ export const ConnectionPage: React.FC = () => {
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <NoConnectionPage />
 
-  console.log('SESSION', session)
-
   return (
     <Container
       header={
@@ -72,8 +70,8 @@ export const ConnectionPage: React.FC = () => {
             <EditButton device={device} service={service} connection={connection} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
-            <LaunchButton connection={connection} service={service} />
             <CopyButton connection={connection} service={service} />
+            <LaunchButton connection={connection} service={service} />
           </Gutters>
           <ServiceConnected connection={connection} session={session} show={connection?.enabled} />
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}

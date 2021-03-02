@@ -58,7 +58,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               <Route path={['/connections/:serviceID/lan', '/connections/new/:serviceID/lan']}>
                 <LanSharePage />
               </Route>
-              <Route path={['/connections/new/:serviceID', '/connections/:serviceID/:sessionID/other']}>
+              <Route path="/connections/:serviceID/:sessionID/other">
                 <ConnectionOtherPage />
               </Route>
               <Route path={['/connections/new/:serviceID', '/connections/:serviceID?/:sessionID?']}>

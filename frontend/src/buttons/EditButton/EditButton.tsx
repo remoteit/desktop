@@ -22,10 +22,11 @@ export const EditButton: React.FC<Props> = ({ onClick, device, service, connecti
     icon = 'info-circle'
   }
 
+  console.log('EDIT', connection)
+
   if (service) title += ' Service'
   else if (device) title += ' Device'
 
-  if (connection?.connected) return null
   if (instance)
     onClick = () => {
       let path = `/devices/${device?.id}`
