@@ -38,9 +38,8 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     }
 
     for (const connection of allConnections) {
-      const [service, device] = selectById(state, connection.id)
+      const [_, device] = selectById(state, connection.id)
       const session = {
-        id: state.backend.device.uid,
         timestamp: new Date(connection.startTime || 0),
         platform: state.backend.environment.manufacturerDetails?.product.platform || 0,
         user: state.auth.user,

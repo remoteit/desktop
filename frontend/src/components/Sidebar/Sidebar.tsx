@@ -40,7 +40,6 @@ const useStyles = addSpace =>
       minWidth: SIDEBAR_WIDTH,
       height: '100%',
       paddingTop: addSpace ? spacing.md : 0,
-      '-webkit-app-region': 'drag',
       '& section': { margin: `${spacing.xl}px ${spacing.md}px` },
     },
     header: {

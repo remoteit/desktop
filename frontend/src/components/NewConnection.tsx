@@ -33,11 +33,7 @@ export const NewConnection: React.FC = () => {
   useEffect(() => {
     analyticsHelper.track('newConnection')
   }, [])
-  console.log(
-    '-----------------------------',
-    serviceID,
-    devices.find(d => d.id === serviceID)
-  )
+
   return (
     <>
       <Typography variant="subtitle1">

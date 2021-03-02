@@ -114,6 +114,7 @@ class CloudController {
           ... on DeviceConnectEvent {
             platform
             session
+            proxy
             sourceGeo {
               city
               stateName
@@ -159,6 +160,7 @@ class CloudController {
         type: event.type,
         state: event.state,
         timestamp: new Date(event.timestamp),
+        isP2P: !event.proxy,
         actor: event.actor,
         users: event.users,
         authUserId: state.auth.user?.id || '',
@@ -170,7 +172,7 @@ class CloudController {
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
-            name: connectionName(t.device),
+            name: connectionName(t, t.device),
             owner: t.owner,
             typeID: t.application,
             platform: t.platform,
@@ -227,6 +229,7 @@ class CloudController {
               id: event.sessionId,
               timestamp: event.timestamp,
               platform: event.platform,
+              isP2P: event.isP2P,
               user: event.actor,
               geo: event.geo,
               target: {

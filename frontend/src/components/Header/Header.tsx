@@ -5,17 +5,14 @@ import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { isElectron } from '../../services/Browser'
 import { Typography } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 
-export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) => {
+export const Header: React.FC = () => {
   const [hasFocus, setHasFocus] = useState<boolean>(true)
-
   const history = useHistory()
-
-  const css = useStyles(hasFocus, menuOverlaps && isElectron())()
+  const css = useStyles(hasFocus)()
   const { device } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
   }))
@@ -48,11 +45,11 @@ export const Header: React.FC<{ menuOverlaps?: boolean }> = ({ menuOverlaps }) =
   )
 }
 
-const useStyles = (hasFocus, moveMenu) =>
+const useStyles = hasFocus =>
   makeStyles({
     header: {
       padding: `${styles.spacing.xs}px ${styles.spacing.md}px`,
-      paddingTop: moveMenu ? 30 : styles.spacing.xs,
+      paddingTop: styles.spacing.xs,
       display: 'flex',
       justifyContent: 'flex-start',
       alignItems: 'center',
@@ -60,8 +57,8 @@ const useStyles = (hasFocus, moveMenu) =>
       position: 'relative',
       width: '100%',
       opacity: hasFocus ? 1 : 0.2,
-      '-webkit-user-select': 'none',
-      '-webkit-app-region': 'drag',
+      // '-webkit-user-select': 'none',
+      // '-webkit-app-region': 'drag',
       '& .MuiTypography-root': { marginLeft: styles.spacing.md },
     },
   })

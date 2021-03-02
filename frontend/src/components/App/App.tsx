@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Box } from '@material-ui/core'
+import { isElectron, isMac } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
@@ -22,12 +23,10 @@ export const App: React.FC = () => {
       uninstalling: state.ui.uninstalling,
     })
   )
-
-  const css = useStyles()
   const [pageWidth, setPageWidth] = useState<number>(window.innerWidth)
-
   const updateWidth = () => setPageWidth(window.innerWidth)
   const singlePanel = pageWidth < 1000
+  const css = useStyles(singlePanel && isElectron() && isMac())()
 
   useEffect(() => {
     window.addEventListener('resize', updateWidth)
@@ -97,33 +96,32 @@ export const App: React.FC = () => {
   )
 }
 // neuter
-const useStyles = makeStyles({
-  main: {
-    flexGrow: 1,
-    height: '100%',
-    display: 'flex',
-    flexFlow: 'column',
-    justifyContent: 'space-between',
-    flexWrap: 'nowrap',
-  },
-  columns: {
-    flexGrow: 1,
-    position: 'relative',
-    display: 'flex',
-    overflow: 'hidden',
-    flexDirection: 'row',
-    alignItems: 'start',
-    justifyContent: 'start',
-    // '& > *:second-child:hover': {
-    //   borderRight: `2px solid ${colors.primary}`,
-    // },
-  },
-  rows: {
-    flexGrow: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-})
+const useStyles = overlapHeader =>
+  makeStyles({
+    main: {
+      flexGrow: 1,
+      height: '100%',
+      display: 'flex',
+      flexFlow: 'column',
+      justifyContent: 'space-between',
+      flexWrap: 'nowrap',
+    },
+    columns: {
+      flexGrow: 1,
+      position: 'relative',
+      display: 'flex',
+      overflow: 'hidden',
+      flexDirection: 'row',
+      alignItems: 'start',
+      justifyContent: 'start',
+      paddingTop: overlapHeader ? 30 : 0,
+    },
+    rows: {
+      flexGrow: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      overflow: 'hidden',
+      position: 'relative',
+    },
+  })

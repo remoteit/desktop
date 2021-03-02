@@ -25,6 +25,7 @@ export default createModel<RootModel>()({
                   id
                   timestamp
                   endpoint {
+                    proxy
                     platform
                     geo {
                       city
@@ -74,6 +75,7 @@ export default createModel<RootModel>()({
         sessions.push({
           id: e.id,
           timestamp: new Date(e.timestamp),
+          isP2P: e.endpoint ? !e.endpoint?.proxy : undefined,
           platform: e.endpoint?.platform,
           user: e.user,
           geo: e.endpoint?.geo,

@@ -38,20 +38,20 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
                 thisDevice={true}
                 setContextMenu={setContextMenu}
               />
-              <Divider />
+              <Divider variant="inset" />
             </>
           ) : (
             <>
               <ListItem>
                 <Notice>This device is not registered to you.</Notice>
               </ListItem>
-              <Divider />
+              <Divider variant="inset" />
             </>
           ))
         ) : (
           <>
             <DeviceSetupItem />
-            <Divider />
+            <Divider variant="inset" />
           </>
         )}
         {devices?.map(device => {

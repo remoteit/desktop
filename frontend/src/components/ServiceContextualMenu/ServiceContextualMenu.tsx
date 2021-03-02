@@ -57,7 +57,7 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
         </Typography>
       </ListItem>
       <ListItem className={css.connect} dense>
-        <ComboButton connection={connection} service={service} />
+        <ComboButton connection={connection} service={service} size="small" />
         <CopyButton connection={connection} service={service} size="base" />
         <LaunchButton connection={connection} service={service} size="base" />
       </ListItem>

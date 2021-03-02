@@ -3,6 +3,7 @@ import { DeviceRouter } from './DeviceRouter'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom'
+import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
 import { SettingsPage } from '../pages/SettingsPage'
@@ -38,8 +39,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
     }
   }, [redirect])
 
-  console.log('ROUTER URL', window.location.href)
-
   return (
     <Switch>
       <Redirect
@@ -59,7 +58,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               <Route path={['/connections/:serviceID/lan', '/connections/new/:serviceID/lan']}>
                 <LanSharePage />
               </Route>
-              <Route path={['/connections/new/:serviceID', '/connections/:serviceID?']}>
+              <Route path={['/connections/new/:serviceID', '/connections/:serviceID/:sessionID/other']}>
+                <ConnectionOtherPage />
+              </Route>
+              <Route path={['/connections/new/:serviceID', '/connections/:serviceID?/:sessionID?']}>
                 <ConnectionPage />
               </Route>
             </Switch>

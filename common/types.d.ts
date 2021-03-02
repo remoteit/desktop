@@ -265,7 +265,8 @@ declare global {
   }
 
   type ISession = {
-    id: string
+    id?: string
+    isP2P?: boolean
     timestamp: Date
     platform: number
     user?: IUserRef
@@ -332,6 +333,7 @@ declare global {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
+    isP2P: boolean
     actor: IUserRef
     users: IUserRef[]
     platform: IUser['platform']

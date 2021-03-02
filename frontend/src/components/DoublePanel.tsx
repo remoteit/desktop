@@ -78,8 +78,8 @@ const useStyles = makeStyles({
   },
   header: {
     height: spacing.xl,
-    '-webkit-user-select': 'none',
-    '-webkit-app-region': 'drag',
+    // '-webkit-user-select': 'none',
+    // '-webkit-app-region': 'drag',
   },
   handle: {
     height: '100%',

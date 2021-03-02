@@ -15,10 +15,17 @@ export const EditButton: React.FC<Props> = ({ onClick, device, service, connecti
   const instance = device || service
 
   let title = 'Configure'
+  let icon = 'cog'
+
+  if (device?.shared) {
+    title = 'View'
+    icon = 'info-circle'
+  }
+
   if (service) title += ' Service'
   else if (device) title += ' Device'
 
-  if ((service && device?.shared) || connection?.connected) return null
+  if (connection?.connected) return null
   if (instance)
     onClick = () => {
       let path = `/devices/${device?.id}`
@@ -29,7 +36,7 @@ export const EditButton: React.FC<Props> = ({ onClick, device, service, connecti
   return (
     <Tooltip title={title}>
       <IconButton onClick={() => onClick && onClick()}>
-        <Icon name="cog" size="md" fixedWidth />
+        <Icon name={icon} size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )
