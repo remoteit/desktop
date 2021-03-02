@@ -1,23 +1,27 @@
-import React, { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { useParams, useLocation } from 'react-router-dom'
-import { makeStyles, Typography, List } from '@material-ui/core'
+import React, { useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
+import {
+  makeStyles,
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+} from '@material-ui/core'
 import { selectById } from '../models/devices'
 import { ServiceConnected } from '../components/ServiceConnected'
 import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { Title } from '../components/Title'
-import { ApplicationState, Dispatch } from '../store'
+import { ApplicationState } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
 import { EditButton } from '../buttons/EditButton'
 import { Container } from '../components/Container'
-import { Gutters } from '../components/Gutters'
-import { Icon } from '../components/Icon'
-import { spacing } from '../styling'
+import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionOtherPage: React.FC = () => {
-  const css = useStyles()
   const { serviceID, sessionID } = useParams<{ serviceID?: string; sessionID?: string }>()
   const { service, device, connection, session } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
@@ -39,13 +43,23 @@ export const ConnectionOtherPage: React.FC = () => {
     <Container
       header={
         <>
-          <Gutters className={css.gutters} inset>
-            {/* <InitiatorPlatform id={session?.platform} connected /> */}
-            <Typography variant="h2">
-              <Title>{session?.user?.email}</Title>
-            </Typography>
-            <EditButton device={device} service={service} connection={connection} />
-          </Gutters>
+          <List>
+            <ListItem dense>
+              <ListItemIcon>
+                <InitiatorPlatform id={session?.platform} connected />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography variant="h2">
+                    <Title enabled>{session?.user?.email}</Title>
+                  </Typography>
+                }
+              />
+              <ListItemSecondaryAction>
+                <EditButton device={device} service={service} connection={connection} />
+              </ListItemSecondaryAction>
+            </ListItem>
+          </List>
           <ServiceConnected connection={connection} session={session} show />
         </>
       }
@@ -59,14 +73,3 @@ export const ConnectionOtherPage: React.FC = () => {
     </Container>
   )
 }
-
-const useStyles = makeStyles({
-  gutters: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginLeft: spacing.xl,
-    marginRight: spacing.xl,
-    paddingLeft: spacing.xs,
-  },
-})
