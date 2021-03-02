@@ -29,18 +29,19 @@ type eventLogs = {
   id: string
   from?: number
   maxDate?: string
+  minDate?: string
 }
 
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetchLogs({ id, from, maxDate }: eventLogs, globalState) {
+    async fetchLogs({ id, from, maxDate, minDate }: eventLogs, globalState) {
       const { set } = dispatch.logs
 
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
 
       try {
-        const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
+        const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate, minDate)
         const { items } = globalState.logs.events?.deviceId === id ? globalState.logs.events : { items: [] }
         const { device } = gqlResponse?.data?.data?.login || {}
         const events = { ...device[0].events, deviceId: id }
@@ -52,12 +53,12 @@ export default createModel<RootModel>()({
       from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
     },
     async getEventsURL(data: eventLogs) {
-      const { id, maxDate } = data
+      const { id, maxDate, minDate } = data
       const { set } = dispatch.logs
 
       if (!hasCredentials()) return
       try {
-        const gqlResponse = await graphQLGetEventsURL(id, maxDate)
+        const gqlResponse = await graphQLGetEventsURL(id, maxDate, minDate)
         const { device } = gqlResponse?.data?.data?.login || {}
         const { eventsUrl } = device[0]
         set({ eventsUrl: eventsUrl })

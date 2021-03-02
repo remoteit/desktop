@@ -3,7 +3,7 @@ import { graphQLRequest } from './graphQL'
 const LOG_SELECT_FOR_DEVICE = `
   {
     id
-    events(from: $from, maxDate: $maxDate) {
+    events(from: $from, maxDate: $maxDate, minDate: $minDate) {
       hasMore
       total
       items {
@@ -29,9 +29,9 @@ const LOG_SELECT_FOR_DEVICE = `
     }
   }`
 
-export async function graphQLGetMoreLogs(id: string, from?: number, maxDate?: string) {
+export async function graphQLGetMoreLogs(id: string, from?: number, maxDate?: string, minDate?: string) {
   return await graphQLRequest(
-    `  query($id: [String!]!, $from: Int, $maxDate: DateTime ) {
+    `  query($id: [String!]!, $from: Int, $maxDate: DateTime, $minDate: DateTime ) {
           login {
             id
             device(id: $id) ${LOG_SELECT_FOR_DEVICE}
@@ -40,13 +40,14 @@ export async function graphQLGetMoreLogs(id: string, from?: number, maxDate?: st
       `,
     {
       maxDate,
+      minDate,
       from,
       id,
     }
   )
 }
 
-export async function graphQLGetEventsURL(id: string, maxDate?: string) {
+export async function graphQLGetEventsURL(id: string, maxDate?: string, minDate?: String) {
   return await graphQLRequest(
     `  query($ids: [String!]!, $maxDate: DateTime ) {
           login {
@@ -58,6 +59,7 @@ export async function graphQLGetEventsURL(id: string, maxDate?: string) {
         }`,
     {
       maxDate,
+      minDate,
       ids: id,
     }
   )

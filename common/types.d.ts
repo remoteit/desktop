@@ -252,6 +252,7 @@ declare global {
     // platform?: number // fixme - unconfuse IUser with ISessionFixme
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
+    limits?: ILimit[]
   }
 
   type IUserRef = {
@@ -386,6 +387,12 @@ declare global {
     items: IEvent[]
     hasMore: boolean
     deviceId: string
+  }
+
+  interface ILimit {
+    name: string
+    value: any
+    actual: any
   }
 
   type gqlOptions = {
