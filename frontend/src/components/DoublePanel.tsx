@@ -1,10 +1,8 @@
 import React, { useRef, useState } from 'react'
-import { useLocation, matchPath } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { REGEX_FIRST_PATH } from '../shared/constants'
 import { colors, spacing } from '../styling'
-import { Breadcrumbs } from './Breadcrumbs'
+import { DragAppRegion } from './DragAppRegion'
 import { makeStyles } from '@material-ui/core'
 import { Header } from './Header'
 import classnames from 'classnames'
@@ -53,6 +51,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     <>
       <div className={css.panel} style={{ width }} ref={primaryRef}>
         <Header />
+        <DragAppRegion />
         {primary}
       </div>
       <div className={css.handle} onMouseDown={onDown}>
@@ -60,6 +59,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
       </div>
       <div className={classnames(css.panel, css.secondary)}>
         <div className={css.header} />
+        <DragAppRegion />
         {secondary}
       </div>
     </>
@@ -71,6 +71,7 @@ const useStyles = makeStyles({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
+    position: 'relative',
   },
   secondary: {
     flexGrow: 1,

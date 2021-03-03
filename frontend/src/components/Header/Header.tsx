@@ -48,17 +48,18 @@ export const Header: React.FC = () => {
 const useStyles = hasFocus =>
   makeStyles({
     header: {
+      position: 'relative',
+      display: 'flex',
       padding: `${styles.spacing.xs}px ${styles.spacing.md}px`,
       paddingTop: styles.spacing.xs,
-      display: 'flex',
       justifyContent: 'flex-start',
       alignItems: 'center',
       minHeight: 40,
-      position: 'relative',
       width: '100%',
       opacity: hasFocus ? 1 : 0.2,
-      // '-webkit-user-select': 'none',
-      // '-webkit-app-region': 'drag',
+      // pointerEvents: 'none',
+      // '-webkit-text-selection': 'none',
       '& .MuiTypography-root': { marginLeft: styles.spacing.md },
+      '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
     },
   })

@@ -31,7 +31,7 @@ declare global {
     | 'launch/app'
 
     // App/settings
-    | 'app/open-on-login'
+    | 'maximize'
     | 'showFolder'
 
     // Backend

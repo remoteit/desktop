@@ -2,13 +2,14 @@ import React from 'react'
 import { SIDEBAR_WIDTH } from '../../shared/constants'
 import { makeStyles, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
-import { RemoteManagement } from '../RemoteManagement'
 import { NewConnectionButton } from '../../buttons/NewConnectionButton'
+import { RemoteManagement } from '../RemoteManagement'
 import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
-import { colors, spacing } from '../../styling'
+import { DragAppRegion } from '../DragAppRegion'
 import { SidebarNav } from '../SidebarNav'
 import { AvatarMenu } from '../AvatarMenu'
+import { colors, spacing } from '../../styling'
 
 export const Sidebar: React.FC = () => {
   const addSpace = isMac() && isElectron()
@@ -16,6 +17,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <Box className={css.sidebar}>
+      <DragAppRegion />
       <section className={css.header}>
         <AvatarMenu />
         <span className={css.header}>
@@ -35,6 +37,7 @@ export const Sidebar: React.FC = () => {
 const useStyles = addSpace =>
   makeStyles({
     sidebar: {
+      position: 'relative',
       backgroundColor: colors.grayLighter,
       width: SIDEBAR_WIDTH,
       minWidth: SIDEBAR_WIDTH,

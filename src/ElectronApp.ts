@@ -17,6 +17,7 @@ export default class ElectronApp {
   private window?: electron.BrowserWindow
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
+  private isMaximized: boolean
   private openAtLogin?: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
@@ -25,6 +26,7 @@ export default class ElectronApp {
   constructor() {
     this.app = electron.app
     this.quitSelected = false
+    this.isMaximized = false
     this.autoUpdater = new AutoUpdater()
     this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
@@ -43,6 +45,7 @@ export default class ElectronApp {
     this.app.on('open-url', this.handleOpenUrl)
 
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
+    EventBus.on(EVENTS.maximize, this.handleMaximize)
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
@@ -79,6 +82,16 @@ export default class ElectronApp {
     event.preventDefault()
     this.setDeepLink(url)
     this.openWindow()
+  }
+
+  private handleMaximize = () => {
+    if (this.isMaximized) {
+      this.window?.unmaximize()
+      this.isMaximized = false
+    } else {
+      this.window?.maximize()
+      this.isMaximized = true
+    }
   }
 
   private setDeepLink(link?: string) {

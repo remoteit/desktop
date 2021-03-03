@@ -3,11 +3,11 @@ import { Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { isElectron } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
-import * as screenfull from 'screenfull'
 import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 import classnames from 'classnames'
+import * as screenfull from 'screenfull'
 
 type Props = { device?: IDevice; color?: string; children: React.ReactNode }
 
@@ -32,7 +32,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
 
   return (
     <div className={remoteCss} style={{ backgroundColor: color }}>
-      {showFrame ? (
+      {showFrame && (
         <div className={css.remote}>
           {fullscreenEnabled && (
             <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
@@ -46,8 +46,6 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
           </span>
           <Logo width={80} margin="auto" white />
         </div>
-      ) : (
-        <div className={css.drag} />
       )}
       <div className={pageCss}>{children}</div>
     </div>
@@ -62,14 +60,6 @@ const useStyles = makeStyles({
     flexFlow: 'column',
     backgroundColor: colors.white,
     margin: 'auto',
-  },
-  drag: {
-    width: '100%',
-    height: spacing.xxl,
-    position: 'absolute',
-    '-webkit-app-region': 'drag',
-    // backgroundColor: 'rgba(255,0,0,0.2)',
-    // zIndex: 10,
   },
   inset: {
     top: spacing.xl,

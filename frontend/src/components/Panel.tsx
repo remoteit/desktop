@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
+import { DragAppRegion } from './DragAppRegion'
 import { Header } from './Header'
 
 export const Panel: React.FC = ({ children }) => {
@@ -9,6 +10,7 @@ export const Panel: React.FC = ({ children }) => {
     <>
       <div className={css.panel}>
         <Header />
+        <DragAppRegion />
         {children}
       </div>
     </>
