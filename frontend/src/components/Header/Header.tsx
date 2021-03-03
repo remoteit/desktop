@@ -48,7 +48,6 @@ export const Header: React.FC = () => {
 const useStyles = hasFocus =>
   makeStyles({
     header: {
-      position: 'relative',
       display: 'flex',
       padding: `${styles.spacing.xs}px ${styles.spacing.md}px`,
       paddingTop: styles.spacing.xs,

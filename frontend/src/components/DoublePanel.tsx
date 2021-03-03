@@ -59,7 +59,6 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
       </div>
       <div className={classnames(css.panel, css.secondary)}>
         <div className={css.header} />
-        <DragAppRegion />
         {secondary}
       </div>
     </>
@@ -71,7 +70,6 @@ const useStyles = makeStyles({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    position: 'relative',
   },
   secondary: {
     flexGrow: 1,
@@ -79,8 +77,6 @@ const useStyles = makeStyles({
   },
   header: {
     height: spacing.xl,
-    // '-webkit-user-select': 'none',
-    // '-webkit-app-region': 'drag',
   },
   handle: {
     height: '100%',

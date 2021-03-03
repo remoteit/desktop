@@ -51,7 +51,7 @@ const useStyles = makeStyles({
     overflow: 'hidden',
   },
   header: {
-    backgroundColor: colors.white,
+    // backgroundColor: colors.white,
     position: 'relative',
     zIndex: 3,
     '& .MuiTypography-h1': {
@@ -70,12 +70,12 @@ const useStyles = makeStyles({
   },
   sideContent: {
     boxShadow: `-1px 0 2px ${colors.darken}`,
-    backgroundColor: colors.white,
+    // backgroundColor: colors.white,
     position: 'relative',
     zIndex: 2,
   },
   footer: {
-    backgroundColor: colors.white,
+    // backgroundColor: colors.white,
     position: 'relative',
     zIndex: 3,
   },

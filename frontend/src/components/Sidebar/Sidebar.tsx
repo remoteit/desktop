@@ -6,7 +6,6 @@ import { NewConnectionButton } from '../../buttons/NewConnectionButton'
 import { RemoteManagement } from '../RemoteManagement'
 import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
-import { DragAppRegion } from '../DragAppRegion'
 import { SidebarNav } from '../SidebarNav'
 import { AvatarMenu } from '../AvatarMenu'
 import { colors, spacing } from '../../styling'
@@ -17,7 +16,6 @@ export const Sidebar: React.FC = () => {
 
   return (
     <Box className={css.sidebar}>
-      <DragAppRegion />
       <section className={css.header}>
         <AvatarMenu />
         <span className={css.header}>
