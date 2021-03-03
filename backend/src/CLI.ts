@@ -246,7 +246,7 @@ export default class CLI {
   }
 
   async reset() {
-    await this.exec({ cmds: [strings.reset()], checkAuthHash: true })
+    await this.exec({ cmds: [strings.reset()], admin: true })
   }
 
   async serviceUninstall() {

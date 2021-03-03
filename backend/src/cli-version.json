@@ -1,5 +1,5 @@
 {
-  "cli": "1.7.6",
+  "cli": "1.7.10",
   "connectd": "4.12.0",
   "muxer": "0.3-alpha",
   "demuxer": "0.3-alpha",
