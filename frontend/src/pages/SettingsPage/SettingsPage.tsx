@@ -116,6 +116,16 @@ export const SettingsPage: React.FC = () => {
           <Divider />
         </>
       )}
+      <Divider />
+
+      {showReports && (
+        <>
+          <List>
+            <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
+          </List>
+          <Divider />
+        </>
+      )}
       {remoteUI || (
         <>
           <Typography variant="subtitle1">Sharing</Typography>

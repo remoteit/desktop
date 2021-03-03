@@ -155,7 +155,7 @@ const options = {
   minute: '2-digit',
 }
 
-export function EventCell({ item, device, user }: { item: IEvent; device: IDevice; user?: IUser }): JSX.Element {
+export function EventCell({ item, device, user }: { item: IEvent; device?: IDevice; user?: IUser }): JSX.Element {
   return (
     <ListItem>
       <span>{new Date(item.timestamp).toLocaleDateString('en-US', options)}</span>

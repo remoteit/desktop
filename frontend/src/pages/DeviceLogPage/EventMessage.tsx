@@ -16,7 +16,7 @@ export function EventMessage({
   loggedInUser,
 }: {
   item: IEvent
-  device: IDevice
+  device?: IDevice
   loggedInUser: IUser | undefined
 }): JSX.Element {
   const serviceName = (item.target?.map(service => service.name) || []).join(' + ')

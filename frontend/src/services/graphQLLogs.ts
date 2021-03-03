@@ -64,3 +64,65 @@ export async function graphQLGetEventsURL(id: string, maxDate?: string, minDate?
     }
   )
 }
+export async function graphQLGetLogsURL(types: [string, string], minDate?: string) {
+  return await graphQLRequest(
+    `
+      query getLogsUrl($types: [EventType!], $minDate: DateTime) {
+        login {
+          id
+          eventsUrl(types: $types, minDate: $minDate)
+        }
+      }
+    `,
+    {
+      types,
+      minDate,
+    }
+  )
+}
+
+export async function graphQLGetEventsLogs(from?: number, minDate?: string) {
+  return await graphQLRequest(
+    `  query($from: Int, $minDate: DateTime) {
+          login {
+            id
+            events( from: $from, minDate: $minDate) {
+              items {
+                id
+                type
+                timestamp
+                state
+                action
+                actor {
+                  id
+                  email
+                }
+                users {
+                  id
+                  email
+                }
+                owner {
+                  id
+                  email
+                }
+                devices {
+                  id
+                  name
+                }
+                ... on DeviceShareEvent {
+                  scripting
+                }
+              }
+              total
+              last
+              hasMore
+            }
+          }
+        }
+      `,
+    {
+      from,
+      minDate,
+    }
+  )
+}

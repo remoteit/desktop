@@ -5,13 +5,14 @@ import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 
 interface Props {
-  deviceID: string
-  maxDate: string
+  deviceID?: string
+  maxDate?: string
+  minDate?: string
 }
 
-export function CSVDownloadButton({ deviceID, maxDate }: Props) {
+export function CSVDownloadButton({ deviceID, maxDate, minDate }: Props) {
   const dispatch = useDispatch<Dispatch>()
-  const { getEventsURL, set } = dispatch.logs
+  const { getEventsURL, getLogsURL, set } = dispatch.logs
   const { eventsUrl } = useSelector((state: ApplicationState) => state.logs)
   const [shouldDownload, setShouldDownload] = useState(false)
 
@@ -24,7 +25,7 @@ export function CSVDownloadButton({ deviceID, maxDate }: Props) {
   }, [eventsUrl, shouldDownload])
 
   const download = () => {
-    getEventsURL({ id: deviceID, maxDate: maxDate })
+    deviceID ? getEventsURL({ id: deviceID, maxDate: maxDate }) : getLogsURL({ id: '', minDate: minDate })
     setShouldDownload(true)
   }
 

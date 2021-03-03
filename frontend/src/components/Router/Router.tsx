@@ -27,6 +27,7 @@ import { SharePage } from '../../pages/SharePage/SharePage'
 import { getLinks } from '../../helpers/routeHelper'
 import { LogPage } from '../../pages/LogPage'
 import { ReportsPage } from '../../pages/ReportsPage'
+import { LogsPage } from '../../pages/LogsPage'
 
 export const Router: React.FC = () => {
   const history = useHistory()
@@ -66,6 +67,9 @@ export const Router: React.FC = () => {
       </Route>
       <Route path="/settings/reports">
         <ReportsPage />
+      </Route>
+      <Route path="/settings/logs">
+        <LogsPage />
       </Route>
       <Route path={links.waiting}>
         <SetupWaiting os={os} targetDevice={targetDevice} />
