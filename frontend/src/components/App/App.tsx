@@ -114,7 +114,7 @@ export const App: React.FC = () => {
     { label: 'Connections', path: '/connections', icon: 'scrubber', show: !remoteUI },
     { label: 'Devices', path: '/devices', icon: 'chart-network', show: !remoteUI },
     { label: 'Announcements', path: '/announcements', icon: 'megaphone', badge: unreadAnnouncements, show: !remoteUI },
-    { label: 'Settings', path: '/settings', icon: 'cog', badge: licenseIndicator, show: true },
+    { label: 'More', path: '/settings', icon: 'ellipsis-h', badge: licenseIndicator, show: true },
   ]
 
   return (
