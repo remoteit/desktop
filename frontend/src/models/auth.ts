@@ -66,10 +66,6 @@ export default createModel<RootModel>()({
                 authhash
                 yoicsId
                 created
-                limits {
-                  name
-                  value
-                }
               }
             }`
         )
@@ -81,7 +77,6 @@ export default createModel<RootModel>()({
           authHash: data.authhash,
           yoicsId: data.yoicsId,
           created: data.created,
-          limits: data.limits
         })
       } catch (error) {
         await graphQLCatchError(error)
