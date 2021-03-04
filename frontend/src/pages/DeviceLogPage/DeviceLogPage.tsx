@@ -28,45 +28,63 @@ const DAY = 1000 * 60 * 60 * 24
 
 export const DeviceLogPage = () => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { device, events, fetchingMore, fetching, user, items } = useSelector((state: ApplicationState) => {
-    const device = getAllDevices(state).find(d => d.id === deviceID)
-    return {
-      device,
-      events: state.logs.events,
-      fetchingMore: state.logs.fetchingMore,
-      fetching: state.logs.fetching,
-      user: state.auth.user,
-      items: state.logs?.events?.deviceId === deviceID ? state.logs?.events?.items : [],
+  const { device, events, idDevice, fetchingMore, fetching, user, limits, items } = useSelector(
+    (state: ApplicationState) => {
+      const device = getAllDevices(state).find(d => d.id === deviceID)
+      return {
+        device,
+        events: state.logs.events,
+        idDevice: state.logs.events?.deviceId,
+        fetchingMore: state.logs.fetchingMore,
+        fetching: state.logs.fetching,
+        user: state.auth.user,
+        limits: state.licensing.limits,
+        items: state.logs?.events?.deviceId === deviceID ? state.logs?.events?.items : [],
+      }
     }
-  })
+  )
   const dispatch = useDispatch<Dispatch>()
-  const [planUpgrade, setPlanUpgrade] = useState(false)
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
   const { fetchLogs } = dispatch.logs
-  const freePlan = 90
+  const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
+  const createAt_days = Math.floor((new Date().getTime() - createAt.getTime()) / DAY)
+
+  let daysAllowed = 0
+  let logLimit = (limits && limits?.filter(limit => limit.name === 'log-limit')[0].value.toString()) || '0'
+  let limitNumber = (logLimit && logLimit.replace(/\D/g, '')) || '0'
+
+  switch (logLimit.slice(-1)) {
+    case 'D':
+      daysAllowed = limitNumber
+      break
+    case 'M':
+      daysAllowed = limitNumber.parseInt() * 30
+      break
+    case 'Y':
+      daysAllowed = limitNumber.parseInt() * 365
+      break
+    default:
+      daysAllowed = 7
+      break
+  }
+  const limitDays = () => (createAt_days > daysAllowed ? daysAllowed : createAt_days)
+  const minDay = new Date(new Date().getTime() - DAY * limitDays())
+  minDay.setHours(0)
 
   useEffect(() => {
-    fetchLogs({ id: deviceID, from: 0 })
+    idDevice !== deviceID && fetchLogs({ id: deviceID, from: 0, minDate: `${minDay}` })
     console.log('Fetching Logs')
   }, [deviceID])
-
-  const limitDays = () => {
-    const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
-    return Math.floor((new Date().getTime() - createAt.getTime()) / DAY)
-    // return user?.plan.name === 'free' && createAt_days > freePlan ? freePlan : createAt_days
-  }
-
-  const minDay = new Date(new Date().getTime() - DAY * limitDays())
 
   const css = useStyles()
 
   const onChange = (date: any) => {
     setSelectedDate(date)
-    fetchLogs({ id: deviceID, from: 0, maxDate: `${date}` })
+    fetchLogs({ id: deviceID, from: 0, maxDate: `${date}`, minDate: `${minDay}` })
   }
 
   const fetchMore = () => {
-    fetchLogs({ id: deviceID, from: items?.length, maxDate: `${selectedDate} 23:59:59` })
+    fetchLogs({ id: deviceID, from: items?.length, maxDate: `${selectedDate} 23:59:59`, minDate: `${minDay}` })
   }
 
   if (!device) return null
@@ -110,7 +128,7 @@ export const DeviceLogPage = () => {
 
       <Box className={css.box}>
         {events?.hasMore || fetching ? (
-          <Button color="primary" onClick={fetchMore} disabled={planUpgrade || fetchingMore || fetching}>
+          <Button color="primary" onClick={fetchMore} disabled={fetchingMore || fetching}>
             {fetchingMore || fetching ? `Loading ...` : 'Load More'}
           </Button>
         ) : (
@@ -118,10 +136,9 @@ export const DeviceLogPage = () => {
             End of Logs
           </Typography>
         )}
-
-        {planUpgrade && (
+        {!events?.hasMore && !fetching && createAt_days > daysAllowed && (
           <Typography variant="body2" align="center" color="textSecondary">
-            Plan upgrade required to view logs past 90 days <br />
+            Plan upgrade required to view logs past {daysAllowed} days <br />
             <Link onClick={() => window.open('https://link.remote.it/licensing/plans')}>Learn more</Link>
           </Typography>
         )}
