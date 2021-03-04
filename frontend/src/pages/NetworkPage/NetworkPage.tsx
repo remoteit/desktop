@@ -34,7 +34,6 @@ export const NetworkPage: React.FC = () => {
       header={
         <>
           <OutOfBand />
-          <Breadcrumbs />
           <Typography variant="h1">Add from Network</Typography>
         </>
       }

@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
-import { REGEX_LAST_PATH } from '../../shared/constants'
-import { useParams } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
+import { REGEX_LAST_PATH } from '../../shared/constants'
 import { ServiceForm } from '../../components/ServiceForm'
-import { getLinks } from '../../helpers/routeHelper'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
@@ -16,11 +14,8 @@ type Props = {
 }
 export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device }) => {
   const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
-  const { serviceID = '', deviceID } = useParams<{ serviceID: string; deviceID: string }>()
-  const { service, links } = useSelector((state: ApplicationState) => ({
-    service: device?.services.find(s => s.id === serviceID),
-    links: getLinks(state, deviceID),
-  }))
+  const { serviceID } = useParams<{ serviceID?: string }>()
+  const service = device?.services.find(s => s.id === serviceID)
   const target = targets?.find(t => t.uid === serviceID)
   const thisDevice = service?.deviceID === targetDevice.uid
   const location = useLocation()
@@ -32,7 +27,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device
   }, [])
 
   if (!service || (thisDevice && !target)) {
-    history.push(links.edit)
+    history.push('/devices/:deviceID')
     return null
   }
 
@@ -49,7 +44,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device
         onSubmit={async form => {
           if (device?.configurable) {
             // CloudShift
-            await devices.cloudUpdateService({ form, deviceId: deviceID })
+            await devices.cloudUpdateService({ form, deviceId: device?.id })
           } else {
             // for local cli config update
             backend.updateTargetService(form)

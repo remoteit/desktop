@@ -5,26 +5,24 @@ import { ApplicationState } from '../store'
 import { Switch, Route, useParams } from 'react-router-dom'
 import { NetworkPage } from '../pages/NetworkPage'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
-import { DeviceDetailPage } from '../pages/DeviceDetailPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
+import { DeviceDetailPage } from '../pages/DeviceDetailPage'
 import { ServiceDetailPage } from '../pages/ServiceDetailPage'
 import { UsersPageService } from '../pages/UsersPageService'
 import { UsersPageDevice } from '../pages/UsersPageDevice'
 import { ServiceEditPage } from '../pages/ServiceEditPage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
+import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
 import { LogPage } from '../pages/LogPage'
-import { getLinks } from '../helpers/routeHelper'
-import { DynamicPanel } from '../components/DynamicPanel'
 
 export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { device, targetDevice, targets, links } = useSelector((state: ApplicationState) => ({
+  const { device, targetDevice, targets } = useSelector((state: ApplicationState) => ({
     device: selectDevice(state, deviceID),
     targetDevice: state.backend.device,
     targets: state.backend.targets,
-    links: getLinks(state),
   }))
 
   // const { devices } = useDispatch<Dispatch>()
@@ -49,10 +47,10 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       primary={<DevicePage targetDevice={targetDevice} targets={targets} device={device} />}
       secondary={
         <Switch>
-          <Route path={links.scan}>
+          <Route path="/devices/:deviceID/add/scan">
             <NetworkPage />
           </Route>
-          <Route path={links.add}>
+          <Route path="/devices/:deviceID/add">
             <ServiceAddPage targetDevice={targetDevice} targets={targets} device={device} />
           </Route>
           <Route

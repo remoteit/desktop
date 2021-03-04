@@ -2,13 +2,10 @@ import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { List } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { getLinks } from '../helpers/routeHelper'
-import { fontSizes } from '../styling'
+import { List } from '@material-ui/core'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -18,17 +15,13 @@ type Props = {
 }
 
 export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, device }) => {
-  const css = useStyles()
   const history = useHistory()
-  const { links, remoteUI } = useSelector((state: ApplicationState) => ({
-    remoteUI: isRemoteUI(state),
-    links: getLinks(state, device?.id),
-  }))
+  const remoteUI = useSelector((state: ApplicationState) => isRemoteUI(state))
 
   useEffect(() => {
     analyticsHelper.page('DeviceEditPage')
     // check that target device is registered and don't redirect
-    if (!device && !(remoteUI && targetDevice.uid)) history.push(links.home)
+    if (!device && !(remoteUI && targetDevice.uid)) history.push('/devices')
   }, [device, targetDevice, history])
 
   if (!device) return null
@@ -55,7 +48,3 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, device 
     </DeviceHeaderMenu>
   )
 }
-
-const useStyles = makeStyles({
-  // actions: { right: 70 },
-})

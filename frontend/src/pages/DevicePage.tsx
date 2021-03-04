@@ -22,7 +22,6 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { getLinks } from '../helpers/routeHelper'
 import { Title } from '../components/Title'
 import { spacing, fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -36,17 +35,16 @@ type Props = {
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
   const history = useHistory()
-  const { connections, setupAddingService, links, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { connections, setupAddingService, remoteUI } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
     remoteUI: isRemoteUI(state),
-    links: getLinks(state, device?.id),
   }))
 
   useEffect(() => {
     analyticsHelper.page('DevicePage')
     // check that target device is registered and don't redirect
-    if (!device && !(remoteUI && targetDevice.uid)) history.push(links.home)
+    if (!device && !(remoteUI && targetDevice.uid)) history.push('/devices')
   }, [device, targetDevice, history])
 
   if (!device) return null
@@ -94,7 +92,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <AddFromNetwork allowScanning={thisDevice} button />
-        <AddServiceButton device={device} editable={editable} link={links.add} />
+        <AddServiceButton device={device} editable={editable} link="/devices/:deviceID/add" />
       </Typography>
       <List>
         {editable && <LicensingNotice device={device} />}
@@ -109,8 +107,8 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         {device.services.map(s => (
           <ListItemLocation
             key={s.id}
-            pathname={links.service.replace(':serviceID', s.id) + '/details'}
-            selected={links.service.replace(':serviceID', s.id)}
+            pathname={`/devices/${device.id}/${s.id}/details`}
+            selected={`/devices/${device.id}/${s.id}`}
             dense
           >
             <ListItemText className={css.service} primary={s.name} secondary={host(s)} />

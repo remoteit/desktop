@@ -14,7 +14,6 @@ import {
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
-import { getLinks } from '../../helpers/routeHelper'
 import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
@@ -22,20 +21,17 @@ import { Icon } from '../Icon'
 export const DeviceSetupItem: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
   const history = useHistory()
-  const { thisDevice, targetDevice, os, links, canRestore, restore, restoring } = useSelector(
-    (state: ApplicationState) => ({
-      thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-      targetDevice: state.backend.device,
-      os: state.backend.environment.os,
-      links: getLinks(state),
-      canRestore:
-        !state.backend.device.uid &&
-        (state.devices.total > state.devices.size ||
-          !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
-      restore: state.ui.restore,
-      restoring: state.ui.restoring,
-    })
-  )
+  const { thisDevice, targetDevice, os, canRestore, restore, restoring } = useSelector((state: ApplicationState) => ({
+    thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+    targetDevice: state.backend.device,
+    os: state.backend.environment.os,
+    canRestore:
+      !state.backend.device.uid &&
+      (state.devices.total > state.devices.size ||
+        !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
+    restore: state.ui.restore,
+    restoring: state.ui.restoring,
+  }))
 
   if (restoring)
     return (
@@ -60,9 +56,9 @@ export const DeviceSetupItem: React.FC = () => {
       )
     }
   }
-  console.log('DEVICE SETUP', links.setup)
+
   return (
-    <ListItemLocation pathname={links.setup}>
+    <ListItemLocation pathname="/devices/setup">
       <ListItemIcon>
         <Icon name="hdd" size="md" type="regular" />
       </ListItemIcon>

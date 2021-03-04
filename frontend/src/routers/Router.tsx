@@ -17,18 +17,18 @@ import { AccountAccessPage } from '../pages/AccountAccessPage'
 import { AccountMembershipPage } from '../pages/AccountMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { ReportsPage } from '../pages/ReportsPage'
-import { getLinks } from '../helpers/routeHelper'
+import { isRemoteUI } from '../helpers/uiHelper'
 import { Panel } from '../components/Panel'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
-  const { redirect, targetDevice, registered, os, links } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, redirect, targetDevice, registered, os } = useSelector((state: ApplicationState) => ({
+    remoteUI: isRemoteUI(state),
     redirect: state.ui.redirect,
     targetDevice: state.backend.device,
     registered: !!state.backend.device.uid,
     os: state.backend.environment.os,
-    links: getLinks(state),
   }))
 
   useEffect(() => {
@@ -72,17 +72,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         />
       </Route>
 
-      {/* Configure */}
-      <Route path="/configure">
-        {registered ? (
-          <Redirect to={`/configure/${targetDevice.uid}`} />
-        ) : (
-          <Panel>
-            <SetupDevice os={os} />
-          </Panel>
-        )}
-      </Route>
-
       {/* Devices */}
       <Route path="/devices/setup">
         {registered ? (
@@ -100,7 +89,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         </Panel>
       </Route>
 
-      <Route path={links.waiting}>
+      <Route path="/devices/setupWaiting">
         <Panel>
           <SetupWaiting os={os} targetDevice={targetDevice} />
         </Panel>
@@ -111,9 +100,19 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       </Route>
 
       <Route path="/devices">
-        <Panel>
-          <DevicesPage />
-        </Panel>
+        {remoteUI ? (
+          registered ? (
+            <Redirect to={`/devices/${targetDevice.uid}`} />
+          ) : (
+            <Panel>
+              <SetupDevice os={os} />
+            </Panel>
+          )
+        ) : (
+          <Panel>
+            <DevicesPage />
+          </Panel>
+        )}
       </Route>
 
       <Route path={['/settings/membership/share', '/settings/access/share']}>
@@ -147,7 +146,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       </Route>
 
       <Route path="/">
-        <Redirect to={links.home} />
+        <Redirect to="/devices" />
       </Route>
     </Switch>
   )

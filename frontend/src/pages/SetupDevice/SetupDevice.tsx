@@ -4,25 +4,18 @@ import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
 import { TextField, Button, Typography } from '@material-ui/core'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { getDevices } from '../../models/accounts'
-import { Container } from '../../components/Container'
-import { isRemoteUI } from '../../helpers/uiHelper'
-import { getLinks } from '../../helpers/routeHelper'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
-import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { os?: Ios }
 
 export const SetupDevice: React.FC<Props> = ({ os }) => {
-  const { hostname, loading, nameBlacklist, links, remoteUI } = useSelector((state: ApplicationState) => ({
-    links: getLinks(state),
-    remoteUI: isRemoteUI(state),
+  const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost,
     nameBlacklist: getDevices(state)
@@ -61,7 +54,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
           if (!name) return
           event.preventDefault()
           backend.registerDevice({ targets: selected, name })
-          history.push(links.waiting)
+          history.push('/devices/setupWaiting')
         }}
       >
         <section className={css.device}>
