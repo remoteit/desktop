@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { isElectron } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
 import { spacing, colors } from '../../styling'
+import { DragAppRegion } from '../DragAppRegion'
 import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 import classnames from 'classnames'
@@ -47,6 +48,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
           <Logo width={80} margin="auto" white />
         </div>
       )}
+      <DragAppRegion />
       <div className={pageCss}>{children}</div>
     </div>
   )
