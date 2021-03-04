@@ -273,6 +273,7 @@ const jssTheme: ThemeOptions = {
       },
       colorTextSecondary: {
         color: colors.grayDark,
+        '& b': { color: colors.grayDarkest, fontWeight: 400 },
       },
     },
     MuiDialogTitle: { root: { margin: `${spacing.lg}px ${gutters}px 0`, padding: 0 } },

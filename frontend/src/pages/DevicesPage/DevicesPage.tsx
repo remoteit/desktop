@@ -61,7 +61,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: `0 ${styles.spacing.md}px`,
+    padding: `0 ${styles.spacing.md}px ${styles.spacing.sm}px`,
   },
   fetching: {
     position: 'absolute',
