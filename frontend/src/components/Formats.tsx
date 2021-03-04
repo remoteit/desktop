@@ -18,11 +18,19 @@ export const Formats = {
     if (!geo) return null
     return (
       <>
-        {geo.city}
-        <br />
-        {geo.stateName}
-        <br />
-        {geo.countryName}
+        {geo.city && (
+          <>
+            {geo.city}
+            <br />
+          </>
+        )}
+        {geo.stateName && (
+          <>
+            {geo.stateName}
+            <br />
+          </>
+        )}
+        {geo.countryName && geo.countryName}
       </>
     )
   },

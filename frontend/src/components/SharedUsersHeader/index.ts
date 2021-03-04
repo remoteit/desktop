@@ -1,1 +1,0 @@
-export { SharedUsersHeader } from './SharedUsersHeader'

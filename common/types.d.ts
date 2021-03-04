@@ -31,7 +31,7 @@ declare global {
     | 'launch/app'
 
     // App/settings
-    | 'app/open-on-login'
+    | 'maximize'
     | 'showFolder'
 
     // Backend
@@ -249,7 +249,6 @@ declare global {
     authHash?: string
     yoicsId?: string
     created?: Date
-    // platform?: number // fixme - unconfuse IUser with ISessionFixme
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
   }
@@ -266,10 +265,11 @@ declare global {
   }
 
   type ISession = {
-    id: string
+    id?: string
+    isP2P?: boolean
     timestamp: Date
     platform: number
-    user: IUserRef
+    user?: IUserRef
     geo?: IGeo
     target: {
       id: string
@@ -277,14 +277,6 @@ declare global {
       platform: number
       name: string // combined service + device names
     }
-  }
-
-  type ISessionFixme = {
-    id: string // user id
-    sessionId: string // FIXME this should be the id
-    timestamp: Date
-    email: string // user email FIXME this should be a IUserRef
-    platform: number
   }
 
   type IApplicationType = {
@@ -341,6 +333,7 @@ declare global {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
+    isP2P: boolean
     actor: IUserRef
     users: IUserRef[]
     platform: IUser['platform']
@@ -542,6 +535,14 @@ declare global {
   }
 
   type IShowFolderType = 'logs' | 'connections'
+
+  type INavigation = {
+    label: string
+    path: string
+    icon: string
+    show: boolean
+    badge?: number
+  }
 }
 
 export {}

@@ -20,7 +20,7 @@ export function SignInPage() {
   }, [])
 
   return (
-    <Body center>
+    <Body className={css.body} center>
       <SignInForm />
       {allowSwitch && (
         <div className={css.link}>
@@ -54,6 +54,7 @@ export function SignInPage() {
 }
 
 const useStyles = makeStyles({
+  body: { '& > div': { maxWidth: 440 } },
   logo: {
     marginTop: -styles.spacing.xl,
     marginBottom: styles.spacing.lg,

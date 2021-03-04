@@ -308,15 +308,15 @@ export function isOffline(instance?: IDevice | IService, connection?: IConnectio
   return inactive || unlicensed
 }
 
-export function selectDevice(state: ApplicationState, deviceId: string) {
+export function selectDevice(state: ApplicationState, deviceId?: string) {
   return getAllDevices(state).find(d => d.id === deviceId)
 }
 
-export function selectService(state: ApplicationState, serviceId: string) {
-  return findService(getAllDevices(state), serviceId)
+export function selectById(state: ApplicationState, id?: string) {
+  return findService(getAllDevices(state), id)
 }
 
-export function findService(devices: IDevice[], id: string) {
+export function findService(devices: IDevice[], id?: string) {
   let service: IService | undefined
   const device = devices.find(
     d =>

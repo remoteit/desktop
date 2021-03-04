@@ -60,7 +60,7 @@ export const RegisterButton: React.FC = () => {
     <>
       <Tooltip title="Device Registration">
         <IconButton onClick={handleOpen}>
-          <Icon name="plus" size="sm" type="regular" />
+          <Icon name="plus" size="sm" type="regular" fixedWidth />
         </IconButton>
       </Tooltip>
       <Popover
@@ -77,7 +77,7 @@ export const RegisterButton: React.FC = () => {
         }}
       >
         <Body center className={css.popover}>
-          <Typography variant="body1">Enter your code to register a new device.</Typography>
+          <Typography variant="caption">Enter your code to register a new device.</Typography>
           <form
             onSubmit={e => {
               e.preventDefault()
@@ -123,8 +123,9 @@ export const RegisterButton: React.FC = () => {
 
 const useStyles = makeStyles({
   popover: {
-    padding: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
     '& .MuiList-root, & form': { width: '100%' },
+    '& .MuiListItem-root': { margin: 0, width: '100%' },
   },
 })

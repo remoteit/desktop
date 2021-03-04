@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
-import { version } from '../../../package.json'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -18,17 +17,15 @@ import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { isRemote } from '../../services/Browser'
 import { spacing } from '../../styling'
-import { Avatar } from '../../components/Avatar'
 import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC = () => {
-  const { showReports, os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
+  const { showReports, os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       showReports: state.auth.user?.email.includes('@remote.it'),
       os: state.backend.environment.os,
-      user: state.auth.user,
       installing: state.binaries.installing,
       cliVersion: state.binaries.installedVersion || '(loading...)',
       preferences: state.backend.preferences,
@@ -59,53 +56,12 @@ export const SettingsPage: React.FC = () => {
               </Tooltip>
             </Title>
             <OutOfBand inline />
-            <Typography className={css.user} variant="caption">
-              {user?.email}
-            </Typography>
-            <Avatar email={user?.email} button />
           </Typography>
         </>
       }
     >
       <List>
         <DeviceSetupItem />
-      </List>
-      <Divider />
-      <Typography variant="subtitle1">User</Typography>
-      <List>
-        <ListItemSetting
-          label="Help documentation"
-          icon="books"
-          onClick={() => window.open('https://link.remote.it/documentation-desktop/overview')}
-        />
-        <ListItemSetting
-          label="Send feedback"
-          icon="envelope"
-          onClick={() =>
-            (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
-          }
-        />
-        <ListItemSetting
-          label="Sign out"
-          subLabel="Allow this device to be transferred or another user to sign in. Will stop all connections."
-          icon="sign-out"
-          onClick={() => {
-            emit('user/sign-out')
-            analyticsHelper.track('signOut')
-          }}
-        />
-        <ListItemSetting
-          confirm
-          label="Lock application"
-          subLabel="Sign out and prevent others from signing in."
-          icon="lock"
-          confirmTitle="Are you sure?"
-          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
-          onClick={() => {
-            emit('user/lock')
-            analyticsHelper.track('signOutLock')
-          }}
-        />
       </List>
       <Divider />
       {showReports && (
@@ -118,15 +74,19 @@ export const SettingsPage: React.FC = () => {
       )}
       {remoteUI || (
         <>
-          <Typography variant="subtitle1">Sharing</Typography>
+          {/* <Typography variant="subtitle1">Sharing</Typography> */}
           <List>
             <AccountLinkingSettings />
           </List>
           <Divider />
         </>
       )}
-      <LicensingSetting />
-      <Typography variant="subtitle1">Application</Typography>
+      {/* <Typography variant="subtitle1">Licensing</Typography> */}
+      <List>
+        <LicensingSetting />
+      </List>
+      <Divider />
+      <Typography variant="subtitle1">Settings</Typography>
       <List>
         {isRemote() && (
           <ListItemSetting
@@ -165,16 +125,6 @@ export const SettingsPage: React.FC = () => {
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
-        {remoteUI || (
-          <ListItemSetting
-            confirm
-            label="Quit"
-            icon="power-off"
-            confirmTitle="Are you sure?"
-            confirmMessage="Quitting will not close your connections."
-            onClick={() => emit('user/quit')}
-          />
-        )}
         <UpdateSetting />
       </List>
       {remoteUI || (
@@ -223,5 +173,4 @@ export const SettingsPage: React.FC = () => {
 
 const useStyles = makeStyles({
   logo: { marginBottom: spacing.xs },
-  user: { marginRight: spacing.sm, fontFamily: 'Roboto Mono' },
 })

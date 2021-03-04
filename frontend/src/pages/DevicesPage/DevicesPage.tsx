@@ -3,9 +3,7 @@ import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { RegisterButton } from '../../buttons/RegisterButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { RefreshButton } from '../../buttons/RefreshButton'
 import { AccountSelect } from '../../components/AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
@@ -40,8 +38,6 @@ export const DevicesPage = () => {
           <div className={css.header}>
             <SearchField />
             <AccountSelect />
-            <RegisterButton />
-            <RefreshButton />
             <FilterButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
@@ -65,7 +61,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: `0 ${styles.spacing.md}px`,
+    padding: `0 ${styles.spacing.md}px ${styles.spacing.sm}px`,
   },
   fetching: {
     position: 'absolute',

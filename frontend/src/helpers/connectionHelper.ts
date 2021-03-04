@@ -21,11 +21,13 @@ export function findLocalConnection(state: ApplicationState, id: string, session
   return state.backend.connections.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
 
-export function connectionName(service?: IService, device?: IDevice) {
-  if (!device) return attributeName(service)
-  if (!service) return attributeName(device)
-  const deviceName = `${attributeName(device)} - `
-  const serviceName = attributeName(service)
+type nameObj = { name: string }
+
+export function connectionName(service?: nameObj, device?: nameObj): string {
+  if (!device) return service?.name || ''
+  if (!service) return device?.name || ''
+  const deviceName = `${device.name} - `
+  const serviceName = service.name
   return deviceName + serviceName.replace(deviceName, '')
 }
 
@@ -82,28 +84,6 @@ export function getConnectionIds(state: ApplicationState) {
 
 export function selectConnections(state: ApplicationState) {
   return state.backend.connections.filter(c => !!c.startTime)
-}
-
-export function selectMyConnections(state: ApplicationState) {
-  const devices = getAllDevices(state)
-  const allConnections = selectConnections(state)
-
-  let services: IService[] = []
-  let connections: IConnection[] = []
-
-  for (const device of devices) {
-    for (const service of device.services) {
-      const index = allConnections.findIndex(c => c.id === service.id)
-
-      if (index > -1) {
-        connections.push(allConnections[index])
-        services.push(service)
-        allConnections.splice(index, 1)
-      }
-    }
-  }
-
-  return { services, connections }
 }
 
 export function getConnectionSessionIds() {

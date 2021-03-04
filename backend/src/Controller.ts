@@ -78,6 +78,7 @@ class Controller {
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
+    socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
 
     this.initBackend()
     this.check()

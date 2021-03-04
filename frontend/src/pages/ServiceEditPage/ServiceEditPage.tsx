@@ -1,37 +1,21 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
-import { selectService } from '../../models/devices'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
-import { UnregisterServiceButton } from '../../buttons/UnregisterServiceButton'
-import { DeleteServiceButton } from '../../buttons/DeleteServiceButton'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { REGEX_LAST_PATH } from '../../shared/constants'
-import { Typography } from '@material-ui/core'
-import { useParams } from 'react-router-dom'
-import { Container } from '../../components/Container'
-import { OutOfBand } from '../../components/OutOfBand'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { ServiceForm } from '../../components/ServiceForm'
-import { getLinks } from '../../helpers/routeHelper'
-import { Title } from '../../components/Title'
-import { Icon } from '../../components/Icon'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
   targetDevice: ITargetDevice
+  device?: IDevice
 }
-export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
+export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device }) => {
   const { devices, backend, applicationTypes } = useDispatch<Dispatch>()
-  const { serviceID = '', deviceID } = useParams<{ serviceID: string; deviceID: string }>()
-  const { device, service, links } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectService(state, serviceID)
-    return {
-      device,
-      service,
-      links: getLinks(state, deviceID),
-    }
-  })
+  const { serviceID } = useParams<{ serviceID?: string }>()
+  const service = device?.services.find(s => s.id === serviceID)
   const target = targets?.find(t => t.uid === serviceID)
   const thisDevice = service?.deviceID === targetDevice.uid
   const location = useLocation()
@@ -43,30 +27,14 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
   }, [])
 
   if (!service || (thisDevice && !target)) {
-    history.push(links.edit)
+    history.push('/devices/:deviceID')
     return null
   }
 
   const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   return (
-    <Container
-      header={
-        <>
-          <OutOfBand />
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
-            <Title inline>Edit service</Title>
-            {thisDevice ? (
-              <UnregisterServiceButton target={target} />
-            ) : (
-              <DeleteServiceButton device={device} service={service} />
-            )}
-          </Typography>
-        </>
-      }
-    >
+    <ServiceHeaderMenu device={device} service={service} target={target}>
       <ServiceForm
         service={service}
         target={target}
@@ -76,7 +44,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
         onSubmit={async form => {
           if (device?.configurable) {
             // CloudShift
-            await devices.cloudUpdateService({ form, deviceId: deviceID })
+            await devices.cloudUpdateService({ form, deviceId: device?.id })
           } else {
             // for local cli config update
             backend.updateTargetService(form)
@@ -90,6 +58,6 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice }) => {
           exit()
         }}
       />
-    </Container>
+    </ServiceHeaderMenu>
   )
 }

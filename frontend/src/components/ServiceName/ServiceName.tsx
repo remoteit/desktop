@@ -23,7 +23,6 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   const instance = service || device
   const accessDisabled = !!device?.attributes?.accessDisabled
   const offline = isOffline(instance, connection)
-  const targetPlatformId = device?.targetPlatform
   const proxy = service && connection?.isP2P === false
 
   let name = ''
@@ -36,13 +35,13 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   if (connection?.name && menu && menu[0] === '/connections') name = connection.name
 
   return (
-    <Title offline={offline} inline={inline}>
+    <Title enabled={connection?.enabled} offline={offline} inline={inline}>
       {name || 'No device found'}
-      {!!targetPlatformId && (
+      {/* {!!targetPlatformId && (
         <sup>
           <TargetPlatform id={targetPlatformId} tooltip />
         </sup>
-      )}
+      )} */}
       {device?.configurable && (
         <Tooltip title="CloudShift Configurable" placement="top" arrow>
           <sup>

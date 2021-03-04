@@ -4,25 +4,18 @@ import { ApplicationState, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '../../shared/nameHelper'
 import { TextField, Button, Typography } from '@material-ui/core'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import { getDevices } from '../../models/accounts'
-import { Container } from '../../components/Container'
-import { isRemoteUI } from '../../helpers/uiHelper'
-import { getLinks } from '../../helpers/routeHelper'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
-import { Icon } from '../../components/Icon'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { os?: Ios }
 
 export const SetupDevice: React.FC<Props> = ({ os }) => {
-  const { hostname, loading, nameBlacklist, links, remoteUI } = useSelector((state: ApplicationState) => ({
-    links: getLinks(state),
-    remoteUI: isRemoteUI(state),
+  const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
     loading: !state.backend.scanData.localhost,
     nameBlacklist: getDevices(state)
@@ -52,61 +45,58 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   }, [])
 
   return (
-    <Container header={remoteUI || <Breadcrumbs />} integrated>
-      <Body center={true}>
-        <Typography variant="body2" align="center" color="textSecondary">
-          Register your {osName(os)} for remote access
-        </Typography>
-        <form
-          onSubmit={event => {
-            if (!name) return
-            event.preventDefault()
-            backend.registerDevice({ targets: selected, name })
-            history.push(links.waiting)
-          }}
-        >
-          <section className={css.device}>
-            <TextField
-              label="Name"
-              className={css.input}
-              value={name}
-              variant="filled"
-              error={!!nameError}
-              onChange={event => {
-                const validation = serviceNameValidation(event.target.value)
-                setName(validation.value)
-                if (validation.error) {
-                  setNameError(validation.error)
-                  return
-                }
-                if (nameBlacklist.includes(validation.value.toLowerCase().trim())) {
-                  setNameError('That device name is already in use.')
-                  setDisableRegister(true)
-                } else {
-                  setNameError(undefined)
-                  setDisableRegister(false)
-                }
-              }}
-              onFocus={event => event.target.select()}
-              helperText={nameError}
-              InputProps={{ disableUnderline: true }}
-            />
-            <Button
-              className={css.button}
-              color="primary"
-              variant="contained"
-              size="medium"
-              disabled={!name || disableRegister}
-              type="submit"
-            >
-              Register
-              <Icon name="check" type="regular" inline />
-            </Button>
-          </section>
-          <LocalhostScanForm onSelect={setSelected} loading={loading} />
-        </form>
-      </Body>
-    </Container>
+    <Body center={true}>
+      <Typography variant="body2" align="center" color="textSecondary">
+        Register your {osName(os)} for remote access
+      </Typography>
+      <form
+        onSubmit={event => {
+          if (!name) return
+          event.preventDefault()
+          backend.registerDevice({ targets: selected, name })
+          history.push('/devices/setupWaiting')
+        }}
+      >
+        <section className={css.device}>
+          <TextField
+            label="Name"
+            className={css.input}
+            value={name}
+            variant="filled"
+            error={!!nameError}
+            onChange={event => {
+              const validation = serviceNameValidation(event.target.value)
+              setName(validation.value)
+              if (validation.error) {
+                setNameError(validation.error)
+                return
+              }
+              if (nameBlacklist.includes(validation.value.toLowerCase().trim())) {
+                setNameError('That device name is already in use.')
+                setDisableRegister(true)
+              } else {
+                setNameError(undefined)
+                setDisableRegister(false)
+              }
+            }}
+            onFocus={event => event.target.select()}
+            helperText={nameError}
+            InputProps={{ disableUnderline: true }}
+          />
+          <Button
+            className={css.button}
+            color="primary"
+            variant="contained"
+            size="large"
+            disabled={!name || disableRegister}
+            type="submit"
+          >
+            Register
+          </Button>
+        </section>
+        <LocalhostScanForm onSelect={setSelected} loading={loading} />
+      </form>
+    </Body>
   )
 }
 

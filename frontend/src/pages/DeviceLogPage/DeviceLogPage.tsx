@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import {
@@ -12,42 +12,33 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
 } from '@material-ui/core'
-import { useParams } from 'react-router-dom'
-import { Container } from '../../components/Container'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { Title } from '../../components/Title'
-import { Icon } from '../../components/Icon'
 import { colors, fontSizes, spacing } from '../../styling'
-import { EventMessage } from './EventMessage'
-import { EventIcon } from './EventIcon'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
-import { DatePicker } from '../../components/DatePicker/DatePicker'
-import { getAllDevices } from '../../models/accounts'
+import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
+import { EventMessage } from './EventMessage'
+import { DatePicker } from '../../components/DatePicker'
+import { Container } from '../../components/Container'
+import { EventIcon } from './EventIcon'
+import { Icon } from '../../components/Icon'
 
 const DAY = 1000 * 60 * 60 * 24
 
-export const DeviceLogPage = () => {
-  const { deviceID } = useParams<{ deviceID: string }>()
-  const { device, events, idDevice, fetchingMore, fetching, user, limits, items } = useSelector(
-    (state: ApplicationState) => {
-      const device = getAllDevices(state).find(d => d.id === deviceID)
-      return {
-        device,
-        events: state.logs.events,
-        idDevice: state.logs.events?.deviceId,
-        fetchingMore: state.logs.fetchingMore,
-        fetching: state.logs.fetching,
-        user: state.auth.user,
-        limits: state.licensing.limits,
-        items: state.logs?.events?.deviceId === deviceID ? state.logs?.events?.items : [],
-      }
-    }
-  )
+export const DeviceLogPage: React.FC<{ device?: IDevice }> = ({ device }) => {
+  const { events, idDevice, fetchingMore, fetching, user, limits, items } = useSelector((state: ApplicationState) => ({
+    events: state.logs.events,
+    idDevice: state.logs.events?.deviceId,
+    fetchingMore: state.logs.fetchingMore,
+    fetching: state.logs.fetching,
+    user: state.auth.user,
+    limits: state.licensing.limits,
+    items: state.logs?.events?.deviceId === device?.id ? state.logs?.events?.items : [],
+  }))
   const dispatch = useDispatch<Dispatch>()
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
   const { fetchLogs } = dispatch.logs
   const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
   const createAt_days = Math.floor((new Date().getTime() - createAt.getTime()) / DAY)
+  const css = useStyles()
 
   let daysAllowed = 0
   let logLimit = (limits && limits?.filter(limit => limit.name === 'log-limit')[0].value.toString()) || '0'
@@ -72,34 +63,28 @@ export const DeviceLogPage = () => {
   minDay.setHours(0)
 
   useEffect(() => {
-    idDevice !== deviceID && fetchLogs({ id: deviceID, from: 0, minDate: `${minDay}` })
-    console.log('Fetching Logs')
-  }, [deviceID])
-
-  const css = useStyles()
-
-  const onChange = (date: any) => {
-    setSelectedDate(date)
-    fetchLogs({ id: deviceID, from: 0, maxDate: `${date}`, minDate: `${minDay}` })
-  }
-
-  const fetchMore = () => {
-    fetchLogs({ id: deviceID, from: items?.length, maxDate: `${selectedDate} 23:59:59`, minDate: `${minDay}` })
-  }
+    if (idDevice !== device?.id && device?.id) {
+      fetchLogs({ id: device.id, from: 0, minDate: `${minDay}` })
+      console.log('Fetching Logs')
+    }
+  }, [device?.id])
 
   if (!device) return null
 
+  const onChange = (date: any) => {
+    setSelectedDate(date)
+  }
+
+  const fetchMore = () => {
+    fetchLogs({ id: device.id, from: items?.length, maxDate: `${selectedDate} 23:59:59`, minDate: `${minDay}` })
+  }
+
   return (
-    <Container
-      bodyProps={{ inset: true }}
-      header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="file-alt" color="grayDarker" size="lg" />
-            <Title inline>Device Logs</Title>
-          </Typography>
-          <List className={css.header}>
+    <DeviceHeaderMenu device={device}>
+      <Container
+        bodyProps={{ inset: true }}
+        header={
+          <List>
             <ListItem dense>
               <ListItemIcon>
                 <Icon name={fetching ? 'spinner-third' : 'calendar-day'} size="md" spin={fetching} fixedWidth />
@@ -113,37 +98,36 @@ export const DeviceLogPage = () => {
               />
               <ListItemSecondaryAction>
                 <CSVDownloadButton
-                  deviceID={deviceID}
+                  deviceID={device.id}
                   maxDate={selectedDate?.toDateString() || new Date().toString()}
                 />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
-        </>
-      }
-    >
-      <List className={css.item}>
-        {!fetching && items?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
-      </List>
-
-      <Box className={css.box}>
-        {events?.hasMore || fetching ? (
-          <Button color="primary" onClick={fetchMore} disabled={fetchingMore || fetching}>
-            {fetchingMore || fetching ? `Loading ...` : 'Load More'}
-          </Button>
-        ) : (
-          <Typography variant="body2" align="center" color="textSecondary">
-            End of Logs
-          </Typography>
-        )}
-        {!events?.hasMore && !fetching && createAt_days > daysAllowed && (
-          <Typography variant="body2" align="center" color="textSecondary">
-            Plan upgrade required to view logs past {daysAllowed} days <br />
-            <Link onClick={() => window.open('https://link.remote.it/licensing/plans')}>Learn more</Link>
-          </Typography>
-        )}
-      </Box>
-    </Container>
+        }
+      >
+        <List className={css.item}>
+          {!fetching && items?.map((item: any) => <EventCell item={item} device={device} user={user} key={item.id} />)}
+        </List>
+        <Box className={css.box}>
+          {events?.hasMore || fetching ? (
+            <Button color="primary" onClick={fetchMore} disabled={fetchingMore || fetching}>
+              {fetchingMore || fetching ? `Loading ...` : 'Load More'}
+            </Button>
+          ) : (
+            <Typography variant="body2" align="center" color="textSecondary">
+              End of Logs
+            </Typography>
+          )}
+          {!events?.hasMore && !fetching && createAt_days > daysAllowed && (
+            <Typography variant="body2" align="center" color="textSecondary">
+              Plan upgrade required to view logs past {daysAllowed} days <br />
+              <Link onClick={() => window.open('https://link.remote.it/licensing/plans')}>Learn more</Link>
+            </Typography>
+          )}
+        </Box>
+      </Container>
+    </DeviceHeaderMenu>
   )
 }
 
@@ -168,9 +152,6 @@ export function EventCell({ item, device, user }: { item: IEvent; device: IDevic
 }
 
 const useStyles = makeStyles({
-  header: {
-    paddingTop: 0,
-  },
   textField: {
     display: 'block',
     marginLeft: spacing.sm,

@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { selectService } from '../models/devices'
+import { selectById } from '../models/devices'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { platformConfiguration } from '../services/platformConfiguration'
@@ -121,7 +121,7 @@ export default createModel<RootModel>()({
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
         if (last) {
-          let [service] = selectService(globalState, last.uid)
+          let [service] = selectById(globalState, last.uid)
           if (service) {
             service.attributes = { ...service.attributes, ...deferredAttributes }
             dispatch.devices.setServiceAttributes(service)
@@ -175,7 +175,7 @@ export default createModel<RootModel>()({
       connections.forEach(connection => {
         // data missing from cli if our connections file is lost
         if (!connection.owner) {
-          const [service] = selectService(globalState, connection.id)
+          const [service] = selectById(globalState, connection.id)
           if (service) {
             connection = { ...newConnection(service), ...connection }
             setConnection(connection)

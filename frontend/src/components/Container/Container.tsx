@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles, Divider } from '@material-ui/core'
 import { colors, spacing } from '../../styling'
 import { Body } from '../Body'
 
@@ -17,7 +17,10 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
 
   return (
     <div className={css.container}>
-      <div className={integrated ? undefined : css.header}>{header}</div>
+      <div className={integrated ? undefined : css.header}>
+        {header}
+        {integrated || <Divider variant="inset" />}
+      </div>
       {sidebar ? (
         <div className={css.sidebar}>
           <Body {...bodyProps}>{children}</Body>
@@ -28,7 +31,12 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
           {children}
         </Body>
       )}
-      {footer && <div>{footer}</div>}
+      {footer && (
+        <div className={css.footer}>
+          <Divider variant="inset" />
+          {footer}
+        </div>
+      )}
     </div>
   )
 }
@@ -40,11 +48,10 @@ const useStyles = makeStyles({
     flexFlow: 'column',
     height: '100%',
     position: 'relative',
+    overflow: 'hidden',
   },
   header: {
-    backgroundColor: colors.white,
     position: 'relative',
-    boxShadow: `0 1px 2px ${colors.darken}`,
     zIndex: 3,
     '& .MuiTypography-h1': {
       display: 'flex',
@@ -62,8 +69,11 @@ const useStyles = makeStyles({
   },
   sideContent: {
     boxShadow: `-1px 0 2px ${colors.darken}`,
-    backgroundColor: colors.white,
     position: 'relative',
     zIndex: 2,
+  },
+  footer: {
+    position: 'relative',
+    zIndex: 3,
   },
 })

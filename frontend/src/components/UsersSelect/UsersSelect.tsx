@@ -1,6 +1,5 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
 import { ApplicationState } from '../../store'
 import { selectSessionUsers } from '../../models/sessions'
 import { ListItemIcon, ListItemText } from '@material-ui/core'
@@ -15,7 +14,6 @@ type Props = {
 }
 
 export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
-  const location = useLocation()
   const connected = useSelector(
     (state: ApplicationState) => selectSessionUsers(state, service ? service.id : device?.id).length
   )
@@ -25,8 +23,12 @@ export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
 
   if (device?.shared) return null
 
+  let pathname = `/devices/${device?.id}`
+  if (service) pathname += `/${service.id}`
+  pathname += total ? '/users' : '/share'
+
   return (
-    <ListItemLocation pathname={`${location.pathname}/${total ? 'users' : 'share'}`} dense>
+    <ListItemLocation pathname={pathname} dense>
       <ListItemIcon>
         <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
       </ListItemIcon>

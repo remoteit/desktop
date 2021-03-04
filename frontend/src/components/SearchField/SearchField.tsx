@@ -1,5 +1,5 @@
 import React from 'react'
-import { InputBase, IconButton, Tooltip, Typography } from '@material-ui/core'
+import { TextField, IconButton, Tooltip, Typography } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, colors } from '../../styling'
@@ -27,10 +27,12 @@ export const SearchField: React.FC = () => {
         devices.fetch()
       }}
     >
-      <InputBase
+      <TextField
+        fullWidth
         value={query}
+        variant="filled"
         className={css.input}
-        classes={{ focused: css.focused }}
+        SelectProps={{ disableUnderline: true }}
         onKeyPress={e => {
           if (e.key === 'Enter' && query.trim().length < 2) {
             devices.set({ query: '', searched: false, from: 0 })
@@ -77,17 +79,7 @@ const useStyles = makeStyles({
     position: 'relative',
   },
   input: {
-    width: '100%',
-    backgroundColor: colors.grayLightest,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
     marginRight: spacing.sm,
-    padding: `${spacing.sm}px ${spacing.md}px`,
-    transition: 'background-color 300ms',
-    '&:focus, &:hover': { backgroundColor: colors.primaryHighlight },
-  },
-  focused: {
-    backgroundColor: colors.primaryLighter,
   },
   total: {
     marginRight: spacing.sm,

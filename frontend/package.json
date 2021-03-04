@@ -1,6 +1,6 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "2.11.5",
+  "version": "2.12.0-alpha.0",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
@@ -23,6 +23,7 @@
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@kevinwolf/formal-web": "^0.1.3",
     "@material-ui/core": "^4.11.3",
+    "@material-ui/lab": "^4.0.0-alpha.57",
     "@material-ui/pickers": "^3.2.10",
     "@rematch/core": "^2.0.0-next.6",
     "@rematch/immer": "^1.2.0",

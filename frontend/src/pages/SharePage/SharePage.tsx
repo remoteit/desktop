@@ -143,7 +143,6 @@ export const SharePage = () => {
     <Container
       header={
         <>
-          <Breadcrumbs />
           <Typography variant="h1">
             {email ? (
               <>

@@ -9,17 +9,19 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export type ConnectButtonProps = {
   connection?: IConnection
   service?: IService
-  size?: 'icon' | 'medium' | 'small'
+  size?: 'icon' | 'medium' | 'small' | 'large'
   color?: Color
   autoConnect?: boolean
+  fullWidth?: boolean
 }
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'secondary',
+  color = 'primary',
   autoConnect,
+  fullWidth,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
   const hidden = connection?.connected || service?.state !== 'active'
@@ -60,7 +62,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (listening) {
-    title = 'Waiting'
+    title = 'Started'
     color = 'primary'
   }
 
@@ -69,13 +71,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       <div>
         <DynamicButton
           title={connecting ? 'Connecting' : title}
-          icon="exchange"
+          icon="arrow-right"
           variant={variant}
           loading={connecting}
-          color={connecting ? 'gray' : color}
+          color={connecting ? 'grayDark' : color}
           size={size}
           onClick={clickHandler}
           disabled={disabled}
+          fullWidth={fullWidth}
         />
       </div>
     </Fade>

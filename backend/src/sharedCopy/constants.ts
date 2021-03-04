@@ -40,6 +40,7 @@ export const REGEX_VALID_HOSTNAME = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-
 
 export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_NAME_LENGTH = 100
+export const SIDEBAR_WIDTH = 250
 
 export const LEGACY_ATTRIBUTES = [
   'categoryA',

@@ -83,16 +83,16 @@ export const InlineSetting: React.FC<Props> = ({
           }}
         >
           {children}
-          {resetValue != null && (
-            <ResetButton
-              onMouseDown={cancelBlur}
-              onClick={() => {
-                onResetClick()
-                fieldRef.current?.focus()
-              }}
-            />
-          )}
           <ListItemSecondaryAction>
+            {resetValue != null && (
+              <ResetButton
+                onMouseDown={cancelBlur}
+                onClick={() => {
+                  onResetClick()
+                  fieldRef.current?.focus()
+                }}
+              />
+            )}
             <Tooltip title="Cancel">
               <IconButton onClick={onCancel}>
                 <Icon name="times" size="md" fixedWidth />
@@ -149,9 +149,12 @@ const useStyles = makeStyles({
   },
   action: {
     position: 'absolute',
+    display: 'flex',
+    minWidth: 60,
+    justifyContent: 'center',
     zIndex: 1,
     right: 'auto',
-    left: spacing.lg,
+    left: 20,
     marginTop: spacing.xs,
   },
 })
