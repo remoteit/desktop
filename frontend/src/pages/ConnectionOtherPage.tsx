@@ -16,7 +16,7 @@ import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
-import { EditButton } from '../buttons/EditButton'
+import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -56,7 +56,7 @@ export const ConnectionOtherPage: React.FC = () => {
                 }
               />
               <ListItemSecondaryAction>
-                <EditButton device={device} service={service} connection={connection} />
+                <InfoButton device={device} service={service} connection={connection} />
               </ListItemSecondaryAction>
             </ListItem>
           </List>

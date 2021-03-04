@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
+import { Icon } from '../components/Icon'
 
 type Props = {
   device: IDevice
@@ -10,19 +10,11 @@ type Props = {
   onClick?: () => void
 }
 
-export const EditButton: React.FC<Props> = ({ onClick, device, service, connection }) => {
+export const InfoButton: React.FC<Props> = ({ onClick, device, service, connection }) => {
   const history = useHistory()
   const instance = device || service
 
-  let title = 'Configure'
-  let icon = 'cog'
-
-  if (device?.shared) {
-    title = 'View'
-    icon = 'info-circle'
-  }
-
-  console.log('EDIT', connection)
+  let title = 'View'
 
   if (service) title += ' Service'
   else if (device) title += ' Device'
@@ -37,7 +29,7 @@ export const EditButton: React.FC<Props> = ({ onClick, device, service, connecti
   return (
     <Tooltip title={title}>
       <IconButton onClick={() => onClick && onClick()}>
-        <Icon name={icon} size="md" fixedWidth />
+        <Icon name="info-circle" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

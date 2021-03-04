@@ -23,7 +23,7 @@ import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { ForgetButton } from '../buttons/ForgetButton'
 import { ErrorButton } from '../buttons/ErrorButton'
-import { EditButton } from '../buttons/EditButton'
+import { InfoButton } from '../buttons/InfoButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
@@ -67,7 +67,7 @@ export const ConnectionPage: React.FC = () => {
               size="large"
               fullWidth
             />
-            <EditButton device={device} service={service} connection={connection} />
+            <InfoButton device={device} service={service} connection={connection} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <CopyButton connection={connection} service={service} />

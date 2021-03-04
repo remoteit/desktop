@@ -61,7 +61,7 @@ const useStyles = recent =>
       display: 'flex',
       alignItems: 'flex-start',
       '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
-      '& > svg': { marginTop: spacing.xs, marginRight: spacing.lg, marginLeft: spacing.lg },
+      '& > svg': { marginTop: spacing.xxs, marginRight: spacing.lg, marginLeft: spacing.lg },
     },
     from: { width: '25%' },
     vertical: {
