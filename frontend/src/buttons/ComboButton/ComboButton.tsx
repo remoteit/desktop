@@ -1,6 +1,5 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
-import { connectionState } from '../../helpers/connectionHelper'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
 import { OfflineButton } from '../OfflineButton'
@@ -13,14 +12,12 @@ type Props = {
 }
 
 export const ComboButton: React.FC<Props> = ({ connection, service, className }) => {
-  const state = connectionState(service, connection)
   const css = useStyles()
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
       <ConnectButton connection={connection} service={service} size="small" />
       <DisconnectButton connection={connection} service={service} size="small" />
       <OfflineButton connection={connection} service={service} />
-      {state}
     </div>
   )
 }
