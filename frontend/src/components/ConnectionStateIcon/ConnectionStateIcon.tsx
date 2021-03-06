@@ -3,6 +3,7 @@ import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
+import { connectionState } from '../../helpers/connectionHelper'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'
 import { colors, spacing, Color } from '../../styling'
 
@@ -24,6 +25,7 @@ export function ConnectionStateIcon({
 }: ConnectionStateIconProps) {
   const css = useStyles()
   const history = useHistory()
+  const cState = connectionState(service, connection)
 
   let instance = service || device
   let icon = 'question-circle'
@@ -33,8 +35,9 @@ export function ConnectionStateIcon({
   let state = instance?.state || ''
 
   if (connection) {
-    if (connection.connected) state = 'connected'
-    if (connection.connecting) state = 'connecting'
+    if (cState === 'connected') state = 'connected'
+    if (cState === 'connecting') state = 'transition'
+    if (cState === 'stopping') state = 'transition'
   }
 
   let name: any = state || 'unknown'
@@ -55,7 +58,7 @@ export function ConnectionStateIcon({
       icon = 'scrubber'
       colorName = 'primary'
       break
-    case 'connecting':
+    case 'transition':
       icon = 'spinner-third'
       colorName = 'grayLight'
       showQuality = false
@@ -83,7 +86,7 @@ export function ConnectionStateIcon({
         <Icon {...props} name="hdd" color="grayDarker" fixedWidth />
         {!(showQuality && device) && (
           <sup>
-            <Icon name={icon} color={colorName} spin={state === 'connecting'} size="sm" type="regular" fixedWidth />
+            <Icon name={icon} color={colorName} spin={state === 'transition'} size="sm" type="regular" fixedWidth />
           </sup>
         )}
       </span>
@@ -91,7 +94,7 @@ export function ConnectionStateIcon({
   else {
     element = (
       <span>
-        <Icon {...props} name={icon} color={colorName} spin={state === 'connecting'} fixedWidth />
+        <Icon {...props} name={icon} color={colorName} spin={state === 'transition'} fixedWidth />
       </span>
     )
   }

@@ -12,9 +12,13 @@ export interface Props {
 }
 
 export const ConnectionsList: React.FC<Props> = ({ connections, services }) => {
+  let recent: IConnection[] = []
   const css = useStyles()
-  const enabled = connections.filter(c => c.enabled)
-  const recent = connections.filter(c => !c.enabled)
+  const enabled = connections.filter(c => {
+    if (c.enabled && c.online) return true
+    recent.push(c)
+    return false
+  })
 
   return (
     <List>

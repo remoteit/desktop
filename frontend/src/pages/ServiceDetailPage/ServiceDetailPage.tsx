@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { useParams } from 'react-router-dom'
 import { ApplicationState } from '../../store'
+import { connectionState } from '../../helpers/connectionHelper'
 import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { Title } from '../../components/Title'
@@ -17,6 +18,7 @@ export const ServiceDetailPage = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
+  const state = connectionState(service, connection)
 
   let data: IDataDisplay[] = []
 
@@ -26,11 +28,11 @@ export const ServiceDetailPage = () => {
 
   if (!service || !device) return null
 
-  if (connection && connection.connected) {
+  if (state === 'connected') {
     data = data.concat([
-      { label: 'Host', value: connection.host },
-      { label: 'Port', value: connection.port },
-      { label: 'Restriction', value: connection.restriction },
+      { label: 'Host', value: connection?.host },
+      { label: 'Port', value: connection?.port },
+      { label: 'Restriction', value: connection?.restriction },
     ])
   }
 

@@ -155,6 +155,7 @@ export default class CLI {
         }
 
         d('UPDATE STATUS', { c, status: status.state })
+        console.log('STATE --------------- ', status.state, ' - ', status.sessionID)
       }
       return c
     })

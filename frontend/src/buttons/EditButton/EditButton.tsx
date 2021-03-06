@@ -1,6 +1,7 @@
 import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Tooltip, IconButton } from '@material-ui/core'
+import { connectionState } from '../../helpers/connectionHelper'
 import { Icon } from '../../components/Icon'
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export const EditButton: React.FC<Props> = ({ onClick, device, service, connection }) => {
+  const state = connectionState(service, connection)
   const location = useLocation()
   const history = useHistory()
   const instance = device || service
@@ -19,7 +21,7 @@ export const EditButton: React.FC<Props> = ({ onClick, device, service, connecti
   if (service) title += ' Service'
   else if (device) title += ' Device'
 
-  if ((service && device?.shared) || connection?.connected) return null
+  if ((service && device?.shared) || state === 'connected') return null
   if (instance) onClick = () => history.push(location.pathname + '/edit')
 
   return (

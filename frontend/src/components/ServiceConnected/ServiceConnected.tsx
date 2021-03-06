@@ -1,7 +1,8 @@
 import React from 'react'
 import { hostName } from '../../shared/nameHelper'
-import { DisconnectButton } from '../../buttons/DisconnectButton'
 import { Typography, Divider, Collapse } from '@material-ui/core'
+import { DisconnectButton } from '../../buttons/DisconnectButton'
+import { connectionState } from '../../helpers/connectionHelper'
 import { DataDisplay } from '../DataDisplay'
 import { Duration } from '../Duration'
 import { Columns } from '../Columns'
@@ -12,7 +13,8 @@ type Props = {
 }
 
 export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
-  const visible = connection?.connected
+  const state = connectionState(service, connection)
+  const visible = state === 'connecting' || state === 'connected'
 
   return (
     <Collapse in={visible} timeout={800}>

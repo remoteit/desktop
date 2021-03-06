@@ -1,11 +1,12 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { newConnection, setConnection, connectionState } from '../../helpers/connectionHelper'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { REGEX_PORT_SAFE } from '../../shared/constants'
 import { ApplicationState } from '../../store'
-import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { REGEX_PORT_SAFE } from '../../shared/constants'
 
 export const PortSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
+  const state = connectionState(service, connection)
   const defaultPort = useSelector(
     (state: ApplicationState) => service.attributes?.defaultPort || state.backend.freePort
   )
@@ -13,7 +14,7 @@ export const PortSetting: React.FC<{ service: IService; connection?: IConnection
   if (!service) return null
   if (!connection) connection = newConnection(service)
 
-  const disabled = connection.connected || connection.connecting
+  const disabled = state === 'connected' || state === 'connecting'
   const save = (port?: number) =>
     connection &&
     setConnection({

@@ -145,6 +145,8 @@ declare global {
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
+  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping'
+
   type IConnectionKey = keyof IConnection
 
   interface IosInfo {

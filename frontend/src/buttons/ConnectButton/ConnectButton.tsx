@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { connectionState } from '../../helpers/connectionHelper'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
@@ -22,9 +23,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   autoConnect,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const hidden = connection?.connected || service?.state !== 'active'
-  const connecting = !!connection?.connecting
-  const listening = connection?.enabled && !connection.connected
+  const state = connectionState(service, connection)
+  const visible = state === 'stopping' || state === 'disconnected'
+  const connecting = state === 'connecting'
+  const listening = state === 'connected'
 
   const clickHandler = () => {
     if (connecting) {
@@ -65,7 +67,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   return (
-    <Fade in={!hidden} timeout={600}>
+    <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
           title={connecting ? 'Connecting' : title}

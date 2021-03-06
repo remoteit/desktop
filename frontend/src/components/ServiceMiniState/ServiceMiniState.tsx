@@ -4,6 +4,7 @@ import { makeStyles, Box, lighten } from '@material-ui/core'
 import { spacing, colors, fontSizes, Color } from '../../styling'
 import { selectSessionsByService } from '../../models/sessions'
 import { ApplicationState } from '../../store'
+import { connectionState } from '../../helpers/connectionHelper'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
 import classnames from 'classnames'
@@ -20,6 +21,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
   const sessions = useSelector((state: ApplicationState) =>
     selectSessionsByService(state, service?.id || connection?.id)
   )
+  const cState = connectionState(service, connection)
   const connected = showConnected && !!sessions.length
   const css = useStyles()
 
@@ -29,8 +31,8 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
 
   if (connection) {
     failover = connection.isP2P === false
-    if (connection.connecting && !connection.connected) state = 'connecting'
-    if (connection.connected) state = 'connected'
+    if (cState === 'connecting' || cState === 'stopping') state = 'transition'
+    if (cState === 'connected') state = 'connected'
     if (connection.error?.message) state = 'error'
   }
 
@@ -50,7 +52,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
     case 'connected':
       colorName = 'primary'
       break
-    case 'connecting':
+    case 'transition':
       colorName = 'grayLight'
       break
     case 'restricted':
