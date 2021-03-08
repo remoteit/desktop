@@ -190,9 +190,11 @@ export function getOwnDevices(state: ApplicationState): IDevice[] {
   return state.devices.all[state.auth.user?.id || ''] || []
 }
 
-export function getAllDevices(state: ApplicationState) {
-  return Object.keys(state.devices.all).reduce(
-    (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
-    []
+export function getAllDevices(state: ApplicationState): IDevice[] {
+  return (
+    Object.keys(state.devices.all).reduce(
+      (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
+      []
+    ) || []
   )
 }

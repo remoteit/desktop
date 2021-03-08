@@ -116,6 +116,12 @@ declare global {
     guid: string
   }
 
+  interface ISearch {
+    deviceName: string
+    serviceName: string
+    serviceId: string
+    accountEmail: string
+  }
   interface IConnection {
     id: string
     name: string

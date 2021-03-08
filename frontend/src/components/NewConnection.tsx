@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
-import { TextField, Typography } from '@material-ui/core'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
+import { TextField, Typography, ListSubheader } from '@material-ui/core'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
 import { useHistory, useParams } from 'react-router-dom'
 import { connectionName } from '../helpers/connectionHelper'
@@ -14,24 +14,19 @@ import analyticsHelper from '../helpers/analyticsHelper'
 export const NewConnection: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
+  const { search } = useDispatch<Dispatch>()
   const { serviceID } = useParams<{ serviceID?: string }>()
-  const { devices, enabledIds } = useSelector((state: ApplicationState) => ({
+  const [open, setOpen] = React.useState(false)
+  const [options, setOptions] = React.useState<ISearch[]>([])
+  const { data, enabledIds } = useSelector((state: ApplicationState) => ({
     enabledIds: state.backend.connections.filter(c => c.enabled).map(c => c.id),
-    devices: getAllDevices(state)
-      .filter(d => !d.hidden)
-      .sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0))
-      .map(d =>
-        d.services.map(s => ({
-          deviceName: d.name,
-          ...s,
-        }))
-      )
-      .flat()
-      .filter(s => s.state === 'active'),
+    data: state.search.all,
   }))
 
   useEffect(() => {
     analyticsHelper.track('newConnection')
+    search.fetch('')
+    // if (!open) setOptions([])
   }, [])
 
   return (
@@ -41,22 +36,34 @@ export const NewConnection: React.FC = () => {
       </Typography>
       <div className={css.container}>
         <Autocomplete
+          // debug
           autoHighlight
           autoComplete
           autoSelect
-          defaultValue={devices.find(d => d.id === serviceID)}
-          options={devices}
+          defaultValue={data.find(d => d.serviceId === serviceID)}
+          options={data}
           groupBy={option => option.deviceName}
-          getOptionLabel={option => connectionName(option, { name: option.deviceName })}
-          getOptionDisabled={option => option.state === 'inactive'}
-          getOptionSelected={(option, value) => option.id === value.id}
-          filterOptions={createFilterOptions({ stringify: option => option.name + ' ' + option.deviceName })}
+          // getOptionDisabled={option => option.state === 'inactive'}
+          getOptionLabel={option => connectionName({ name: option.serviceName }, { name: option.deviceName })}
+          getOptionSelected={(option, value) => option.serviceId === value.serviceId}
+          filterOptions={createFilterOptions({ stringify: option => option.serviceName + ' ' + option.deviceName })}
           renderInput={params => <TextField {...params} label="Select a service" size="small" variant="filled" />}
           renderOption={option =>
-            enabledIds.includes(option.id) ? <span className={css.enabled}>{option.name}</span> : option.name
+            enabledIds.includes(option.serviceId) ? (
+              <span className={css.enabled}>{option.serviceName}</span>
+            ) : (
+              option.serviceName
+            )
           }
+          renderGroup={option => [
+            <ListSubheader className="MuiAutocomplete-groupLabel" key={option.key}>
+              {option.group}
+              <span className={css.email}>{data[option.key].accountEmail}</span>
+            </ListSubheader>,
+            option.children,
+          ]}
           onChange={(event, value, reason) => {
-            if (reason === 'select-option') history.push(`/connections/new/${value?.id}`)
+            if (reason === 'select-option') history.push(`/connections/new/${value?.serviceId}`)
           }}
           fullWidth
         />
@@ -73,6 +80,12 @@ const useStyles = makeStyles({
     marginLeft: styles.spacing.lg,
     marginRight: styles.spacing.lg,
     padding: styles.spacing.md,
+  },
+  email: {
+    float: 'right',
+    color: styles.colors.grayLight,
+    textTransform: 'none',
+    letterSpacing: 0,
   },
   enabled: { color: styles.colors.primary },
 })
