@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Button, List, Typography, TextField, MenuItem } from '@material-ui/core'
-import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../shared/constants'
+import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_IP } from '../../shared/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
@@ -56,17 +56,24 @@ export const LanSharePage: React.FC = () => {
   const history = useHistory()
   const css = useStyles()
   const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
-
-  if (!connection || !service) return null
-
+  const [error, setError] = useState<string>()
+  const maxLength = 15
+  const [bindIP, setBindIP] = useState(currentHost)
+  const validIp = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
   const getSelectionValue = () => {
     if (!enabled) return IP_OPEN
     const value = selected.value
     return typeof value === 'function' ? value() : value
   }
+  const [disable, setDisable] = useState(
+    (connection.host !== IP_PRIVATE) === enabled && connection.restriction === getSelectionValue()
+  )
+
+  if (!connection || !service) return null
 
   const save = () => {
-    setConnection({ ...connection, host: enabled ? IP_OPEN : IP_PRIVATE, restriction: getSelectionValue() })
+    !validIp.test(bindIP) && setError('invalid IP')
+    !error && setConnection({ ...connection, host: enabled ? bindIP : IP_PRIVATE, restriction: getSelectionValue() })
     history.goBack()
   }
 
@@ -77,7 +84,7 @@ export const LanSharePage: React.FC = () => {
           icon="network-wired"
           toggle={enabled}
           onClick={() => {
-            setCurrentHost(enabled ? IP_PRIVATE : IP_OPEN)
+            setCurrentHost(enabled ? IP_PRIVATE : bindIP)
             setEnabled(!enabled)
           }}
           label="Enable local sharing"
@@ -89,15 +96,35 @@ export const LanSharePage: React.FC = () => {
           <Typography variant="caption">Your local IP address</Typography>
           <Typography variant="h2">{privateIP}</Typography>
         </div>
-        <div className={css.typography}>
-          <Typography variant="caption">Bind IP Address</Typography>
-          <Typography variant="h2">{currentHost}</Typography>
-        </div>
         <div className={css.note}>
           Allow users to connect to your remote device through your IP address using a custom port.
         </div>
         {enabled && (
           <>
+            <List>
+              <TextField
+                autoFocus
+                multiline={currentHost.toString().length > 30}
+                label="Bind IP Address"
+                error={!!error}
+                defaultValue={currentHost}
+                variant="filled"
+                helperText={error}
+                InputProps={{ disableUnderline: true }}
+                onChange={event => {
+                  let { value } = event.target
+                  if (maxLength && value.length > maxLength) {
+                    setError(`Cannot exceed ${maxLength} characters.`)
+                    value = value.substring(0, maxLength)
+                  } else {
+                    setError(undefined)
+                    setDisable(false)
+                    setBindIP(value)
+                  }
+                }}
+              ></TextField>
+            </List>
+
             <TextField
               select
               size="small"
@@ -135,12 +162,7 @@ export const LanSharePage: React.FC = () => {
       </div>
 
       <div className={css.indent}>
-        <Button
-          onClick={save}
-          variant="contained"
-          color="primary"
-          disabled={(connection.host !== IP_PRIVATE) === enabled && connection.restriction === getSelectionValue()}
-        >
+        <Button onClick={save} variant="contained" color="primary" disabled={disable}>
           Save
         </Button>
       </div>
@@ -160,6 +182,9 @@ const useStyles = makeStyles({
   },
   textField: {
     minWidth: 300,
+  },
+  list: {
+    textAlign: 'left',
   },
   mask: {
     fontStyle: 'italic',
