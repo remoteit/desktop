@@ -3,7 +3,6 @@ import Controller from '../../services/Controller'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Snackbar, IconButton } from '@material-ui/core'
-import { DragAppRegion } from '../../components/DragAppRegion'
 import { getOwnDevices } from '../../models/accounts'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
@@ -45,7 +44,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   return (
     <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
       {children}
-      <DragAppRegion />
       <Snackbar
         open={snackbar === 'offline'}
         message="Webserver connection lost. Retrying..."

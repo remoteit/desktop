@@ -18,6 +18,6 @@ const useStyles = makeStyles({
     height: spacing.xxl,
     position: 'absolute',
     '-webkit-app-region': 'drag',
-    backgroundColor: 'rgba(255,0,0,0.2)',
+    // backgroundColor: 'rgba(255,0,0,0.2)',
   },
 })

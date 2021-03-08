@@ -80,5 +80,6 @@ const useStyles = makeStyles({
     position: 'absolute',
     height: spacing.lg,
     right: spacing.md,
+    top: spacing.xxs,
   },
 })
