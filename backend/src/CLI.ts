@@ -155,6 +155,7 @@ export default class CLI {
         }
 
         d('UPDATE STATUS', { c, status: status.state })
+        // console.log('STATE --------------- ', status.state, ' - ', status.sessionID)
       }
       return c
     })
@@ -246,7 +247,7 @@ export default class CLI {
   }
 
   async reset() {
-    await this.exec({ cmds: [strings.reset()], checkAuthHash: true })
+    await this.exec({ cmds: [strings.reset()], admin: true })
   }
 
   async serviceUninstall() {

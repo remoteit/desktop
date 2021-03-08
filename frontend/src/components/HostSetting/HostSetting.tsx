@@ -1,15 +1,16 @@
 import React from 'react'
 import { replaceHost } from '../../shared/nameHelper'
-import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../shared/constants'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../shared/constants'
+import { newConnection, setConnection, connectionState } from '../../helpers/connectionHelper'
 
 export const HostSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   if (!service) return null
   if (!connection) connection = newConnection(service)
+  const state = connectionState(service, connection)
 
   const currentHost = (connection && connection.host) || IP_PRIVATE
-  const disabled = connection.connected || connection.connecting
+  const disabled = state === 'connected' || state === 'connecting'
 
   return (
     <InlineTextFieldSetting

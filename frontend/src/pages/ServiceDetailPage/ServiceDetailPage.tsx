@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom'
 import { IconButton, makeStyles } from '@material-ui/core'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ApplicationState } from '../../store'
+import { connectionState } from '../../helpers/connectionHelper'
 import { DataDisplay } from '../../components/DataDisplay'
 import { ComboButton } from '../../buttons/ComboButton'
 import { Columns } from '../../components/Columns'
@@ -17,6 +18,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
   const service = device?.services.find(s => s.id === serviceID)
   const target = targets.find(t => t.uid === serviceID)
+  const state = connectionState(service, connection)
   const css = useStyles()
 
   useEffect(() => {
@@ -27,11 +29,11 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
 
   let data: IDataDisplay[] = []
 
-  if (connection && connection.connected) {
+  if (state === 'connected') {
     data = data.concat([
-      { label: 'Host', value: connection.host },
-      { label: 'Port', value: connection.port },
-      { label: 'Restriction', value: connection.restriction },
+      { label: 'Host', value: connection?.host },
+      { label: 'Port', value: connection?.port },
+      { label: 'Restriction', value: connection?.restriction },
     ])
   }
 
