@@ -16,7 +16,7 @@ export function EventMessage({
   loggedInUser,
 }: {
   item: IEvent
-  device: IDevice
+  device?: IDevice
   loggedInUser: IUser | undefined
 }): JSX.Element {
   const serviceName = (item.target?.map(service => service.name) || []).join(' + ')
@@ -51,26 +51,26 @@ export function EventMessage({
       if (item.shared) {
         message = (
           <>
-            {actor} shared <i>{device.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
+            {actor} shared <i>{device?.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
             <b>{affected}</b>
           </>
         )
       } else if (item.action === 'add') {
         message = (
           <>
-            {actor} shared <i>{device.name}</i> with <b>{affected}</b>
+            {actor} shared <i>{device?.name}</i> with <b>{affected}</b>
           </>
         )
       } else if (actor === affected) {
         message = (
           <>
-            You left the shared device <i>{device.name}</i>
+            You left the shared device <i>{device?.name}</i>
           </>
         )
       } else {
         message = (
           <>
-            {actor} removed sharing of <i>{device.name}</i> with <b>{affected}</b>
+            {actor} removed sharing of <i>{device?.name}</i> with <b>{affected}</b>
           </>
         )
       }
