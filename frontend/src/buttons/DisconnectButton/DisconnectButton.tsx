@@ -29,7 +29,7 @@ export const DisconnectButton: React.FC<Props> = ({
       <div>
         <DynamicButton
           title={state === 'stopping' || state === 'connecting' ? state : 'Disconnect'}
-          icon="ban"
+          // icon="ban"
           disabled={disabled}
           loading={disabled}
           color={disabled ? 'grayDark' : color}
