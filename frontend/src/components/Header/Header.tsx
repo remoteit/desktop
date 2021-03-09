@@ -13,6 +13,11 @@ export const Header: React.FC = () => {
   const [hasFocus, setHasFocus] = useState<boolean>(true)
   const history = useHistory()
   const css = useStyles(hasFocus)()
+  const [back, setBack] = useState('')
+  const [fordWare, setFordWare] = useState('')
+  const [disabledForward, setDisabledForward] = useState<boolean>(false)
+  const [disabledGoback, setDisabledGoback] = useState<boolean>(false)
+
   const { device } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
   }))
@@ -29,12 +34,28 @@ export const Header: React.FC = () => {
     }
   })
 
+  const goBack = () => {
+    if (document.location.href === back) {
+      setDisabledGoback(true)
+    }
+    setBack(document.location.href)
+    history.goBack()
+  }
+
+  const goForward = () => {
+    if (document.location.href === fordWare) {
+      setDisabledForward(true)
+    }
+    setFordWare(document.location.href)
+    history.goForward()
+  }
+
   return (
     <div className={css.header}>
-      <IconButton onClick={() => history.goBack()}>
+      <IconButton disabled={disabledGoback} onClick={goBack}>
         <Icon name="chevron-left" size="lg" color="grayDark" />
       </IconButton>
-      <IconButton onClick={() => history.goForward()}>
+      <IconButton disabled={disabledForward} onClick={goForward}>
         <Icon name="chevron-right" size="lg" color="grayDark" />
       </IconButton>
       <Typography variant="body2" color="textSecondary">
