@@ -5,6 +5,8 @@ import { version } from '../../package.json'
 export const CONNECTION_TYPE_PROXY_FAILOVER = 'proxy_failover'
 export const CONNECTION_TYPE_PEER_TO_PEER = 'peer_to_peer'
 export const CONNECTION_TYPE_NONE = 'None'
+//segment-analytics
+export const SEGMENT_PROJECT_KEY = 'tMedSrVUwDIeRs6kndztUPgjPiVlDmAe'
 
 export class AnalyticsHelper {
   private context: SegmentContext
@@ -66,7 +68,7 @@ export class AnalyticsHelper {
           analytics._loadOptions = e
         }
         analytics.SNIPPET_VERSION = '4.1.0'
-        analytics.load('tMedSrVUwDIeRs6kndztUPgjPiVlDmAe')
+        analytics.load(SEGMENT_PROJECT_KEY)
 
         // analytics.page()
       }
