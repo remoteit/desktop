@@ -135,6 +135,7 @@ declare global {
     host?: ipAddress // Bind address
     typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address
+    timeout?: number // timeout to disconnect in minutes
     autoStart?: boolean // auto retry connect if closed
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     failover?: boolean // allow proxy failover

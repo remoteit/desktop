@@ -53,9 +53,9 @@ export default {
   },
 
   connect(c: IConnection) {
-    return `-j connection add --id ${c.id} --connect true --name "${c.name}" --port ${c.port} --hostname ${
-      c.host
-    } --restrict ${
+    return `-j connection add --id ${c.id} --connect true --name "${c.name}" --port ${c.port} --hostname ${c.host} ${
+      c.timeout ? ' --timeout ' + c.timeout : ''
+    }--restrict ${
       c.restriction
     } --retry ${!!c.autoStart} --failover ${!!c.failover} --p2p ${!c.proxyOnly} --servicetype ${c.typeID} --authhash ${
       user.authHash
@@ -67,7 +67,9 @@ export default {
   },
 
   setConnect(c: IConnection) {
-    return `-j connection modify --id ${c.id} --name "${c.name}" --port ${c.port} --hostname ${c.host} --restrict ${
+    return `-j connection modify --id ${c.id} --name "${c.name}" --port ${c.port} --hostname ${c.host} ${
+      c.timeout ? ' --timeout ' + c.timeout : ''
+    }--restrict ${
       c.restriction
     } --retry ${!!c.autoStart} --failover ${!!c.failover} --p2p ${!c.proxyOnly} --enable ${!!c.enabled} --servicetype ${
       c.typeID
