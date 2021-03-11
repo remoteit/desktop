@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
+import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getAllDevices, getActiveAccount } from './accounts'
 import { RootModel } from './rootModel'
@@ -86,7 +87,7 @@ export default createModel<RootModel>()({
             .map(device =>
               device.services.map(service => ({
                 deviceName: device.name,
-                serviceName: service.name,
+                serviceName: removeDeviceName(device.name, service.name),
                 deviceId: device.id,
                 serviceId: service.id,
                 accountEmail: account.email,

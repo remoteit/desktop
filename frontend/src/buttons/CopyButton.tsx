@@ -5,13 +5,14 @@ import { useApplication } from '../hooks/useApplication'
 import { useClipboard } from 'use-clipboard-copy'
 import { PromptModal } from '../components/PromptModal'
 import { Application } from '../shared/applications'
-import { FontSize } from '../styling'
+import { FontSize, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
 export interface CopyButtonProps {
   connection?: IConnection
   service?: IService
   context?: Application['context']
+  color?: Color
   title?: string
   menuItem?: boolean
   size?: FontSize
@@ -22,6 +23,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   connection,
   service,
   menuItem,
+  color,
   context = 'copy',
   title = 'Copy',
   size = 'md',
@@ -55,7 +57,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
     <>
       <Icon
         name={clipboard.copied ? 'check' : 'clipboard'}
-        color={clipboard.copied ? 'success' : undefined}
+        color={clipboard.copied ? 'success' : color}
         size={size}
         fixedWidth
       />

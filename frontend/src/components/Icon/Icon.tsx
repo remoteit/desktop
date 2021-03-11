@@ -24,14 +24,14 @@ export interface IconProps {
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef(
-  ({ color, fixedWidth, name, size, spin, type = 'light', inline, inlineLeft, ...props }: IconProps): JSX.Element => {
+  ({ color, fixedWidth, name, size, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps): JSX.Element => {
     const styles: any = {}
     if (color) styles.color = colors[color]
     if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 2 : spacing.md
     if (size) styles.fontSize = fontSizes[size]
 
-    let fontType: IconPrefix = 'fal'
+    let fontType: IconPrefix = 'far'
 
     switch (type) {
       case 'brands': {
@@ -52,9 +52,9 @@ export const Icon = React.forwardRef(
       <FontAwesomeIcon
         style={styles}
         icon={[fontType, name as IconName]}
-        {...props}
         spin={spin}
         fixedWidth={fixedWidth}
+        {...props}
       />
     )
   }

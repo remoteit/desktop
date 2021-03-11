@@ -63,7 +63,7 @@ const useStyles = recent =>
       '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
       '& > svg': { marginTop: spacing.xxs, marginRight: spacing.lg, marginLeft: spacing.lg },
     },
-    from: { width: '25%' },
+    from: { width: '20%' },
     vertical: {
       height: '2.8em',
       backgroundColor: recent ? colors.grayLight : colors.primaryLight,

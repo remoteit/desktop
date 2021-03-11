@@ -18,7 +18,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, co
       disabled={disabled}
       value={app.template}
       displayValue={app.command}
-      actionIcon={<CopyButton connection={connection} service={service} context={context} show />}
+      actionIcon={<CopyButton connection={connection} service={service} context={context} color="grayDark" show />}
       label={
         <>
           {app.contextTitle}

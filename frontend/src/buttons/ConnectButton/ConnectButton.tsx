@@ -73,7 +73,6 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       <div>
         <DynamicButton
           title={connecting ? 'Connecting' : title}
-          icon="arrow-right"
           variant={variant}
           loading={connecting}
           color={connecting ? 'grayDark' : color}

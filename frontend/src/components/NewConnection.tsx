@@ -4,9 +4,9 @@ import reactStringReplace from 'react-string-replace'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { TextField, Typography, ListSubheader } from '@material-ui/core'
+import { TextField, Typography, ListSubheader, IconButton } from '@material-ui/core'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useParams, Link } from 'react-router-dom'
 import { connectionName } from '../helpers/connectionHelper'
 import { makeStyles } from '@material-ui/core/styles'
 import { Title } from './Title'
@@ -38,6 +38,8 @@ export const NewConnection: React.FC = () => {
 
   useEffect(() => {
     analyticsHelper.track('newConnection')
+    console.log('SERVICE ID', serviceID)
+    if (serviceID) setValue(data.find(d => d.serviceId === serviceID))
   }, [])
 
   useEffect(() => {
@@ -48,6 +50,11 @@ export const NewConnection: React.FC = () => {
     <>
       <Typography variant="subtitle1">
         <Title enabled={true}>New Connection</Title>
+        <Link to="/connections">
+          <IconButton className={css.button}>
+            <Icon name="times" size="sm" color="gray" />
+          </IconButton>
+        </Link>
       </Typography>
       <div className={css.container}>
         <Autocomplete
@@ -59,16 +66,13 @@ export const NewConnection: React.FC = () => {
           value={value}
           options={data}
           loading={fetching}
-          // filterSelectedOptions
           classes={{ option: css.option }}
           onChange={(event, newValue: ISearch | null, reason) => {
-            console.log('CHANGE reason:', reason, newValue)
             if (reason === 'select-option')
               history.push(`/connections/new/${newValue?.deviceId}/${newValue?.serviceId}`)
             setValue(newValue)
           }}
           groupBy={option => option.deviceName}
-          defaultValue={data.find(d => d.serviceId === serviceID)}
           onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
           getOptionLabel={option => connectionName({ name: option.serviceName }, { name: option.deviceName })}
           getOptionSelected={(option, value) => option.serviceId === value.serviceId}
@@ -130,6 +134,7 @@ const useStyles = makeStyles({
     textTransform: 'none',
     letterSpacing: 0,
   },
+  button: { marginBottom: -spacing.sm },
   enabled: { color: colors.primary },
   option: { display: 'block' },
   loading: { color: colors.grayDarker, position: 'absolute', right: 70, top: 0, height: '100%' },

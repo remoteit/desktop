@@ -4,10 +4,8 @@ import { Button } from '@material-ui/core'
 
 export const NewConnectionButton: React.FC = () => {
   return (
-    <Link to="/connections/new">
-      <Button variant="contained" color="primary" size="large" fullWidth>
-        New Connection
-      </Button>
-    </Link>
+    <Button to="/connections/new" variant="contained" color="primary" size="large" component={Link} fullWidth>
+      New Connection
+    </Button>
   )
 }
