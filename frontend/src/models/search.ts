@@ -1,16 +1,19 @@
 import { createModel } from '@rematch/core'
+import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getAllDevices, getActiveAccount } from './accounts'
 import { RootModel } from './rootModel'
 
 type ISearchState = ILookup<any> & {
-  all: ISearch[]
+  search: ISearch[]
+  devices: ISearch[]
   fetching: boolean
   cloudSearch: boolean
 }
 
 const searchState: ISearchState = {
-  all: [],
+  search: [],
+  devices: [],
   fetching: false,
   cloudSearch: true,
 }
@@ -18,14 +21,18 @@ const searchState: ISearchState = {
 export default createModel<RootModel>()({
   state: searchState,
   effects: dispatch => ({
+    async updateSearch(_, rootState) {
+      const { total, size } = rootState.devices
+      const { member } = rootState.accounts
+
+      dispatch.search.set({ cloudSearch: total > size || member.length })
+
+      const devices = await dispatch.search.parseDevices()
+      await dispatch.search.set({ devices })
+    },
     async fetch(name: string, rootState) {
       if (!rootState.auth.user) return
-
-      if (!rootState.search.cloudSearch) {
-        const all = await dispatch.search.parseDevices()
-        await dispatch.search.set({ all })
-        return
-      }
+      if (!rootState.search.cloudSearch) return
 
       dispatch.search.set({ fetching: true })
 
@@ -62,8 +69,8 @@ export default createModel<RootModel>()({
           }
         )
         graphQLGetErrors(response)
-        const all = await dispatch.search.parse({ response, accounts })
-        await dispatch.search.set({ all })
+        const search = await dispatch.search.parse({ response, accounts })
+        await dispatch.search.set({ search })
       } catch (error) {
         await graphQLCatchError(error)
       }
@@ -72,7 +79,7 @@ export default createModel<RootModel>()({
     },
     async parse({ response, accounts }: { response: any; accounts: IUser[] }): Promise<ISearch[]> {
       const data = response?.data?.data?.login
-      let items: ISearch[] = accounts
+      return accounts
         .map((account, index) => {
           const devices = data[`_${index}`].devices.items
           return devices
@@ -88,18 +95,11 @@ export default createModel<RootModel>()({
             .flat()
         })
         .flat()
-
-      return items.sort((a, b) => {
-        if (a.deviceName.toLowerCase() > b.deviceName.toLowerCase()) return 1
-        if (a.deviceName.toLowerCase() < b.deviceName.toLowerCase()) return -1
-        return 0
-      })
     },
     async parseDevices(_, rootState): Promise<ISearch[]> {
       const account = getActiveAccount(rootState)
       if (!account) return []
-
-      let items = getAllDevices(rootState)
+      return getAllDevices(rootState)
         .filter(d => !d.hidden)
         .map(device =>
           device.services
@@ -114,12 +114,6 @@ export default createModel<RootModel>()({
             .flat()
         )
         .flat()
-
-      return items.sort((a, b) => {
-        if (a.deviceName.toLowerCase() > b.deviceName.toLowerCase()) return 1
-        if (a.deviceName.toLowerCase() < b.deviceName.toLowerCase()) return -1
-        return 0
-      })
     },
   }),
 
@@ -130,3 +124,14 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function selectAllSearch(state: ApplicationState) {
+  const { search, devices } = state.search
+  const searchIds = search.map(s => s.serviceId)
+  const all = search.concat(devices.filter(item => !searchIds.includes(item.serviceId)))
+  return all.sort((a, b) => {
+    if (a.deviceName.toLowerCase() > b.deviceName.toLowerCase()) return 1
+    if (a.deviceName.toLowerCase() < b.deviceName.toLowerCase()) return -1
+    return 0
+  })
+}

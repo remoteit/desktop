@@ -75,6 +75,7 @@ export default createModel<RootModel>()({
       const userId = globalState.auth.user?.id
       if (!userId) return console.error('NO AUTH USER ID')
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
+      const { updateSearch } = dispatch.search
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, appendUniqueDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched, platform } = globalState.devices
@@ -106,12 +107,12 @@ export default createModel<RootModel>()({
         await appendUniqueDevices({ devices: connections, accountId: userId })
       }
 
+      updateSearch()
       if (!error) cleanOrphanConnections()
       platformConfiguration()
 
       // @TODO pull contacts out into its own model / request on page load
       set({ initialized: true, fetching: false, append: false, contacts })
-      dispatch.search.set({ cloudSearch: total > size || globalState.accounts.member.length })
     },
 
     /*

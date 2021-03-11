@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import debounce from 'lodash.debounce'
 import reactStringReplace from 'react-string-replace'
+import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { TextField, Typography, ListSubheader } from '@material-ui/core'
@@ -17,7 +18,7 @@ export const NewConnection: React.FC = () => {
   const { enabledIds, fetching, data } = useSelector((state: ApplicationState) => ({
     enabledIds: state.backend.connections.filter(c => c.enabled).map(c => c.id),
     fetching: state.search.fetching,
-    data: state.search.all,
+    data: selectAllSearch(state),
   }))
   const css = useStyles()
   const history = useHistory()
@@ -58,7 +59,7 @@ export const NewConnection: React.FC = () => {
           value={value}
           options={data}
           loading={fetching}
-          filterSelectedOptions
+          // filterSelectedOptions
           classes={{ option: css.option }}
           onChange={(event, newValue: ISearch | null, reason) => {
             console.log('CHANGE reason:', reason, newValue)
