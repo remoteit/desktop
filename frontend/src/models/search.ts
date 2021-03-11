@@ -1,15 +1,18 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { getAllDevices, getActiveAccount } from './accounts'
 import { RootModel } from './rootModel'
 
 type ISearchState = ILookup<any> & {
   all: ISearch[]
   fetching: boolean
+  cloudSearch: boolean
 }
 
 const searchState: ISearchState = {
   all: [],
   fetching: false,
+  cloudSearch: true,
 }
 
 export default createModel<RootModel>()({
@@ -17,6 +20,13 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(name: string, rootState) {
       if (!rootState.auth.user) return
+
+      if (!rootState.search.cloudSearch) {
+        const all = await dispatch.search.parseDevices()
+        await dispatch.search.set({ all })
+        return
+      }
+
       dispatch.search.set({ fetching: true })
 
       const accounts: IUser[] = [rootState.auth.user, ...rootState.accounts.member]
@@ -85,7 +95,34 @@ export default createModel<RootModel>()({
         return 0
       })
     },
+    async parseDevices(_, rootState): Promise<ISearch[]> {
+      const account = getActiveAccount(rootState)
+      if (!account) return []
+
+      let items = getAllDevices(rootState)
+        .filter(d => !d.hidden)
+        .map(device =>
+          device.services
+            .filter(service => service.state === 'active')
+            .map(service => ({
+              deviceName: device.name,
+              serviceName: service.name,
+              deviceId: device.id,
+              serviceId: service.id,
+              accountEmail: account.email,
+            }))
+            .flat()
+        )
+        .flat()
+
+      return items.sort((a, b) => {
+        if (a.deviceName.toLowerCase() > b.deviceName.toLowerCase()) return 1
+        if (a.deviceName.toLowerCase() < b.deviceName.toLowerCase()) return -1
+        return 0
+      })
+    },
   }),
+
   reducers: {
     set(state, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))

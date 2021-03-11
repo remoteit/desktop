@@ -178,6 +178,11 @@ export default createModel<RootModel>()({
   },
 })
 
+export function getActiveAccount(state: ApplicationState) {
+  const id = getActiveAccountId(state)
+  return [state.auth.user, ...state.accounts.member].find(a => a?.id === id)
+}
+
 export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }

@@ -50,11 +50,7 @@ export const ConnectionPage: React.FC = () => {
   useEffect(() => {
     analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
-    console.log('\n\n---------------------ID', id, window.location.href, '\n\n')
-    if (!device && id) {
-      alert('fetchSingle ' + id)
-      devices.fetchSingle({ id, hidden: true })
-    }
+    if (!device && id) devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />

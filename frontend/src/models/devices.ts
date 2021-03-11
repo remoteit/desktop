@@ -111,6 +111,7 @@ export default createModel<RootModel>()({
 
       // @TODO pull contacts out into its own model / request on page load
       set({ initialized: true, fetching: false, append: false, contacts })
+      dispatch.search.set({ cloudSearch: total > size || globalState.accounts.member.length })
     },
 
     /*
