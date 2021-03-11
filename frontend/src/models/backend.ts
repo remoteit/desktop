@@ -72,7 +72,7 @@ export default createModel<RootModel>()({
       if (targetDevice?.uid !== device.uid) {
         // register
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
-          const result = await devices.fetchSingle({ deviceId: targetDevice.uid })
+          const result = await devices.fetchSingle({ id: targetDevice.uid })
           if (!result) {
             // Instances were reported where a device wasn't returned
             await sleep(2000)
@@ -85,7 +85,7 @@ export default createModel<RootModel>()({
 
           // deleting
         } else if (globalState.ui.setupDeletingDevice) {
-          const result = await devices.fetchSingle({ deviceId: device.uid })
+          const result = await devices.fetchSingle({ id: device.uid })
           if (result) {
             await sleep(2000)
             await devices.fetch()

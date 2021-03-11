@@ -35,14 +35,14 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
       {showFrame && (
         <div className={css.remote}>
           {fullscreenEnabled && (
-            <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'}>
+            <Tooltip title={fullscreen ? 'Exit full screen' : 'Full screen'} arrow>
               <IconButton onClick={toggleFullscreen}>
                 <Icon name={fullscreen ? 'compress' : 'expand'} size="md" />
               </IconButton>
             </Tooltip>
           )}
           <span className={css.icon}>
-            <TargetPlatform id={device?.targetPlatform} size="xl" />
+            <TargetPlatform id={device?.targetPlatform} size="xl" tooltip />
           </span>
           <Logo width={80} margin="auto" white />
         </div>
@@ -78,5 +78,6 @@ const useStyles = makeStyles({
     position: 'absolute',
     height: spacing.lg,
     right: spacing.md,
+    top: spacing.xxs,
   },
 })

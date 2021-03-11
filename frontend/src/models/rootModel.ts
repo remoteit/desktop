@@ -10,6 +10,7 @@ import devices from './devices'
 import labels from './labels'
 import licensing from './licensing'
 import logs from './logs'
+import search from './search'
 import sessions from './sessions'
 import shares from './shares'
 import ui from './ui'
@@ -26,6 +27,7 @@ export interface RootModel extends Models<RootModel> {
   labels: typeof labels
   licensing: typeof licensing
   logs: typeof logs
+  search: typeof search
   sessions: typeof sessions
   shares: typeof shares
   ui: typeof ui
@@ -43,6 +45,7 @@ export const models: RootModel = {
   labels,
   licensing,
   logs,
+  search,
   sessions,
   shares,
   ui,

@@ -148,7 +148,7 @@ export default class ConnectionPool {
 
   clearRecent = () => {
     this.pool = this.pool.filter(async connection => {
-      if (connection.params.connected) return true
+      if (connection.params.enabled && connection.params.online) return true
       await connection.clear()
       return false
     })

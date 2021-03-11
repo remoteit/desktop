@@ -24,10 +24,7 @@ export const RegisterButton: React.FC = () => {
   const [el, setEl] = useState<HTMLButtonElement | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { user, claiming } = useSelector((state: ApplicationState) => ({
-    user: state.auth.user,
-    claiming: state.ui.claiming,
-  }))
+  const { claiming } = useSelector((state: ApplicationState) => state.ui)
 
   const handleClose = () => {
     setEl(null)
@@ -38,8 +35,6 @@ export const RegisterButton: React.FC = () => {
   useEffect(() => {
     if (!claiming) handleClose()
   }, [claiming])
-
-  if (!user?.email.includes('remote.it')) return null
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setEl(event.currentTarget)
@@ -68,12 +63,12 @@ export const RegisterButton: React.FC = () => {
         onClose={handleClose}
         anchorEl={el}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+          vertical: 'top',
+          horizontal: 'right',
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'right',
+          horizontal: 'left',
         }}
       >
         <Body center className={css.popover}>
@@ -107,7 +102,7 @@ export const RegisterButton: React.FC = () => {
               </ListItem>
               <ListItem>
                 <Button type="submit" variant="contained" color="primary" disabled={claiming || !valid} fullWidth>
-                  {claiming ? 'Registering...' : 'Register'}
+                  {claiming ? 'Working' : 'Register'}
                 </Button>
                 <Button onClick={handleClose} fullWidth>
                   Cancel

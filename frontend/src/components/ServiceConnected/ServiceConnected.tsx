@@ -1,6 +1,8 @@
 import React from 'react'
 import { hostName } from '../../shared/nameHelper'
 import { Typography, Divider, Collapse } from '@material-ui/core'
+import { DisconnectButton } from '../../buttons/DisconnectButton'
+import { connectionState } from '../../helpers/connectionHelper'
 import { DataDisplay } from '../DataDisplay'
 import { Duration } from '../Duration'
 import { Gutters } from '../Gutters'

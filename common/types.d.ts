@@ -116,6 +116,13 @@ declare global {
     guid: string
   }
 
+  interface ISearch {
+    deviceName: string
+    serviceName: string
+    deviceId: string
+    serviceId: string
+    accountEmail: string
+  }
   interface IConnection {
     id: string
     name: string
@@ -144,6 +151,8 @@ declare global {
     log?: boolean // if cli should log the connectd stdout to file
     [index: string]: any // needed to be able to iterate the keys :(
   }
+
+  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping'
 
   type IConnectionKey = keyof IConnection
 

@@ -50,7 +50,7 @@ const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setConte
 }
 
 export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, setContextMenu, restore }) => {
-  const connected = connections && connections.find(c => c.connected)
+  const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
 
   if (!device) return null

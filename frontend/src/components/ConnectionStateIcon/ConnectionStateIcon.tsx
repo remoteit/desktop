@@ -3,6 +3,7 @@ import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
+import { connectionState } from '../../helpers/connectionHelper'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'
 import { getTargetPlatformIcon } from '../../helpers/platformHelper'
 import { colors, spacing, Color } from '../../styling'
@@ -25,32 +26,32 @@ export function ConnectionStateIcon({
 }: ConnectionStateIconProps) {
   const css = useStyles()
   const history = useHistory()
+  const state = connectionState(service || device, connection)
 
   let { name, type } = getTargetPlatformIcon(device?.targetPlatform)
 
-  let instance = service || device
   let colorName: Color = 'grayDarker'
   let showQuality = device?.quality === 'POOR' || device?.quality === 'MODERATE'
   let element: any
   let opacity: number = 1
   let title: any = 'Online'
+  let spin = false
 
-  if (connection) {
-    if (connection.enabled) {
-      colorName = 'primary'
-      title = 'Connected'
-    }
-    if (connection.connecting) {
-      name = 'spinner-third'
-      colorName = 'grayLight'
-      showQuality = false
-      title = 'Connecting'
-    }
+  if (state === 'connected') {
+    colorName = 'primary'
+    title = 'Connected'
   }
-
-  if (instance?.state === 'inactive') {
+  if (state === 'connecting' || state === 'stopping') {
+    name = 'spinner-third'
+    type = 'regular'
+    colorName = 'grayLight'
+    showQuality = false
+    title = state
+    spin = true
+  }
+  if (state === 'offline') {
     opacity = 0.2
-    title = 'offline'
+    title = 'Offline'
     showQuality = false
   }
 
@@ -75,7 +76,7 @@ export function ConnectionStateIcon({
         <Icon {...props} name="hdd" color="grayDark" type="regular" fixedWidth />
         {!(showQuality && device) && (
           <sup>
-            <Icon name={name} color={colorName} spin={connection?.connecting} size="sm" type={type} fixedWidth />
+            <Icon name={name} color={colorName} spin={spin} size="sm" type={type} fixedWidth />
           </sup>
         )}
       </span>
@@ -83,7 +84,7 @@ export function ConnectionStateIcon({
   else {
     element = (
       <span>
-        <Icon {...props} name={name} color={colorName} spin={connection?.connecting} type={type} size="md" fixedWidth />
+        <Icon {...props} name={name} color={colorName} spin={spin} type={type} size="md" fixedWidth />
       </span>
     )
   }

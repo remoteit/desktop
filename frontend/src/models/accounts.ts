@@ -178,6 +178,11 @@ export default createModel<RootModel>()({
   },
 })
 
+export function getActiveAccount(state: ApplicationState) {
+  const id = getActiveAccountId(state)
+  return [state.auth.user, ...state.accounts.member].find(a => a?.id === id)
+}
+
 export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
@@ -190,9 +195,11 @@ export function getOwnDevices(state: ApplicationState): IDevice[] {
   return state.devices.all[state.auth.user?.id || ''] || []
 }
 
-export function getAllDevices(state: ApplicationState) {
-  return Object.keys(state.devices.all).reduce(
-    (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
-    []
+export function getAllDevices(state: ApplicationState): IDevice[] {
+  return (
+    Object.keys(state.devices.all).reduce(
+      (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
+      []
+    ) || []
   )
 }

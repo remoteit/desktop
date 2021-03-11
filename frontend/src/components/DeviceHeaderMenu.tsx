@@ -1,35 +1,25 @@
-import React, { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles } from '@material-ui/core/styles'
-import { Title } from './Title'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
-import { ApplicationState, Dispatch } from '../store'
-import { Typography, Divider, List } from '@material-ui/core'
+import { ApplicationState } from '../store'
+import { Typography, List } from '@material-ui/core'
 import { UnregisterDeviceButton } from '../buttons/UnregisterDeviceButton'
-import { ConnectionStateIcon } from './ConnectionStateIcon'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
+import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, children }) => {
-  const { thisDevice, access, connected } = useSelector((state: ApplicationState) => {
+  const { thisDevice, access } = useSelector((state: ApplicationState) => {
     return {
       thisDevice: state.backend.device?.uid === device?.id,
       fetching: state.devices.fetching,
       access: state.accounts.access,
-      connected: state.backend.connections.find(c => c.deviceID === device?.id && c.connected),
     }
   })
-
-  // useEffect(() => {
-  //   analyticsHelper.page('ServicePage')
-  //   if (!device && connection?.device.id) devices.fetchSingle({ deviceId: connection.device.id, hidden: true })
-  // }, [])
-
-  // if (!device && fetching) return <LoadingMessage message="Fetching data..." />
 
   if (!device) return <UnauthorizedPage />
 
@@ -63,7 +53,3 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
     </Container>
   )
 }
-
-const useStyles = makeStyles({
-  errorMessage: { padding: 0 },
-})

@@ -15,6 +15,9 @@ const jssTheme: ThemeOptions = {
       inset: { marginRight: spacing.md, marginLeft: spacing.md },
     },
     MuiFormHelperText: { root: { fontSize: 10 } },
+    MuiIconButton: {
+      root: { borderRadius: radius },
+    },
     MuiButton: {
       root: {
         color: colors.grayDark,
@@ -68,7 +71,6 @@ const jssTheme: ThemeOptions = {
         fontSize: fontSizes.xxs,
         marginTop: 2,
         marginRight: 'initial',
-        // '& .MuiIconButton-root': { padding: spacing.xs },
       },
     },
     MuiCardActions: {

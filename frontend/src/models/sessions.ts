@@ -65,8 +65,9 @@ export default createModel<RootModel>()({
       - Filter out this user's sessions
       - Combine same user sessions
     */
-    async parse(response: AxiosResponse<any> | undefined): Promise<ISession[]> {
+    async parse(response: any): Promise<ISession[]> {
       const data = response?.data?.data?.login?.sessions
+      if (!data) return []
       console.log('SESSION DATA', data)
       const dates = data.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
@@ -120,11 +121,3 @@ export function selectSessionUsers(state: ApplicationState, id?: string) {
     return users
   }, [])
 }
-
-/* 
-export function getCnnected(services?: IService[]) {
-  const connected: IUser[] = []
-  services?.forEach(s => s.sessions.forEach(session => !connected.includes(session) && connected.push(session)))
-  return connected
-}
- */

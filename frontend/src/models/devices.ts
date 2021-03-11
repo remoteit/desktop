@@ -18,7 +18,7 @@ import { RootModel } from './rootModel'
 type DeviceParams = { [key: string]: any }
 
 type IGetDevice = {
-  deviceId: string
+  id: string
   hidden?: boolean
 }
 
@@ -75,6 +75,7 @@ export default createModel<RootModel>()({
       const userId = globalState.auth.user?.id
       if (!userId) return console.error('NO AUTH USER ID')
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
+      const { updateSearch } = dispatch.search
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, appendUniqueDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched, platform } = globalState.devices
@@ -106,6 +107,7 @@ export default createModel<RootModel>()({
         await appendUniqueDevices({ devices: connections, accountId: userId })
       }
 
+      updateSearch()
       if (!error) cleanOrphanConnections()
       platformConfiguration()
 
@@ -116,18 +118,18 @@ export default createModel<RootModel>()({
     /*
       Fetches a single device and merges in the state
     */
-    async fetchSingle({ deviceId, hidden }: IGetDevice, globalState: any): Promise<IDevice | undefined> {
+    async fetchSingle({ id, hidden }: IGetDevice, globalState: any): Promise<IDevice | undefined> {
       const { set } = dispatch.devices
-      const device = selectDevice(globalState, deviceId)
+      const device = selectDevice(globalState, id)
       const accountId = device?.accountId || getActiveAccountId(globalState)
 
       let result: IDevice | undefined
 
-      if (!(await hasCredentials()) || !deviceId) return
+      if (!(await hasCredentials()) || !id) return
 
       set({ fetching: true })
       try {
-        const gqlResponse = await graphQLFetchDevice(deviceId)
+        const gqlResponse = await graphQLFetchDevice(id)
         graphQLGetErrors(gqlResponse)
         const gqlDevice = gqlResponse?.data?.data?.login.device || {}
         const loginId = gqlResponse?.data?.data?.login?.id
@@ -136,7 +138,7 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
 
-      await dispatch.accounts.setDevice({ id: deviceId, accountId, device: result })
+      await dispatch.accounts.setDevice({ id: id, accountId, device: result })
       set({ fetching: false })
 
       platformConfiguration()
@@ -224,7 +226,7 @@ export default createModel<RootModel>()({
       const id = result?.data?.data?.addService?.id
       if (id) {
         await graphQLSetAttributes(form.attributes, id)
-        await dispatch.devices.fetchSingle({ deviceId })
+        await dispatch.devices.fetchSingle({ id: deviceId })
       }
       dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
     },
@@ -241,7 +243,7 @@ export default createModel<RootModel>()({
         enabled: !form.disabled,
       })
       await graphQLSetAttributes(form.attributes, form.uid)
-      await dispatch.devices.fetchSingle({ deviceId })
+      await dispatch.devices.fetchSingle({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
@@ -249,7 +251,7 @@ export default createModel<RootModel>()({
       console.log('REMOVING SERVICE', serviceId, deviceId)
       dispatch.ui.set({ setupServiceBusy: serviceId, setupDeletingService: serviceId })
       await graphQLRemoveService(serviceId)
-      await dispatch.devices.fetchSingle({ deviceId })
+      await dispatch.devices.fetchSingle({ id: deviceId })
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
     },
 

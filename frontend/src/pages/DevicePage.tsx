@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { replaceHost } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
@@ -19,6 +19,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { AddFromNetwork } from '../components/AddFromNetwork'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
+import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
 import { isRemoteUI } from '../helpers/uiHelper'
@@ -35,6 +36,7 @@ type Props = {
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
   const history = useHistory()
+  const [contextMenu, setContextMenu] = useState<IContextMenu>({})
   const { connections, setupAddingService, remoteUI } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
@@ -51,7 +53,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
 
   const thisDevice = device.id === targetDevice.uid
   const editable = thisDevice || device.configurable
-  const connected = connections.find(c => c.deviceID === device.id && c.connected)
+  const connection = connections.find(c => c.deviceID === device.id && c.enabled)
 
   function host(service: IService) {
     const target = targets.find(t => t.uid === service.id)
@@ -76,12 +78,12 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             dense
           >
             <ListItemIcon>
-              <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" />
+              <ConnectionStateIcon device={device} connection={connection} thisDevice={thisDevice} size="lg" />
             </ListItemIcon>
             <ListItemText
               primary={
                 <Typography variant="h2">
-                  <ServiceName device={device} connection={connected} />
+                  <ServiceName device={device} connection={connection} />
                 </Typography>
               }
             />
@@ -92,7 +94,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <AddFromNetwork allowScanning={thisDevice} button />
-        <AddServiceButton device={device} editable={editable} link="/devices/:deviceID/add" />
+        <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
       <List>
         {editable && <LicensingNotice device={device} />}
@@ -113,11 +115,20 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           >
             <ListItemText className={css.service} primary={s.name} secondary={host(s)} />
             <ListItemSecondaryAction>
-              <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
+              <ServiceMiniState
+                service={s}
+                connection={connections.find(c => c.id === s.id)}
+                setContextMenu={setContextMenu}
+              />
             </ListItemSecondaryAction>
           </ListItemLocation>
         ))}
       </List>
+      <ServiceContextualMenu
+        el={contextMenu.el}
+        serviceID={contextMenu.serviceID}
+        setEl={el => setContextMenu({ ...contextMenu, el })}
+      />
     </Container>
   )
 }

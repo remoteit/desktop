@@ -31,7 +31,7 @@ export default createModel<RootModel>()({
         const response = await graphQLUnShareDevice({ deviceId, email: [email] })
         const errors = graphQLGetErrors(response)
         if (!errors) {
-          await dispatch.devices.fetchSingle({ deviceId })
+          await dispatch.devices.fetchSingle({ id: deviceId })
           dispatch.ui.set({ successMessage: `${email} successfully removed.` })
         }
       } catch (error) {

@@ -82,12 +82,6 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
         />
       </MenuItem>
       <Divider />
-      <MenuItem dense disableGutters onClick={() => history.push(`/devices/${device?.id}/${service?.id}`)}>
-        <ListItemIcon>
-          <ConnectionStateIcon connection={connection} service={service} size="md" />
-        </ListItemIcon>
-        <ListItemText primary="View Service" />
-      </MenuItem>
       {!device?.shared && (
         <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
           <ListItemIcon>

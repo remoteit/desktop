@@ -91,7 +91,7 @@ export default {
   },
 
   reset() {
-    return `-j reset --yes --authhash ${user.authHash}`
+    return `-j reset --yes`
   },
 
   uninstall() {

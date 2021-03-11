@@ -1,8 +1,9 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
-import { DynamicButton } from '../DynamicButton'
-import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
+import { Color } from '../../styling'
+import { DynamicButton } from '../DynamicButton'
+import { connectionState } from '../../helpers/connectionHelper'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
@@ -20,18 +21,18 @@ export const DisconnectButton: React.FC<Props> = ({
   connection,
   fullWidth,
 }) => {
-  const hidden = !connection || !connection.connected
-  const disconnecting = !connection?.enabled && !!connection?.connected
-  const connecting = !!connection?.connecting
+  const state = connectionState(service, connection)
+  const visible = state === 'connecting' || state === 'connected'
+  const disabled = state === 'stopping' || state === 'connecting'
   return (
-    <Fade in={!hidden} timeout={600}>
+    <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={connecting ? 'Connecting' : disconnecting ? 'Stopping' : 'Disconnect'}
-          icon="ban"
-          disabled={disconnecting}
-          loading={disconnecting}
-          color={disconnecting || connecting ? 'grayDark' : color}
+          title={state === 'stopping' || state === 'connecting' ? state : 'Disconnect'}
+          // icon="ban"
+          disabled={disabled}
+          loading={disabled}
+          color={disabled ? 'grayDark' : color}
           size={size}
           fullWidth={fullWidth}
           onClick={() => {

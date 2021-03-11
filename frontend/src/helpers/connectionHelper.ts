@@ -17,6 +17,18 @@ export const DEFAULT_CONNECTION = {
   autoStart: true,
 }
 
+export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
+  if (instance?.state === 'inactive') return 'offline'
+  if (connection) {
+    if (!connection.online) return 'disconnected'
+    if (connection.connecting) return 'connecting'
+    if (connection.connected && !connection.enabled) return 'stopping'
+    if (connection.connected) return 'connected'
+    if (connection.enabled) return 'connected'
+  }
+  return 'disconnected'
+}
+
 export function findLocalConnection(state: ApplicationState, id: string, sessionId: string) {
   return state.backend.connections.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }

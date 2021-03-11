@@ -23,7 +23,7 @@ export function getTargetPlatform(targetPlatformId?: number) {
   return TARGET_PLATFORMS[targetPlatformId || -1] || TARGET_PLATFORMS[65535]
 }
 
-export function getTargetPlatformIcon(id?: number) {
+export function getTargetPlatformIcon(id?: number): { name: string; type: IconType; size: FontSize } {
   let type: IconType = 'solid'
   let name: string = 'hdd'
   let size: FontSize = 'xxs'

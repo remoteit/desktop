@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { colors, spacing } from '../styling'
-import { DragAppRegion } from './DragAppRegion'
 import { makeStyles } from '@material-ui/core'
 import { Header } from './Header'
 import classnames from 'classnames'
@@ -51,7 +50,6 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     <>
       <div className={css.panel} style={{ width }} ref={primaryRef}>
         <Header />
-        <DragAppRegion />
         {primary}
       </div>
       <div className={css.handle} onMouseDown={onDown}>
