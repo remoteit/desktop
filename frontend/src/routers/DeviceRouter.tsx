@@ -34,7 +34,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
   //     if (loaded) {
   //       history.push('/devices')
   //     } else {
-  //       await devices.fetchSingle({ deviceId: device?.id, hidden: true })
+  //       await devices.fetchSingle({ id: device?.id, hidden: true })
   //       setLoaded(true)
   //     }
   //   }

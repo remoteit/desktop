@@ -39,8 +39,6 @@ export const RegisterButton: React.FC = () => {
     if (!claiming) handleClose()
   }, [claiming])
 
-  if (!user?.email.includes('remote.it')) return null
-
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setEl(event.currentTarget)
   }

@@ -1,15 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import {
-  makeStyles,
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-} from '@material-ui/core'
+import { Typography, List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { selectById } from '../models/devices'
 import { ServiceConnected } from '../components/ServiceConnected'
 import { InitiatorPlatform } from '../components/InitiatorPlatform'
@@ -56,7 +48,7 @@ export const ConnectionOtherPage: React.FC = () => {
                 }
               />
               <ListItemSecondaryAction>
-                <InfoButton device={device} service={service} connection={connection} />
+                <InfoButton device={device} service={service} />
               </ListItemSecondaryAction>
             </ListItem>
           </List>

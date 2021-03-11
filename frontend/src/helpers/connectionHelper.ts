@@ -17,8 +17,8 @@ export const DEFAULT_CONNECTION = {
   autoStart: true,
 }
 
-export function connectionState(service?: IService, connection?: IConnection): IConnectionState {
-  if (service?.state === 'inactive') return 'offline'
+export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
+  if (instance?.state === 'inactive') return 'offline'
   if (connection) {
     if (!connection.online) return 'disconnected'
     if (connection.connecting) return 'connecting'

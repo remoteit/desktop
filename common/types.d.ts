@@ -119,6 +119,7 @@ declare global {
   interface ISearch {
     deviceName: string
     serviceName: string
+    deviceId: string
     serviceId: string
     accountEmail: string
   }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, Divider, Typography, ListItemText, ListItemIcon } from '@material-ui/core'
+import { makeStyles, Divider, ListItemText, ListItemIcon } from '@material-ui/core'
 import { InitiatorPlatform } from './InitiatorPlatform'
 import { ListItemLocation } from './ListItemLocation'
 import { TargetPlatform } from './TargetPlatform'
@@ -36,7 +36,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
             <span className={css.from}>
               {merge || (
                 <Title enabled={!recent}>
-                  {session.user?.email}
+                  {other ? session.user?.email : 'This device'}
                   {/* {session.id} */}
                 </Title>
               )}

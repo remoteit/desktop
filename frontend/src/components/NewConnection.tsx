@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import debounce from 'lodash.debounce'
+import reactStringReplace from 'react-string-replace'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { TextField, Typography, ListSubheader } from '@material-ui/core'
@@ -6,28 +8,40 @@ import { Autocomplete, createFilterOptions } from '@material-ui/lab'
 import { useHistory, useParams } from 'react-router-dom'
 import { connectionName } from '../helpers/connectionHelper'
 import { makeStyles } from '@material-ui/core/styles'
-import { getAllDevices } from '../models/accounts'
 import { Title } from './Title'
-import styles from '../styling'
+import { Icon } from './Icon'
+import { colors, spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const NewConnection: React.FC = () => {
+  const { enabledIds, fetching, data } = useSelector((state: ApplicationState) => ({
+    enabledIds: state.backend.connections.filter(c => c.enabled).map(c => c.id),
+    fetching: state.search.fetching,
+    data: state.search.all,
+  }))
   const css = useStyles()
   const history = useHistory()
   const { search } = useDispatch<Dispatch>()
   const { serviceID } = useParams<{ serviceID?: string }>()
-  const [open, setOpen] = React.useState(false)
-  const [options, setOptions] = React.useState<ISearch[]>([])
-  const { data, enabledIds } = useSelector((state: ApplicationState) => ({
-    enabledIds: state.backend.connections.filter(c => c.enabled).map(c => c.id),
-    data: state.search.all,
-  }))
+  const [value, setValue] = useState<ISearch | null>(null)
+  const [inputValue, setInputValue] = useState<string>('')
+
+  const fetch = React.useMemo(
+    () =>
+      debounce(value => {
+        console.log('Debounce SEARCH', value)
+        search.fetch(value)
+      }, 400),
+    []
+  )
 
   useEffect(() => {
     analyticsHelper.track('newConnection')
-    search.fetch('')
-    // if (!open) setOptions([])
   }, [])
+
+  useEffect(() => {
+    if (inputValue && !serviceID) fetch(inputValue)
+  }, [inputValue])
 
   return (
     <>
@@ -37,35 +51,63 @@ export const NewConnection: React.FC = () => {
       <div className={css.container}>
         <Autocomplete
           // debug
-          autoHighlight
-          autoComplete
+          fullWidth
           autoSelect
-          defaultValue={data.find(d => d.serviceId === serviceID)}
+          autoComplete
+          autoHighlight
+          value={value}
           options={data}
+          loading={fetching}
+          filterSelectedOptions
+          classes={{ option: css.option }}
+          onChange={(event, newValue: ISearch | null, reason) => {
+            console.log('CHANGE reason:', reason, newValue)
+            if (reason === 'select-option')
+              history.push(`/connections/new/${newValue?.deviceId}/${newValue?.serviceId}`)
+            setValue(newValue)
+          }}
           groupBy={option => option.deviceName}
-          // getOptionDisabled={option => option.state === 'inactive'}
+          defaultValue={data.find(d => d.serviceId === serviceID)}
+          onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
           getOptionLabel={option => connectionName({ name: option.serviceName }, { name: option.deviceName })}
           getOptionSelected={(option, value) => option.serviceId === value.serviceId}
           filterOptions={createFilterOptions({ stringify: option => option.serviceName + ' ' + option.deviceName })}
-          renderInput={params => <TextField {...params} label="Select a service" size="small" variant="filled" />}
-          renderOption={option =>
-            enabledIds.includes(option.serviceId) ? (
-              <span className={css.enabled}>{option.serviceName}</span>
-            ) : (
-              option.serviceName
-            )
-          }
+          renderInput={params => (
+            <TextField
+              {...params}
+              label="Select a service"
+              size="small"
+              variant="filled"
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {fetching && <Icon className={css.loading} name="sync" type="regular" size="xs" spin fixedWidth />}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          renderOption={option => {
+            const parts = reactStringReplace(option.serviceName, new RegExp(`(${inputValue})`, 'i'), (match, i) => (
+              <span key={i} style={{ color: colors.primary }}>
+                {match}
+              </span>
+            ))
+            return enabledIds.includes(option.serviceId) ? <span className={css.enabled}>{parts}</span> : parts
+          }}
           renderGroup={option => [
             <ListSubheader className="MuiAutocomplete-groupLabel" key={option.key}>
-              {option.group}
+              {reactStringReplace(option.group, new RegExp(`(${inputValue})`, 'i'), (match, i) => (
+                <span key={i} style={{ color: colors.primary }}>
+                  {match}
+                </span>
+              ))}
               <span className={css.email}>{data[option.key].accountEmail}</span>
             </ListSubheader>,
             option.children,
           ]}
-          onChange={(event, value, reason) => {
-            if (reason === 'select-option') history.push(`/connections/new/${value?.serviceId}`)
-          }}
-          fullWidth
         />
       </div>
     </>
@@ -74,18 +116,20 @@ export const NewConnection: React.FC = () => {
 
 const useStyles = makeStyles({
   container: {
-    backgroundColor: styles.colors.primaryLighter,
-    borderRadius: styles.spacing.sm,
-    marginTop: styles.spacing.sm,
-    marginLeft: styles.spacing.lg,
-    marginRight: styles.spacing.lg,
-    padding: styles.spacing.md,
+    backgroundColor: colors.primaryLighter,
+    borderRadius: spacing.sm,
+    marginTop: spacing.sm,
+    marginLeft: spacing.lg,
+    marginRight: spacing.lg,
+    padding: spacing.md,
   },
   email: {
     float: 'right',
-    color: styles.colors.grayLight,
+    color: colors.grayLight,
     textTransform: 'none',
     letterSpacing: 0,
   },
-  enabled: { color: styles.colors.primary },
+  enabled: { color: colors.primary },
+  option: { display: 'block' },
+  loading: { color: colors.grayDarker, position: 'absolute', right: 70, top: 0, height: '100%' },
 })

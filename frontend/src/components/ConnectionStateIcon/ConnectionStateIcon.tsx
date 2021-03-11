@@ -26,7 +26,7 @@ export function ConnectionStateIcon({
 }: ConnectionStateIconProps) {
   const css = useStyles()
   const history = useHistory()
-  const state = connectionState(service, connection)
+  const state = connectionState(service || device, connection)
 
   let { name, type } = getTargetPlatformIcon(device?.targetPlatform)
 
@@ -43,6 +43,7 @@ export function ConnectionStateIcon({
   }
   if (state === 'connecting' || state === 'stopping') {
     name = 'spinner-third'
+    type = 'regular'
     colorName = 'grayLight'
     showQuality = false
     title = state

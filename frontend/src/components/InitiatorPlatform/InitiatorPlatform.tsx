@@ -27,7 +27,7 @@ export const INITIATOR_PLATFORMS = [
 
 export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean }> = ({ id, connected }) => {
   let name: string
-  let type: IconType = 'light'
+  let type: IconType = 'regular'
   let color: Color | undefined = connected ? 'primary' : undefined
   const size: FontSize = 'md'
 
@@ -79,7 +79,7 @@ export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean }> =
     case 17:
     case 18:
     default:
-      name = 'user'
+      name = 'hdd'
       break
   }
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
-import { IconButton, makeStyles } from '@material-ui/core'
+import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
@@ -57,11 +57,23 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
         <Gutters className={css.gutters}>
           <ComboButton connection={connection} service={service} size="medium" fullWidth />
           {/* <Icon name="neuter" /> */}
-          <Link to={`/connections/new/${service.id}`}>
-            <IconButton>
-              <Icon name="cog" />
-            </IconButton>
-          </Link>
+          {connection?.enabled ? (
+            <Tooltip title="Connection Details" arrow>
+              <Link to={`/connections/${service.id}`}>
+                <IconButton>
+                  <Icon name="arrow-right" type="light" />
+                </IconButton>
+              </Link>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Configure Connection" arrow>
+              <Link to={`/connections/new/${device.id}/${service.id}`}>
+                <IconButton>
+                  <Icon name="cog" type="light" />
+                </IconButton>
+              </Link>
+            </Tooltip>
+          )}
         </Gutters>
       }
     >

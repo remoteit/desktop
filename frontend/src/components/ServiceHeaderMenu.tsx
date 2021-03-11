@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
-import { ServiceName } from './ServiceName'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
@@ -32,13 +31,6 @@ export const ServiceHeaderMenu: React.FC<{
     thisDevice: state.backend.device?.uid === device?.id,
     access: state.accounts.access,
   }))
-
-  // useEffect(() => {
-  //   analyticsHelper.page('ServicePage')
-  //   if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
-  // }, [])
-
-  // if (!device && fetching) return <LoadingMessage message="Fetching data..." />
 
   if (!service || !device) return <UnauthorizedPage />
 

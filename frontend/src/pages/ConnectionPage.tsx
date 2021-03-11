@@ -33,7 +33,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 export const ConnectionPage: React.FC = () => {
   const css = useStyles()
   const location = useLocation<{ autoConnect: boolean }>()
-  const { serviceID, sessionID } = useParams<{ serviceID?: string; sessionID?: string }>()
+  const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { devices } = useDispatch<Dispatch>()
   const { service, device, connection, session, fetching } = useSelector((state: ApplicationState) => {
@@ -49,8 +49,13 @@ export const ConnectionPage: React.FC = () => {
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
-    if (!device && connection?.deviceID) devices.fetchSingle({ deviceId: connection.deviceID, hidden: true })
-  }, [])
+    const id = connection?.deviceID || deviceID
+    console.log('\n\n---------------------ID', id, window.location.href, '\n\n')
+    if (!device && id) {
+      alert('fetchSingle ' + id)
+      devices.fetchSingle({ id, hidden: true })
+    }
+  }, [deviceID])
 
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <NoConnectionPage />
@@ -67,7 +72,7 @@ export const ConnectionPage: React.FC = () => {
               size="large"
               fullWidth
             />
-            <InfoButton device={device} service={service} connection={connection} />
+            <InfoButton device={device} service={service} />
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <CopyButton connection={connection} service={service} />

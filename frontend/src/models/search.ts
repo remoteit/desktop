@@ -1,15 +1,15 @@
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 
-type ISearchState = ILookup<ISearch[]> & {
+type ISearchState = ILookup<any> & {
   all: ISearch[]
+  fetching: boolean
 }
 
 const searchState: ISearchState = {
   all: [],
+  fetching: false,
 }
 
 export default createModel<RootModel>()({
@@ -17,10 +17,11 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(name: string, rootState) {
       if (!rootState.auth.user) return
+      dispatch.search.set({ fetching: true })
 
-      const size = 5
-      const state = 'active'
       const accounts: IUser[] = [rootState.auth.user, ...rootState.accounts.member]
+      const state = 'active'
+      const size = Math.max(4 - accounts.length, 0) + 3
       const accountQueries = accounts.map(
         (account, index) => `
         _${index}: account(id: "${account.id}") {
@@ -52,10 +53,12 @@ export default createModel<RootModel>()({
         )
         graphQLGetErrors(response)
         const all = await dispatch.search.parse({ response, accounts })
-        dispatch.search.set({ all })
+        await dispatch.search.set({ all })
       } catch (error) {
         await graphQLCatchError(error)
       }
+
+      dispatch.search.set({ fetching: false })
     },
     async parse({ response, accounts }: { response: any; accounts: IUser[] }): Promise<ISearch[]> {
       const data = response?.data?.data?.login
@@ -67,6 +70,7 @@ export default createModel<RootModel>()({
               device.services.map(service => ({
                 deviceName: device.name,
                 serviceName: service.name,
+                deviceId: device.id,
                 serviceId: service.id,
                 accountEmail: account.email,
               }))
@@ -83,13 +87,9 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state, params: ILookup<ISearch[]>) {
+    set(state, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
   },
 })
-
-// export function selectAnnouncements(state: ApplicationState, unread?: boolean) {
-//   return state.announcements.all.filter(a => !unread || !a.read)
-// }
