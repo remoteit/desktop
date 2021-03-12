@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
+import { selectById } from '../models/devices'
 import { PortSetting } from '../components/PortSetting'
 import { NameSetting } from '../components/NameSetting'
 import { HostSetting } from '../components/HostSetting'
 import { ProxySetting } from '../components/ProxySetting'
-import { selectById } from '../models/devices'
+import { TimeoutSetting } from '../components/TimeoutSetting'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceConnected } from '../components/ServiceConnected'
 import { AutoStartSetting } from '../components/AutoStartSetting'
@@ -92,6 +93,7 @@ export const ConnectionPage: React.FC = () => {
         <InlineTemplateSetting connection={connection} service={service} context="launch" />
         <InlineTemplateSetting connection={connection} service={service} context="copy" />
         <CustomAttributeSettings connection={connection} service={service} />
+        <TimeoutSetting connection={connection} service={service} />
         <ProxySetting connection={connection} service={service} />
         <AutoStartSetting connection={connection} service={service} />
         <LanShareSelect connection={connection} service={service} />

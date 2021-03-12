@@ -17,7 +17,7 @@ export const ProxySetting: React.FC<{ service: IService; connection?: IConnectio
     <InlineSelectSetting
       label="Routing"
       disabled={disabled || (service.attributes.route && service.attributes.route !== 'failover')}
-      icon={<Icon name={route?.icon} size="md" type="light" />}
+      icon={<Icon name={route?.icon} size="md" />}
       value={connectionRoute}
       values={ROUTES.map(r => ({ key: r.key, name: r.name }))}
       onSave={route => {

@@ -9,7 +9,7 @@ import { fas } from '@fortawesome/pro-solid-svg-icons'
 
 library.add(fal, fab, far, fas)
 export interface IconProps {
-  name: string
+  name?: string
   color?: Color
   className?: string
   fixedWidth?: boolean
@@ -24,8 +24,9 @@ export interface IconProps {
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef(
-  ({ color, fixedWidth, name, size, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps): JSX.Element => {
+  ({ color, fixedWidth, name, size, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps) => {
     const styles: any = {}
+    if (!name) return null
     if (color) styles.color = colors[color]
     if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 2 : spacing.md

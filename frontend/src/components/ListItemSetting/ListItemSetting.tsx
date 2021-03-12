@@ -55,7 +55,7 @@ export const ListItemSetting = React.forwardRef(
       <>
         <ListItem button onClick={handleClick} disabled={disabled} style={{ opacity: 1 }} dense>
           <ListItemIcon>
-            <Icon name={icon} size="md" type="light" />
+            <Icon name={icon} size="md" />
           </ListItemIcon>
           <ListItemText primary={label} secondary={subLabel} />
           <ListItemSecondaryAction>

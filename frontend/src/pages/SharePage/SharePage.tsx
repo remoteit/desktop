@@ -14,7 +14,7 @@ import { getPermissions } from '../../helpers/userHelper'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
 
-export const SharePage: React.FC<{ device: IDevice }> = ({ device }) => {
+export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { email = '' } = useParams<{ email: string }>()
   const { shares } = useDispatch<Dispatch>()
   const { contacts = [], user, deleting } = useSelector((state: ApplicationState) => ({
@@ -37,6 +37,8 @@ export const SharePage: React.FC<{ device: IDevice }> = ({ device }) => {
   useEffect(() => {
     analyticsHelper.page('SharePage')
   }, [])
+
+  if (!device) return null
 
   const handleUnshare = async () => {
     await shares.delete({ deviceId: device.id, email })

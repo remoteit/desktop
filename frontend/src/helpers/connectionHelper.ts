@@ -13,6 +13,7 @@ export const DEFAULT_CONNECTION = {
   online: false,
   port: 33000,
   host: IP_PRIVATE,
+  timeout: 15,
   restriction: IP_OPEN,
   autoStart: true,
 }
