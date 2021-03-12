@@ -5,6 +5,7 @@ import { Dispatch, ApplicationState } from '../../store'
 import { CognitoAuth } from '@remote.it/components'
 import theme from '../../styling/theme'
 import { CHECKBOX_REMEMBER_KEY } from '../../models/auth'
+import { SEGMENT_PROJECT_KEY } from '../../helpers/analyticsHelper'
 
 export function SignInForm() {
   const { signInError, authService, localUsername } = useSelector((state: ApplicationState) => state.auth)
@@ -31,6 +32,11 @@ export function SignInForm() {
     }
   }
 
+  const segmentSettings = {
+      segmentKey: 'DESKTOP',
+      segmentAppName: SEGMENT_PROJECT_KEY
+  }
+
   return (
     <CognitoAuth
       themeOverride={theme}
@@ -42,6 +48,7 @@ export function SignInForm() {
       showCheckboxRemember={true}
       onClickCheckboxRemember={onClickCheckboxRemember}
       checkedCheckboxRemember={rememberMe}
+      segmentSettings={segmentSettings}
     />
   )
 }
