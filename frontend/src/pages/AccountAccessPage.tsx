@@ -13,7 +13,6 @@ import {
 import { useSelector, useDispatch } from 'react-redux'
 import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { AddUserButton } from '../buttons/AddUserButton'
-import { Breadcrumbs } from '../components/Breadcrumbs'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
 import { Notice } from '../components/Notice'
@@ -33,14 +32,10 @@ export const AccountAccessPage: React.FC = () => {
   return (
     <Container
       header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="user-friends" size="lg" />
-            <Title inline>Device List Sharing</Title>
-            <AddUserButton />
-          </Typography>
-        </>
+        <Typography variant="h1">
+          <Title>Device List Sharing</Title>
+          <AddUserButton />
+        </Typography>
       }
     >
       {access.length ? (
