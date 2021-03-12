@@ -60,6 +60,7 @@ export const ConnectionPage: React.FC = () => {
       header={
         <>
           <Gutters className={css.gutters} inset>
+            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
               connection={connection}
               service={service}
@@ -68,16 +69,15 @@ export const ConnectionPage: React.FC = () => {
               fullWidth
             />
             <InfoButton device={device} service={service} />
-            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ForgetButton connection={connection} />
             <CopyButton connection={connection} service={service} />
             <LaunchButton connection={connection} service={service} />
           </Gutters>
-          <ServiceConnected connection={connection} session={session} show={connection?.enabled} />
-          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
+          <ServiceConnected connection={connection} session={session} show={connection?.enabled} />
+          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
         </>
       }
     >

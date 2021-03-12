@@ -2,8 +2,8 @@ import React, { useEffect } from 'react'
 import { Body } from '../../components/Body'
 import { matchPath, useHistory, useLocation } from 'react-router-dom'
 import { makeStyles, Typography, Collapse, Link } from '@material-ui/core'
+import { selectConnections, connectionState } from '../../helpers/connectionHelper'
 import { NewConnectionButton } from '../../buttons/NewConnectionButton'
-import { selectConnections } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
 import { NewConnection } from '../../components/NewConnection'
 import { SessionsList } from '../../components/SessionsList'
@@ -30,9 +30,11 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     for (const session of state.sessions.all) {
       const index = allConnections.findIndex(c => c.sessionId === session.id)
       if (index > -1) {
+        session.state = connectionState(undefined, allConnections[index])
         local.push(session)
         allConnections.splice(index, 1)
       } else {
+        session.state = 'connected'
         other.push(session)
       }
     }
@@ -96,8 +98,8 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
           </Typography>
         </>
       )}
-      <SessionsList title="Connected" sessions={local} />
-      <SessionsList title="From Others" sessions={other} other />
+      <SessionsList title="Active" sessions={local} />
+      <SessionsList title="Others" sessions={other} other />
       <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
     </Container>
   )

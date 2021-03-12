@@ -22,13 +22,13 @@ export const DisconnectButton: React.FC<Props> = ({
   fullWidth,
 }) => {
   const state = connectionState(service, connection)
-  const visible = state === 'connecting' || state === 'connected'
+  const visible = state === 'connecting' || state === 'connected' || state === 'ready'
   const disabled = state === 'stopping' || state === 'connecting'
   return (
     <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={state === 'stopping' || state === 'connecting' ? state : 'Disconnect'}
+          title={state === 'stopping' || state === 'connecting' ? state : 'Remove Connection'}
           // icon="ban"
           disabled={disabled}
           loading={disabled}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, Divider, ListItemText, ListItemIcon } from '@material-ui/core'
+import { makeStyles, Divider, Tooltip, ListItemText, ListItemIcon } from '@material-ui/core'
 import { InitiatorPlatform } from './InitiatorPlatform'
 import { ListItemLocation } from './ListItemLocation'
 import { TargetPlatform } from './TargetPlatform'
@@ -17,7 +17,7 @@ export interface Props {
 export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent }) => {
   const css = useStyles(recent)()
   const pathname = `/connections/${session.target.id}/${session.id}` + (other ? '/other' : '')
-
+  const connected = session.state === 'connected'
   if (!session) return null
 
   return (
@@ -41,10 +41,20 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
                 </Title>
               )}
             </span>
-            <Icon name="arrow-right" color={recent ? 'gray' : 'primary'} size="md" type="regular" fixedWidth />
+            <Tooltip title={connected ? 'Connected' : 'Idle'} placement="top" arrow>
+              <span className={css.icon}>
+                <Icon
+                  name={connected ? 'arrow-right' : 'ellipsis-h'}
+                  color={recent ? 'gray' : connected ? 'primary' : 'primaryLight'}
+                  size="md"
+                  type="regular"
+                  fixedWidth
+                />
+              </span>
+            </Tooltip>
             <Title enabled={!recent}>
               {session.target.name}
-              <sup>
+              <sup className={css.targetPlatform}>
                 <TargetPlatform id={session.target.platform} tooltip />
               </sup>
             </Title>
@@ -61,7 +71,6 @@ const useStyles = recent =>
       display: 'flex',
       alignItems: 'flex-start',
       '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
-      '& > svg': { marginTop: spacing.xxs, marginRight: spacing.lg, marginLeft: spacing.lg },
     },
     from: { width: '20%' },
     vertical: {
@@ -70,4 +79,6 @@ const useStyles = recent =>
       marginTop: -spacing.sm,
       marginBottom: -spacing.sm,
     },
+    icon: { marginTop: spacing.xxs, marginRight: spacing.lg, marginLeft: spacing.lg },
+    targetPlatform: { opacity: 0.8 },
   })

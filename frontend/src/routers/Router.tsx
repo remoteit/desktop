@@ -148,7 +148,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
       <Route path="/settings">
         <Panel>
-          <SettingsPage />
+          <SettingsPage singlePanel={singlePanel} />
         </Panel>
       </Route>
 

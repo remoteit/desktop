@@ -30,7 +30,6 @@ export const NewConnection: React.FC = () => {
   const fetch = React.useMemo(
     () =>
       debounce(value => {
-        console.log('Debounce SEARCH', value)
         search.fetch(value)
       }, 400),
     []
@@ -39,7 +38,7 @@ export const NewConnection: React.FC = () => {
   useEffect(() => {
     analyticsHelper.track('newConnection')
     console.log('SERVICE ID', serviceID)
-    if (serviceID) setValue(data.find(d => d.serviceId === serviceID))
+    if (serviceID) setValue(data.find(d => d.serviceId === serviceID) || null)
   }, [])
 
   useEffect(() => {

@@ -152,7 +152,7 @@ declare global {
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
-  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping'
+  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping' | 'ready'
 
   type IConnectionKey = keyof IConnection
 
@@ -278,6 +278,7 @@ declare global {
     isP2P?: boolean
     timestamp: Date
     platform: number
+    state?: IConnectionState
     user?: IUserRef
     geo?: IGeo
     target: {
