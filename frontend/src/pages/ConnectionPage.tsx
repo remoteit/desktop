@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
-import { makeStyles } from '@material-ui/core/styles'
 import { selectById } from '../models/devices'
 import { PortSetting } from '../components/PortSetting'
 import { NameSetting } from '../components/NameSetting'
@@ -10,10 +9,9 @@ import { ProxySetting } from '../components/ProxySetting'
 import { TimeoutSetting } from '../components/TimeoutSetting'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceConnected } from '../components/ServiceConnected'
-import { AutoStartSetting } from '../components/AutoStartSetting'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../store'
-import { Divider, List } from '@material-ui/core'
+import { makeStyles, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../components/InlineTemplateSetting'
 import { ConnectionLogSetting } from '../components/ConnectionLogSetting'
@@ -87,15 +85,14 @@ export const ConnectionPage: React.FC = () => {
         <NameSetting connection={connection} service={service} />
         <PortSetting connection={connection} service={service} />
         <HostSetting connection={connection} service={service} />
-      </List>
-      <Divider variant="inset" />
-      <List>
         <InlineTemplateSetting connection={connection} service={service} context="launch" />
         <InlineTemplateSetting connection={connection} service={service} context="copy" />
         <CustomAttributeSettings connection={connection} service={service} />
+      </List>
+      <Divider variant="inset" />
+      <List>
         <TimeoutSetting connection={connection} service={service} />
         <ProxySetting connection={connection} service={service} />
-        <AutoStartSetting connection={connection} service={service} />
         <LanShareSelect connection={connection} service={service} />
         <ConnectionLogSetting connection={connection} service={service} />
       </List>

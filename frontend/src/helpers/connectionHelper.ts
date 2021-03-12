@@ -15,7 +15,6 @@ export const DEFAULT_CONNECTION = {
   host: IP_PRIVATE,
   timeout: 15,
   restriction: IP_OPEN,
-  autoStart: true,
 }
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {

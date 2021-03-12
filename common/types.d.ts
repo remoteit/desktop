@@ -136,7 +136,6 @@ declare global {
     typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address
     timeout?: number // timeout to disconnect in minutes
-    autoStart?: boolean // auto retry connect if closed
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     failover?: boolean // allow proxy failover
     proxyOnly?: boolean // disabled p2p
@@ -243,7 +242,7 @@ declare global {
     host?: ipAddress
     protocol?: string
     access: IUser[]
-    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
+    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy

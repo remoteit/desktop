@@ -56,7 +56,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   const CopyIcon = (
     <>
       <Icon
-        name={clipboard.copied ? 'check' : 'clipboard'}
+        name={clipboard.copied ? 'check' : 'copy'}
         color={clipboard.copied ? 'success' : color}
         size={size}
         fixedWidth

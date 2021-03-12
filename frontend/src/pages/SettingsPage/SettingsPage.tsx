@@ -64,30 +64,12 @@ export const SettingsPage: React.FC = () => {
         <DeviceSetupItem />
       </List>
       <Divider />
-      {showReports && (
-        <>
-          <List>
-            <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
-          </List>
-          <Divider />
-        </>
-      )}
+      <List>
+        {showReports && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
+        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
+        {remoteUI || <AccountLinkingSettings />}
+      </List>
       <Divider />
-      <>
-        <List>
-          <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
-        </List>
-        <Divider />
-      </>
-      {remoteUI || (
-        <>
-          {/* <Typography variant="subtitle1">Sharing</Typography> */}
-          <List>
-            <AccountLinkingSettings />
-          </List>
-          <Divider />
-        </>
-      )}
       {/* <Typography variant="subtitle1">Licensing</Typography> */}
       <List>
         <LicensingSetting />
