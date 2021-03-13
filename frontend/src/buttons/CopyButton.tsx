@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { setConnection, connectionState } from '../helpers/connectionHelper'
+import { setConnection } from '../helpers/connectionHelper'
 import { useApplication } from '../hooks/useApplication'
 import { useClipboard } from 'use-clipboard-copy'
 import { PromptModal } from '../components/PromptModal'
@@ -31,10 +31,9 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const state = connectionState(service, connection)
   const app = useApplication(context, service, connection)
 
-  if (!connection || (!show && (state !== 'connected' || !app))) return null
+  if (!connection || (!show && (!connection?.enabled || !app))) return null
 
   const check = event => {
     event.preventDefault()

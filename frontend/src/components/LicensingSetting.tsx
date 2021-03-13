@@ -1,12 +1,10 @@
 import React from 'react'
 import {
   makeStyles,
-  List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-  Typography,
   Divider,
   Button,
   Box,

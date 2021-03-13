@@ -47,6 +47,10 @@ export const Icon = React.forwardRef(
         fontType = 'fas'
         break
       }
+      case 'light': {
+        fontType = 'fal'
+        break
+      }
     }
 
     return (

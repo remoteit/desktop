@@ -37,7 +37,7 @@ export function ConnectionStateIcon({
   let title: any = 'Online'
   let spin = false
 
-  if (state === 'connected') {
+  if (state === 'connected' || state === 'ready') {
     colorName = 'primary'
     title = 'Connected'
   }

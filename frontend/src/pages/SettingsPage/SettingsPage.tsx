@@ -64,15 +64,12 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
     >
       <List>
         <DeviceSetupItem />
-      </List>
-      <Divider />
-      <List>
-        {showReports && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
-        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
         {remoteUI || <AccountLinkingSettings />}
+        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
+        {showReports && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
       </List>
       <Divider />
-      {/* <Typography variant="subtitle1">Licensing</Typography> */}
+      <Typography variant="subtitle1">Licensing</Typography>
       <List>
         <LicensingSetting />
       </List>
