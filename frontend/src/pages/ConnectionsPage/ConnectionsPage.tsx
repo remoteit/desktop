@@ -98,7 +98,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
           </Typography>
         </>
       )}
-      <SessionsList title="Active" sessions={local} />
+      <SessionsList title="Current" sessions={local} />
       <SessionsList title="Others" sessions={other} other />
       <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
     </Container>
