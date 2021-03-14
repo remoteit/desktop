@@ -1,8 +1,8 @@
 import React from 'react'
+import { Switch, Route, Redirect, useParams } from 'react-router-dom'
+import { ApplicationState } from '../store'
 import { selectDevice } from '../models/devices'
 import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
-import { Switch, Route, useParams } from 'react-router-dom'
 import { NetworkPage } from '../pages/NetworkPage'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
@@ -51,7 +51,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             <NetworkPage />
           </Route>
           <Route path="/devices/:deviceID/add">
-            <ServiceAddPage targetDevice={targetDevice} targets={targets} device={device} />
+            <ServiceAddPage targetDevice={targetDevice} device={device} />
           </Route>
           <Route
             path={['/devices/:deviceID/users/share', '/devices/:deviceID/users/:email', '/devices/:deviceID/share']}
@@ -92,7 +92,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             <ServiceDetailPage targets={targets} device={device} />
           </Route>
           <Route path="/devices/:deviceID">
-            <DeviceDetailPage device={device} />
+            <Redirect to={`/devices/${deviceID}/details`} />
           </Route>
         </Switch>
       }

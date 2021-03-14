@@ -20,7 +20,7 @@ export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
   return button ? (
     <Tooltip title="Scan for Services">
       <IconButton onClick={() => history.push(`/devices/${deviceID}/add/scan`)}>
-        <Icon name="radar" size="md" type="light" />
+        <Icon name="radar" size="md" />
       </IconButton>
     </Tooltip>
   ) : (

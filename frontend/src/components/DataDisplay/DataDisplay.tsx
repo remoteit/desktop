@@ -18,7 +18,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
                 {item.label}:
                 {item.help && (
                   <Tooltip title={item.help}>
-                    <Icon name="question-circle" type="light" size="sm" inline />
+                    <Icon name="question-circle" size="sm" inline />
                   </Tooltip>
                 )}
               </span>

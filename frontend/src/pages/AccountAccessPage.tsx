@@ -34,7 +34,7 @@ export const AccountAccessPage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>Device List Sharing</Title>
-          <AddUserButton />
+          <AddUserButton to={'settings/access/share'} />
         </Typography>
       }
     >

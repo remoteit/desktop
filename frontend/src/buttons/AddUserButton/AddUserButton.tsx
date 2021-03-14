@@ -1,19 +1,13 @@
 import React from 'react'
-import { useLocation, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { Icon } from '../../components/Icon'
 
-export const AddUserButton: React.FC<{ device?: IDevice }> = ({ device }) => {
-  const location = useLocation()
-  const history = useHistory()
-  const onClick = () => history.push(`${location.pathname}/share`)
-
-  if (device?.shared) return null
-
+export const AddUserButton: React.FC<{ to: string }> = ({ to }) => {
   return (
     <Tooltip title="Share">
-      <IconButton onClick={onClick}>
-        <Icon name="user-plus" size="md" type="light" />
+      <IconButton to={to} component={Link}>
+        <Icon name="user-plus" size="md" />
       </IconButton>
     </Tooltip>
   )
