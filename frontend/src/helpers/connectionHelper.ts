@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
-import { attributeName } from '../shared/nameHelper'
+import { attributeName, removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
@@ -36,11 +36,13 @@ export function findLocalConnection(state: ApplicationState, id: string, session
 type nameObj = { name: string }
 
 export function connectionName(service?: nameObj, device?: nameObj): string {
-  if (!device) return service?.name || ''
-  if (!service) return device?.name || ''
-  const deviceName = `${device.name} - `
-  const serviceName = service.name
-  return deviceName + serviceName.replace(deviceName, '')
+  let name: string[] = []
+  if (device) {
+    name.push(device.name)
+    if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
+  } else if (service) name.push(service.name)
+  console.log(name.join(' - '))
+  return name.join(' - ')
 }
 
 export function newConnection(service?: IService | null) {
