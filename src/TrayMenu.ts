@@ -110,7 +110,7 @@ export default class TrayMenu {
       list = list.slice(0, MAX_MENU_SIZE)
     }
     let menu = list.reduce((result: any[], connection) => {
-      if (connection.startTime) {
+      if (connection.createdTime) {
         result.push({
           label: connection.name,
           icon: connection.enabled ? iconConnected : connection.online ? iconOnline : iconOffline,
