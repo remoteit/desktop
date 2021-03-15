@@ -32,7 +32,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
             <Title>{device.name || 'Unknown'}</Title>
             {/* <ServiceName device={device} connection={connected} /> */}
             <RefreshButton device={device} />
-            <AddUserButton device={device} />
+            <AddUserButton to={`/devices/${device.id}/share`} />
             {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
           </Typography>
           <List>

@@ -44,7 +44,7 @@ export const ServiceHeaderMenu: React.FC<{
             {/* <ServiceName connection={connection} service={service} /> */}
             <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-            <AddUserButton device={device} />
+            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} />
             {thisDevice ? (
               <UnregisterServiceButton target={target} />
             ) : (

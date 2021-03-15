@@ -1,6 +1,5 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
-import { connectionState } from '../../helpers/connectionHelper'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { useLocation, useHistory } from 'react-router-dom'
 import { Tooltip, IconButton } from '@material-ui/core'
@@ -14,9 +13,8 @@ type Props = {
 export const ForgetButton: React.FC<Props> = ({ disabled = false, connection }) => {
   const history = useHistory()
   const location = useLocation()
-  const state = connectionState(undefined, connection)
 
-  if (state === 'connected') return null
+  if (connection?.enabled) return null
 
   const forget = () => {
     emit('service/forget', connection)

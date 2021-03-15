@@ -1,17 +1,18 @@
 import React, { useState } from 'react'
 import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { setConnection, connectionState } from '../helpers/connectionHelper'
+import { setConnection } from '../helpers/connectionHelper'
 import { useApplication } from '../hooks/useApplication'
 import { useClipboard } from 'use-clipboard-copy'
 import { PromptModal } from '../components/PromptModal'
 import { Application } from '../shared/applications'
-import { FontSize } from '../styling'
+import { FontSize, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
 export interface CopyButtonProps {
   connection?: IConnection
   service?: IService
   context?: Application['context']
+  color?: Color
   title?: string
   menuItem?: boolean
   size?: FontSize
@@ -22,6 +23,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   connection,
   service,
   menuItem,
+  color,
   context = 'copy',
   title = 'Copy',
   size = 'md',
@@ -29,10 +31,9 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const state = connectionState(service, connection)
   const app = useApplication(context, service, connection)
 
-  if (!connection || (!show && (state !== 'connected' || !app))) return null
+  if (!connection || (!show && (!connection?.enabled || !app))) return null
 
   const check = event => {
     event.preventDefault()
@@ -54,8 +55,8 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   const CopyIcon = (
     <>
       <Icon
-        name={clipboard.copied ? 'check' : 'clipboard'}
-        color={clipboard.copied ? 'success' : undefined}
+        name={clipboard.copied ? 'check' : 'copy'}
+        color={clipboard.copied ? 'success' : color}
         size={size}
         fixedWidth
       />

@@ -13,6 +13,7 @@ import { UpdateSetting } from '../../components/UpdateSetting'
 import { getOwnDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
 import { isRemoteUI } from '../../helpers/uiHelper'
+import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { isRemote } from '../../services/Browser'
@@ -21,7 +22,7 @@ import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SettingsPage: React.FC = () => {
+export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { showReports, os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       showReports: state.auth.user?.email.includes('@remote.it'),
@@ -55,6 +56,7 @@ export const SettingsPage: React.FC = () => {
                 </ButtonBase>
               </Tooltip>
             </Title>
+            {singlePanel && <AvatarMenu />}
             <OutOfBand inline />
           </Typography>
         </>
@@ -62,33 +64,12 @@ export const SettingsPage: React.FC = () => {
     >
       <List>
         <DeviceSetupItem />
+        {remoteUI || <AccountLinkingSettings />}
+        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
+        {showReports && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
       </List>
       <Divider />
-      {showReports && (
-        <>
-          <List>
-            <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
-          </List>
-          <Divider />
-        </>
-      )}
-      <Divider />
-      <>
-        <List>
-          <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
-        </List>
-        <Divider />
-      </>
-      {remoteUI || (
-        <>
-          {/* <Typography variant="subtitle1">Sharing</Typography> */}
-          <List>
-            <AccountLinkingSettings />
-          </List>
-          <Divider />
-        </>
-      )}
-      {/* <Typography variant="subtitle1">Licensing</Typography> */}
+      <Typography variant="subtitle1">Licensing</Typography>
       <List>
         <LicensingSetting />
       </List>

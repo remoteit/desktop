@@ -28,7 +28,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const state = connectionState(service, connection)
   const visible = state === 'stopping' || state === 'disconnected'
   const connecting = state === 'connecting'
-  const listening = state === 'connected'
+  const listening = state === 'ready'
 
   const clickHandler = () => {
     if (connecting) {
@@ -47,7 +47,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   })
 
-  let title = 'Connect'
+  let title = 'Create Connection'
   let disabled = false
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
@@ -64,19 +64,22 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (listening) {
-    title = 'Started'
+    title = 'Starting'
     color = 'primary'
+  }
+  if (connecting) {
+    title = 'Starting'
+    color = 'grayDark'
   }
 
   return (
     <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={connecting ? 'Connecting' : title}
-          icon="arrow-right"
+          title={title}
           variant={variant}
           loading={connecting}
-          color={connecting ? 'grayDark' : color}
+          color={color}
           size={size}
           onClick={clickHandler}
           disabled={disabled}

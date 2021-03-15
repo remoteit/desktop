@@ -23,10 +23,10 @@ export const FooterNav: React.FC = () => {
               icon={
                 m.badge ? (
                   <Badge variant={m.badge > 1 ? undefined : 'dot'} badgeContent={m.badge} color="error">
-                    <Icon name={m.icon} size="lg" />
+                    <Icon name={m.icon} size="lg" type="light" />
                   </Badge>
                 ) : (
-                  <Icon name={m.icon} size="lg" />
+                  <Icon name={m.icon} size="lg" type="light" />
                 )
               }
             />

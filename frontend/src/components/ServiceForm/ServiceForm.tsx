@@ -89,7 +89,6 @@ export const ServiceForm: React.FC<Props> = ({
   const CheckIcon = () => (
     <Icon
       name={isValid ? 'check-circle' : 'exclamation-triangle'}
-      type="light"
       size="md"
       color={isValid ? 'success' : 'warning'}
       fixedWidth

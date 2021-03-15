@@ -5,8 +5,10 @@ import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
+import { LaunchButton } from '../../buttons/LaunchButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { ComboButton } from '../../buttons/ComboButton'
+import { CopyButton } from '../../buttons/CopyButton'
 import { Columns } from '../../components/Columns'
 import { Gutters } from '../../components/Gutters'
 import { spacing } from '../../styling'
@@ -58,21 +60,23 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
           <ComboButton connection={connection} service={service} size="medium" fullWidth />
           {/* <Icon name="neuter" /> */}
           {connection?.enabled ? (
-            <Tooltip title="Connection Details" arrow>
-              <Link to={`/connections/${service.id}`}>
-                <IconButton>
-                  <Icon name="arrow-right" type="light" />
+            <>
+              <Tooltip title="Connection Details" arrow>
+                <IconButton to={`/connections/${service.id}`} component={Link}>
+                  <Icon name="info-circle" size="md" fixedWidth />
                 </IconButton>
-              </Link>
-            </Tooltip>
+              </Tooltip>
+              <CopyButton connection={connection} service={service} />
+              <LaunchButton connection={connection} service={service} />
+            </>
           ) : (
-            <Tooltip title="Configure Connection" arrow>
-              <Link to={`/connections/new/${device.id}/${service.id}`}>
-                <IconButton>
-                  <Icon name="cog" type="light" />
+            <>
+              <Tooltip title="Configure Connection" arrow>
+                <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
+                  <Icon name="cog" size="md" fixedWidth />
                 </IconButton>
-              </Link>
-            </Tooltip>
+              </Tooltip>
+            </>
           )}
         </Gutters>
       }

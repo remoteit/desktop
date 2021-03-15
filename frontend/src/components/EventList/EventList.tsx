@@ -122,10 +122,11 @@ export const EventList: React.FC<LogListProps> = ({
             <>
               <Breadcrumbs />
               <List>
-                <Typography variant="h1">
-                  <Icon name="file-alt" color="grayDarker" size="lg" />
-                  <Title inline>{device ? `Device Logs` : `Logs`} </Title>
-                </Typography>
+                {!device && (
+                  <Typography variant="h1">
+                    <Title>Logs</Title>
+                  </Typography>
+                )}
                 {device && (
                   <>
                     <ListItem dense>
@@ -150,16 +151,15 @@ export const EventList: React.FC<LogListProps> = ({
                   {!device ? (
                     <>
                       <Box ml="auto" display="flex" alignItems="center">
-                        <i className={css.dateUpdate}>
-                          {' '}
-                          {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)}{' '}
-                        </i>
-                        <CSVDownloadButton minDate={minDate?.toDateString() || new Date().toString()} />
+                        <Typography variant="caption" className={css.dateUpdate}>
+                          {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)}
+                        </Typography>
                         <Tooltip title="Refresh List">
                           <IconButton onClick={refresh}>
-                            <Icon name="sync" spin={fetching} size="md" fixedWidth />
+                            <Icon name="sync" spin={fetching} size="sm" fixedWidth />
                           </IconButton>
                         </Tooltip>
+                        <CSVDownloadButton minDate={minDate?.toDateString() || new Date().toString()} />
                       </Box>
                     </>
                   ) : (
@@ -221,8 +221,7 @@ const useStyles = makeStyles({
     height: 100,
   },
   dateUpdate: {
-    fontSize: fontSizes.xxs,
-    marginRight: spacing.sm,
+    marginRight: spacing.md,
   },
   item: {
     paddingTop: 0,

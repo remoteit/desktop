@@ -20,6 +20,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
   const handleRef = useRef<number>(savedWidth)
   const primaryRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState<number>(handleRef.current)
+  const [parentWidth, setParentWidth] = useState<number | undefined>()
   const [grab, setGrab] = useState<boolean>(false)
   const css = useStyles()
 
@@ -33,6 +34,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
   const onDown = (event: React.MouseEvent) => {
     setGrab(true)
     handleRef.current = primaryRef.current?.offsetWidth || width
+    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) - 9 - 250)
     event.preventDefault()
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
@@ -48,14 +50,17 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
 
   return (
     <>
-      <div className={css.panel} style={{ width }} ref={primaryRef}>
+      <div className={css.panel} style={{ minWidth: width }} ref={primaryRef}>
         <Header />
         {primary}
       </div>
       <div className={css.handle} onMouseDown={onDown}>
         <div className={grab ? 'active' : undefined} />
       </div>
-      <div className={classnames(css.panel, css.secondary)}>
+      <div
+        className={classnames(css.panel, css.secondary)}
+        style={{ minWidth: parentWidth ? parentWidth - width : undefined }}
+      >
         <div className={css.header} />
         {secondary}
       </div>
@@ -74,7 +79,7 @@ const useStyles = makeStyles({
     flexShrink: 10,
   },
   header: {
-    height: spacing.xl,
+    height: spacing.lg,
   },
   handle: {
     height: '100%',

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
-import { connectionState } from '../../helpers/connectionHelper'
 import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
 import { launchPutty, launchVNC } from '../../services/Browser'
@@ -32,8 +31,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   const [open, setOpen] = useState<boolean>(false)
   const [openApp, setOpenApp] = useState<boolean>(false)
   const [downloadLink, setDownloadLink] = useState<string>('')
-  const state = connectionState(service, connection)
-  const hidden = state !== 'connected'
+  const hidden = !connection?.enabled
 
   const app = useApplication('launch', service, connection)
   const css = useStyles()
@@ -82,7 +80,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   }
 
   const onSubmit = (tokens: ILookup<string>) => {
-    setConnection({ ...connection, ...tokens })
+    connection && setConnection({ ...connection, ...tokens })
   }
 
   const closeAll = () => {

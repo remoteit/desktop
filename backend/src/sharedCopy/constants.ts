@@ -69,7 +69,7 @@ export const DEFAULT_TARGET: ITarget | ITargetDevice = {
 export const ROUTES: IRoute[] = [
   {
     key: 'failover',
-    icon: 'cloud',
+    icon: 'code-branch',
     name: 'Peer to peer with proxy failover',
     description:
       'Default is to prioritize peer to peer connections over proxy connections, but use proxy if peer to peer fails. Also allows overriding at time of connection.',

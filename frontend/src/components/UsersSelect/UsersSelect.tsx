@@ -30,7 +30,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
   return (
     <ListItemLocation pathname={pathname} dense>
       <ListItemIcon>
-        <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" type="light" />
+        <Icon name="user-friends" color={connected ? 'primary' : undefined} size="md" />
       </ListItemIcon>
       <ListItemText
         primary={total ? 'Shared Users' : 'Add Shared User'}

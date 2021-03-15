@@ -32,7 +32,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
   if (connection) {
     failover = connection.isP2P === false
     if (cState === 'connecting' || cState === 'stopping') state = 'transition'
-    if (cState === 'connected') state = 'connected'
+    if (cState === 'connected' || cState === 'ready') state = 'connected'
     if (connection.error?.message) state = 'error'
   }
 

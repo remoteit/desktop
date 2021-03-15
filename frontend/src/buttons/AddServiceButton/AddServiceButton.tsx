@@ -13,7 +13,7 @@ export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) =>
   return (
     <Tooltip title="Add Service">
       <IconButton onClick={() => history.push(link)}>
-        <Icon name="plus-circle" size="md" type="light" />
+        <Icon name="plus-circle" size="md" />
       </IconButton>
     </Tooltip>
   )

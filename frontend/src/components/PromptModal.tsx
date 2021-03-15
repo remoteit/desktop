@@ -34,9 +34,10 @@ export const PromptModal: React.FC<{
           <DialogTitle>Missing info found</DialogTitle>
           <DialogContent>
             <Typography variant="h4">{app.command}</Typography>
-            {app.missingTokens.map(token => (
+            {app.missingTokens.map((token, index) => (
               <TextField
                 fullWidth
+                autoFocus={index === 0}
                 key={token}
                 variant="filled"
                 label={token}

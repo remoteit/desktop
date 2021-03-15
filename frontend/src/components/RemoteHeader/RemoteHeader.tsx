@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { isElectron } from '../../services/Browser'
+import { isElectron, isMac } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
 import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
@@ -12,18 +12,19 @@ import * as screenfull from 'screenfull'
 type Props = { device?: IDevice; color?: string; children: React.ReactNode }
 
 export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
-  const css = useStyles()
+  const showFrame = !isElectron()
+  const showBorder = !isMac() && !showFrame
+  const css = useStyles(showBorder)()
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
 
-  const showFrame = !isElectron()
   const toggleFullscreen = () => {
     setFullscreen(!fullscreen)
     if (screenfull.isEnabled) screenfull.toggle()
   }
 
   let remoteCss = ''
-  let pageCss = classnames(css.page, css.full)
+  let pageCss = classnames(css.full, css.page)
 
   if (showFrame) {
     pageCss = classnames(pageCss, css.inset)
@@ -52,32 +53,40 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
   )
 }
 
-const useStyles = makeStyles({
-  full: { top: 0, left: 0, right: 0, bottom: 0, position: 'fixed' },
-  page: {
-    overflow: 'hidden',
-    display: 'flex',
-    flexFlow: 'column',
-    backgroundColor: colors.white,
-    margin: 'auto',
-  },
-  inset: {
-    top: spacing.xl,
-    left: spacing.sm,
-    right: spacing.sm,
-    bottom: spacing.sm,
-    borderRadius: spacing.sm,
-  },
-  default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
-  remote: {
-    color: colors.white,
-    textAlign: 'center',
-    '& button': { position: 'absolute', left: 0, top: 0, color: colors.white },
-  },
-  icon: {
-    position: 'absolute',
-    height: spacing.lg,
-    right: spacing.md,
-    top: spacing.xxs,
-  },
-})
+const useStyles = showBorder =>
+  makeStyles({
+    full: {
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      position: 'fixed',
+    },
+    page: {
+      overflow: 'hidden',
+      display: 'flex',
+      flexFlow: 'column',
+      backgroundColor: colors.white,
+      margin: 'auto',
+      borderTop: showBorder ? `1px solid ${colors.gray}` : undefined,
+    },
+    inset: {
+      top: spacing.xl,
+      left: spacing.sm,
+      right: spacing.sm,
+      bottom: spacing.sm,
+      borderRadius: spacing.sm,
+    },
+    default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
+    remote: {
+      color: colors.white,
+      textAlign: 'center',
+      '& button': { position: 'absolute', left: 0, top: 0, color: colors.white },
+    },
+    icon: {
+      position: 'absolute',
+      height: spacing.lg,
+      right: spacing.md,
+      top: spacing.xxs,
+    },
+  })

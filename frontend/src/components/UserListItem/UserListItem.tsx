@@ -17,7 +17,7 @@ export const UserListItem: React.FC<Props> = ({ user, isConnected, isUserLinked 
   return (
     <ListItemLocation pathname={redirectTo} dense>
       <ListItemIcon>
-        <InitiatorPlatform id={user.platform} connected={isConnected} />
+        <InitiatorPlatform id={user.platform} connected={isConnected} user />
       </ListItemIcon>
       {isConnected ? (
         <ListItemText

@@ -68,11 +68,9 @@ export const DynamicButton: React.FC<Props> = props => {
 
   return (
     <Tooltip title={title}>
-      <span>
-        <IconButton disabled={disabled} onClick={clickHandler}>
-          {IconComponent}
-        </IconButton>
-      </span>
+      <IconButton disabled={disabled} onClick={clickHandler}>
+        {IconComponent}
+      </IconButton>
     </Tooltip>
   )
 }

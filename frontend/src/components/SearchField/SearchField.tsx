@@ -55,7 +55,7 @@ export const SearchField: React.FC = () => {
                 devices.fetch()
               }}
             >
-              <Icon name="times" size="md" type="light" color="grayDarker" fixedWidth />
+              <Icon name="times" size="md" color="grayDarker" fixedWidth />
             </IconButton>
           </Tooltip>
         )}

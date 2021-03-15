@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
-import { attributeName } from '../shared/nameHelper'
+import { attributeName, removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
@@ -13,8 +13,8 @@ export const DEFAULT_CONNECTION = {
   online: false,
   port: 33000,
   host: IP_PRIVATE,
+  timeout: 15,
   restriction: IP_OPEN,
-  autoStart: true,
 }
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
@@ -24,7 +24,7 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
     if (connection.connecting) return 'connecting'
     if (connection.connected && !connection.enabled) return 'stopping'
     if (connection.connected) return 'connected'
-    if (connection.enabled) return 'connected'
+    if (connection.enabled) return 'ready'
   }
   return 'disconnected'
 }
@@ -36,11 +36,13 @@ export function findLocalConnection(state: ApplicationState, id: string, session
 type nameObj = { name: string }
 
 export function connectionName(service?: nameObj, device?: nameObj): string {
-  if (!device) return service?.name || ''
-  if (!service) return device?.name || ''
-  const deviceName = `${device.name} - `
-  const serviceName = service.name
-  return deviceName + serviceName.replace(deviceName, '')
+  let name: string[] = []
+  if (device) {
+    name.push(device.name)
+    if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
+  } else if (service) name.push(service.name)
+  console.log(name.join(' - '))
+  return name.join(' - ')
 }
 
 export function newConnection(service?: IService | null) {

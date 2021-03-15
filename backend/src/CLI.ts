@@ -118,7 +118,7 @@ export default class CLI {
       startTime: Math.round((c.startedtimestamp || c.createdtimestamp) / 1000000),
       endTime: Math.round(c.stoppedtimestamp / 1000000),
       restriction: c.restrict,
-      autoStart: c.retry,
+      timeout: c.timeout,
       failover: c.failover,
     }))
     await this.updateConnectionStatus()

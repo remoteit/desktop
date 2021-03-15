@@ -135,7 +135,7 @@ declare global {
     host?: ipAddress // Bind address
     typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address
-    autoStart?: boolean // auto retry connect if closed
+    timeout?: number // timeout to disconnect in minutes
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     failover?: boolean // allow proxy failover
     proxyOnly?: boolean // disabled p2p
@@ -152,7 +152,7 @@ declare global {
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
-  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping'
+  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping' | 'ready'
 
   type IConnectionKey = keyof IConnection
 
@@ -242,7 +242,7 @@ declare global {
     host?: ipAddress
     protocol?: string
     access: IUser[]
-    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
+    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy
@@ -278,6 +278,7 @@ declare global {
     isP2P?: boolean
     timestamp: Date
     platform: number
+    state?: IConnectionState
     user?: IUserRef
     geo?: IGeo
     target: {
