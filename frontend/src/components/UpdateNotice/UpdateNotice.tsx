@@ -12,7 +12,7 @@ const NOTICE_VERSION_ID = 'notice-version'
 
 export const UpdateNotice: React.FC = () => {
   const [updateNotice, setUpdateNotice] = useState<boolean>(false)
-  const { update } = useSelector((state: ApplicationState) => state.backend)
+  const { update, connections } = useSelector((state: ApplicationState) => state.backend)
   const [versionShown, setVersionShown] = useState<boolean>(false)
 
   useEffect(() => {
@@ -30,21 +30,18 @@ export const UpdateNotice: React.FC = () => {
 
   if (isHeadless() && versionShown) return <></>
 
+  const handleClickRestart = () => {
+    analyticsHelper.track('update')
+    emit('restart', update, connections)
+  }
+
   return (
     <Snackbar
       open={updateNotice}
       message={`An update is available (v${update}).`}
       action={[
         !isHeadless() && (
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={() => {
-              analyticsHelper.track('update')
-              emit('restart', update)
-            }}
-          >
+          <Button variant="contained" color="primary" size="small" onClick={handleClickRestart}>
             Restart
           </Button>
         ),

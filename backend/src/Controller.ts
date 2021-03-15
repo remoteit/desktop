@@ -182,8 +182,9 @@ class Controller {
     app.quit()
   }
 
-  restart = (update?: string) => {
+  restart = (update?: string, connections?: IConnection[]) => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
+    connections && connections.map( connection => this.pool.stop(connection))
     app.restart(update)
   }
 
