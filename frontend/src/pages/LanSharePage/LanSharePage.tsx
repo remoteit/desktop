@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Button, List, Typography, TextField, MenuItem } from '@material-ui/core'
-import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_IP } from '../../shared/constants'
+import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../shared/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
 import { Quote } from '../../components/Quote'
 import analyticsHelper from '../../helpers/analyticsHelper'
+import { enable } from 'debug'
 
 type Selections = { value: string | Function; name: string; note: string }
 
@@ -59,22 +60,22 @@ export const LanSharePage: React.FC = () => {
   const [error, setError] = useState<string>()
   const maxLength = 15
   const [bindIP, setBindIP] = useState(currentHost)
-  const validIp = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+  const validHostname = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
   const getSelectionValue = () => {
     if (!enabled) return IP_OPEN
     const value = selected.value
     return typeof value === 'function' ? value() : value
   }
-  const [disable, setDisable] = useState(
-    (connection.host !== IP_PRIVATE) === enabled && connection.restriction === getSelectionValue()
-  )
 
   if (!connection || !service) return null
 
   const save = () => {
-    !validIp.test(bindIP) && setError('invalid IP')
-    !error && setConnection({ ...connection, host: enabled ? bindIP : IP_PRIVATE, restriction: getSelectionValue() })
-    history.goBack()
+    if (enable && !validHostname.test(bindIP)) {
+      setError('invalid IP')
+    } else {
+      setConnection({ ...connection, host: enabled ? bindIP : IP_PRIVATE, restriction: getSelectionValue() })
+      history.goBack()
+    }
   }
 
   return (
@@ -118,7 +119,6 @@ export const LanSharePage: React.FC = () => {
                     value = value.substring(0, maxLength)
                   } else {
                     setError(undefined)
-                    setDisable(false)
                     setBindIP(value)
                   }
                 }}
@@ -162,7 +162,7 @@ export const LanSharePage: React.FC = () => {
       </div>
 
       <div className={css.indent}>
-        <Button onClick={save} variant="contained" color="primary" disabled={disable}>
+        <Button onClick={save} variant="contained" color="primary">
           Save
         </Button>
       </div>
