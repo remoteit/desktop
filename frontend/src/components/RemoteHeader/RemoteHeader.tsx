@@ -68,7 +68,7 @@ const useStyles = showBorder =>
       flexFlow: 'column',
       backgroundColor: colors.white,
       margin: 'auto',
-      borderTop: showBorder ? `1px solid ${colors.gray}` : undefined,
+      borderTop: showBorder ? `1px solid ${colors.grayLight}` : undefined,
     },
     inset: {
       top: spacing.xl,
