@@ -113,7 +113,11 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             selected={`/devices/${device.id}/${s.id}`}
             dense
           >
-            <ListItemText className={css.service} primary={s.name} secondary={host(s)} />
+            <ListItemText
+              className={css.service}
+              primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
+              secondary={host(s)}
+            />
             <ListItemSecondaryAction>
               <ServiceMiniState
                 service={s}

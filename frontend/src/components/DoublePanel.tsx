@@ -79,7 +79,7 @@ const useStyles = makeStyles({
     flexShrink: 10,
   },
   header: {
-    height: spacing.xl,
+    height: spacing.lg,
   },
   handle: {
     height: '100%',

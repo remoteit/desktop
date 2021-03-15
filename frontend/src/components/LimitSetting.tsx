@@ -13,7 +13,8 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   switch (limit.name) {
     case 'aws-services':
       template = 'value'
-      message = limit.value ? `${v(limit.actual)} of ${v(limit.value)} services registered` : 'Unlimited services'
+      message =
+        limit.value !== null ? `${v(limit.actual)} of ${v(limit.value)} services registered` : 'Unlimited services'
       break
     case 'aws-evaluation':
       template = 'text'
@@ -25,13 +26,17 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       break
     case 'iot-devices':
       template = 'value'
-      message = limit.value ? `${v(limit.actual)} of ${v(limit.value)} devices registered` : 'Unlimited devices'
+      message =
+        limit.value !== null
+          ? `${v(limit.actual)} of ${v(limit.value)} licensed devices registered`
+          : 'Unlimited devices'
       break
     case 'iot-nc-devices':
       template = 'value'
-      message = limit.value
-        ? `${v(limit.actual)} of ${v(limit.value)} non-commercial devices registered`
-        : 'Unlimited non-commercial devices'
+      message =
+        limit.value !== null
+          ? `${v(limit.actual)} of ${v(limit.value)} non-commercial devices registered`
+          : 'Unlimited non-commercial devices'
       break
   }
 

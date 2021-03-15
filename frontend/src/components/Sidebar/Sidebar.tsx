@@ -41,6 +41,7 @@ const useStyles = addSpace =>
       minWidth: SIDEBAR_WIDTH,
       height: '100%',
       paddingTop: addSpace ? spacing.md : 0,
+      marginTop: addSpace ? 0 : -spacing.md,
       '& section': { margin: `${spacing.xl}px ${spacing.md}px` },
     },
     header: {

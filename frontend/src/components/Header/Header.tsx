@@ -14,9 +14,9 @@ export const Header: React.FC = () => {
   const history = useHistory()
   const css = useStyles(hasFocus)()
   const [back, setBack] = useState('')
-  const [fordWare, setFordWare] = useState('')
+  const [forward, setForward] = useState('')
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
-  const [disabledGoback, setDisabledGoback] = useState<boolean>(false)
+  const [disabledBack, setDisabledBack] = useState<boolean>(false)
 
   const { device } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
@@ -36,31 +36,30 @@ export const Header: React.FC = () => {
 
   const goBack = () => {
     if (document.location.href === back) {
-      setDisabledGoback(true)
+      setDisabledBack(true)
     }
     setBack(document.location.href)
     history.goBack()
   }
 
   const goForward = () => {
-    if (document.location.href === fordWare) {
+    if (document.location.href === forward) {
       setDisabledForward(true)
     }
-    setFordWare(document.location.href)
+    setForward(document.location.href)
     history.goForward()
   }
 
   return (
     <div className={css.header}>
-      <IconButton disabled={disabledGoback} onClick={goBack}>
-        <Icon name="chevron-left" size="lg" color="grayDark" />
+      <IconButton disabled={disabledBack} onClick={goBack}>
+        <Icon name="chevron-left" size="lg" color={disabledBack ? 'grayLight' : 'grayDark'} />
       </IconButton>
       <IconButton disabled={disabledForward} onClick={goForward}>
-        <Icon name="chevron-right" size="lg" color="grayDark" />
+        <Icon name="chevron-right" size="lg" color={disabledForward ? 'grayLight' : 'grayDark'} />
       </IconButton>
       <Typography variant="body2" color="textSecondary">
         {device ? attributeName(device) : 'remote.it'}
-        {/*  <Breadcrumbs /> */}
       </Typography>
     </div>
   )
