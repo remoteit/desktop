@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { isElectron, isWindows } from '../../services/Browser'
+import { isElectron, isMac } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
 import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
@@ -13,7 +13,7 @@ type Props = { device?: IDevice; color?: string; children: React.ReactNode }
 
 export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
   const showFrame = !isElectron()
-  const showBorder = isWindows() && !showFrame
+  const showBorder = !isMac() && !showFrame
   const css = useStyles(showBorder)()
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
