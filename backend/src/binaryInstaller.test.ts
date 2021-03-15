@@ -90,10 +90,10 @@ describe('backend/binaryInstaller', () => {
       console.log(__dirname)
 
       expect(commandSpy).toBeCalledWith(`"${environment.binPath}/remoteit" -j agent uninstall`)
-      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/remoteit`)
-      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/connectd`)
-      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/muxer`)
-      expect(commandSpy).toBeCalledWith(`rm -f ${environment.symlinkPath}/demuxer`)
+      expect(commandSpy).toBeCalledWith(`rm -f "${environment.symlinkPath}/remoteit"`)
+      expect(commandSpy).toBeCalledWith(`rm -f "${environment.symlinkPath}/connectd"`)
+      expect(commandSpy).toBeCalledWith(`rm -f "${environment.symlinkPath}/muxer"`)
+      expect(commandSpy).toBeCalledWith(`rm -f "${environment.symlinkPath}/demuxer"`)
       expect(commandSpy).toHaveBeenCalledTimes(5)
     })
 
