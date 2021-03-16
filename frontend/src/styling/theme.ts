@@ -179,8 +179,13 @@ const jssTheme: ThemeOptions = {
     MuiMenuItem: {
       root: {
         '& .MuiListItemIcon-root': { minWidth: 50 },
+        color: colors.grayDarkest,
+        paddingLeft: spacing.sm,
+        paddingRight: spacing.sm,
+        marginLeft: spacing.sm,
+        marginRight: spacing.sm,
         // '&:hover, &:focus': { backgroundColor: colors.grayLighter },
-        '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
+        '&:hover, &:focus': { backgroundColor: colors.primaryLighter },
       },
     },
     MuiInput: {
