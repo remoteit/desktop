@@ -34,7 +34,7 @@ export function useNavigation(): [string, INavigation[]] {
 
   const menuItems: INavigation[] = [
     { label: 'This Device', path: path('/devices'), icon: 'hdd', show: remoteUI },
-    { label: 'Connections', path: path('/connections'), icon: 'scrubber', show: !remoteUI },
+    { label: 'Connections', path: path('/connections'), icon: 'arrow-right', show: !remoteUI },
     { label: 'Devices', path: path('/devices'), icon: 'chart-network', show: !remoteUI },
     {
       label: 'Announcements',
