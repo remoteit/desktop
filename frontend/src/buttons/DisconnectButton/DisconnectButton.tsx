@@ -28,8 +28,7 @@ export const DisconnectButton: React.FC<Props> = ({
     <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={state === 'stopping' || state === 'connecting' ? state : 'Remove Connection'}
-          // icon="ban"
+          title={state === 'stopping' || state === 'connecting' ? state : 'Stop Connection'}
           disabled={disabled}
           loading={disabled}
           color={disabled ? 'grayDark' : color}
