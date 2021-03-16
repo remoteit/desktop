@@ -43,7 +43,7 @@ export const DynamicButton: React.FC<Props> = props => {
   if (size === 'small') {
     return (
       <Button variant={variant} onClick={clickHandler} disabled={disabled} size={size} className={css.button} fullWidth>
-        {title}
+        {title.split(' ')[0]}
         {loading && IconComponent}
       </Button>
     )

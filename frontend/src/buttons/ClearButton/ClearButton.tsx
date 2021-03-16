@@ -14,7 +14,7 @@ type Props = {
 export const ClearButton: React.FC<Props> = ({ disabled = false, connection, all }) => {
   const state = connectionState(undefined, connection)
   const location = useLocation()
-  if (!all && (!connection || state === 'connected' || !connection.startTime)) return null
+  if (!all && (!connection || state === 'connected' || !connection.createdTime)) return null
   if (!location.pathname.includes('connections')) return null
 
   const forget = () => {

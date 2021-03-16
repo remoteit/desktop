@@ -52,12 +52,14 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
                 />
               </span>
             </Tooltip>
-            <Title enabled={!recent}>
-              {session.target.name}
-              <sup className={css.targetPlatform}>
-                <TargetPlatform id={session.target.platform} tooltip />
-              </sup>
-            </Title>
+            <span className={css.to}>
+              <Title enabled={!recent}>
+                {session.target.name}
+                <sup className={css.targetPlatform}>
+                  <TargetPlatform id={session.target.platform} tooltip />
+                </sup>
+              </Title>
+            </span>
           </>
         }
       />
@@ -72,13 +74,14 @@ const useStyles = recent =>
       alignItems: 'flex-start',
       '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
     },
-    from: { width: '20%' },
+    from: { width: '25%' },
+    to: { width: '60%' },
     vertical: {
       height: '2.8em',
       backgroundColor: recent ? colors.grayLight : colors.primaryLight,
       marginTop: -spacing.sm,
       marginBottom: -spacing.sm,
     },
-    icon: { marginTop: spacing.xxs, marginRight: spacing.lg, marginLeft: spacing.lg },
+    icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
     targetPlatform: { opacity: 0.8 },
   })

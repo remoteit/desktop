@@ -42,14 +42,13 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     for (const connection of allConnections) {
       const [_, device] = selectById(state, connection.id)
       const session = {
-        timestamp: new Date(connection.startTime || 0),
+        timestamp: new Date(connection.createdTime || 0),
         platform: state.backend.environment.manufacturerDetails?.product.platform || 0,
         user: state.auth.user,
         geo: undefined,
         target: {
           id: connection.id,
           deviceId: device?.id || '',
-          platform: device?.targetPlatform || 0,
           name: connection.name,
         },
       }
