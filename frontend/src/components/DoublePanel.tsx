@@ -13,6 +13,7 @@ type Props = {
 }
 
 const MIN_WIDTH = 300
+const SIDEBAR_WIDTH = 9 + 250
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => {
   const { ui } = useDispatch<Dispatch>()
@@ -26,9 +27,12 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
   const css = useStyles()
 
   const onMove = (event: MouseEvent) => {
-    handleRef.current += (event.clientX - moveRef.current)
+    handleRef.current += event.clientX - moveRef.current
     moveRef.current = event.clientX
-    if (handleRef.current > MIN_WIDTH && handleRef.current < window.document.body.offsetWidth - MIN_WIDTH) {
+    if (
+      handleRef.current > MIN_WIDTH &&
+      handleRef.current < window.document.body.offsetWidth - MIN_WIDTH - SIDEBAR_WIDTH
+    ) {
       setWidth(handleRef.current)
     }
   }
@@ -37,7 +41,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     setGrab(true)
     moveRef.current = event.clientX
     handleRef.current = primaryRef.current?.offsetWidth || width
-    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) )
+    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) - SIDEBAR_WIDTH)
     event.preventDefault()
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
