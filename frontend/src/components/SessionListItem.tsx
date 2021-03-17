@@ -15,9 +15,13 @@ export interface Props {
 }
 
 export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent }) => {
-  const css = useStyles(recent)()
-  const pathname = `/connections/${session.target.id}/${session.id}` + (other ? '/other' : '')
   const connected = session.state === 'connected'
+  const css = useStyles(recent)()
+
+  let pathname = `/connections/${session.target.id}`
+  if (session.id) pathname += `/${session.id}`
+  if (other) pathname += '/other'
+
   if (!session) return null
 
   return (

@@ -71,14 +71,7 @@ export const LanSharePage: React.FC = () => {
   }
 
   return (
-    <Container
-      header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">Local Network Sharing</Typography>
-        </>
-      }
-    >
+    <Container header={<Typography variant="h1">Local Network Sharing</Typography>}>
       <List>
         <ListItemSetting
           icon="network-wired"
