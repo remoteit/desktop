@@ -19,13 +19,15 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
   const savedWidth = useSelector((state: ApplicationState) => state.ui[`${resize}PanelWidth`])
   const handleRef = useRef<number>(savedWidth)
   const primaryRef = useRef<HTMLDivElement>(null)
+  const moveRef = useRef<number>(0)
   const [width, setWidth] = useState<number>(handleRef.current)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
   const [grab, setGrab] = useState<boolean>(false)
   const css = useStyles()
 
   const onMove = (event: MouseEvent) => {
-    handleRef.current += event.movementX
+    handleRef.current += (event.clientX - moveRef.current)
+    moveRef.current = event.clientX
     if (handleRef.current > MIN_WIDTH && handleRef.current < window.document.body.offsetWidth - MIN_WIDTH) {
       setWidth(handleRef.current)
     }
@@ -33,8 +35,9 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
 
   const onDown = (event: React.MouseEvent) => {
     setGrab(true)
+    moveRef.current = event.clientX
     handleRef.current = primaryRef.current?.offsetWidth || width
-    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) - 9 - 250)
+    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) )
     event.preventDefault()
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
