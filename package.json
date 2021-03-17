@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean build-backend install-binaries compile copy-* build-electron",
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 REACT_APP_GRAPHQL_API=$(./scripts/load-api.sh) REACT_APP_GRAPHQL_BETA_API=$(./scripts/load-api.sh) run-s clean build-backend install-binaries compile copy-* build-electron",
     "build-backend": "cd backend && npm run build",
     "build-electron": "cross-env electron-builder",
     "clean": "rimraf build/* dist/*",
