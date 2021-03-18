@@ -70,11 +70,11 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async getEventsLogs({ from, minDate }: eventLogs, globalState) {
+    async getEventsLogs({ from, minDate, maxDate }: eventLogs, globalState) {
       const { set } = dispatch.logs
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
       try {
-        const gqlResponse = await graphQLGetEventsLogs(from, minDate)
+        const gqlResponse = await graphQLGetEventsLogs(from, minDate, maxDate)
         const events = gqlResponse.data.data?.login.events
         const { items } = globalState.logs.events || { items: [] }
         set({ events: from === 0 ? events : { ...events, items: items.concat(events.items) } })

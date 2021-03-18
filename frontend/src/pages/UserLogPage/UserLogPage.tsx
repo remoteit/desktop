@@ -11,7 +11,12 @@ export const UserLogPage: React.FC = () => {
     fetching: state.logs.fetching,
   }))
   const dispatch = useDispatch<Dispatch>()
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
   const { getEventsLogs } = dispatch.logs
+
+  const onChangeDate = (date: any) => {
+    setSelectedDate(date)
+  }
 
   const getDeviceLogs = (data: eventLogs) => {
     getEventsLogs(data)
@@ -22,7 +27,8 @@ export const UserLogPage: React.FC = () => {
       fetching={fetching}
       fetchLogs={getDeviceLogs}
       events={events}
-      selectedDate={null}
+      selectedDate={selectedDate}
+      onChangeDate={onChangeDate}
       fetchingMore={fetchingMore}
     />
   )

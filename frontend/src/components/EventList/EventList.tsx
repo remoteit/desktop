@@ -90,6 +90,8 @@ export const EventList: React.FC<LogListProps> = ({
         setPlanUpgrade(false)
         limit = create_days
       }
+    } else {
+      setPlanUpgrade(true)
     }
     return new Date(new Date().getTime() - DAY * limit)
   }
@@ -107,7 +109,7 @@ export const EventList: React.FC<LogListProps> = ({
 
   const fetchMore = () => {
     const newOffset = itemOffset + pageSize
-    fetchLogs({ id: device?.id || '', from: newOffset, minDate: `${minDate}` }, true, null)
+    fetchLogs({ id: device?.id || '', from: newOffset, minDate: `${minDate}`, maxDate: `${selectedDate}` }, true, null)
   }
 
   const refresh = () => {
@@ -122,49 +124,49 @@ export const EventList: React.FC<LogListProps> = ({
             <>
               <Breadcrumbs />
               <List>
-                {!device && (
-                  <Typography variant="h1">
-                    <Title>Logs</Title>
-                  </Typography>
-                )}
-                {device && (
-                  <>
-                    <ListItem dense>
-                      <ListItemIcon>
-                        <Icon name={fetching ? 'spinner-third' : 'calendar-day'} size="md" spin={fetching} fixedWidth />
-                      </ListItemIcon>
-                      {onChangeDate && (
-                        <>
-                          <DatePicker
-                            onChange={onChangeDate}
-                            minDay={minDate}
-                            selectedDate={selectedDate}
-                            fetching={fetching}
-                            label="Jump to Date"
-                          />
-                        </>
-                      )}
-                    </ListItem>
-                  </>
-                )}
+                <Typography variant="h1">
+                  <Icon name="file-alt" color="grayDarker" size="lg" />
+                  <Title inline>{device ? `Device Logs` : `Logs`} </Title>
+                </Typography>
+                <ListItem dense>
+                  <ListItemIcon>
+                    <Icon name={fetching ? 'spinner-third' : 'calendar-day'} size="md" spin={fetching} fixedWidth />
+                  </ListItemIcon>
+                  {onChangeDate && (
+                    <>
+                      <DatePicker
+                        onChange={onChangeDate}
+                        minDay={minDate}
+                        selectedDate={selectedDate}
+                        fetching={fetching}
+                        label="Jump to Date"
+                      />
+                    </>
+                  )}
+                </ListItem>
                 <ListItemSecondaryAction>
                   {!device ? (
                     <>
                       <Box ml="auto" display="flex" alignItems="center">
-                        <Typography variant="caption" className={css.dateUpdate}>
-                          {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)}
-                        </Typography>
+                        <i className={css.dateUpdate}>
+                          {' '}
+                          {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)}{' '}
+                        </i>
+                        <CSVDownloadButton
+                          minDate={minDate?.toDateString() || new Date().toString()}
+                          maxDate={selectedDate?.toDateString() || new Date().toString()}
+                        />
                         <Tooltip title="Refresh List">
                           <IconButton onClick={refresh}>
-                            <Icon name="sync" spin={fetching} size="sm" fixedWidth />
+                            <Icon name="sync" spin={fetching} size="md" fixedWidth />
                           </IconButton>
                         </Tooltip>
-                        <CSVDownloadButton minDate={minDate?.toDateString() || new Date().toString()} />
                       </Box>
                     </>
                   ) : (
                     <CSVDownloadButton
                       deviceID={device.id}
+                      minDate={minDate?.toDateString() || new Date().toString()}
                       maxDate={selectedDate?.toDateString() || new Date().toString()}
                     />
                   )}
@@ -221,7 +223,8 @@ const useStyles = makeStyles({
     height: 100,
   },
   dateUpdate: {
-    marginRight: spacing.md,
+    fontSize: fontSizes.xxs,
+    marginRight: spacing.sm,
   },
   item: {
     paddingTop: 0,
