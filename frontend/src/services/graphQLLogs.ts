@@ -1,6 +1,7 @@
 import { graphQLRequest } from './graphQL'
 
 const EVENTS = `
+  events(from: $from, maxDate: $maxDate, minDate: $minDate) {
       hasMore
       total
       items {
@@ -26,7 +27,8 @@ const EVENTS = `
         ... on DeviceShareEvent {
           scripting
         }
-      }`
+      }
+    }`
 
 export async function graphQLGetMoreLogs(id: string, from?: number, maxDate?: string, minDate?: string) {
   return await graphQLRequest(
@@ -35,9 +37,7 @@ export async function graphQLGetMoreLogs(id: string, from?: number, maxDate?: st
             id
             device(id: $id) {
               id
-              events(from: $from, maxDate: $maxDate, minDate: $minDate) {
-                ${EVENTS}
-              }
+              ${EVENTS}
             }
           }
         }
@@ -53,11 +53,11 @@ export async function graphQLGetMoreLogs(id: string, from?: number, maxDate?: st
 
 export async function graphQLGetEventsURL(id: string, maxDate?: string, minDate?: String) {
   return await graphQLRequest(
-    `  query($ids: [String!]!, $maxDate: DateTime ) {
+    `  query($ids: [String!]!, $maxDate: DateTime, $minDate: DateTime ) {
           login {
             id
             device(id: $ids){
-              eventsUrl( maxDate: $maxDate  )
+              eventsUrl( maxDate: $maxDate, minDate: $minDate  )
             }
           }
         }`,
@@ -69,37 +69,37 @@ export async function graphQLGetEventsURL(id: string, maxDate?: string, minDate?
   )
 }
 
-export async function graphQLGetLogsURL(types: [string, string], minDate?: string) {
+export async function graphQLGetLogsURL(types: [string, string], minDate?: string, maxDate?: string) {
   return await graphQLRequest(
     `
-      query getLogsUrl($types: [EventType!], $minDate: DateTime) {
+      query getLogsUrl($types: [EventType!], $minDate: DateTime, $maxDate: DateTime) {
         login {
           id
-          eventsUrl(types: $types, minDate: $minDate)
+          eventsUrl(types: $types, minDate: $minDate, maxDate: $maxDate)
         }
       }
     `,
     {
       types,
       minDate,
+      maxDate,
     }
   )
 }
 
-export async function graphQLGetEventsLogs(from?: number, minDate?: string) {
+export async function graphQLGetEventsLogs(from?: number, minDate?: string, maxDate?: string) {
   return await graphQLRequest(
-    `  query($from: Int, $minDate: DateTime) {
+    `  query($from: Int, $maxDate: DateTime, $minDate: DateTime) {
           login {
             id
-            events( from: $from, minDate: $minDate) {
-              ${EVENTS}
-            }
+            ${EVENTS}
           }
         }
       `,
     {
       from,
       minDate,
+      maxDate,
     }
   )
 }

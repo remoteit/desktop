@@ -25,7 +25,7 @@ export function CSVDownloadButton({ deviceID, maxDate, minDate }: Props) {
   }, [eventsUrl, shouldDownload])
 
   const download = () => {
-    deviceID ? getEventsURL({ id: deviceID, maxDate: maxDate }) : getLogsURL({ id: '', minDate: minDate })
+    deviceID ? getEventsURL({ id: deviceID, minDate, maxDate }) : getLogsURL({ id: '', minDate, maxDate })
     setShouldDownload(true)
   }
 

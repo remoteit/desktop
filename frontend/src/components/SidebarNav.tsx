@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useNavigation } from '../hooks/useNavigation'
 import { List, ListItem, ListItemText, ListItemIcon, Badge } from '@material-ui/core'
@@ -8,8 +8,11 @@ import { Icon } from './Icon'
 
 export const SidebarNav: React.FC = () => {
   const [menu, menuItems] = useNavigation()
+  const [viewBadge, setViewBadge] = useState(true)
   const history = useHistory()
   const css = useStyles()
+
+  const dismissBadge = () => setViewBadge(false)
 
   return (
     <List className={css.list}>
@@ -24,8 +27,13 @@ export const SidebarNav: React.FC = () => {
               dense
             >
               <ListItemIcon>
-                {m.badge ? (
-                  <Badge variant={m.badge > 1 ? undefined : 'dot'} badgeContent={m.badge} color="error">
+                {m.badge && viewBadge ? (
+                  <Badge
+                    onClick={dismissBadge}
+                    variant={m.badge > 1 ? undefined : 'dot'}
+                    badgeContent={m.badge}
+                    color="error"
+                  >
                     <Icon size="md" type="regular" name={m.icon} color={menu === m.path ? 'black' : 'grayDark'} />
                   </Badge>
                 ) : (
