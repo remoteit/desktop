@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useParams, useLocation } from 'react-router-dom'
+import { useParams, useLocation, useHistory } from 'react-router-dom'
 import { selectById } from '../models/devices'
 import { PortSetting } from '../components/PortSetting'
 import { NameSetting } from '../components/NameSetting'
@@ -32,6 +32,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 export const ConnectionPage: React.FC = () => {
   const css = useStyles()
   const location = useLocation<{ autoConnect: boolean }>()
+  const history = useHistory()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { devices } = useDispatch<Dispatch>()
@@ -65,6 +66,7 @@ export const ConnectionPage: React.FC = () => {
               connection={connection}
               service={service}
               autoConnect={location.state?.autoConnect}
+              onClick={() => history.push(`/connections/${service?.id}`)}
               size="large"
               fullWidth
             />

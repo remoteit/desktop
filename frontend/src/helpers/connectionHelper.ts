@@ -41,7 +41,6 @@ export function connectionName(service?: nameObj, device?: nameObj): string {
     name.push(device.name)
     if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
   } else if (service) name.push(service.name)
-  console.log(name.join(' - '))
   return name.join(' - ')
 }
 
