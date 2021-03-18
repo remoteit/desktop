@@ -44,7 +44,7 @@ const jssTheme: ThemeOptions = {
       sizeSmall: {
         borderRadius: spacing.sm,
         fontSize: fontSizes.xxs,
-        padding: `${spacing.xxs}px ${spacing.md}px`,
+        padding: `${spacing.xs}px ${spacing.md}px`,
       },
     },
     MuiTouchRipple: {
