@@ -51,15 +51,15 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
       disableScrollLock
       elevation={2}
     >
-      <ListItem className={css.name} dense>
-        <Typography variant="caption" align="center" display="block">
-          {service?.name}
-        </Typography>
-      </ListItem>
       <ListItem className={css.connect} dense>
         <ComboButton connection={connection} service={service} size="small" />
         <CopyButton connection={connection} service={service} size="base" />
         <LaunchButton connection={connection} service={service} size="base" />
+      </ListItem>
+      <ListItem className={css.name} dense>
+        <Typography variant="caption" align="center" display="block">
+          {service?.name}
+        </Typography>
       </ListItem>
       <Divider />
       {!device?.shared && (
@@ -107,9 +107,12 @@ const useStyles = makeStyles({
       paddingRight: spacing.lg,
     },
   },
-  name: { paddingTop: 0, paddingBottom: 0 },
+  name: { paddingTop: 0, paddingLeft: spacing.md },
   connect: {
-    '& > button + button': { marginLeft: -spacing.sm, marginRight: -spacing.xs },
-    '& > div': { margin: `${spacing.xs}px 0`, width: '100%', minWidth: 120 },
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginTop: -spacing.xs,
+    '& > button + button': { marginLeft: -spacing.xs },
+    '& > div': { margin: `${spacing.xs}px ${spacing.xs}px`, width: '100%', minWidth: 150 },
   },
 })
