@@ -117,7 +117,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           )
         ) : (
           <Panel>
-            <DevicesPage />
+            <DevicesPage singlePanel={singlePanel} />
           </Panel>
         )}
       </Route>
