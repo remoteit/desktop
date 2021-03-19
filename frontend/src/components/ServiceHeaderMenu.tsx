@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
+import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
@@ -51,7 +52,7 @@ export const ServiceHeaderMenu: React.FC<{
               <DeleteServiceButton device={device} service={service} />
             )}
           </Typography>
-          <List>
+          <ListHorizontal>
             <ListItemLocation
               title="Service Details"
               icon="info-circle"
@@ -67,7 +68,7 @@ export const ServiceHeaderMenu: React.FC<{
               />
             )}
             <UsersSelect service={service} device={device} access={access} />
-          </List>
+          </ListHorizontal>
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>

@@ -3,9 +3,10 @@ import { useSelector } from 'react-redux'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { ApplicationState } from '../store'
-import { Typography, List } from '@material-ui/core'
+import { Typography } from '@material-ui/core'
 import { UnregisterDeviceButton } from '../buttons/UnregisterDeviceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { UsersSelect } from './UsersSelect'
@@ -35,7 +36,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
             <AddUserButton to={`/devices/${device.id}/share`} />
             {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
           </Typography>
-          <List>
+          <ListHorizontal>
             <ListItemLocation
               title="Device Details"
               icon="info-circle"
@@ -45,7 +46,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
             <ListItemLocation title="Edit Device" icon="pen" pathname={`/devices/${device.id}/edit`} dense />
             <UsersSelect device={device} access={access} />
             <ListItemLocation title="Device Logs" icon="file-alt" pathname={`/devices/${device.id}/logs`} dense />
-          </List>
+          </ListHorizontal>
         </>
       }
     >
