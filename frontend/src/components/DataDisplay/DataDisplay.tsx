@@ -7,7 +7,6 @@ import { Icon } from '../Icon'
 
 export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
   const css = useStyles()
-
   return (
     <List className={css.list}>
       {data.map(

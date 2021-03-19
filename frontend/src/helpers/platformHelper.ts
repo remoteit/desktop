@@ -18,7 +18,7 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   1185: 'AWS',
   1200: 'Linux ARM',
   1201: 'NVIDIA Jetson',
-  1202: 'OpenWrt',
+  1205: 'OpenWrt',
   65535: 'Unknown',
 }
 

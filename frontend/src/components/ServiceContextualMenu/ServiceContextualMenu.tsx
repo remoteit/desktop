@@ -8,7 +8,6 @@ import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ApplicationState } from '../../store'
 import {
   makeStyles,
@@ -20,7 +19,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
-import { spacing } from '../../styling'
+import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 
 interface Props {
@@ -51,17 +50,24 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
       disableScrollLock
       elevation={2}
     >
-      <ListItem className={css.connect} dense>
-        <ComboButton connection={connection} service={service} size="small" />
-        <CopyButton connection={connection} service={service} size="base" />
-        <LaunchButton connection={connection} service={service} size="base" />
-      </ListItem>
       <ListItem className={css.name} dense>
         <Typography variant="caption" align="center" display="block">
           {service?.name}
         </Typography>
       </ListItem>
-      <Divider />
+      <ListItem className={css.connect} dense>
+        <ComboButton connection={connection} service={service} size="small" />
+        <CopyButton connection={connection} service={service} size="base" />
+        <LaunchButton connection={connection} service={service} size="base" />
+      </ListItem>
+      {connection?.enabled && (
+        <MenuItem dense onClick={() => history.push(`/connections/${service?.id}`)}>
+          <ListItemIcon>
+            <Icon name="arrow-right" size="md" color="primary" />
+          </ListItemIcon>
+          <ListItemText primary="Connection Details" color="primary" classes={{ primary: css.connected }} />
+        </MenuItem>
+      )}
       {!device?.shared && (
         <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/users/share`)}>
           <ListItemIcon>
@@ -81,7 +87,6 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
           value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
         />
       </MenuItem>
-      <Divider />
       {!device?.shared && (
         <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
           <ListItemIcon>
@@ -115,4 +120,5 @@ const useStyles = makeStyles({
     '& > button + button': { marginLeft: -spacing.xs },
     '& > div': { margin: `${spacing.xs}px ${spacing.xs}px`, width: '100%', minWidth: 150 },
   },
+  connected: { color: colors.primary },
 })

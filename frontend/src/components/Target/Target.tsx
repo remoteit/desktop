@@ -143,7 +143,7 @@ export const Target: React.FC<Props> = ({
         ) : (
           <Tooltip title="Delete">
             <IconButton disabled={busy} onClick={() => onDelete()}>
-              <Icon name="trash-alt" size="md" fixedWidth />
+              <Icon name="trash" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
         )}

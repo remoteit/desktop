@@ -45,7 +45,7 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
       <Tooltip title={tooltip}>
         <span>
           <IconButton disabled={disabled} onClick={() => setOpen(true)}>
-            <Icon name="trash-alt" size="md" fixedWidth />
+            <Icon name="trash" size="md" fixedWidth />
           </IconButton>
         </span>
       </Tooltip>

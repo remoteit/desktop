@@ -96,7 +96,7 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.backend.connections.filter(c => !!c.createdTime)
+  return state.backend.connections.filter(c => !!c.createdTime || c.enabled)
 }
 
 export function getConnectionSessionIds() {

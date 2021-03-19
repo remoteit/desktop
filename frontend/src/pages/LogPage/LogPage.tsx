@@ -29,7 +29,7 @@ export const LogPage: React.FC = () => {
             <Title inline>Raw Connection Log</Title>
             <Tooltip title="Clear log">
               <IconButton onClick={() => dispatch.logs.clear(serviceID)}>
-                <Icon name="trash-alt" size="md" fixedWidth />
+                <Icon name="trash" size="md" fixedWidth />
               </IconButton>
             </Tooltip>
           </Typography>

@@ -15,9 +15,9 @@ const useStyles = inset =>
   makeStyles({
     gutters: {
       margin: inset
-        ? `${spacing.md}px ${spacing.lg}px ${spacing.lg}px`
+        ? `${spacing.md}px ${spacing.xxl}px ${spacing.lg}px`
         : `${spacing.md}px ${spacing.sm}px ${spacing.lg}px`,
+      paddingLeft: inset ? spacing.sm : 0,
     },
     center: { alignItems: 'stretch' },
-    inset: {},
   })

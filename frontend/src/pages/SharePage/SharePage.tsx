@@ -136,7 +136,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
                 ) : (
                   <Tooltip title={`Remove ${email}`}>
                     <IconButton onClick={handleUnshare} disabled={deleting}>
-                      <Icon name="trash-alt" size="md" fixedWidth />
+                      <Icon name="trash" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 )}
