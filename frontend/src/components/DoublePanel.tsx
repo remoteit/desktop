@@ -60,6 +60,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
   }
 
   useEffect(() => {
+    measure()
     window.addEventListener('resize', measure)
     return function cleanup() {
       window.removeEventListener('resize', measure)
