@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { colors, spacing } from '../styling'
@@ -37,11 +37,15 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     }
   }
 
+  const measure = () => {
+    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) - SIDEBAR_WIDTH)
+  }
+
   const onDown = (event: React.MouseEvent) => {
     setGrab(true)
+    measure()
     moveRef.current = event.clientX
     handleRef.current = primaryRef.current?.offsetWidth || width
-    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) - SIDEBAR_WIDTH)
     event.preventDefault()
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
@@ -54,6 +58,13 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     window.removeEventListener('mouseup', onUp)
     ui.set({ [`${resize}PanelWidth`]: primaryRef.current?.offsetWidth || width })
   }
+
+  useEffect(() => {
+    window.addEventListener('resize', measure)
+    return function cleanup() {
+      window.removeEventListener('resize', measure)
+    }
+  })
 
   return (
     <>
