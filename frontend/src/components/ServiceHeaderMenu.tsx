@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useParams } from 'react-router-dom'
+import { useParams, Route } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
@@ -46,11 +46,13 @@ export const ServiceHeaderMenu: React.FC<{
             <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <AddUserButton to={`/devices/${device.id}/${service.id}/share`} />
-            {thisDevice ? (
-              <UnregisterServiceButton target={target} />
-            ) : (
-              <DeleteServiceButton device={device} service={service} />
-            )}
+            <Route path="/devices/:deviceID/:serviceID/edit">
+              {thisDevice ? (
+                <UnregisterServiceButton target={target} />
+              ) : (
+                <DeleteServiceButton device={device} service={service} />
+              )}
+            </Route>
           </Typography>
           <ListHorizontal>
             <ListItemLocation

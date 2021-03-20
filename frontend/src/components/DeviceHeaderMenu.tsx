@@ -1,4 +1,5 @@
 import React from 'react'
+import { Route } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
@@ -34,7 +35,9 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
             {/* <ServiceName device={device} connection={connected} /> */}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} />
-            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
+            <Route path="/devices/:deviceID/edit">
+              {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
+            </Route>
           </Typography>
           <ListHorizontal>
             <ListItemLocation
