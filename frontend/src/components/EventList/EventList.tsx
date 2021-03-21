@@ -58,7 +58,7 @@ export const EventList: React.FC<LogListProps> = ({
   const [planUpgrade, setPlanUpgrade] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<DateTime>(DateTime.local())
   let daysAllowed = 0
-  let logLimit = (limits && limits?.filter(limit => limit.name === 'log-limit')[0].value.toString()) || '0'
+  let logLimit = (limits && limits.filter(limit => limit.name === 'log-limit')[0]?.value?.toString()) || '0'
   let limitNumber = (logLimit && logLimit.replace(/\D/g, '')) || '0'
 
   switch (logLimit.slice(-1)) {
