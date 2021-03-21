@@ -116,7 +116,7 @@ export default class CLI {
       port: c.port,
       host: c.hostname,
       enabled: !c.disabled,
-      createdTime: new Date(c.createdAt).getTime(),
+      createdTime: Date.parse(c.createdAt),
       restriction: c.restrict,
       timeout: c.timeout,
       failover: c.failover,

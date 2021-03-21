@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useParams } from 'react-router-dom'
+import { useParams, Route } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
+import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
@@ -45,16 +46,19 @@ export const ServiceHeaderMenu: React.FC<{
             <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <AddUserButton to={`/devices/${device.id}/${service.id}/share`} />
-            {thisDevice ? (
-              <UnregisterServiceButton target={target} />
-            ) : (
-              <DeleteServiceButton device={device} service={service} />
-            )}
+            <Route path="/devices/:deviceID/:serviceID/edit">
+              {thisDevice ? (
+                <UnregisterServiceButton target={target} />
+              ) : (
+                <DeleteServiceButton device={device} service={service} />
+              )}
+            </Route>
           </Typography>
-          <List>
+          <ListHorizontal>
             <ListItemLocation
               title="Service Details"
               icon="info-circle"
+              iconColor="grayDarker"
               pathname={`/devices/${device.id}/${serviceID}/details`}
               dense
             />
@@ -62,12 +66,13 @@ export const ServiceHeaderMenu: React.FC<{
               <ListItemLocation
                 title="Edit Service"
                 icon="pen"
+                iconColor="grayDarker"
                 pathname={`/devices/${device.id}/${serviceID}/edit`}
                 dense
               />
             )}
             <UsersSelect service={service} device={device} access={access} />
-          </List>
+          </ListHorizontal>
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>

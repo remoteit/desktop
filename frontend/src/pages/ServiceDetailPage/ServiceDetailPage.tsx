@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
 import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
+import { ServiceConnected } from '../../components/ServiceConnected'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import { LaunchButton } from '../../buttons/LaunchButton'
@@ -56,29 +57,32 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
       service={service}
       target={target}
       footer={
-        <Gutters className={css.gutters}>
-          <ComboButton connection={connection} service={service} size="medium" fullWidth />
-          {/* <Icon name="neuter" /> */}
-          {connection?.enabled ? (
-            <>
-              <Tooltip title="Connection Details" arrow>
-                <IconButton to={`/connections/${service.id}`} component={Link}>
-                  <Icon name="info-circle" size="md" fixedWidth />
-                </IconButton>
-              </Tooltip>
-              <CopyButton connection={connection} service={service} />
-              <LaunchButton connection={connection} service={service} />
-            </>
-          ) : (
-            <>
-              <Tooltip title="Configure Connection" arrow>
-                <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
-                  <Icon name="cog" size="md" fixedWidth />
-                </IconButton>
-              </Tooltip>
-            </>
-          )}
-        </Gutters>
+        <>
+          <Gutters className={css.gutters}>
+            <ComboButton connection={connection} service={service} size="medium" fullWidth />
+            {/* <Icon name="neuter" /> */}
+            {connection?.enabled ? (
+              <>
+                <Tooltip title="Connection Details" arrow>
+                  <IconButton to={`/connections/${service.id}`} component={Link}>
+                    <Icon name="info-circle" size="md" fixedWidth />
+                  </IconButton>
+                </Tooltip>
+                <CopyButton connection={connection} service={service} />
+                <LaunchButton connection={connection} service={service} />
+              </>
+            ) : (
+              <>
+                <Tooltip title="Configure Connection" arrow>
+                  <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
+                    <Icon name="cog" size="md" fixedWidth />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
+          </Gutters>
+          <ServiceConnected connection={connection} show={connection?.enabled} />
+        </>
       }
     >
       <Columns count={1} inset>

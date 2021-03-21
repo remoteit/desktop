@@ -5,6 +5,7 @@ import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import { emit } from '../../services/Controller'
+import heartbeat from '../../services/Heartbeat'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {
@@ -14,15 +15,17 @@ export type ConnectButtonProps = {
   color?: Color
   autoConnect?: boolean
   fullWidth?: boolean
+  onClick?: () => void
 }
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'primary',
+  color = 'grayDarker',
   autoConnect,
   fullWidth,
+  onClick,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
   const state = connectionState(service, connection)
@@ -31,10 +34,12 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const listening = state === 'ready'
 
   const clickHandler = () => {
+    heartbeat.caffeinate()
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
       emit('service/disconnect', connection)
     } else {
+      onClick && onClick()
       analyticsHelper.trackConnect('connectionInitiated', service)
       emit('service/connect', connection || newConnection(service))
     }
@@ -65,7 +70,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (listening) {
     title = 'Starting'
-    color = 'primary'
+    color = 'grayDarker'
   }
   if (connecting) {
     title = 'Starting'

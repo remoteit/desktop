@@ -37,13 +37,10 @@ export const ConnectionOtherPage: React.FC = () => {
         <>
           <List>
             <ListItem dense>
-              <ListItemIcon>
-                <InitiatorPlatform id={session?.platform} connected />
-              </ListItemIcon>
               <ListItemText
                 primary={
-                  <Typography variant="h2">
-                    <Title enabled>{session?.user?.email}</Title>
+                  <Typography variant="h1">
+                    <Title>{session?.user?.email}</Title>
                   </Typography>
                 }
               />
@@ -52,15 +49,17 @@ export const ConnectionOtherPage: React.FC = () => {
               </ListItemSecondaryAction>
             </ListItem>
           </List>
-          <ServiceConnected connection={connection} session={session} show />
+          <List>
+            <ServiceConnected connection={connection} session={session} show />
+          </List>
+          {/* <Icon name="arrow-right" size="lg" /> */}
+          {/* <Icon name="ellipsis-h" /> */}
+          {/* <Title inline>{session?.target.name}</Title> */}
         </>
       }
     >
       <List>
         <InlineTextFieldSetting disabled label="Connection Name" value={session.target.name} />
-        {/* <Icon name="arrow-right" size="lg" /> */}
-        {/* <Icon name="ellipsis-h" /> */}
-        {/* <Title inline>{session?.target.name}</Title> */}
       </List>
     </Container>
   )

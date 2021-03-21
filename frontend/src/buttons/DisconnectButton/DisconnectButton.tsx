@@ -17,7 +17,7 @@ type Props = {
 export const DisconnectButton: React.FC<Props> = ({
   service,
   size = 'medium',
-  color = 'grayDarker',
+  color = 'primary',
   connection,
   fullWidth,
 }) => {
@@ -28,10 +28,10 @@ export const DisconnectButton: React.FC<Props> = ({
     <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={state === 'stopping' || state === 'connecting' ? state : 'Stop Connection'}
+          title={state === 'stopping' ? 'Stopping' : state === 'connecting' ? 'Starting' : 'Stop Connection'}
           disabled={disabled}
           loading={disabled}
-          color={disabled ? 'grayDark' : color}
+          color={color}
           size={size}
           fullWidth={fullWidth}
           onClick={() => {

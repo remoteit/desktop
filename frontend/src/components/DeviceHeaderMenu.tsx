@@ -1,11 +1,13 @@
 import React from 'react'
+import { Route } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { ApplicationState } from '../store'
-import { Typography, List } from '@material-ui/core'
+import { Typography } from '@material-ui/core'
 import { UnregisterDeviceButton } from '../buttons/UnregisterDeviceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { UsersSelect } from './UsersSelect'
@@ -33,19 +35,34 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
             {/* <ServiceName device={device} connection={connected} /> */}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} />
-            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
+            <Route path="/devices/:deviceID/edit">
+              {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
+            </Route>
           </Typography>
-          <List>
+          <ListHorizontal>
             <ListItemLocation
               title="Device Details"
               icon="info-circle"
+              iconColor="grayDarker"
               pathname={`/devices/${device.id}/details`}
               dense
             />
-            <ListItemLocation title="Edit Device" icon="pen" pathname={`/devices/${device.id}/edit`} dense />
+            <ListItemLocation
+              title="Edit Device"
+              icon="pen"
+              iconColor="grayDarker"
+              pathname={`/devices/${device.id}/edit`}
+              dense
+            />
             <UsersSelect device={device} access={access} />
-            <ListItemLocation title="Device Logs" icon="file-alt" pathname={`/devices/${device.id}/logs`} dense />
-          </List>
+            <ListItemLocation
+              title="Device Logs"
+              icon="file-alt"
+              iconColor="grayDarker"
+              pathname={`/devices/${device.id}/logs`}
+              dense
+            />
+          </ListHorizontal>
         </>
       }
     >

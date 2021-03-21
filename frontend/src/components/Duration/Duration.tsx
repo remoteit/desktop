@@ -18,6 +18,5 @@ export const Duration: React.FC<{ startTime?: number; ago?: boolean }> = ({ star
     duration > aDay
       ? new Date(startTime).toLocaleString(undefined, dateOptions)
       : humanize(duration, { largest: 2 }) + (ago ? ' ago' : '')
-
-  return <>{display}</>
+  return <>{display || '-'}</>
 }

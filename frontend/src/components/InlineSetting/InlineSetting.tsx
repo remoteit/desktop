@@ -139,8 +139,10 @@ const useStyles = makeStyles({
     '& .MuiFilledInput-input': { paddingTop: 22, paddingBottom: 10, fontSize: 14 },
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .MuiTextField-root': { marginLeft: -12 },
-    '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } }, // paddingTop: 3, marginTop: -6 },
+    '& .MuiInput-root': { marginRight: spacing.sm },
+    '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },
     '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
   },
   active: {
     paddingTop: 0,

@@ -41,7 +41,6 @@ export function connectionName(service?: nameObj, device?: nameObj): string {
     name.push(device.name)
     if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
   } else if (service) name.push(service.name)
-  console.log(name.join(' - '))
   return name.join(' - ')
 }
 
@@ -97,7 +96,7 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.backend.connections.filter(c => !!c.createdTime)
+  return state.backend.connections.filter(c => !!c.createdTime || c.enabled)
 }
 
 export function getConnectionSessionIds() {

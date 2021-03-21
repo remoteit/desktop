@@ -1,8 +1,10 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../../store'
+import { Typography } from '@material-ui/core'
 import { EventList } from '../../components/EventList'
 import { eventLogs } from '../../models/logs'
-import { Dispatch, ApplicationState } from '../../store'
+import { Title } from '../../components/Title'
 
 export const UserLogPage: React.FC = () => {
   const { events, fetchingMore, fetching } = useSelector((state: ApplicationState) => ({
@@ -24,6 +26,11 @@ export const UserLogPage: React.FC = () => {
 
   return (
     <EventList
+      title={
+        <Typography variant="h1">
+          <Title>Logs</Title>
+        </Typography>
+      }
       fetching={fetching}
       fetchLogs={getDeviceLogs}
       events={events}

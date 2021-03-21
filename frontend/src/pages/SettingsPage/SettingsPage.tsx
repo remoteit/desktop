@@ -136,7 +136,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
                 confirm
                 label="Uninstall"
                 subLabel={`De-register this device, completely remove all saved data, and uninstall the system service and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
-                icon="trash-alt"
+                icon="trash"
                 confirmTitle="Are you sure?"
                 confirmMessage="You will remove this system as a host, your connections and command line utilities."
                 onClick={() => {

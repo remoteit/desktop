@@ -30,7 +30,7 @@ export const DeleteServiceButton: React.FC<Props> = ({ device, service }) => {
       <Tooltip title="Delete this service">
         <span>
           <IconButton disabled={deleting} onClick={() => setOpen(true)}>
-            <Icon name="trash-alt" size="md" fixedWidth />
+            <Icon name="trash" size="md" fixedWidth />
           </IconButton>
         </span>
       </Tooltip>

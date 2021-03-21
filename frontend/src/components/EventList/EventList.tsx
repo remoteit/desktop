@@ -11,7 +11,6 @@ import {
   makeStyles,
   Typography,
   Link,
-  Breadcrumbs,
   Tooltip,
   IconButton,
 } from '@material-ui/core'
@@ -23,7 +22,6 @@ import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { colors, fontSizes, spacing } from '../../styling'
 import { EventItem } from './EventItem'
 import { eventLogs } from '../../models/logs'
-import { Title } from '../Title'
 import { DateTime } from 'luxon'
 
 export interface LogListProps {
@@ -34,6 +32,7 @@ export interface LogListProps {
   device?: IDevice
   events?: IEventList
   fetchingMore: boolean
+  title?: React.ReactElement
 }
 
 const DAY = 1000 * 60 * 60 * 24
@@ -46,6 +45,7 @@ export const EventList: React.FC<LogListProps> = ({
   device,
   events,
   fetchingMore,
+  title,
 }) => {
   const { limits, user } = useSelector((state: ApplicationState) => ({
     limits: state.licensing.limits,
@@ -122,12 +122,8 @@ export const EventList: React.FC<LogListProps> = ({
           bodyProps={{ inset: true }}
           header={
             <>
-              <Breadcrumbs />
+              {title}
               <List>
-                <Typography variant="h1">
-                  <Icon name="file-alt" color="grayDarker" size="lg" />
-                  <Title inline>{device ? `Device Logs` : `Logs`} </Title>
-                </Typography>
                 <ListItem dense>
                   <ListItemIcon>
                     <Icon name={fetching ? 'spinner-third' : 'calendar-day'} size="md" spin={fetching} fixedWidth />

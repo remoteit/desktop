@@ -4,6 +4,8 @@ import { ApplicationState } from '../../store'
 import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
+import { RegisterButton } from '../../buttons/RegisterButton'
+import { RefreshButton } from '../../buttons/RefreshButton'
 import { AccountSelect } from '../../components/AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
@@ -14,7 +16,7 @@ import { Container } from '../../components/Container'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const DevicesPage = () => {
+export const DevicesPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
@@ -38,6 +40,12 @@ export const DevicesPage = () => {
           <div className={css.header}>
             <SearchField />
             <AccountSelect />
+            {singlePanel && (
+              <>
+                <RegisterButton />
+                <RefreshButton />
+              </>
+            )}
             <FilterButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}

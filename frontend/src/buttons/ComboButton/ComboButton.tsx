@@ -12,6 +12,7 @@ type Props = {
   size?: 'icon' | 'medium' | 'small' | 'large'
   autoConnect?: boolean
   fullWidth?: boolean
+  onClick?: () => void
 }
 
 export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
