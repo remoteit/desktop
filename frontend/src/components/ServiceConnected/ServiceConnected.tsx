@@ -13,8 +13,8 @@ type Props = {
 
 export const ServiceConnected: React.FC<Props> = ({ show, connection, session }) => {
   return (
-    <Collapse in={show} timeout={800}>
-      <Gutters inset>
+    <Gutters inset>
+      <Collapse in={show} timeout={800}>
         {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
         <DataDisplay
           data={[
@@ -40,7 +40,7 @@ export const ServiceConnected: React.FC<Props> = ({ show, connection, session })
             { label: 'Service ID', value: session?.target.id },
           ]}
         />
-      </Gutters>
-    </Collapse>
+      </Collapse>
+    </Gutters>
   )
 }

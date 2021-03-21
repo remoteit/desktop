@@ -17,7 +17,7 @@ type Props = {
 export const DisconnectButton: React.FC<Props> = ({
   service,
   size = 'medium',
-  color = 'grayDarker',
+  color = 'primary',
   connection,
   fullWidth,
 }) => {

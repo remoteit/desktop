@@ -22,7 +22,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'primary',
+  color = 'grayDarker',
   autoConnect,
   fullWidth,
   onClick,
@@ -70,7 +70,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (listening) {
     title = 'Starting'
-    color = 'primary'
+    color = 'grayDarker'
   }
   if (connecting) {
     title = 'Starting'

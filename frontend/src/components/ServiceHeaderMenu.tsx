@@ -58,6 +58,7 @@ export const ServiceHeaderMenu: React.FC<{
             <ListItemLocation
               title="Service Details"
               icon="info-circle"
+              iconColor="grayDarker"
               pathname={`/devices/${device.id}/${serviceID}/details`}
               dense
             />
@@ -65,6 +66,7 @@ export const ServiceHeaderMenu: React.FC<{
               <ListItemLocation
                 title="Edit Service"
                 icon="pen"
+                iconColor="grayDarker"
                 pathname={`/devices/${device.id}/${serviceID}/edit`}
                 dense
               />

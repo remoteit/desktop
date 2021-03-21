@@ -1,17 +1,15 @@
 import React from 'react'
 import { Tooltip } from '@material-ui/core'
-import { newConnection, setConnection, connectionState, DEFAULT_CONNECTION } from '../helpers/connectionHelper'
+import { newConnection, setConnection, DEFAULT_CONNECTION } from '../helpers/connectionHelper'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Icon } from './Icon'
 
 export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  const state = connectionState(service, connection)
-
   if (!service) return null
   if (!connection) connection = newConnection(service)
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
-  const disabled = state === 'connected' || state === 'connecting'
+  const disabled = connection.enabled
   const save = (timeout?: number) =>
     connection &&
     setConnection({
