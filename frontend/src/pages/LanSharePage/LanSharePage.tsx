@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Button, List, Typography, TextField, MenuItem } from '@material-ui/core'
-import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE } from '../../shared/constants'
+import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
@@ -15,7 +15,6 @@ import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
 import { Quote } from '../../components/Quote'
 import analyticsHelper from '../../helpers/analyticsHelper'
-import { enable } from 'debug'
 
 type Selections = { value: string | Function; name: string; note: string }
 
@@ -45,7 +44,7 @@ export const LanSharePage: React.FC = () => {
     analyticsHelper.page('LanSharePage')
   }, [])
 
-  const [enabled, setEnabled] = useState<boolean>(connection.host === IP_OPEN)
+  const [enabled, setEnabled] = useState<boolean>(connection.host !== IP_PRIVATE)
   const restriction: ipAddress = enabled && connection.restriction ? connection.restriction : IP_LATCH
   const [selection, setSelection] = useState<number>(() => {
     let s = selections.findIndex(s => s.value === restriction)
@@ -58,11 +57,11 @@ export const LanSharePage: React.FC = () => {
   const css = useStyles()
   const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
   const [error, setError] = useState<string>()
-  const maxLength = 15
   const [bindIP, setBindIP] = useState(currentHost)
-  const validHostname = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
+  const [disabled, setDisabled] = useState(true)
+
   const getSelectionValue = () => {
-    if (!enabled) return IP_OPEN
+    if (!enabled) return IP_PRIVATE
     const value = selected.value
     return typeof value === 'function' ? value() : value
   }
@@ -70,24 +69,48 @@ export const LanSharePage: React.FC = () => {
   if (!connection || !service) return null
 
   const save = () => {
-    if (enable && !validHostname.test(bindIP)) {
+    setConnection({ ...connection, host: enabled ? bindIP : IP_PRIVATE, restriction: getSelectionValue() })
+    history.goBack()
+  }
+
+  const handleLocalNetworkSecurity = event => {
+    setSelection(parseInt(event.target.value as string))
+    setDisabled(false)
+  }
+
+  const handleBindIP = event => {
+    const { value } = event.target
+    setBindIP(value)
+
+    if (!REGEX_VALID_HOSTNAME.test(value)) {
       setError('invalid IP')
+      setDisabled(true)
     } else {
-      setConnection({ ...connection, host: enabled ? bindIP : IP_PRIVATE, restriction: getSelectionValue() })
-      history.goBack()
+      setError('')
+      setDisabled(false)
     }
   }
 
+  const handleEnableLocalSharing = () => {
+    setCurrentHost(enabled ? IP_PRIVATE : bindIP)
+    setEnabled(!enabled)
+    setDisabled(false)
+  }
+
   return (
-    <Container header={<Typography variant="h1">Local Network Sharing</Typography>}>
+    <Container
+      header={
+        <>
+          <Breadcrumbs />
+          <Typography variant="h1">Local Network Sharing</Typography>
+        </>
+      }
+    >
       <List>
         <ListItemSetting
           icon="network-wired"
           toggle={enabled}
-          onClick={() => {
-            setCurrentHost(enabled ? IP_PRIVATE : bindIP)
-            setEnabled(!enabled)
-          }}
+          onClick={handleEnableLocalSharing}
           label="Enable local sharing"
         />
       </List>
@@ -112,16 +135,7 @@ export const LanSharePage: React.FC = () => {
                 variant="filled"
                 helperText={error}
                 InputProps={{ disableUnderline: true }}
-                onChange={event => {
-                  let { value } = event.target
-                  if (maxLength && value.length > maxLength) {
-                    setError(`Cannot exceed ${maxLength} characters.`)
-                    value = value.substring(0, maxLength)
-                  } else {
-                    setError(undefined)
-                    setBindIP(value)
-                  }
-                }}
+                onChange={handleBindIP}
               ></TextField>
             </List>
 
@@ -133,7 +147,7 @@ export const LanSharePage: React.FC = () => {
               label="Local Network Security"
               value={selection.toString()}
               InputProps={{ disableUnderline: true }}
-              onChange={event => setSelection(parseInt(event.target.value as string))}
+              onChange={handleLocalNetworkSecurity}
             >
               {selections.map((option, key) => (
                 <MenuItem key={key} value={key.toString()}>
@@ -162,7 +176,7 @@ export const LanSharePage: React.FC = () => {
       </div>
 
       <div className={css.indent}>
-        <Button onClick={save} variant="contained" color="primary">
+        <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
           Save
         </Button>
       </div>
