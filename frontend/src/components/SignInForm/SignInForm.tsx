@@ -9,6 +9,7 @@ import { SEGMENT_PROJECT_KEY } from '../../helpers/analyticsHelper'
 
 export function SignInForm() {
   const { signInError, authService, localUsername } = useSelector((state: ApplicationState) => state.auth)
+  const appVersion = useSelector((state: ApplicationState) => state.binaries.version)
   const [successUser, setSuccessUser] = useState<CognitoUser>()
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const { auth } = useDispatch<Dispatch>()
@@ -34,7 +35,8 @@ export function SignInForm() {
 
   const segmentSettings = {
       segmentKey: 'DESKTOP',
-      segmentAppName: SEGMENT_PROJECT_KEY
+      segmentAppName: SEGMENT_PROJECT_KEY,
+      appVersion
   }
 
   return (

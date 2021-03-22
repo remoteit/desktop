@@ -27,7 +27,7 @@
     "@material-ui/pickers": "^3.2.10",
     "@rematch/core": "^2.0.0-next.6",
     "@rematch/immer": "^1.2.0",
-    "@remote.it/components": "^0.29.74",
+    "@remote.it/components": "^0.29.75",
     "@remote.it/services": "^0.7.27",
     "@remote.it/types": "^0.4.6",
     "@types/analytics-node": "^3.1.3",
