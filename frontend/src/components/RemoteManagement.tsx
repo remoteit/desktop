@@ -8,8 +8,8 @@ import { getOwnDevices } from '../models/accounts'
 import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { isRemote } from '../services/Browser'
-import onLanGraphic from '../assets/remote-on-lan.svg'
-import onRemoteGraphic from '../assets/remote-on-remote.svg'
+import { RemoteOnLan } from '../assets/RemoteOnLan'
+import { RemoteOnRemote } from '../assets/RemoteOnRemote'
 
 type NetworkType = { primary: string; secondary?: string }
 
@@ -29,7 +29,7 @@ export const RemoteManagement: React.FC = () => {
   const css = useStyles()
   if (!isRemote()) return null
 
-  let graphic = onLanGraphic
+  let Graphic = RemoteOnLan
   let diagram: NetworkType[] = [
     { primary: 'You' },
     { primary: 'Local network' },
@@ -38,7 +38,7 @@ export const RemoteManagement: React.FC = () => {
   ]
 
   if (isLocalhost) {
-    graphic = onRemoteGraphic
+    Graphic = RemoteOnRemote
     diagram = [diagram[0], diagram[3], diagram[2], diagram[1]]
   }
 
@@ -54,7 +54,7 @@ export const RemoteManagement: React.FC = () => {
           </Typography>
         )}
         <Box className={css.graphic}>
-          <img src={graphic} alt="From remote network graphic" />
+          <Graphic />
           <List>
             {diagram.map((i: NetworkType, key) => (
               <ListItem key={key} disableGutters>
@@ -75,6 +75,7 @@ const useStyles = makeStyles({
   graphic: {
     display: 'flex',
     marginTop: spacing.lg,
+    '& svg': { height: 220, marginTop: spacing.xs, marginBottom: spacing.xs, marginLeft: spacing.xs },
     '& ul': {
       padding: 0,
       display: 'flex',
