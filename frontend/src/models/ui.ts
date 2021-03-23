@@ -12,7 +12,6 @@ type UIState = {
   routingMessage?: string
   filterMenu: boolean
   redirect?: string
-  restore: boolean
   restoring: boolean
   scanEnabled: boolean
   scanLoading: { [interfaceName: string]: boolean }
@@ -47,7 +46,6 @@ const state: UIState = {
   routingMessage: undefined,
   filterMenu: false,
   redirect: undefined,
-  restore: false,
   restoring: false,
   scanEnabled: true,
   scanLoading: {},

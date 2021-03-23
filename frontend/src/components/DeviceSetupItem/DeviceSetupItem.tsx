@@ -18,19 +18,17 @@ import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
-export const DeviceSetupItem: React.FC = () => {
-  const { ui } = useDispatch<Dispatch>()
+export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const history = useHistory()
-  const { thisDevice, targetDevice, os, canRestore, restore, restoring } = useSelector((state: ApplicationState) => ({
+  const { thisDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
     thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
     targetDevice: state.backend.device,
     os: state.backend.environment.os,
+    restoring: state.ui.restoring,
     canRestore:
       !state.backend.device.uid &&
       (state.devices.total > state.devices.size ||
         !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
-    restore: state.ui.restore,
-    restoring: state.ui.restoring,
   }))
 
   if (restoring)
@@ -68,17 +66,10 @@ export const DeviceSetupItem: React.FC = () => {
           {restore ? (
             <Typography variant="body2" color="textSecondary">
               Select a device or
-              <Link onClick={() => ui.set({ restore: false })}>cancel</Link>
+              <Link onClick={() => history.push('/devices')}>cancel</Link>
             </Typography>
           ) : (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                ui.set({ restore: true })
-                history.push('/devices')
-              }}
-            >
+            <Button variant="outlined" size="small" onClick={() => history.push('/devices/restore')}>
               Restore Device
             </Button>
           )}
