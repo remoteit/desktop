@@ -69,14 +69,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
               <Link onClick={() => history.push('/devices')}>cancel</Link>
             </Typography>
           ) : (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                console.log('---------click------------')
-                history.push('/devices/restore')
-              }}
-            >
+            <Button variant="outlined" size="small" onClick={() => history.push('/devices/restore')}>
               Restore Device
             </Button>
           )}
