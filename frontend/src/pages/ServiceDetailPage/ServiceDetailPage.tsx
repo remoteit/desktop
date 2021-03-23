@@ -13,6 +13,7 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Columns } from '../../components/Columns'
 import { Gutters } from '../../components/Gutters'
 import { spacing } from '../../styling'
+import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -85,6 +86,11 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
         </>
       }
     >
+      {service.state === 'inactive' && (
+        <Notice severity="warning" gutterTop>
+          Service offline
+        </Notice>
+      )}
       <Columns count={1} inset>
         <DataDisplay data={data} />
       </Columns>

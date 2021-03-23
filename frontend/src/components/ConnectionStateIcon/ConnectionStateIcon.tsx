@@ -50,9 +50,11 @@ export function ConnectionStateIcon({
     spin = true
   }
   if (state === 'offline') {
-    opacity = 0.2
+    opacity = 0.3
     title = 'Offline'
     showQuality = false
+    // name = 'minus'
+    // type = 'light'
   }
 
   if (service?.license === 'EVALUATION') {

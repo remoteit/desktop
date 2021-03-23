@@ -21,7 +21,7 @@ export const InfoButton: React.FC<Props> = ({ onClick, device, service }) => {
     onClick = () => {
       let path = `/devices/${device?.id}`
       if (service) path += `/${service.id}`
-      history.push(path)
+      history.push(path + '/details')
     }
 
   return (

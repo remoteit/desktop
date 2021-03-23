@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, Typography } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 
 export const Title: React.FC<{ offline?: boolean; inline?: boolean; enabled?: boolean }> = ({
@@ -21,12 +21,12 @@ const useStyles = (inline, offline, enabled) =>
       textOverflow: 'ellipsis',
       marginLeft: inline ? spacing.lg : 0,
       color: enabled ? colors.primary : undefined,
-      opacity: offline ? 0.2 : undefined,
+      opacity: offline ? 0.3 : undefined,
       '& sup': {
         marginLeft: spacing.xs,
         marginRight: spacing.xxs,
         color: enabled ? colors.primary : colors.grayDark,
-        opacity: offline ? 0.2 : undefined,
+        opacity: offline ? 0.3 : undefined,
       },
     },
   })

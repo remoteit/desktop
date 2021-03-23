@@ -83,7 +83,13 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
             setOpenTooltip(false)
           }}
         >
-          <span style={{ color, backgroundColor: lighten(color, 0.94) }}>
+          <span
+            style={{
+              color,
+              backgroundColor: lighten(color, 0.94),
+              textDecoration: state === 'inactive' ? 'line-through' : '',
+            }}
+          >
             {connected && <Icon name="user" type="solid" size="xxxs" color="primary" fixedWidth />}
             {failover && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}

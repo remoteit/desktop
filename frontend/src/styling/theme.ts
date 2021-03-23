@@ -112,6 +112,9 @@ const jssTheme: ThemeOptions = {
       },
       sticky: { zIndex: 2 },
     },
+    MuiPaper: {
+      rounded: { borderRadius: radius },
+    },
     MuiListItem: {
       root: {
         opacity: 1,
