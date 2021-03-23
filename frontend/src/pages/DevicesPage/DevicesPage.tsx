@@ -16,7 +16,7 @@ import { Container } from '../../components/Container'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const DevicesPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const DevicesPage: React.FC<{ singlePanel?: boolean; restore?: boolean }> = ({ singlePanel, restore }) => {
   const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
@@ -58,7 +58,7 @@ export const DevicesPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={devices} connections={connections} />
+        <DeviceList devices={devices} connections={connections} restore={restore} />
       )}
     </Container>
   )

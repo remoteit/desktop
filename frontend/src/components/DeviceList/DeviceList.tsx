@@ -11,17 +11,17 @@ import { LoadMore } from '../LoadMore'
 import { Notice } from '../Notice'
 
 export interface DeviceListProps {
-  devices?: IDevice[]
   connections: { [deviceID: string]: IConnection[] }
+  devices?: IDevice[]
+  restore?: boolean
 }
 
-export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {} }) => {
+export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {}, restore }) => {
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
-  const { myDevice, loggedInUser, registeredId, restore } = useSelector((state: ApplicationState) => ({
+  const { myDevice, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
     loggedInUser: getActiveAccountId(state) === state.auth.user?.id,
     myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
-    restore: state.ui.restore,
   }))
 
   return (
@@ -50,7 +50,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
           ))
         ) : (
           <>
-            <DeviceSetupItem />
+            <DeviceSetupItem restore={restore} />
             <Divider variant="inset" />
           </>
         )}
