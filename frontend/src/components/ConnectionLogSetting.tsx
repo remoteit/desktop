@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListItemSetting } from './ListItemSetting'
-import { newConnection, setConnection, connectionState } from '../helpers/connectionHelper'
+import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { emit } from '../services/Controller'
 
 export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IConnection }> = ({
@@ -9,8 +9,7 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
 }) => {
   if (!service) return null
   if (!connection) connection = newConnection(service)
-  const state = connectionState(service, connection)
-  const disabled = state === 'connected' || state === 'connecting' || state === 'offline'
+  const disabled = connection.enabled
 
   return (
     <ListItemSetting
