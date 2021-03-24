@@ -182,8 +182,9 @@ class Controller {
     app.quit()
   }
 
-  restart = (update?: string) => {
+  restart = async (update?: string) => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
+    await cli.serviceUninstall()
     app.restart(update)
   }
 
