@@ -44,8 +44,8 @@ export const LanSharePage: React.FC = () => {
     analyticsHelper.page('LanSharePage')
   }, [])
 
-  const [enabled, setEnabled] = useState<boolean>(connection.host !== IP_PRIVATE)
-  const restriction: ipAddress = enabled && connection.restriction ? connection.restriction : IP_LATCH
+  const [enabledLocalSharing, setEnabledLocalSharing] = useState<boolean>(connection.host !== IP_PRIVATE)
+  const restriction: ipAddress = enabledLocalSharing && connection.restriction ? connection.restriction : IP_LATCH
   const [selection, setSelection] = useState<number>(() => {
     let s = selections.findIndex(s => s.value === restriction)
     if (s === -1) s = selections.findIndex(s => typeof s.value === 'function')
@@ -57,11 +57,10 @@ export const LanSharePage: React.FC = () => {
   const css = useStyles()
   const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
   const [error, setError] = useState<string>()
-  const [bindIP, setBindIP] = useState(IP_OPEN)
   const [disabled, setDisabled] = useState(true)
 
   const getSelectionValue = () => {
-    if (!enabled) return IP_PRIVATE
+    if (!enabledLocalSharing) return IP_PRIVATE
     const value = selected.value
     return typeof value === 'function' ? value() : value
   }
@@ -69,7 +68,7 @@ export const LanSharePage: React.FC = () => {
   if (!connection || !service) return null
 
   const save = () => {
-    setConnection({ ...connection, host: enabled ? bindIP : IP_PRIVATE, restriction: getSelectionValue() })
+    setConnection({ ...connection, host: enabledLocalSharing ? currentHost : IP_PRIVATE, restriction: getSelectionValue() })
     history.goBack()
   }
 
@@ -80,7 +79,7 @@ export const LanSharePage: React.FC = () => {
 
   const handleBindIP = event => {
     const { value } = event.target
-    setBindIP(value)
+    setCurrentHost(value)
 
     if (!REGEX_VALID_HOSTNAME.test(value)) {
       setError('invalid IP')
@@ -92,8 +91,8 @@ export const LanSharePage: React.FC = () => {
   }
 
   const handleEnableLocalSharing = () => {
-    setCurrentHost(enabled ? IP_PRIVATE : bindIP)
-    setEnabled(!enabled)
+    setCurrentHost(enabledLocalSharing ? IP_PRIVATE : IP_OPEN)
+    setEnabledLocalSharing(!enabledLocalSharing)
     setDisabled(false)
   }
 
@@ -109,7 +108,7 @@ export const LanSharePage: React.FC = () => {
       <List>
         <ListItemSetting
           icon="network-wired"
-          toggle={enabled}
+          toggle={enabledLocalSharing}
           onClick={handleEnableLocalSharing}
           label="Enable local sharing"
         />
@@ -123,7 +122,7 @@ export const LanSharePage: React.FC = () => {
         <div className={css.note}>
           Allow users to connect to your remote device through your IP address using a custom port.
         </div>
-        {enabled && (
+        {enabledLocalSharing && (
           <>
             <List>
               <TextField
