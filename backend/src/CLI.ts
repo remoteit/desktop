@@ -33,7 +33,7 @@ type IExec = {
 
 type IConnectionStatus = {
   id?: string
-  enabled?: boolean
+  isDisabled?: boolean
   state?: 'offline' | 'connecting' | 'connected'
   isFailover?: boolean
   isP2P?: boolean
@@ -115,7 +115,6 @@ export default class CLI {
       id: c.uid,
       port: c.port,
       host: c.hostname,
-      enabled: !c.disabled,
       createdTime: Date.parse(c.createdAt),
       restriction: c.restrict,
       timeout: c.timeout,
@@ -135,6 +134,7 @@ export default class CLI {
     this.data.connections = this.data.connections.map(c => {
       const status = connections?.find(s => s.id === c.id)
       if (status) {
+        c.enabled = !status.isDisabled
         c.startTime = status.startedAt ? Date.parse(status.startedAt) : undefined
         c.endTime = status.stoppedAt ? Date.parse(status.stoppedAt) : undefined
         c.connected = status.state === 'connected'

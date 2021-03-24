@@ -6,6 +6,7 @@ import { makeStyles, Paper, Box, lighten, darken } from '@material-ui/core'
 type Props = {
   severity?: 'info' | 'warning' | 'success'
   button?: React.ReactElement
+  gutterTop?: boolean
   gutterBottom?: boolean
   fullWidth?: boolean
   loading?: boolean
@@ -15,11 +16,12 @@ export const Notice: React.FC<Props> = ({
   severity = 'info',
   button,
   fullWidth = false,
+  gutterTop,
   gutterBottom,
   loading,
   children,
 }) => {
-  const css = useStyles({ fullWidth, gutterBottom })()
+  const css = useStyles({ fullWidth, gutterBottom, gutterTop })()
   let icon, color
 
   switch (severity) {
@@ -54,13 +56,14 @@ export const Notice: React.FC<Props> = ({
   )
 }
 
-const useStyles = ({ fullWidth, gutterBottom }) =>
+const useStyles = ({ fullWidth, gutterBottom, gutterTop }) =>
   makeStyles({
     notice: {
       flexGrow: 1,
       alignItems: 'center',
-      margin: `${spacing.xxs}px ${fullWidth ? 0 : spacing.xs}px`,
+      margin: `${spacing.xxs}px ${fullWidth ? 0 : spacing.md}px`,
       marginBottom: gutterBottom ? spacing.md : 'inherit',
+      marginTop: gutterTop ? spacing.lg : 'inherit',
       padding: `${spacing.sm}px ${spacing.md}px`,
       display: 'flex',
       fontWeight: 500,

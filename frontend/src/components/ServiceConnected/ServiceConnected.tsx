@@ -36,8 +36,8 @@ export const ServiceConnected: React.FC<Props> = ({ show, connection, session })
             { label: 'Location', value: session?.geo, format: 'location' },
 
             { label: 'Platform', value: session && INITIATOR_PLATFORMS[session.platform] },
-            { label: 'Device ID', value: session?.target.deviceId },
-            { label: 'Service ID', value: session?.target.id },
+            // { label: 'Device ID', value: session?.target.deviceId },
+            // { label: 'Service ID', value: session?.target.id },
           ]}
         />
       </Collapse>
