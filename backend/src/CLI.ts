@@ -136,8 +136,8 @@ export default class CLI {
 
   readOverrides() {
     const config = this.readFile()
-    d('READ APIURL', config.overrides.apiURL)
-    const { apiURL = GRAPHQL_API, betaApiURL = GRAPHQL_BETA_API } = config.overrides
+    d('READ overrides', config.overrides)
+    const { apiURL = GRAPHQL_API, betaApiURL = GRAPHQL_BETA_API } = config?.overrides || {}
     this.data.overridesSetting = {
       apiURL,
       betaApiURL,
