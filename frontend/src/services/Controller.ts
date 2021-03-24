@@ -52,6 +52,15 @@ class Controller extends EventEmitter {
   auth() {
     emit('authentication', { username: this.userName, authHash: this.userPassword })
     emit('backend/check-setting')
+    setTimeout(() => {
+      const { backend } = store.getState()
+      if (!backend.initialized) {
+        console.log('timeout load setting from backend')
+        store.dispatch.backend.set({
+          initialized: true,
+        })
+      }
+    }, 500)
   }
 
   // Retry open with delay, force skips delay
