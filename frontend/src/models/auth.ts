@@ -108,7 +108,7 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
       if (cognitoUser?.username) {
-        console.log({cognitoUser})
+        console.log({ cognitoUser })
         if (cognitoUser?.attributes?.email && window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
           window.localStorage.setItem('username', cognitoUser?.attributes?.email)
         } else if (!window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
@@ -130,15 +130,7 @@ export default createModel<RootModel>()({
     async authenticated(_: void, rootState) {
       if (rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
-        await cloudController.init()
-        await dispatch.licensing.fetch()
-        await dispatch.accounts.init()
-        dispatch.applicationTypes.fetch()
-        dispatch.announcements.fetch()
       }
-      // always fetch on connect
-      await dispatch.devices.fetch()
-      dispatch.sessions.fetch()
     },
     async disconnect(_: void, rootState: any) {
       console.log('DISCONNECT')

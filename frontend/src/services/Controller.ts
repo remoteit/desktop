@@ -3,6 +3,7 @@ import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
+import cloudController from './cloudController'
 
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
@@ -51,16 +52,6 @@ class Controller extends EventEmitter {
 
   auth() {
     emit('authentication', { username: this.userName, authHash: this.userPassword })
-    emit('backend/check-setting')
-    setTimeout(() => {
-      const { backend } = store.getState()
-      if (!backend.initialized) {
-        console.log('timeout load setting from backend')
-        store.dispatch.backend.set({
-          initialized: true,
-        })
-      }
-    }, 500)
   }
 
   // Retry open with delay, force skips delay
@@ -163,7 +154,9 @@ function getEventHandlers() {
     dataReady: (result: boolean) => backend.set({ dataReady: result }),
 
     environment: (result: ILookup<any>) => {
-      backend.set({ environment: result })
+      const state = store.getState()
+      const { backendSetting } = state.backend.environment
+      backend.set({ environment: { ...result, backendSetting } })
       analyticsHelper.setOS(result.os)
       analyticsHelper.setOsVersion(result.osVersion)
       analyticsHelper.setArch(result.arch)
@@ -215,12 +208,20 @@ function getEventHandlers() {
         launchPath: result.path,
       })
     },
-    'setting-overrides': (backendSetting: IOverridesSetting) => {
+    'setting-overrides': async (backendSetting: IOverridesSetting) => {
+      const { dispatch } = store
+      const state = store.getState()
       console.log('setting-overrides')
-      backend.set({
-        initialized: true,
-        backendSetting,
+      await backend.set({
+        environment: { ...state.backend.environment, backendSetting },
       })
+      await cloudController.init()
+      await dispatch.licensing.fetch()
+      await dispatch.accounts.init()
+      dispatch.applicationTypes.fetch()
+      dispatch.announcements.fetch()
+      await dispatch.devices.fetch()
+      dispatch.sessions.fetch()
     },
     reachablePort: (result: boolean) => {
       backend.set({ reachablePort: result, loading: false })

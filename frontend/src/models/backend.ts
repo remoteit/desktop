@@ -29,13 +29,12 @@ type IBackendState = {
     privateIP: ipAddress
     hostname: string
     oobAvailable: boolean
+    backendSetting: IOverridesSetting
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
   reachablePort: boolean
   reachablePortLoading: boolean
-  backendSetting: IOverridesSetting
-  initialized: boolean
 }
 
 const state: IBackendState = {
@@ -58,16 +57,15 @@ const state: IBackendState = {
     privateIP: '',
     hostname: '',
     oobAvailable: false,
+    backendSetting: {
+      apiURL: GRAPHQL_API,
+      betaApiURL: GRAPHQL_BETA_API,
+    },
   },
   preferences: {},
   deferredAttributes: undefined,
   reachablePort: true,
   reachablePortLoading: false,
-  backendSetting: {
-    apiURL: GRAPHQL_API,
-    betaApiURL: GRAPHQL_BETA_API,
-  },
-  initialized: false,
 }
 
 export default createModel<RootModel>()({
