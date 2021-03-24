@@ -12,6 +12,12 @@ import { Dispatch } from '../store'
 import { store } from '../store'
 import { emit } from '../services/Controller'
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 const USER_KEY = 'user'
 
 export const CHECKBOX_REMEMBER_KEY = 'remember-username'
@@ -51,6 +57,9 @@ export default createModel<RootModel>()({
           callbackURL: CALLBACK_URL,
           signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL,
         })
+
+        await sleep(500);
+
         dispatch.auth.setAuthService(authService)
         dispatch.auth.setInitialized()
       }
