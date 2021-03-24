@@ -80,7 +80,7 @@ export default createModel<RootModel>()({
         )
         graphQLGetErrors(result)
         const data = result?.data?.data?.login
-        await auth.setUser({
+        auth.setUser({
           id: data.id,
           email: data.email,
           authHash: data.authhash,
@@ -108,7 +108,6 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
       if (cognitoUser?.username) {
-        console.log({ cognitoUser })
         if (cognitoUser?.attributes?.email && window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
           window.localStorage.setItem('username', cognitoUser?.attributes?.email)
         } else if (!window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
