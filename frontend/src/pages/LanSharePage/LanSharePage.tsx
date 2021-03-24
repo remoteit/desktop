@@ -57,7 +57,7 @@ export const LanSharePage: React.FC = () => {
   const css = useStyles()
   const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
   const [error, setError] = useState<string>()
-  const [bindIP, setBindIP] = useState(currentHost)
+  const [bindIP, setBindIP] = useState(IP_OPEN)
   const [disabled, setDisabled] = useState(true)
 
   const getSelectionValue = () => {
