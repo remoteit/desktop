@@ -51,6 +51,7 @@ class Controller extends EventEmitter {
 
   auth() {
     emit('authentication', { username: this.userName, authHash: this.userPassword })
+    emit('backend/check-setting')
   }
 
   // Retry open with delay, force skips delay
@@ -84,6 +85,7 @@ class Controller extends EventEmitter {
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
     console.log('Controller emit', event, args)
+    console.log(this.socket)
     this.socket?.emit(event, ...args)
     return true
   }
@@ -202,6 +204,13 @@ function getEventHandlers() {
         requireInstall: result.install,
         launchLoading: result.loading,
         launchPath: result.path,
+      })
+    },
+    'setting-overrides': (backendSetting: IOverridesSetting) => {
+      console.log('setting-overrides')
+      backend.set({
+        initialized: true,
+        backendSetting,
       })
     },
     reachablePort: (result: boolean) => {

@@ -32,6 +32,11 @@ export function useNavigation(): [string, INavigation[]] {
     }
   }, [navigation, location, menu])
 
+
+  useEffect(() => {
+    console.log("LOCATION :", location)
+  }, [location])
+
   const menuItems: INavigation[] = [
     { label: 'This Device', path: '/devices', match: '/devices', icon: 'hdd', show: remoteUI },
     {

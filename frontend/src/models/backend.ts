@@ -7,6 +7,7 @@ import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 
 type IBackendState = {
   connections: IConnection[]
@@ -33,6 +34,8 @@ type IBackendState = {
   deferredAttributes?: IService['attributes']
   reachablePort: boolean
   reachablePortLoading: boolean
+  backendSetting: IOverridesSetting
+  initialized: boolean
 }
 
 const state: IBackendState = {
@@ -60,6 +63,11 @@ const state: IBackendState = {
   deferredAttributes: undefined,
   reachablePort: true,
   reachablePortLoading: false,
+  backendSetting: {
+    apiURL: GRAPHQL_API,
+    betaApiURL: GRAPHQL_BETA_API,
+  },
+  initialized: false,
 }
 
 export default createModel<RootModel>()({

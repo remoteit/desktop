@@ -49,6 +49,7 @@ declare global {
     | 'preferences'
     | 'osInfo'
     | 'reachablePort'
+    | 'backend/check-setting'
 
   type SocketEvent =
     // built-in events
@@ -427,6 +428,11 @@ declare global {
       timestamp: number
       data: IScan[]
     }
+  }
+
+  type IOverridesSetting = {
+    apiURL: string
+    betaApiURL: string
   }
 
   type IScanDataRaw = {

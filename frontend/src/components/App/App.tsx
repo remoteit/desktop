@@ -13,16 +13,23 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
-  const { authInitialized, backendAuthenticated, initialized, installed, signedOut, uninstalling } = useSelector(
-    (state: ApplicationState) => ({
-      authInitialized: state.auth.initialized,
-      backendAuthenticated: state.auth.backendAuthenticated,
-      initialized: state.devices.initialized,
-      installed: state.binaries.installed,
-      signedOut: state.auth.initialized && !state.auth.authenticated,
-      uninstalling: state.ui.uninstalling,
-    })
-  )
+  const {
+    authInitialized,
+    backendAuthenticated,
+    initialized,
+    initializedBackend,
+    installed,
+    signedOut,
+    uninstalling,
+  } = useSelector((state: ApplicationState) => ({
+    authInitialized: state.auth.initialized,
+    backendAuthenticated: state.auth.backendAuthenticated,
+    initialized: state.devices.initialized,
+    initializedBackend: state.backend.initialized,
+    installed: state.binaries.installed,
+    signedOut: state.auth.initialized && !state.auth.authenticated,
+    uninstalling: state.ui.uninstalling,
+  }))
   const [pageWidth, setPageWidth] = useState<number>(window.innerWidth)
   const updateWidth = () => setPageWidth(window.innerWidth)
   const singlePanel = pageWidth < 1000
@@ -70,7 +77,7 @@ export const App: React.FC = () => {
       </Page>
     )
 
-  if (!initialized)
+  if (!initialized || !initializedBackend)
     return (
       <Page>
         <LoadingMessage message="Starting up..." logo />

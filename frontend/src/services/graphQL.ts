@@ -2,7 +2,6 @@ import axios, { AxiosError } from 'axios'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
 import { version } from '../../package.json'
-import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   try {
@@ -16,6 +15,9 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 
 export async function graphQLRequest(query: String, variables: ILookup<any> = {}) {
   if (store.getState().ui.offline) return {}
+  const state = store.getState()
+
+  const { apiURL, betaApiURL } = state.backend.backendSetting
 
   const token = await getToken()
 
@@ -25,7 +27,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   }
 
   const request = {
-    url: version.includes('alpha') ? GRAPHQL_BETA_API : GRAPHQL_API,
+    url: version.includes('alpha') ? betaApiURL : apiURL,
     method: 'post' as 'post',
     headers: { Authorization: token },
     data: { query, variables },

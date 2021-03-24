@@ -49,6 +49,7 @@ class Controller {
   openSockets = () => {
     const socket = server.socket
 
+    if (!socket) Logger.error('Socket.io server failed to start.')
     if (!socket) throw new Error('Socket.io server failed to start.')
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
@@ -79,6 +80,7 @@ class Controller {
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
+    socket.on('backend/check-setting', this.checkBackendSetting)
 
     this.initBackend()
     this.check()
@@ -223,6 +225,13 @@ class Controller {
     } catch (error) {
       EventBus.emit(Binary.EVENTS.error, error)
     }
+  }
+
+  checkBackendSetting = async () => {
+    Logger.info('SETTING OVERRIDES READING')
+    cli.readOverrides()
+    Logger.info('SETTING OVERRIDES', cli.data.overridesSetting)
+    this.io.emit('setting-overrides', cli.data.overridesSetting)
   }
 }
 
