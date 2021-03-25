@@ -23,6 +23,7 @@ import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { spacing, fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -91,6 +92,11 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         </List>
       }
     >
+      {device.state === 'inactive' && (
+        <Notice severity="warning" gutterTop>
+          Device offline
+        </Notice>
+      )}
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <AddFromNetwork allowScanning={thisDevice} button />
@@ -99,11 +105,11 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
       <List>
         {editable && <LicensingNotice device={device} />}
         {editable && setupAddingService && (
-          <ListItem disabled button dense>
-            <ListItemIcon>
+          <ListItem disabled dense>
+            <ListItemText className={css.service} primary="Registering..." />
+            <ListItemSecondaryAction>
               <CircularProgress color="inherit" size={fontSizes.md} />
-            </ListItemIcon>
-            <ListItemText primary="Registering..." />
+            </ListItemSecondaryAction>
           </ListItem>
         )}
         {device.services.map(s => (

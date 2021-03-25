@@ -15,21 +15,29 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
-  const { device, connected, successMessage, noticeMessage, errorMessage, backendAuthenticated, label } = useSelector(
-    (state: ApplicationState) => {
-      const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
-      return {
-        device,
-        connected: state.ui.connected,
-        successMessage: state.ui.successMessage,
-        noticeMessage: state.ui.noticeMessage,
-        errorMessage: state.ui.errorMessage,
-        backendAuthenticated: state.auth.backendAuthenticated,
-        os: state.backend.environment.os,
-        label: state.labels.find(l => l.id === device?.attributes.color),
-      }
+  const {
+    device,
+    connected,
+    successMessage,
+    noticeMessage,
+    errorMessage,
+    offline,
+    backendAuthenticated,
+    label,
+  } = useSelector((state: ApplicationState) => {
+    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+    return {
+      device,
+      connected: state.ui.connected,
+      successMessage: state.ui.successMessage,
+      noticeMessage: state.ui.noticeMessage,
+      errorMessage: state.ui.errorMessage,
+      offline: state.ui.offline,
+      backendAuthenticated: state.auth.backendAuthenticated,
+      os: state.backend.environment.os,
+      label: state.labels.find(l => l.id === device?.attributes.color),
     }
-  )
+  })
 
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
@@ -40,7 +48,8 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   if (noticeMessage) snackbar = 'notice'
   if (successMessage) snackbar = 'success'
   if (errorMessage) snackbar = 'error'
-  if (backendAuthenticated && !connected) snackbar = 'offline'
+  if (offline) snackbar = 'offline'
+  if (backendAuthenticated && !connected) snackbar = 'retry'
 
   return (
     <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
@@ -48,6 +57,15 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <DragAppRegion />
       <Snackbar
         open={snackbar === 'offline'}
+        message={
+          <>
+            <Icon name="exclamation-triangle" size="md" color="warning" type="regular" fixedWidth inlineLeft />
+            Network offline.
+          </>
+        }
+      />
+      <Snackbar
+        open={snackbar === 'retry'}
         message="Webserver connection lost. Retrying..."
         action={
           <IconButton onClick={reconnect}>

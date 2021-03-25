@@ -6,6 +6,7 @@ export const DEFAULT_INTERFACE = 'searching'
 type UIState = {
   navigation: ILookup<string>
   connected: boolean
+  offline: boolean
   uninstalling: boolean
   claiming: boolean
   routingLock?: IRouteType
@@ -40,6 +41,7 @@ type UIState = {
 const state: UIState = {
   navigation: {},
   connected: false,
+  offline: false,
   uninstalling: false,
   claiming: false,
   routingLock: undefined,
@@ -74,11 +76,18 @@ const state: UIState = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    setupUpdated(count: number, globalState: any) {
+    setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
         dispatch.ui.reset()
         dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
+    },
+    async refreshAll() {
+      dispatch.devices.set({ from: 0 })
+      await dispatch.devices.fetch()
+      dispatch.sessions.fetch()
+      dispatch.licensing.fetch()
+      dispatch.announcements.fetch()
     },
   }),
   reducers: {

@@ -15,6 +15,23 @@ class Controller extends EventEmitter {
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'
     this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
+    this.setOffline()
+    window.addEventListener('online', this.setOffline)
+    window.addEventListener('offline', this.setOffline)
+  }
+
+  setOffline = () => {
+    const state = store.getState()
+    const { ui, auth } = store.dispatch
+    const offline = !navigator.onLine
+    ui.set({ offline })
+    if (!offline) {
+      if (state.auth.backendAuthenticated) {
+        ui.refreshAll()
+      } else {
+        auth.init()
+      }
+    }
   }
 
   setupConnection(username: string, password: string) {

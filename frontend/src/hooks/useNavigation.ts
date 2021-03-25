@@ -33,17 +33,31 @@ export function useNavigation(): [string, INavigation[]] {
   }, [navigation, location, menu])
 
   const menuItems: INavigation[] = [
-    { label: 'This Device', path: path('/devices'), icon: 'hdd', show: remoteUI },
-    { label: 'Connections', path: path('/connections'), icon: 'arrow-right', show: !remoteUI },
-    { label: 'Devices', path: path('/devices'), icon: 'chart-network', show: !remoteUI },
+    { label: 'This Device', path: '/devices', match: '/devices', icon: 'hdd', show: remoteUI },
+    {
+      label: 'Connections',
+      path: path('/connections'),
+      match: '/connections/:any?',
+      icon: 'arrow-right',
+      show: !remoteUI,
+    },
+    { label: 'Devices', path: '/devices', match: '/devices', icon: 'chart-network', show: !remoteUI },
     {
       label: 'Announcements',
-      path: path('/announcements'),
+      path: '/announcements',
+      match: '/announcements',
       icon: 'megaphone',
       badge: unreadAnnouncements,
       show: !remoteUI,
     },
-    { label: 'Settings', path: path('/settings'), icon: 'cog', badge: licenseIndicator, show: true },
+    {
+      label: 'Settings',
+      path: '/settings',
+      match: '/settings',
+      icon: 'cog',
+      badge: licenseIndicator,
+      show: true,
+    },
   ]
 
   return [menu, menuItems]

@@ -12,7 +12,7 @@ type Props = {
   resize?: 'devices' | 'connections'
 }
 
-const MIN_WIDTH = 300
+const MIN_WIDTH = 360
 const SIDEBAR_WIDTH = 9 + 250
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => {
@@ -27,18 +27,19 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
   const css = useStyles()
 
   const onMove = (event: MouseEvent) => {
+    const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
     handleRef.current += event.clientX - moveRef.current
     moveRef.current = event.clientX
-    if (
-      handleRef.current > MIN_WIDTH &&
-      handleRef.current < window.document.body.offsetWidth - MIN_WIDTH - SIDEBAR_WIDTH
-    ) {
+    if (handleRef.current > MIN_WIDTH && handleRef.current < fullWidth - MIN_WIDTH - SIDEBAR_WIDTH) {
       setWidth(handleRef.current)
     }
   }
 
   const measure = () => {
-    setParentWidth((primaryRef.current?.parentElement?.offsetWidth || 1000) - SIDEBAR_WIDTH)
+    const parent = (primaryRef.current?.parentElement?.offsetWidth || 1000) - SIDEBAR_WIDTH
+    setParentWidth(parent)
+    if (width < MIN_WIDTH) setWidth(MIN_WIDTH)
+    else if (width > parent - MIN_WIDTH) setWidth(parent - MIN_WIDTH)
   }
 
   const onDown = (event: React.MouseEvent) => {
