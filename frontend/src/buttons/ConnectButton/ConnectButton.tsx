@@ -31,7 +31,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const state = connectionState(service, connection)
   const visible = state === 'stopping' || state === 'disconnected'
   const connecting = state === 'connecting'
-  const listening = state === 'ready'
+  const stopping = state === 'stopping'
 
   const clickHandler = () => {
     heartbeat.caffeinate()
@@ -68,9 +68,13 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     variant = 'text'
   }
 
-  if (listening) {
+  if (state === 'ready') {
     title = 'Starting'
     color = 'grayDarker'
+  }
+  if (stopping) {
+    title = 'Stopping'
+    color = 'grayDark'
   }
   if (connecting) {
     title = 'Starting'
@@ -83,7 +87,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
         <DynamicButton
           title={title}
           variant={variant}
-          loading={connecting}
+          loading={connecting || stopping}
           color={color}
           size={size}
           onClick={clickHandler}
