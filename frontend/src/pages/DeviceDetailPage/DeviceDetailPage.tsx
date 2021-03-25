@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { LEGACY_ATTRIBUTES } from '../../shared/constants'
 import { TargetPlatform } from '../../components/TargetPlatform'
-import { Notice } from '../../components/Notice'
 import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
 import { QualityDetails } from '../../components/QualityDetails'
@@ -17,11 +16,6 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
 
   return (
     <DeviceHeaderMenu device={device}>
-      {device.state === 'inactive' && (
-        <Notice severity="warning" gutterTop>
-          Device offline
-        </Notice>
-      )}
       <Columns count={1} inset>
         {/* {!editable && <AdminPanelConnect device={device} connections={connections} />} */}
         <DataDisplay

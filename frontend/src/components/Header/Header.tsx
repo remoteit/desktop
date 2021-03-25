@@ -78,7 +78,7 @@ const useStyles = hasFocus =>
       opacity: hasFocus ? 1 : 0.2,
       // pointerEvents: 'none',
       // '-webkit-text-selection': 'none',
-      '& .MuiTypography-root': { marginLeft: styles.spacing.md },
+      '& .MuiTypography-root': { marginLeft: styles.spacing.md, fontWeight: 500 },
       '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
     },
   })
