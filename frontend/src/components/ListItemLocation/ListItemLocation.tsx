@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory, useLocation, matchPath, useRouteMatch } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { makeStyles, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { colors, Color } from '../../styling'
