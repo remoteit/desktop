@@ -27,7 +27,7 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device
   }, [])
 
   if (!service || (thisDevice && !target)) {
-    history.push('/devices/:deviceID')
+    history.push(`/devices/${device?.id}`)
     return null
   }
 

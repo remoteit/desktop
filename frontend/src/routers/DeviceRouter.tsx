@@ -25,23 +25,6 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
     targets: state.backend.targets,
   }))
 
-  // const { devices } = useDispatch<Dispatch>()
-  // const [loaded, setLoaded] = useState<boolean>(false)
-
-  // useEffect(() => {
-  //   analyticsHelper.page('DevicePage')
-  //   if (!device && !fetching) {
-  //     if (loaded) {
-  //       history.push('/devices')
-  //     } else {
-  //       await devices.fetchSingle({ id: device?.id, hidden: true })
-  //       setLoaded(true)
-  //     }
-  //   }
-  // }, [device, loaded, history])
-
-  // if (!device || fetching) return <LoadingMessage message="Fetching data..." />
-
   return (
     <DynamicPanel
       primary={<DevicePage targetDevice={targetDevice} targets={targets} device={device} />}
