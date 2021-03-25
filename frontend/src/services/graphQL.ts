@@ -15,6 +15,8 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 }
 
 export async function graphQLRequest(query: String, variables: ILookup<any> = {}) {
+  if (store.getState().ui.offline) return {}
+
   const token = await getToken()
 
   if (!token) {
