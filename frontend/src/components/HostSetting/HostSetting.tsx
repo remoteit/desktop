@@ -14,7 +14,6 @@ export const HostSetting: React.FC<{ service: IService; connection?: IConnection
   return (
     <InlineTextFieldSetting
       value={currentHost}
-      displayValue={replaceHost(currentHost)}
       label="Bind IP Address"
       disabled={disabled}
       resetValue={IP_PRIVATE}
