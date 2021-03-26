@@ -7,7 +7,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from './Icon'
 
 export const SidebarNav: React.FC = () => {
-  const [menu, menuItems] = useNavigation()
+  const { menu, menuItems } = useNavigation()
   const [viewBadge, setViewBadge] = useState(true)
   const location = useLocation()
   const history = useHistory()

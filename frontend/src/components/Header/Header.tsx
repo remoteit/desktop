@@ -8,8 +8,10 @@ import { useHistory } from 'react-router-dom'
 import { Typography } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
+import { useNavigation } from '../../hooks/useNavigation'
 
 export const Header: React.FC = () => {
+  const { handleBack, handleNext } = useNavigation()
   const [hasFocus, setHasFocus] = useState<boolean>(true)
   const history = useHistory()
   const css = useStyles(hasFocus)()
@@ -35,19 +37,21 @@ export const Header: React.FC = () => {
   })
 
   const goBack = () => {
-    if (document.location.href === back) {
-      setDisabledBack(true)
-    }
-    setBack(document.location.href)
-    history.goBack()
+    handleBack()
+    // if (document.location.href === back) {
+    //   setDisabledBack(true)
+    // }
+    // setBack(document.location.href)
+    // history.goBack()
   }
 
   const goForward = () => {
-    if (document.location.href === forward) {
-      setDisabledForward(true)
-    }
-    setForward(document.location.href)
-    history.goForward()
+    handleNext()
+    // if (document.location.href === forward) {
+    //   setDisabledForward(true)
+    // }
+    // setForward(document.location.href)
+    // history.goForward()
   }
 
   return (

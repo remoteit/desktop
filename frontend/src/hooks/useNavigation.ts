@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../shared/constants'
@@ -6,8 +6,17 @@ import { useLocation } from 'react-router-dom'
 import { selectAnnouncements } from '../models/announcements'
 import { selectLicenseIndicator } from '../models/licensing'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { string } from 'yup'
 
-export function useNavigation(): [string, INavigation[]] {
+interface INavigationHook {
+  menu: string
+  menuItems: INavigation[]
+  handleBack: () => void
+  handleNext: () => void
+  historyBack: string[]
+  historyNext: string[]
+}
+export function useNavigation(): INavigationHook {
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
   const { navigation, remoteUI, licenseIndicator, unreadAnnouncements } = useSelector((state: ApplicationState) => ({
@@ -16,6 +25,9 @@ export function useNavigation(): [string, INavigation[]] {
     unreadAnnouncements: selectAnnouncements(state, true).length,
     remoteUI: isRemoteUI(state),
   }))
+  const [historyBack, setHistoryBack] = useState<string[]>([])
+  const [historyNext, setHistoryNext] = useState<string[]>([])
+  const [shouldUpdate, setShouldUpdate] = useState<boolean>(true)
 
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
@@ -31,6 +43,27 @@ export function useNavigation(): [string, INavigation[]] {
       ui.set({ navigation: { ...navigation, [menu]: location.pathname } })
     }
   }, [navigation, location, menu])
+
+  useEffect(() => {
+    if (location?.pathname && shouldUpdate) {
+      setHistoryBack(historyBack.concat([location?.pathname]))
+    }
+
+    /// check if a new URL
+    /// validate if is a come back
+    /// check if is forward
+
+    console.log('LOCATION :', location)
+    console.log('HISTORY USER :', historyBack)
+  }, [location?.pathname])
+
+  const handleBack = () => {
+    setShouldUpdate(false)
+    // validate
+    setShouldUpdate(true)
+  }
+
+  const handleNext = () => {}
 
   const menuItems: INavigation[] = [
     { label: 'This Device', path: '/devices', match: '/devices', icon: 'hdd', show: remoteUI },
@@ -60,5 +93,5 @@ export function useNavigation(): [string, INavigation[]] {
     },
   ]
 
-  return [menu, menuItems]
+  return { menu, menuItems, handleBack, handleNext, historyBack, historyNext }
 }
