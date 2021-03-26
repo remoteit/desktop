@@ -86,7 +86,7 @@ export const ConnectionPage: React.FC = () => {
       <List>
         <NameSetting connection={connection} service={service} />
         <PortSetting connection={connection} service={service} />
-        <HostSetting connection={connection} service={service} />
+        {/* <HostSetting connection={connection} service={service} /> */}
         <InlineTemplateSetting connection={connection} service={service} context="launch" />
         <InlineTemplateSetting connection={connection} service={service} context="copy" />
         <CustomAttributeSettings connection={connection} service={service} />

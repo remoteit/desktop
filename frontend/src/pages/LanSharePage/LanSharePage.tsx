@@ -68,7 +68,11 @@ export const LanSharePage: React.FC = () => {
   if (!connection || !service) return null
 
   const save = () => {
-    setConnection({ ...connection, host: enabledLocalSharing ? currentHost : IP_PRIVATE, restriction: getSelectionValue() })
+    setConnection({
+      ...connection,
+      host: enabledLocalSharing ? currentHost : IP_PRIVATE,
+      restriction: getSelectionValue(),
+    })
     history.goBack()
   }
 
@@ -126,7 +130,6 @@ export const LanSharePage: React.FC = () => {
           <>
             <List>
               <TextField
-                autoFocus
                 multiline={currentHost.toString().length > 30}
                 label="Bind IP Address"
                 error={!!error}
@@ -135,9 +138,8 @@ export const LanSharePage: React.FC = () => {
                 helperText={error}
                 InputProps={{ disableUnderline: true }}
                 onChange={handleBindIP}
-              ></TextField>
+              />
             </List>
-
             <TextField
               select
               size="small"
