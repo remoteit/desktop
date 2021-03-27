@@ -37,7 +37,7 @@ export function useNavigation(): [string, INavigation[]] {
     {
       label: 'Connections',
       path: path('/connections'),
-      match: '/connections/:any?',
+      match: '/connections/:any?/:any?/:any?',
       icon: 'arrow-right',
       show: !remoteUI,
     },
