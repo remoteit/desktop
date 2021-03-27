@@ -7,7 +7,6 @@ import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { getDevices } from '../../models/accounts'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { colors, spacing, fontSizes } from '../../styling'
 import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
@@ -73,7 +72,7 @@ export const LanSharePage: React.FC = () => {
       host: enabledLocalSharing ? currentHost : IP_PRIVATE,
       restriction: getSelectionValue(),
     })
-    history.goBack()
+    history.push(`/connections/${serviceID}`)
   }
 
   const handleLocalNetworkSecurity = event => {
@@ -101,14 +100,7 @@ export const LanSharePage: React.FC = () => {
   }
 
   return (
-    <Container
-      header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">Local Network Sharing</Typography>
-        </>
-      }
-    >
+    <Container header={<Typography variant="h1">Local Network Sharing</Typography>}>
       <List>
         <ListItemSetting
           icon="network-wired"
@@ -118,28 +110,26 @@ export const LanSharePage: React.FC = () => {
         />
       </List>
 
-      <div className={css.indent}>
-        <div className={css.typography}>
+      <div className={css.container}>
+        <p>
           <Typography variant="caption">Your local IP address</Typography>
           <Typography variant="h2">{privateIP}</Typography>
-        </div>
-        <div className={css.note}>
+        </p>
+        <Typography variant="body2" color="textSecondary">
           Allow users to connect to your remote device through your IP address using a custom port.
-        </div>
+        </Typography>
         {enabledLocalSharing && (
           <>
-            <List>
-              <TextField
-                multiline={currentHost.toString().length > 30}
-                label="Bind IP Address"
-                error={!!error}
-                defaultValue={currentHost}
-                variant="filled"
-                helperText={error}
-                InputProps={{ disableUnderline: true }}
-                onChange={handleBindIP}
-              />
-            </List>
+            <TextField
+              className={css.textField}
+              multiline={currentHost.toString().length > 30}
+              label="Bind IP Address"
+              error={!!error}
+              defaultValue={currentHost}
+              variant="filled"
+              helperText={error}
+              onChange={handleBindIP}
+            />
             <TextField
               select
               size="small"
@@ -147,7 +137,6 @@ export const LanSharePage: React.FC = () => {
               variant="filled"
               label="Local Network Security"
               value={selection.toString()}
-              InputProps={{ disableUnderline: true }}
               onChange={handleLocalNetworkSecurity}
             >
               {selections.map((option, key) => (
@@ -156,10 +145,10 @@ export const LanSharePage: React.FC = () => {
                 </MenuItem>
               ))}
             </TextField>
-            <div className={css.note}>
+            <Typography variant="body2" color="textSecondary">
               {selected.note}
               <span className={css.mask}>Mask {getSelectionValue()}</span>
-            </div>
+            </Typography>
             {typeof selected.value === 'function' && (
               <Quote>
                 <TextField
@@ -167,7 +156,6 @@ export const LanSharePage: React.FC = () => {
                   value={address}
                   variant="filled"
                   label="IP address"
-                  InputProps={{ disableUnderline: true }}
                   onChange={event => setAddress(event.target.value.replace(REGEX_IP_SAFE, ''))}
                 />
               </Quote>
@@ -175,38 +163,28 @@ export const LanSharePage: React.FC = () => {
           </>
         )}
       </div>
-
-      <div className={css.indent}>
+      <div className={css.container}>
         <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
           Save
         </Button>
+        <Button onClick={() => history.push(`/connections/${serviceID}`)}>Cancel</Button>
       </div>
     </Container>
   )
 }
 
 const useStyles = makeStyles({
-  indent: {
-    paddingLeft: spacing.lg,
-    margin: `${spacing.md}px ${spacing.xxl}px ${spacing.xl}px`,
-  },
-  note: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.lg,
-    color: colors.grayDark,
+  container: {
+    paddingLeft: spacing.xl,
+    margin: `${spacing.sm}px ${spacing.xxl}px ${spacing.lg}px`,
+    '& > p': { marginBottom: spacing.md },
+    '& > div': { marginBottom: spacing.sm },
   },
   textField: {
     minWidth: 300,
   },
-  list: {
-    textAlign: 'left',
-  },
   mask: {
     fontStyle: 'italic',
-    fontSize: fontSizes.sm,
     marginLeft: spacing.sm,
-  },
-  typography: {
-    marginTop: spacing.md,
   },
 })
