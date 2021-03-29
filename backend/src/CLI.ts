@@ -11,7 +11,6 @@ import debug from 'debug'
 import path from 'path'
 import user from './User'
 import { REACHABLE_ERROR_CODE } from './constants'
-import { GRAPHQL_API, GRAPHQL_BETA_API } from './sharedCopy/constants'
 
 const d = debug('CLI')
 
@@ -137,7 +136,7 @@ export default class CLI {
   readOverrides() {
     const config = this.readFile()
     d('READ overrides', config.overrides)
-    const { apiURL = GRAPHQL_API, betaApiURL = GRAPHQL_BETA_API } = config?.overrides || {}
+    const { apiURL, betaApiURL } = config?.overrides || {}
     this.data.overridesSetting = {
       apiURL,
       betaApiURL,

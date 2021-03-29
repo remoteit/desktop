@@ -7,7 +7,6 @@ import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 
 type IBackendState = {
   connections: IConnection[]
@@ -58,8 +57,8 @@ const state: IBackendState = {
     hostname: '',
     oobAvailable: false,
     backendSetting: {
-      apiURL: GRAPHQL_API,
-      betaApiURL: GRAPHQL_BETA_API,
+      apiURL: '',
+      betaApiURL: '',
     },
   },
   preferences: {},
