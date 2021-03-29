@@ -1,8 +1,9 @@
-import React from 'react'
-import { Switch, Route, Redirect, useParams } from 'react-router-dom'
-import { ApplicationState } from '../store'
+import React, { useState, useEffect } from 'react'
+import { Switch, Route, Redirect, useParams, useHistory } from 'react-router-dom'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { selectDevice } from '../models/devices'
-import { useSelector } from 'react-redux'
+import { isRemoteUI } from '../helpers/uiHelper'
 import { NetworkPage } from '../pages/NetworkPage'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
@@ -11,6 +12,7 @@ import { ServiceDetailPage } from '../pages/ServiceDetailPage'
 import { UsersPageService } from '../pages/UsersPageService'
 import { UsersPageDevice } from '../pages/UsersPageDevice'
 import { ServiceEditPage } from '../pages/ServiceEditPage'
+import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
@@ -19,11 +21,31 @@ import { LogPage } from '../pages/LogPage'
 
 export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
-  const { device, targetDevice, targets } = useSelector((state: ApplicationState) => ({
+  const { remoteUI, device, targetDevice, targets, fetching } = useSelector((state: ApplicationState) => ({
+    remoteUI: isRemoteUI(state),
+    fetching: state.devices.fetching,
     device: selectDevice(state, deviceID),
     targetDevice: state.backend.device,
     targets: state.backend.targets,
   }))
+
+  const history = useHistory()
+  const { devices } = useDispatch<Dispatch>()
+  const [loaded, setLoaded] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (deviceID && !device && !fetching) {
+      // check that target device is registered and don't redirect
+      if (loaded && !(remoteUI && targetDevice.uid)) {
+        history.push('/devices')
+      } else if (!loaded) {
+        devices.fetchSingle({ id: deviceID, hidden: true })
+        setLoaded(true)
+      }
+    }
+  }, [fetching, device, targetDevice, history])
+
+  if (fetching) return <LoadingMessage message="Fetching device..." />
 
   return (
     <DynamicPanel
