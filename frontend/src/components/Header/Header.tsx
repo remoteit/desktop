@@ -4,19 +4,19 @@ import { ApplicationState } from '../../store'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
 import { Typography } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
 import { useNavigation } from '../../hooks/useNavigation'
 
 export const Header: React.FC = () => {
-  const { handleBack, handleNext } = useNavigation()
+  const { navigationBack, navigationForward } = useSelector((state: ApplicationState) => ({
+    navigationBack: state.ui.navigationBack,
+    navigationForward: state.ui.navigationForward,
+  }))
+  const { handleBack, handleForward } = useNavigation()
   const [hasFocus, setHasFocus] = useState<boolean>(true)
-  const history = useHistory()
   const css = useStyles(hasFocus)()
-  const [back, setBack] = useState('')
-  const [forward, setForward] = useState('')
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
 
@@ -36,30 +36,17 @@ export const Header: React.FC = () => {
     }
   })
 
-  const goBack = () => {
-    handleBack()
-    // if (document.location.href === back) {
-    //   setDisabledBack(true)
-    // }
-    // setBack(document.location.href)
-    // history.goBack()
-  }
-
-  const goForward = () => {
-    handleNext()
-    // if (document.location.href === forward) {
-    //   setDisabledForward(true)
-    // }
-    // setForward(document.location.href)
-    // history.goForward()
-  }
+  useEffect(() => {
+    setDisabledBack(!(navigationBack?.length > 1))
+    setDisabledForward(!navigationForward?.length)
+  }, [navigationBack, navigationForward])
 
   return (
     <div className={css.header}>
-      <IconButton disabled={disabledBack} onClick={goBack}>
+      <IconButton disabled={disabledBack} onClick={handleBack}>
         <Icon name="chevron-left" size="lg" color={disabledBack ? 'grayLight' : 'grayDark'} />
       </IconButton>
-      <IconButton disabled={disabledForward} onClick={goForward}>
+      <IconButton disabled={disabledForward} onClick={handleForward}>
         <Icon name="chevron-right" size="lg" color={disabledForward ? 'grayLight' : 'grayDark'} />
       </IconButton>
       <Typography variant="body2" color="textSecondary">
