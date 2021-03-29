@@ -52,7 +52,6 @@ class Controller {
     if (!socket) Logger.error('Socket.io server failed to start.')
     if (!socket) throw new Error('Socket.io server failed to start.')
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
-    this.checkBackendSetting()
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
 
     socket.on('user/lock', user.signOut)
@@ -168,6 +167,7 @@ class Controller {
     this.io.emit('preferences', preferences.data)
     this.freePort()
     this.io.emit('dataReady', true)
+    this.checkBackendSetting()
   }
 
   connection = async (connection: IConnection) => {

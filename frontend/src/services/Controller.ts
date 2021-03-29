@@ -85,7 +85,6 @@ class Controller extends EventEmitter {
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
     console.log('Controller emit', event, args)
-    console.log(this.socket)
     this.socket?.emit(event, ...args)
     return true
   }
@@ -154,9 +153,7 @@ function getEventHandlers() {
     dataReady: (result: boolean) => backend.set({ dataReady: result }),
 
     environment: (result: ILookup<any>) => {
-      const state = store.getState()
-      const { backendSetting } = state.backend.environment
-      backend.set({ environment: { ...result, backendSetting } })
+      backend.set({ environment: result })
       analyticsHelper.setOS(result.os)
       analyticsHelper.setOsVersion(result.osVersion)
       analyticsHelper.setArch(result.arch)
