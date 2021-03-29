@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
 import { replaceHost } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
@@ -22,7 +21,6 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
-import { isRemoteUI } from '../helpers/uiHelper'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { spacing, fontSizes } from '../styling'
@@ -36,21 +34,22 @@ type Props = {
 
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
-  const history = useHistory()
   const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { connections, setupAddingService } = useSelector((state: ApplicationState) => ({
     connections: state.backend.connections.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
-    remoteUI: isRemoteUI(state),
   }))
 
   useEffect(() => {
     analyticsHelper.page('DevicePage')
-    // check that target device is registered and don't redirect
-    if (!device && !(remoteUI && targetDevice.uid)) history.push('/devices')
-  }, [device, targetDevice, history])
+  }, [])
 
-  if (!device) return null
+  if (!device)
+    return (
+      <span>
+        <Notice severity="warning">Device not found.</Notice>
+      </span>
+    )
 
   const thisDevice = device.id === targetDevice.uid
   const editable = thisDevice || device.configurable
