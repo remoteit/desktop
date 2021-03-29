@@ -18,7 +18,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   if (store.getState().ui.offline) return {}
   const { backend } = store.getState()
 
-  const { apiURL = GRAPHQL_API, betaApiURL = GRAPHQL_BETA_API } = backend.environment.backendSetting
+  const { apiURL, betaApiURL } = backend.environment.backendSetting
 
   const token = await getToken()
 
@@ -28,7 +28,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   }
 
   const request = {
-    url: version.includes('alpha') ? betaApiURL : apiURL,
+    url: version.includes('alpha') ? betaApiURL || GRAPHQL_BETA_API : apiURL || GRAPHQL_API,
     method: 'post' as 'post',
     headers: { Authorization: token },
     data: { query, variables },
