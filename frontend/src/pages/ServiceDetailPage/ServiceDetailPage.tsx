@@ -42,7 +42,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   }
 
   data = data.concat([
-    { label: 'Last reported', value: service.lastReported, format: 'duration' },
+    { label: 'Last reported', value: { start: service.lastReported, ago: true }, format: 'duration' },
     { label: 'Service Name', value: service.name },
     { label: 'Remote Port', value: service.port },
     { label: 'Remote Protocol', value: service.protocol },
