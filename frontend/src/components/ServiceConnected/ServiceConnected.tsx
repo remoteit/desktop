@@ -30,7 +30,10 @@ export const ServiceConnected: React.FC<Props> = ({ show, connection, session })
             },
             {
               label: 'Duration',
-              value: connection?.startTime ? new Date(connection.startTime || 0) : session?.timestamp,
+              value: connection?.startTime && {
+                start: connection?.startTime ? new Date(connection.startTime || 0) : session?.timestamp,
+                end: connection?.endTime && new Date(connection.endTime),
+              },
               format: 'duration',
             },
             { label: 'Location', value: session?.geo, format: 'location' },
