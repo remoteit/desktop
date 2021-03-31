@@ -47,10 +47,10 @@ export const Breadcrumbs: React.FC = () => {
   let breadcrumb: string = ''
 
   return (
-    <div className={css.header}>
-      <IconButton onClick={() => history.push(parentPath)}>
+    <span className={css.header}>
+      {/* <IconButton onClick={() => history.push(parentPath)}>
         <Icon name="chevron-left" size="md" fixedWidth />
-      </IconButton>
+      </IconButton> */}
       {crumbs.reduce((result: any[], crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
@@ -61,14 +61,14 @@ export const Breadcrumbs: React.FC = () => {
         )
         return result
       }, [])}
-    </div>
+    </span>
   )
 }
 
 const useStyles = makeStyles({
   header: {
     marginLeft: spacing.md,
-    marginBottom: -spacing.xs,
+    marginBottom: spacing.xs,
     color: colors.grayDark,
     position: 'relative',
     zIndex: 2,
@@ -80,7 +80,7 @@ const useStyles = makeStyles({
       padding: `${spacing.xxs}px ${spacing.xs}px`,
       marginLeft: spacing.xs,
       marginRight: spacing.xs,
-      letterSpacing: 2,
+      // letterSpacing: 2,
     },
   },
 })

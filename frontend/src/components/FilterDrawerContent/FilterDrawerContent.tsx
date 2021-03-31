@@ -8,7 +8,6 @@ import { FilterSelector } from './FilterSelector'
 import { spacing, colors } from '../../styling'
 import { CloseButton } from '../../buttons/CloseButton'
 import { Body } from '../Body'
-import classnames from 'classnames'
 
 type IValues = {
   sort: typeof defaults.sort
@@ -54,7 +53,8 @@ export const FilterDrawerContent: React.FC = () => {
   }))
   const { ui, devices } = useDispatch<Dispatch>()
   const [values, setValues] = useState<IValues>(state)
-  const css = useStyles()
+  const [width, setWidth] = useState<number>(0)
+  const css = useStyles(width)()
 
   const handleClear = () => {
     setValues({
@@ -64,6 +64,10 @@ export const FilterDrawerContent: React.FC = () => {
       platform: defaults.platform,
     })
   }
+
+  useEffect(() => {
+    setWidth(open ? window.document.body.offsetWidth * 0.2 : 0)
+  }, [open])
 
   useEffect(() => {
     if (
@@ -78,7 +82,7 @@ export const FilterDrawerContent: React.FC = () => {
   }, [values])
 
   return (
-    <div className={classnames(css.drawer, open || css.drawerClose)}>
+    <div className={css.drawer}>
       <div className={css.drawerHeader}>
         <Button size="small" onClick={handleClear}>
           clear
@@ -86,7 +90,7 @@ export const FilterDrawerContent: React.FC = () => {
         <CloseButton onClick={() => ui.set({ filterMenu: false })} />
       </div>
       <Divider />
-      <Body maxHeight="100%">
+      <Body className={css.body}>
         <List dense className={css.list}>
           <FilterSelector
             subtitle="Sort"
@@ -125,29 +129,28 @@ export const FilterDrawerContent: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
-  drawer: {
-    display: 'flex',
-    alignItems: 'stretch',
-    flexFlow: 'column',
-    height: '100%',
-    // position: 'relative',
-
-    maxWidth: 200,
-    transition: 'max-width 200ms ease-out',
-    '& > *': { minWidth: 200 },
-  },
-  drawerClose: {
-    maxWidth: 0,
-  },
-  drawerHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  list: {
-    backgroundColor: colors.white,
-    padding: 0,
-    '& > .MuiListItem-dense': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
-    '& > .MuiListItem-dense + .MuiDivider-root': { marginTop: spacing.sm },
-  },
-})
+const useStyles = width =>
+  makeStyles({
+    body: {
+      maxHeight: '100%',
+    },
+    drawer: {
+      maxWidth: width,
+      display: 'flex',
+      alignItems: 'stretch',
+      flexFlow: 'column',
+      height: '100%',
+      transition: 'max-width 200ms',
+      '& > *': { minWidth: width },
+    },
+    drawerHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+    },
+    list: {
+      backgroundColor: colors.white,
+      padding: 0,
+      '& > .MuiListItem-dense': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
+      '& > .MuiListItem-dense + .MuiDivider-root': { marginTop: spacing.sm },
+    },
+  })

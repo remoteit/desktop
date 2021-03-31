@@ -7,9 +7,8 @@ import { Icon } from '../Icon'
 
 export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
   const css = useStyles()
-
   return (
-    <List>
+    <List className={css.list}>
       {data.map(
         item =>
           item.value != null && (
@@ -18,7 +17,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
                 {item.label}:
                 {item.help && (
                   <Tooltip title={item.help}>
-                    <Icon name="question-circle" type="light" size="sm" inline />
+                    <Icon name="question-circle" size="sm" inline />
                   </Tooltip>
                 )}
               </span>
@@ -31,6 +30,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
 }
 
 const useStyles = makeStyles({
+  list: { width: '100%' },
   item: {
     padding: `4px 0`,
     fontSize: fontSizes.sm,

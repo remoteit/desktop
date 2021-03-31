@@ -1,12 +1,10 @@
 import React from 'react'
 import {
   makeStyles,
-  List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-  Typography,
   Divider,
   Button,
   Box,
@@ -28,46 +26,42 @@ export const LicensingSetting: React.FC = () => {
 
   return (
     <>
-      <Typography variant="subtitle1">Licensing</Typography>
-      <List>
-        {licenses.map((license, index) => (
-          <React.Fragment key={index}>
-            <LicensingNotice license={license} />
-            <ListItem key={license.id} dense>
-              <ListItemIcon>
-                <LicensingIcon license={license} />
-              </ListItemIcon>
-              <ListItemText
-                primary={`${license.plan.product.description} ${license.plan.description} plan`}
-                secondary={
-                  license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
-                }
-              />
-              <ListItemSecondaryAction>
-                <Button color="primary" href={upgradeUrl} size="small" target="_blank">
-                  Manage Subscription
-                </Button>
-              </ListItemSecondaryAction>
-            </ListItem>
-            <ListItem>
-              <ListItemIcon></ListItemIcon>
-              <Box width={400}>
-                {license.limits.map(limit => (
-                  <LimitSetting key={limit.name} limit={limit} />
-                ))}
-              </Box>
-            </ListItem>
-          </React.Fragment>
-        ))}
-        {!!limits.length && <Divider className={css.divider} />}
-        {limits.map(limit => (
-          <ListItem key={limit.name}>
-            <ListItemIcon></ListItemIcon>
-            <LimitSetting limit={limit} />
+      {licenses.map((license, index) => (
+        <React.Fragment key={index}>
+          <LicensingNotice license={license} />
+          <ListItem key={license.id} dense>
+            <ListItemIcon>
+              <LicensingIcon license={license} />
+            </ListItemIcon>
+            <ListItemText
+              primary={`${license.plan.product.description} ${license.plan.description} plan`}
+              secondary={
+                license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
+              }
+            />
+            <ListItemSecondaryAction>
+              <Button color="primary" href={upgradeUrl} size="small" target="_blank">
+                Manage Subscription
+              </Button>
+            </ListItemSecondaryAction>
           </ListItem>
-        ))}
-      </List>
-      <Divider />
+          <ListItem>
+            <ListItemIcon></ListItemIcon>
+            <Box width={400}>
+              {license.limits.map(limit => (
+                <LimitSetting key={limit.name} limit={limit} />
+              ))}
+            </Box>
+          </ListItem>
+        </React.Fragment>
+      ))}
+      {!!limits.length && <Divider className={css.divider} />}
+      {limits.map(limit => (
+        <ListItem key={limit.name}>
+          <ListItemIcon></ListItemIcon>
+          <LimitSetting limit={limit} />
+        </ListItem>
+      ))}
     </>
   )
 }

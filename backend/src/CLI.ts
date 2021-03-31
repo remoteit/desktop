@@ -33,13 +33,15 @@ type IExec = {
 
 type IConnectionStatus = {
   id?: string
-  enabled?: boolean
+  isDisabled?: boolean
   state?: 'offline' | 'connecting' | 'connected'
   isFailover?: boolean
   isP2P?: boolean
   error?: ISimpleError
   reachable: boolean
   sessionID?: string
+  startedAt?: string
+  stoppedAt?: string
 }
 
 export default class CLI {
@@ -113,12 +115,9 @@ export default class CLI {
       id: c.uid,
       port: c.port,
       host: c.hostname,
-      enabled: !c.disabled,
-      createdTime: Math.round(c.createdtimestamp / 1000000),
-      startTime: Math.round((c.startedtimestamp || c.createdtimestamp) / 1000000),
-      endTime: Math.round(c.stoppedtimestamp / 1000000),
+      createdTime: Date.parse(c.createdAt),
       restriction: c.restrict,
-      autoStart: c.retry,
+      timeout: c.timeout,
       failover: c.failover,
     }))
     await this.updateConnectionStatus()
@@ -135,6 +134,9 @@ export default class CLI {
     this.data.connections = this.data.connections.map(c => {
       const status = connections?.find(s => s.id === c.id)
       if (status) {
+        c.enabled = !status.isDisabled
+        c.startTime = status.startedAt ? Date.parse(status.startedAt) : undefined
+        c.endTime = status.stoppedAt ? Date.parse(status.stoppedAt) : undefined
         c.connected = status.state === 'connected'
         c.connecting = status.state === 'connecting'
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined

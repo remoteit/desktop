@@ -3,7 +3,6 @@ import { useHistory, useParams } from 'react-router-dom'
 import { IconButton, Tooltip, Link } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
-import { getLinks } from '../helpers/routeHelper'
 import { Icon } from './Icon'
 
 type Props = {
@@ -13,21 +12,18 @@ type Props = {
 
 export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
-  const { scanEnabled, links } = useSelector((state: ApplicationState) => ({
-    scanEnabled: state.ui.scanEnabled,
-    links: getLinks(state, deviceID),
-  }))
+  const { scanEnabled } = useSelector((state: ApplicationState) => state.ui)
   const history = useHistory()
 
   if (!allowScanning || !scanEnabled) return null
 
   return button ? (
     <Tooltip title="Scan for Services">
-      <IconButton onClick={() => history.push(links.scan)}>
-        <Icon name="radar" size="md" type="light" />
+      <IconButton onClick={() => history.push(`/devices/${deviceID}/add/scan`)}>
+        <Icon name="radar" size="md" />
       </IconButton>
     </Tooltip>
   ) : (
-    <Link onClick={() => history.push(links.scan)}>Scan network</Link>
+    <Link onClick={() => history.push(`/devices/${deviceID}/add/scan`)}>Scan network</Link>
   )
 }

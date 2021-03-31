@@ -1,40 +1,49 @@
 import React from 'react'
 import { hostName } from '../../shared/nameHelper'
-import { DisconnectButton } from '../../buttons/DisconnectButton'
-import { Typography, Divider, Collapse } from '@material-ui/core'
+import { INITIATOR_PLATFORMS } from '../InitiatorPlatform/InitiatorPlatform'
+import { Collapse } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'
-import { Duration } from '../Duration'
-import { Columns } from '../Columns'
+import { Gutters } from '../Gutters'
 
 type Props = {
   connection?: IConnection
-  service?: IService
+  session?: ISession
+  show?: boolean
 }
 
-export const ServiceConnected: React.FC<Props> = ({ connection, service }) => {
-  const visible = connection?.connected
-
+export const ServiceConnected: React.FC<Props> = ({ show, connection, session }) => {
   return (
-    <Collapse in={visible} timeout={800}>
-      <Typography color={connection?.connecting ? undefined : 'primary'} variant="subtitle1">
-        {connection?.connecting ? 'Connecting' : 'Connected'}
-      </Typography>
-      <Columns inset>
+    <Gutters inset>
+      <Collapse in={show} timeout={800}>
+        {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
         <DataDisplay
           data={[
             { label: 'Connection URL', value: connection && hostName(connection) },
             {
-              label: 'Connection Type',
-              value: connection?.isP2P === undefined ? 'None' : connection?.isP2P === true ? 'Peer to peer' : 'Proxy',
+              label: 'Connection',
+              value:
+                connection?.isP2P === undefined && session?.isP2P === undefined
+                  ? 'Idle'
+                  : connection?.isP2P || session?.isP2P
+                  ? 'Peer to peer'
+                  : 'Proxy',
             },
-            { label: 'Duration', value: connection && <Duration startTime={connection.startTime} /> },
+            {
+              label: 'Duration',
+              value: connection?.startTime && {
+                start: connection?.startTime ? new Date(connection.startTime || 0) : session?.timestamp,
+                end: connection?.endTime && new Date(connection.endTime),
+              },
+              format: 'duration',
+            },
+            { label: 'Location', value: session?.geo, format: 'location' },
+
+            { label: 'Platform', value: session && INITIATOR_PLATFORMS[session.platform] },
+            // { label: 'Device ID', value: session?.target.deviceId },
+            // { label: 'Service ID', value: session?.target.id },
           ]}
         />
-        <div>
-          <DisconnectButton connection={connection} service={service} />
-        </div>
-      </Columns>
-      <Divider />
-    </Collapse>
+      </Collapse>
+    </Gutters>
   )
 }

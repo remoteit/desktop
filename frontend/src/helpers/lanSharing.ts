@@ -1,4 +1,4 @@
-import { IP_OPEN, IP_LATCH } from '../shared/constants'
+import { IP_OPEN, IP_LATCH, IP_PRIVATE } from '../shared/constants'
 import { store } from '../store'
 
 export function lanShareRestriction(connection?: IConnection) {
@@ -15,7 +15,7 @@ export function lanShareRestriction(connection?: IConnection) {
 }
 
 export function lanShared(connection?: IConnection) {
-  return !!(connection && connection.host === IP_OPEN)
+  return !!(connection && connection.host !== IP_PRIVATE)
 }
 
 export function isIPClass(checkIP: ipAddress, privateIP: ipAddress, type: ipClass) {

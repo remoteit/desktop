@@ -83,16 +83,16 @@ export const InlineSetting: React.FC<Props> = ({
           }}
         >
           {children}
-          {resetValue != null && (
-            <ResetButton
-              onMouseDown={cancelBlur}
-              onClick={() => {
-                onResetClick()
-                fieldRef.current?.focus()
-              }}
-            />
-          )}
           <ListItemSecondaryAction>
+            {resetValue != null && (
+              <ResetButton
+                onMouseDown={cancelBlur}
+                onClick={() => {
+                  onResetClick()
+                  fieldRef.current?.focus()
+                }}
+              />
+            )}
             <Tooltip title="Cancel">
               <IconButton onClick={onCancel}>
                 <Icon name="times" size="md" fixedWidth />
@@ -139,8 +139,10 @@ const useStyles = makeStyles({
     '& .MuiFilledInput-input': { paddingTop: 22, paddingBottom: 10, fontSize: 14 },
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .MuiTextField-root': { marginLeft: -12 },
-    '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } }, // paddingTop: 3, marginTop: -6 },
+    '& .MuiInput-root': { marginRight: spacing.sm },
+    '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },
     '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
+    '& .MuiListItemSecondaryAction-root': { right: spacing.sm },
   },
   active: {
     paddingTop: 0,
@@ -149,9 +151,12 @@ const useStyles = makeStyles({
   },
   action: {
     position: 'absolute',
+    display: 'flex',
+    minWidth: 60,
+    justifyContent: 'center',
     zIndex: 1,
     right: 'auto',
-    left: spacing.lg,
+    left: 20,
     marginTop: spacing.xs,
   },
 })

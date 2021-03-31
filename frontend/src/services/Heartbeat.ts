@@ -15,6 +15,18 @@ class Heartbeat {
     const { auth } = store.getState()
     document.hasFocus() && auth.authenticated && emit('heartbeat')
   }
+
+  caffeinate() {
+    this.count = 0
+    if (this.interval) window.clearInterval(this.interval)
+    this.interval = window.setInterval(() => {
+      if (this.count++ > 6) {
+        window.clearInterval(this.interval)
+        this.interval = undefined
+      }
+      this.beat()
+    }, 1000)
+  }
 }
 
 export default new Heartbeat()

@@ -3,8 +3,8 @@ import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
-import { RegisterButton } from '../../buttons/RegisterButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
+import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { AccountSelect } from '../../components/AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
@@ -16,7 +16,7 @@ import { Container } from '../../components/Container'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const DevicesPage = () => {
+export const DevicesPage: React.FC<{ singlePanel?: boolean; restore?: boolean }> = ({ singlePanel, restore }) => {
   const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
@@ -40,8 +40,12 @@ export const DevicesPage = () => {
           <div className={css.header}>
             <SearchField />
             <AccountSelect />
-            <RegisterButton />
-            <RefreshButton />
+            {singlePanel && (
+              <>
+                <RegisterButton />
+                <RefreshButton />
+              </>
+            )}
             <FilterButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
@@ -54,7 +58,7 @@ export const DevicesPage = () => {
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={devices} connections={connections} />
+        <DeviceList devices={devices} connections={connections} restore={restore} />
       )}
     </Container>
   )
@@ -65,7 +69,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: `0 ${styles.spacing.md}px`,
+    padding: `0 ${styles.spacing.md}px ${styles.spacing.sm}px`,
   },
   fetching: {
     position: 'absolute',

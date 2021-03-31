@@ -31,7 +31,7 @@ declare global {
     | 'launch/app'
 
     // App/settings
-    | 'app/open-on-login'
+    | 'maximize'
     | 'showFolder'
 
     // Backend
@@ -116,6 +116,13 @@ declare global {
     guid: string
   }
 
+  interface ISearch {
+    deviceName: string
+    serviceName: string
+    deviceId: string
+    serviceId: string
+    accountEmail: string
+  }
   interface IConnection {
     id: string
     name: string
@@ -128,7 +135,7 @@ declare global {
     host?: ipAddress // Bind address
     typeID?: number // service type ID
     restriction?: ipAddress // Restriction IP address
-    autoStart?: boolean // auto retry connect if closed
+    timeout?: number // timeout to disconnect in minutes
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     failover?: boolean // allow proxy failover
     proxyOnly?: boolean // disabled p2p
@@ -144,6 +151,8 @@ declare global {
     log?: boolean // if cli should log the connectd stdout to file
     [index: string]: any // needed to be able to iterate the keys :(
   }
+
+  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping' | 'ready'
 
   type IConnectionKey = keyof IConnection
 
@@ -233,7 +242,7 @@ declare global {
     host?: ipAddress
     protocol?: string
     access: IUser[]
-    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED'
+    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy
@@ -249,7 +258,6 @@ declare global {
     authHash?: string
     yoicsId?: string
     created?: Date
-    // platform?: number // fixme - unconfuse IUser with ISessionFixme
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
   }
@@ -266,10 +274,12 @@ declare global {
   }
 
   type ISession = {
-    id: string
+    id?: string
+    isP2P?: boolean
     timestamp: Date
     platform: number
-    user: IUserRef
+    state?: IConnectionState
+    user?: IUserRef
     geo?: IGeo
     target: {
       id: string
@@ -277,14 +287,6 @@ declare global {
       platform: number
       name: string // combined service + device names
     }
-  }
-
-  type ISessionFixme = {
-    id: string // user id
-    sessionId: string // FIXME this should be the id
-    timestamp: Date
-    email: string // user email FIXME this should be a IUserRef
-    platform: number
   }
 
   type IApplicationType = {
@@ -341,6 +343,7 @@ declare global {
     type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
+    isP2P: boolean
     actor: IUserRef
     users: IUserRef[]
     platform: IUser['platform']
@@ -542,6 +545,15 @@ declare global {
   }
 
   type IShowFolderType = 'logs' | 'connections'
+
+  type INavigation = {
+    label: string
+    path: string
+    match: string
+    icon: string
+    show: boolean
+    badge?: number
+  }
 }
 
 export {}

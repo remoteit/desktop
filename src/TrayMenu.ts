@@ -110,12 +110,12 @@ export default class TrayMenu {
       list = list.slice(0, MAX_MENU_SIZE)
     }
     let menu = list.reduce((result: any[], connection) => {
-      if (connection.startTime) {
+      if (connection.createdTime || connection.enabled) {
         result.push({
           label: connection.name,
-          icon: connection.enabled ? iconConnected : connection.online ? iconOnline : iconOffline,
+          icon: connection.connected ? iconConnected : connection.online ? iconOnline : iconOffline,
           submenu: [
-            connection.connected
+            connection.enabled
               ? { label: 'Disconnect', click: () => this.disconnect(connection) }
               : connection.online
               ? { label: 'Connect', click: () => this.connect(connection) }
@@ -124,7 +124,7 @@ export default class TrayMenu {
             { label: hostName(connection), enabled: false },
             { label: 'Copy to clipboard', click: () => this.copy(connection) },
             connection.online
-              ? { label: 'Launch', enabled: connection.connected, click: () => this.launch(connection) }
+              ? { label: 'Launch', enabled: connection.enabled, click: () => this.launch(connection) }
               : { label: 'Remove', click: () => EventBus.emit(EVENTS.clear, connection) },
           ],
         })

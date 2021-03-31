@@ -4,7 +4,7 @@ import { getToken } from './remote.it'
 import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
-import { selectService } from '../models/devices'
+import { selectById } from '../models/devices'
 import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
 import { emit } from './Controller'
@@ -114,6 +114,7 @@ class CloudController {
           ... on DeviceConnectEvent {
             platform
             session
+            proxy
             sourceGeo {
               city
               stateName
@@ -159,6 +160,7 @@ class CloudController {
         type: event.type,
         state: event.state,
         timestamp: new Date(event.timestamp),
+        isP2P: !event.proxy,
         actor: event.actor,
         users: event.users,
         authUserId: state.auth.user?.id || '',
@@ -166,11 +168,11 @@ class CloudController {
         sessionId: event.session,
         geo: event.sourceGeo,
         target: event.target.map(t => {
-          const [service, device] = selectService(state, t.id)
+          const [service, device] = selectById(state, t.id)
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
-            name: connectionName(t, t.device),
+            name: connectionName(t.device, t),
             owner: t.owner,
             typeID: t.application,
             platform: t.platform,
@@ -221,28 +223,27 @@ class CloudController {
             setConnection(target.connection)
           }
 
-          // connection state for other users
-          else {
-            if (event.state === 'connected') {
-              sessions.setSession({
-                id: event.sessionId,
-                timestamp: event.timestamp,
-                platform: event.platform,
-                user: event.actor,
-                geo: event.geo,
-                target: {
-                  id: target.id,
-                  deviceId: target.deviceId,
-                  platform: target.platform,
-                  name: target.name,
-                },
-              })
-            } else {
-              sessions.removeSession(event.sessionId)
-            }
-            if (target.device?.id) {
-              accounts.setDevice({ id: target.device.id, device: target.device })
-            }
+          // session state
+          if (event.state === 'connected') {
+            sessions.setSession({
+              id: event.sessionId,
+              timestamp: event.timestamp,
+              platform: event.platform,
+              isP2P: event.isP2P,
+              user: event.actor,
+              geo: event.geo,
+              target: {
+                id: target.id,
+                deviceId: target.deviceId,
+                platform: target.platform,
+                name: target.name,
+              },
+            })
+          } else {
+            sessions.removeSession(event.sessionId)
+          }
+          if (target.device?.id) {
+            accounts.setDevice({ id: target.device.id, device: target.device })
           }
 
           console.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)

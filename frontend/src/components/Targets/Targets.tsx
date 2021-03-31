@@ -50,7 +50,7 @@ export const Targets: React.FC<Props> = ({ targets, targetDevice }) => {
                     </span>
                   }
                 >
-                  <Icon name="question-circle" type="light" size="sm" inline />
+                  <Icon name="question-circle" size="sm" inline />
                 </Tooltip>
               </InputLabel>
             </th>

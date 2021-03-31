@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
-import { version } from '../../../package.json'
 import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -14,21 +13,20 @@ import { UpdateSetting } from '../../components/UpdateSetting'
 import { getOwnDevices } from '../../models/accounts'
 import { makeStyles } from '@material-ui/core/styles'
 import { isRemoteUI } from '../../helpers/uiHelper'
+import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { isRemote } from '../../services/Browser'
 import { spacing } from '../../styling'
-import { Avatar } from '../../components/Avatar'
 import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SettingsPage: React.FC = () => {
-  const { showReports, os, user, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
+export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+  const { showReports, os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       showReports: state.auth.user?.email.includes('@remote.it'),
       os: state.backend.environment.os,
-      user: state.auth.user,
       installing: state.binaries.installing,
       cliVersion: state.binaries.installedVersion || '(loading...)',
       preferences: state.backend.preferences,
@@ -58,75 +56,25 @@ export const SettingsPage: React.FC = () => {
                 </ButtonBase>
               </Tooltip>
             </Title>
+            {singlePanel && <AvatarMenu />}
             <OutOfBand inline />
-            <Typography className={css.user} variant="caption">
-              {user?.email}
-            </Typography>
-            <Avatar email={user?.email} button />
           </Typography>
         </>
       }
     >
       <List>
         <DeviceSetupItem />
+        {remoteUI || <AccountLinkingSettings />}
+        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
+        {showReports && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
       </List>
       <Divider />
-      <Typography variant="subtitle1">User</Typography>
+      <Typography variant="subtitle1">Licensing</Typography>
       <List>
-        <ListItemSetting
-          label="Help documentation"
-          icon="books"
-          onClick={() => window.open('https://link.remote.it/documentation-desktop/overview')}
-        />
-        <ListItemSetting
-          label="Send feedback"
-          icon="envelope"
-          onClick={() =>
-            (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
-          }
-        />
-        <ListItemSetting
-          label="Sign out"
-          subLabel="Allow this device to be transferred or another user to sign in. Will stop all connections."
-          icon="sign-out"
-          onClick={() => {
-            emit('user/sign-out')
-            analyticsHelper.track('signOut')
-          }}
-        />
-        <ListItemSetting
-          confirm
-          label="Lock application"
-          subLabel="Sign out and prevent others from signing in."
-          icon="lock"
-          confirmTitle="Are you sure?"
-          confirmMessage="Signing out will leave all active connections and hosted services running and prevent others from signing in."
-          onClick={() => {
-            emit('user/lock')
-            analyticsHelper.track('signOutLock')
-          }}
-        />
+        <LicensingSetting />
       </List>
       <Divider />
-      {showReports && (
-        <>
-          <List>
-            <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
-          </List>
-          <Divider />
-        </>
-      )}
-      {remoteUI || (
-        <>
-          <Typography variant="subtitle1">Sharing</Typography>
-          <List>
-            <AccountLinkingSettings />
-          </List>
-          <Divider />
-        </>
-      )}
-      <LicensingSetting />
-      <Typography variant="subtitle1">Application</Typography>
+      <Typography variant="subtitle1">Settings</Typography>
       <List>
         {isRemote() && (
           <ListItemSetting
@@ -165,16 +113,6 @@ export const SettingsPage: React.FC = () => {
           toggle={preferences.openAtLogin}
           onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
         />
-        {remoteUI || (
-          <ListItemSetting
-            confirm
-            label="Quit"
-            icon="power-off"
-            confirmTitle="Are you sure?"
-            confirmMessage="Quitting will not close your connections."
-            onClick={() => emit('user/quit')}
-          />
-        )}
         <UpdateSetting />
       </List>
       {remoteUI || (
@@ -198,7 +136,7 @@ export const SettingsPage: React.FC = () => {
                 confirm
                 label="Uninstall"
                 subLabel={`De-register this device, completely remove all saved data, and uninstall the system service and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
-                icon="trash-alt"
+                icon="trash"
                 confirmTitle="Are you sure?"
                 confirmMessage="You will remove this system as a host, your connections and command line utilities."
                 onClick={() => {
@@ -223,5 +161,4 @@ export const SettingsPage: React.FC = () => {
 
 const useStyles = makeStyles({
   logo: { marginBottom: spacing.xs },
-  user: { marginRight: spacing.sm, fontFamily: 'Roboto Mono' },
 })

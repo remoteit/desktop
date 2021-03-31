@@ -13,7 +13,7 @@ type Props = {
   resetValue?: string | number
   maxLength?: number
   onError?: (value: string | undefined) => void
-  onSave: (value: string | number) => void
+  onSave?: (value: string | number) => void
 }
 
 export const InlineTextFieldSetting: React.FC<Props> = ({
@@ -42,7 +42,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
       fieldRef={fieldRef}
       resetValue={resetValue}
       onResetClick={() => setEditValue(resetValue)}
-      onSubmit={() => onSave(editValue)}
+      onSubmit={() => onSave && onSave(editValue)}
       onCancel={() => setEditValue(value)}
       onShowEdit={() => setEditValue(value)}
     >

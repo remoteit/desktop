@@ -6,7 +6,7 @@ export const ResetButton: React.FC<{ onClick?: () => void; onMouseDown?: () => v
   return (
     <Tooltip title="Reset">
       <IconButton {...props}>
-        <Icon name="undo" size="md" type="regular" fixedWidth />
+        <Icon name="undo" size="md" fixedWidth />
       </IconButton>
     </Tooltip>
   )

@@ -31,6 +31,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   const [open, setOpen] = useState<boolean>(false)
   const [openApp, setOpenApp] = useState<boolean>(false)
   const [downloadLink, setDownloadLink] = useState<string>('')
+  const hidden = !connection?.enabled
 
   const app = useApplication('launch', service, connection)
   const css = useStyles()
@@ -53,7 +54,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     }
   }, [requireInstall, launch, app])
 
-  if (!connection || !connection.connected || !app) return null
+  if (hidden || !app) return null
 
   const launchBrowser = () => {
     let launchApp: ILaunchApp | undefined
@@ -79,7 +80,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   }
 
   const onSubmit = (tokens: ILookup<string>) => {
-    setConnection({ ...connection, ...tokens })
+    connection && setConnection({ ...connection, ...tokens })
   }
 
   const closeAll = () => {

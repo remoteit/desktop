@@ -9,7 +9,7 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
 }) => {
   if (!service) return null
   if (!connection) connection = newConnection(service)
-  const disabled = connection?.connected || connection?.connecting || service.state !== 'active'
+  const disabled = connection.enabled
 
   return (
     <ListItemSetting

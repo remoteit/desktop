@@ -9,6 +9,7 @@ import { existsSync, lstatSync } from 'fs'
 import Command from './Command'
 import Binary, { binaries, cliBinary } from './Binary'
 import Logger from './Logger'
+import checkupdateheadless from './CheckUpdateHeadless'
 
 export class BinaryInstaller {
   inProgress = false
@@ -38,6 +39,7 @@ export class BinaryInstaller {
     const serviceStopped = !(await cli.agentRunning())
     const desktopOutdated = !this.isDesktopCurrent()
     Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, desktopOutdated })
+    environment.isHeadless && checkupdateheadless.checkUpdate()
     return binariesOutdated || serviceStopped || desktopOutdated
   }
 
@@ -62,7 +64,7 @@ export class BinaryInstaller {
 
       if (!(environment.isWindows || environment.isHeadless)) {
         this.binaries.map(binary => {
-          if (existsSync(environment.symlinkPath)) commands.push(`ln -sf ${binary.path} ${binary.symlink}`)
+          if (existsSync(environment.symlinkPath)) commands.push(`ln -sf "${binary.path}" "${binary.symlink}"`)
         })
       }
 
@@ -118,9 +120,9 @@ export class BinaryInstaller {
       this.binaries.map(binary => {
         if (existsSync(binary.symlink)) {
           if (lstatSync(binary.symlink).isSymbolicLink()) {
-            commands.push(`unlink ${binary.symlink}`)
+            commands.push(`unlink "${binary.symlink}"`)
           } else {
-            commands.push(`rm -f ${binary.symlink}`)
+            commands.push(`rm -f "${binary.symlink}"`)
           }
         }
       })

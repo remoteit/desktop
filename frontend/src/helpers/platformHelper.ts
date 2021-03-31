@@ -12,10 +12,13 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   1072: 'Raspberry Pi',
   1075: 'remoteit Pi',
   1076: 'remoteit Pi Lite',
+  1077: 'remoteit Pi 64',
   1120: 'Debian Linux',
+  1121: 'RedHat Linux',
   1185: 'AWS',
   1200: 'Linux ARM',
-  34304: 'remoteit CloudShift',
+  1201: 'NVIDIA Jetson',
+  1205: 'OpenWrt',
   65535: 'Unknown',
 }
 
@@ -23,7 +26,7 @@ export function getTargetPlatform(targetPlatformId?: number) {
   return TARGET_PLATFORMS[targetPlatformId || -1] || TARGET_PLATFORMS[65535]
 }
 
-export function getTargetPlatformIcon(id?: number) {
+export function getTargetPlatformIcon(id?: number): { name: string; type: IconType; size: FontSize } {
   let type: IconType = 'solid'
   let name: string = 'hdd'
   let size: FontSize = 'xxs'
@@ -44,12 +47,15 @@ export function getTargetPlatformIcon(id?: number) {
       type = 'solid'
       break
     case 769:
+    case 1121:
+    case 1200:
       name = 'linux'
       type = 'brands'
       break
     case 1072:
     case 1075:
     case 1076:
+    case 1077:
       name = 'raspberry-pi'
       type = 'brands'
       size = 'xs'
@@ -63,14 +69,13 @@ export function getTargetPlatformIcon(id?: number) {
       type = 'brands'
       size = 'xs'
       break
-    case 1200:
-      name = 'linux'
-      type = 'brands'
-      break
-    case 34304:
-      name = 'cloud-rainbow'
+    case 1201:
+      name = 'fighter-jet'
       type = 'solid'
-      size = 'xs'
+      break
+    case 1202:
+      name = 'router'
+      type = 'solid'
       break
     case 65535:
       name = 'hdd'

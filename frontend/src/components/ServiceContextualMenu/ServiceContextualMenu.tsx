@@ -8,7 +8,6 @@ import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { ApplicationState } from '../../store'
 import {
   makeStyles,
@@ -20,7 +19,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core'
-import { spacing } from '../../styling'
+import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 
 interface Props {
@@ -57,11 +56,18 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
         </Typography>
       </ListItem>
       <ListItem className={css.connect} dense>
-        <ComboButton connection={connection} service={service} />
+        <ComboButton connection={connection} service={service} size="small" />
         <CopyButton connection={connection} service={service} size="base" />
         <LaunchButton connection={connection} service={service} size="base" />
       </ListItem>
-      <Divider />
+      {connection?.enabled && (
+        <MenuItem dense onClick={() => history.push(`/connections/${service?.id}`)}>
+          <ListItemIcon>
+            <Icon name="arrow-right" size="md" color="primary" />
+          </ListItemIcon>
+          <ListItemText primary="Connection Details" color="primary" classes={{ primary: css.connected }} />
+        </MenuItem>
+      )}
       {!device?.shared && (
         <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/users/share`)}>
           <ListItemIcon>
@@ -80,13 +86,6 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
           ref={clipboard.target}
           value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
         />
-      </MenuItem>
-      <Divider />
-      <MenuItem dense disableGutters onClick={() => history.push(`/devices/${device?.id}/${service?.id}`)}>
-        <ListItemIcon>
-          <ConnectionStateIcon connection={connection} service={service} size="md" />
-        </ListItemIcon>
-        <ListItemText primary="View Service" />
       </MenuItem>
       {!device?.shared && (
         <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
@@ -113,9 +112,13 @@ const useStyles = makeStyles({
       paddingRight: spacing.lg,
     },
   },
-  name: { paddingTop: 0, paddingBottom: 0 },
+  name: { paddingTop: 0, paddingLeft: spacing.md },
   connect: {
-    '& > button + button': { marginLeft: -spacing.sm, marginRight: -spacing.xs },
-    '& > div': { margin: `${spacing.xs}px 0`, width: '100%', minWidth: 120 },
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginTop: -spacing.xs,
+    '& > button + button': { marginLeft: -spacing.xs },
+    '& > div': { margin: `${spacing.xs}px ${spacing.xs}px`, width: '100%', minWidth: 150 },
   },
+  connected: { color: colors.primary },
 })

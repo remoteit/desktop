@@ -1,33 +1,24 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { LicensingServiceNotice } from '../../components/LicensingServiceNotice'
 import { REGEX_LAST_PATH } from '../../shared/constants'
-import { getAllDevices } from '../../models/accounts'
 import { Typography } from '@material-ui/core'
 import { Container } from '../../components/Container'
 import { ServiceForm } from '../../components/ServiceForm'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { getLinks } from '../../helpers/routeHelper'
 import { Title } from '../../components/Title'
 import { Body } from '../../components/Body'
-import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
-  targets: ITarget[]
   targetDevice: ITargetDevice
+  device?: IDevice
 }
 
-export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
-  const { deviceID } = useParams<{ deviceID: string }>()
+export const ServiceAddPage: React.FC<Props> = ({ targetDevice, device }) => {
   const { backend, applicationTypes, devices } = useDispatch<Dispatch>()
-  const { setupServicesLimit, device, links } = useSelector((state: ApplicationState) => ({
-    ...state.ui,
-    device: getAllDevices(state).find(d => d.id === deviceID),
-    links: getLinks(state, deviceID),
-  }))
+  const { setupServicesLimit } = useSelector((state: ApplicationState) => state.ui)
   const location = useLocation()
   const history = useHistory()
 
@@ -42,10 +33,8 @@ export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
     <Container
       header={
         <>
-          <Breadcrumbs />
           <Typography variant="h1">
-            <Icon name="pen" size="lg" type="light" color="grayDarker" fixedWidth />
-            <Title inline>Add service</Title>
+            <Title>Add service</Title>
           </Typography>
           <LicensingServiceNotice device={device} />
         </>
@@ -69,7 +58,7 @@ export const ServiceAddPage: React.FC<Props> = ({ targets, targetDevice }) => {
               await backend.addTargetService(form)
               await backend.set({ deferredAttributes: form.attributes }) // set route attributes via deferred update
             }
-            history.push(links.edit)
+            history.push(`/devices/${device?.id}`)
           }}
           onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
         />

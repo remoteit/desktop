@@ -13,12 +13,12 @@ type Props = {
 export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   const location = useLocation()
   const shared = lanShared(connection)
-  const disabled = connection?.connected || connection?.connecting || service.state !== 'active'
+  const disabled = connection?.enabled
   const color = shared ? 'primary' : undefined
   return (
     <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'} dense>
       <ListItemIcon>
-        <Icon name="network-wired" color={color} size="md" type="light" />
+        <Icon name="network-wired" color={color} size="md" />
       </ListItemIcon>
       <ListItemText
         primary="Local Network Sharing"

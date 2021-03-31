@@ -1,30 +1,39 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
-import { DynamicButton } from '../DynamicButton'
-import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
+import { Color } from '../../styling'
+import { DynamicButton } from '../DynamicButton'
+import { connectionState } from '../../helpers/connectionHelper'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   service?: IService
   connection?: IConnection
   color?: Color
-  size?: 'icon' | 'medium' | 'small'
+  size?: 'icon' | 'medium' | 'small' | 'large'
+  fullWidth?: boolean
 }
 
-export const DisconnectButton: React.FC<Props> = ({ service, size = 'medium', color = 'primary', connection }) => {
-  const hidden = !connection || !connection.connected
-  const disconnecting = !connection?.enabled && !!connection?.connected
+export const DisconnectButton: React.FC<Props> = ({
+  service,
+  size = 'medium',
+  color = 'primary',
+  connection,
+  fullWidth,
+}) => {
+  const state = connectionState(service, connection)
+  const visible = state === 'connecting' || state === 'connected' || state === 'ready'
+  const disabled = state === 'stopping' || state === 'connecting'
   return (
-    <Fade in={!hidden} timeout={600}>
+    <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={disconnecting ? 'Stopping' : 'Disconnect'}
-          icon="ban"
-          disabled={disconnecting}
-          loading={disconnecting}
-          color={disconnecting ? 'grayDark' : color}
+          title={state === 'stopping' ? 'Stopping' : state === 'connecting' ? 'Starting' : 'Stop Connection'}
+          disabled={disabled}
+          loading={disabled}
+          color={color}
           size={size}
+          fullWidth={fullWidth}
           onClick={() => {
             analyticsHelper.trackConnect('connectionClosed', service)
             emit('service/disconnect', connection)

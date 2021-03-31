@@ -1,8 +1,12 @@
 import { graphQLCatchError } from '../services/graphQL'
-import { getDevices } from './accounts'
 import { hasCredentials } from '../services/remote.it'
 import { createModel } from '@rematch/core'
-import { graphQLGetEventsURL, graphQLGetMoreLogs } from '../services/graphQLLogs'
+import {
+  graphQLGetEventsLogs,
+  graphQLGetEventsURL,
+  graphQLGetLogsURL,
+  graphQLGetMoreLogs,
+} from '../services/graphQLLogs'
 import { RootModel } from './rootModel'
 
 const MAX_LOG_LENGTH = 1000
@@ -22,29 +26,30 @@ const state: ILogState = {
   fetchingMore: false,
   from: 0,
   eventsUrl: '',
-  events: undefined
+  events: undefined,
 }
 
-type eventLogs = {
+export type eventLogs = {
   id: string
   from?: number
   maxDate?: string
+  minDate?: string
 }
 
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetchLogs({ id, from, maxDate }: eventLogs, globalState) {
+    async fetchLogs({ id, from, maxDate, minDate }: eventLogs, globalState) {
       const { set } = dispatch.logs
 
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
 
       try {
-        const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate)
-        const {items} = globalState.logs.events?.deviceId === id ?  globalState.logs.events : {items: []}
+        const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate, minDate)
+        const { items } = globalState.logs.events?.deviceId === id ? globalState.logs.events : { items: [] }
         const { device } = gqlResponse?.data?.data?.login || {}
-        const { events } = device[0]
-        set({events: items?.length ? events : {...events, items: events.items.concat(items)}})
+        const events = { ...device[0].events, deviceId: id }
+        set({ events: from === 0 ? events : { ...events, items: items.concat(events.items) } })
       } catch (error) {
         await graphQLCatchError(error)
       }
@@ -52,14 +57,39 @@ export default createModel<RootModel>()({
       from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
     },
     async getEventsURL(data: eventLogs) {
-      const { id, maxDate } = data
+      const { id, maxDate, minDate } = data
       const { set } = dispatch.logs
 
       if (!hasCredentials()) return
       try {
-        const gqlResponse = await graphQLGetEventsURL(id, maxDate)
+        const gqlResponse = await graphQLGetEventsURL(id, maxDate, minDate)
         const { device } = gqlResponse?.data?.data?.login || {}
         const { eventsUrl } = device[0]
+        set({ eventsUrl: eventsUrl })
+      } catch (error) {
+        await graphQLCatchError(error)
+      }
+    },
+    async getEventsLogs({ from, minDate, maxDate }: eventLogs, globalState) {
+      const { set } = dispatch.logs
+      from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
+      try {
+        const gqlResponse = await graphQLGetEventsLogs(from, minDate, maxDate)
+        const events = gqlResponse.data.data?.login.events
+        const { items } = globalState.logs.events || { items: [] }
+        set({ events: from === 0 ? events : { ...events, items: items.concat(events.items) } })
+      } catch (error) {
+        await graphQLCatchError(error)
+      }
+      from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
+    },
+    async getLogsURL(data: eventLogs) {
+      const { id, minDate } = data
+      const { set } = dispatch.logs
+      if (!hasCredentials()) return
+      try {
+        const gqlResponse = await graphQLGetLogsURL(['DEVICE_STATE', 'DEVICE_CONNECT'], minDate)
+        const { eventsUrl } = gqlResponse?.data?.data?.login
         set({ eventsUrl: eventsUrl })
       } catch (error) {
         await graphQLCatchError(error)

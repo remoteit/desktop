@@ -1,6 +1,9 @@
 import electron from 'electron'
-import { EventBus, Logger, EVENTS, preferences } from 'remoteit-headless'
+import { EventBus, Logger, EVENTS, preferences, environment } from 'remoteit-headless'
 import { autoUpdater } from 'electron-updater'
+import axios from 'axios'
+import { ENVIRONMENT, LATEST } from 'remoteit-headless/build/constants'
+import semverCompare from 'semver/functions/compare'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 
@@ -32,11 +35,28 @@ export default class AppUpdater {
     this.autoUpdate = !!preferences.get().autoUpdate
   }
 
-  check(force?: boolean) {
+  async check(force?: boolean) {
     try {
-      if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
-        autoUpdater.checkForUpdatesAndNotify()
-        this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
+      if (ENVIRONMENT !== 'development') {
+        if (environment.isLinux) {
+          try {
+            const response = await axios.get(LATEST)
+            Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })
+            const latest = response.data.tag_name
+            let desktopVersion = preferences.get().version
+            let current = desktopVersion && semverCompare(desktopVersion, latest) >= 0
+            if (!current) {
+              EventBus.emit(EVENTS.downloaded, latest.substring(1))
+            }
+          } catch (error) {
+            Logger.error('LATEST VERSION ERROR', { error })
+          }
+        } else if (environment.isWindows || environment.isMac) {
+          if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
+            autoUpdater.checkForUpdatesAndNotify()
+            this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
+          }
+        }
       }
     } catch (error) {
       Logger.warn('AUTO UPDATE ERROR', { error })

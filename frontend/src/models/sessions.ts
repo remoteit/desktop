@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { getConnectionSessionIds, connectionName } from '../helpers/connectionHelper'
+import { connectionName } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -25,6 +25,7 @@ export default createModel<RootModel>()({
                   id
                   timestamp
                   endpoint {
+                    proxy
                     platform
                     geo {
                       city
@@ -64,30 +65,28 @@ export default createModel<RootModel>()({
       - Filter out this user's sessions
       - Combine same user sessions
     */
-    async parse(response: AxiosResponse<any> | undefined): Promise<ISession[]> {
-      const sessionIds: IConnection['sessionId'][] = getConnectionSessionIds()
+    async parse(response: any): Promise<ISession[]> {
       const data = response?.data?.data?.login?.sessions
+      if (!data) return []
       console.log('SESSION DATA', data)
       const dates = data.map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) }))
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
       return sorted.reduce((sessions: ISession[], e: any) => {
-        const localConnection = sessionIds.includes(e.id)
-        if (localConnection) {
-          // @TODO set state in local connections model
-        } else if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
-          sessions.push({
-            id: e.id,
-            timestamp: e.timestamp,
-            platform: e.endpoint?.platform,
-            user: e.user,
-            geo: e.endpoint?.geo,
-            target: {
-              id: e.target.id,
-              deviceId: e.target.device.id,
-              platform: e.target.platform,
-              name: connectionName(e.target, e.target.device),
-            },
-          })
+        // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
+        sessions.push({
+          id: e.id,
+          timestamp: new Date(e.timestamp),
+          isP2P: e.endpoint ? !e.endpoint?.proxy : undefined,
+          platform: e.endpoint?.platform,
+          user: e.user,
+          geo: e.endpoint?.geo,
+          target: {
+            id: e.target.id,
+            deviceId: e.target.device.id,
+            platform: e.target.platform,
+            name: connectionName(e.target, e.target.device),
+          },
+        })
         return sessions
       }, [])
     },
@@ -122,11 +121,3 @@ export function selectSessionUsers(state: ApplicationState, id?: string) {
     return users
   }, [])
 }
-
-/* 
-export function getCnnected(services?: IService[]) {
-  const connected: IUser[] = []
-  services?.forEach(s => s.sessions.forEach(session => !connected.includes(session) && connected.push(session)))
-  return connected
-}
- */

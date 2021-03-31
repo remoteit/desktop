@@ -1,22 +1,23 @@
 import React from 'react'
 import { makeStyles, IconButton, Tooltip, Button, darken, lighten } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
 import { Color, colors } from '../../styling'
+import { Icon } from '../../components/Icon'
 
 type Props = {
-  icon: string
+  icon?: string
   title: string
   color?: Color
-  size?: 'icon' | 'medium' | 'small'
+  size?: 'icon' | 'medium' | 'small' | 'large'
   disabled?: boolean
   loading?: boolean
   variant?: 'text' | 'outlined' | 'contained'
   onClick: () => void
+  fullWidth?: boolean
 }
 
 export const DynamicButton: React.FC<Props> = props => {
   const css = useStyles(props)()
-  let { title, icon, onClick, color, size = 'icon', variant = 'contained', disabled, loading }: Props = props
+  let { title, icon, onClick, color, size = 'icon', variant = 'contained', disabled, loading, fullWidth }: Props = props
   let styles = {}
 
   const clickHandler = (event: React.MouseEvent) => {
@@ -27,7 +28,7 @@ export const DynamicButton: React.FC<Props> = props => {
 
   if (loading) icon = 'spinner-third'
 
-  const IconComponent = (
+  const IconComponent = icon ? (
     <Icon
       name={icon}
       type="regular"
@@ -37,7 +38,7 @@ export const DynamicButton: React.FC<Props> = props => {
       spin={loading}
       fixedWidth
     />
-  )
+  ) : null
 
   if (size === 'small') {
     return (
@@ -48,7 +49,7 @@ export const DynamicButton: React.FC<Props> = props => {
     )
   }
 
-  if (size === 'medium') {
+  if (size === 'medium' || size === 'large') {
     return (
       <Button
         style={styles}
@@ -57,6 +58,7 @@ export const DynamicButton: React.FC<Props> = props => {
         disabled={disabled}
         size={size}
         className={css.button}
+        fullWidth={fullWidth}
       >
         {title}
         {IconComponent}
@@ -66,11 +68,9 @@ export const DynamicButton: React.FC<Props> = props => {
 
   return (
     <Tooltip title={title}>
-      <span>
-        <IconButton disabled={disabled} onClick={clickHandler}>
-          {IconComponent}
-        </IconButton>
-      </span>
+      <IconButton disabled={disabled} onClick={clickHandler}>
+        {IconComponent}
+      </IconButton>
     </Tooltip>
   )
 }
