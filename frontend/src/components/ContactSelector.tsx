@@ -54,7 +54,8 @@ const useStyles = makeStyles({
   select: {
     flexGrow: 1,
     margin: `${spacing.md}px 0`,
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.base,
+    fontWeight: 400,
     '& .select__placeholder': { color: colors.primary },
     '& .select__multi-value': { backgroundColor: colors.primary, padding: `${spacing.xxs}px ${spacing.xs}px` },
     '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: colors.white },

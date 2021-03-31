@@ -1,25 +1,13 @@
-import { LEGACY_ATTRIBUTES } from '../../shared/constants'
 import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
-import { useParams } from 'react-router-dom'
-import { ApplicationState } from '../../store'
+import { LEGACY_ATTRIBUTES } from '../../shared/constants'
 import { TargetPlatform } from '../../components/TargetPlatform'
-import { Container } from '../../components/Container'
 import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { QualityDetails } from '../../components/QualityDetails'
-import { getAllDevices } from '../../models/accounts'
-import { Title } from '../../components/Title'
-import { Icon } from '../../components/Icon'
+import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const DeviceDetailPage = () => {
-  const { deviceID } = useParams<{ deviceID: string }>()
-  const devices = useSelector((state: ApplicationState) => getAllDevices(state))
-  const device = devices.find(d => d.id === deviceID)
-
+export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')
   }, [])
@@ -27,18 +15,9 @@ export const DeviceDetailPage = () => {
   if (!device) return null
 
   return (
-    <Container
-      header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="info-circle" color="grayDarker" size="lg" />
-            <Title inline>Details</Title>
-          </Typography>
-        </>
-      }
-    >
+    <DeviceHeaderMenu device={device}>
       <Columns count={1} inset>
+        {/* {!editable && <AdminPanelConnect device={device} connections={connections} />} */}
         <DataDisplay
           data={[
             { label: 'Device Name', value: device.name },
@@ -49,7 +28,7 @@ export const DeviceDetailPage = () => {
               value: <QualityDetails device={device} />,
             },
             { label: 'Owner', value: device.owner.email },
-            { label: 'Last reported', value: device.lastReported, format: 'duration' },
+            { label: 'Last reported', value: { start: device.lastReported, ago: true }, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
             { label: 'Connection type', value: device.geo?.connectionType },
             { label: 'Location', value: device.geo, format: 'location' },
@@ -62,6 +41,6 @@ export const DeviceDetailPage = () => {
           ]}
         />
       </Columns>
-    </Container>
+    </DeviceHeaderMenu>
   )
 }

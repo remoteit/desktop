@@ -1,7 +1,7 @@
 import React from 'react'
 import { replaceHost } from '../../shared/nameHelper'
-import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../shared/constants'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
+import { REGEX_IP_SAFE, IP_PRIVATE, IP_OPEN } from '../../shared/constants'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 
 export const HostSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
@@ -9,12 +9,11 @@ export const HostSetting: React.FC<{ service: IService; connection?: IConnection
   if (!connection) connection = newConnection(service)
 
   const currentHost = (connection && connection.host) || IP_PRIVATE
-  const disabled = connection.connected || connection.connecting
+  const disabled = connection.enabled
 
   return (
     <InlineTextFieldSetting
       value={currentHost}
-      displayValue={replaceHost(currentHost)}
       label="Bind IP Address"
       disabled={disabled}
       resetValue={IP_PRIVATE}

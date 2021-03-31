@@ -1,36 +1,45 @@
 import React, { useEffect, useState } from 'react'
+import { connectionState } from '../../helpers/connectionHelper'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import { emit } from '../../services/Controller'
+import heartbeat from '../../services/Heartbeat'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type ConnectButtonProps = {
   connection?: IConnection
   service?: IService
-  size?: 'icon' | 'medium' | 'small'
+  size?: 'icon' | 'medium' | 'small' | 'large'
   color?: Color
   autoConnect?: boolean
+  fullWidth?: boolean
+  onClick?: () => void
 }
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'secondary',
+  color = 'grayDarker',
   autoConnect,
+  fullWidth,
+  onClick,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const hidden = connection?.connected || service?.state !== 'active'
-  const connecting = !!connection?.connecting
-  const listening = connection?.enabled && !connection.connected
+  const state = connectionState(service, connection)
+  const visible = state === 'stopping' || state === 'disconnected'
+  const connecting = state === 'connecting'
+  const stopping = state === 'stopping'
 
   const clickHandler = () => {
+    heartbeat.caffeinate()
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
       emit('service/disconnect', connection)
     } else {
+      onClick && onClick()
       analyticsHelper.trackConnect('connectionInitiated', service)
       emit('service/connect', connection || newConnection(service))
     }
@@ -43,7 +52,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   })
 
-  let title = 'Connect'
+  let title = 'Create Connection'
   let disabled = false
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
@@ -59,23 +68,31 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     variant = 'text'
   }
 
-  if (listening) {
-    title = 'Waiting'
-    color = 'primary'
+  if (state === 'ready') {
+    title = 'Starting'
+    color = 'grayDarker'
+  }
+  if (stopping) {
+    title = 'Stopping'
+    color = 'grayDark'
+  }
+  if (connecting) {
+    title = 'Starting'
+    color = 'grayDark'
   }
 
   return (
-    <Fade in={!hidden} timeout={600}>
+    <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={connecting ? 'Connecting' : title}
-          icon="exchange"
+          title={title}
           variant={variant}
-          loading={connecting}
-          color={connecting ? 'gray' : color}
+          loading={connecting || stopping}
+          color={color}
           size={size}
           onClick={clickHandler}
           disabled={disabled}
+          fullWidth={fullWidth}
         />
       </div>
     </Fade>

@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { selectService } from '../models/devices'
+import { selectById } from '../models/devices'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { platformConfiguration } from '../services/platformConfiguration'
@@ -72,7 +72,7 @@ export default createModel<RootModel>()({
       if (targetDevice?.uid !== device.uid) {
         // register
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
-          const result = await devices.fetchSingle({ deviceId: targetDevice.uid })
+          const result = await devices.fetchSingle({ id: targetDevice.uid })
           if (!result) {
             // Instances were reported where a device wasn't returned
             await sleep(2000)
@@ -85,7 +85,7 @@ export default createModel<RootModel>()({
 
           // deleting
         } else if (globalState.ui.setupDeletingDevice) {
-          const result = await devices.fetchSingle({ deviceId: device.uid })
+          const result = await devices.fetchSingle({ id: device.uid })
           if (result) {
             await sleep(2000)
             await devices.fetch()
@@ -121,7 +121,7 @@ export default createModel<RootModel>()({
       if (deferredAttributes) {
         const last = targets[targets.length - 1]
         if (last) {
-          let [service] = selectService(globalState, last.uid)
+          let [service] = selectById(globalState, last.uid)
           if (service) {
             service.attributes = { ...service.attributes, ...deferredAttributes }
             dispatch.devices.setServiceAttributes(service)
@@ -175,7 +175,7 @@ export default createModel<RootModel>()({
       connections.forEach(connection => {
         // data missing from cli if our connections file is lost
         if (!connection.owner) {
-          const [service] = selectService(globalState, connection.id)
+          const [service] = selectById(globalState, connection.id)
           if (service) {
             connection = { ...newConnection(service), ...connection }
             setConnection(connection)

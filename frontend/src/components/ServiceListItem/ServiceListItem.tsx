@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { hostName } from '../../shared/nameHelper'
-import { useLocation } from 'react-router-dom'
 import { ListItemText, ListItemSecondaryAction } from '@material-ui/core'
 import { lanShareRestriction, lanShared } from '../../helpers/lanSharing'
 import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
@@ -28,7 +27,6 @@ export interface ServiceListItemProps {
 
 export function ServiceListItem({ connection, service, indent, dense, secondary }: ServiceListItemProps) {
   const [showError, setShowError] = useState<boolean>(false)
-  const location = useLocation()
   const user = useSelector((state: ApplicationState) => state.auth.user)
   const css = useStyles()
   const id = connection ? connection.id : service ? service.id : ''
@@ -51,7 +49,7 @@ export function ServiceListItem({ connection, service, indent, dense, secondary 
 
   return (
     <>
-      <ListItemLocation className={className} pathname={`${location.pathname}/${id}`} dense={dense}>
+      <ListItemLocation className={className} pathname={`/devices/${service?.deviceID}/${id}`} dense={dense}>
         <ComboButton connection={connection} service={service} />
         <ListItemText primary={<ServiceName service={service} connection={connection} />} secondary={secondary} />
         <ListItemSecondaryAction>

@@ -1,10 +1,9 @@
 import React from 'react'
-import { List, Divider, Typography, makeStyles } from '@material-ui/core'
+import { List, Typography } from '@material-ui/core'
 import { UserListItem } from '../UserListItem'
 import { ShareDetails } from '../ShareDetails'
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
-import { spacing } from '../../styling'
 
 interface Props {
   device?: IDevice
@@ -19,7 +18,6 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
   const { access } = useSelector((state: ApplicationState) => state.accounts)
   const filtered = sort(users.filter(user => !connected.find(_u => _u.email === user.email)))
   const listUserLinked = sort(access.filter(user => !connected.find(_u => _u.email === user.email)))
-  const css = useStyles()
 
   if (!users?.length && !access.length) return null
 
@@ -36,7 +34,6 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
             <ShareDetails user={user} device={device} connected />
           </UserListItem>
         ))}
-        {!!connected.length && <Divider className={css.divider} />}
         {!!listUserLinked.length && !!filtered.length && (
           <Typography variant="subtitle1"> Single Device Shared</Typography>
         )}
@@ -45,7 +42,6 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
             <ShareDetails user={user} device={device} />
           </UserListItem>
         ))}
-        {!!filtered.length && <Divider className={css.divider} />}
         {!!listUserLinked.length && <Typography variant="subtitle1">Device List Shared</Typography>}
         {listUserLinked.map(user => (
           <UserListItem key={user.email} user={user} isUserLinked={true}>
@@ -56,9 +52,3 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
     </>
   )
 }
-
-const useStyles = makeStyles({
-  divider: {
-    marginTop: spacing.sm,
-  },
-})

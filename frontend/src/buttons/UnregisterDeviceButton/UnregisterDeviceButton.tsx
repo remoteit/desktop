@@ -30,7 +30,7 @@ export const UnregisterDeviceButton: React.FC<Props> = ({ device }) => {
     <>
       <Tooltip title="Unregister Device">
         <IconButton onClick={() => setOpen(true)} disabled={setupBusy}>
-          <Icon name="trash-alt" size="md" fixedWidth />
+          <Icon name="trash" size="md" fixedWidth />
         </IconButton>
       </Tooltip>
       <Confirm

@@ -25,9 +25,13 @@ export const INITIATOR_PLATFORMS = [
   'BSD',
 ]
 
-export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean }> = ({ id, connected }) => {
+export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean; user?: boolean }> = ({
+  id,
+  connected,
+  user,
+}) => {
   let name: string
-  let type: IconType = 'light'
+  let type: IconType = 'regular'
   let color: Color | undefined = connected ? 'primary' : undefined
   const size: FontSize = 'md'
 
@@ -79,7 +83,7 @@ export const InitiatorPlatform: React.FC<{ id?: number; connected?: boolean }> =
     case 17:
     case 18:
     default:
-      name = 'user'
+      name = user ? 'user' : 'hdd'
       break
   }
 

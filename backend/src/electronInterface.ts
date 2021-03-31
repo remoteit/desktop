@@ -3,6 +3,7 @@ export const EVENTS = {
   clear: 'service/clear',
   ready: 'app/ready',
   open: 'app/open',
+  maximize: 'app/maximize',
   preferences: 'preferences',
   downloaded: 'update/downloaded',
   available: 'update/available',

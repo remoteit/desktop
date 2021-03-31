@@ -4,6 +4,7 @@ import { makeStyles, Box, lighten } from '@material-ui/core'
 import { spacing, colors, fontSizes, Color } from '../../styling'
 import { selectSessionsByService } from '../../models/sessions'
 import { ApplicationState } from '../../store'
+import { connectionState } from '../../helpers/connectionHelper'
 import { SessionsTooltip } from '../SessionsTooltip'
 import { Icon } from '../Icon'
 import classnames from 'classnames'
@@ -20,6 +21,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
   const sessions = useSelector((state: ApplicationState) =>
     selectSessionsByService(state, service?.id || connection?.id)
   )
+  const cState = connectionState(service, connection)
   const connected = showConnected && !!sessions.length
   const css = useStyles()
 
@@ -29,8 +31,8 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
 
   if (connection) {
     failover = connection.isP2P === false
-    if (connection.connecting && !connection.connected) state = 'connecting'
-    if (connection.connected) state = 'connected'
+    if (cState === 'connecting' || cState === 'stopping') state = 'transition'
+    if (cState === 'connected' || cState === 'ready') state = 'connected'
     if (connection.error?.message) state = 'error'
   }
 
@@ -41,7 +43,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       colorName = 'danger'
       break
     case 'active':
-      colorName = 'success'
+      colorName = 'grayDarker'
       if (service.license === 'EVALUATION') colorName = 'warning'
       break
     case 'inactive':
@@ -50,8 +52,8 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
     case 'connected':
       colorName = 'primary'
       break
-    case 'connecting':
-      colorName = 'grayLight'
+    case 'transition':
+      colorName = 'grayDarkest'
       break
     case 'restricted':
       colorName = 'danger'
@@ -81,8 +83,14 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
             setOpenTooltip(false)
           }}
         >
-          <span style={{ color, backgroundColor: lighten(color, 0.9) }}>
-            {connected && <Icon name="user" type="solid" size="xxxs" color={colorName} fixedWidth />}
+          <span
+            style={{
+              color,
+              backgroundColor: lighten(color, 0.94),
+              textDecoration: state === 'inactive' ? 'line-through' : '',
+            }}
+          >
+            {connected && <Icon name="user" type="solid" size="xxxs" color="primary" fixedWidth />}
             {failover && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}
           </span>

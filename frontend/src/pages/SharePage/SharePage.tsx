@@ -3,42 +3,24 @@ import { useParams, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { makeStyles, Typography, IconButton, Tooltip, CircularProgress } from '@material-ui/core'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
-import { findService } from '../../models/devices'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { useHistory } from 'react-router-dom'
-import { getDevices } from '../../models/accounts'
-import { ContactSelector } from '../../components/ContactSelector'
 import { ContactCard } from '../../components/ContactCard'
+import { ContactSelector } from '../../components/ContactSelector'
 import { SharingDetails } from '../../components/SharingForm'
+import { getPermissions } from '../../helpers/userHelper'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
-import { getPermissions } from '../../helpers/userHelper'
 
-export const SharePage = () => {
-  const { email = '', deviceID = '', serviceID = '' } = useParams<{
-    email: string
-    deviceID: string
-    serviceID: string
-  }>()
+export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
+  const { email = '' } = useParams<{ email: string }>()
   const { shares } = useDispatch<Dispatch>()
-  const { device, deleting } = useSelector((state: ApplicationState) => {
-    const deleting = state.shares.deleting
-    const devices = getDevices(state)
-    let device: IDevice | undefined
-    if (deviceID) {
-      device = devices.find(device => device.id === deviceID)
-    } else if (serviceID) {
-      const result = findService(devices, serviceID)
-      device = result[1]
-    }
-    return { deleting, device }
-  })
-  const { contacts = [], user } = useSelector((state: ApplicationState) => ({
+  const { contacts = [], user, deleting } = useSelector((state: ApplicationState) => ({
     contacts: state.devices.contacts,
     user: state.devices.contacts.find(c => c.email === email),
+    deleting: state.shares.deleting,
   }))
   const [selected, setSelected] = React.useState<string[]>([])
   const [userSelected, setUserSelected] = React.useState<IUserRef | undefined>(user)
@@ -56,8 +38,10 @@ export const SharePage = () => {
     analyticsHelper.page('SharePage')
   }, [])
 
+  if (!device) return null
+
   const handleUnshare = async () => {
-    await shares.delete({ deviceId: deviceID, email })
+    await shares.delete({ deviceId: device.id, email })
     history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
   }
 
@@ -143,18 +127,16 @@ export const SharePage = () => {
     <Container
       header={
         <>
-          <Breadcrumbs />
           <Typography variant="h1">
             {email ? (
               <>
-                <Icon name={email === '' ? 'user-plus' : 'user'} size="lg" />
-                <Title inline>{email || 'Share'}</Title>
+                <Title>{email || 'Share'}</Title>
                 {deleting ? (
                   <CircularProgress className={css.loading} size={styles.fontSizes.md} />
                 ) : (
                   <Tooltip title={`Remove ${email}`}>
                     <IconButton onClick={handleUnshare} disabled={deleting}>
-                      <Icon name="trash-alt" size="md" fixedWidth />
+                      <Icon name="trash" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 )}

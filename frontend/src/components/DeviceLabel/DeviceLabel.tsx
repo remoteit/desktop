@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { spacing } from '../../styling'
 
 export const DeviceLabel: React.FC<{ device: IDevice }> = ({ device }) => {
   const css = useStyles()
@@ -13,5 +14,12 @@ export const DeviceLabel: React.FC<{ device: IDevice }> = ({ device }) => {
 }
 
 const useStyles = makeStyles({
-  label: { height: '100%', width: 8, left: 0, position: 'absolute' },
+  label: {
+    height: '100%',
+    width: 8,
+    left: -spacing.md,
+    position: 'absolute',
+    borderTopRightRadius: spacing.xxs,
+    borderBottomRightRadius: spacing.xxs,
+  },
 })

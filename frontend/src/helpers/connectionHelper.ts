@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
-import { attributeName } from '../shared/nameHelper'
+import { attributeName, removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
@@ -13,20 +13,35 @@ export const DEFAULT_CONNECTION = {
   online: false,
   port: 33000,
   host: IP_PRIVATE,
+  timeout: 15,
   restriction: IP_OPEN,
-  autoStart: true,
+}
+
+export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
+  if (instance?.state === 'inactive') return 'offline'
+  if (connection) {
+    if (!connection.online) return 'disconnected'
+    if (connection.connecting) return 'connecting'
+    if (connection.connected && !connection.enabled) return 'stopping'
+    if (connection.connected) return 'connected'
+    if (connection.enabled) return 'ready'
+  }
+  return 'disconnected'
 }
 
 export function findLocalConnection(state: ApplicationState, id: string, sessionId: string) {
   return state.backend.connections.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
 
-export function connectionName(service?: IService, device?: IDevice) {
-  if (!device) return attributeName(service)
-  if (!service) return attributeName(device)
-  const deviceName = `${attributeName(device)} - `
-  const serviceName = attributeName(service)
-  return deviceName + serviceName.replace(deviceName, '')
+type nameObj = { name: string }
+
+export function connectionName(service?: nameObj, device?: nameObj): string {
+  let name: string[] = []
+  if (device) {
+    name.push(device.name)
+    if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
+  } else if (service) name.push(service.name)
+  return name.join(' - ')
 }
 
 export function newConnection(service?: IService | null) {
@@ -81,29 +96,7 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.backend.connections.filter(c => !!c.startTime)
-}
-
-export function selectMyConnections(state: ApplicationState) {
-  const devices = getAllDevices(state)
-  const allConnections = selectConnections(state)
-
-  let services: IService[] = []
-  let connections: IConnection[] = []
-
-  for (const device of devices) {
-    for (const service of device.services) {
-      const index = allConnections.findIndex(c => c.id === service.id)
-
-      if (index > -1) {
-        connections.push(allConnections[index])
-        services.push(service)
-        allConnections.splice(index, 1)
-      }
-    }
-  }
-
-  return { services, connections }
+  return state.backend.connections.filter(c => !!c.createdTime || c.enabled)
 }
 
 export function getConnectionSessionIds() {

@@ -78,6 +78,7 @@ class Controller {
     socket.on('uninstall', this.uninstall)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
+    socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
 
     this.initBackend()
     this.check()
@@ -181,9 +182,10 @@ class Controller {
     app.quit()
   }
 
-  restart = () => {
+  restart = async (update?: string) => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
-    app.restart()
+    await cli.serviceUninstall()
+    app.restart(update)
   }
 
   signOut = async () => {

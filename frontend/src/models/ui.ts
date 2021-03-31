@@ -4,14 +4,15 @@ import { RootModel } from './rootModel'
 export const DEFAULT_INTERFACE = 'searching'
 
 type UIState = {
+  navigation: ILookup<string>
   connected: boolean
+  offline: boolean
   uninstalling: boolean
   claiming: boolean
   routingLock?: IRouteType
   routingMessage?: string
   filterMenu: boolean
   redirect?: string
-  restore: boolean
   restoring: boolean
   scanEnabled: boolean
   scanLoading: { [interfaceName: string]: boolean }
@@ -33,17 +34,20 @@ type UIState = {
   launchLoading: boolean
   launchPath: string
   requireInstall: string
+  devicesPanelWidth: number
+  connectionsPanelWidth: number
 }
 
 const state: UIState = {
+  navigation: {},
   connected: false,
+  offline: false,
   uninstalling: false,
   claiming: false,
   routingLock: undefined,
   routingMessage: undefined,
   filterMenu: false,
   redirect: undefined,
-  restore: false,
   restoring: false,
   scanEnabled: true,
   scanLoading: {},
@@ -64,17 +68,26 @@ const state: UIState = {
   errorMessage: '',
   launchLoading: false,
   launchPath: '',
-  requireInstall: ''
+  requireInstall: '',
+  devicesPanelWidth: 400,
+  connectionsPanelWidth: 600,
 }
 
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    setupUpdated(count: number, globalState: any) {
+    setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
         dispatch.ui.reset()
         dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
+    },
+    async refreshAll() {
+      dispatch.devices.set({ from: 0 })
+      await dispatch.devices.fetch()
+      dispatch.sessions.fetch()
+      dispatch.licensing.fetch()
+      dispatch.announcements.fetch()
     },
   }),
   reducers: {

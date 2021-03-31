@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import { Tooltip } from '@material-ui/core'
 
 export interface Props {
-  session: ISession
+  session?: ISession
 }
 
 export const LocationPin: React.FC<Props> = ({ session }) => {

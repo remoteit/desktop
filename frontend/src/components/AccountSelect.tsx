@@ -5,7 +5,6 @@ import { ApplicationState, Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { getActiveAccountId } from '../models/accounts'
 import { spacing, colors } from '../styling'
-// import { Avatar } from './Avatar'
 import classnames from 'classnames'
 
 export const AccountSelect: React.FC = () => {
@@ -42,27 +41,19 @@ export const AccountSelect: React.FC = () => {
       {options.map(
         user =>
           !!user && (
-            <MenuItem
-              className={classnames(css.menu, user.id === signedInUser?.id && css.primary)}
-              value={user.id}
-              key={user.id}
-            >
-              {/* <Avatar email={user.email} size={24} label /> */}
+            <MenuItem className={classnames(user.id === signedInUser?.id && css.primary)} value={user.id} key={user.id}>
               {user.email}
             </MenuItem>
           )
       )}
       <Divider className={css.divider} />
-      <MenuItem className={css.menu} onClick={() => history.push('/devices/membership')}>
-        Manage Lists...
-      </MenuItem>
+      <MenuItem onClick={() => history.push('/devices/membership')}>Manage Lists...</MenuItem>
     </TextField>
   )
 }
 
 const useStyles = makeStyles({
   field: { width: 300, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
-  menu: { color: colors.grayDarkest, paddingLeft: spacing.md },
   primary: { color: colors.primary },
   divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
   action: { right: spacing.xs, marginLeft: spacing.sm },

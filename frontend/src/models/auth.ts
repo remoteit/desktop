@@ -12,7 +12,15 @@ import { Dispatch } from '../store'
 import { store } from '../store'
 import { emit } from '../services/Controller'
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 const USER_KEY = 'user'
+
+export const CHECKBOX_REMEMBER_KEY = 'remember-username'
 
 export interface AuthState {
   initialized: boolean
@@ -22,6 +30,7 @@ export interface AuthState {
   signInError?: string
   authService?: AuthService
   user?: IUser
+  localUsername?: string
 }
 
 const state: AuthState = {
@@ -32,6 +41,7 @@ const state: AuthState = {
   signInError: undefined,
   user: undefined,
   authService: undefined,
+  localUsername: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -47,6 +57,9 @@ export default createModel<RootModel>()({
           callbackURL: CALLBACK_URL,
           signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL,
         })
+
+        await sleep(500);
+
         dispatch.auth.setAuthService(authService)
         dispatch.auth.setInitialized()
       }
@@ -86,7 +99,7 @@ export default createModel<RootModel>()({
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
           console.error('SESSION ERROR', result.error)
-          ui.set({ errorMessage: result.error.message })       
+          ui.set({ errorMessage: result.error.message })
         }
       } catch (err) {
         console.log('check sign in error:')
@@ -95,6 +108,12 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
       if (cognitoUser?.username) {
+        if (cognitoUser?.attributes?.email && window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
+          window.localStorage.setItem('username', cognitoUser?.attributes?.email)
+        } else if (!window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
+          window.localStorage.removeItem('username')
+        }
+
         if (cognitoUser?.authProvider === 'Google') {
           window.localStorage.setItem('amplify-signin-with-hostedUI', 'true')
         }
@@ -102,6 +121,10 @@ export default createModel<RootModel>()({
         dispatch.auth.setInitialized()
         dispatch.auth.fetchUser()
       }
+    },
+    async getUsernameLocal() {
+      const localUsername = localStorage.getItem('username')
+      dispatch.auth.setUsername(localUsername || undefined)
     },
     async authenticated(_: void, rootState) {
       if (rootState.auth.authenticated) {
@@ -201,6 +224,10 @@ export default createModel<RootModel>()({
     },
     setAuthService(state: AuthState, authService: AuthService) {
       state.authService = authService
+      return state
+    },
+    setUsername(state: AuthState, username?: string) {
+      state.localUsername = username
       return state
     },
   },

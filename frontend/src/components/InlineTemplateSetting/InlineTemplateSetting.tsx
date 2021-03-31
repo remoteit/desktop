@@ -7,17 +7,18 @@ import { CopyButton } from '../../buttons/CopyButton'
 import { Tooltip } from '@material-ui/core'
 import { Icon } from '../Icon'
 
-type Props = { service: IService; connection?: IConnection; context: Application['context'] }
+type Props = { service: IService; connection?: IConnection; context: Application['context']; disabled?: boolean }
 
-export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, context }) => {
+export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, context, disabled }) => {
   if (!connection) connection = newConnection(service)
   const app = useApplication(context, service, connection)
 
   return (
     <InlineTextFieldSetting
+      disabled={disabled}
       value={app.template}
       displayValue={app.command}
-      actionIcon={<CopyButton connection={connection} service={service} context={context} show />}
+      actionIcon={<CopyButton connection={connection} service={service} context={context} color="grayDark" show />}
       label={
         <>
           {app.contextTitle}

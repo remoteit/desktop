@@ -6,29 +6,35 @@ import { OfflineButton } from '../OfflineButton'
 import { spacing } from '../../styling'
 
 type Props = {
+  className?: string
   connection?: IConnection
   service?: IService
-  className?: string
+  size?: 'icon' | 'medium' | 'small' | 'large'
+  autoConnect?: boolean
+  fullWidth?: boolean
+  onClick?: () => void
 }
 
-export const ComboButton: React.FC<Props> = ({ connection, service, className }) => {
-  const css = useStyles()
+export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
+  const css = useStyles(props.fullWidth)()
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
-      <ConnectButton connection={connection} service={service} size="small" />
-      <DisconnectButton connection={connection} service={service} size="small" />
-      <OfflineButton connection={connection} service={service} />
+      <DisconnectButton {...props} />
+      <ConnectButton {...props} />
+      <OfflineButton {...props} />
     </div>
   )
 }
 
-const useStyles = makeStyles({
-  buttons: {
-    width: 121,
-    marginLeft: spacing.md,
-    marginRight: spacing.lg,
-    position: 'relative',
-    '& > div': { position: 'absolute', width: '100%' },
-    '& > div:last-child': { position: 'relative' },
-  },
-})
+const useStyles = fullWidth =>
+  makeStyles({
+    buttons: {
+      width: fullWidth ? 'inherit' : 121,
+      marginLeft: spacing.md,
+      marginRight: spacing.lg,
+      position: 'relative',
+      flexGrow: 1,
+      '& > div': { position: 'absolute', width: '100%' },
+      '& > div:last-child': { position: 'relative' },
+    },
+  })

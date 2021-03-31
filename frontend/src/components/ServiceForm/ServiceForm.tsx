@@ -40,8 +40,7 @@ export const ServiceForm: React.FC<Props> = ({
     setupAdded: state.ui.setupAdded,
     isValid: state.backend.reachablePort,
   }))
-  const [error, setError] = useState<string>()
-  const [form, setForm] = useState<ITarget & IServiceForm>(() => {
+  const initForm = () => {
     const defaultAppType = findType(applicationTypes, target.type)
     return {
       hostname: service?.host || target.hostname,
@@ -55,9 +54,20 @@ export const ServiceForm: React.FC<Props> = ({
       attributes: service?.attributes || {},
       ...setupAdded,
     }
-  })
+  }
+  const [error, setError] = useState<string>()
+  const [form, setForm] = useState<ITarget & IServiceForm>(initForm)
   const appType = findType(applicationTypes, form.type)
   const css = useStyles()
+
+  useEffect(() => {
+    setForm(initForm())
+  }, [service])
+
+  useEffect(() => {
+    checkPort()
+    if (setupAdded) ui.set({ setupAdded: undefined })
+  }, [form?.port, form?.hostname])
 
   const checkPort = () => {
     if (
@@ -79,17 +89,11 @@ export const ServiceForm: React.FC<Props> = ({
   const CheckIcon = () => (
     <Icon
       name={isValid ? 'check-circle' : 'exclamation-triangle'}
-      type="light"
       size="md"
       color={isValid ? 'success' : 'warning'}
       fixedWidth
     />
   )
-
-  useEffect(() => {
-    checkPort()
-    if (setupAdded) ui.set({ setupAdded: undefined })
-  }, [form?.port, form?.hostname])
 
   return (
     <form
@@ -292,12 +296,13 @@ export const ServiceForm: React.FC<Props> = ({
 
 const useStyles = makeStyles({
   field: {
-    paddingLeft: 75,
+    paddingLeft: 54,
     paddingRight: spacing.xl,
+    alignItems: 'flex-start',
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
   fieldSub: {
-    padding: `0 ${spacing.xl}px 0 75px`,
+    padding: `0 ${spacing.xl}px 0 60px`,
     '& .MuiFormControl-root': {
       minWidth: 300 - spacing.lg,
       display: 'block',

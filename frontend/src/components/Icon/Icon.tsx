@@ -9,12 +9,11 @@ import { fas } from '@fortawesome/pro-solid-svg-icons'
 
 library.add(fal, fab, far, fas)
 export interface IconProps {
-  className?: string
-  color?: Color
-  fixedWidth?: boolean
   name?: string
+  color?: Color
+  className?: string
+  fixedWidth?: boolean
   onClick?: () => void
-  title?: string
   size?: FontSize
   spin?: boolean
   type?: IconType
@@ -25,24 +24,15 @@ export interface IconProps {
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef(
-  ({
-    color,
-    fixedWidth = false,
-    name,
-    size,
-    spin,
-    type = 'light',
-    inline,
-    inlineLeft,
-    ...props
-  }: IconProps): JSX.Element => {
+  ({ color, fixedWidth, name, size, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps) => {
     const styles: any = {}
+    if (!name) return null
     if (color) styles.color = colors[color]
     if (inline) styles.marginLeft = size ? fontSizes[size] / 2 : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] / 2 : spacing.md
     if (size) styles.fontSize = fontSizes[size]
 
-    let fontType: IconPrefix = 'fal'
+    let fontType: IconPrefix = 'far'
 
     switch (type) {
       case 'brands': {
@@ -57,8 +47,20 @@ export const Icon = React.forwardRef(
         fontType = 'fas'
         break
       }
+      case 'light': {
+        fontType = 'fal'
+        break
+      }
     }
 
-    return <FontAwesomeIcon style={styles} icon={[fontType, name as IconName]} {...props} spin={spin} />
+    return (
+      <FontAwesomeIcon
+        style={styles}
+        icon={[fontType, name as IconName]}
+        spin={spin}
+        fixedWidth={fixedWidth}
+        {...props}
+      />
+    )
   }
 )

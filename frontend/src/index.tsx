@@ -15,8 +15,6 @@ import './styling/index.css'
 import './styling/fonts.css'
 
 analyticsHelper.setup()
-const { auth } = store.dispatch
-auth.init()
 
 ReactDOM.render(
   <Provider store={store}>

@@ -17,6 +17,7 @@ export default class ElectronApp {
   private window?: electron.BrowserWindow
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
+  private isMaximized: boolean
   private openAtLogin?: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
@@ -25,6 +26,7 @@ export default class ElectronApp {
   constructor() {
     this.app = electron.app
     this.quitSelected = false
+    this.isMaximized = false
     this.autoUpdater = new AutoUpdater()
     this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
@@ -43,6 +45,7 @@ export default class ElectronApp {
     this.app.on('open-url', this.handleOpenUrl)
 
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
+    EventBus.on(EVENTS.maximize, this.handleMaximize)
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
@@ -81,6 +84,16 @@ export default class ElectronApp {
     this.openWindow()
   }
 
+  private handleMaximize = () => {
+    if (this.isMaximized) {
+      this.window?.unmaximize()
+      this.isMaximized = false
+    } else {
+      this.window?.maximize()
+      this.isMaximized = true
+    }
+  }
+
   private setDeepLink(link?: string) {
     const scheme = this.protocol + '://'
     const authCallbackCode = 'authCallback'
@@ -111,9 +124,8 @@ export default class ElectronApp {
     if (this.window) return
 
     this.window = new electron.BrowserWindow({
-      width: 800,
-      height: 700,
-      maxWidth: 1000,
+      width: 1280,
+      height: 800,
       minWidth: 525,
       minHeight: 325,
       icon: path.join(__dirname, 'images/icon-64x64.png'),
@@ -135,24 +147,6 @@ export default class ElectronApp {
         this.closeWindow()
       }
     })
-
-    if (environment.isWindows) {
-      // Handle Windows fullscreen
-      this.window.on('maximize', () => {
-        setTimeout(() => {
-          if (!this.window) return
-          const window = this.window.getBounds()
-          const screen = electron.screen.getDisplayMatching(window).bounds
-          this.window.setMaximumSize(screen.width, screen.height)
-          this.window.setSize(screen.width, screen.height, true)
-        }, 0)
-      })
-
-      this.window.on('unmaximize', () => {
-        if (!this.window) return
-        this.window.setMaximumSize(1000, 9999)
-      })
-    }
 
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()

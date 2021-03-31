@@ -29,7 +29,7 @@ export const UnregisterServiceButton: React.FC<Props> = ({ target }) => {
       <Tooltip title="Unregister Service">
         <span>
           <IconButton disabled={setupBusy} onClick={() => setOpen(true)}>
-            <Icon name="trash-alt" size="md" fixedWidth />
+            <Icon name="trash" size="md" fixedWidth />
           </IconButton>
         </span>
       </Tooltip>
