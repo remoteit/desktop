@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory, useLocation, matchPath } from 'react-router-dom'
 import { makeStyles, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { colors, Color } from '../../styling'
@@ -13,7 +13,8 @@ export type Props = {
   disabled?: boolean
   dense?: boolean
   className?: string
-  selected?: string | string[]
+  match?: string | string[]
+  exactMatch?: boolean
 }
 
 export const ListItemLocation: React.FC<Props> = ({
@@ -23,7 +24,8 @@ export const ListItemLocation: React.FC<Props> = ({
   icon,
   iconColor,
   disabled = false,
-  selected,
+  match,
+  exactMatch,
   children,
   ...props
 }) => {
@@ -31,9 +33,9 @@ export const ListItemLocation: React.FC<Props> = ({
   const history = useHistory()
   const location = useLocation()
 
-  if (!selected) selected = pathname
-  if (typeof selected === 'string') selected = [selected]
-  const matches = selected?.find(s => location.pathname.includes(s))
+  if (!match) match = pathname
+  if (typeof match === 'string') match = [match]
+  const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.includes(s)))
 
   const onClick = () => !disabled && history.push(pathname)
   return (

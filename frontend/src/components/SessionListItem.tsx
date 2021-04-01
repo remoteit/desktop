@@ -25,7 +25,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
   if (!session) return null
 
   return (
-    <ListItemLocation pathname={pathname} selected={`/connections/${session.target.id}`} dense>
+    <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>
       <ListItemIcon>
         {merge ? (
           <Divider orientation="vertical" className={css.vertical} />

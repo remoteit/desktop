@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     paddingLeft: spacing.md,
     '& .MuiListItem-root': {
       display: 'block',
-      width: 140,
+      width: 100,
       paddingLeft: spacing.md,
       paddingTop: spacing.lg,
       paddingBottom: spacing.sm,

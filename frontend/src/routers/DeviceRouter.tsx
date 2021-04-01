@@ -1,5 +1,5 @@
 import React from 'react'
-import { Switch, Route, Redirect, useParams } from 'react-router-dom'
+import { Switch, Route, useParams } from 'react-router-dom'
 import { ApplicationState } from '../store'
 import { selectDevice } from '../models/devices'
 import { useSelector } from 'react-redux'
@@ -24,6 +24,8 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
     targetDevice: state.backend.device,
     targets: state.backend.targets,
   }))
+
+  console.log('window', window.location.href)
 
   return (
     <DynamicPanel
@@ -50,7 +52,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Route path="/devices/:deviceID/logs">
             <DeviceLogPage device={device} />
           </Route>
-          <Route path="/devices/:deviceID/details">
+          <Route path={['/devices/:deviceID', '/devices/:deviceID/details']} exact>
             <DeviceDetailPage device={device} />
           </Route>
           <Route
@@ -73,9 +75,6 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </Route>
           <Route path="/devices/:deviceID/:serviceID">
             <ServiceDetailPage targets={targets} device={device} />
-          </Route>
-          <Route path="/devices/:deviceID">
-            <Redirect to={`/devices/${deviceID}/details`} />
           </Route>
         </Switch>
       }
