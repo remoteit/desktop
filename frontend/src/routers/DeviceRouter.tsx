@@ -25,8 +25,6 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
     targets: state.backend.targets,
   }))
 
-  console.log('window', window.location.href)
-
   return (
     <DynamicPanel
       primary={<DevicePage targetDevice={targetDevice} targets={targets} device={device} />}
