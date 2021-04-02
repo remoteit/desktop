@@ -486,6 +486,7 @@ declare global {
     remoteUIOverride?: boolean
     disableLocalNetwork?: boolean
     showNotifications?: boolean
+    allowPrerelease?: boolean
   }
 
   type SegmentContext = {

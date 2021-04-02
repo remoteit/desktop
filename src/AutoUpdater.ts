@@ -28,6 +28,7 @@ export default class AppUpdater {
     })
 
     EventBus.on(EVENTS.preferences, ({ autoUpdate }: IPreferences) => {
+      autoUpdater.allowPrerelease = preferences.get().allowPrerelease || false
       if (autoUpdate !== this.autoUpdate) this.check(true)
       this.autoUpdate = !!autoUpdate
     })
@@ -52,6 +53,7 @@ export default class AppUpdater {
             Logger.error('LATEST VERSION ERROR', { error })
           }
         } else if (environment.isWindows || environment.isMac) {
+          Logger.info('CHECK FOR UPDATE')
           if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
             autoUpdater.checkForUpdatesAndNotify()
             this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL

@@ -12,6 +12,7 @@ export class Preferences {
     remoteUIOverride: false,
     disableLocalNetwork: false,
     showNotifications: true,
+    allowPrerelease: false,
   }
 
   private file: JSONFile<IPreferences>
