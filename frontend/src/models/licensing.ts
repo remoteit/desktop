@@ -174,13 +174,13 @@ export function selectLicenses(state: ApplicationState) {
 
 export function selectLicenseIndicator(state: ApplicationState) {
   const { informed } = state.licensing
+  if (informed) return 0
   let indicators = 0
   const { licenses } = selectLicenses(state)
   for (var license of licenses) {
     const { noticeType } = selectLicense(state, license?.plan.product.id)
     if (noticeType) indicators++
   }
-  if (informed) return 0
   return indicators
 }
 
