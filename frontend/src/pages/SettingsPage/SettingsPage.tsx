@@ -23,7 +23,7 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
-  const { showReports, os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
+  const { showReports, os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI, user } = useSelector(
     (state: ApplicationState) => ({
       showReports: state.auth.user?.email.includes('@remote.it'),
       os: state.backend.environment.os,
@@ -33,6 +33,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       targetDevice: state.backend.device,
       notOwner: !!state.backend.device.uid && !getOwnDevices(state).find(d => d.id === state.backend.device.uid),
       remoteUI: isRemoteUI(state),
+      user: state.auth.user,
     })
   )
   const css = useStyles()
@@ -100,12 +101,22 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           onClick={() => emit('preferences', { ...preferences, showNotifications: !preferences.showNotifications })}
         />
         {(os === 'mac' || os === 'windows') && (
-          <ListItemSetting
-            label="Auto update"
-            icon="chevron-double-up"
-            toggle={preferences.autoUpdate}
-            onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
-          />
+          <>
+            <ListItemSetting
+              label="Auto update"
+              icon="chevron-double-up"
+              toggle={preferences.autoUpdate}
+              onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
+            />
+            {user?.email.includes('@remote.it') && (
+              <ListItemSetting
+                label="Allow Prerelease"
+                icon="broadcast-tower"
+                toggle={preferences.allowPrerelease}
+                onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
+              />
+            )}
+          </>
         )}
         <ListItemSetting
           label="Open at login"
