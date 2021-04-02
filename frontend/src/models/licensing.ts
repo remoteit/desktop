@@ -17,11 +17,13 @@ export const LicenseLookup: ILicenseLookup[] = [
 type ILicensing = {
   licenses: ILicense[]
   limits: ILimit[]
+  informed: boolean
 }
 
 const state: ILicensing = {
   licenses: [],
   limits: [],
+  informed: false,
 }
 
 export default createModel<RootModel>()({
@@ -131,6 +133,7 @@ export function lookupLicenseProductId(device?: IDevice) {
 export function selectLicense(state: ApplicationState, productId?: string) {
   const license = state.licensing.licenses.find(l => l.plan.product.id === productId)
   const limits = state.licensing.limits
+  const informed = state.licensing.informed
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
@@ -149,6 +152,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
   return {
     noticeType,
     license,
+    informed,
     limits,
     serviceLimit,
     evaluationLimit,
@@ -169,12 +173,14 @@ export function selectLicenses(state: ApplicationState) {
 }
 
 export function selectLicenseIndicator(state: ApplicationState) {
+  const { informed } = state.licensing
   let indicators = 0
   const { licenses } = selectLicenses(state)
   for (var license of licenses) {
     const { noticeType } = selectLicense(state, license?.plan.product.id)
     if (noticeType) indicators++
   }
+  if (informed) return 0
   return indicators
 }
 
