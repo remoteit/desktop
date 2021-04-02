@@ -5,16 +5,16 @@ import { ApplicationState } from '../store'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { TagMenu } from '../components/TagMenu'
 import { List } from '@material-ui/core'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
-  targets: ITarget[]
   targetDevice: ITargetDevice
   device?: IDevice
 }
 
-export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, device }) => {
+export const DeviceEditPage: React.FC<Props> = ({ targetDevice, device }) => {
   const history = useHistory()
   const remoteUI = useSelector((state: ApplicationState) => isRemoteUI(state))
 
@@ -30,20 +30,8 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, targets, device 
     <DeviceHeaderMenu device={device}>
       <List>
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
-        {/* <DeviceLabelSetting device={device} /> */}
-        {/* <SharedAccessSetting device={device} /> */}
-        {/* {thisDevice && (
-          <ListItemSetting
-            label={targetDevice.disabled ? 'Device disabled' : 'Device enabled'}
-            subLabel="Disabling your service will take it offline."
-            icon="circle-check"
-            toggle={!form.disabled}
-            disabled={setupBusy}
-            onClick={() => {
-              setForm({ ...form, disabled: !form.disabled })
-            }}
-          />
-        )} */}
+        {/* <TagList device={device} /> */}
+        <TagMenu device={device} />
       </List>
     </DeviceHeaderMenu>
   )

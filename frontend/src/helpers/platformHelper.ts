@@ -32,7 +32,6 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
   let size: FontSize = 'xxs'
 
   switch (id) {
-    case 0:
     case 5:
     case 10:
       name = 'windows'
