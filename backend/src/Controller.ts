@@ -49,7 +49,6 @@ class Controller {
   openSockets = () => {
     const socket = server.socket
 
-    if (!socket) Logger.error('Socket.io server failed to start.')
     if (!socket) throw new Error('Socket.io server failed to start.')
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
