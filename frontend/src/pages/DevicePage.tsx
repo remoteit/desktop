@@ -69,12 +69,14 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         <List>
           <ListItemLocation
             pathname={`/devices/${device.id}/details`}
-            selected={[
+            match={[
               `/devices/${device.id}/details`,
               `/devices/${device.id}/edit`,
               `/devices/${device.id}/users`,
               `/devices/${device.id}/logs`,
+              `/devices/${device.id}`,
             ]}
+            exactMatch
             dense
           >
             <ListItemIcon>
@@ -115,7 +117,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           <ListItemLocation
             key={s.id}
             pathname={`/devices/${device.id}/${s.id}/details`}
-            selected={`/devices/${device.id}/${s.id}`}
+            match={`/devices/${device.id}/${s.id}`}
             dense
           >
             <ListItemText

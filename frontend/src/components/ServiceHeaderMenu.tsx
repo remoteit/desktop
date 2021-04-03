@@ -13,6 +13,7 @@ import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { UnregisterServiceButton } from '../buttons/UnregisterServiceButton'
 import { DeleteServiceButton } from '../buttons/DeleteServiceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { ErrorButton } from '../buttons/ErrorButton'
@@ -45,7 +46,6 @@ export const ServiceHeaderMenu: React.FC<{
             {/* <ServiceName connection={connection} service={service} /> */}
             <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} />
             <Route path="/devices/:deviceID/:serviceID/edit">
               {thisDevice ? (
                 <UnregisterServiceButton target={target} />
@@ -53,10 +53,12 @@ export const ServiceHeaderMenu: React.FC<{
                 <DeleteServiceButton device={device} service={service} />
               )}
             </Route>
+            <RefreshButton device={device} />
+            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} />
           </Typography>
           <ListHorizontal>
             <ListItemLocation
-              title="Service Details"
+              title="Details"
               icon="info-circle"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/${serviceID}/details`}
@@ -64,7 +66,7 @@ export const ServiceHeaderMenu: React.FC<{
             />
             {!device.shared && (
               <ListItemLocation
-                title="Edit Service"
+                title="Edit"
                 icon="pen"
                 iconColor="grayDarker"
                 pathname={`/devices/${device.id}/${serviceID}/edit`}

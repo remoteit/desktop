@@ -36,6 +36,8 @@ type UIState = {
   requireInstall: string
   devicesPanelWidth: number
   connectionsPanelWidth: number
+  navigationBack: string[]
+  navigationForward: string[]
 }
 
 const state: UIState = {
@@ -71,6 +73,8 @@ const state: UIState = {
   requireInstall: '',
   devicesPanelWidth: 400,
   connectionsPanelWidth: 600,
+  navigationBack: [],
+  navigationForward: []
 }
 
 export default createModel<RootModel>()({

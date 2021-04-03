@@ -33,22 +33,24 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
             {/* <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" /> */}
             <Title>{device.name || 'Unknown'}</Title>
             {/* <ServiceName device={device} connection={connected} /> */}
-            <RefreshButton device={device} />
-            <AddUserButton to={`/devices/${device.id}/share`} />
             <Route path="/devices/:deviceID/edit">
               {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
             </Route>
+            <RefreshButton device={device} />
+            <AddUserButton to={`/devices/${device.id}/share`} />
           </Typography>
           <ListHorizontal>
             <ListItemLocation
-              title="Device Details"
+              title="Details"
               icon="info-circle"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/details`}
+              match={[`/devices/${device.id}`, `/devices/${device.id}/details`]}
+              exactMatch
               dense
             />
             <ListItemLocation
-              title="Edit Device"
+              title="Edit"
               icon="pen"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/edit`}
@@ -56,7 +58,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
             />
             <UsersSelect device={device} access={access} />
             <ListItemLocation
-              title="Device Logs"
+              title="Logs"
               icon="file-alt"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/logs`}

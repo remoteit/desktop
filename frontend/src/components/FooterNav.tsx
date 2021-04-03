@@ -7,7 +7,7 @@ import { Icon } from './Icon'
 import { colors } from '../styling'
 
 export const FooterNav: React.FC = () => {
-  const [menu, menuItems] = useNavigation()
+  const { menu, menuItems } = useNavigation()
   const history = useHistory()
   const css = useStyles()
 
