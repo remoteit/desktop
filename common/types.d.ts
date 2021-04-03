@@ -429,6 +429,11 @@ declare global {
     }
   }
 
+  type IOverridesSetting = {
+    apiURL: string
+    betaApiURL: string
+  }
+
   type IScanDataRaw = {
     host: string
     name: string

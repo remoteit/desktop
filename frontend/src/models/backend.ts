@@ -28,6 +28,7 @@ type IBackendState = {
     privateIP: ipAddress
     hostname: string
     oobAvailable: boolean
+    backendSetting: IOverridesSetting
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
@@ -55,6 +56,10 @@ const state: IBackendState = {
     privateIP: '',
     hostname: '',
     oobAvailable: false,
+    backendSetting: {
+      apiURL: '',
+      betaApiURL: '',
+    },
   },
   preferences: {},
   deferredAttributes: undefined,

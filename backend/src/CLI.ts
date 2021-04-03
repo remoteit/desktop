@@ -20,6 +20,7 @@ type IData = {
   device: ITargetDevice
   targets: ITarget[]
   connections: IConnection[]
+  overridesSetting: IOverridesSetting
 }
 
 type IExec = {
@@ -51,6 +52,10 @@ export default class CLI {
     device: DEFAULT_TARGET,
     targets: [DEFAULT_TARGET],
     connections: [],
+    overridesSetting: {
+      apiURL: '',
+      betaApiURL: '',
+    },
   }
 
   configFile: JSONFile<ConfigFile>
@@ -79,6 +84,7 @@ export default class CLI {
     this.readDevice()
     this.readTargets()
     this.readConnections()
+    this.readOverrides()
   }
 
   readUser() {
@@ -125,6 +131,16 @@ export default class CLI {
 
   private readFile() {
     return this.configFile.read() || {}
+  }
+
+  readOverrides() {
+    const config = this.readFile()
+    d('READ overrides', config.overrides)
+    const { apiURL, betaApiURL } = config?.overrides || {}
+    this.data.overridesSetting = {
+      apiURL,
+      betaApiURL,
+    }
   }
 
   async updateConnectionStatus() {

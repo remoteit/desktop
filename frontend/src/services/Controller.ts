@@ -3,6 +3,7 @@ import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
+import cloudController from './cloudController'
 
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
@@ -203,6 +204,21 @@ function getEventHandlers() {
         launchLoading: result.loading,
         launchPath: result.path,
       })
+    },
+    'setting-overrides': async (backendSetting: IOverridesSetting) => {
+      const { dispatch } = store
+      const state = store.getState()
+      console.log('setting-overrides')
+      await backend.set({
+        environment: { ...state.backend.environment, backendSetting },
+      })
+      await cloudController.init()
+      await dispatch.licensing.fetch()
+      await dispatch.accounts.init()
+      dispatch.applicationTypes.fetch()
+      dispatch.announcements.fetch()
+      await dispatch.devices.fetch()
+      dispatch.sessions.fetch()
     },
     reachablePort: (result: boolean) => {
       backend.set({ reachablePort: result, loading: false })
