@@ -71,7 +71,7 @@ const state: UIState = {
   launchLoading: false,
   launchPath: '',
   requireInstall: '',
-  devicesPanelWidth: 480,
+  devicesPanelWidth: 400,
   connectionsPanelWidth: 600,
   navigationBack: [],
   navigationForward: []

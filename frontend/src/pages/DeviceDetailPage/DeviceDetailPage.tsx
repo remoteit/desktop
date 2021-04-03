@@ -28,7 +28,7 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
               value: <QualityDetails device={device} />,
             },
             { label: 'Owner', value: device.owner.email },
-            { label: 'Last reported', value: device.lastReported, format: 'duration' },
+            { label: 'Last reported', value: { start: device.lastReported, ago: true }, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
             { label: 'Connection type', value: device.geo?.connectionType },
             { label: 'Location', value: device.geo, format: 'location' },

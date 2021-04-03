@@ -38,7 +38,7 @@ function stateNotification(event: ICloudEvent) {
         title: `${target.name} ${actions[event.state]}`,
         body:
           getTargetPlatform(target.platform) + (event.authUserId === target.owner.id ? '' : ' - ' + target.owner.email),
-        id: target.id,
+        id: target.deviceId,
       })
     }
   })
@@ -53,7 +53,7 @@ function connectNotification(event: ICloudEvent) {
     createNotification({
       title: (event.authUserId === event.actor.id ? 'You ' : event.actor.email + ' ') + actions[event.state],
       body: `To ${target.name}` + (event.isP2P ? '' : ' by proxy'),
-      id: target.id,
+      id: target.deviceId,
     })
   })
 }

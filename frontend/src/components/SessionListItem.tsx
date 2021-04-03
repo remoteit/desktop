@@ -45,10 +45,10 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
                 </Title>
               )}
             </span>
-            <Tooltip title={connected ? 'Connected' : 'Idle'} placement="top" arrow>
+            <Tooltip title={recent ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="top" arrow>
               <span className={css.icon}>
                 <Icon
-                  name={connected ? 'arrow-right' : 'ellipsis-h'}
+                  name={recent ? 'minus' : connected ? 'arrow-right' : 'ellipsis-h'}
                   color={recent ? 'gray' : connected ? 'primary' : 'primaryLight'}
                   size="md"
                   type="regular"

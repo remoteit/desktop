@@ -50,7 +50,12 @@ export function useNavigation(): INavigationHook {
   }, [navigation, location, menu])
 
   useEffect(() => {
-    if (location?.pathname && shouldUpdate && navigationBack.slice(-1)[0] !== location.pathname) {
+    if (
+      location?.pathname &&
+      location?.pathname !== '/' &&
+      shouldUpdate &&
+      navigationBack.slice(-1)[0] !== location.pathname
+    ) {
       ui.set({ navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] })
     }
   }, [location?.pathname])
@@ -74,11 +79,11 @@ export function useNavigation(): INavigationHook {
   }
 
   const menuItems: INavigation[] = [
-    { label: 'This Device', path: '/devices', match: '/devices', icon: 'hdd', show: remoteUI },
+    { label: 'This Device', path: '/devices', match: '/devices/:any?/:any?/:any?', icon: 'hdd', show: remoteUI },
     {
       label: 'Connections',
       path: path('/connections'),
-      match: '/connections/:any?',
+      match: '/connections/:any?/:any?/:any?',
       icon: 'arrow-right',
       show: !remoteUI,
     },

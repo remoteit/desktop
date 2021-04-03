@@ -5,8 +5,9 @@ export const Formats = {
   element: (el: JSX.Element) => {
     return el
   },
-  duration: (date: Date) => {
-    if (date instanceof Date) return <Duration startTime={date.getTime()} ago />
+  duration: ({ start, end, ago }: { start: Date; end?: Date; ago?: boolean }) => {
+    if (start instanceof Date)
+      return <Duration startTime={start.getTime()} endTime={end ? end.getTime() : undefined} ago={ago} />
   },
   percent: (value: number) => {
     if (value) return Math.round(value) + '%'
