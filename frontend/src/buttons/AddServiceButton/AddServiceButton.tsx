@@ -8,7 +8,7 @@ type Props = { device?: IDevice; editable?: boolean; link: string }
 export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) => {
   const history = useHistory()
 
-  if (!device || !editable) return null
+  if (!device || device.shared || !editable) return null
 
   return (
     <Tooltip title="Add Service">
