@@ -79,6 +79,7 @@ export const NewConnection: React.FC = () => {
           renderInput={params => (
             <TextField
               {...params}
+              autoFocus
               label="Select a service"
               size="small"
               variant="filled"

@@ -8,19 +8,22 @@ import { getDevices } from '../models/accounts'
 import { findService } from '../models/devices'
 import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
+import reactStringReplace from 'react-string-replace'
 import { ApplicationState } from '../store'
+import { Autocomplete } from '@material-ui/lab'
 import {
   makeStyles,
   Button,
+  Box,
   Typography,
-  Menu,
-  MenuItem,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Paper,
+  Popper,
   TextField,
 } from '@material-ui/core'
-import { spacing, colors } from '../styling'
+import { spacing, colors, radius, fontSizes } from '../styling'
 import { Icon } from './Icon'
 
 interface Props {
@@ -37,16 +40,31 @@ export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
 
 export const TagMenu: React.FC<Props> = ({ device }) => {
   const tags = useSelector((state: ApplicationState) => state.labels)
-  const [editValue, setEditValue] = React.useState<string | number>('')
+  const [inputValue, setInputValue] = React.useState<string>('')
   const [el, setEl] = React.useState<HTMLButtonElement | null>()
   const buttonRef = React.useRef<HTMLButtonElement>(null)
-  const inputRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
 
-  if (!device) return null
+  const handleClose = event => {
+    setEl(null)
+    console.log(inputValue, 'close event:', event.target.value)
+  }
+  const handleOpen = () => setEl(el ? null : buttonRef.current)
 
-  const handleClose = () => setEl(null)
-  const handleOpen = () => setEl(buttonRef.current)
+  const handleSelect = (action: 'add' | 'new', value: ILabel) => {
+    console.log(action, value)
+  }
+
+  const options =
+    inputValue.length && !tags.find(t => t.name === inputValue)
+      ? tags.concat({
+          name: `Add tag: ${inputValue}`,
+          id: -1,
+          color: '',
+        })
+      : tags
+
+  if (!device) return null
 
   return (
     <>
@@ -54,56 +72,87 @@ export const TagMenu: React.FC<Props> = ({ device }) => {
         <Icon name="plus" size="sm" inlineLeft />
         add tag
       </Button>
-      <Menu
-        open={Boolean(el)}
-        anchorEl={el}
-        className={css.menu}
-        onClose={handleClose}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        getContentAnchorEl={null}
-        disableScrollLock
-        elevation={2}
-      >
-        <MenuItem onFocus={() => inputRef.current?.focus()} dense>
-          <TextField
-            autoFocus
-            inputRef={inputRef}
-            value={editValue}
-            variant="filled"
-            placeholder="Add tag..."
-            focused={true}
-            onKeyDown={event => {
-              console.log('keydown', event.key, event.key.length)
-              if (event.key.length < 2) event.stopPropagation()
+      <Popper anchorEl={el} open={Boolean(el)} placement="bottom-start">
+        <Paper className={css.container} elevation={1}>
+          <Autocomplete
+            open
+            fullWidth
+            disablePortal
+            autoHighlight
+            options={options}
+            includeInputInList
+            inputValue={inputValue}
+            classes={{
+              listbox: css.listbox,
+              option: css.option,
+              input: css.input,
+              popperDisablePortal: css.popperDisablePortal,
             }}
-            onChange={event => {
-              let { value } = event.target
-              value = value.replace(REGEX_TAG_SAFE, '')
-              setEditValue(value)
+            onClose={handleClose}
+            onChange={(event, value, reason) => {
+              if (!value) return
+              if (value.id === -1) handleSelect('new', { color: '', name: inputValue, id: -1 })
+              else handleSelect('add', value)
             }}
-          />
-        </MenuItem>
-        {tags.map(
-          tag =>
-            (!editValue || tag.name.toLowerCase().includes(editValue.toString().toLowerCase())) && (
-              <MenuItem dense>
+            PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
+            noOptionsText={false}
+            getOptionLabel={option => option.name}
+            onInputChange={(event, newValue) => setInputValue(newValue.replace(REGEX_TAG_SAFE, ''))}
+            renderOption={option => (
+              <>
                 <ListItemIcon>
-                  <Icon name="circle" color={tag.color} type="solid" />
+                  <Icon name={option.id === -1 ? 'plus' : 'circle'} color={option.color} type="solid" />
                 </ListItemIcon>
-                <ListItemText primary={tag.name} />
-              </MenuItem>
-            )
-        )}
-      </Menu>
+                <ListItemText
+                  primary={reactStringReplace(option.name, new RegExp(`(${inputValue})`, 'i'), (match, i) => (
+                    <span key={i} style={{ color: colors.primary }}>
+                      {match}
+                    </span>
+                  ))}
+                />
+              </>
+            )}
+            renderInput={params => (
+              <TextField
+                ref={params.InputProps.ref}
+                inputProps={params.inputProps}
+                className={css.textField}
+                autoFocus
+                size="small"
+                variant="filled"
+                placeholder="Add tag..."
+              />
+            )}
+          />
+        </Paper>
+      </Popper>
     </>
   )
 }
 
 const useStyles = makeStyles({
-  menu: {
-    '& .MuiMenuItem-root': {
-      // paddingLeft: 0,
-      // paddingRight: spacing.lg,
-    },
+  container: { width: 200 },
+  listbox: { shadow: 'none', paddingTop: 0 },
+  textField: { width: '100%', padding: `${spacing.xs}px ${spacing.xs}px 0` },
+  input: {
+    width: '100%',
+    padding: `${spacing.xs}px ${spacing.sm}px`,
+    fontSize: fontSizes.base,
+    color: colors.grayDarkest,
+  },
+  popperDisablePortal: {
+    position: 'relative',
+  },
+  option: {
+    borderRadius: radius,
+    marginLeft: spacing.xs,
+    marginRight: spacing.xs,
+    marginBottom: 1,
+    padding: `${spacing.xxs}px ${spacing.xs}px`,
+    color: colors.grayDarker,
+    '&[data-focus="true"]': { backgroundColor: colors.primaryHighlight },
+    '&[aria-selected="true"]': { backgroundColor: colors.primaryHighlight },
+    '& .MuiListItemText-primary': { fontSize: fontSizes.base },
+    '& .MuiListItemIcon-root': { minWidth: 40 },
   },
 })
