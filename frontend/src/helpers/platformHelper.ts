@@ -27,7 +27,7 @@ export function getTargetPlatform(targetPlatformId?: number) {
 }
 
 export function getTargetPlatformIcon(id?: number): { name: string; type: IconType; size: FontSize } {
-  let type: IconType = 'solid'
+  let type: IconType = 'regular'
   let name: string = 'hdd'
   let size: FontSize = 'xxs'
 
@@ -70,15 +70,15 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
       break
     case 1201:
       name = 'fighter-jet'
-      type = 'solid'
+      type = 'regular'
       break
     case 1202:
       name = 'router'
-      type = 'solid'
+      type = 'regular'
       break
     case 65535:
       name = 'hdd'
-      type = 'solid'
+      type = 'regular'
       break
   }
 

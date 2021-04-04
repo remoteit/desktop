@@ -45,7 +45,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
     }
   }, [fetching, device, targetDevice, history])
 
-  if (fetching) return <LoadingMessage message="Fetching device..." />
+  if (fetching && !device) return <LoadingMessage message="Fetching device..." />
 
   return (
     <DynamicPanel
