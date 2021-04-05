@@ -140,6 +140,10 @@ class Server {
 
   disconnect = (socket: SocketIO.Socket) => {
     Logger.info('SERVER DISCONNECT')
+    Logger.info('SOCKET.EVENTNAMES', { names: socket.eventNames() })
+    Logger.info('SOCKET.GETMAXLISTENERS', { max: socket.getMaxListeners() })
+    Logger.info('SOCKET.LISTENERCOUNT', { count: socket.listenerCount })
+    Logger.info('SOCKET.LISTENERS', { listeners: socket.eventNames().map(event => socket.listeners(event.toString())) })
     socket.removeAllListeners()
   }
 }

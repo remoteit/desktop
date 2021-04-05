@@ -44,6 +44,9 @@ process
       promise,
     })
   })
+  .on('warning', error => {
+    Logger.warn('UNHANDLED PROCESS WARNING', { e: error, stack: error.stack })
+  })
 
 export default new Application()
 

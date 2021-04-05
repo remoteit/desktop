@@ -14,7 +14,7 @@
     "copy-images": "cp -R src/images build/",
     "copy-install": "cp installer.nsh build/",
     "copy-entitlements": "cp entitlements.mac.plist build/",
-    "electron": "cross-env NODE_ENV=development electron ./",
+    "electron": "cross-env NODE_ENV=development electron --trace-warnings ./",
     "install-backend": "cd backend && npm i",
     "install-electron": "electron-builder install-app-deps",
     "install-frontend": "cd frontend && npm i",
