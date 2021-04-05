@@ -1,12 +1,12 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, Button, Chip } from '@material-ui/core'
+import { makeStyles, Button } from '@material-ui/core'
 import { AutocompleteMenu } from './AutocompleteMenu'
 import { Icon } from './Icon'
+import { Tag } from './Tag'
 
 export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
-  const css = useStyles()
   const labels = useSelector((state: ApplicationState) => state.labels)
   const [tempTags, setTempTags] = React.useState<ITag[]>([
     {
@@ -47,21 +47,7 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
   return (
     <>
       {tempTags.map((tag, index) => (
-        <Chip
-          key={index}
-          className={css.chip}
-          label={
-            <>
-              <Icon name="circle" type="solid" size="xxs" />
-              {tag.name}
-            </>
-          }
-          size="small"
-          style={{ color: getColor(tag.label) }}
-          deleteIcon={<Icon name="times" size="xs" />}
-          onClick={console.log}
-          onDelete={() => handleRemoveTag(index)}
-        />
+        <Tag key={index} tag={tag} labels={labels} onDelete={() => handleRemoveTag(index)} onClick={console.log} />
       ))}
       <Button variant="text" size="small" onClick={handleOpen} ref={buttonRef}>
         <Icon name="plus" size="sm" inlineLeft />
@@ -95,9 +81,3 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
     </>
   )
 }
-
-const useStyles = makeStyles({
-  chip: {
-    '& .MuiChip-label > *': { marginRight: 6 },
-  },
-})
