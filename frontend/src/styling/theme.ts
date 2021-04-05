@@ -52,7 +52,15 @@ const jssTheme: ThemeOptions = {
     },
     MuiChip: {
       root: { borderRadius: radius, backgroundColor: colors.grayLightest },
-      sizeSmall: { fontSize: fontSizes.xs },
+      clickable: {
+        '&:hover, &:focus': { backgroundColor: colors.primaryLighter },
+      },
+      sizeSmall: {
+        height: 20,
+        borderRadius: 10,
+        fontSize: fontSizes.xxs,
+        '& + .MuiChip-sizeSmall': { marginLeft: spacing.xxs },
+      },
     },
     MuiSnackbar: {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },

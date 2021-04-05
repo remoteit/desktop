@@ -38,7 +38,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
           !!total && (
             <>
               {total ? total + ' total' : ''}
-              &nbsp; &nbsp;
+              <br />
               {!!connected && <span style={{ color: colors.primary }}>{connected} connected</span>}
             </>
           )

@@ -98,6 +98,13 @@ declare global {
     id: number
   }
 
+  interface ITag {
+    id: number
+    name: string
+    label?: ILabel['id']
+    color?: string
+  }
+
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 

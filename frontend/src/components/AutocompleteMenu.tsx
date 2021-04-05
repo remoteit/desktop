@@ -9,27 +9,23 @@ import { Icon } from './Icon'
 
 interface Props {
   open: boolean
-  items: ILabel[]
+  items: ITag[]
   targetEl: HTMLButtonElement | null
   placeholder: string
   allowAdding?: boolean
-  onSelect?: (action: 'add' | 'new', value: ILabel) => void
+  onItemColor?: (value: ITag) => string
+  onSelect?: (action: 'add' | 'new', value: ITag) => void
   onClose?: () => void
 }
 
 export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
-
-// interface ITag {
-//   id: number
-//   name: string
-//   color: ILabel['id']
-// }
 
 export const AutocompleteMenu: React.FC<Props> = ({
   open,
   items,
   placeholder,
   targetEl,
+  onItemColor,
   onSelect,
   onClose,
   allowAdding,
@@ -42,7 +38,6 @@ export const AutocompleteMenu: React.FC<Props> = ({
       ? items.concat({
           name: `Add tag: ${inputValue}`,
           id: -1,
-          color: '',
         })
       : items
 
@@ -66,7 +61,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
           onClose={onClose}
           onChange={(event, value, reason) => {
             if (!value || !onSelect) return
-            if (value.id === -1) onSelect('new', { color: '', name: inputValue, id: -1 })
+            if (value.id === -1) onSelect('new', { name: inputValue, id: -1 })
             else onSelect('add', value)
           }}
           PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
@@ -76,7 +71,11 @@ export const AutocompleteMenu: React.FC<Props> = ({
           renderOption={option => (
             <>
               <ListItemIcon>
-                <Icon name={option.id === -1 ? 'plus' : 'circle'} color={option.color} type="solid" />
+                <Icon
+                  name={option.id === -1 ? 'plus' : 'circle'}
+                  color={option.id === -1 ? undefined : onItemColor ? onItemColor(option) : undefined}
+                  type="solid"
+                />
               </ListItemIcon>
               <ListItemText
                 primary={reactStringReplace(option.name, new RegExp(`(${inputValue})`, 'i'), (match, i) => (
