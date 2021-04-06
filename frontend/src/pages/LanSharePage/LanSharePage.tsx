@@ -29,12 +29,14 @@ export const LanSharePage: React.FC = () => {
     }
   })
 
+  const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
+
   // prettier-ignore
   const selections: Selections[] = [
     { value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
-    { value: maskIPClass(privateIP, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
-    { value: maskIPClass(privateIP, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
-    { value: maskIPClass(privateIP, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
+    { value: maskIPClass(currentHost, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
+    { value: maskIPClass(currentHost, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
+    { value: maskIPClass(currentHost, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
     { value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
     { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
@@ -54,7 +56,6 @@ export const LanSharePage: React.FC = () => {
   const selected = selections[selection] || {}
   const history = useHistory()
   const css = useStyles()
-  const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
   const [error, setError] = useState<string>()
   const [disabled, setDisabled] = useState(true)
 
