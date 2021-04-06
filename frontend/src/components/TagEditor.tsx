@@ -24,18 +24,20 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
       name: 'Shared',
       label: 7,
     },
+    {
+      id: 3,
+      name: 'Important',
+      label: 2,
+    },
   ])
   const [newValue, setNewValue] = React.useState<ITag>()
   const [open, setOpen] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
 
-  const getColor = (id = 0) => labels[id].color
+  const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
-  const handleAddTag = (tag: ITag) => {
-    console.log('ADD TAG', tag)
-    setTempTags([...tempTags, tag])
-  }
+  const handleAddTag = (tag: ITag) => setTempTags([...tempTags, tag])
   const handleRemoveTag = index => {
     let result = [...tempTags]
     result.splice(index, 1)
@@ -56,6 +58,7 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
       <AutocompleteMenu
         items={tempTags}
         open={open}
+        indicator="tag"
         placeholder="New tag..."
         targetEl={buttonRef.current}
         onItemColor={tag => getColor(tag.label)}
@@ -67,7 +70,7 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
         allowAdding
       />
       <AutocompleteMenu
-        items={labels}
+        items={labels.filter(l => !l.hidden)}
         open={Boolean(newValue)}
         placeholder="Choose a color..."
         targetEl={buttonRef.current}
@@ -76,7 +79,6 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
           setNewValue(undefined)
           handleAddTag({ ...(newValue || label), label: label.id, id: tempTags.length })
         }}
-        onClose={handleClose}
       />
     </>
   )

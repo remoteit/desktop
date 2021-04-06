@@ -27,7 +27,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, onClick, onDelete }) =>
         arrow
       >
         <span className={css.dot}>
-          <Icon name="circle" color={getColor(tag.label)} type="solid" size="xxs" />
+          <Icon name="tag" color={getColor(tag.label)} type="solid" size="xxs" />
         </span>
       </Tooltip>
     )
@@ -37,7 +37,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, onClick, onDelete }) =>
       className={css.chip}
       label={
         <>
-          <Icon name="circle" type="solid" size="xxs" />
+          <Icon name="tag" type="solid" size="xxs" />
           {tag.name}
         </>
       }

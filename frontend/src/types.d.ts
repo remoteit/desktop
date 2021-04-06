@@ -96,6 +96,7 @@ declare global {
     color: string
     name: string
     id: number
+    hidden?: boolean
   }
 
   interface ITag {

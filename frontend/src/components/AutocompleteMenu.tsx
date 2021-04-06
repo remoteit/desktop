@@ -1,7 +1,5 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import reactStringReplace from 'react-string-replace'
-import { ApplicationState } from '../store'
 import { Autocomplete } from '@material-ui/lab'
 import { makeStyles, Box, ListItemIcon, ListItemText, Paper, Popper, TextField } from '@material-ui/core'
 import { spacing, colors, radius, fontSizes } from '../styling'
@@ -13,6 +11,7 @@ interface Props {
   targetEl: HTMLButtonElement | null
   placeholder: string
   allowAdding?: boolean
+  indicator?: string
   onItemColor?: (value: ITag) => string
   onSelect?: (action: 'add' | 'new', value: ITag) => void
   onClose?: () => void
@@ -24,6 +23,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
   open,
   items,
   placeholder,
+  indicator,
   targetEl,
   onItemColor,
   onSelect,
@@ -72,9 +72,10 @@ export const AutocompleteMenu: React.FC<Props> = ({
             <>
               <ListItemIcon>
                 <Icon
-                  name={option.id === -1 ? 'plus' : 'circle'}
+                  name={option.id === -1 ? 'plus' : indicator || 'circle'}
                   color={option.id === -1 ? undefined : onItemColor ? onItemColor(option) : undefined}
                   type="solid"
+                  size="base"
                 />
               </ListItemIcon>
               <ListItemText
@@ -121,11 +122,11 @@ const useStyles = makeStyles({
     marginLeft: spacing.xs,
     marginRight: spacing.xs,
     marginBottom: 1,
-    padding: `${spacing.xxs}px ${spacing.xs}px`,
+    padding: `${2}px ${spacing.xxs}px`,
     color: colors.grayDarker,
     '&[data-focus="true"]': { backgroundColor: colors.primaryHighlight },
     '&[aria-selected="true"]': { backgroundColor: colors.primaryHighlight },
-    '& .MuiListItemText-primary': { fontSize: fontSizes.base },
+    '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
     '& .MuiListItemIcon-root': { minWidth: 40 },
   },
 })
