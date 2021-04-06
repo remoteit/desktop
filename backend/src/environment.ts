@@ -33,6 +33,7 @@ export class Environment {
   manufacturerDetails: ManufacturerDetails
   oobAvailable: boolean
   version: string
+  overrides: IOverrides
 
   EVENTS = { send: 'environment' }
 
@@ -51,6 +52,7 @@ export class Environment {
     this.version = this.getAppVersion()
     this.isHeadless = !isElectron()
     this.symlinkPath = ''
+    this.overrides = {}
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
@@ -89,6 +91,7 @@ export class Environment {
       privateIP: this.privateIP,
       hostname: os.hostname(),
       oobAvailable: this.oobAvailable,
+      overrides: this.overrides,
     }
   }
 

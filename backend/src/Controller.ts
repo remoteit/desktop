@@ -53,32 +53,32 @@ class Controller {
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().includes('init')) socket.removeAllListeners()
 
-    socket.once('user/lock', user.signOut)
-    socket.once('user/sign-out', this.signOut)
-    socket.once('user/sign-out-complete', this.signOutComplete)
-    socket.once('user/quit', this.quit)
-    socket.once('service/connect', this.connect)
-    socket.once('service/disconnect', this.disconnect)
-    socket.once('service/clear', this.pool.clear)
-    socket.once('service/clear-recent', this.pool.clearRecent)
-    socket.once('service/forget', this.forget)
-    socket.once('binaries/install', this.installBinaries)
-    socket.once('launch/app', openCMDforWindows)
-    socket.once('connection', this.connection)
-    socket.once('targets', this.targets)
-    socket.once('device', this.device)
-    socket.once('registration', this.registration)
-    socket.once('restore', this.restore)
-    socket.once('scan', this.scan)
-    socket.once(lan.EVENTS.interfaces, this.interfaces)
-    socket.once('freePort', this.freePort)
-    socket.once('reachablePort', this.isReachablePort)
-    socket.once('preferences', preferences.set)
-    socket.once('restart', this.restart)
-    socket.once('uninstall', this.uninstall)
-    socket.once('heartbeat', this.check)
-    socket.once('showFolder', this.showFolder)
-    socket.once('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
+    socket.on('user/lock', user.signOut)
+    socket.on('user/sign-out', this.signOut)
+    socket.on('user/sign-out-complete', this.signOutComplete)
+    socket.on('user/quit', this.quit)
+    socket.on('service/connect', this.connect)
+    socket.on('service/disconnect', this.disconnect)
+    socket.on('service/clear', this.pool.clear)
+    socket.on('service/clear-recent', this.pool.clearRecent)
+    socket.on('service/forget', this.forget)
+    socket.on('binaries/install', this.installBinaries)
+    socket.on('launch/app', openCMDforWindows)
+    socket.on('connection', this.connection)
+    socket.on('targets', this.targets)
+    socket.on('device', this.device)
+    socket.on('registration', this.registration)
+    socket.on('restore', this.restore)
+    socket.on('scan', this.scan)
+    socket.on(lan.EVENTS.interfaces, this.interfaces)
+    socket.on('freePort', this.freePort)
+    socket.on('reachablePort', this.isReachablePort)
+    socket.on('preferences', preferences.set)
+    socket.on('restart', this.restart)
+    socket.on('uninstall', this.uninstall)
+    socket.on('heartbeat', this.check)
+    socket.on('showFolder', this.showFolder)
+    socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
 
     this.initBackend()
     this.check()
@@ -157,6 +157,7 @@ class Controller {
   initBackend = async () => {
     cli.read()
     this.pool.init()
+    this.freePort()
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
@@ -165,7 +166,6 @@ class Controller {
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
     this.io.emit('dataReady', true)
-    this.checkBackendSetting()
   }
 
   connection = async (connection: IConnection) => {
@@ -223,12 +223,6 @@ class Controller {
     } catch (error) {
       EventBus.emit(Binary.EVENTS.error, error)
     }
-  }
-
-  checkBackendSetting = async () => {
-    cli.readOverrides()
-    Logger.info('SETTING OVERRIDES', cli.data.overridesSetting)
-    this.io.emit('setting-overrides', cli.data.overridesSetting)
   }
 }
 

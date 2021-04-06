@@ -108,6 +108,18 @@ function getEventHandlers() {
 
     disconnect: () => auth.disconnect(),
 
+    dataReady: async (result: boolean) => {
+      console.log('Data ready')
+      backend.set({ dataReady: result })
+      await cloudController.init()
+      await store.dispatch.licensing.fetch()
+      await store.dispatch.accounts.init()
+      store.dispatch.applicationTypes.fetch()
+      store.dispatch.announcements.fetch()
+      await store.dispatch.devices.fetch()
+      store.dispatch.sessions.fetch()
+    },
+
     connect_error: () => {
       backend.set({ error: true })
     },
@@ -150,7 +162,9 @@ function getEventHandlers() {
 
     freePort: (result: number) => backend.set({ freePort: result }),
 
-    dataReady: (result: boolean) => backend.set({ dataReady: result }),
+    reachablePort: (result: boolean) => {
+      backend.set({ reachablePort: result, loading: false })
+    },
 
     environment: (result: ILookup<any>) => {
       backend.set({ environment: result })
@@ -204,24 +218,6 @@ function getEventHandlers() {
         launchLoading: result.loading,
         launchPath: result.path,
       })
-    },
-    'setting-overrides': async (backendSetting: IOverridesSetting) => {
-      const { dispatch } = store
-      const state = store.getState()
-      console.log('setting-overrides')
-      await backend.set({
-        environment: { ...state.backend.environment, backendSetting },
-      })
-      await cloudController.init()
-      await dispatch.licensing.fetch()
-      await dispatch.accounts.init()
-      dispatch.applicationTypes.fetch()
-      dispatch.announcements.fetch()
-      await dispatch.devices.fetch()
-      dispatch.sessions.fetch()
-    },
-    reachablePort: (result: boolean) => {
-      backend.set({ reachablePort: result, loading: false })
     },
   } as EventHandlers
 }
