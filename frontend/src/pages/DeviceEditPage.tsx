@@ -6,7 +6,8 @@ import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { TagEditor } from '../components/TagEditor'
-import { List, ListItem } from '@material-ui/core'
+import { Gutters } from '../components/Gutters'
+import { List } from '@material-ui/core'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -31,10 +32,10 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, device }) => {
       <List>
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
         {/* <TagList device={device} /> */}
-        <ListItem>
-          <TagEditor device={device} />
-        </ListItem>
       </List>
+      {/* <Gutters inset>
+        <TagEditor device={device} />
+      </Gutters> */}
     </DeviceHeaderMenu>
   )
 }
