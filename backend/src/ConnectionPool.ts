@@ -27,6 +27,14 @@ export default class ConnectionPool {
     reachablePort: 'reachablePort',
   }
 
+  constructor() {
+    EventBus.on(Connection.EVENTS.disconnected, this.updated)
+    EventBus.on(Connection.EVENTS.connected, this.updated)
+    EventBus.on(electronInterface.EVENTS.ready, this.updated)
+    EventBus.on(electronInterface.EVENTS.clear, this.clear)
+    EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
+  }
+
   init() {
     this.file = new JSONFile<IConnection[]>(path.join(environment.userPath, `connections/${user.id}.json`))
     this.migrateLegacyFile()
@@ -38,16 +46,6 @@ export default class ConnectionPool {
 
     // load connection data
     connections.map(c => this.set(c))
-
-    // init freeport
-    this.nextFreePort()
-
-    // Listen to events to synchronize state
-    EventBus.on(Connection.EVENTS.disconnected, this.updated)
-    EventBus.on(Connection.EVENTS.connected, this.updated)
-    EventBus.on(electronInterface.EVENTS.ready, this.updated)
-    EventBus.on(electronInterface.EVENTS.clear, this.clear)
-    EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
   }
 
   // Sync with CLI
@@ -86,6 +84,7 @@ export default class ConnectionPool {
   set = (connection: IConnection, setCLI?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
+    d('SET SINGLE CONNECTION', { name: connection.name, id: connection.id })
     if (instance) {
       if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
         instance.set(connection, setCLI)
@@ -165,6 +164,7 @@ export default class ConnectionPool {
     const json = this.toJSON()
     if (!user.signedIn) return
     this.file?.write(json)
+    d('CONNECTION POOL UPDATED')
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
 

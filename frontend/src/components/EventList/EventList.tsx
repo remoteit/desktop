@@ -17,6 +17,7 @@ import {
 import { Container } from '../Container'
 import { DeviceHeaderMenu } from '../DeviceHeaderMenu'
 import { DatePicker } from '../DatePicker'
+import { Notice } from '../Notice'
 import { Icon } from '../Icon'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { colors, fontSizes, spacing } from '../../styling'
@@ -185,13 +186,19 @@ export const EventList: React.FC<LogListProps> = ({
                 End of Logs
               </Typography>
             )}
-            {!events?.hasMore && !fetching && planUpgrade && (
-              <Typography variant="body2" align="center" color="textSecondary">
-                Plan upgrade required to view logs past {daysAllowed} days <br />
-                <Link onClick={() => window.open('https://link.remote.it/licensing/plans')}>Learn more</Link>
-              </Typography>
-            )}
           </Box>
+          {!events?.hasMore && !fetching && planUpgrade && (
+            <Notice
+              severity="warning"
+              button={
+                <Button variant="contained" href="https://link.remote.it/licensing/plans" size="small" target="_blank">
+                  Upgrade
+                </Button>
+              }
+            >
+              Plan upgrade required to view logs past {daysAllowed} days
+            </Notice>
+          )}
         </Container>
       </>
     )

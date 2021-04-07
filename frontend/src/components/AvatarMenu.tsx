@@ -1,14 +1,14 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { version } from '../../package.json'
-import { emit } from '../services/Controller'
 import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/core'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { ApplicationState } from '../store'
 import { ListItemSetting } from './ListItemSetting'
 import { colors, spacing } from '../styling'
+import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { version } from '../../package.json'
 import { Avatar } from './Avatar'
+import { emit } from '../services/Controller'
 
 export interface Props {}
 

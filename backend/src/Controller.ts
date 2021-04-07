@@ -157,6 +157,7 @@ class Controller {
   initBackend = async () => {
     cli.read()
     this.pool.init()
+    this.freePort()
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
@@ -164,9 +165,7 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
-    this.freePort()
     this.io.emit('dataReady', true)
-    this.checkBackendSetting()
   }
 
   connection = async (connection: IConnection) => {
@@ -224,13 +223,6 @@ class Controller {
     } catch (error) {
       EventBus.emit(Binary.EVENTS.error, error)
     }
-  }
-
-  checkBackendSetting = async () => {
-    Logger.info('SETTING OVERRIDES READING')
-    cli.readOverrides()
-    Logger.info('SETTING OVERRIDES', cli.data.overridesSetting)
-    this.io.emit('setting-overrides', cli.data.overridesSetting)
   }
 }
 

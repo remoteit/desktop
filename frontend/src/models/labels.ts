@@ -7,6 +7,7 @@ const state: ILabel[] = [
     id: 0,
     name: 'none',
     color: colors.white,
+    hidden: true,
   },
   {
     id: 1,

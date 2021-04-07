@@ -429,9 +429,9 @@ declare global {
     }
   }
 
-  type IOverridesSetting = {
-    apiURL: string
-    betaApiURL: string
+  type IOverrides = {
+    apiURL?: string
+    betaApiURL?: string
   }
 
   type IScanDataRaw = {

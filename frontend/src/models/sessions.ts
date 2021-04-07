@@ -116,8 +116,16 @@ export function selectSessionsByService(state: ApplicationState, id?: string) {
 }
 
 export function selectSessionUsers(state: ApplicationState, id?: string) {
+  let ids: string[] = []
   return state.sessions.all.reduce((users: IUserRef[], session) => {
-    if (session.target.id === id || session.target.deviceId === id) users.push(session.user)
+    if (
+      session.user &&
+      !ids.includes(session.user.id) &&
+      (session.target.id === id || session.target.deviceId === id)
+    ) {
+      ids.push(session.user.id)
+      users.push(session.user)
+    }
     return users
   }, [])
 }

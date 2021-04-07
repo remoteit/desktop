@@ -18,6 +18,7 @@ class CloudController {
   }
 
   connect() {
+    if (this.socket instanceof ReconnectingWebSocket) return
     this.socket = new ReconnectingWebSocket(version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL)
     this.socket.addEventListener('open', this.onOpen)
     this.socket.addEventListener('message', this.onMessage)

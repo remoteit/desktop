@@ -29,8 +29,7 @@ export const AnnouncementsPage = () => {
       bodyProps={{ inset: true, flex: true }}
       header={
         <Typography variant="h1">
-          <Icon name="megaphone" size="lg" />
-          <Title inline>Announcements</Title>
+          <Title>Announcements</Title>
         </Typography>
       }
     >
