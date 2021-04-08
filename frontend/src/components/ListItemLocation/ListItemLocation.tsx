@@ -44,7 +44,7 @@ export const ListItemLocation: React.FC<Props> = ({
       button
       selected={!!matches}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || !!matches}
       style={{ opacity: 1 }}
       classes={{ selected: css.selected }}
     >

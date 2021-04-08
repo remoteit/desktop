@@ -23,6 +23,7 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
     "Deleting devices can't be undone so may require you to physically access the device if you wish to recover it."
 
   let disabled: boolean = false
+  let icon: string = 'trash'
   let tooltip: string = 'Delete this device'
 
   if (!device || device.accountId !== userId) return null
@@ -34,6 +35,7 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
 
   if (device.shared) {
     disabled = false
+    icon = 'sign-out'
     tooltip = 'Leave Device'
     warning = 'This device will have to be re-shared to you if you wish to access it again.'
   }
@@ -45,7 +47,7 @@ export const DeleteButton: React.FC<Props> = ({ device }) => {
       <Tooltip title={tooltip}>
         <span>
           <IconButton disabled={disabled} onClick={() => setOpen(true)}>
-            <Icon name="trash" size="md" fixedWidth />
+            <Icon name={icon} size="md" fixedWidth />
           </IconButton>
         </span>
       </Tooltip>

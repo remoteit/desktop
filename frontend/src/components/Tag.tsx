@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, Tooltip, Chip } from '@material-ui/core'
+import { makeStyles, Tooltip, Chip, IconButton } from '@material-ui/core'
 import { spacing } from '../styling'
 import { Icon } from '../components/Icon'
 
@@ -43,7 +43,11 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, onClick, onDelete }) =>
       }
       size="small"
       style={{ color: getColor(tag.label) }}
-      deleteIcon={<Icon name="times" size="xs" />}
+      deleteIcon={
+        <IconButton>
+          <Icon name="times" size="xs" />
+        </IconButton>
+      }
       onClick={onClick}
       onDelete={onDelete}
     />
@@ -56,6 +60,9 @@ const useStyles = makeStyles({
   },
   chip: {
     '& .MuiChip-label > *': { marginRight: spacing.xs },
-    '& .MuiChip-deleteIconSmall': { marginLeft: -1, marginRight: 8 },
+    '& .MuiChip-deleteIconSmall': {
+      marginLeft: -spacing.sm,
+      marginRight: 0,
+    },
   },
 })

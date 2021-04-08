@@ -109,7 +109,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           <ListItem disabled dense>
             <ListItemText className={css.service} primary="Registering..." />
             <ListItemSecondaryAction>
-              <CircularProgress color="inherit" size={fontSizes.md} />
+              <CircularProgress color="primary" size={fontSizes.md} />
             </ListItemSecondaryAction>
           </ListItem>
         )}
