@@ -69,21 +69,20 @@ export async function graphQLGetEventsURL(id: string, maxDate?: string, minDate?
   )
 }
 
-export async function graphQLGetLogsURL(types: [string, string], minDate?: string, maxDate?: string) {
+export async function graphQLGetLogsURL(minDate?: string, maxDate?: string) {
   return await graphQLRequest(
     `
-      query getLogsUrl($types: [EventType!], $minDate: DateTime, $maxDate: DateTime) {
+      query getLogsUrl($minDate: DateTime, $maxDate: DateTime) {
         login {
           id
-          eventsUrl(types: $types, minDate: $minDate, maxDate: $maxDate)
+          eventsUrl(minDate: $minDate, maxDate: $maxDate)
         }
       }
     `,
     {
-      types,
       minDate,
       maxDate,
-    }
+    },
   )
 }
 
