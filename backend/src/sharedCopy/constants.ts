@@ -42,19 +42,6 @@ export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_NAME_LENGTH = 100
 export const SIDEBAR_WIDTH = 250
 
-export const LEGACY_ATTRIBUTES = [
-  'categoryA',
-  'categoryB',
-  'categoryC',
-  'categoryD',
-  'categoryE',
-  'statusA',
-  'statusB',
-  'statusC',
-  'statusD',
-  'statusE',
-]
-
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',
   hostname: IP_PRIVATE,
