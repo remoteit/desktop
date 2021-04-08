@@ -88,7 +88,7 @@ export default createModel<RootModel>()({
       const { set } = dispatch.logs
       if (!hasCredentials()) return
       try {
-        const gqlResponse = await graphQLGetLogsURL(['DEVICE_STATE', 'DEVICE_CONNECT'], minDate)
+        const gqlResponse = await graphQLGetLogsURL(minDate)
         const { eventsUrl } = gqlResponse?.data?.data?.login
         set({ eventsUrl: eventsUrl })
       } catch (error) {
