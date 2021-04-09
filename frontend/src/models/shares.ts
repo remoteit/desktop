@@ -53,7 +53,7 @@ export default createModel<RootModel>()({
             successMessage:
               data.email.length > 1
                 ? `${data.email.length} accounts successfully shared to ${attributeName(device)}.`
-                : `${data.email[0]} successfully shared to ${attributeName(device)}.`,
+                : `${attributeName(device)} successfully shared to ${data.email[0]}.`,
           })
       } catch (error) {
         await graphQLCatchError(error)
