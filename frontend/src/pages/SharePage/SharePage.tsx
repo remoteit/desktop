@@ -15,7 +15,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
 
 export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
-  const { email = '' } = useParams<{ email: string }>()
+  const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
   const { shares } = useDispatch<Dispatch>()
   const { contacts = [], user, deleting } = useSelector((state: ApplicationState) => ({
     contacts: state.devices.contacts,
@@ -83,7 +83,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
       setScriptIndeterminate(false)
     }
 
-    setSelectedServices(matchServices)
+    matchServices ? setSelectedServices([...matchServices, serviceID]) : setSelectedServices([serviceID])
     setIndeterminate(indeterminateServices)
     setUserSelected(contacts.find(c => emails.includes(c.email)))
     setSelected(emails)
