@@ -70,7 +70,10 @@ export default createModel<RootModel>()({
     }) {
       const { device, emails, scripting, services, isNew } = infoUpdate
 
-      const newUsers: IUser[] = emails.map(email => ({ email, id: '', scripting }))
+      const sharedUsers = device.access.map(item => item.email)
+      const newUsers: IUser[] = emails
+        .map(email => ({ email, id: '', scripting }))
+        .filter(item => !sharedUsers.includes(item.email) && item)
       if (isNew) {
         const access = device.access.filter(i => emails.includes(i.email))
         device.access =
