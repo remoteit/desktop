@@ -1,6 +1,5 @@
 import { graphQLRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
-import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
 
 const DEVICE_SELECT = `
@@ -14,7 +13,6 @@ const DEVICE_SELECT = `
   version
   configurable
   attributes
-  ${LEGACY_ATTRIBUTES.join('\n')}
   access {
     user {
       id
@@ -202,9 +200,6 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
 
 function processDeviceAttributes(response: any): IDevice['attributes'] {
   let result = processAttributes(response)
-  LEGACY_ATTRIBUTES.forEach(attribute => {
-    if (response[attribute]) result[attribute] = response[attribute]
-  })
   return result
 }
 

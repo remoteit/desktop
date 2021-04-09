@@ -1,11 +1,23 @@
 import React, { useEffect } from 'react'
-import { LEGACY_ATTRIBUTES } from '../../shared/constants'
 import { TargetPlatform } from '../../components/TargetPlatform'
 import { Columns } from '../../components/Columns'
 import { DataDisplay } from '../../components/DataDisplay'
 import { QualityDetails } from '../../components/QualityDetails'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
 import analyticsHelper from '../../helpers/analyticsHelper'
+
+const ATTRIBUTES = [
+  'categoryA',
+  'categoryB',
+  'categoryC',
+  'categoryD',
+  'categoryE',
+  'statusA',
+  'statusB',
+  'statusC',
+  'statusD',
+  'statusE',
+]
 
 export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   useEffect(() => {
@@ -37,7 +49,7 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
             { label: 'Device ID', value: device.id },
             { label: 'Hardware ID', value: device.hardwareID },
             { label: 'Daemon version', value: device.version },
-            ...LEGACY_ATTRIBUTES.map(label => ({ label, value: device.attributes[label] })),
+            ...ATTRIBUTES.map(label => ({ label, value: device.attributes[label] })),
           ]}
         />
       </Columns>
