@@ -69,6 +69,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         <DeviceSetupItem />
         {remoteUI || <AccountLinkingSettings />}
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
+<<<<<<< HEAD
         <TestUI>
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
         </TestUI>
@@ -80,6 +81,17 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             onClick={() => emit('preferences', { ...preferences, testUI: false, allowPrerelease: false })}
           />
         </TestUI>
+=======
+        {preferences.alphaUI && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
+        {preferences.alphaUI && (
+          <ListItemSetting
+            label="Disable Alpha UI"
+            subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
+            icon="vial"
+            onClick={() => emit('preferences', { ...preferences, alphaUI: false, allowPrerelease: false })}
+          />
+        )}
+>>>>>>> Basic certificate support, alphaUI support, styling updates
       </List>
       <Divider variant="inset" />
       <LicensingSetting />
@@ -129,7 +141,11 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
               toggle={preferences.autoUpdate}
               onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
             />
+<<<<<<< HEAD
             <TestUI>
+=======
+            {preferences.alphaUI && (
+>>>>>>> Basic certificate support, alphaUI support, styling updates
               <ListItemSetting
                 quote
                 label="Allow Prerelease"

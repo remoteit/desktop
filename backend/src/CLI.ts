@@ -165,7 +165,7 @@ export default class CLI {
           c.error = { message: status.error.message, code: status.error.code }
         }
 
-        d('UPDATE STATUS', { c, status: status.state })
+        Logger.info('UPDATE STATUS', { c, status: status.state })
       }
       return c
     })

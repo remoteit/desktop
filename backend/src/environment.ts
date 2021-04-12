@@ -79,6 +79,7 @@ export class Environment {
     // this.certificatePath = path.resolve(this.userPath, 'certificate')
     this.logPath = path.resolve(this.userPath, 'log')
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
+    this.certificatePath = path.resolve(this.userPath, 'certificate')
     this.manufacturerDetails = this.getManufacturerDetails()
     this.oobAvailable = this.getOobAvailable()
   }
