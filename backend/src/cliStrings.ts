@@ -56,6 +56,7 @@ export default {
   connect(c: IConnection) {
     const { useCertificate } = preferences.get()
     const domain = 'dt.rt3.io'
+
     const command = `-j connection add \
       --id ${c.id} \
       --port ${c.port} \
@@ -69,13 +70,13 @@ export default {
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
       --manufacture-id ${environment.appCode} `
+
     const certCommand = `--enableReverseHTTPSProxy \
       --reverseHTTPSProxyDomain "${domain}" \
       --reverseHTTPSProxyCert "${environment.certificatePath}/${domain}.cert" \
       --reverseHTTPSProxyKey "${environment.certificatePath}/${domain}.key"`
 
     return useCertificate ? command + certCommand : command
-
     //--domain ${domain} \
     //--targetHostname ${c.targetHost} \
     //--enableHTTP ${ /* if http(s) or lan shared */} \
