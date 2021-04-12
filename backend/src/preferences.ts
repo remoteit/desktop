@@ -13,6 +13,8 @@ export class Preferences {
     disableLocalNetwork: false,
     showNotifications: true,
     allowPrerelease: false,
+    useCertificate: true,
+    alphaUI: false,
   }
 
   private file: JSONFile<IPreferences>

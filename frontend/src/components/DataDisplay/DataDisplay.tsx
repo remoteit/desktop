@@ -5,8 +5,8 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Formats } from '../Formats'
 import { Icon } from '../Icon'
 
-export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
-  const css = useStyles()
+export const DataDisplay: React.FC<{ data: IDataDisplay[]; width?: number }> = ({ data, width = 140 }) => {
+  const css = useStyles(width)()
   return (
     <List className={css.list}>
       {data.map(
@@ -29,22 +29,23 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[] }> = ({ data }) => {
   )
 }
 
-const useStyles = makeStyles({
-  list: { width: '100%' },
-  item: {
-    padding: `4px 0`,
-    fontSize: fontSizes.sm,
-    fontFamily: 'Roboto Mono',
-    color: colors.grayDarker,
-    alignItems: 'start',
-    '& > span': {
-      fontFamily: 'Roboto',
-      color: colors.grayDark,
-      minWidth: 142,
-      textTransform: 'capitalize',
-    },
-    '& svg': {
+const useStyles = minWidth =>
+  makeStyles({
+    list: { width: '100%' },
+    item: {
+      padding: `4px 0`,
+      fontSize: fontSizes.sm,
+      fontFamily: 'Roboto Mono',
       color: colors.grayDarker,
+      alignItems: 'start',
+      '& > span': {
+        fontFamily: 'Roboto',
+        color: colors.grayDark,
+        textTransform: 'capitalize',
+        minWidth,
+      },
+      '& svg': {
+        color: colors.grayDarker,
+      },
     },
-  },
-})
+  })

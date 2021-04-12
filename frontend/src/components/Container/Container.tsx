@@ -10,10 +10,20 @@ type Props = {
   integrated?: boolean
   bodyProps?: any
   bodyRef?: React.RefObject<HTMLDivElement>
+  gutterBottom?: boolean
 }
 
-export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated, bodyProps, bodyRef, children }) => {
-  const css = useStyles()
+export const Container: React.FC<Props> = ({
+  header,
+  sidebar,
+  footer,
+  integrated,
+  bodyProps,
+  bodyRef,
+  gutterBottom,
+  children,
+}) => {
+  const css = useStyles(gutterBottom)()
 
   return (
     <div className={css.container}>
@@ -23,11 +33,13 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
       </div>
       {sidebar ? (
         <div className={css.sidebar}>
-          <Body {...bodyProps}>{children}</Body>
+          <Body {...bodyProps} gutterBottom={gutterBottom}>
+            {children}
+          </Body>
           <div className={css.sideContent}>{sidebar}</div>
         </div>
       ) : (
-        <Body bodyRef={bodyRef} {...bodyProps}>
+        <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom}>
           {children}
         </Body>
       )}
@@ -41,39 +53,40 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
   )
 }
 
-const useStyles = makeStyles({
-  container: {
-    display: 'flex',
-    alignItems: 'stretch',
-    flexFlow: 'column',
-    height: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  header: {
-    position: 'relative',
-    zIndex: 3,
-    '& .MuiTypography-h1': {
+const useStyles = gutterBottom =>
+  makeStyles({
+    container: {
       display: 'flex',
-      alignItems: 'center',
-      padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
-      minHeight: 50,
+      alignItems: 'stretch',
+      flexFlow: 'column',
+      height: '100%',
+      position: 'relative',
+      overflow: 'hidden',
     },
-  },
-  sidebar: {
-    display: 'flex',
-    flexFlow: 'row',
-    flexGrow: 1,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  sideContent: {
-    boxShadow: `-1px 0 2px ${colors.darken}`,
-    position: 'relative',
-    zIndex: 2,
-  },
-  footer: {
-    position: 'relative',
-    zIndex: 3,
-  },
-})
+    header: {
+      position: 'relative',
+      zIndex: 3,
+      '& .MuiTypography-h1': {
+        display: 'flex',
+        alignItems: 'center',
+        padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
+        minHeight: 50,
+      },
+    },
+    sidebar: {
+      display: 'flex',
+      flexFlow: 'row',
+      flexGrow: 1,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    sideContent: {
+      boxShadow: `-1px 0 2px ${colors.darken}`,
+      position: 'relative',
+      zIndex: 2,
+    },
+    footer: {
+      position: 'relative',
+      zIndex: 3,
+    },
+  })

@@ -15,7 +15,7 @@ export class Application {
   context?: 'copy' | 'launch'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
-  defaultTokens: string[] = ['host', 'port', 'id']
+  defaultTokens: string[] = ['host', 'port', 'id', 'address']
   iconRotate: boolean = false
   localhost?: boolean
 
@@ -159,7 +159,8 @@ function getApplicationType(typeID?: number) {
         title: 'Secure Browser',
         icon: 'arrow-right',
         iconRotate: true,
-        defaultLaunchTemplate: 'https://[host]:[port]',
+        defaultLaunchTemplate: '[address]', // :'https://[host]:[port]',
+        defaultCommandTemplate: '[address]',
       })
       break
     case 7:

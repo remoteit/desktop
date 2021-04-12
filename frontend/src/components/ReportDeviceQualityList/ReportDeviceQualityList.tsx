@@ -86,7 +86,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
 
 const headCells = [
   { id: 'name', label: 'Device Name', orderBy: 'name', numeric: false },
-  { id: 'quality', label: 'Internet Connectivity', orderBy: 'qualitySort', numeric: true },
+  { id: 'quality', label: 'Connectivity', orderBy: 'qualitySort', numeric: true },
 ]
 
 interface HeadCell {

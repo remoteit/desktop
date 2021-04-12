@@ -103,7 +103,7 @@ export function ConnectionStateIcon({
           type="solid"
           inlineLeft
         />
-        Internet connectivity {device.quality.toLowerCase()}
+        Connectivity {device.quality.toLowerCase()}
       </>
     )
     element = (

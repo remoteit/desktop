@@ -42,6 +42,7 @@ type IConnectionStatus = {
   sessionID?: string
   startedAt?: string
   stoppedAt?: string
+  address?: string
 }
 
 export default class CLI {
@@ -149,6 +150,7 @@ export default class CLI {
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined
         c.reachable = status.reachable
         c.sessionId = status.sessionID?.toLowerCase()
+        c.address = status.address
 
         if (status.reachable === false) {
           c.error = {
@@ -163,7 +165,7 @@ export default class CLI {
           c.error = { message: status.error.message, code: status.error.code }
         }
 
-        d('UPDATE STATUS', { c, status: status.state })
+        Logger.info('UPDATE STATUS', { c, status: status.state })
       }
       return c
     })

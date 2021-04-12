@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { emit } from '../../services/Controller'
-import { List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
+import { makeStyles, List, Divider, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { SettingsDisableNetworkItem } from '../../components/SettingsDisableNetworkItem'
@@ -11,7 +11,7 @@ import { ListItemSetting } from '../../components/ListItemSetting'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { UpdateSetting } from '../../components/UpdateSetting'
 import { getOwnDevices } from '../../models/accounts'
-import { makeStyles } from '@material-ui/core/styles'
+import { Collapsible } from '../../components/Collapsible'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -23,9 +23,8 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
-  const { showReports, os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI, user } = useSelector(
+  const { os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI, user } = useSelector(
     (state: ApplicationState) => ({
-      showReports: state.auth.user?.email.includes('@remote.it'),
       os: state.backend.environment.os,
       installing: state.binaries.installing,
       cliVersion: state.binaries.installedVersion || '(loading...)',
@@ -47,6 +46,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
 
   return (
     <Container
+      gutterBottom
       header={
         <>
           <Typography variant="h1">
@@ -67,14 +67,18 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         <DeviceSetupItem />
         {remoteUI || <AccountLinkingSettings />}
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
-        {showReports && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
+        {preferences.alphaUI && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
+        {preferences.alphaUI && (
+          <ListItemSetting
+            label="Disable Alpha UI"
+            subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
+            icon="vial"
+            onClick={() => emit('preferences', { ...preferences, alphaUI: false, allowPrerelease: false })}
+          />
+        )}
       </List>
-      <Divider />
-      <Typography variant="subtitle1">Licensing</Typography>
-      <List>
-        <LicensingSetting />
-      </List>
-      <Divider />
+      <Divider variant="inset" />
+      <LicensingSetting />
       <Typography variant="subtitle1">Settings</Typography>
       <List>
         {isRemote() && (
@@ -100,6 +104,19 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           toggle={preferences.showNotifications}
           onClick={() => emit('preferences', { ...preferences, showNotifications: !preferences.showNotifications })}
         />
+        <ListItemSetting
+          label="Open at login"
+          icon="door-open"
+          toggle={preferences.openAtLogin}
+          onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
+        />
+        <ListItemSetting
+          label="HTTPS Certificate"
+          subLabel="Use a remote.it certificate to handle https connections"
+          icon="file-certificate"
+          toggle={preferences.useCertificate}
+          onClick={() => emit('preferences', { ...preferences, useCertificate: !preferences.useCertificate })}
+        />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
@@ -108,38 +125,30 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
               toggle={preferences.autoUpdate}
               onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
             />
-            {user?.email.includes('@remote.it') && (
+            {preferences.alphaUI && (
               <ListItemSetting
+                quote
                 label="Allow Prerelease"
-                icon="broadcast-tower"
                 toggle={preferences.allowPrerelease}
                 onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
               />
             )}
           </>
         )}
-        <ListItemSetting
-          label="Open at login"
-          icon="door-open"
-          toggle={preferences.openAtLogin}
-          onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
-        />
         <UpdateSetting />
       </List>
       {remoteUI || (
-        <>
-          <Divider />
-          <Typography variant="subtitle1">Advanced</Typography>
+        <Collapsible title="Advanced">
           <List>
             <SettingsDisableNetworkItem />
             <ListItemSetting
               confirm
-              label={installing ? 'Installing...' : 'Re-install command line tools'}
+              label={installing ? 'Installing...' : 'Re-install system service'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}
               icon="terminal"
               confirmTitle="Are you sure?"
-              confirmMessage="This will stop all services and re-install the command line utilities."
+              confirmMessage="This will stop and attempt to re-install the system service."
               onClick={() => binaries.install()}
             />
             {!notOwner && (
@@ -164,7 +173,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
               onClick={() => emit('showFolder', 'logs')}
             />
           </List>
-        </>
+        </Collapsible>
       )}
     </Container>
   )

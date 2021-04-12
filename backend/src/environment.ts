@@ -29,6 +29,7 @@ export class Environment {
   symlinkPath: string
   logPath: string
   connectionLogPath: string
+  certificatePath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   oobAvailable: boolean
@@ -76,6 +77,7 @@ export class Environment {
 
     this.logPath = path.resolve(this.userPath, 'log')
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
+    this.certificatePath = path.resolve(this.userPath, 'certificate')
     this.manufacturerDetails = this.getManufacturerDetails()
     this.oobAvailable = this.getOobAvailable()
   }

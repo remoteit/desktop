@@ -14,7 +14,7 @@ import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Title } from './Title'
 
-export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, children }) => {
+export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({ device, header, children }) => {
   const { thisDevice, access } = useSelector((state: ApplicationState) => {
     return {
       thisDevice: state.backend.device?.uid === device?.id,
@@ -27,6 +27,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
 
   return (
     <Container
+      gutterBottom
       header={
         <>
           <Typography variant="h1">
@@ -65,6 +66,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice }> = ({ device, child
               dense
             />
           </ListHorizontal>
+          {header}
         </>
       }
     >

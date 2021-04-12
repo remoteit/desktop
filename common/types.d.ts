@@ -141,6 +141,7 @@ declare global {
     proxyOnly?: boolean // disabled p2p
     connecting?: boolean
     sessionId?: string //the connection session id
+    address?: string // the connection url returned from cli
     username?: string // support for launching where username could be saved
     launchTemplate?: string // deep link launch url template
     commandTemplate?: string // command line launch template
@@ -502,6 +503,8 @@ declare global {
     disableLocalNetwork?: boolean
     showNotifications?: boolean
     allowPrerelease?: boolean
+    useCertificate?: boolean
+    alphaUI?: boolean
   }
 
   type SegmentContext = {

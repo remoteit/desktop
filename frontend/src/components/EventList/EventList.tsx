@@ -10,7 +10,6 @@ import {
   Button,
   makeStyles,
   Typography,
-  Link,
   Tooltip,
   IconButton,
 } from '@material-ui/core'
@@ -116,95 +115,87 @@ export const EventList: React.FC<LogListProps> = ({
   const refresh = () => {
     fetchLogs({ id: device?.id || '', from: 0, minDate: `${minDate}` })
   }
-  const container = () => {
-    return (
-      <>
-        <Container
-          bodyProps={{ inset: true }}
-          header={
-            <>
-              {title}
-              <List>
-                <ListItem dense>
-                  <ListItemIcon>
-                    <Icon name={fetching ? 'spinner-third' : 'calendar-day'} size="md" spin={fetching} fixedWidth />
-                  </ListItemIcon>
-                  {onChangeDate && (
-                    <>
-                      <DatePicker
-                        onChange={onChangeDate}
-                        minDay={minDate}
-                        selectedDate={selectedDate}
-                        fetching={fetching}
-                        label="Jump to Date"
-                      />
-                    </>
-                  )}
-                </ListItem>
-                <ListItemSecondaryAction>
-                  {!device ? (
-                    <>
-                      <Box ml="auto" display="flex" alignItems="center">
-                        <i className={css.dateUpdate}>
-                          {' '}
-                          {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)}{' '}
-                        </i>
-                        <CSVDownloadButton
-                          minDate={minDate?.toDateString() || new Date().toString()}
-                          maxDate={selectedDate?.toDateString() || new Date().toString()}
-                        />
-                        <Tooltip title="Refresh List">
-                          <IconButton onClick={refresh}>
-                            <Icon name="sync" spin={fetching} size="md" fixedWidth />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </>
-                  ) : (
+
+  return (
+    <Container
+      bodyProps={{ inset: true }}
+      header={
+        <>
+          {title}
+          <List>
+            <ListItem dense>
+              <ListItemIcon>
+                <Icon name="calendar-day" size="md" fixedWidth />
+              </ListItemIcon>
+              {onChangeDate && (
+                <>
+                  <DatePicker
+                    onChange={onChangeDate}
+                    minDay={minDate}
+                    selectedDate={selectedDate}
+                    fetching={fetching}
+                    label="Jump to Date"
+                  />
+                </>
+              )}
+            </ListItem>
+            <ListItemSecondaryAction>
+              {!device ? (
+                <>
+                  <Box ml="auto" display="flex" alignItems="center">
+                    <i className={css.dateUpdate}> {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)} </i>
                     <CSVDownloadButton
-                      deviceID={device.id}
                       minDate={minDate?.toDateString() || new Date().toString()}
                       maxDate={selectedDate?.toDateString() || new Date().toString()}
                     />
-                  )}
-                </ListItemSecondaryAction>
-              </List>
-            </>
+                    <Tooltip title="Refresh List">
+                      <IconButton onClick={refresh}>
+                        <Icon name="sync" spin={fetching} size="md" fixedWidth />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </>
+              ) : (
+                <CSVDownloadButton
+                  deviceID={device.id}
+                  minDate={minDate?.toDateString() || new Date().toString()}
+                  maxDate={selectedDate?.toDateString() || new Date().toString()}
+                />
+              )}
+            </ListItemSecondaryAction>
+          </List>
+        </>
+      }
+    >
+      <List className={css.item}>
+        {!fetching &&
+          events?.items?.map((item: any) => <EventItem item={item} device={device} user={user} key={item.id} />)}
+      </List>
+      <Box className={css.box}>
+        {events?.hasMore || fetching ? (
+          <Button color="primary" onClick={fetchMore} disabled={fetchingMore || fetching}>
+            {fetchingMore || fetching ? `Loading ...` : 'Load More'}
+          </Button>
+        ) : (
+          <Typography variant="body2" align="center" color="textSecondary">
+            End of Logs
+          </Typography>
+        )}
+      </Box>
+      {!events?.hasMore && !fetching && planUpgrade && (
+        <Notice
+          severity="warning"
+          button={
+            <Button variant="contained" href="https://link.remote.it/licensing/plans" size="small" target="_blank">
+              Upgrade
+            </Button>
           }
         >
-          <List className={css.item}>
-            {!fetching &&
-              events?.items?.map((item: any) => <EventItem item={item} device={device} user={user} key={item.id} />)}
-          </List>
-          <Box className={css.box}>
-            {events?.hasMore || fetching ? (
-              <Button color="primary" onClick={fetchMore} disabled={fetchingMore || fetching}>
-                {fetchingMore || fetching ? `Loading ...` : 'Load More'}
-              </Button>
-            ) : (
-              <Typography variant="body2" align="center" color="textSecondary">
-                End of Logs
-              </Typography>
-            )}
-          </Box>
-          {!events?.hasMore && !fetching && planUpgrade && (
-            <Notice
-              severity="warning"
-              button={
-                <Button variant="contained" href="https://link.remote.it/licensing/plans" size="small" target="_blank">
-                  Upgrade
-                </Button>
-              }
-            >
-              Plan upgrade required to view logs past {daysAllowed} days
-            </Notice>
-          )}
-        </Container>
-      </>
-    )
-  }
-
-  return device ? <DeviceHeaderMenu device={device}> {container()}</DeviceHeaderMenu> : container()
+          Plan upgrade required to view logs past {daysAllowed} days
+        </Notice>
+      )}
+    </Container>
+  )
 }
 
 const useStyles = makeStyles({

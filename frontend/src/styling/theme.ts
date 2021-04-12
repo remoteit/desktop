@@ -66,6 +66,9 @@ const jssTheme: ThemeOptions = {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
       anchorOriginBottomCenter: { bottom: '80px !important' },
     },
+    MuiSnackbarContent: {
+      root: { borderRadius: radius },
+    },
     MuiCardHeader: {
       root: {
         paddingTop: spacing.xs,
@@ -135,6 +138,8 @@ const jssTheme: ThemeOptions = {
         marginBottom: 1,
         borderRadius: radius,
         width: `calc(100% - ${spacing.md * 2}px)`,
+        '&.Mui-selected': { backgroundColor: colors.primaryHighlight },
+        '&.Mui-selected:hover': { backgroundColor: colors.primaryLighter },
       },
       gutters: {
         paddingLeft: spacing.xxs,
