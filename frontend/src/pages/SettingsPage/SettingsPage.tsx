@@ -17,6 +17,7 @@ import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { isRemote } from '../../services/Browser'
+import { getApi } from '../../services/graphQL'
 import { spacing } from '../../styling'
 import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
@@ -67,13 +68,13 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         <DeviceSetupItem />
         {remoteUI || <AccountLinkingSettings />}
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
-        {preferences.alphaUI && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
-        {preferences.alphaUI && (
+        {preferences.testUI && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
+        {preferences.testUI && (
           <ListItemSetting
             label="Disable Alpha UI"
             subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
             icon="vial"
-            onClick={() => emit('preferences', { ...preferences, alphaUI: false, allowPrerelease: false })}
+            onClick={() => emit('preferences', { ...preferences, testUI: false, allowPrerelease: false })}
           />
         )}
       </List>
@@ -125,7 +126,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
               toggle={preferences.autoUpdate}
               onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
             />
-            {preferences.alphaUI && (
+            {preferences.testUI && (
               <ListItemSetting
                 quote
                 label="Allow Prerelease"
@@ -140,6 +141,15 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       {remoteUI || (
         <Collapsible title="Advanced">
           <List>
+            {preferences.testUI && (
+              <ListItemSetting
+                label="Switch GraphQL APIs"
+                subLabel={`Using ${getApi()}`}
+                icon="database"
+                onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
+                toggle={preferences.switchApi}
+              />
+            )}
             <SettingsDisableNetworkItem />
             <ListItemSetting
               confirm

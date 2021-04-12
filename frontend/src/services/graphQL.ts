@@ -4,6 +4,14 @@ import { store } from '../store'
 import { version } from '../../package.json'
 import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 
+export function getApi(): string {
+  const { backend } = store.getState()
+  const { overrides } = backend.environment
+  let beta = version.includes('alpha')
+  if (backend.preferences.switchApi) beta = !beta
+  return beta ? overrides?.betaApiURL || GRAPHQL_BETA_API : overrides?.apiURL || GRAPHQL_API
+}
+
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   try {
     const response = await graphQLRequest(query, variables)
@@ -16,7 +24,6 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 
 export async function graphQLRequest(query: String, variables: ILookup<any> = {}) {
   if (store.getState().ui.offline) return {}
-  const { overrides } = store.getState().backend.environment
   const token = await getToken()
 
   if (!token) {
@@ -25,7 +32,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   }
 
   const request = {
-    url: version.includes('alpha') ? overrides?.betaApiURL || GRAPHQL_BETA_API : overrides?.apiURL || GRAPHQL_API,
+    url: getApi(),
     method: 'post' as 'post',
     headers: { Authorization: token },
     data: { query, variables },

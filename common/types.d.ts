@@ -504,7 +504,8 @@ declare global {
     showNotifications?: boolean
     allowPrerelease?: boolean
     useCertificate?: boolean
-    alphaUI?: boolean
+    switchApi?: boolean
+    testUI?: boolean
   }
 
   type SegmentContext = {

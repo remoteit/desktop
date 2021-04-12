@@ -69,11 +69,11 @@ export const AvatarMenu: React.FC<Props> = ({}) => {
         {altMenu && (
           <ListItemSetting
             confirm
-            label="Enable Alpha UI"
+            label="Enable Test UI"
             icon="vial"
             confirmTitle="Are you sure?"
             confirmMessage="Enabling alpha features may be unstable. It is only intended for testing and development."
-            onClick={() => emit('preferences', { ...preferences, alphaUI: true })}
+            onClick={() => emit('preferences', { ...preferences, testUI: true })}
           />
         )}
         <Divider />
