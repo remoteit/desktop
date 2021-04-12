@@ -3,15 +3,17 @@ import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { RootModel } from './rootModel'
 
-const upgradeUrl = 'https://link.remote.it/aws-marketplace/saas'
-// const upgradeUrl = 'https://app.remote.it/#account'
-
-type ILicenseLookup = { productId: string; platform: number }
+type ILicenseLookup = { productId: string; platform?: number; upgradeUrl: string }
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
     productId: '55d9e884-05fd-11eb-bda8-021f403e8c27',
     platform: 1185,
+    upgradeUrl: 'https://link.remote.it/aws-marketplace/saas',
+  },
+  {
+    productId: 'b999e047-5532-11eb-8872-063ce187bcd7',
+    upgradeUrl: 'https://link.remote.it/portal/account',
   },
 ]
 
@@ -101,6 +103,25 @@ export default createModel<RootModel>()({
         //       },
         //     },
         //   },
+        //   {
+        //     id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
+        //     created: new Date('2020-10-17T01:03:47.976Z'),
+        //     updated: new Date('2020-10-17T01:03:47.976Z'),
+        //     expiration: new Date('2020-11-05T01:03:48.000Z'),
+        //     valid: true,
+        //     plan: {
+        //       id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
+        //       name: 'TRIAL',
+        //       description: 'trial',
+        //       duration: 'P30D',
+        //       product: {
+        //         id: 'b999e047-5532-11eb-8872-063ce187bcd7',
+        //         name: 'remote.it for AWS',
+        //         description: 'remote.it for AWS',
+        //         provider: 'AWS',
+        //       },
+        //     },
+        //   },
         // ],
         // limits: [
         //   {
@@ -126,6 +147,11 @@ export default createModel<RootModel>()({
   },
 })
 
+export function lookupLicenseUpgradeUrl(productId?: string) {
+  const lookup = LicenseLookup.find(l => l.productId === productId)
+  return lookup?.upgradeUrl
+}
+
 export function lookupLicenseProductId(device?: IDevice) {
   const lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
   return lookup?.productId
@@ -138,6 +164,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
+  const upgradeUrl = lookupLicenseUpgradeUrl(productId)
 
   if (!license) return {}
 
@@ -166,10 +193,10 @@ export function selectLicenses(state: ApplicationState) {
   return {
     licenses: licensing.licenses.map(license => ({
       ...license,
+      upgradeUrl: lookupLicenseUpgradeUrl(license.plan.product.id),
       limits: licensing.limits.filter(limit => limit.license?.id === license.id),
     })),
     limits: licensing.limits.filter(limit => !limit.license),
-    upgradeUrl,
   }
 }
 

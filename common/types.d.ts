@@ -322,6 +322,7 @@ declare global {
     expiration?: Date
     valid: boolean
     value: object
+    upgradeUrl?: string
     plan: {
       id: string
       name: string

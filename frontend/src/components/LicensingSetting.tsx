@@ -21,7 +21,7 @@ import { LimitSetting } from './LimitSetting'
 import { spacing } from '../styling'
 
 export const LicensingSetting: React.FC = () => {
-  const { licenses, limits, upgradeUrl } = useSelector((state: ApplicationState) => selectLicenses(state))
+  const { licenses, limits } = useSelector((state: ApplicationState) => selectLicenses(state))
   const css = useStyles()
 
   if (!licenses.length) return null
@@ -43,11 +43,13 @@ export const LicensingSetting: React.FC = () => {
                   license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
                 }
               />
-              <ListItemSecondaryAction>
-                <Button color="primary" href={upgradeUrl} size="small" target="_blank">
-                  Manage Subscription
-                </Button>
-              </ListItemSecondaryAction>
+              {license.upgradeUrl && (
+                <ListItemSecondaryAction>
+                  <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
+                    Manage Subscription
+                  </Button>
+                </ListItemSecondaryAction>
+              )}
             </ListItem>
             <ListItem>
               <ListItemIcon></ListItemIcon>
