@@ -2,6 +2,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
+import { EventHeader } from '../../components/EventList/EventHeader'
 import { EventList } from '../../components/EventList'
 import { eventLogs } from '../../models/logs'
 
@@ -29,7 +30,20 @@ export const DeviceLogPage: React.FC<{ device?: IDevice }> = ({ device }) => {
   }
 
   return (
-    <DeviceHeaderMenu device={device}>
+    <DeviceHeaderMenu
+      device={device}
+      header={
+        <EventHeader
+          fetching={fetching}
+          onChangeDate={onChangeDate}
+          fetchLogs={getDeviceLogs}
+          selectedDate={selectedDate}
+          device={device}
+          events={events}
+          fetchingMore={fetchingMore}
+        />
+      }
+    >
       <EventList
         fetching={fetching}
         onChangeDate={onChangeDate}
