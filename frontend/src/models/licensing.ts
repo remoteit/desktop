@@ -4,6 +4,7 @@ import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services
 import { RootModel } from './rootModel'
 
 const upgradeUrl = 'https://link.remote.it/aws-marketplace/saas'
+// const upgradeUrl = 'https://app.remote.it/#account'
 
 type ILicenseLookup = { productId: string; platform: number }
 
@@ -31,7 +32,7 @@ export default createModel<RootModel>()({
   effects: (dispatch: any) => ({
     async fetch() {
       try {
-        const result = await graphQLRequest(
+        const result: any = await graphQLRequest(
           ` {
               login {
                 licenses {
