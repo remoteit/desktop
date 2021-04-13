@@ -20,6 +20,9 @@ type ILogState = {
   events?: IEventList
   maxDate?: string
   minDate?: string
+  selectedDate: Date | null
+  planUpgrade: boolean
+  daysAllowed: number
 }
 
 const state: ILogState = {
@@ -31,6 +34,9 @@ const state: ILogState = {
   events: undefined,
   maxDate: new Date().toString(),
   minDate: '',
+  selectedDate: null,
+  planUpgrade: false,
+  daysAllowed: 0
 }
 
 export type eventLogs = {
@@ -48,7 +54,7 @@ export default createModel<RootModel>()({
 
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
 
-      set({ maxDate, minDate })
+      set({ maxDate, minDate, from })
 
       try {
         const gqlResponse = await graphQLGetMoreLogs(id, from, maxDate, minDate)
@@ -79,7 +85,7 @@ export default createModel<RootModel>()({
     async getEventsLogs({ from, minDate, maxDate }: eventLogs, globalState) {
       const { set } = dispatch.logs
       from === 0 ? set({ fetching: true }) : set({ fetchingMore: true })
-      set({ maxDate, minDate })
+      set({ maxDate, minDate, from })
       try {
         const gqlResponse = await graphQLGetEventsLogs(from, minDate, maxDate)
         const events = gqlResponse.data.data?.login.events
