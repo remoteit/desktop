@@ -17,6 +17,7 @@ import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { isRemote } from '../../services/Browser'
+import { TestUI } from '../../components/TestUI'
 import { getApi } from '../../services/graphQL'
 import { spacing } from '../../styling'
 import { Title } from '../../components/Title'
@@ -68,15 +69,17 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         <DeviceSetupItem />
         {remoteUI || <AccountLinkingSettings />}
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
-        {preferences.testUI && <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />}
-        {preferences.testUI && (
+        <TestUI>
+          <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
+        </TestUI>
+        <TestUI>
           <ListItemSetting
-            label="Disable Alpha UI"
+            label="Disable Test UI"
             subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
             icon="vial"
             onClick={() => emit('preferences', { ...preferences, testUI: false, allowPrerelease: false })}
           />
-        )}
+        </TestUI>
       </List>
       <Divider variant="inset" />
       <LicensingSetting />
@@ -126,14 +129,14 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
               toggle={preferences.autoUpdate}
               onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
             />
-            {preferences.testUI && (
+            <TestUI>
               <ListItemSetting
                 quote
                 label="Allow Prerelease"
                 toggle={preferences.allowPrerelease}
                 onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
               />
-            )}
+            </TestUI>
           </>
         )}
         <UpdateSetting />
@@ -141,7 +144,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       {remoteUI || (
         <Collapsible title="Advanced">
           <List>
-            {preferences.testUI && (
+            <TestUI>
               <ListItemSetting
                 label="Switch GraphQL APIs"
                 subLabel={`Using ${getApi()}`}
@@ -149,7 +152,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
                 onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
                 toggle={preferences.switchApi}
               />
-            )}
+            </TestUI>
             <SettingsDisableNetworkItem />
             <ListItemSetting
               confirm

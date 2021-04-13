@@ -40,6 +40,7 @@ export type Color =
   | 'darken'
   | 'screen'
   | 'rpi'
+  | 'test'
 
 export const colors: { [key in Color]: string } = {
   primary: '#0096e7',
@@ -65,7 +66,8 @@ export const colors: { [key in Color]: string } = {
   black: '#000',
   darken: 'rgba(0,0,0,0.15)',
   screen: 'rgba(0,0,0,0.03)',
-  rpi: '#C51A4A',
+  rpi: '#c51a4a',
+  test: '#fffcf0',
 }
 
 export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
