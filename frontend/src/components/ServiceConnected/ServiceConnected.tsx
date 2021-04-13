@@ -1,5 +1,4 @@
 import React from 'react'
-import { hostName } from '../../shared/nameHelper'
 import { INITIATOR_PLATFORMS } from '../InitiatorPlatform/InitiatorPlatform'
 import { Collapse } from '@material-ui/core'
 import { DataDisplay } from '../DataDisplay'
@@ -13,12 +12,14 @@ type Props = {
 
 export const ServiceConnected: React.FC<Props> = ({ show, connection, session }) => {
   return (
-    <Gutters inset>
+    <Gutters>
       <Collapse in={show} timeout={800}>
         {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
         <DataDisplay
+          width={100}
           data={[
-            { label: 'Connection URL', value: connection && hostName(connection) },
+            // { label: 'URL', value: connection && hostName(connection) },
+            { label: 'Address', value: connection?.address },
             {
               label: 'Connection',
               value:

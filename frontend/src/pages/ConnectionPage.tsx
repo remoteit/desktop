@@ -60,7 +60,7 @@ export const ConnectionPage: React.FC = () => {
     <Container
       header={
         <>
-          <Gutters className={css.gutters} inset>
+          <Gutters className={css.gutters}>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
               connection={connection}
@@ -109,8 +109,5 @@ const useStyles = makeStyles({
     justifyContent: 'center',
   },
   errorMessage: { padding: 0 },
-  gutters: {
-    display: 'flex',
-    margin: spacing.lg,
-  },
+  gutters: { display: 'flex' },
 })

@@ -1,8 +1,8 @@
 import React from 'react'
-import { useHistory, useLocation, matchPath } from 'react-router-dom'
-import { makeStyles, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { useHistory, useLocation } from 'react-router-dom'
+import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { Icon } from '../Icon'
-import { colors, Color } from '../../styling'
+import { Color } from '../../styling'
 
 export type Props = {
   pathname: string
@@ -29,7 +29,6 @@ export const ListItemLocation: React.FC<Props> = ({
   children,
   ...props
 }) => {
-  const css = useStyles()
   const history = useHistory()
   const location = useLocation()
 
@@ -44,9 +43,8 @@ export const ListItemLocation: React.FC<Props> = ({
       button
       selected={!!matches}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || !!matches}
       style={{ opacity: 1 }}
-      classes={{ selected: css.selected }}
     >
       {icon && (
         <ListItemIcon>
@@ -58,10 +56,3 @@ export const ListItemLocation: React.FC<Props> = ({
     </ListItem>
   )
 }
-
-const useStyles = makeStyles({
-  selected: {
-    '&.Mui-selected': { backgroundColor: colors.primaryHighlight },
-    '&.Mui-selected:hover': { backgroundColor: colors.primaryLighter },
-  },
-})

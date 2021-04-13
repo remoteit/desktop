@@ -64,7 +64,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             <SharePage device={device} />
           </Route>
           <Route path="/devices/:deviceID/edit">
-            <DeviceEditPage targetDevice={targetDevice} targets={targets} device={device} />
+            <DeviceEditPage targetDevice={targetDevice} device={device} />
           </Route>
           <Route path="/devices/:deviceID/users">
             <UsersPageDevice device={device} />
@@ -86,9 +86,6 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </Route>
           <Route path="/devices/:deviceID/:serviceID/users">
             <UsersPageService device={device} />
-          </Route>
-          <Route path="/devices/:deviceID/:serviceID/log">
-            <LogPage />
           </Route>
           <Route path="/devices/:deviceID/:serviceID/edit">
             <ServiceEditPage targetDevice={targetDevice} targets={targets} device={device} />

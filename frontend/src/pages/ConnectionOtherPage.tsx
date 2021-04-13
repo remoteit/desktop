@@ -35,20 +35,10 @@ export const ConnectionOtherPage: React.FC = () => {
     <Container
       header={
         <>
-          <List>
-            <ListItem dense>
-              <ListItemText
-                primary={
-                  <Typography variant="h1">
-                    <Title>{session?.user?.email}</Title>
-                  </Typography>
-                }
-              />
-              <ListItemSecondaryAction>
-                <InfoButton device={device} service={service} />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </List>
+          <Typography variant="h1">
+            <Title>{session?.user?.email}</Title>
+            <InfoButton device={device} service={service} />
+          </Typography>
           <List>
             <ServiceConnected connection={connection} session={session} show />
           </List>

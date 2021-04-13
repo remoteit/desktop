@@ -10,9 +10,19 @@ type Props = {
   bodyRef?: React.RefObject<HTMLDivElement>
   className?: string
   maxHeight?: string
+  gutterBottom?: boolean
 }
 
-export const Body: React.FC<Props> = ({ inset, center, flex, bodyRef, maxHeight, className = '', children }) => {
+export const Body: React.FC<Props> = ({
+  inset,
+  center,
+  flex,
+  bodyRef,
+  maxHeight,
+  className = '',
+  gutterBottom,
+  children,
+}) => {
   const css = useStyles()
   const [hover, setHover] = useState<boolean>(true)
   className = classnames(
@@ -21,7 +31,8 @@ export const Body: React.FC<Props> = ({ inset, center, flex, bodyRef, maxHeight,
     flex && css.flex,
     center && css.center,
     inset && css.inset,
-    hover && css.showScroll
+    hover && css.showScroll,
+    gutterBottom && css.gutterBottom
   )
   let style = maxHeight ? { maxHeight } : {}
   return (
@@ -61,6 +72,9 @@ const useStyles = makeStyles({
     alignContent: 'flex-start',
     flexWrap: 'wrap',
     justifyContent: 'center',
+  },
+  gutterBottom: {
+    paddingBottom: spacing.xxl,
   },
   center: {
     display: 'flex',

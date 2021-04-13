@@ -91,9 +91,9 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
           Service offline
         </Notice>
       )}
-      <Columns count={1} inset>
+      <Gutters>
         <DataDisplay data={data} />
-      </Columns>
+      </Gutters>
     </ServiceHeaderMenu>
   )
 }
@@ -101,6 +101,6 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
 const useStyles = makeStyles({
   gutters: {
     display: 'flex',
-    margin: spacing.lg,
+    marginBottom: '0 !important',
   },
 })

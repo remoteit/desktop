@@ -1,4 +1,5 @@
 import environment from './environment'
+import preferences from './preferences'
 import user from './User'
 
 export default {
@@ -53,13 +54,19 @@ export default {
   },
 
   connect(c: IConnection) {
-    return `-j connection add --id ${c.id} --name "${c.name}" --port ${c.port} --hostname ${c.host} --timeout ${
-      c.timeout
-    } --restrict ${c.restriction} --failover ${!!c.failover} --p2p ${!c.proxyOnly} --servicetype ${
-      c.typeID
-    } --authhash ${user.authHash} --log ${!!c.log} --logfolder "${environment.connectionLogPath}" --manufacture-id ${
-      environment.appCode
-    }`
+    return certify(`-j connection add \
+      --id ${c.id} \
+      --port ${c.port} \
+      --hostname ${c.host} \
+      --timeout ${c.timeout} \
+      --restrict ${c.restriction} \
+      --failover ${!!c.failover} \
+      --p2p ${!c.proxyOnly} \
+      --servicetype ${c.typeID} \
+      --authhash ${user.authHash} \
+      --log ${!!c.log} \
+      --logfolder "${environment.connectionLogPath}" \
+      --manufacture-id ${environment.appCode}`)
   },
 
   disconnect(c: IConnection) {
@@ -67,13 +74,19 @@ export default {
   },
 
   setConnect(c: IConnection) {
-    return `-j connection modify --id ${c.id} --name "${c.name}" --port ${c.port} --hostname ${c.host} --timeout ${
-      c.timeout
-    } --restrict ${
-      c.restriction
-    } --failover ${!!c.failover} --p2p ${!c.proxyOnly} --enable ${!!c.enabled} --servicetype ${c.typeID} --authhash ${
-      user.authHash
-    } --manufacture-id ${environment.appCode}`
+    return certify(`-j connection modify \
+      --id ${c.id} \
+      --name "${c.name}" \
+      --port ${c.port} \
+      --hostname ${c.host} \
+      --timeout ${c.timeout} \
+      --restrict ${c.restriction} \
+      --failover ${!!c.failover} \
+      --p2p ${!c.proxyOnly} \
+      --enable ${!!c.enabled} \
+      --servicetype ${c.typeID} \
+      --authhash ${user.authHash} \
+      --manufacture-id ${environment.appCode}`)
   },
 
   serviceInstall() {
@@ -107,4 +120,22 @@ export default {
   version() {
     return '-j version'
   },
+}
+
+function certify(command: string) {
+  const { useCertificate } = preferences.get()
+  const domain = 'dt.rt3.io'
+
+  const certCommand = ` \
+    --enableReverseHTTPSProxy \
+    --reverseHTTPSProxyDomain "${domain}" \
+    --reverseHTTPSProxyCert "${environment.certificatePath}/${domain}.cert" \
+    --reverseHTTPSProxyKey "${environment.certificatePath}/${domain}.key"`
+
+  return useCertificate ? command + certCommand : command
+  //--domain ${domain} \
+  //--targetHostname ${c.targetHost} \
+  //--enableHTTP ${ /* if http(s) or lan shared */} \
+  //--cert "${environment.certificatePath}/${domain}.cert" \
+  //--Key "${environment.certificatePath}/${domain}.key"`
 }

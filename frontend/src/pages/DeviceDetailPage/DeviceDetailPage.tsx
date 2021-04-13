@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { TargetPlatform } from '../../components/TargetPlatform'
-import { Columns } from '../../components/Columns'
+import { Gutters } from '../../components/Gutters'
 import { DataDisplay } from '../../components/DataDisplay'
 import { QualityDetails } from '../../components/QualityDetails'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
@@ -28,17 +28,13 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
 
   return (
     <DeviceHeaderMenu device={device}>
-      <Columns count={1} inset>
+      <Gutters>
         {/* {!editable && <AdminPanelConnect device={device} connections={connections} />} */}
         <DataDisplay
           data={[
             { label: 'Device Name', value: device.name },
             { label: 'Platform', value: TargetPlatform({ id: device.targetPlatform, label: true }), format: 'element' },
-            {
-              label: 'Internet Connectivity',
-              format: 'element',
-              value: <QualityDetails device={device} />,
-            },
+            { label: 'Connectivity', format: 'element', value: <QualityDetails device={device} /> },
             { label: 'Owner', value: device.owner.email },
             { label: 'Last reported', value: { start: device.lastReported, ago: true }, format: 'duration' },
             { label: 'ISP', value: device.geo?.isp },
@@ -52,7 +48,7 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
             ...ATTRIBUTES.map(label => ({ label, value: device.attributes[label] })),
           ]}
         />
-      </Columns>
+      </Gutters>
     </DeviceHeaderMenu>
   )
 }

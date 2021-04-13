@@ -43,9 +43,9 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
         </sup>
       )} */}
       {device?.configurable && (
-        <Tooltip title="CloudShift Configurable" placement="top" arrow>
+        <Tooltip title="Configurable" placement="top" arrow>
           <sup>
-            <Icon name="pencil" size="xxs" type="solid" fixedWidth />
+            <Icon name="wifi" size="xxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )}

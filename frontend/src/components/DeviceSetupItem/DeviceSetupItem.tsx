@@ -47,11 +47,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
       title = attributeName(thisDevice) || targetDevice.name || ''
       subtitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
     } else {
-      return (
-        <ListItem>
-          <Notice>This device is not registered to you.</Notice>
-        </ListItem>
-      )
+      return <Notice>This device is not registered to you.</Notice>
     }
   }
 

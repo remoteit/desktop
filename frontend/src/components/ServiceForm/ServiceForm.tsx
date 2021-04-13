@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
 import { findType } from '../../models/applicationTypes'
-import { Columns } from '../Columns'
+import { Gutters } from '../Gutters'
 import { spacing } from '../../styling'
 import { Notice } from '../Notice'
 import { emit } from '../../services/Controller'
@@ -282,27 +282,24 @@ export const ServiceForm: React.FC<Props> = ({
           </List>
         </>
       )}
-      <Columns inset count={1}>
-        <span>
-          <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
-            Save
-          </Button>
-          <Button onClick={onCancel}>Cancel</Button>
-        </span>
-      </Columns>
+      <Gutters>
+        <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
+          Save
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
+      </Gutters>
     </form>
   )
 }
 
 const useStyles = makeStyles({
   field: {
-    paddingLeft: 54,
     paddingRight: spacing.xl,
     alignItems: 'flex-start',
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
   fieldSub: {
-    padding: `0 ${spacing.xl}px 0 60px`,
+    padding: `0 ${spacing.xl}px 0 ${spacing.xxs}px`,
     '& .MuiFormControl-root': {
       minWidth: 300 - spacing.lg,
       display: 'block',

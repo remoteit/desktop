@@ -1,4 +1,4 @@
-import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
+import { PATHS, CERT_DIR, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
 import isElectron from 'is-electron'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
@@ -29,6 +29,7 @@ export class Environment {
   symlinkPath: string
   logPath: string
   connectionLogPath: string
+  certificatePath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   oobAvailable: boolean
@@ -74,6 +75,8 @@ export class Environment {
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
+    this.certificatePath = CERT_DIR
+    // this.certificatePath = path.resolve(this.userPath, 'certificate')
     this.logPath = path.resolve(this.userPath, 'log')
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()

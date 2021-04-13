@@ -1,6 +1,8 @@
 import React from 'react'
 import {
   makeStyles,
+  Typography,
+  List,
   ListItem,
   ListItemIcon,
   ListItemText,
@@ -19,49 +21,54 @@ import { LimitSetting } from './LimitSetting'
 import { spacing } from '../styling'
 
 export const LicensingSetting: React.FC = () => {
-  const { licenses, limits, upgradeUrl } = useSelector((state: ApplicationState) => selectLicenses(state))
+  const { licenses, limits } = useSelector((state: ApplicationState) => selectLicenses(state))
   const css = useStyles()
 
   if (!licenses.length) return null
 
   return (
     <>
-      {licenses.map((license, index) => (
-        <React.Fragment key={index}>
-          <LicensingNotice license={license} />
-          <ListItem key={license.id} dense>
-            <ListItemIcon>
-              <LicensingIcon license={license} />
-            </ListItemIcon>
-            <ListItemText
-              primary={`${license.plan.product.description} ${license.plan.description} plan`}
-              secondary={
-                license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
-              }
-            />
-            <ListItemSecondaryAction>
-              <Button color="primary" href={upgradeUrl} size="small" target="_blank">
-                Manage Subscription
-              </Button>
-            </ListItemSecondaryAction>
-          </ListItem>
-          <ListItem>
+      <Typography variant="subtitle1">Licensing</Typography>
+      <List>
+        {licenses.map((license, index) => (
+          <React.Fragment key={index}>
+            <LicensingNotice license={license} />
+            <ListItem key={license.id} dense>
+              <ListItemIcon>
+                <LicensingIcon license={license} />
+              </ListItemIcon>
+              <ListItemText
+                primary={`${license.plan.product.description} ${license.plan.description} plan`}
+                secondary={
+                  license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
+                }
+              />
+              {license.upgradeUrl && (
+                <ListItemSecondaryAction>
+                  <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
+                    Manage Subscription
+                  </Button>
+                </ListItemSecondaryAction>
+              )}
+            </ListItem>
+            <ListItem>
+              <ListItemIcon></ListItemIcon>
+              <Box width={400}>
+                {license.limits.map(limit => (
+                  <LimitSetting key={limit.name} limit={limit} />
+                ))}
+              </Box>
+            </ListItem>
+          </React.Fragment>
+        ))}
+        {!!limits.length && <Divider className={css.divider} />}
+        {limits.map(limit => (
+          <ListItem key={limit.name}>
             <ListItemIcon></ListItemIcon>
-            <Box width={400}>
-              {license.limits.map(limit => (
-                <LimitSetting key={limit.name} limit={limit} />
-              ))}
-            </Box>
+            <LimitSetting limit={limit} />
           </ListItem>
-        </React.Fragment>
-      ))}
-      {!!limits.length && <Divider className={css.divider} />}
-      {limits.map(limit => (
-        <ListItem key={limit.name}>
-          <ListItemIcon></ListItemIcon>
-          <LimitSetting limit={limit} />
-        </ListItem>
-      ))}
+        ))}
+      </List>
     </>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch, Button } from '@material-ui/core'
 import { Confirm } from '../Confirm'
+import { Quote } from '../Quote'
 import { Icon } from '../Icon'
 
 // React.ComponentProps<typeof ListItem> &
@@ -14,6 +15,7 @@ type Props = {
   confirm?: boolean
   confirmMessage?: string
   confirmTitle?: string
+  quote?: boolean
   onClick?: () => void
   onButtonClick?: () => void
 }
@@ -28,6 +30,7 @@ export const ListItemSetting = React.forwardRef(
     onClick,
     onButtonClick,
     disabled,
+    quote,
     confirm,
     confirmMessage = 'Are you sure?',
     confirmTitle = '',
@@ -51,13 +54,15 @@ export const ListItemSetting = React.forwardRef(
       setOpen(false)
     }
 
+    const ListItemContent = <ListItemText primary={label} secondary={subLabel} />
+
     return (
       <>
         <ListItem button onClick={handleClick} disabled={disabled} style={{ opacity: 1 }} dense>
           <ListItemIcon>
             <Icon name={icon} size="md" />
           </ListItemIcon>
-          <ListItemText primary={label} secondary={subLabel} />
+          {quote ? <Quote margin={0}>{ListItemContent}</Quote> : ListItemContent}
           <ListItemSecondaryAction>
             {showButton && (
               <Button onClick={onButtonClick} size="small">

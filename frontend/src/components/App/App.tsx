@@ -70,12 +70,12 @@ export const App: React.FC = () => {
       </Page>
     )
 
-  if (!initialized)
-    return (
-      <Page>
-        <LoadingMessage message="Starting up..." logo />
-      </Page>
-    )
+  // if (!initialized)
+  //   return (
+  //     <Page>
+  //       <LoadingMessage message="Starting up..." logo />
+  //     </Page>
+  //   )
 
   return (
     <Page>
