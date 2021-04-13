@@ -15,30 +15,12 @@ export interface LogListProps {
 }
 
 export const EventList: React.FC<LogListProps> = ({ fetching, device, events, fetchingMore, onFetchMore }) => {
-  const { limits, user } = useSelector((state: ApplicationState) => ({
-    limits: state.licensing.limits,
+  const { user, daysAllowed, planUpgrade} = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
+    daysAllowed: state.logs.daysAllowed,
+    planUpgrade: state.logs.planUpgrade
   }))
   const css = useStyles()
-
-  let daysAllowed = 0
-  let logLimit = (limits && limits.filter(limit => limit.name === 'log-limit')[0]?.value?.toString()) || '0'
-  let limitNumber = (logLimit && logLimit.replace(/\D/g, '')) || '0'
-
-  switch (logLimit.slice(-1)) {
-    case 'D':
-      daysAllowed = limitNumber
-      break
-    case 'M':
-      daysAllowed = limitNumber.parseInt() * 30
-      break
-    case 'Y':
-      daysAllowed = limitNumber.parseInt() * 365
-      break
-    default:
-      daysAllowed = 7
-      break
-  }
 
   return (
     <>
@@ -57,7 +39,7 @@ export const EventList: React.FC<LogListProps> = ({ fetching, device, events, fe
           </Typography>
         )}
       </Box>
-      {!events?.hasMore && !fetching && (
+      {!events?.hasMore && !fetching && planUpgrade && (
         <Notice
           severity="warning"
           button={
