@@ -9,7 +9,6 @@ import { existsSync, lstatSync } from 'fs'
 import Command from './Command'
 import Binary, { binaries, cliBinary } from './Binary'
 import Logger from './Logger'
-import checkupdateheadless from './CheckUpdateHeadless'
 
 export class BinaryInstaller {
   inProgress = false
@@ -31,16 +30,16 @@ export class BinaryInstaller {
       if (environment.isElevated) return await this.install()
       return EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
     }
+
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
   }
 
   async shouldInstall() {
-    const binariesOutdated = !(await this.cliBinary.isCurrent())
+    let binariesOutdated = !(await this.cliBinary.isCurrent())
     const serviceStopped = !(await cli.agentRunning())
-    const desktopOutdated = !this.isDesktopCurrent()
-    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, desktopOutdated })
-    environment.isHeadless && checkupdateheadless.checkUpdate()
-    return binariesOutdated || serviceStopped || desktopOutdated
+    const cliChanged = this.cliVersionChanged()
+    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, cliChanged })
+    return binariesOutdated || serviceStopped || cliChanged
   }
 
   async install() {
@@ -50,7 +49,7 @@ export class BinaryInstaller {
 
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
-    preferences.update({ version: environment.version })
+    this.updateVersions()
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     this.inProgress = false
   }
@@ -129,23 +128,25 @@ export class BinaryInstaller {
     }
   }
 
-  isDesktopCurrent() {
-    let desktopVersion = preferences.get().version
-    let current = desktopVersion && semverCompare(desktopVersion, environment.version) >= 0
+  cliVersionChanged() {
+    const previousVersion = preferences.get().cliVersion || 'unknown'
+    const thisVersion = this.cliBinary.version
+    let changed = semverCompare(previousVersion, thisVersion) < 0
 
-    if (environment.isWindows && !current) {
+    if (environment.isWindows && changed) {
       // Windows has an installer script to update so doesn't need this check
-      preferences.update({ version: environment.version })
+      this.updateVersions()
       return true
     }
 
-    if (current) {
-      Logger.info('DESKTOP CURRENT', { desktopVersion })
-    } else {
-      Logger.info('DESKTOP UPDATE DETECTED', { oldVersion: desktopVersion, thisVersion: environment.version })
-    }
+    if (changed) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
+    else Logger.info('CLI NOT UPDATED', { previousVersion, thisVersion })
 
-    return current
+    return changed
+  }
+
+  updateVersions() {
+    preferences.update({ version: environment.version, cliVersion: this.cliBinary.installedVersion })
   }
 }
 

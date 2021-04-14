@@ -1,5 +1,6 @@
 import cli from './cliInterface'
 import semverCompare from 'semver/functions/compare'
+import preferences from './preferences'
 import environment from './environment'
 import version from './cli-version.json'
 import Logger from './Logger'
@@ -31,6 +32,9 @@ export default class Binary {
     this.isCli = args.isCli
   }
 
+  // This will now always return true unless someone else changes the embedded cli
+  //   because we package the version with the desktop
+  //   we now have to save the version in the preferences file to check for update.
   async isCurrent() {
     let current = true
     let version = 'Not fetched'
