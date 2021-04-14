@@ -53,8 +53,8 @@ export default class AppUpdater {
             Logger.error('LATEST VERSION ERROR', { error })
           }
         } else if (environment.isWindows || environment.isMac) {
-          Logger.info('CHECK FOR UPDATE')
           if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
+            Logger.info('CHECK FOR UPDATE')
             autoUpdater.checkForUpdatesAndNotify()
             this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
           }

@@ -124,13 +124,12 @@ export default {
 
 function certify(command: string) {
   const { useCertificate } = preferences.get()
-  const domain = 'dt.rt3.io'
 
   const certCommand = ` \
     --enableReverseHTTPSProxy \
-    --reverseHTTPSProxyDomain "${domain}" \
-    --reverseHTTPSProxyCert "${environment.certificatePath}/${domain}.cert" \
-    --reverseHTTPSProxyKey "${environment.certificatePath}/${domain}.key"`
+    --reverseHTTPSProxyDomain "${environment.certificateDomain}" \
+    --reverseHTTPSProxyCert "${environment.certificatePath}" \
+    --reverseHTTPSProxyKey "${environment.certificateKeyPath}"`
 
   return useCertificate ? command + certCommand : command
   //--domain ${domain} \

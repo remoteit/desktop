@@ -25,7 +25,7 @@ import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
-  const { os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI, user } = useSelector(
+  const { os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       os: state.backend.environment.os,
       installing: state.binaries.installing,
@@ -34,7 +34,6 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       targetDevice: state.backend.device,
       notOwner: !!state.backend.device.uid && !getOwnDevices(state).find(d => d.id === state.backend.device.uid),
       remoteUI: isRemoteUI(state),
-      user: state.auth.user,
     })
   )
   const css = useStyles()
@@ -77,7 +76,9 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             label="Disable Test UI"
             subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
             icon="vial"
-            onClick={() => emit('preferences', { ...preferences, testUI: false, allowPrerelease: false })}
+            onClick={() =>
+              emit('preferences', { ...preferences, testUI: false, allowPrerelease: false, switchApi: false })
+            }
           />
         </TestUI>
       </List>
@@ -132,7 +133,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             <TestUI>
               <ListItemSetting
                 quote
-                label="Allow Prerelease"
+                label="Update to pre-released builds"
                 toggle={preferences.allowPrerelease}
                 onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
               />
