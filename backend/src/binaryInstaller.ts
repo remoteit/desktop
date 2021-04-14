@@ -134,7 +134,7 @@ export class BinaryInstaller {
     let current = desktopVersion && semverCompare(desktopVersion, environment.version) >= 0
 
     if (environment.isWindows && !current) {
-      // Windows as an installer script to update so doesn't need this check
+      // Windows has an installer script to update so doesn't need this check
       preferences.update({ version: environment.version })
       return true
     }

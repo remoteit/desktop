@@ -23,7 +23,7 @@ export const Container: React.FC<Props> = ({
   gutterBottom,
   children,
 }) => {
-  const css = useStyles(gutterBottom)()
+  const css = useStyles()
 
   return (
     <div className={css.container}>
@@ -53,40 +53,39 @@ export const Container: React.FC<Props> = ({
   )
 }
 
-const useStyles = gutterBottom =>
-  makeStyles({
-    container: {
+const useStyles = makeStyles({
+  container: {
+    display: 'flex',
+    alignItems: 'stretch',
+    flexFlow: 'column',
+    height: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  header: {
+    position: 'relative',
+    zIndex: 3,
+    '& .MuiTypography-h1': {
       display: 'flex',
-      alignItems: 'stretch',
-      flexFlow: 'column',
-      height: '100%',
-      position: 'relative',
-      overflow: 'hidden',
+      alignItems: 'center',
+      padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
+      minHeight: 50,
     },
-    header: {
-      position: 'relative',
-      zIndex: 3,
-      '& .MuiTypography-h1': {
-        display: 'flex',
-        alignItems: 'center',
-        padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
-        minHeight: 50,
-      },
-    },
-    sidebar: {
-      display: 'flex',
-      flexFlow: 'row',
-      flexGrow: 1,
-      overflow: 'hidden',
-      position: 'relative',
-    },
-    sideContent: {
-      boxShadow: `-1px 0 2px ${colors.darken}`,
-      position: 'relative',
-      zIndex: 2,
-    },
-    footer: {
-      position: 'relative',
-      zIndex: 3,
-    },
-  })
+  },
+  sidebar: {
+    display: 'flex',
+    flexFlow: 'row',
+    flexGrow: 1,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  sideContent: {
+    boxShadow: `-1px 0 2px ${colors.grayLighter}`,
+    position: 'relative',
+    zIndex: 2,
+  },
+  footer: {
+    position: 'relative',
+    zIndex: 3,
+  },
+})
