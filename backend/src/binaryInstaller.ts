@@ -129,7 +129,7 @@ export class BinaryInstaller {
   }
 
   cliVersionChanged() {
-    const previousVersion = preferences.get().cliVersion || 'unknown'
+    const previousVersion = preferences.get().cliVersion
     const thisVersion = this.cliBinary.version
     let changed = semverCompare(previousVersion, thisVersion) < 0
 

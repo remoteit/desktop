@@ -1,5 +1,6 @@
 import { BinaryInstaller } from './binaryInstaller'
 import environment from './environment'
+import versionJson from './cli-version.json'
 import Command from './Command'
 import rimraf from 'rimraf'
 import Binary from './Binary'
@@ -86,9 +87,6 @@ describe('backend/binaryInstaller', () => {
 
       await binaryInstaller.uninstall()
 
-      console.log('__dirname')
-      console.log(__dirname)
-
       expect(commandSpy).toBeCalledWith(`"${environment.binPath}/remoteit" -j agent uninstall`)
       expect(commandSpy).toBeCalledWith(`rm -f "${environment.symlinkPath}/remoteit"`)
       expect(commandSpy).toBeCalledWith(`rm -f "${environment.symlinkPath}/connectd"`)
@@ -138,7 +136,9 @@ describe('backend/binaryInstaller', () => {
     })
 
     beforeEach(() => {
-      prefSpy = jest.spyOn(preferences, 'get').mockImplementation(() => ({ version: environment.version }))
+      prefSpy = jest
+        .spyOn(preferences, 'get')
+        .mockImplementation(() => ({ version: environment.version, cliVersion: versionJson.cli }))
       installSpy = jest.spyOn(binaryInstaller, 'install').mockImplementation()
       eventSpy = jest.spyOn(EventBus, 'emit').mockImplementation()
       agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(true))
