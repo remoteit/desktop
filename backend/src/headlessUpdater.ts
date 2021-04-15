@@ -6,7 +6,7 @@ import { preferences } from '.'
 import semverCompare from 'semver/functions/compare'
 import { LATEST } from './constants'
 
-export class CheckUpdateHeadless {
+export class HeadlessUpdater {
   static checkUpdate() {
     throw new Error('Method not implemented.')
   }
@@ -14,7 +14,8 @@ export class CheckUpdateHeadless {
     downloaded: 'update/downloaded',
   }
 
-  checkUpdate = async () => {
+  check = async () => {
+    if (!environment.isHeadless) return
     try {
       const response = await Axios.get(LATEST)
       Logger.info('LATEST VERSION IS', { version: response.data.tag_name })
@@ -23,7 +24,7 @@ export class CheckUpdateHeadless {
       let current = desktopVersion && semverCompare(desktopVersion, latest) >= 0
       if (!current) {
         Logger.warn('THERE IS A NEW VERSION AVAILABLE', { latest })
-        EventBus.emit(CheckUpdateHeadless.EVENTS.downloaded, latest.substring(1))
+        EventBus.emit(HeadlessUpdater.EVENTS.downloaded, latest.substring(1))
       }
 
       return true
@@ -34,4 +35,4 @@ export class CheckUpdateHeadless {
   }
 }
 
-export default new CheckUpdateHeadless()
+export default new HeadlessUpdater()

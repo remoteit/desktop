@@ -497,7 +497,8 @@ declare global {
   type ISelect = { [key: string]: string | number }
 
   type IPreferences = {
-    version?: string
+    version: string
+    cliVersion: string
     autoUpdate?: boolean
     openAtLogin?: boolean
     remoteUIOverride?: boolean

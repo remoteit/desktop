@@ -10,6 +10,7 @@ import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
+import headlessUpdater from './headlessUpdater'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import Binary from './Binary'
@@ -83,6 +84,7 @@ class Controller {
     this.initBackend()
     this.check()
     binaryInstaller.check()
+    headlessUpdater.check()
   }
 
   recapitate = () => {

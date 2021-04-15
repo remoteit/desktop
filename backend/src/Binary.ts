@@ -1,7 +1,7 @@
 import cli from './cliInterface'
 import semverCompare from 'semver/functions/compare'
 import environment from './environment'
-import version from './cli-version.json'
+import versionJson from './cli-version.json'
 import Logger from './Logger'
 import path from 'path'
 
@@ -31,6 +31,9 @@ export default class Binary {
     this.isCli = args.isCli
   }
 
+  // This will now always return true unless someone else changes the embedded cli
+  //   because we package the version with the desktop
+  //   we now have to save the version in the preferences file to check for update.
   async isCurrent() {
     let current = true
     let version = 'Not fetched'
@@ -77,11 +80,11 @@ export default class Binary {
   }
 }
 
-export const cliBinary = new Binary({ name: 'remoteit', version: version.cli, isCli: true })
+export const cliBinary = new Binary({ name: 'remoteit', version: versionJson.cli, isCli: true })
 
 export const binaries = [
   cliBinary,
-  new Binary({ name: 'muxer', version: version.muxer }),
-  new Binary({ name: 'demuxer', version: version.demuxer }),
-  new Binary({ name: 'connectd', version: version.connectd }),
+  new Binary({ name: 'muxer', version: versionJson.muxer }),
+  new Binary({ name: 'demuxer', version: versionJson.demuxer }),
+  new Binary({ name: 'connectd', version: versionJson.connectd }),
 ]
