@@ -155,6 +155,10 @@ export default class ConnectionPool {
     this.updated()
   }
 
+  clearErrors = async () => {
+    await cli.restart()
+  }
+
   clearMemory = async () => {
     Logger.info('CLEARING CONNECTIONS')
     this.pool = []

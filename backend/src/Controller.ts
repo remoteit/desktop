@@ -222,6 +222,8 @@ class Controller {
   installBinaries = async () => {
     try {
       await binaryInstaller.install()
+      await cli.restart()
+      Logger.info('CLI RESTART')
     } catch (error) {
       EventBus.emit(Binary.EVENTS.error, error)
     }
