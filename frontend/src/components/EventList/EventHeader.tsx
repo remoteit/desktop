@@ -31,9 +31,10 @@ export interface LogListProps {
 const DAY = 1000 * 60 * 60 * 24
 
 export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fetchLogs, selectedDate, device, setPlanUpgrade, setDaysAllowed }) => {
-  const { limits, minDate, itemOffset, daysAllowed} = useSelector((state: ApplicationState) => ({
+  const { limits, minDate, maxDate, itemOffset, daysAllowed} = useSelector((state: ApplicationState) => ({
     limits: state.licensing.limits,
     minDate: state.logs.minDate,
+    maxDate: state.logs.maxDate,
     itemOffset: state.logs.from,
     daysAllowed: state.logs.daysAllowed
   }))
@@ -115,10 +116,7 @@ export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fe
           <>
             <Box ml="auto" display="flex" alignItems="center">
               <i className={css.dateUpdate}> {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)} </i>
-              <CSVDownloadButton
-                minDate={minDate || new Date().toString()}
-                maxDate={selectedDate?.toDateString() || new Date().toString()}
-              />
+              <CSVDownloadButton />
               <Tooltip title="Refresh List">
                 <IconButton onClick={refresh}>
                   <Icon name="sync" spin={fetching} size="md" fixedWidth />
@@ -127,11 +125,7 @@ export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fe
             </Box>
           </>
         ) : (
-          <CSVDownloadButton
-            deviceID={device.id}
-            minDate={minDate || new Date().toString()}
-            maxDate={selectedDate?.toDateString() || new Date().toString()}
-          />
+          <CSVDownloadButton />
         )}
       </ListItemSecondaryAction>
     </List>
