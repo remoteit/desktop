@@ -17,6 +17,7 @@ import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { AddFromNetwork } from '../components/AddFromNetwork'
+import { SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
@@ -99,7 +100,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         </Notice>
       )}
       <Typography variant="subtitle1">
-        <Title>Services</Title>
+        <Title>Services<SortServices /></Title>
         <AddFromNetwork allowScanning={thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
