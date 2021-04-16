@@ -97,10 +97,6 @@ export default {
     return `-j agent uninstall`
   },
 
-  serviceRestart() {
-    return `-j agent restart`
-  },
-
   toolsInstall() {
     return '-j tools install --update'
   },

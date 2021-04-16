@@ -11,6 +11,7 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
 import user from './User'
+import Binary from './Binary'
 
 const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
@@ -33,6 +34,7 @@ export default class ConnectionPool {
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
     EventBus.on(electronInterface.EVENTS.clear, this.clear)
     EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
+    EventBus.on(Binary.EVENTS.installed, this.clearErrors)
   }
 
   init() {
@@ -156,7 +158,9 @@ export default class ConnectionPool {
   }
 
   clearErrors = async () => {
-    await cli.restart()
+    this.pool.forEach(connection => (connection.params.error = undefined))
+    Logger.info('CLEARING ERRORS')
+    this.updated()
   }
 
   clearMemory = async () => {
