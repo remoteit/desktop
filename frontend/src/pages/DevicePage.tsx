@@ -36,9 +36,10 @@ type Props = {
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
   const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService } = useSelector((state: ApplicationState) => ({
+  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
+    sortService: state.devices.sortService,
   }))
 
   useEffect(() => {
@@ -100,7 +101,10 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         </Notice>
       )}
       <Typography variant="subtitle1">
-        <Title>Services<SortServices /></Title>
+        <Title>
+          Services
+          <SortServices />
+        </Title>
         <AddFromNetwork allowScanning={thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
@@ -114,7 +118,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.map(s => (
+        {device.services.sort(sortService).map(s => (
           <ListItemLocation
             key={s.id}
             pathname={`/devices/${device.id}/${s.id}/details`}

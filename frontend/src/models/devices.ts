@@ -41,6 +41,7 @@ type IDeviceState = {
   from: number
   contacts: IUserRef[]
   eventsUrl: string
+  sortService: (a: IService, b: IService) => -1 | 1 | 0
 }
 
 export const state: IDeviceState = {
@@ -62,6 +63,7 @@ export const state: IDeviceState = {
   from: 0,
   contacts: [],
   eventsUrl: '',
+  sortService: () => 0
 }
 
 export default createModel<RootModel>()({
