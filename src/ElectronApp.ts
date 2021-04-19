@@ -30,7 +30,7 @@ export default class ElectronApp {
     this.autoUpdater = new AutoUpdater()
     this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
-    if (!this.app.requestSingleInstanceLock()) {
+    if (!this.requestSingleInstanceLock()) {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
       this.app.quit()
     }
@@ -122,7 +122,7 @@ export default class ElectronApp {
   private createMainWindow = () => {
     d('Create main window')
     if (this.window) return
-    app.setAppUserModelId(process.execPath)
+    this.app.setAppUserModelId(process.execPath)
 
     this.window = new electron.BrowserWindow({
       width: 1280,
