@@ -56,6 +56,11 @@ function launchApplication(cwd: string, launchApp: ILaunchApp) {
     case 'vncviewer':
       command = `start ${launchApp.application}.exe -Username ${launchApp.username} ${launchApp.host}:${launchApp.port}`
       break
+    case 'remoteDesktop':
+      command = `cmdkey /generic:${launchApp.host} /user:${launchApp.username} && 
+        mstsc /v: ${launchApp.host} &&
+        cmdkey /delete:TERMSRV/${launchApp.host}`
+      break
   }
   child_process.exec(`${command}`, { cwd }, (error: any) => {
     error && Logger.error(`error: ${error}`)

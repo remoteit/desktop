@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { ApplicationState } from '../../store'
 import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
-import { launchPutty, launchVNC } from '../../services/Browser'
+import { launchPutty, launchVNC, launchRemoteDesktop } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
@@ -73,6 +73,15 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
         username: app.connection?.username,
         path,
         application: 'vncviewer',
+      }
+    }
+    if (launchRemoteDesktop(service?.typeID)) {
+      launchApp = {
+        port: app.connection?.port,
+        host: app.connection?.host,
+        username: app.connection?.username,
+        path: 'desktop',
+        application: 'remoteDesktop',
       }
     }
     launchApp ? emit('launch/app', launchApp) : window.open(app.command)
