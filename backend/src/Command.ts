@@ -91,13 +91,13 @@ export default class Command {
         result = stdout.toString()
       }
     } catch (error) {
-      if (this.isErrorReportable(error) && !cli.data.errorsCode.includes(error.code)) {
+      if (this.isErrorReportable(error, error.code)) {
         AirBrake.notify({
           params: { type: 'COMMAND ERROR', exec: this.toString() },
           context: { version: environment.version },
           error,
         })
-        cli.data.errorsCode.push(error.code)
+        cli.data.errorCodes.push(error.code)
       }
       this.log(
         `EXEC CAUGHT *** ERROR ***`,
@@ -111,7 +111,8 @@ export default class Command {
     return result
   }
 
-  isErrorReportable(stderr: string) {
-    return !stderr.toString().includes('read-only file system')
+  isErrorReportable(stderr: string, code?: number) {
+    const isErrorCode = code ? !cli.data.errorCodes.includes(code) : true
+    return !stderr.toString().includes('read-only file system') && isErrorCode
   }
 }

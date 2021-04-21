@@ -20,7 +20,7 @@ type IData = {
   device: ITargetDevice
   targets: ITarget[]
   connections: IConnection[]
-  errorsCode: number[]
+  errorCodes: number[]
 }
 
 type IExec = {
@@ -53,7 +53,7 @@ export default class CLI {
     device: DEFAULT_TARGET,
     targets: [DEFAULT_TARGET],
     connections: [],
-    errorsCode: [],
+    errorCodes: [],
   }
 
   configFile: JSONFile<ConfigFile>
