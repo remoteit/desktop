@@ -5,6 +5,7 @@ import environment from './environment'
 import { promisify } from 'util'
 import { exec } from 'child_process'
 import { sudoPromise } from './sudoPromise'
+import cli from './cliInterface'
 
 const execPromise = promisify(exec)
 
@@ -90,12 +91,13 @@ export default class Command {
         result = stdout.toString()
       }
     } catch (error) {
-      if (this.isErrorReportable(error)) {
+      if (this.isErrorReportable(error, error.code)) {
         AirBrake.notify({
           params: { type: 'COMMAND ERROR', exec: this.toString() },
           context: { version: environment.version },
           error,
         })
+        cli.data.errorCodes.push(error.code)
       }
       this.log(
         `EXEC CAUGHT *** ERROR ***`,
@@ -109,7 +111,8 @@ export default class Command {
     return result
   }
 
-  isErrorReportable(stderr: string) {
-    return !stderr.toString().includes('read-only file system')
+  isErrorReportable(stderr: string, code?: number) {
+    const isErrorCode = code ? !cli.data.errorCodes.includes(code) : true
+    return !stderr.toString().includes('read-only file system') && isErrorCode
   }
 }
