@@ -15,6 +15,7 @@ export class Application {
   context?: 'copy' | 'launch'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
+  defaultPublicTemplate: string = '[address]'
   defaultTokens: string[] = ['host', 'port', 'id', 'address']
   iconRotate: boolean = false
   localhost?: boolean
@@ -79,11 +80,15 @@ export class Application {
   }
 
   private get resolvedDefaultLaunchTemplate() {
-    return this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
+    return this.connection?.public
+      ? this.defaultPublicTemplate
+      : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate() {
-    return this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
+    return this.connection?.public
+      ? this.defaultPublicTemplate
+      : this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
   }
 
   private get launchTemplate() {

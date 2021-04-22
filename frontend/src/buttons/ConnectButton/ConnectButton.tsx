@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
@@ -28,6 +30,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
+  const { connections } = useDispatch<Dispatch>()
   const state = connectionState(service, connection)
   const visible = state === 'stopping' || state === 'disconnected'
   const connecting = state === 'connecting'
@@ -41,7 +44,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     } else {
       onClick && onClick()
       analyticsHelper.trackConnect('connectionInitiated', service)
-      emit('service/connect', connection || newConnection(service))
+      connection = connection || newConnection(service)
+      connection?.public ? connections.proxyConnect(connection) : emit('service/connect', connection)
     }
   }
 

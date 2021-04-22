@@ -19,7 +19,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
   const { serviceID } = useParams<{ serviceID: string }>()
-  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
+  const connection = useSelector((state: ApplicationState) => state.connections.all.find(c => c.id === serviceID))
   const service = device?.services.find(s => s.id === serviceID)
   const target = targets.find(t => t.uid === serviceID)
   const state = connectionState(service, connection)

@@ -20,7 +20,7 @@ export const ConnectionOtherPage: React.FC = () => {
     return {
       service,
       device,
-      connection: state.backend.connections.find(c => c.id === serviceID),
+      connection: state.connections.all.find(c => c.id === serviceID),
       session: state.sessions.all.find(s => s.id === sessionID),
     }
   })

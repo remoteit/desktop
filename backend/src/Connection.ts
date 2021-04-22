@@ -17,31 +17,26 @@ export default class Connection extends EventEmitter {
 
   constructor(connection: IConnection) {
     super()
-    // connection.createdTime = Date.now()
     this.set(connection)
   }
 
   set({ host = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
     this.params = { host, restriction, failover, ...connection }
     d('SET CONNECTION', { params: this.params })
-    if (setCLI) cli.setConnection(this.params, this.error)
+    if (setCLI && !this.params.public) cli.setConnection(this.params, this.error)
   }
 
   start() {
     this.params.enabled = true
-    // this.params.connecting = true
-    // this.params.createdTime = Date.now()
     this.params.error = undefined
     // if (cli.data.connections.find(c => c.id === this.params.id)) cli.setConnection(this.params, this.error) else
-    cli.addConnection(this.params, this.error)
+    if (!this.params.public) cli.addConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
   stop() {
     this.params.enabled = false
-    // this.params.connecting = false
-    // this.params.endTime = Date.now()
-    cli.setConnection(this.params, this.error)
+    if (!this.params.public) cli.setConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
   }
 
@@ -50,7 +45,7 @@ export default class Connection extends EventEmitter {
     this.params.connecting = false
     this.params.createdTime = undefined
     this.params.error = undefined
-    await cli.removeConnection(this.params, this.error)
+    if (!this.params.public) await cli.removeConnection(this.params, this.error)
   }
 
   error = (e: Error) => {

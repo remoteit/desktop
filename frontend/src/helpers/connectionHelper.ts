@@ -1,20 +1,30 @@
 import { emit } from '../services/Controller'
-import { IP_OPEN, IP_PRIVATE } from '../shared/constants'
+import { IP_OPEN, IP_PRIVATE, IP_LATCH } from '../shared/constants'
 import { attributeName, removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState } from '../store'
 import { store } from '../store'
 
 export const DEFAULT_CONNECTION = {
-  id: 'service-id',
-  name: 'Unknown',
-  owner: { id: '', email: 'Unknown' },
-  deviceID: 'Unknown',
+  id: '',
+  name: '',
+  owner: { id: '', email: '' },
+  deviceID: '',
   online: false,
-  port: 33000,
   host: IP_PRIVATE,
   timeout: 15,
   restriction: IP_OPEN,
+  publicRestriction: IP_LATCH,
+}
+
+export const PUBLIC_CONNECTION = {
+  port: undefined,
+  public: true,
+  timeout: 15,
+  isP2P: false,
+  failover: false,
+  proxyOnly: true,
+  log: false,
 }
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
@@ -29,8 +39,8 @@ export function connectionState(instance?: IService | IDevice, connection?: ICon
   return 'disconnected'
 }
 
-export function findLocalConnection(state: ApplicationState, id: string, sessionId: string) {
-  return state.backend.connections.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
+export function findLocalConnection(state: ApplicationState, id: string, sessionId: string | undefined) {
+  return state.connections.all.find(c => c.id === id && (c.sessionId === sessionId || c.connecting))
 }
 
 type nameObj = { name: string }
@@ -48,7 +58,7 @@ export function newConnection(service?: IService | null) {
   const state = store.getState()
   const accountId = getActiveAccountId(state)
   const user = [...state.accounts.member, state.auth.user].find(u => u?.id === accountId)
-  const port = service?.attributes.defaultPort || state.backend.freePort
+  const port = service?.attributes.defaultPort //|| state.backend.freePort
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
@@ -96,17 +106,17 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.backend.connections.filter(c => !!c.createdTime || c.enabled)
+  return state.connections.all.filter(c => !!c.createdTime || c.enabled)
 }
 
 export function getConnectionSessionIds() {
-  const { connections } = store.getState().backend
-  return connections.map(c => c.sessionId)
+  const { all } = store.getState().connections
+  return all.map(c => c.sessionId)
 }
 
 export function updateConnections(devices: IDevice[]) {
-  const { connections } = store.getState().backend
-  let lookup = connections.reduce((result: ConnectionLookup, c: IConnection) => {
+  const { all } = store.getState().connections
+  let lookup = all.reduce((result: ConnectionLookup, c: IConnection) => {
     result[c.id] = c
     return result
   }, {})
@@ -130,7 +140,7 @@ export function cleanOrphanConnections() {
   const services = getAllDevices(state)
     .map(d => d.services.map(s => s.id))
     .flat()
-  state.backend.connections.forEach(c => {
+  state.connections.all.forEach(c => {
     if (!services.includes(c.id)) {
       emit('service/forget', c)
     }

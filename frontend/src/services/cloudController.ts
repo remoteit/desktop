@@ -1,6 +1,7 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { WEBSOCKET_URL, WEBSOCKET_BETA_URL } from '../shared/constants'
 import { getToken } from './remote.it'
+import { AxiosResponse } from 'axios'
 import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -130,7 +131,6 @@ class CloudController {
       }`,
       // "variables": {}
     })
-    // console.log('SUBSCRIBE', message)
     this.socket?.send(message)
   }
 
@@ -145,7 +145,7 @@ class CloudController {
   }
 
   errors(data) {
-    const errors = graphQLGetErrors({ data }, true)
+    const errors = graphQLGetErrors({ data } as AxiosResponse, true)
     return !!errors?.length
   }
 
@@ -173,7 +173,7 @@ class CloudController {
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
-            name: connectionName(t.device, t),
+            name: connectionName(t, t.device),
             owner: t.owner,
             typeID: t.application,
             platform: t.platform,
@@ -219,6 +219,10 @@ class CloudController {
         event.target.forEach(target => {
           // Local connection state
           if (target.connection) {
+            if (target.connection.public) {
+              target.connection.enabled = event.state === 'connected'
+              if (event.state !== 'connected') target.connection.endTime = Date.now()
+            }
             target.connection.connected = event.state === 'connected'
             target.connection.connecting = false
             setConnection(target.connection)
@@ -233,6 +237,7 @@ class CloudController {
               isP2P: event.isP2P,
               user: event.actor,
               geo: event.geo,
+              public: !!target.connection?.public,
               target: {
                 id: target.id,
                 deviceId: target.deviceId,

@@ -16,7 +16,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const NewConnection: React.FC = () => {
   const { enabledIds, fetching, data } = useSelector((state: ApplicationState) => ({
-    enabledIds: state.backend.connections.filter(c => c.enabled).map(c => c.id),
+    enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
     fetching: state.search.fetching,
     data: selectAllSearch(state),
   }))

@@ -22,18 +22,19 @@ export const ServiceConnected: React.FC<Props> = ({ show, connection, session })
             { label: 'Address', value: connection?.address },
             {
               label: 'Connection',
-              value:
-                connection?.isP2P === undefined && session?.isP2P === undefined
-                  ? 'Idle'
-                  : connection?.isP2P || session?.isP2P
-                  ? 'Peer to peer'
-                  : 'Proxy',
+              value: connection?.public
+                ? 'Public Proxy'
+                : connection?.isP2P === undefined && session?.isP2P === undefined
+                ? 'Idle'
+                : connection?.isP2P || session?.isP2P
+                ? 'Peer to peer'
+                : 'Proxy',
             },
             {
               label: 'Duration',
               value: connection?.startTime && {
                 start: connection?.startTime ? new Date(connection.startTime || 0) : session?.timestamp,
-                end: connection?.endTime && new Date(connection.endTime),
+                end: connection?.endTime && connection?.endTime > connection?.startTime && new Date(connection.endTime),
               },
               format: 'duration',
             },

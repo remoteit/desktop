@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip } from '@material-ui/core'
-import { newConnection, setConnection, DEFAULT_CONNECTION } from '../helpers/connectionHelper'
+import { newConnection, setConnection, DEFAULT_CONNECTION, PUBLIC_CONNECTION } from '../helpers/connectionHelper'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Icon } from './Icon'
 
@@ -9,18 +9,21 @@ export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnect
   if (!connection) connection = newConnection(service)
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
-  const disabled = connection.enabled
-  const save = (timeout?: number) =>
+  const disabled = connection.enabled || connection.public
+  const timeout = connection.public ? PUBLIC_CONNECTION.timeout : connection.timeout
+  let display = timeout === 0 ? 'Never' : `${timeout} minutes`
+
+  const save = (newTimeout?: number) =>
     connection &&
     setConnection({
       ...connection,
-      timeout,
+      timeout: newTimeout,
     })
 
   return (
     <InlineTextFieldSetting
-      value={connection.timeout}
-      displayValue={connection.timeout === 0 ? 'Never' : `${connection.timeout} minutes`}
+      value={timeout}
+      displayValue={display}
       icon={<Icon name="hourglass" size="md" />}
       label={
         <>

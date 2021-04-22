@@ -3,6 +3,8 @@ import { emit } from '../../services/Controller'
 import { Fade } from '@material-ui/core'
 import { Color } from '../../styling'
 import { DynamicButton } from '../DynamicButton'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -21,6 +23,7 @@ export const DisconnectButton: React.FC<Props> = ({
   connection,
   fullWidth,
 }) => {
+  const { connections } = useDispatch<Dispatch>()
   const state = connectionState(service, connection)
   const visible = state === 'connecting' || state === 'connected' || state === 'ready'
   const disabled = state === 'stopping' || state === 'connecting'
@@ -36,7 +39,7 @@ export const DisconnectButton: React.FC<Props> = ({
           fullWidth={fullWidth}
           onClick={() => {
             analyticsHelper.trackConnect('connectionClosed', service)
-            emit('service/disconnect', connection)
+            connection?.public ? connections.proxyDisconnect(connection) : emit('service/disconnect', connection)
           }}
         />
       </div>
