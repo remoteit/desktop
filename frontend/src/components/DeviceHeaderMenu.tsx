@@ -38,7 +38,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
             </Route>
             <RefreshButton device={device} />
-            <AddUserButton to={`/devices/${device.id}/share`} />
+            <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
           </Typography>
           <ListHorizontal>
             <ListItemLocation
