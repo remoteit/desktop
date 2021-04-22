@@ -111,7 +111,7 @@ export const InlineSetting: React.FC<Props> = ({
   return (
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
-      <ListItem button onClick={triggerEdit} disabled={disabled} style={{ opacity: 1 }} dense>
+      <ListItem button onClick={triggerEdit} disabled={disabled} dense>
         <ListItemIcon>{icon}</ListItemIcon>
         <Title>
           <ListItemText>

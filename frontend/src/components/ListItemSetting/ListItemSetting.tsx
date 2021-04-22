@@ -58,7 +58,7 @@ export const ListItemSetting = React.forwardRef(
 
     return (
       <>
-        <ListItem button onClick={handleClick} disabled={disabled} style={{ opacity: 1 }} dense>
+        <ListItem button onClick={handleClick} disabled={disabled} dense>
           <ListItemIcon>
             <Icon name={icon} size="md" />
           </ListItemIcon>
