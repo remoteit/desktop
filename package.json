@@ -111,6 +111,10 @@
     },
     "extraResources": [
       {
+        "from": "./backend/cert/",
+        "to": "./cert/"
+      },
+      {
         "from": "./backend/src/cli-version.json",
         "to": "./"
       },
