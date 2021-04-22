@@ -59,3 +59,7 @@ export function launchPutty(typeID?: number) {
 export function launchVNC(typeID?: number) {
   return typeID === 4 && isWindows()
 }
+
+export function launchRemoteDesktop(typeID?: number) {
+  return typeID === 5 && isWindows()
+}
