@@ -4,6 +4,7 @@ import strings from './cliStrings'
 import EventBus from './EventBus'
 import environment from './environment'
 import preferences from './preferences'
+import ConnectionPool from './ConnectionPool'
 import semverCompare from 'semver/functions/compare'
 import { existsSync, lstatSync } from 'fs'
 import Command from './Command'
@@ -51,6 +52,7 @@ export class BinaryInstaller {
 
     this.updateVersions()
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
+    EventBus.emit(ConnectionPool.EVENTS.clearErrors)
     this.inProgress = false
   }
 
