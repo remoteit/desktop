@@ -8,7 +8,9 @@ const jssTheme: ThemeOptions = {
     secondary: { main: colors.secondary, contrastText: colors.white },
     error: { main: colors.danger },
   },
-  typography: { fontFamily: 'Roboto, san-serif' },
+  typography: {
+    fontFamily: "'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  },
   overrides: {
     MuiDivider: {
       root: { backgroundColor: colors.grayLighter },
@@ -149,6 +151,7 @@ const jssTheme: ThemeOptions = {
         // '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
         '&:hover': { backgroundColor: colors.primaryHighlight },
       },
+      secondaryAction: { paddingRight: 60 },
       container: {
         '& .MuiListItemSecondaryAction-root': {},
         '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
@@ -259,8 +262,8 @@ const jssTheme: ThemeOptions = {
       gutterBottom: { marginBottom: spacing.md },
       h1: {
         fontSize: fontSizes.xl,
-        fontWeight: 100,
-        color: colors.grayDarkest,
+        fontWeight: 400,
+        color: colors.grayDarker,
         letterSpacing: -0.2,
       },
       h2: {
@@ -269,7 +272,7 @@ const jssTheme: ThemeOptions = {
       },
       h4: {
         fontSize: fontSizes.sm,
-        fontFamily: 'Roboto Mono',
+        fontFamily: "'Roboto Mono'",
         color: colors.grayDark,
         marginTop: spacing.xs,
         marginBottom: spacing.sm,
