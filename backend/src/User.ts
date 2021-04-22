@@ -6,6 +6,7 @@ import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
 import { r3 } from './remote.it'
+import ConnectionPool from './ConnectionPool'
 
 const d = debug('r3:backend:User')
 
@@ -80,6 +81,7 @@ export class User {
 
     Logger.info('SIGN OUT USER', { user: this })
 
+    EventBus.emit(ConnectionPool.EVENTS.updated, [])
     EventBus.emit(User.EVENTS.signedOut)
     try {
       rimraf.sync(path.join(environment.userPath, 'user.json'), { disableGlob: true })

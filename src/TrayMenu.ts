@@ -44,7 +44,6 @@ export default class TrayMenu {
   }
 
   private render = () => {
-    if(!user.signedIn) this.pool = []
     const menuItems = user.signedIn ? this.remoteitMenu() : this.signInMenu()
     this.menu = electron.Menu.buildFromTemplate(menuItems)
     this.menu.on('menu-will-show', headless.pool.check)
