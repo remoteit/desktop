@@ -18,11 +18,11 @@ const state: ConnectionsState = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async updateConnection(connection: IConnection, globalState) {
-      globalState.connections.all.some((c, index) => {
+    async updateConnection(connection: IConnection, { connections }) {
+      connections.all.some((c, index) => {
         if (c.id === connection.id) {
-          globalState.connections[index] = connection
-          dispatch.backend.set({ connections: globalState.connections.all })
+          connections[index] = connection
+          dispatch.backend.set({ connections: connections.all })
           if (connection) return true
         }
         return false
@@ -39,9 +39,9 @@ export default createModel<RootModel>()({
             setConnection(connection)
           } else {
             console.warn('No service found for connection', connection.id)
-            // fetch device?
-            const device = await dispatch.devices.fetchSingle({ id: connection.id, hidden: true })
-            console.log('FETCHED DEVICE RETURNED:', device)
+            // @TODO fetch device if trying to restore a non-loaded connection
+            // const device = await dispatch.devices.fetchSingle({ id: connection.id, hidden: true })
+            // console.log('FETCHED DEVICE RETURNED:', device)
           }
         }
       })
@@ -62,7 +62,6 @@ export default createModel<RootModel>()({
 
     async proxyConnect(connection: IConnection): Promise<any> {
       const data = { wait: 'true', hostip: connection.publicRestriction, deviceaddress: connection.id }
-      console.log('PROXY CONNECT', `${API_URL}/device/connect`, data)
 
       setConnection({
         ...connection,
