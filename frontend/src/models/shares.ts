@@ -84,16 +84,15 @@ export default createModel<RootModel>()({
         device.access = device.access.map(_ac => ({ ..._ac, scripting }))
       }
 
-      services.length &&
-        device.services.map(service => {
-          if (!service.access) {
-            service.access = []
-          }
-          service.access = services.includes(service.id)
-            ? service.access.concat(newUsers)
-            : service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
-          return service
-        })
+      device.services.map(service => {
+        if (!service.access) {
+          service.access = []
+        }
+        service.access = services.includes(service.id)
+          ? service.access.concat(newUsers)
+          : service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
+        return service
+      })
       dispatch.devices.updateShareDevice(device)
     },
   }),
