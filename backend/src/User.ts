@@ -81,7 +81,6 @@ export class User {
 
     Logger.info('SIGN OUT USER', { user: this })
 
-    EventBus.emit(ConnectionPool.EVENTS.updated, [])
     EventBus.emit(User.EVENTS.signedOut)
     try {
       rimraf.sync(path.join(environment.userPath, 'user.json'), { disableGlob: true })
