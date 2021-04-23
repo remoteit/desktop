@@ -6,7 +6,6 @@ import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
 import { r3 } from './remote.it'
-import ConnectionPool from './ConnectionPool'
 
 const d = debug('r3:backend:User')
 
