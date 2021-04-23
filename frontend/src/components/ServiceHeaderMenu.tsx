@@ -29,7 +29,7 @@ export const ServiceHeaderMenu: React.FC<{
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { connection, thisDevice, access } = useSelector((state: ApplicationState) => ({
-    connection: state.backend.connections.find(c => c.id === serviceID),
+    connection: state.connections.all.find(c => c.id === serviceID),
     thisDevice: state.backend.device?.uid === device?.id,
     access: state.accounts.access,
   }))
@@ -54,7 +54,7 @@ export const ServiceHeaderMenu: React.FC<{
               )}
             </Route>
             <RefreshButton device={device} />
-            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} />
+            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
           </Typography>
           <ListHorizontal>
             <ListItemLocation

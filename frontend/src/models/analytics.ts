@@ -1,5 +1,4 @@
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { hasCredentials } from '../services/remote.it'
 import { RootModel } from './rootModel'
@@ -77,13 +76,12 @@ type parseDeviceOptions = {
 }
 export default createModel<RootModel>()({
   state,
-  effects: (dispatch: any) => ({
-    async fetchAnalytics(_: void, globalState: any) {
+  effects: dispatch => ({
+    async fetchAnalytics(_, globalState) {
       if (!hasCredentials()) return
       const { from, size, startDate, endDate } = globalState.analytics
       const { getAnalytics, set, primeGraphTimeseries } = dispatch.analytics
       const primedGraphTimeseries = primeGraphTimeseries({ startDate: startDate, endDate: endDate })
-      const timeZone = getTimeZone()
       set({
         fetching: true,
         deviceTimeseries: primedGraphTimeseries,
@@ -91,7 +89,7 @@ export default createModel<RootModel>()({
       })
       getAnalytics({ from, size })
     },
-    async getAnalytics({ from, size }: analyticsGQLOptions, globalState: ApplicationState) {
+    async getAnalytics({ from, size }: analyticsGQLOptions, globalState) {
       const { startDate, endDate } = globalState.analytics
       const { parse } = dispatch.analytics
       const options = { from, size, start: startDate, end: endDate, timezone: getTimeZone() }
@@ -130,7 +128,7 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async parse(gqlResponse: any, globalState: ApplicationState) {
+    async parse(gqlResponse: any, globalState) {
       const gqlData = gqlResponse?.data?.data?.login
       const {
         from,

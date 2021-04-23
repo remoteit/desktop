@@ -6,6 +6,7 @@ import applicationTypes from './applicationTypes'
 import auth from './auth'
 import backend from './backend'
 import binaries from './binaries'
+import connections from './connections'
 import devices from './devices'
 import labels from './labels'
 import licensing from './licensing'
@@ -23,6 +24,7 @@ export interface RootModel extends Models<RootModel> {
   auth: typeof auth
   backend: typeof backend
   binaries: typeof binaries
+  connections: typeof connections
   devices: typeof devices
   labels: typeof labels
   licensing: typeof licensing
@@ -41,6 +43,7 @@ export const models: RootModel = {
   auth,
   backend,
   binaries,
+  connections,
   devices,
   labels,
   licensing,

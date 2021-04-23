@@ -39,7 +39,8 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async parse(response: AxiosResponse<any> | undefined): Promise<IAnnouncement[]> {
+    async parse(response: AxiosResponse<any> | void, globalState): Promise<IAnnouncement[]> {
+      if (!response) return []
       const all = response?.data?.data?.notices
       // const all = TEST_DATA
       if (!all) return []

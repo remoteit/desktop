@@ -29,7 +29,7 @@ interface Props {
 }
 
 export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, setEl }) => {
-  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
+  const connection = useSelector((state: ApplicationState) => state.connections.all.find(c => c.id === serviceID))
   const [service, device] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const history = useHistory()

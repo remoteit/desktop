@@ -20,7 +20,7 @@ export const DevicesPage: React.FC<{ singlePanel?: boolean; restore?: boolean }>
   const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching,
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
-    connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
+    connections: state.connections.all.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
       return lookup

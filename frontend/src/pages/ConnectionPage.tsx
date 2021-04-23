@@ -4,11 +4,12 @@ import { useParams, useLocation, useHistory } from 'react-router-dom'
 import { selectById } from '../models/devices'
 import { PortSetting } from '../components/PortSetting'
 import { NameSetting } from '../components/NameSetting'
-import { HostSetting } from '../components/HostSetting'
 import { ProxySetting } from '../components/ProxySetting'
+import { PublicSetting } from '../components/PublicSetting'
 import { TimeoutSetting } from '../components/TimeoutSetting'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceConnected } from '../components/ServiceConnected'
+import { newConnection } from '../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../store'
 import { makeStyles, Divider, List } from '@material-ui/core'
@@ -21,11 +22,13 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { ForgetButton } from '../buttons/ForgetButton'
+import { ClearButton } from '../buttons/ClearButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { InfoButton } from '../buttons/InfoButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
+import { TestUI } from '../components/TestUI'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -41,7 +44,7 @@ export const ConnectionPage: React.FC = () => {
     return {
       service,
       device,
-      connection: state.backend.connections.find(c => c.id === serviceID),
+      connection: state.connections.all.find(c => c.id === serviceID) || newConnection(service),
       session: state.sessions.all.find(s => s.id === sessionID),
       fetching: state.devices.fetching,
     }
@@ -71,6 +74,7 @@ export const ConnectionPage: React.FC = () => {
               fullWidth
             />
             <InfoButton device={device} service={service} />
+            <ClearButton connection={connection} />
             <ForgetButton connection={connection} />
             <CopyButton connection={connection} service={service} />
             <LaunchButton connection={connection} service={service} />
@@ -84,7 +88,7 @@ export const ConnectionPage: React.FC = () => {
       }
     >
       <List>
-        <NameSetting connection={connection} service={service} />
+        <NameSetting connection={connection} service={service} device={device} />
         <PortSetting connection={connection} service={service} />
         <InlineTemplateSetting connection={connection} service={service} context="launch" />
         <InlineTemplateSetting connection={connection} service={service} context="copy" />
@@ -97,6 +101,12 @@ export const ConnectionPage: React.FC = () => {
         <LanShareSelect connection={connection} service={service} />
         <ConnectionLogSetting connection={connection} service={service} />
       </List>
+      <TestUI>
+        <Divider variant="inset" />
+        <List>
+          <PublicSetting connection={connection} service={service} />
+        </List>
+      </TestUI>
     </Container>
   )
 }

@@ -20,7 +20,7 @@ type Selections = { value: string | Function; name: string; note: string }
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const { service, privateIP, connection } = useSelector((state: ApplicationState) => {
-    let connection = state.backend.connections.find(c => c.id === serviceID)
+    let connection = state.connections.all.find(c => c.id === serviceID)
     const [service] = findService(getDevices(state), serviceID)
     return {
       service,

@@ -26,6 +26,7 @@ export default class ConnectionPool {
     updated: 'pool',
     freePort: 'freePort',
     reachablePort: 'reachablePort',
+    clearErrors: 'clearErrors',
   }
 
   constructor() {
@@ -34,7 +35,7 @@ export default class ConnectionPool {
     EventBus.on(electronInterface.EVENTS.ready, this.updated)
     EventBus.on(electronInterface.EVENTS.clear, this.clear)
     EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
-    EventBus.on(Binary.EVENTS.installed, this.clearErrors)
+    EventBus.on(ConnectionPool.EVENTS.clearErrors, this.clearErrors)
   }
 
   init() {
@@ -61,12 +62,13 @@ export default class ConnectionPool {
       const connection = this.find(c.id)?.params
       if (
         !connection ||
-        connection.enabled !== c.enabled ||
-        connection.startTime !== c.startTime ||
-        connection.connected !== c.connected ||
-        connection.connecting !== c.connecting ||
-        connection.reachable !== c.reachable ||
-        connection.sessionId !== c.sessionId
+        (!connection.public &&
+          (connection.enabled !== c.enabled ||
+            connection.startTime !== c.startTime ||
+            connection.connected !== c.connected ||
+            connection.connecting !== c.connecting ||
+            connection.reachable !== c.reachable ||
+            connection.sessionId !== c.sessionId))
       ) {
         // Logger.info('SYNC CLI CONNECTION', { connection, c })
         this.set({ ...connection, ...c })
@@ -75,7 +77,7 @@ export default class ConnectionPool {
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
       const cliConnection = cli.data.connections.find(c => c.id === connection.params.id)
-      if (!cliConnection && connection.params.connected) {
+      if (!cliConnection && connection.params.connected && !connection.params.public) {
         Logger.info('SYNC START CONNECTION', { connection: connection.params })
         connection.start()
       }
@@ -187,7 +189,7 @@ export default class ConnectionPool {
       })
   }
 
-  //@ts-ignore - you can do math with booleans
+  // @ts-ignore - you can do math with booleans
   sort = (a: number | boolean = 0, b: number | boolean = 0) => b - a
 
   nextFreePort = async () => {
@@ -233,7 +235,9 @@ export default class ConnectionPool {
   private migrateConnectionData(connections: IConnection[]) {
     // migrate active to enabled and connected
     return connections.map(c => {
+      // @ts-ignore
       const enabled = c.active
+      // @ts-ignore
       delete c.active
       return { ...c, enabled, connected: enabled }
     })

@@ -124,32 +124,36 @@ declare global {
     accountEmail: string
   }
   interface IConnection {
-    id: string
-    name: string
-    owner: IUserRef
-    deviceID: string
-    online: boolean // online if service is online
-    port?: number
-    connected?: boolean
-    enabled?: boolean // if the connection is active
-    host?: ipAddress // Bind address
-    typeID?: number // service type ID
-    restriction?: ipAddress // Restriction IP address
-    timeout?: number // timeout to disconnect in minutes
-    isP2P?: boolean // if the connection was made with peer to peer vs failover
-    failover?: boolean // allow proxy failover
-    proxyOnly?: boolean // disabled p2p
-    connecting?: boolean
-    sessionId?: string //the connection session id
     address?: string // the connection url returned from cli
-    username?: string // support for launching where username could be saved
-    launchTemplate?: string // deep link launch url template
     commandTemplate?: string // command line launch template
+    connected?: boolean
+    connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
-    startTime?: number // unix timestamp connection start time
+    deviceID: string
+    enabled?: boolean // if the connection is active
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
+    failover?: boolean // allow proxy failover
+    host?: ipAddress // Bind address
+    id: string
+    isP2P?: boolean // if the connection was made with peer to peer vs failover
+    launchTemplate?: string // deep link launch url template
     log?: boolean // if cli should log the connectd stdout to file
+    name: string
+    online: boolean // online if service is online
+    owner: IUserRef
+    port?: number
+    proxyOnly?: boolean // disabled p2p
+    public?: boolean // if the connection should be a public proxy link
+    publicId?: string // public proxy connection ID
+    publicRestriction: ipAddress // public proxy restriction IP
+    reachable?: boolean // if remote connection resource is reachable
+    restriction?: ipAddress // Restriction IP address
+    sessionId?: string //the connection session id
+    startTime?: number // unix timestamp connection start time
+    timeout?: number // timeout to disconnect in minutes
+    typeID?: number // service type ID
+    username?: string // support for launching where username could be saved
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
@@ -292,6 +296,7 @@ declare global {
     state?: IConnectionState
     user?: IUserRef
     geo?: IGeo
+    public?: boolean
     target: {
       id: string
       deviceId: string

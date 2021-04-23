@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
 import { version } from '../../package.json'
@@ -22,13 +22,13 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
   }
 }
 
-export async function graphQLRequest(query: String, variables: ILookup<any> = {}) {
-  if (store.getState().ui.offline) return {}
+export async function graphQLRequest(query: String, variables: ILookup<any> = {}): Promise<AxiosResponse | void> {
+  if (store.getState().ui.offline) return Promise.resolve()
   const token = await getToken()
 
   if (!token) {
     console.warn('Unable to get token for graphQL request.')
-    return {}
+    return Promise.resolve()
   }
 
   const request = {
@@ -41,7 +41,8 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   return await axios.request(request)
 }
 
-export function graphQLGetErrors(response: any, silent?: boolean) {
+export function graphQLGetErrors(response: AxiosResponse | void, silent?: boolean) {
+  if (!response) return
   const errors: undefined | { message: string }[] = response?.data?.errors
 
   if (errors) {

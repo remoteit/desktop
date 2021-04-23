@@ -6,8 +6,8 @@ import path from 'path'
 
 export class Preferences {
   data: IPreferences = {
-    version: 'unknown',
-    cliVersion: 'unknown',
+    version: '',
+    cliVersion: '',
     autoUpdate: false,
     openAtLogin: true,
     remoteUIOverride: false,

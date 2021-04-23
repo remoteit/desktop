@@ -11,6 +11,7 @@ export type Props = {
   icon?: string
   iconColor?: Color
   disabled?: boolean
+  showDisabled?: boolean
   dense?: boolean
   className?: string
   match?: string | string[]
@@ -23,7 +24,8 @@ export const ListItemLocation: React.FC<Props> = ({
   subtitle,
   icon,
   iconColor,
-  disabled = false,
+  disabled,
+  showDisabled,
   match,
   exactMatch,
   children,
@@ -44,7 +46,7 @@ export const ListItemLocation: React.FC<Props> = ({
       selected={!!matches}
       onClick={onClick}
       disabled={disabled || !!matches}
-      style={{ opacity: 1 }}
+      style={showDisabled ? undefined : { opacity: 1 }}
     >
       {icon && (
         <ListItemIcon>

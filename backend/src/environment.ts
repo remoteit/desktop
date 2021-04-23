@@ -1,4 +1,11 @@
-import { PATHS, CERT_DIR, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
+import {
+  PATHS,
+  CERT_DIR,
+  CERT_DIR_DEV,
+  MANUFACTURE_ID_HEADLESS,
+  MANUFACTURE_ID_STANDARD,
+  PLATFORM_CODES,
+} from './constants'
 import isElectron from 'is-electron'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
@@ -77,9 +84,10 @@ export class Environment {
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
+    const certPath = this.isDev ? CERT_DIR_DEV : CERT_DIR
     this.certificateDomain = 'dt.rt3.io'
-    this.certificatePath = path.resolve(CERT_DIR, `${this.certificateDomain}.cert`)
-    this.certificateKeyPath = path.resolve(CERT_DIR, `${this.certificateDomain}.key`)
+    this.certificatePath = path.resolve(certPath, `${this.certificateDomain}.cert`)
+    this.certificateKeyPath = path.resolve(certPath, `${this.certificateDomain}.key`)
     this.logPath = path.resolve(this.userPath, 'log')
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()

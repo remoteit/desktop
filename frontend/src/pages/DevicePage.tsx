@@ -36,7 +36,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
   const css = useStyles()
   const [contextMenu, setContextMenu] = useState<IContextMenu>({})
   const { connections, setupAddingService } = useSelector((state: ApplicationState) => ({
-    connections: state.backend.connections.filter(c => c.deviceID === device?.id),
+    connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
   }))
 
