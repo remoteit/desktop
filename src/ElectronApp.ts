@@ -30,7 +30,7 @@ export default class ElectronApp {
     this.autoUpdater = new AutoUpdater()
     this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
-    if (!this.requestSingleInstanceLock()) {
+    if (!this.app.requestSingleInstanceLock()) {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
       this.app.quit()
     }
