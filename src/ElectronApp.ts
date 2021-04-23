@@ -122,6 +122,7 @@ export default class ElectronApp {
   private createMainWindow = () => {
     d('Create main window')
     if (this.window) return
+    this.app.setAppUserModelId(process.execPath)
 
     this.window = new electron.BrowserWindow({
       width: 1280,
