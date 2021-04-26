@@ -112,7 +112,6 @@ export const ServiceForm: React.FC<Props> = ({
               value={form.type}
               disabled={disabled}
               variant="filled"
-              InputProps={{ disableUnderline: true }}
               onChange={event => {
                 const type = Number(event.target.value)
                 const updatedAppType = findType(applicationTypes, type)
@@ -154,7 +153,6 @@ export const ServiceForm: React.FC<Props> = ({
             variant="filled"
             helperText={error || ''}
             placeholder={appType.description}
-            InputProps={{ disableUnderline: true }}
             onChange={event => {
               const validation = serviceNameValidation(event.target.value)
               setForm({ ...form, name: validation.value })
@@ -173,7 +171,6 @@ export const ServiceForm: React.FC<Props> = ({
                 variant="filled"
                 onChange={event => setForm({ ...form, port: validPort(event) })}
                 InputProps={{
-                  disableUnderline: true,
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
@@ -187,7 +184,6 @@ export const ServiceForm: React.FC<Props> = ({
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
                 InputProps={{
-                  disableUnderline: true,
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
@@ -237,7 +233,6 @@ export const ServiceForm: React.FC<Props> = ({
             value={form.attributes.defaultPort || ''}
             disabled={disabled}
             variant="filled"
-            InputProps={{ disableUnderline: true }}
             onChange={event => {
               form.attributes.defaultPort = validPort(event)
               setForm({ ...form })

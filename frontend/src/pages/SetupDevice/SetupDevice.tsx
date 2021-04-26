@@ -81,7 +81,6 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             }}
             onFocus={event => event.target.select()}
             helperText={nameError}
-            InputProps={{ disableUnderline: true }}
           />
           <Button
             className={css.button}

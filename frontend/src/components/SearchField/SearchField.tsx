@@ -32,7 +32,6 @@ export const SearchField: React.FC = () => {
         value={query}
         variant="filled"
         className={css.input}
-        SelectProps={{ disableUnderline: true }}
         onKeyPress={e => {
           if (e.key === 'Enter' && query.trim().length < 2) {
             devices.set({ query: '', searched: false, from: 0 })
