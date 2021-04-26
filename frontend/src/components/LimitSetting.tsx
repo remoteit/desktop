@@ -6,9 +6,12 @@ import { colors, spacing } from '../styling'
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const css = useStyles()
   const v = (value?: number): number => value || 0
+  const overLimit = limit.actual > limit.value ? limit.actual - limit.value : 0
 
   let template: 'value' | 'text' | undefined
   let message: React.ReactElement | string | undefined
+
+  if (limit.value === 0) return null
 
   switch (limit.name) {
     case 'aws-services':
@@ -26,17 +29,16 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       break
     case 'iot-devices':
       template = 'value'
-      message =
-        limit.value !== null
-          ? `${v(limit.actual)} of ${v(limit.value)} licensed devices registered`
-          : 'Unlimited devices'
+      message = limit.value !== null ? `${v(limit.actual)} of ${v(limit.value)} licensed devices` : 'Unlimited devices'
+      if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device limit`
       break
     case 'iot-nc-devices':
       template = 'value'
       message =
         limit.value !== null
-          ? `${v(limit.actual)} of ${v(limit.value)} non-commercial devices registered`
+          ? `${v(limit.actual)} of ${v(limit.value)} non-commercial devices`
           : 'Unlimited non-commercial devices'
+      if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device non-commercial limit`
       break
   }
 
@@ -45,15 +47,21 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
     case 'text':
       return <Typography variant="caption">{message}</Typography>
     case 'value':
+      let value = limit.value ? (limit.actual / limit.value) * 100 : 0
+      if (value > 100) value = (100 / value) * 100
       return (
         <Box className={css.box}>
           <Typography variant="caption" display="block">
             {message}
           </Typography>
           <LinearProgress
-            classes={{ root: css.root, colorPrimary: css.colorPrimary, bar: css.bar }}
+            classes={{
+              root: css.root,
+              colorPrimary: overLimit ? css.warning : css.background,
+              bar: overLimit ? css.warningBar : undefined,
+            }}
             variant="determinate"
-            value={limit.value ? (limit.actual / limit.value) * 100 : 0}
+            value={value}
           />
         </Box>
       )
@@ -65,7 +73,6 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
 const useStyles = makeStyles({
   box: {
     width: '70%',
-    marginBottom: spacing.sm,
   },
   root: {
     height: spacing.xs,
@@ -73,10 +80,13 @@ const useStyles = makeStyles({
     width: '100%',
     marginTop: spacing.xxs,
   },
-  colorPrimary: {
+  background: {
     backgroundColor: colors.grayLighter,
   },
-  bar: {
-    borderRadius: spacing.xxs,
+  warning: {
+    backgroundColor: colors.warning,
+  },
+  warningBar: {
+    backgroundColor: colors.grayLighter,
   },
 })

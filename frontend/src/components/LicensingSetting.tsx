@@ -17,6 +17,7 @@ import { dateOptions } from './Duration/Duration'
 import { selectLicenses } from '../models/licensing'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
+import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
 import { spacing } from '../styling'
 
@@ -29,9 +30,9 @@ export const LicensingSetting: React.FC = () => {
   return (
     <>
       <Typography variant="subtitle1">Licensing</Typography>
-      <List>
+      <>
         {licenses.map((license, index) => (
-          <React.Fragment key={index}>
+          <List key={index}>
             <LicensingNotice license={license} />
             <ListItem key={license.id} dense>
               <ListItemIcon>
@@ -59,20 +60,27 @@ export const LicensingSetting: React.FC = () => {
                 ))}
               </Box>
             </ListItem>
-          </React.Fragment>
+            <ListItemCopy label="Copy key" value={license.id} />
+            <Divider className={css.divider} />
+          </List>
         ))}
-        {!!limits.length && <Divider className={css.divider} />}
-        {limits.map(limit => (
-          <ListItem key={limit.name}>
-            <ListItemIcon></ListItemIcon>
-            <LimitSetting limit={limit} />
-          </ListItem>
-        ))}
-      </List>
+        {!!limits.length && (
+          <>
+            <List>
+              {limits.map(limit => (
+                <ListItem key={limit.name}>
+                  <ListItemIcon></ListItemIcon>
+                  <LimitSetting limit={limit} />
+                </ListItem>
+              ))}
+            </List>
+          </>
+        )}
+      </>
     </>
   )
 }
 
 const useStyles = makeStyles({
-  divider: { margin: `${spacing.sm}px ${spacing.xl}px ${spacing.xs}px 73px` },
+  divider: { margin: `${spacing.sm}px ${spacing.xl}px ${spacing.xs}px 80px` },
 })

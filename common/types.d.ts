@@ -317,27 +317,26 @@ declare global {
     name: string
     value: any
     actual: any
-    license?: { id: string }
+    license: { id: string } | null
   }
 
   type ILicense = {
     id: string
     created: Date
     updated: Date
-    expiration?: Date
+    expiration: Date | null
     valid: boolean
-    value: object
     upgradeUrl?: string
     plan: {
       id: string
       name: string
       description: string
-      duration: string
+      duration: string | null
       product: {
         id: string
         name: string
         description: string
-        provider: string
+        provider: string | null
       }
     }
   }
@@ -512,7 +511,7 @@ declare global {
     allowPrerelease?: boolean
     useCertificate?: boolean
     switchApi?: boolean
-    testUI?: boolean
+    testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
   }
 
   type SegmentContext = {
