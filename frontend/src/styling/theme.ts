@@ -263,7 +263,7 @@ const jssTheme: ThemeOptions = {
       h1: {
         fontSize: fontSizes.xl,
         fontWeight: 400,
-        color: colors.grayDarker,
+        color: colors.grayDarkest,
         letterSpacing: -0.2,
       },
       h2: {
