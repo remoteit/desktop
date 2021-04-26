@@ -67,19 +67,10 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       <List>
         <DeviceSetupItem />
         {remoteUI || <AccountLinkingSettings />}
-        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" />
+        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         <TestUI>
-          <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" />
-        </TestUI>
-        <TestUI>
-          <ListItemSetting
-            label="Disable Test UI"
-            subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
-            icon="vial"
-            onClick={() =>
-              emit('preferences', { ...preferences, testUI: false, allowPrerelease: false, switchApi: false })
-            }
-          />
+          <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
+          <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />
         </TestUI>
       </List>
       <Divider variant="inset" />
@@ -141,6 +132,16 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </>
         )}
         <UpdateSetting />
+        <TestUI>
+          <ListItemSetting
+            label="Disable Test UI"
+            subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
+            icon="vial"
+            onClick={() =>
+              emit('preferences', { ...preferences, testUI: 'OFF', allowPrerelease: false, switchApi: false })
+            }
+          />
+        </TestUI>
       </List>
       {remoteUI || (
         <Collapsible title="Advanced">

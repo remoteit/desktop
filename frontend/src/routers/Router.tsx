@@ -7,6 +7,7 @@ import { ConnectionOtherPage } from '../pages/ConnectionOtherPage'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { ConnectionPage } from '../pages/ConnectionPage'
 import { SettingsPage } from '../pages/SettingsPage'
+import { TestPage } from '../pages/TestPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { DevicesPage } from '../pages/DevicesPage'
@@ -140,15 +141,21 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         </Panel>
       </Route>
 
+      <Route path="/settings/logs">
+        <Panel>
+          <UserLogPage />
+        </Panel>
+      </Route>
+
       <Route path="/settings/reports">
         <Panel>
           <ReportsPage />
         </Panel>
       </Route>
 
-      <Route path="/settings/logs">
+      <Route path="/settings/test">
         <Panel>
-          <UserLogPage />
+          <TestPage />
         </Panel>
       </Route>
 
