@@ -42,7 +42,7 @@ export const Notice: React.FC<Props> = ({
   return (
     <Paper
       elevation={0}
-      style={{ backgroundColor: lighten(color, 0.9), color: darken(color, 0.2) }}
+      style={{ backgroundColor: lighten(color, 0.9), color: darken(color, 0.1) }}
       className={css.notice}
     >
       {loading ? (

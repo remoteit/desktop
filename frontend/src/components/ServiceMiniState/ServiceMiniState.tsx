@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { makeStyles, Box, lighten } from '@material-ui/core'
-import { spacing, colors, fontSizes, Color } from '../../styling'
+import { spacing, colors, fontSizes, Color, radius } from '../../styling'
 import { selectSessionsByService } from '../../models/sessions'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
@@ -18,16 +18,19 @@ interface Props {
 
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu, showConnected = true }) => {
   const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
-  const sessions = useSelector((state: ApplicationState) =>
-    selectSessionsByService(state, service?.id || connection?.id)
-  )
+  const { sessions, licensingChip } = useSelector((state: ApplicationState) => ({
+    licensingChip: state.licensing.chip,
+    sessions: selectSessionsByService(state, service?.id || connection?.id),
+  }))
   const cState = connectionState(service, connection)
   const connected = showConnected && !!sessions.length
   const css = useStyles()
 
-  let colorName: Color = 'warning'
+  let colorName: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
   let failover: boolean = false
+  let opacity: number = 1
+  let label: string = ''
 
   if (connection) {
     failover = connection.isP2P === false
@@ -44,10 +47,9 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       break
     case 'active':
       colorName = 'grayDarker'
-      if (service.license === 'EVALUATION') colorName = 'warning'
       break
     case 'inactive':
-      colorName = 'grayLight'
+      opacity = 0.3
       break
     case 'connected':
       colorName = 'primary'
@@ -62,13 +64,28 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       colorName = 'grayLight'
   }
 
-  if (service.license === 'UNLICENSED') colorName = 'grayLight'
+  const chip = licensingChip[service.license]
+
+  if (chip.show) {
+    colorName = chip.colorName
+    label = chip.name
+    console.log('SHOW CHIP', chip)
+  }
 
   const color = colors[colorName]
+  console.log('-> mini state color', color, colorName, chip, state)
 
   return (
     <>
-      <SessionsTooltip service={service} open={openTooltip} sessions={sessions} placement="top" arrow label>
+      <SessionsTooltip
+        service={service}
+        open={openTooltip}
+        sessions={sessions}
+        secondaryLabel={label}
+        placement="top"
+        arrow
+        label
+      >
         <Box
           component="span"
           className={classnames(setContextMenu && css.hasMenu, css.indicator)}
@@ -86,6 +103,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
           <span
             style={{
               color,
+              opacity,
               backgroundColor: lighten(color, 0.94),
               textDecoration: state === 'inactive' ? 'line-through' : '',
             }}
@@ -108,7 +126,7 @@ const useStyles = makeStyles({
     display: 'inline-flex',
     alignItems: 'center',
     '& > span': {
-      borderRadius: 3,
+      borderRadius: radius,
       fontSize: fontSizes.xxs,
       fontWeight: 500,
       padding: 1,

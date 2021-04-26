@@ -62,7 +62,7 @@ export function ConnectionStateIcon({
     title = 'Evaluation'
   }
   if (service?.license === 'UNLICENSED') {
-    colorName = 'grayLight'
+    colorName = 'warning'
     title = 'Unlicensed'
   }
 

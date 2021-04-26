@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
@@ -30,6 +30,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
+  const chip = useSelector((state: ApplicationState) => service && state.licensing.chip[service.license])
   const { connections } = useDispatch<Dispatch>()
   const state = connectionState(service, connection)
   const visible = state === 'stopping' || state === 'disconnected'
@@ -60,15 +61,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   let disabled = false
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
-  if (service?.license === 'EVALUATION') {
-    color = 'warning'
-    title = 'Evaluation'
-    variant = 'text'
-  }
-  if (service?.license === 'UNLICENSED') {
-    color = 'grayLight'
-    title = 'Unlicensed'
-    disabled = true
+  if (chip && chip.show) {
+    color = chip.colorName
+    title = chip.name
+    disabled = !!chip.disabled
     variant = 'text'
   }
 
