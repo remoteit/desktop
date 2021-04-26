@@ -4,7 +4,6 @@ import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { r3, getToken } from '../services/remote.it'
 import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
-import { store } from '../store'
 import axios from 'axios'
 
 type ConnectionsState = {
@@ -63,24 +62,24 @@ export default createModel<RootModel>()({
     async proxyConnect(connection: IConnection): Promise<any> {
       const data = { wait: 'true', hostip: connection.publicRestriction, deviceaddress: connection.id }
 
-      setConnection({
+      let proxyConnection = {
         ...connection,
         createdTime: Date.now(),
         startTime: Date.now(),
         connecting: true,
         enabled: true,
-      })
+      }
+
+      setConnection(proxyConnection)
 
       try {
         let result = await axios.post(`${API_URL}/device/connect`, data, await dispatch.connections.headerOptions())
         const response = r3.processData(result)
         const proxyResult: ProxyConnectionResult = response.connection || {}
-        const updated = store.getState().connections.all.find(c => c.id === connection.id) || connection
-
         console.log('PROXY CONNECTED', proxyResult)
 
         setConnection({
-          ...updated,
+          ...proxyConnection,
           publicId: proxyResult.connectionid,
           connecting: false,
           connected: true,
@@ -98,7 +97,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async proxyDisconnect(connection: IConnection, globalState) {
+    async proxyDisconnect(connection: IConnection) {
       setConnection({ ...connection, enabled: false })
       console.log('PROXY DISCONNECT', connection)
       const data = { deviceaddress: connection.id, connectionid: connection.publicId }
@@ -109,12 +108,6 @@ export default createModel<RootModel>()({
           await dispatch.connections.headerOptions()
         )
         const proxyResult = r3.processData(result)
-        // setConnection({
-        //   ...connection,
-        //   enabled: false,
-        //   connected: false,
-        //   endTime: Date.now(),
-        // })
         console.log('PROXY DISCONNECTED', proxyResult)
       } catch (error) {
         r3.processError(error)
