@@ -74,7 +74,7 @@ export const AvatarMenu: React.FC<Props> = ({}) => {
             confirmTitle="Are you sure?"
             confirmMessage="Enabling alpha features may be unstable. It is only intended for testing and development."
             onClick={() => {
-              emit('preferences', { ...preferences, testUI: true })
+              emit('preferences', { ...preferences, testUI: 'HIGHLIGHT' })
               handleClose()
             }}
           />

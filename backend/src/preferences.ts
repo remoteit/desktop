@@ -16,7 +16,7 @@ export class Preferences {
     allowPrerelease: false,
     useCertificate: true,
     switchApi: false,
-    testUI: false,
+    testUI: 'OFF',
   }
 
   private file: JSONFile<IPreferences>

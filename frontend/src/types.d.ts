@@ -1,4 +1,5 @@
 import { AnalyticsJS } from 'segment-analytics'
+import { Color } from './styling'
 
 declare global {
   type ConnectionState = IService['state'] | 'connecting' | 'disconnected' | 'unknown'
@@ -23,6 +24,15 @@ declare global {
     | 'service/throughput'
     | 'service/uptime'
     | 'connectd/install/error'
+
+  type ILicenseChip = {
+    name: string
+    color: string
+    colorName: Color
+    background?: string
+    disabled?: boolean
+    show?: boolean
+  }
 
   type LogType = 'general' | 'connectd' | 'alert'
 
@@ -89,7 +99,7 @@ declare global {
     label: string
     value?: any
     help?: string
-    format?: 'duration' | 'percent' | 'round' | 'location' | 'element'
+    format?: 'duration' | 'percent' | 'round' | 'location' | 'element' | 'chip'
   }
 
   interface ILabel {
