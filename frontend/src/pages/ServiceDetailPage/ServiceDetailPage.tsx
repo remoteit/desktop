@@ -10,17 +10,18 @@ import { LaunchButton } from '../../buttons/LaunchButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { ComboButton } from '../../buttons/ComboButton'
 import { CopyButton } from '../../buttons/CopyButton'
-import { Columns } from '../../components/Columns'
 import { Gutters } from '../../components/Gutters'
-import { spacing } from '../../styling'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
   const { serviceID } = useParams<{ serviceID: string }>()
-  const connection = useSelector((state: ApplicationState) => state.connections.all.find(c => c.id === serviceID))
   const service = device?.services.find(s => s.id === serviceID)
+  const { connection, licenseChip } = useSelector((state: ApplicationState) => ({
+    connection: state.connections.all.find(c => c.id === serviceID),
+    licenseChip: state.licensing.chip[service?.license || 0],
+  }))
   const target = targets.find(t => t.uid === serviceID)
   const state = connectionState(service, connection)
   const css = useStyles()
@@ -50,6 +51,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
     { label: 'Device Name', value: device.name },
     { label: 'Owner', value: device.owner.email },
     { label: 'Service ID', value: service.id },
+    { label: 'License', value: licenseChip, format: 'chip' },
   ])
 
   return (

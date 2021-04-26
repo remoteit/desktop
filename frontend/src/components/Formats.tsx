@@ -1,4 +1,5 @@
 import React from 'react'
+import { Chip } from '@material-ui/core'
 import { Duration } from './Duration'
 
 export const Formats = {
@@ -14,6 +15,15 @@ export const Formats = {
   },
   round: (value: number) => {
     return Math.round(value * 10) / 10
+  },
+  chip: (value: ILicenseChip) => {
+    return (
+      <Chip
+        style={{ color: value.color, backgroundColor: value.background, fontFamily: 'Roboto Mono' }}
+        label={value.name}
+        size="small"
+      />
+    )
   },
   location: (geo: IDevice['geo']) => {
     if (!geo) return null
