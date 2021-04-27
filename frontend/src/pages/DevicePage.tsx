@@ -36,11 +36,13 @@ type Props = {
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
   const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
-    connections: state.connections.all.filter(c => c.deviceID === device?.id),
-    setupAddingService: state.ui.setupAddingService,
-    sortService: state.devices.sortService,
-  }))
+  const { connections, setupAddingService, sortService = (a: number, b: number) => 0 } = useSelector(
+    (state: ApplicationState) => ({
+      connections: state.connections.all.filter(c => c.deviceID === device?.id),
+      setupAddingService: state.ui.setupAddingService,
+      sortService: state.devices.sortServiceOption?.sortService,
+    })
+  )
 
   useEffect(() => {
     analyticsHelper.page('DevicePage')

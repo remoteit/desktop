@@ -14,6 +14,7 @@ import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
+import { ISortService } from '../components/SortServices'
 
 type DeviceParams = { [key: string]: any }
 
@@ -41,7 +42,7 @@ type IDeviceState = {
   from: number
   contacts: IUserRef[]
   eventsUrl: string
-  sortService: (a: IService, b: IService) => -1 | 1 | 0
+  sortServiceOption?: ISortService
 }
 
 export const state: IDeviceState = {
@@ -63,7 +64,7 @@ export const state: IDeviceState = {
   from: 0,
   contacts: [],
   eventsUrl: '',
-  sortService: () => 0
+  sortServiceOption: undefined
 }
 
 export default createModel<RootModel>()({

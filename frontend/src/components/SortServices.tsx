@@ -6,11 +6,26 @@ import { Dispatch } from '../store'
 import { makeStyles } from '@material-ui/core/styles'
 import { fontSize } from '@remote.it/components/lib/styles/variables'
 
-const options = [
-  { value: 0, name: 'Alphabetical(A-Z)' },
-  { value: 1, name: 'Alphabetical(Z-A)' },
-  { value: 2, name: 'Creation Date (Newest)' },
-  { value: 3, name: 'Creation Date (Oldest)' },
+export interface ISortService {
+  value: number
+  name: string
+  sortService: (a: IService, b: IService) => number
+}
+const options: ISortService[] = [
+  {
+    value: 0,
+    name: 'Alpha A-Z',
+    sortService: (a: IService, b: IService) =>
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0,
+  },
+  {
+    value: 1,
+    name: 'Alpha Z-A',
+    sortService: (a: IService, b: IService) =>
+      a.name.toLowerCase() < b.name.toLowerCase() ? 1 : a.name.toLowerCase() > b.name.toLowerCase() ? -1 : 0,
+  },
+  { value: 2, name: 'Newest first', sortService: (a: IService, b: IService) => (a.createdAt > b.createdAt ? 1 : -1) },
+  { value: 3, name: 'Oldest first', sortService: (a: IService, b: IService) => (a.createdAt < b.createdAt ? 1 : -1) },
 ]
 
 export const SortServices: React.FC = () => {
@@ -20,10 +35,10 @@ export const SortServices: React.FC = () => {
   const css = useStyles()
   const [icon, setIcon] = React.useState('sort-amount-down')
   const [dot, setDot] = React.useState(false)
-  const [optionSelected, setOptionSelected] = React.useState(0)
+  const [optionSelected, setOptionSelected] = React.useState<ISortService>()
 
   useEffect(() => {
-    servicesSort(0)
+    servicesSort(options[0])
   }, [])
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -34,33 +49,11 @@ export const SortServices: React.FC = () => {
     setAnchorEl(null)
   }
 
-  const servicesSort = async (type: number) => {
-    setOptionSelected(type)
-    let sortService
-    switch (type) {
-      case 0:
-        sortService = (a: IService, b: IService) =>
-          a.name.toLowerCase() > b.name.toLowerCase() ? 1 : a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0
-        break
-      case 1:
-        sortService = (a: IService, b: IService) =>
-          a.name.toLowerCase() < b.name.toLowerCase() ? 1 : a.name.toLowerCase() > b.name.toLowerCase() ? -1 : 0
-        break
-      case 2:
-        sortService = (a: IService, b: IService) => (a.createdAt > b.createdAt ? 1 : -1)
-        break
-      case 3:
-        sortService = (a: IService, b: IService) => (a.createdAt < b.createdAt ? 1 : -1)
-        break
-    }
-
-    type === 0 || type === 2 ? setIcon('sort-amount-down') : setIcon('sort-amount-up')
-
-    setDot(!!type)
-
-    if (sortService) {
-      devices.set({ sortService })
-    }
+  const servicesSort = async (option: ISortService) => {
+    setOptionSelected(option)
+    option.value === 0 || option.value === 2 ? setIcon('sort-amount-down') : setIcon('sort-amount-up')
+    setDot(!!option.value)
+    devices.set({ sortServiceOption: option })
     handleClose()
   }
 
@@ -80,7 +73,7 @@ export const SortServices: React.FC = () => {
           <MenuItem
             key={index}
             selected={option.value === optionSelected}
-            onClick={() => servicesSort(option.value)}
+            onClick={() => servicesSort(option)}
             className={css.list}
           >
             {option.name}
