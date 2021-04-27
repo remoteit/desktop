@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Badge, IconButton, Menu, MenuItem } from '@material-ui/core'
 import { Icon } from './Icon'
 import { useDispatch } from 'react-redux'
@@ -21,6 +21,10 @@ export const SortServices: React.FC = () => {
   const [icon, setIcon] = React.useState('sort-amount-down')
   const [dot, setDot] = React.useState(false)
   const [optionSelected, setOptionSelected] = React.useState(0)
+
+  useEffect(() => {
+    servicesSort(0)
+  }, [])
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -49,8 +53,11 @@ export const SortServices: React.FC = () => {
         sortService = (a: IService, b: IService) => (a.createdAt < b.createdAt ? 1 : -1)
         break
     }
-    optionSelected === 0 || optionSelected === 2 ? setIcon('sort-amount-down') : setIcon('sort-amount-up')
-    setDot(true)
+
+    type === 0 || type === 2 ? setIcon('sort-amount-down') : setIcon('sort-amount-up')
+
+    setDot(!!type)
+
     if (sortService) {
       devices.set({ sortService })
     }
