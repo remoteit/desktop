@@ -168,6 +168,7 @@ export default class ConnectionPool {
   clearMemory = async () => {
     Logger.info('CLEARING CONNECTIONS')
     this.pool = []
+    EventBus.emit(ConnectionPool.EVENTS.updated, [])
   }
 
   updated = () => {
