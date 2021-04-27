@@ -24,6 +24,7 @@ import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { Panel } from '../components/Panel'
 import { UserLogPage } from '../pages/UserLogPage'
+import { NotificationsPage } from '../pages/NotificationsPage'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
@@ -166,6 +167,9 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
               <Route path="/settings/reports">
                 <ReportsPage />
+              </Route>
+              <Route path="/settings/notifications">
+                <NotificationsPage />
               </Route>
 
               <Route path="/settings/licensing">

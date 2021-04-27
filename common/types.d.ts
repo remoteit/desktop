@@ -239,6 +239,9 @@ declare global {
       color?: number
       label?: string
       accessDisabled?: boolean
+      onlineDeviceNotification?: boolean
+      onlineSharedDeviceNotification?: boolean
+      notificationEmail?: boolean
     }
   }
 
@@ -276,6 +279,15 @@ declare global {
     created?: Date
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
+    metadata?: IMetadata
+  }
+
+  type IMetadata = {
+    onlineDeviceNotification?: boolean
+    onlineSharedDeviceNotification?: boolean
+    portalUrl?: string
+    notificationEmail?: boolean
+    notificationSystem?: boolean
   }
 
   type IUserRef = {
@@ -366,6 +378,7 @@ declare global {
     platform: IUser['platform']
     authUserId: string
     geo?: IGeo
+    metadata?: IUser['metadata']
     target: {
       id: string
       name: string

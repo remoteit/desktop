@@ -10,8 +10,12 @@ export const Quote: React.FC<{ margin?: number }> = ({ children, margin = spacin
 const useStyles = margin =>
   makeStyles({
     quote: {
+      width: '100%',
       margin: `${margin}px 0`,
       paddingLeft: spacing.lg,
       borderLeft: `1px solid ${colors.grayLighter}`,
+      '& .MuiListItem-root, & > .MuiIconButton-root': {
+        marginLeft: -spacing.md,
+      },
     },
   })

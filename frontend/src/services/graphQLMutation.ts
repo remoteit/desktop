@@ -106,3 +106,29 @@ export async function graphQLReadNotice(id: string) {
     { id }
   )
 }
+
+export async function graphQLUpdateMetadata(params: IMetadata) {
+  //@TODO: to add $notificationSystem: Boolean waiting API support
+  return await graphQLBasicRequest(
+    `
+        mutation UpdateUserMetadata(
+          $onlineDeviceNotification: Boolean
+          $onlineSharedDeviceNotification: Boolean
+          $portalUrl: String
+          $notificationEmail: Boolean
+          $notificationSystem: Boolean
+        ) {
+          setAttributes(
+            attributes: {
+              onlineDeviceNotification: $onlineDeviceNotification
+              onlineSharedDeviceNotification: $onlineSharedDeviceNotification
+              portalUrl: $portalUrl
+              notificationEmail: $notificationEmail
+              notificationSystem: $notificationSystem
+            }
+          )
+        }
+      `,
+    params
+  )
+}

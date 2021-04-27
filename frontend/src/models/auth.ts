@@ -12,6 +12,7 @@ import { Dispatch } from '../store'
 import { store } from '../store'
 import { emit } from '../services/Controller'
 import { REDIRECT_URL } from '../shared/constants'
+import { graphQLUpdateMetadata } from '../services/graphQLMutation'
 
 function sleep(ms) {
   return new Promise(resolve => {
@@ -76,6 +77,7 @@ export default createModel<RootModel>()({
                 authhash
                 yoicsId
                 created
+                metadata: attributes
               }
             }`
         )
@@ -87,7 +89,22 @@ export default createModel<RootModel>()({
           authHash: data.authhash,
           yoicsId: data.yoicsId,
           created: data.created,
+          metadata: {
+            onlineDeviceNotification: data.metadata.onlineDeviceNotification,
+            onlineSharedDeviceNotification: data.metadata.onlineSharedDeviceNotification,
+            portalUrl: data.metadata.portalUrl,
+            notificationEmail: data.metadata.notificationEmail,
+            notificationSystem: data.metadata.notificationSystem,
+          },
         })
+      } catch (error) {
+        await graphQLCatchError(error)
+      }
+    },
+    async updateUserMetadata(metadata: IMetadata) {
+      try {
+        const response = await graphQLUpdateMetadata(metadata)
+        graphQLGetErrors(response)
       } catch (error) {
         await graphQLCatchError(error)
       }

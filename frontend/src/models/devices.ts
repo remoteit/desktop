@@ -4,6 +4,7 @@ import {
   graphQLAddService,
   graphQLUpdateService,
   graphQLRemoveService,
+  graphQLAddNotifications,
 } from '../services/graphQLMutation'
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
