@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useNavigation } from '../hooks/useNavigation'
-import { List, ListItem, ListItemText, ListItemIcon, Badge } from '@material-ui/core'
+import { List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Chip, Badge } from '@material-ui/core'
 import { colors } from '../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from './Icon'
 
 export const SidebarNav: React.FC = () => {
-  const { menu, menuItems } = useNavigation()
+  const { menuItems } = useNavigation()
   const [viewBadge, setViewBadge] = useState(true)
   const location = useLocation()
   const history = useHistory()
@@ -43,6 +43,11 @@ export const SidebarNav: React.FC = () => {
                 )}
               </ListItemIcon>
               <ListItemText primary={m.label} />
+              {!!m.chip && (
+                <ListItemSecondaryAction>
+                  <Chip size="small" label={m.chip} color="primary" />
+                </ListItemSecondaryAction>
+              )}
             </ListItem>
           )
         return items

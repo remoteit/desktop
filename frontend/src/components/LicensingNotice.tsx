@@ -25,7 +25,7 @@ export const LicensingNotice: React.FC<Props> = props => {
 
   const { licensing } = useDispatch<Dispatch>()
 
-  console.log('LICENSING NOTICE', license, noticeType, informed)
+  // console.log('LICENSING NOTICE', license, noticeType, informed)
 
   if (!license || !noticeType || informed) return null
 
