@@ -15,7 +15,7 @@ import { InlineSelectSetting } from '../components/InlineSelectSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
-import { Notice } from '../components/Notice'
+import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { emit } from '../services/Controller'
 
@@ -27,42 +27,51 @@ export const TestPage: React.FC = () => {
   const { licensing } = useDispatch<Dispatch>()
 
   return (
-    <Container
-      header={
-        <Typography variant="h1">
-          <Title>Test Settings</Title>
-        </Typography>
-      }
-    >
-      <Typography variant="subtitle1">Test Options</Typography>
-      <List>
-        <ListItemSetting
-          label="Hide test UI backgrounds"
-          toggle={preferences.testUI === 'ON'}
-          onClick={() =>
-            emit('preferences', { ...preferences, testUI: preferences.testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })
-          }
-        />
-      </List>
-      <Typography variant="subtitle1">Licensing Options</Typography>
-      <List>
-        <ListItemSetting
-          label="Override licenses and limits"
-          toggle={tests.limit}
-          onClick={() => licensing.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
-        />
-        <ListItemSetting label="Clear licenses and limits" onClick={() => licensing.testClearLicensing()} />
-        <ListItemSetting
-          label="Set service licenses"
-          subLabel="Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY"
-          onClick={() => licensing.testServiceLicensing()}
-        />
-        <ListItemSetting
-          label="License message cleared"
-          toggle={informed}
-          onClick={() => licensing.set({ informed: !informed })}
-        />
-      </List>
-    </Container>
+    <TestUI>
+      <Container
+        header={
+          <Typography variant="h1">
+            <Title>Test Settings</Title>
+          </Typography>
+        }
+      >
+        <Typography variant="subtitle1">Test Options</Typography>
+        <List>
+          <ListItemSetting
+            label="Hide test UI backgrounds"
+            toggle={preferences.testUI === 'ON'}
+            onClick={() =>
+              emit('preferences', { ...preferences, testUI: preferences.testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })
+            }
+          />
+          <ListItemSetting
+            label="Disable Test UI"
+            subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
+            onClick={() =>
+              emit('preferences', { ...preferences, testUI: 'OFF', allowPrerelease: false, switchApi: false })
+            }
+          />
+        </List>
+        <Typography variant="subtitle1">Licensing Options</Typography>
+        <List>
+          <ListItemSetting
+            label="Override licenses and limits"
+            toggle={tests.limit}
+            onClick={() => licensing.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
+          />
+          <ListItemSetting label="Clear licenses and limits" onClick={() => licensing.testClearLicensing()} />
+          <ListItemSetting
+            label="Set service licenses"
+            subLabel="Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY"
+            onClick={() => licensing.testServiceLicensing()}
+          />
+          <ListItemSetting
+            label="License message cleared"
+            toggle={informed}
+            onClick={() => licensing.set({ informed: !informed })}
+          />
+        </List>
+      </Container>
+    </TestUI>
   )
 }

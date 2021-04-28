@@ -56,7 +56,7 @@ export class BinaryInstaller {
     this.inProgress = false
   }
 
-  async installBinaries() {
+  async installBinaries(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })

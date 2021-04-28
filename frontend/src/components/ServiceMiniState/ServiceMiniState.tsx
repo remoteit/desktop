@@ -69,11 +69,9 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
   if (chip.show) {
     colorName = chip.colorName
     label = chip.name
-    console.log('SHOW CHIP', chip)
   }
 
   const color = colors[colorName]
-  console.log('-> mini state color', color, colorName, chip, state)
 
   return (
     <>

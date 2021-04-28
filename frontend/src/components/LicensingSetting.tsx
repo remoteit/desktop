@@ -29,54 +29,51 @@ export const LicensingSetting: React.FC = () => {
 
   return (
     <>
-      <Typography variant="subtitle1">Licensing</Typography>
-      <>
-        {licenses.map((license, index) => (
-          <List key={index}>
-            <LicensingNotice license={license} />
-            <ListItem key={license.id} dense>
-              <ListItemIcon>
-                <LicensingIcon license={license} />
-              </ListItemIcon>
-              <ListItemText
-                primary={`${license.plan.product.description} ${license.plan.description} plan`}
-                secondary={
-                  license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
-                }
-              />
-              {license.upgradeUrl && (
-                <ListItemSecondaryAction>
-                  <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
-                    Manage Subscription
-                  </Button>
-                </ListItemSecondaryAction>
-              )}
-            </ListItem>
-            <ListItem>
-              <ListItemIcon></ListItemIcon>
-              <Box width={400}>
-                {license.limits.map(limit => (
-                  <LimitSetting key={limit.name} limit={limit} />
-                ))}
-              </Box>
-            </ListItem>
-            <ListItemCopy label="Copy key" value={license.id} />
-            <Divider className={css.divider} />
-          </List>
-        ))}
-        {!!limits.length && (
-          <>
-            <List>
-              {limits.map(limit => (
-                <ListItem key={limit.name}>
-                  <ListItemIcon></ListItemIcon>
-                  <LimitSetting limit={limit} />
-                </ListItem>
+      {licenses.map((license, index) => (
+        <List key={index}>
+          <LicensingNotice license={license} />
+          <ListItem key={license.id} dense>
+            <ListItemIcon>
+              <LicensingIcon license={license} />
+            </ListItemIcon>
+            <ListItemText
+              primary={`${license.plan.product.description} ${license.plan.description} plan`}
+              secondary={
+                license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
+              }
+            />
+            {license.upgradeUrl && (
+              <ListItemSecondaryAction>
+                <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
+                  Manage Subscription
+                </Button>
+              </ListItemSecondaryAction>
+            )}
+          </ListItem>
+          <ListItem>
+            <ListItemIcon></ListItemIcon>
+            <Box width={400}>
+              {license.limits.map(limit => (
+                <LimitSetting key={limit.name} limit={limit} />
               ))}
-            </List>
-          </>
-        )}
-      </>
+            </Box>
+          </ListItem>
+          <ListItemCopy label="Copy key" value={license.id} />
+          <Divider className={css.divider} />
+        </List>
+      ))}
+      {!!limits.length && (
+        <>
+          <List>
+            {limits.map(limit => (
+              <ListItem key={limit.name}>
+                <ListItemIcon></ListItemIcon>
+                <LimitSetting limit={limit} />
+              </ListItem>
+            ))}
+          </List>
+        </>
+      )}
     </>
   )
 }

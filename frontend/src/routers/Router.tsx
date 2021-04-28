@@ -12,11 +12,13 @@ import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
+import { LicensingPage } from '../pages/LicensingPage'
 import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
 import { AccountMembershipPage } from '../pages/AccountMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
+import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { Panel } from '../components/Panel'
@@ -80,7 +82,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         />
       </Route>
 
-      {/* Devices */}
       <Route path="/devices/setup">
         {registered ? (
           <Redirect to={`/devices/${targetDevice.uid}`} />
@@ -129,41 +130,43 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         )}
       </Route>
 
-      <Route path={['/settings/membership/share', '/settings/access/share']}>
-        <Panel>
-          <AccountSharePage />
-        </Panel>
-      </Route>
+      <DynamicPanel
+        primary={<SettingsPage singlePanel={singlePanel} />}
+        secondary={
+          <Switch>
+            <Route path={['/settings/membership/share', '/settings/access/share']}>
+              <AccountSharePage />
+            </Route>
 
-      <Route path="/settings/access">
-        <Panel>
-          <AccountAccessPage />
-        </Panel>
-      </Route>
+            <Route path="/settings/access">
+              <AccountAccessPage />
+            </Route>
 
-      <Route path="/settings/logs">
-        <Panel>
-          <UserLogPage />
-        </Panel>
-      </Route>
+            <Route path="/settings/logs">
+              <UserLogPage />
+            </Route>
 
-      <Route path="/settings/reports">
-        <Panel>
-          <ReportsPage />
-        </Panel>
-      </Route>
+            <Route path="/settings/reports">
+              <ReportsPage />
+            </Route>
 
-      <Route path="/settings/test">
-        <Panel>
-          <TestPage />
-        </Panel>
-      </Route>
+            <Route path="/settings/licensing">
+              <LicensingPage />
+            </Route>
 
-      <Route path="/settings">
-        <Panel>
-          <SettingsPage singlePanel={singlePanel} />
-        </Panel>
-      </Route>
+            <Route path="/settings/options">
+              <OptionsPage />
+            </Route>
+
+            <Route path="/settings/test">
+              <TestPage />
+            </Route>
+          </Switch>
+        }
+        resize="settings"
+        single={singlePanel}
+        root={['/connections', '/connections/new']}
+      />
 
       <Route path="/announcements">
         <Panel>

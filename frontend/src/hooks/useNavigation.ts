@@ -37,7 +37,7 @@ export function useNavigation(): INavigationHook {
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
 
-  const path = (selected: string) => {
+  const recallPath = (selected: string) => {
     const stored = navigation[selected]
     if (!stored || stored === location.pathname) return selected
     else return stored
@@ -82,7 +82,7 @@ export function useNavigation(): INavigationHook {
     { label: 'This Device', path: '/devices', match: '/devices/:any?/:any?/:any?', icon: 'hdd', show: remoteUI },
     {
       label: 'Connections',
-      path: path('/connections'),
+      path: '/connections', // recallPath('/connections')
       match: '/connections/:any?/:any?/:any?',
       icon: 'arrow-right',
       show: !remoteUI,
@@ -97,10 +97,10 @@ export function useNavigation(): INavigationHook {
       show: !remoteUI,
     },
     {
-      label: 'Settings',
+      label: 'More',
       path: '/settings',
       match: '/settings',
-      icon: 'cog',
+      icon: 'ellipsis-h',
       badge: licenseIndicator,
       show: true,
     },

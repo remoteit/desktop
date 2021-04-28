@@ -12,7 +12,7 @@ export const DataDisplay: React.FC<{ data: IDataDisplay[]; width?: number }> = (
       {data.map(
         item =>
           item.value != null && (
-            <ListItem className={css.item} key={item.label}>
+            <ListItem className={css.item} key={item.label} disableGutters>
               <span>
                 {item.label}:
                 {item.help && (

@@ -4,23 +4,25 @@ import { Dispatch, ApplicationState } from '../../store'
 import { Typography } from '@material-ui/core'
 import { EventList } from '../../components/EventList'
 import { eventLogs } from '../../models/logs'
-import { Title } from '../../components/Title'
 import { EventHeader } from '../../components/EventList/EventHeader'
-import { Body } from '../../components/Body'
+import { Container } from '../../components/Container'
+import { Title } from '../../components/Title'
 
 export const UserLogPage: React.FC = () => {
-  const { events, fetchingMore, fetching, selectedDate, itemOffset, minDate } = useSelector((state: ApplicationState) => ({
-    events: state.logs.events,
-    fetchingMore: state.logs.fetchingMore,
-    fetching: state.logs.fetching,
-    selectedDate: state.logs.selectedDate,
-    itemOffset: state.logs.from,
-    minDate: state.logs.minDate
-  }))
+  const { events, fetchingMore, fetching, selectedDate, itemOffset, minDate } = useSelector(
+    (state: ApplicationState) => ({
+      events: state.logs.events,
+      fetchingMore: state.logs.fetchingMore,
+      fetching: state.logs.fetching,
+      selectedDate: state.logs.selectedDate,
+      itemOffset: state.logs.from,
+      minDate: state.logs.minDate,
+    })
+  )
   const dispatch = useDispatch<Dispatch>()
   const { getEventsLogs, set } = dispatch.logs
   useEffect(() => {
-    set ({ from: 0 , selectedDate: new Date()})
+    set({ from: 0, selectedDate: new Date() })
   }, [])
 
   const onFetchMore = () => {
@@ -29,10 +31,10 @@ export const UserLogPage: React.FC = () => {
   }
 
   const onChangeDate = (date: any) => {
-    set({ selectedDate: date})
+    set({ selectedDate: date })
     getEventsLogs({ id: '', from: 0, minDate, maxDate: `${date}` })
   }
-  
+
   const setPlanUpgrade = (planUpgrade: boolean) => {
     set({ planUpgrade })
   }
@@ -46,28 +48,24 @@ export const UserLogPage: React.FC = () => {
   }
 
   return (
-    <> 
-    <EventHeader
-          fetching={fetching}
-          onChangeDate={onChangeDate}
-          fetchLogs={getDeviceLogs}
-          selectedDate={selectedDate}
-          setPlanUpgrade={setPlanUpgrade}
-          setDaysAllowed={setDaysAllowed}
-        />
-        <Body>
-            <EventList
-              fetching={fetching}
-              title={
-                <Typography variant="h1">
-                  <Title>Logs</Title>
-                </Typography>
-              }
-              events={events}
-              fetchingMore={fetchingMore}
-              onFetchMore={onFetchMore}
-            />
-        </Body>
-    </>
+    <Container
+      header={
+        <>
+          <Typography variant="h1">
+            <Title>Logs</Title>
+          </Typography>
+          <EventHeader
+            fetching={fetching}
+            onChangeDate={onChangeDate}
+            fetchLogs={getDeviceLogs}
+            selectedDate={selectedDate}
+            setPlanUpgrade={setPlanUpgrade}
+            setDaysAllowed={setDaysAllowed}
+          />
+        </>
+      }
+    >
+      <EventList fetching={fetching} events={events} fetchingMore={fetchingMore} onFetchMore={onFetchMore} />
+    </Container>
   )
 }

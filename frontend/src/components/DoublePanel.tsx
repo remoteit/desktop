@@ -9,7 +9,7 @@ import classnames from 'classnames'
 type Props = {
   primary: React.ReactElement
   secondary?: React.ReactElement
-  resize?: 'devices' | 'connections'
+  resize: 'devices' | 'connections' | 'settings'
 }
 
 const MIN_WIDTH = 360
@@ -17,7 +17,7 @@ const SIDEBAR_WIDTH = 9 + 250
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => {
   const { ui } = useDispatch<Dispatch>()
-  const savedWidth = useSelector((state: ApplicationState) => state.ui[`${resize}PanelWidth`])
+  const savedWidth = useSelector((state: ApplicationState) => state.ui.panelWidth[resize])
   const handleRef = useRef<number>(savedWidth)
   const primaryRef = useRef<HTMLDivElement>(null)
   const moveRef = useRef<number>(0)

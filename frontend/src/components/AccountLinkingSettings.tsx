@@ -8,13 +8,7 @@ export const AccountLinkingSettings: React.FC = () => {
   const { access } = useSelector((state: ApplicationState) => state.accounts)
 
   return (
-    <ListItemLocation
-      dense
-      icon="user-friends"
-      title="Device List Sharing"
-      subtitle="Share all the devices you own to another user"
-      pathname="/settings/access"
-    >
+    <ListItemLocation dense icon="user-friends" title="Device List Sharing" pathname="/settings/access">
       <ListItemSecondaryAction>
         <Chip label={`${access.length} users`} size="small" />
       </ListItemSecondaryAction>

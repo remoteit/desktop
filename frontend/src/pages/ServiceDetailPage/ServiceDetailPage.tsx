@@ -61,7 +61,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
       target={target}
       footer={
         <>
-          <Gutters className={css.gutters}>
+          <Gutters className={css.gutters} noBottom>
             <ComboButton connection={connection} service={service} size="medium" fullWidth />
             {/* <Icon name="neuter" /> */}
             {connection?.enabled ? (
@@ -84,7 +84,9 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
               </>
             )}
           </Gutters>
-          <ServiceConnected connection={connection} show={connection?.enabled} />
+          <Gutters>
+            <ServiceConnected connection={connection} show={connection?.enabled} />
+          </Gutters>
         </>
       }
     >
@@ -103,6 +105,5 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
 const useStyles = makeStyles({
   gutters: {
     display: 'flex',
-    marginBottom: '0 !important',
   },
 })

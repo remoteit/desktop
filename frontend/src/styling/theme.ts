@@ -63,6 +63,10 @@ const jssTheme: ThemeOptions = {
         fontSize: fontSizes.xxs,
         '& + .MuiChip-sizeSmall': { marginLeft: spacing.xxs },
       },
+      outlined: {
+        borderColor: colors.grayLighter,
+        color: colors.grayDarker,
+      },
     },
     MuiSnackbar: {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
@@ -135,7 +139,6 @@ const jssTheme: ThemeOptions = {
         paddingRight: 0,
         paddingTop: 5,
         paddingBottom: 5,
-        marginLeft: spacing.md,
         marginTop: 1,
         marginBottom: 1,
         borderRadius: radius,
@@ -146,6 +149,8 @@ const jssTheme: ThemeOptions = {
       gutters: {
         paddingLeft: spacing.xxs,
         paddingRight: spacing.xxs,
+        marginLeft: spacing.md,
+        marginRight: spacing.md,
       },
       button: {
         // '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },

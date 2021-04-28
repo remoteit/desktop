@@ -2,7 +2,7 @@ import React from 'react'
 import { ListItemSetting } from './ListItemSetting'
 import { makeStyles, ListItemText, InputLabel } from '@material-ui/core'
 import { useClipboard } from 'use-clipboard-copy'
-import { colors, fontSizes } from '../styling'
+import { colors } from '../styling'
 
 export const ListItemCopy: React.FC<{ value: string; label: string }> = ({ value, label, children, ...props }) => {
   const css = useStyles()

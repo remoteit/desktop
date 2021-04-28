@@ -1,7 +1,7 @@
 import React from 'react'
 import { DatePicker as MuiDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles, TextField } from '@material-ui/core'
 import { getDateFormatString } from '../../helpers/dateHelper'
 
 export const DatePicker: React.FC<{
@@ -19,11 +19,11 @@ export const DatePicker: React.FC<{
         className={css.textField}
         disableToolbar
         variant="inline"
+        inputVariant="filled"
         format={getDateFormatString()}
         label={label}
         value={selectedDate || new Date()}
         onChange={onChange}
-        inputVariant="standard"
         disableFuture={true}
         minDate={minDay}
       ></MuiDatePicker>

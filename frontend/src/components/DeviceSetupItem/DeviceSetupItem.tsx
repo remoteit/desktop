@@ -1,14 +1,15 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import {
+  makeStyles,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
   Link,
-  Button,
+  Chip,
   Typography,
 } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
@@ -19,6 +20,7 @@ import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
+  const css = useStyles()
   const history = useHistory()
   const { thisDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
     thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
@@ -52,7 +54,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
   }
 
   return (
-    <ListItemLocation pathname="/devices/setup" dense>
+    <ListItemLocation pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
       <ListItemIcon>
         <Icon name="hdd" size="md" type="regular" />
       </ListItemIcon>
@@ -65,12 +67,19 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
               <Link onClick={() => history.push('/devices')}>cancel</Link>
             </Typography>
           ) : (
-            <Button variant="outlined" size="small" onClick={() => history.push('/devices/restore')}>
-              Restore Device
-            </Button>
+            <Chip
+              label="Restore Device"
+              variant="default"
+              size="small"
+              onClick={() => history.push('/devices/restore')}
+            />
           )}
         </ListItemSecondaryAction>
       )}
     </ListItemLocation>
   )
 }
+
+const useStyles = makeStyles({
+  margin: { paddingRight: 125 },
+})

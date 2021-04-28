@@ -25,6 +25,8 @@ export const LicensingNotice: React.FC<Props> = props => {
 
   const { licensing } = useDispatch<Dispatch>()
 
+  console.log('LICENSING NOTICE', license, noticeType, informed)
+
   if (!license || !noticeType || informed) return null
 
   const onClose = () => licensing.set({ informed: true })
@@ -38,7 +40,7 @@ export const LicensingNotice: React.FC<Props> = props => {
       </Button>
       <Tooltip title="Close">
         <IconButton onClick={onClose}>
-          <Icon name="times" size="md" color="primary" inline />
+          <Icon name="times" size="md" color="primary" />
         </IconButton>
       </Tooltip>
     </>

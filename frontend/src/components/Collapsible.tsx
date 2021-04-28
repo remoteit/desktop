@@ -10,13 +10,13 @@ export const Collapsible: React.FC<{ title: string; open?: boolean }> = ({ title
 
   return (
     <>
-      <Gutters {...props} className={css.container}>
+      <Gutters {...props} className={css.container} noBottom>
         <Button onClick={() => setOpenState(!openState)} fullWidth>
           <Typography variant="subtitle1">{title}</Typography>
           <Icon className={css.rotate} color="grayDarker" name="caret-down" type="solid" size="base" fixedWidth />
         </Button>
       </Gutters>
-      <Collapse in={openState} timeout={800}>
+      <Collapse in={openState} timeout={400}>
         {children}
       </Collapse>
     </>
@@ -26,7 +26,6 @@ export const Collapsible: React.FC<{ title: string; open?: boolean }> = ({ title
 const useStyles = open =>
   makeStyles({
     container: {
-      marginBottom: '0 !important',
       '& button': {
         justifyContent: 'left',
         padding: 0,
@@ -38,7 +37,6 @@ const useStyles = open =>
       '& .MuiTypography-subtitle1': {
         minHeight: spacing.lg,
         padding: spacing.xxs, //`${spacing.xs}px 0 ${spacing.md}px 0 `,
-        marginLeft: spacing.sm,
       },
     },
     rotate: {

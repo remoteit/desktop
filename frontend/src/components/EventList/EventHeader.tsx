@@ -30,13 +30,21 @@ export interface LogListProps {
 
 const DAY = 1000 * 60 * 60 * 24
 
-export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fetchLogs, selectedDate, device, setPlanUpgrade, setDaysAllowed }) => {
-  const { limits, minDate, maxDate, itemOffset, daysAllowed} = useSelector((state: ApplicationState) => ({
+export const EventHeader: React.FC<LogListProps> = ({
+  fetching,
+  onChangeDate,
+  fetchLogs,
+  selectedDate,
+  device,
+  setPlanUpgrade,
+  setDaysAllowed,
+}) => {
+  const { limits, minDate, maxDate, itemOffset, daysAllowed } = useSelector((state: ApplicationState) => ({
     limits: state.licensing.limits,
     minDate: state.logs.minDate,
     maxDate: state.logs.maxDate,
     itemOffset: state.logs.from,
-    daysAllowed: state.logs.daysAllowed
+    daysAllowed: state.logs.daysAllowed,
   }))
   const css = useStyles()
   const [lastUpdated, setLastUpdated] = useState<DateTime>(DateTime.local())
@@ -55,7 +63,7 @@ export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fe
       allowed = limitNumber.parseInt() * 365
       break
   }
-  
+
   const limitDays = () => {
     let create_days = 0
     if (device) {
@@ -87,8 +95,6 @@ export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fe
     setDaysAllowed(allowed)
   }, [selectedDate])
 
-  
-
   const refresh = () => {
     fetchLogs({ id: device?.id || '', from: 0, minDate: `${minDate}` })
   }
@@ -96,9 +102,9 @@ export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fe
   return (
     <List className={css.list}>
       <ListItem dense>
-        <ListItemIcon>
+        {/* <ListItemIcon>
           <Icon name="calendar-day" size="md" fixedWidth />
-        </ListItemIcon>
+        </ListItemIcon> */}
         {onChangeDate && (
           <>
             <DatePicker
@@ -119,7 +125,7 @@ export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fe
               <CSVDownloadButton />
               <Tooltip title="Refresh List">
                 <IconButton onClick={refresh}>
-                  <Icon name="sync" spin={fetching} size="md" fixedWidth />
+                  <Icon name="sync" spin={fetching} size="base" fixedWidth />
                 </IconButton>
               </Tooltip>
             </Box>
