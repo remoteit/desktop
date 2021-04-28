@@ -54,7 +54,14 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
       </List>
       <Divider variant="inset" />
       <List>
-        <ListItemLocation title="Settings" pathname="/settings/options" icon="sliders-h" dense />
+        <ListItemLocation
+          title="Settings"
+          pathname="/settings/options"
+          icon="sliders-h"
+          match={['/settings', '/settings/options']}
+          exactMatch
+          dense
+        />
         <ListItemLocation title="Licensing" pathname="/settings/licensing" icon="credit-card-front" dense />
         {remoteUI || <AccountLinkingSettings />}
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />

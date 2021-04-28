@@ -154,18 +154,18 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               <LicensingPage />
             </Route>
 
-            <Route path="/settings/options">
-              <OptionsPage />
-            </Route>
-
             <Route path="/settings/test">
               <TestPage />
+            </Route>
+
+            <Route path={['/settings/options', '/settings']}>
+              <OptionsPage />
             </Route>
           </Switch>
         }
         resize="settings"
         single={singlePanel}
-        root={['/connections', '/connections/new']}
+        root={['/settings', '/settings/options']}
       />
 
       <Route path="/announcements">
