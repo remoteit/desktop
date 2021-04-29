@@ -140,9 +140,11 @@ export function cleanOrphanConnections() {
   const services = getAllDevices(state)
     .map(d => d.services.map(s => s.id))
     .flat()
-  state.connections.all.forEach(c => {
-    if (!services.includes(c.id)) {
-      emit('service/forget', c)
-    }
-  })
+  if (!state.ui.offline && services.length) {
+    state.connections.all.forEach(c => {
+      if (!services.includes(c.id)) {
+        emit('service/forget', c)
+      }
+    })
+  }
 }
