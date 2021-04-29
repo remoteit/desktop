@@ -119,6 +119,10 @@ export default createModel<RootModel>()({
   }),
 
   reducers: {
+    reset(state) {
+      state = searchState
+      return state
+    },
     set(state, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

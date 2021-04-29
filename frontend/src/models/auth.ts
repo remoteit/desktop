@@ -13,9 +13,9 @@ import { store } from '../store'
 import { emit } from '../services/Controller'
 
 function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
 }
 
 const USER_KEY = 'user'
@@ -58,7 +58,7 @@ export default createModel<RootModel>()({
           signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL,
         })
 
-        await sleep(500);
+        await sleep(500)
 
         dispatch.auth.setAuthService(authService)
         dispatch.auth.setInitialized()
@@ -162,6 +162,7 @@ export default createModel<RootModel>()({
       dispatch.devices.set({ query: '', filter: 'all', initialized: false })
       dispatch.sessions.set({ all: [] })
       dispatch.logs.reset()
+      dispatch.search.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''
       emit('user/sign-out-complete')
