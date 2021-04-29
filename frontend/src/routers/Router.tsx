@@ -130,48 +130,50 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         )}
       </Route>
 
-      <DynamicPanel
-        primary={<SettingsPage singlePanel={singlePanel} />}
-        secondary={
-          <Switch>
-            <Route path={['/settings/membership/share', '/settings/access/share']}>
-              <AccountSharePage />
-            </Route>
-
-            <Route path="/settings/access">
-              <AccountAccessPage />
-            </Route>
-
-            <Route path="/settings/logs">
-              <UserLogPage />
-            </Route>
-
-            <Route path="/settings/reports">
-              <ReportsPage />
-            </Route>
-
-            <Route path="/settings/licensing">
-              <LicensingPage />
-            </Route>
-
-            <Route path="/settings/test">
-              <TestPage />
-            </Route>
-
-            <Route path={['/settings/options', '/settings']}>
-              <OptionsPage />
-            </Route>
-          </Switch>
-        }
-        resize="settings"
-        single={singlePanel}
-        root={['/settings', '/settings/options']}
-      />
-
       <Route path="/announcements">
         <Panel>
           <AnnouncementsPage />
         </Panel>
+      </Route>
+
+      <Route path="/settings">
+        <DynamicPanel
+          primary={<SettingsPage singlePanel={singlePanel} />}
+          secondary={
+            <Switch>
+              <Route path={['/settings/membership/share', '/settings/access/share']}>
+                <AccountSharePage />
+              </Route>
+
+              <Route path="/settings/access">
+                <AccountAccessPage />
+              </Route>
+
+              <Route path="/settings/logs">
+                <UserLogPage />
+              </Route>
+
+              <Route path="/settings/reports">
+                <ReportsPage />
+              </Route>
+
+              <Route path="/settings/licensing">
+                <LicensingPage />
+              </Route>
+
+              <Route path="/settings/test">
+                <TestPage />
+              </Route>
+
+              <Route path={['/settings/options', '/settings']}>
+                <OptionsPage />
+              </Route>
+            </Switch>
+          }
+          resize="settings"
+          single={singlePanel}
+          root={['/settings', '/settings/options']}
+        />
       </Route>
 
       <Route path="/">
