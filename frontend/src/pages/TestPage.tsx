@@ -1,21 +1,11 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Tooltip,
-  IconButton,
-} from '@material-ui/core'
+import { Typography, List } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
-import { InlineSelectSetting } from '../components/InlineSelectSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { Container } from '../components/Container'
-import { Gutters } from '../components/Gutters'
 import { TestUI } from '../components/TestUI'
+import { getApi } from '../services/graphQL'
 import { Title } from '../components/Title'
 import { emit } from '../services/Controller'
 
@@ -50,6 +40,12 @@ export const TestPage: React.FC = () => {
             onClick={() =>
               emit('preferences', { ...preferences, testUI: 'OFF', allowPrerelease: false, switchApi: false })
             }
+          />
+          <ListItemSetting
+            label="Switch GraphQL APIs"
+            subLabel={`Using ${getApi()}`}
+            onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
+            toggle={!!preferences.switchApi}
           />
         </List>
         <Typography variant="subtitle1">Licensing Options</Typography>

@@ -1,3 +1,4 @@
+import { Duration } from 'luxon'
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
@@ -5,6 +6,7 @@ import { colors, Color } from '../styling'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
 import { lighten } from '@material-ui/core'
+import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; upgradeUrl: string }
 
@@ -144,7 +146,7 @@ const state: ILicensing = {
     limits: [
       {
         name: 'log-limit',
-        value: 'P7D',
+        value: 'P1Y',
         actual: null,
         license: null,
       },
@@ -300,12 +302,12 @@ export default createModel<RootModel>()({
   },
 })
 
-function getLicenses(state) {
+export function getLicenses(state: ApplicationState) {
   if (state.licensing.tests.license) return state.licensing.tests.licenses
   else return state.licensing.licenses
 }
 
-function getLimits(state) {
+export function getLimits(state: ApplicationState) {
   if (state.licensing.tests.limit) return state.licensing.tests.limits
   else return state.licensing.limits
 }
@@ -374,6 +376,18 @@ export function selectLicenseIndicator(state: ApplicationState) {
   return indicators
 }
 
-export function evaluationDays(value?: string) {
-  return value ? value.replace(/\D/g, '') : null
+export function limitDays(value?: string) {
+  if (value) {
+    return Duration.fromISO(value).as('days')
+  }
+  return 0
+}
+
+export function humanizeDays(value?: string) {
+  const milliseconds = limitDays(value) * 8.64e7
+  return humanize(milliseconds, { round: true, largest: 1 })
+}
+
+export function getLogLimit(state: ApplicationState) {
+  return getLimits(state).find(limit => limit.name === 'log-limit')?.value || 'P1W'
 }

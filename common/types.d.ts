@@ -404,7 +404,7 @@ declare global {
     total: number
     items: IEvent[]
     hasMore: boolean
-    deviceId: string
+    deviceId?: string
   }
 
   type gqlOptions = {

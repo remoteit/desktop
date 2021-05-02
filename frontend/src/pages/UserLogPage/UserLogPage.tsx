@@ -1,50 +1,20 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { Typography } from '@material-ui/core'
+import { Typography, Tooltip, IconButton } from '@material-ui/core'
 import { EventList } from '../../components/EventList'
-import { eventLogs } from '../../models/logs'
 import { EventHeader } from '../../components/EventList/EventHeader'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
+import { Icon } from '../../components/Icon'
 
 export const UserLogPage: React.FC = () => {
-  const { events, fetchingMore, fetching, selectedDate, itemOffset, minDate } = useSelector(
-    (state: ApplicationState) => ({
-      events: state.logs.events,
-      fetchingMore: state.logs.fetchingMore,
-      fetching: state.logs.fetching,
-      selectedDate: state.logs.selectedDate,
-      itemOffset: state.logs.from,
-      minDate: state.logs.minDate,
-    })
-  )
-  const dispatch = useDispatch<Dispatch>()
-  const { getEventsLogs, set } = dispatch.logs
-  useEffect(() => {
-    set({ from: 0, selectedDate: new Date() })
-  }, [])
+  const { fetching } = useSelector((state: ApplicationState) => state.logs)
+  const { logs } = useDispatch<Dispatch>()
 
-  const onFetchMore = () => {
-    const newOffset = itemOffset + 100
-    getEventsLogs({ id: '', from: newOffset, minDate, maxDate: `${selectedDate}` })
-  }
-
-  const onChangeDate = (date: any) => {
-    set({ selectedDate: date })
-    getEventsLogs({ id: '', from: 0, minDate, maxDate: `${date}` })
-  }
-
-  const setPlanUpgrade = (planUpgrade: boolean) => {
-    set({ planUpgrade })
-  }
-
-  const setDaysAllowed = (daysAllowed: number) => {
-    set({ daysAllowed })
-  }
-
-  const getDeviceLogs = (data: eventLogs) => {
-    getEventsLogs(data)
+  const refresh = () => {
+    logs.set({ from: 0 })
+    logs.fetch()
   }
 
   return (
@@ -53,19 +23,17 @@ export const UserLogPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Logs</Title>
+            <Tooltip title="Refresh List">
+              <IconButton onClick={refresh}>
+                <Icon name="sync" spin={fetching} size="sm" fixedWidth />
+              </IconButton>
+            </Tooltip>
           </Typography>
-          <EventHeader
-            fetching={fetching}
-            onChangeDate={onChangeDate}
-            fetchLogs={getDeviceLogs}
-            selectedDate={selectedDate}
-            setPlanUpgrade={setPlanUpgrade}
-            setDaysAllowed={setDaysAllowed}
-          />
+          <EventHeader />
         </>
       }
     >
-      <EventList fetching={fetching} events={events} fetchingMore={fetchingMore} onFetchMore={onFetchMore} />
+      <EventList />
     </Container>
   )
 }

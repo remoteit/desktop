@@ -158,7 +158,7 @@ export default createModel<RootModel>()({
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.accounts.set({ devices: [] })
-      dispatch.backend.set({ connections: [] })
+      dispatch.connections.set({ all: [] })
       dispatch.devices.set({ query: '', filter: 'all', initialized: false })
       dispatch.sessions.set({ all: [] })
       dispatch.logs.reset()

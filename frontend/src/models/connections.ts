@@ -10,12 +10,12 @@ type ConnectionsState = {
   all: IConnection[]
 }
 
-const state: ConnectionsState = {
+const defaultState: ConnectionsState = {
   all: [],
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
     async updateConnection(connection: IConnection, { connections }) {
       connections.all.some((c, index) => {

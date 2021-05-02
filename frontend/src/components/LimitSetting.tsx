@@ -1,5 +1,5 @@
 import React from 'react'
-import { evaluationDays } from '../models/licensing'
+import { humanizeDays } from '../models/licensing'
 import { makeStyles, LinearProgress, Typography, Box } from '@material-ui/core'
 import { colors, spacing } from '../styling'
 
@@ -21,11 +21,11 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       break
     case 'aws-evaluation':
       template = 'text'
-      message = `Services are granted a ${evaluationDays(limit.value)} day evaluation period`
+      message = `Services are granted an evaluation period of ${humanizeDays(limit.value)}`
       break
     case 'log-limit':
       template = 'text'
-      message = `Log history is available for ${evaluationDays(limit.value)} days`
+      message = `Log history is available for ${humanizeDays(limit.value)}`
       break
     case 'iot-devices':
       template = 'value'

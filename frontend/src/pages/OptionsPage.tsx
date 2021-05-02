@@ -12,7 +12,6 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { Container } from '../components/Container'
 import { isRemote } from '../services/Browser'
 import { TestUI } from '../components/TestUI'
-import { getApi } from '../services/graphQL'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -105,15 +104,6 @@ export const OptionsPage: React.FC = () => {
       {remoteUI || (
         <Collapsible title="Advanced">
           <List>
-            <TestUI>
-              <ListItemSetting
-                label="Switch GraphQL APIs"
-                subLabel={`Using ${getApi()}`}
-                icon="database"
-                onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
-                toggle={!!preferences.switchApi}
-              />
-            </TestUI>
             <SettingsDisableNetworkItem />
             <ListItemSetting
               confirm

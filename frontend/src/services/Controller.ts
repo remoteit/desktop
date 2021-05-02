@@ -93,7 +93,7 @@ class Controller extends EventEmitter {
 type EventHandlers = { [event: string]: (data?: any) => any }
 
 function getEventHandlers() {
-  const { connections, binaries, auth, backend, logs, ui } = store.dispatch
+  const { connections, binaries, auth, backend, ui } = store.dispatch
 
   return {
     connect: () => {
@@ -194,16 +194,13 @@ function getEventHandlers() {
 
     // Connections --- TODO validate we need these three channels
     'service/connected': (msg: ConnectionMessage) => {
-      logs.add({ id: msg.connection.id, log: msg.raw })
       connections.updateConnection(msg.connection)
       analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
-      logs.add({ id: msg.connection.id, log: msg.raw })
       connections.updateConnection(msg.connection)
     },
     'service/error': (msg: ConnectionErrorMessage) => {
-      logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
       connections.updateConnection(msg.connection)
       analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
     },

@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useNavigation } from '../hooks/useNavigation'
 import { List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Chip, Badge } from '@material-ui/core'
-import { colors } from '../styling'
 import { makeStyles } from '@material-ui/core/styles'
+import { colors } from '../styling'
 import { Icon } from './Icon'
 
 export const SidebarNav: React.FC = () => {
@@ -45,7 +45,7 @@ export const SidebarNav: React.FC = () => {
               <ListItemText primary={m.label} />
               {!!m.chip && (
                 <ListItemSecondaryAction>
-                  <Chip size="small" label={m.chip} color="primary" />
+                  <Chip size="small" label={m.chip} className={css.chip} />
                 </ListItemSecondaryAction>
               )}
             </ListItem>
@@ -57,8 +57,11 @@ export const SidebarNav: React.FC = () => {
 }
 
 const useStyles = makeStyles({
+  chip: {
+    fontWeight: 600,
+    color: colors.primary,
+  },
   list: {
-    // borderTop: `1px solid ${colors.grayLight}`,
     '& .MuiListItemText-primary': { color: colors.grayDark },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: colors.black },
     '& .MuiListItem-button:hover path': { color: colors.grayDarkest },
