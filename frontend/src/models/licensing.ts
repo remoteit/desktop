@@ -12,15 +12,18 @@ type ILicenseLookup = { productId: string; platform?: number; upgradeUrl: string
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
+    productId: 'b999e047-5532-11eb-8872-063ce187bcd7',
+    platform: undefined,
+    upgradeUrl: 'https://link.remote.it/portal/account',
+  },
+  {
     productId: '55d9e884-05fd-11eb-bda8-021f403e8c27',
     platform: 1185,
     upgradeUrl: 'https://link.remote.it/aws-marketplace/saas',
   },
-  {
-    productId: 'b999e047-5532-11eb-8872-063ce187bcd7',
-    upgradeUrl: 'https://link.remote.it/portal/account',
-  },
 ]
+
+const defaultLicense = LicenseLookup[0]
 
 type ILicensing = {
   licenses: ILicense[]
@@ -89,8 +92,8 @@ const state: ILicensing = {
         id: '4a5ed500-ef07-4a98-be11-PERSONAL',
         created: new Date('2021-03-12T05:44:32.421Z'),
         updated: new Date('2021-03-12T05:44:32.421Z'),
-        expiration: null,
-        valid: true,
+        expiration: new Date('2021-02-12T05:44:32.421Z'),
+        valid: false,
         plan: {
           id: 'e147a026-81d7-11eb-afc8-02f048730623',
           name: 'PERSONAL',
@@ -108,8 +111,8 @@ const state: ILicensing = {
         id: '4a5ed500-ef07-4a98-be11-PROFESSIONAL',
         created: new Date('2021-03-12T05:44:32.421Z'),
         updated: new Date('2021-03-12T05:44:32.421Z'),
-        expiration: null,
-        valid: true,
+        expiration: new Date('2021-02-12T05:44:32.421Z'),
+        valid: false,
         plan: {
           id: 'e147a026-81d7-11eb-afc8-02f048730623',
           name: 'PROFESSIONAL',
@@ -313,13 +316,15 @@ export function getLimits(state: ApplicationState) {
 }
 
 export function lookupLicenseUpgradeUrl(productId?: string) {
-  const lookup = LicenseLookup.find(l => l.productId === productId)
-  return lookup?.upgradeUrl
+  let lookup = LicenseLookup.find(l => l.productId === productId)
+  if (!lookup) lookup = defaultLicense
+  return lookup.upgradeUrl
 }
 
 export function lookupLicenseProductId(device?: IDevice) {
-  const lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
-  return lookup?.productId
+  let lookup = LicenseLookup.find(l => l.platform === device?.targetPlatform)
+  if (!lookup) lookup = defaultLicense
+  return lookup.productId
 }
 
 export function selectLicense(state: ApplicationState, productId?: string) {
@@ -337,8 +342,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
   let warnDate = new Date()
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
-  if (license.expiration && warnDate > license.expiration && license.plan.name === 'TRIAL')
-    noticeType = 'EXPIRATION_WARNING'
+  if (license.expiration && warnDate > license.expiration) noticeType = 'EXPIRATION_WARNING' // && license.plan.name === 'TRIAL'
   if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value) noticeType = 'LIMIT_EXCEEDED'
   if (!license.valid) noticeType = 'EXPIRED'
 

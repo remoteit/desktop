@@ -8,7 +8,7 @@ import { dateOptions } from './Duration/Duration'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
-type Props = { device?: IDevice; license?: ILicense }
+type Props = { device?: IDevice; license?: ILicense; fullWidth?: boolean }
 
 const learnMoreLink = (
   <Link href="https://link.remote.it/documentation-aws/setup" target="_blank">
@@ -72,5 +72,5 @@ export const LicensingNotice: React.FC<Props> = props => {
       </Notice>
     )
 
-  return <ListItem>{notice}</ListItem>
+  return props.fullWidth ? notice : <ListItem>{notice}</ListItem>
 }
