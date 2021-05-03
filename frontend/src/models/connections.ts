@@ -20,7 +20,7 @@ export default createModel<RootModel>()({
     async updateConnection(connection: IConnection, { connections }) {
       connections.all.some((c, index) => {
         if (c.id === connection.id) {
-          connections[index] = connection
+          connections.all[index] = connection
           dispatch.backend.set({ connections: connections.all })
           if (connection) return true
         }

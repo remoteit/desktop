@@ -10,10 +10,6 @@ export const ListItemCopy: React.FC<{ value?: string; label: string }> = ({ valu
 
   if (!value) return null
 
-  // <ListItemSetting
-  //   onClick={clipboard.copy}
-  // />
-  // <input type="hidden" ref={clipboard.target} value={value} />
   return (
     <Tooltip title={clipboard.copied ? 'Copied!' : label} placement="top" arrow>
       <IconButton className={css.box} onClick={clipboard.copy}>
