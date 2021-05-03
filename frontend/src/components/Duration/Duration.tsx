@@ -11,14 +11,14 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
 
 export const Duration: React.FC<{ startTime?: number; endTime?: number; ago?: boolean }> = ({
   startTime,
-  endTime = Date.now(),
+  endTime,
   ago = false,
 }) => {
-  const [now, setNow] = useState<number>(endTime)
+  const [now, setNow] = useState<number>(endTime || Date.now())
   const aDay = 1000 * 60 * 60 * 24
 
   useInterval(() => {
-    if (startTime) setNow(endTime)
+    if (startTime && !endTime) setNow(Date.now())
   }, 1000)
 
   if (!startTime) return null

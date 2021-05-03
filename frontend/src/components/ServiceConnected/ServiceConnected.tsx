@@ -11,6 +11,11 @@ type Props = {
 }
 
 export const ServiceConnected: React.FC<Props> = ({ show, connection, session }) => {
+  const start = connection?.startTime ? new Date(connection.startTime) : session?.timestamp
+  const end =
+    start && connection?.endTime && connection.endTime > start.getTime() ? new Date(connection.endTime) : undefined
+  const duration = start && { start, end }
+
   return (
     <Collapse in={show} timeout={800}>
       {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
@@ -31,14 +36,10 @@ export const ServiceConnected: React.FC<Props> = ({ show, connection, session })
           },
           {
             label: 'Duration',
-            value: connection?.startTime && {
-              start: connection?.startTime ? new Date(connection.startTime || 0) : session?.timestamp,
-              end: connection?.endTime && connection?.endTime > connection?.startTime && new Date(connection.endTime),
-            },
+            value: duration,
             format: 'duration',
           },
           { label: 'Location', value: session?.geo, format: 'location' },
-
           { label: 'Platform', value: session && INITIATOR_PLATFORMS[session.platform] },
           // { label: 'Device ID', value: session?.target.deviceId },
           // { label: 'Service ID', value: session?.target.id },
