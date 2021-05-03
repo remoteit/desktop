@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react'
 import {
   Tooltip,
   ListItem,
-  ListItemTypeMap,
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,

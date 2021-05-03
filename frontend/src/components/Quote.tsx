@@ -12,6 +12,6 @@ const useStyles = margin =>
     quote: {
       margin: `${margin}px 0`,
       paddingLeft: spacing.lg,
-      borderLeft: `1px solid ${colors.grayLight}`,
+      borderLeft: `1px solid ${colors.grayLighter}`,
     },
   })

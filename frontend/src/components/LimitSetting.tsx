@@ -73,6 +73,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
 const useStyles = makeStyles({
   box: {
     width: '70%',
+    marginBottom: spacing.sm,
   },
   root: {
     height: spacing.xs,

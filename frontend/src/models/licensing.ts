@@ -261,6 +261,7 @@ export default createModel<RootModel>()({
         )
         graphQLGetErrors(result)
         dispatch.licensing.parse(result?.data?.data?.login)
+        dispatch.licensing.fillMissing()
       } catch (error) {
         await graphQLCatchError(error)
       }
@@ -277,6 +278,34 @@ export default createModel<RootModel>()({
         })),
         limits: data.limits,
       })
+    },
+    async fillMissing(_, globalState) {
+      const licenses = globalState.licensing.licenses
+      let missing: ILicense[] = []
+      LicenseLookup.forEach(lookup => {
+        if (!licenses.some(l => l.plan.product.id === lookup.productId)) {
+          missing.push({
+            id: '',
+            created: new Date(),
+            updated: new Date(),
+            expiration: null,
+            valid: true,
+            plan: {
+              id: '',
+              name: '',
+              description: '',
+              duration: null,
+              product: {
+                id: lookup.productId,
+                name: 'AWS',
+                description: 'AWS',
+                provider: 'AWS',
+              },
+            },
+          })
+        }
+      })
+      dispatch.licensing.set({ licenses: [...licenses, ...missing] })
     },
     async testServiceLicensing(_, globalState) {
       const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']
@@ -306,8 +335,10 @@ export default createModel<RootModel>()({
 })
 
 export function getLicenses(state: ApplicationState) {
-  if (state.licensing.tests.license) return state.licensing.tests.licenses
-  else return state.licensing.licenses
+  let licenses: ILicense[]
+  if (state.licensing.tests.license) licenses = state.licensing.tests.licenses
+  else licenses = state.licensing.licenses
+  return licenses
 }
 
 export function getLimits(state: ApplicationState) {

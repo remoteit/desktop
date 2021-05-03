@@ -17,15 +17,12 @@ const learnMoreLink = (
 )
 
 export const LicensingNotice: React.FC<Props> = props => {
+  const { licensing } = useDispatch<Dispatch>()
   const { noticeType, license, informed, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
     return selectLicense(state, productId)
   })
-
-  const { licensing } = useDispatch<Dispatch>()
-
-  // console.log('LICENSING NOTICE', license, noticeType, informed)
 
   if (!license || !noticeType || informed) return null
 
