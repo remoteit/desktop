@@ -23,7 +23,7 @@ export const ServiceHeaderMenu: React.FC<{
   device?: IDevice
   service?: IService
   target?: ITarget
-  footer?: React.ReactElement
+  footer?: React.ReactNode
 }> = ({ device, service, target, footer, children }) => {
   const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()

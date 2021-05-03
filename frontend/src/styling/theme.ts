@@ -142,11 +142,11 @@ const jssTheme: ThemeOptions = {
         marginTop: 1,
         marginBottom: 1,
         borderRadius: radius,
-        width: `calc(100% - ${spacing.md * 2}px)`,
         '&.Mui-selected': { backgroundColor: colors.primaryHighlight },
         '&.Mui-selected:hover': { backgroundColor: colors.primaryLighter },
       },
       gutters: {
+        width: `calc(100% - ${spacing.md * 2}px)`,
         paddingLeft: spacing.xxs,
         paddingRight: spacing.xxs,
         marginLeft: spacing.md,
