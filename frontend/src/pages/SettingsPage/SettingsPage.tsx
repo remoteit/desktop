@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react'
-import { emit } from '../../services/Controller'
 import { makeStyles, List, Typography, Tooltip, ButtonBase, Divider } from '@material-ui/core'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
+import { selectLicenseIndicator } from '../../models/licensing'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
-import { getOwnDevices } from '../../models/accounts'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -19,7 +18,8 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
-  const { preferences, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { preferences, remoteUI, licenseIndicator } = useSelector((state: ApplicationState) => ({
+    licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
     remoteUI: isRemoteUI(state),
   }))
@@ -62,7 +62,13 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           exactMatch
           dense
         />
-        <ListItemLocation title="Licensing" pathname="/settings/licensing" icon="credit-card-front" dense />
+        <ListItemLocation
+          title="Licensing"
+          pathname="/settings/licensing"
+          icon="credit-card-front"
+          badge={licenseIndicator}
+          dense
+        />
         {remoteUI || <AccountLinkingSettings />}
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         <TestUI>

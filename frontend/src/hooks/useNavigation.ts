@@ -39,6 +39,7 @@ export function useNavigation(): INavigationHook {
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
 
+  // Used for remembering the state of a tab - no longer used
   const recallPath = (selected: string) => {
     const stored = navigation[selected]
     if (!stored || stored === location.pathname) return selected

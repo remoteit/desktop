@@ -54,10 +54,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
   }
 
   return (
-    <ListItemLocation pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
-      <ListItemIcon>
-        <Icon name="hdd" size="md" type="regular" />
-      </ListItemIcon>
+    <ListItemLocation icon="hdd" pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
       <ListItemText primary={title} secondary={subtitle} />
       {canRestore && (
         <ListItemSecondaryAction>

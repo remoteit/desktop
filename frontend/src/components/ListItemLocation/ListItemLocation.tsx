@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
 import { Icon } from '../Icon'
 import { Color } from '../../styling'
 
@@ -16,6 +16,7 @@ export type Props = {
   className?: string
   match?: string | string[]
   exactMatch?: boolean
+  badge?: number
 }
 
 export const ListItemLocation: React.FC<Props> = ({
@@ -28,6 +29,7 @@ export const ListItemLocation: React.FC<Props> = ({
   showDisabled,
   match,
   exactMatch,
+  badge,
   children,
   ...props
 }) => {
@@ -39,6 +41,8 @@ export const ListItemLocation: React.FC<Props> = ({
   const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.includes(s)))
 
   const onClick = () => !disabled && history.push(pathname)
+  const iconEl = icon && <Icon name={icon} size="md" color={iconColor} fixedWidth />
+
   return (
     <ListItem
       {...props}
@@ -50,7 +54,13 @@ export const ListItemLocation: React.FC<Props> = ({
     >
       {icon && (
         <ListItemIcon>
-          <Icon name={icon} size="md" color={iconColor} fixedWidth />
+          {badge ? (
+            <Badge variant={badge > 1 ? undefined : 'dot'} badgeContent={badge} color="error">
+              {iconEl}
+            </Badge>
+          ) : (
+            iconEl
+          )}
         </ListItemIcon>
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}
