@@ -144,7 +144,7 @@ export class BinaryInstaller {
     if (environment.isWindows && changed) {
       // Windows has an installer script to update so doesn't need this check
       this.updateVersions()
-      return true
+      return false
     }
 
     if (changed) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
