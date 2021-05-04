@@ -30,6 +30,23 @@ export default class ElectronApp {
     this.autoUpdater = new AutoUpdater()
     this.protocol = process.env.NODE_ENV === 'development' ? DEEP_LINK_PROTOCOL_DEV : DEEP_LINK_PROTOCOL
 
+    const template = [
+      {
+        label: 'Help',
+        submenu: [
+          {
+            label: 'Learn More',
+            click() {
+              electron.shell.openExternal('https://support.remote.it/hc/en-us')
+            },
+          },
+        ],
+      },
+    ]
+    const Menu = electron.Menu
+    const menu = Menu.buildFromTemplate(template)
+    Menu.setApplicationMenu(menu)
+
     if (!this.app.requestSingleInstanceLock()) {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
       this.app.quit()
