@@ -23,7 +23,7 @@ export const ServiceHeaderMenu: React.FC<{
   device?: IDevice
   service?: IService
   target?: ITarget
-  footer?: React.ReactElement
+  footer?: React.ReactNode
 }> = ({ device, service, target, footer, children }) => {
   const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
@@ -56,6 +56,7 @@ export const ServiceHeaderMenu: React.FC<{
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
           </Typography>
+          {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
             <ListItemLocation
               title="Details"
@@ -78,7 +79,6 @@ export const ServiceHeaderMenu: React.FC<{
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
-          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
         </>
       }
       footer={footer}

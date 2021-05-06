@@ -11,41 +11,40 @@ type Props = {
 }
 
 export const ServiceConnected: React.FC<Props> = ({ show, connection, session }) => {
-  return (
-    <Gutters>
-      <Collapse in={show} timeout={800}>
-        {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
-        <DataDisplay
-          width={100}
-          data={[
-            // { label: 'URL', value: connection && hostName(connection) },
-            { label: 'Address', value: connection?.address },
-            {
-              label: 'Connection',
-              value: connection?.public
-                ? 'Public Proxy'
-                : connection?.isP2P === undefined && session?.isP2P === undefined
-                ? 'Idle'
-                : connection?.isP2P || session?.isP2P
-                ? 'Peer to peer'
-                : 'Proxy',
-            },
-            {
-              label: 'Duration',
-              value: connection?.startTime && {
-                start: connection?.startTime ? new Date(connection.startTime || 0) : session?.timestamp,
-                end: connection?.endTime && connection?.endTime > connection?.startTime && new Date(connection.endTime),
-              },
-              format: 'duration',
-            },
-            { label: 'Location', value: session?.geo, format: 'location' },
+  const start = connection?.startTime ? new Date(connection.startTime) : session?.timestamp
+  const end =
+    start && connection?.endTime && connection.endTime > start.getTime() ? new Date(connection.endTime) : undefined
+  const duration = start && { start, end }
 
-            { label: 'Platform', value: session && INITIATOR_PLATFORMS[session.platform] },
-            // { label: 'Device ID', value: session?.target.deviceId },
-            // { label: 'Service ID', value: session?.target.id },
-          ]}
-        />
-      </Collapse>
-    </Gutters>
+  return (
+    <Collapse in={show} timeout={800}>
+      {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
+      <DataDisplay
+        width={100}
+        data={[
+          // { label: 'URL', value: connection && hostName(connection) },
+          { label: 'Address', value: connection?.address },
+          {
+            label: 'Connection',
+            value: connection?.public
+              ? 'Public Proxy'
+              : connection?.isP2P === undefined && session?.isP2P === undefined
+              ? 'Idle'
+              : connection?.isP2P || session?.isP2P
+              ? 'Peer to peer'
+              : 'Proxy',
+          },
+          {
+            label: 'Duration',
+            value: duration,
+            format: 'duration',
+          },
+          { label: 'Location', value: session?.geo, format: 'location' },
+          { label: 'Platform', value: session && INITIATOR_PLATFORMS[session.platform] },
+          // { label: 'Device ID', value: session?.target.deviceId },
+          // { label: 'Service ID', value: session?.target.id },
+        ]}
+      />
+    </Collapse>
   )
 }

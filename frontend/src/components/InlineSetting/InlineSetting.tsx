@@ -18,7 +18,7 @@ import { Icon } from '../Icon'
 type Props = {
   value?: string | number
   label: JSX.Element | string
-  icon?: JSX.Element
+  icon?: JSX.Element | string
   actionIcon?: JSX.Element
   displayValue?: string | number
   disabled?: boolean
@@ -70,45 +70,46 @@ export const InlineSetting: React.FC<Props> = ({
     }
   }, [edit])
 
-  if (edit)
-    return (
-      <ListItem className={css.active} dense>
-        <ListItemIcon>{icon}</ListItemIcon>
-        <form
-          className={css.form}
-          onSubmit={e => {
-            e.preventDefault()
-            onSubmit()
-            setEdit(false)
-          }}
-        >
-          {children}
-          <ListItemSecondaryAction>
-            {resetValue != null && (
-              <ResetButton
-                onMouseDown={cancelBlur}
-                onClick={() => {
-                  onResetClick()
-                  fieldRef.current?.focus()
-                }}
-              />
-            )}
-            <Tooltip title="Cancel">
-              <IconButton onClick={onCancel}>
-                <Icon name="times" size="md" fixedWidth />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Save">
-              <IconButton color="primary" type="submit" onMouseDown={cancelBlur}>
-                <Icon name="check" size="md" fixedWidth />
-              </IconButton>
-            </Tooltip>
-          </ListItemSecondaryAction>
-        </form>
-      </ListItem>
-    )
+  if (typeof icon === 'string') icon = <Icon name={icon} size="md" />
 
-  return (
+  const editForm = (
+    <ListItem className={css.active} dense>
+      <ListItemIcon>{icon}</ListItemIcon>
+      <form
+        className={css.form}
+        onSubmit={e => {
+          e.preventDefault()
+          onSubmit()
+          setEdit(false)
+        }}
+      >
+        {children}
+        <ListItemSecondaryAction>
+          {resetValue != null && (
+            <ResetButton
+              onMouseDown={cancelBlur}
+              onClick={() => {
+                onResetClick()
+                fieldRef.current?.focus()
+              }}
+            />
+          )}
+          <Tooltip title="Cancel">
+            <IconButton onClick={onCancel}>
+              <Icon name="times" size="md" fixedWidth />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Save">
+            <IconButton color="primary" type="submit" onMouseDown={cancelBlur}>
+              <Icon name="check" size="md" fixedWidth />
+            </IconButton>
+          </Tooltip>
+        </ListItemSecondaryAction>
+      </form>
+    </ListItem>
+  )
+
+  const viewForm = (
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
       <ListItem button onClick={triggerEdit} disabled={disabled} dense>
@@ -127,6 +128,8 @@ export const InlineSetting: React.FC<Props> = ({
       </ListItem>
     </>
   )
+
+  return edit ? editForm : viewForm
 }
 
 const useStyles = makeStyles({

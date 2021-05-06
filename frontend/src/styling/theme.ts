@@ -63,6 +63,10 @@ const jssTheme: ThemeOptions = {
         fontSize: fontSizes.xxs,
         '& + .MuiChip-sizeSmall': { marginLeft: spacing.xxs },
       },
+      outlined: {
+        borderColor: colors.grayLighter,
+        color: colors.grayDarker,
+      },
     },
     MuiSnackbar: {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
@@ -135,17 +139,18 @@ const jssTheme: ThemeOptions = {
         paddingRight: 0,
         paddingTop: 5,
         paddingBottom: 5,
-        marginLeft: spacing.md,
         marginTop: 1,
         marginBottom: 1,
         borderRadius: radius,
-        width: `calc(100% - ${spacing.md * 2}px)`,
         '&.Mui-selected': { backgroundColor: colors.primaryHighlight },
         '&.Mui-selected:hover': { backgroundColor: colors.primaryLighter },
       },
       gutters: {
+        width: `calc(100% - ${spacing.md * 2}px)`,
         paddingLeft: spacing.xxs,
         paddingRight: spacing.xxs,
+        marginLeft: spacing.md,
+        marginRight: spacing.md,
       },
       button: {
         // '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
@@ -263,7 +268,7 @@ const jssTheme: ThemeOptions = {
       h1: {
         fontSize: fontSizes.xl,
         fontWeight: 400,
-        color: colors.grayDarker,
+        color: colors.grayDarkest,
         letterSpacing: -0.2,
       },
       h2: {

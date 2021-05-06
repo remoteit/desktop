@@ -6,6 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
+import { R3 } from '../../assets/R3'
 
 library.add(fal, fab, far, fas)
 export interface IconProps {
@@ -33,6 +34,8 @@ export const Icon = React.forwardRef(
     if (size) styles.fontSize = fontSizes[size]
 
     let fontType: IconPrefix = 'far'
+
+    if (name === 'r3') return <R3 style={styles} height={styles.fontSize} {...props} />
 
     switch (type) {
       case 'brands': {

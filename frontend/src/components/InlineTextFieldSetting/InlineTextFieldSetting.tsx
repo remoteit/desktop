@@ -5,7 +5,7 @@ import { InlineSetting } from '../InlineSetting'
 type Props = {
   value?: string | number
   label: string | JSX.Element
-  icon?: JSX.Element
+  icon?: JSX.Element | string
   actionIcon?: JSX.Element
   displayValue?: string | number
   filter?: RegExp

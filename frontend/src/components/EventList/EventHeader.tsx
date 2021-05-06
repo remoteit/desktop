@@ -1,143 +1,71 @@
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Box,
-  makeStyles,
-  Tooltip,
-  IconButton,
-} from '@material-ui/core'
-import { DatePicker } from '../DatePicker'
-import { Icon } from '../Icon'
-import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
-import { fontSizes, spacing } from '../../styling'
-import { eventLogs } from '../../models/logs'
+import React, { useEffect } from 'react'
 import { DateTime } from 'luxon'
-
-export interface LogListProps {
-  fetching: boolean
-  onChangeDate?: (date: any) => void
-  fetchLogs: (data: eventLogs, offset?: boolean, selectDevice?: Date | null) => void
-  selectedDate: Date | null
-  device?: IDevice
-  setPlanUpgrade: (planUpgrade: boolean) => void
-  setDaysAllowed: (daysAllowed: number) => void
-}
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../../store'
+import { makeStyles, List, ListItem, ListItemSecondaryAction } from '@material-ui/core'
+import { getLogLimit, limitDays } from '../../models/licensing'
+import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
+import { DatePicker } from '../DatePicker'
 
 const DAY = 1000 * 60 * 60 * 24
 
-export const EventHeader: React.FC<LogListProps> = ({ fetching, onChangeDate, fetchLogs, selectedDate, device, setPlanUpgrade, setDaysAllowed }) => {
-  const { limits, minDate, maxDate, itemOffset, daysAllowed} = useSelector((state: ApplicationState) => ({
-    limits: state.licensing.limits,
-    minDate: state.logs.minDate,
-    maxDate: state.logs.maxDate,
-    itemOffset: state.logs.from,
-    daysAllowed: state.logs.daysAllowed
-  }))
+export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const css = useStyles()
-  const [lastUpdated, setLastUpdated] = useState<DateTime>(DateTime.local())
-  let logLimit = (limits && limits.filter(limit => limit.name === 'log-limit')[0]?.value?.toString()) || '0'
-  let limitNumber = (logLimit && logLimit.replace(/\D/g, '')) || '0'
-  let allowed = 7
+  const dispatch = useDispatch<Dispatch>()
+  const { fetch, set } = dispatch.logs
 
-  switch (logLimit.slice(-1)) {
-    case 'D':
-      allowed = limitNumber
-      break
-    case 'M':
-      allowed = limitNumber.parseInt() * 30
-      break
-    case 'Y':
-      allowed = limitNumber.parseInt() * 365
-      break
-  }
-  
-  const limitDays = () => {
-    let create_days = 0
+  const { events, deviceId, logLimit, minDate, selectedDate } = useSelector((state: ApplicationState) => ({
+    logLimit: getLogLimit(state),
+    ...state.logs,
+  }))
+
+  let allowed = limitDays(logLimit)
+
+  const getMinDays = () => {
+    let lifetimeDays = 0
     if (device) {
-      const createAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
-      create_days = Math.floor((new Date().getTime() - createAt.getTime()) / DAY)
+      const createdAt = device?.createdAt ? new Date(device?.createdAt) : new Date()
+      lifetimeDays = Math.floor((new Date().getTime() - createdAt.getTime()) / DAY)
     }
-    let limit = daysAllowed
-    if (create_days > 0) {
-      if (create_days > daysAllowed) {
-        setPlanUpgrade(true)
+    let limit = allowed
+    if (lifetimeDays > 0) {
+      if (lifetimeDays > allowed) {
+        set({ planUpgrade: true })
       } else {
-        setPlanUpgrade(false)
-        limit = create_days
+        set({ planUpgrade: false })
+        limit = lifetimeDays
       }
     } else {
-      setPlanUpgrade(true)
+      set({ planUpgrade: true })
     }
-    return new Date(new Date().getTime() - DAY * limit)
+    return DateTime.now().endOf('day').minus({ days: limit }).toJSDate()
   }
 
   useEffect(() => {
-    let minDay = limitDays()
-    minDay.setHours(0)
-    fetchLogs(
-      { id: device?.id || '', from: itemOffset, maxDate: `${selectedDate}`, minDate: `${minDay}` },
-      false,
-      selectedDate
-    )
-    setDaysAllowed(allowed)
-  }, [selectedDate])
+    set({ daysAllowed: allowed, minDate: getMinDays(), maxDate: new Date(), selectedDate: selectedDate || new Date() })
+    if (!events.items.length || device?.id !== deviceId) {
+      set({ deviceId: device?.id, from: 0, events: { ...events, items: [] } })
+      fetch()
+    }
+  }, [])
 
-  
-
-  const refresh = () => {
-    fetchLogs({ id: device?.id || '', from: 0, minDate: `${minDate}` })
+  const handleChangeDate = (date: any) => {
+    set({ selectedDate: date, from: 0, minDate, maxDate: date, events: { ...events, items: [] } })
+    fetch()
   }
 
   return (
     <List className={css.list}>
       <ListItem dense>
-        <ListItemIcon>
-          <Icon name="calendar-day" size="md" fixedWidth />
-        </ListItemIcon>
-        {onChangeDate && (
-          <>
-            <DatePicker
-              onChange={onChangeDate}
-              minDay={minDate}
-              selectedDate={selectedDate}
-              fetching={fetching}
-              label="Jump to Date"
-            />
-          </>
-        )}
+        <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
       </ListItem>
       <ListItemSecondaryAction>
-        {!device ? (
-          <>
-            <Box ml="auto" display="flex" alignItems="center">
-              <i className={css.dateUpdate}> {'Updated ' + lastUpdated.toLocaleString(DateTime.DATETIME_MED)} </i>
-              <CSVDownloadButton />
-              <Tooltip title="Refresh List">
-                <IconButton onClick={refresh}>
-                  <Icon name="sync" spin={fetching} size="md" fixedWidth />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </>
-        ) : (
-          <CSVDownloadButton />
-        )}
+        <CSVDownloadButton />
       </ListItemSecondaryAction>
     </List>
   )
 }
 
 const useStyles = makeStyles({
-  list: {
-    paddingTop: 0,
-  },
-  dateUpdate: {
-    fontSize: fontSizes.xxs,
-    marginRight: spacing.sm,
-  },
+  list: { paddingTop: 0 },
 })

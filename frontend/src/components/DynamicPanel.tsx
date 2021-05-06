@@ -7,7 +7,7 @@ import { Panel } from './Panel'
 type Props = {
   primary: React.ReactElement
   secondary?: React.ReactElement
-  resize?: 'devices' | 'connections'
+  resize: 'devices' | 'connections' | 'settings'
   single?: boolean
   root?: string | string[]
 }

@@ -1,6 +1,7 @@
 import React from 'react'
 import { isDev } from '../../services/Browser'
 import { useHistory } from 'react-router-dom'
+import { isRemoteUI } from '../../helpers/uiHelper'
 import { useClipboard } from 'use-clipboard-copy'
 import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
@@ -29,8 +30,15 @@ interface Props {
 }
 
 export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, setEl }) => {
-  const connection = useSelector((state: ApplicationState) => state.connections.all.find(c => c.id === serviceID))
-  const [service, device] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
+  const { remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
+    const [service, device] = findService(getDevices(state), serviceID)
+    return {
+      remoteUI: isRemoteUI(state),
+      connection: state.connections.all.find(c => c.id === serviceID),
+      service,
+      device,
+    }
+  })
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const history = useHistory()
   const css = useStyles()
@@ -43,7 +51,6 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
     <Menu
       anchorEl={el}
       open={Boolean(el)}
-      // classes={{ paper: css.menu }}
       className={css.menu}
       onClose={handleClose}
       anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
@@ -55,11 +62,13 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
           {service?.name}
         </Typography>
       </ListItem>
-      <ListItem className={css.connect} dense>
-        <ComboButton connection={connection} service={service} size="small" />
-        <CopyButton connection={connection} service={service} size="base" />
-        <LaunchButton connection={connection} service={service} size="base" />
-      </ListItem>
+      {!remoteUI && (
+        <ListItem className={css.connect} dense>
+          <ComboButton connection={connection} service={service} size="small" />
+          <CopyButton connection={connection} service={service} size="base" />
+          <LaunchButton connection={connection} service={service} size="base" />
+        </ListItem>
+      )}
       {connection?.enabled && (
         <MenuItem dense onClick={() => history.push(`/connections/${service?.id}`)}>
           <ListItemIcon>

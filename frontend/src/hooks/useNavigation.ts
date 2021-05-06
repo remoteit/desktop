@@ -18,6 +18,7 @@ export function useNavigation(): INavigationHook {
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
   const {
+    connections,
     navigation,
     remoteUI,
     licenseIndicator,
@@ -25,6 +26,7 @@ export function useNavigation(): INavigationHook {
     navigationBack,
     navigationForward,
   } = useSelector((state: ApplicationState) => ({
+    connections: state.connections.all.filter(connection => connection.enabled).length,
     navigation: state.ui.navigation,
     navigationBack: state.ui.navigationBack,
     navigationForward: state.ui.navigationForward,
@@ -37,7 +39,8 @@ export function useNavigation(): INavigationHook {
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
 
-  const path = (selected: string) => {
+  // Used for remembering the state of a tab - no longer used
+  const recallPath = (selected: string) => {
     const stored = navigation[selected]
     if (!stored || stored === location.pathname) return selected
     else return stored
@@ -82,10 +85,11 @@ export function useNavigation(): INavigationHook {
     { label: 'This Device', path: '/devices', match: '/devices/:any?/:any?/:any?', icon: 'hdd', show: remoteUI },
     {
       label: 'Connections',
-      path: path('/connections'),
+      path: '/connections', // recallPath('/connections')
       match: '/connections/:any?/:any?/:any?',
       icon: 'arrow-right',
       show: !remoteUI,
+      chip: connections,
     },
     { label: 'Devices', path: '/devices', match: '/devices', icon: 'chart-network', show: !remoteUI },
     {
@@ -97,10 +101,10 @@ export function useNavigation(): INavigationHook {
       show: !remoteUI,
     },
     {
-      label: 'Settings',
+      label: 'More',
       path: '/settings',
       match: '/settings',
-      icon: 'cog',
+      icon: 'ellipsis-h',
       badge: licenseIndicator,
       show: true,
     },

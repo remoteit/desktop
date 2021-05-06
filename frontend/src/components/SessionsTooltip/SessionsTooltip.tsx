@@ -9,21 +9,31 @@ interface Props {
   placement?: TooltipProps['placement']
   sessions?: ISession[]
   label?: boolean
+  secondaryLabel?: string
   open?: boolean
   arrow?: boolean
   disabled?: boolean
 }
 
-export const SessionsTooltip: React.FC<Props> = ({ service, sessions, label, children, disabled, ...props }) => {
+export const SessionsTooltip: React.FC<Props> = ({
+  service,
+  sessions,
+  label,
+  secondaryLabel,
+  children,
+  disabled,
+  ...props
+}) => {
   if (!service) return null
 
   const list = sessions?.reduce((list: string[], session, index, all) => {
     if (index > MAX_SESSIONS_DISPLAY) return list
     if (index === MAX_SESSIONS_DISPLAY) list.push(`...and ${all.length - index} more`)
-    else list.push(session.user.email)
+    else session && session.user && list.push(session.user.email)
     return list
   }, [])
 
+  if (list && secondaryLabel) list.unshift(secondaryLabel)
   if (disabled) props.open = false
 
   return (

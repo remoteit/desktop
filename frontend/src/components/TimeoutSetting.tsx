@@ -24,7 +24,7 @@ export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnect
     <InlineTextFieldSetting
       value={timeout}
       displayValue={display}
-      icon={<Icon name="hourglass" size="md" />}
+      icon="hourglass"
       label={
         <>
           Idle Timeout

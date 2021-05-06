@@ -91,7 +91,6 @@ export const RegisterButton: React.FC = () => {
                   onChange={handleChange}
                   fullWidth
                   InputProps={{
-                    disableUnderline: true,
                     endAdornment: claiming ? (
                       <Icon name="spinner-third" size="sm" spin type="regular" />
                     ) : (

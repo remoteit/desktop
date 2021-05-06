@@ -9,7 +9,7 @@ import classnames from 'classnames'
 type Props = {
   primary: React.ReactElement
   secondary?: React.ReactElement
-  resize?: 'devices' | 'connections'
+  resize: 'devices' | 'connections' | 'settings'
 }
 
 const MIN_WIDTH = 360
@@ -17,11 +17,11 @@ const SIDEBAR_WIDTH = 9 + 250
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => {
   const { ui } = useDispatch<Dispatch>()
-  const savedWidth = useSelector((state: ApplicationState) => state.ui[`${resize}PanelWidth`])
-  const handleRef = useRef<number>(savedWidth)
+  const panelWidth = useSelector((state: ApplicationState) => state.ui.panelWidth)
+  const handleRef = useRef<number>(panelWidth[resize])
   const primaryRef = useRef<HTMLDivElement>(null)
   const moveRef = useRef<number>(0)
-  const [width, setWidth] = useState<number>(handleRef.current)
+  const [width, setWidth] = useState<number>(panelWidth[resize])
   const [parentWidth, setParentWidth] = useState<number | undefined>()
   const [grab, setGrab] = useState<boolean>(false)
   const css = useStyles()
@@ -57,8 +57,17 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     event.preventDefault()
     window.removeEventListener('mousemove', onMove)
     window.removeEventListener('mouseup', onUp)
-    ui.set({ [`${resize}PanelWidth`]: primaryRef.current?.offsetWidth || width })
+    console.log('SET PANEL WIDTH', resize, panelWidth, primaryRef.current?.offsetWidth || width)
+    ui.set({
+      panelWidth: {
+        ...panelWidth,
+        [resize]: primaryRef.current?.offsetWidth || width,
+      },
+    })
   }
+  useEffect(() => {
+    setWidth(panelWidth[resize])
+  }, [resize])
 
   useEffect(() => {
     measure()

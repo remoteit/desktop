@@ -1,16 +1,27 @@
-import React, { useState } from 'react'
-import { ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Switch, Button } from '@material-ui/core'
+import React, { useState, useRef } from 'react'
+import {
+  Tooltip,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  Switch,
+  Button,
+} from '@material-ui/core'
 import { Confirm } from '../Confirm'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
+import { Color } from '../../styling'
 
 // React.ComponentProps<typeof ListItem> &
 type Props = {
   icon?: string
-  label: string
-  subLabel?: string | React.ReactNode
+  iconColor?: Color
+  label: string | React.ReactElement
+  subLabel?: string | React.ReactElement
   button?: string
   toggle?: boolean
+  tooltip?: string
   disabled?: boolean
   confirm?: boolean
   confirmMessage?: string
@@ -23,10 +34,12 @@ type Props = {
 export const ListItemSetting = React.forwardRef(
   ({
     icon,
+    iconColor,
     label,
     subLabel,
     button,
     toggle,
+    tooltip,
     onClick,
     onButtonClick,
     disabled,
@@ -36,13 +49,12 @@ export const ListItemSetting = React.forwardRef(
     confirmTitle = '',
   }: Props): JSX.Element => {
     const [open, setOpen] = useState<boolean>(false)
+    const [showTip, setShowTip] = useState<boolean>(false)
+    const iconRef = useRef<HTMLDivElement>(null)
     const showToggle = toggle !== undefined
     const showButton = button !== undefined
 
-    if (!onClick) {
-      disabled = true
-      confirm = false
-    }
+    if (!onClick) confirm = false
 
     const handleClick = () => {
       if (confirm) setOpen(true)
@@ -55,13 +67,30 @@ export const ListItemSetting = React.forwardRef(
     }
 
     const ListItemContent = <ListItemText primary={label} secondary={subLabel} />
+    const TooltipWrapper = ({ children }) =>
+      tooltip ? (
+        <Tooltip title={tooltip} placement="top" open={showTip} arrow>
+          {children}
+        </Tooltip>
+      ) : (
+        children
+      )
 
     return (
       <>
-        <ListItem button onClick={handleClick} disabled={disabled} dense>
-          <ListItemIcon>
-            <Icon name={icon} size="md" />
-          </ListItemIcon>
+        <ListItem
+          button={!!onClick as true}
+          onClick={handleClick}
+          disabled={disabled}
+          onMouseEnter={() => setShowTip(true)}
+          onMouseLeave={() => setShowTip(false)}
+          dense
+        >
+          <TooltipWrapper>
+            <ListItemIcon>
+              <Icon ref={iconRef} name={icon} color={iconColor} size="md" />
+            </ListItemIcon>
+          </TooltipWrapper>
           {quote ? <Quote margin={0}>{ListItemContent}</Quote> : ListItemContent}
           <ListItemSecondaryAction>
             {showButton && (

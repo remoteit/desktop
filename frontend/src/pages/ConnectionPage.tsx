@@ -82,8 +82,10 @@ export const ConnectionPage: React.FC = () => {
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
-          <ServiceConnected connection={connection} session={session} show={connection?.enabled} />
-          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+          <Gutters>
+            <ServiceConnected connection={connection} session={session} show={connection?.enabled} />
+            {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+          </Gutters>
         </>
       }
     >

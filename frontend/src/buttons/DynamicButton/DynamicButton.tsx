@@ -81,15 +81,15 @@ const useStyles = (props: Props) => {
   let foreground
 
   if (props.variant === 'text' && background) {
-    foreground = darken(background, 0.2)
+    foreground = background //  darken(background, 0.2)
     hover = lighten(background, 0.8)
     background = lighten(background, 0.9)
   }
 
   return makeStyles({
     button: {
-      color: foreground,
       backgroundColor: background,
+      '& .MuiButton-label': { color: foreground },
       '&:hover': { backgroundColor: hover },
     },
   })

@@ -1,45 +1,49 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { List, Box, Button, makeStyles, Typography } from '@material-ui/core'
-import { Notice } from '../Notice'
 import { colors, fontSizes, spacing } from '../../styling'
+import { getLogLimit, humanizeDays } from '../../models/licensing'
 import { EventItem } from './EventItem'
+import { Notice } from '../Notice'
 
 export interface LogListProps {
-  fetching: boolean
   device?: IDevice
-  events?: IEventList
-  fetchingMore: boolean
-  onFetchMore?: () => void
 }
 
-export const EventList: React.FC<LogListProps> = ({ fetching, device, events, fetchingMore, onFetchMore }) => {
-  const { user, daysAllowed, planUpgrade} = useSelector((state: ApplicationState) => ({
-    user: state.auth.user,
-    daysAllowed: state.logs.daysAllowed,
-    planUpgrade: state.logs.planUpgrade
-  }))
+export const EventList: React.FC<LogListProps> = ({ device }) => {
   const css = useStyles()
+  const { logs } = useDispatch<Dispatch>()
+  const {
+    events,
+    from,
+    size,
+    minDate,
+    selectedDate,
+    planUpgrade,
+    fetching,
+    fetchingMore,
+    user,
+    logLimit,
+  } = useSelector((state: ApplicationState) => ({
+    ...state.logs,
+    user: state.auth.user,
+    logLimit: getLogLimit(state),
+  }))
+
+  const fetchMore = () => {
+    logs.set({ deviceId: device?.id, from: from + size, minDate, maxDate: selectedDate })
+    logs.fetch()
+  }
 
   return (
     <>
       <List className={css.item}>
-        {!fetching &&
-          events?.items?.map((item: any) => <EventItem item={item} device={device} user={user} key={item.id} />)}
+        {events?.items?.map((item: any) => (
+          <EventItem item={item} device={device} user={user} key={item.id} />
+        ))}
       </List>
-      <Box className={css.box}>
-        {events?.hasMore || fetching ? (
-          <Button color="primary" onClick={() => onFetchMore && onFetchMore()} disabled={fetchingMore || fetching}>
-            {fetchingMore || fetching ? `Loading ...` : 'Load More'}
-          </Button>
-        ) : (
-          <Typography variant="body2" align="center" color="textSecondary">
-            End of Logs
-          </Typography>
-        )}
-      </Box>
-      {!events?.hasMore && !fetching && planUpgrade && (
+      {!events?.hasMore && !fetching && planUpgrade ? (
         <Notice
           severity="warning"
           button={
@@ -48,8 +52,20 @@ export const EventList: React.FC<LogListProps> = ({ fetching, device, events, fe
             </Button>
           }
         >
-          Plan upgrade required to view logs past {daysAllowed} days
+          Plan upgrade required to view logs past {humanizeDays(logLimit)}.
         </Notice>
+      ) : (
+        <Box className={css.box}>
+          {events?.hasMore || fetching ? (
+            <Button color="primary" onClick={fetchMore} disabled={fetchingMore || fetching}>
+              {fetchingMore || fetching ? `Loading ...` : 'Load More'}
+            </Button>
+          ) : (
+            <Typography variant="body2" align="center" color="textSecondary">
+              End of Logs
+            </Typography>
+          )}
+        </Box>
       )}
     </>
   )
@@ -66,7 +82,6 @@ const useStyles = makeStyles({
     height: 100,
   },
   item: {
-    paddingTop: 0,
     '& li': {
       padding: `4px 0`,
       fontSize: fontSizes.sm,

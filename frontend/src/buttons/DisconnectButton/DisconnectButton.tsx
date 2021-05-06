@@ -25,15 +25,17 @@ export const DisconnectButton: React.FC<Props> = ({
 }) => {
   const { connections } = useDispatch<Dispatch>()
   const state = connectionState(service, connection)
+  const connecting = state === 'connecting'
   const visible = state === 'connecting' || state === 'connected' || state === 'ready'
-  const disabled = state === 'stopping' || state === 'connecting'
+  const disabled = state === 'stopping'
+  if (connecting) color = 'grayDark'
   return (
     <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
           title={state === 'stopping' ? 'Stopping' : state === 'connecting' ? 'Starting' : 'Stop Connection'}
           disabled={disabled}
-          loading={disabled}
+          loading={disabled || connecting}
           color={color}
           size={size}
           fullWidth={fullWidth}

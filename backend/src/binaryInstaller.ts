@@ -56,7 +56,7 @@ export class BinaryInstaller {
     this.inProgress = false
   }
 
-  async installBinaries() {
+  async installBinaries(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
@@ -133,12 +133,18 @@ export class BinaryInstaller {
   cliVersionChanged() {
     const previousVersion = preferences.get().cliVersion
     const thisVersion = this.cliBinary.version
-    let changed = semverCompare(previousVersion, thisVersion) < 0
+    let changed = true
+
+    try {
+      changed = semverCompare(previousVersion, thisVersion) < 0
+    } catch (error) {
+      Logger.warn('CLI VERSION COMPARE FAILED', { error, previousVersion, thisVersion })
+    }
 
     if (environment.isWindows && changed) {
       // Windows has an installer script to update so doesn't need this check
       this.updateVersions()
-      return true
+      return false
     }
 
     if (changed) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })

@@ -75,7 +75,7 @@ const useStyles = makeStyles({
   graphic: {
     display: 'flex',
     marginTop: spacing.lg,
-    '& svg': { height: 220, marginTop: spacing.xs, marginBottom: spacing.xs, marginLeft: spacing.xs },
+    '& svg': { height: 220, margin: spacing.xs, marginRight: spacing.md },
     '& ul': {
       padding: 0,
       display: 'flex',

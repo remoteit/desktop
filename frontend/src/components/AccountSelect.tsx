@@ -24,7 +24,6 @@ export const AccountSelect: React.FC = () => {
     <TextField
       select
       className={css.field}
-      SelectProps={{ disableUnderline: true }}
       label="Device lists"
       value={activeId}
       disabled={fetching}

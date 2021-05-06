@@ -183,15 +183,12 @@ export default class ConnectionPool {
     return this.pool
       .map(c => c.params)
       .sort((a, b) => {
-        return (
-          this.sort(a.connected, b.connected) ||
-          (a.connected ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime))
-        )
+        return a.connected ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime)
       })
   }
 
   // @ts-ignore - you can do math with booleans
-  sort = (a: number | boolean = 0, b: number | boolean = 0) => b - a
+  sort = (a: number | boolean = 0, b: number | boolean = 0) => a - b
 
   nextFreePort = async () => {
     const usedPorts = this.usedPorts

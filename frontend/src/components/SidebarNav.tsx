@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useNavigation } from '../hooks/useNavigation'
-import { List, ListItem, ListItemText, ListItemIcon, Badge } from '@material-ui/core'
-import { colors } from '../styling'
+import { List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Chip, Badge } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
+import { colors } from '../styling'
 import { Icon } from './Icon'
 
 export const SidebarNav: React.FC = () => {
-  const { menu, menuItems } = useNavigation()
+  const { menuItems } = useNavigation()
   const [viewBadge, setViewBadge] = useState(true)
   const location = useLocation()
   const history = useHistory()
@@ -43,6 +43,11 @@ export const SidebarNav: React.FC = () => {
                 )}
               </ListItemIcon>
               <ListItemText primary={m.label} />
+              {!!m.chip && (
+                <ListItemSecondaryAction>
+                  <Chip size="small" label={m.chip} className={css.chip} />
+                </ListItemSecondaryAction>
+              )}
             </ListItem>
           )
         return items
@@ -52,8 +57,11 @@ export const SidebarNav: React.FC = () => {
 }
 
 const useStyles = makeStyles({
+  chip: {
+    fontWeight: 600,
+    color: colors.primary,
+  },
   list: {
-    // borderTop: `1px solid ${colors.grayLight}`,
     '& .MuiListItemText-primary': { color: colors.grayDark },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: colors.black },
     '& .MuiListItem-button:hover path': { color: colors.grayDarkest },

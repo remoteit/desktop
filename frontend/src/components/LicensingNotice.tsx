@@ -8,7 +8,7 @@ import { dateOptions } from './Duration/Duration'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
-type Props = { device?: IDevice; license?: ILicense }
+type Props = { device?: IDevice; license?: ILicense; fullWidth?: boolean }
 
 const learnMoreLink = (
   <Link href="https://link.remote.it/documentation-aws/setup" target="_blank">
@@ -17,13 +17,12 @@ const learnMoreLink = (
 )
 
 export const LicensingNotice: React.FC<Props> = props => {
+  const { licensing } = useDispatch<Dispatch>()
   const { noticeType, license, informed, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
     return selectLicense(state, productId)
   })
-
-  const { licensing } = useDispatch<Dispatch>()
 
   if (!license || !noticeType || informed) return null
 
@@ -38,7 +37,7 @@ export const LicensingNotice: React.FC<Props> = props => {
       </Button>
       <Tooltip title="Close">
         <IconButton onClick={onClose}>
-          <Icon name="times" size="md" color="primary" inline />
+          <Icon name="times" size="md" color="primary" />
         </IconButton>
       </Tooltip>
     </>
@@ -70,5 +69,5 @@ export const LicensingNotice: React.FC<Props> = props => {
       </Notice>
     )
 
-  return <ListItem>{notice}</ListItem>
+  return props.fullWidth ? notice : <ListItem>{notice}</ListItem>
 }

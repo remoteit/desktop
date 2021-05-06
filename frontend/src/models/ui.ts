@@ -34,8 +34,7 @@ type UIState = {
   launchLoading: boolean
   launchPath: string
   requireInstall: string
-  devicesPanelWidth: number
-  connectionsPanelWidth: number
+  panelWidth: ILookup<number>
   navigationBack: string[]
   navigationForward: string[]
 }
@@ -71,10 +70,13 @@ const state: UIState = {
   launchLoading: false,
   launchPath: '',
   requireInstall: '',
-  devicesPanelWidth: 400,
-  connectionsPanelWidth: 600,
+  panelWidth: {
+    devices: 400,
+    connections: 600,
+    settings: 400,
+  },
   navigationBack: [],
-  navigationForward: []
+  navigationForward: [],
 }
 
 export default createModel<RootModel>()({
