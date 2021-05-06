@@ -23,6 +23,7 @@ type Props = {
   displayValue?: string | number
   disabled?: boolean
   resetValue?: string | number
+  hideIcon?: boolean
   fieldRef: React.RefObject<HTMLInputElement>
   onSubmit: () => void
   onResetClick: () => void
@@ -45,6 +46,7 @@ export const InlineSetting: React.FC<Props> = ({
   onResetClick,
   onCancel,
   onShowEdit,
+  hideIcon,
   children,
 }) => {
   const css = useStyles()
@@ -74,7 +76,7 @@ export const InlineSetting: React.FC<Props> = ({
 
   const editForm = (
     <ListItem className={css.active} dense>
-      <ListItemIcon>{icon}</ListItemIcon>
+      {!hideIcon && <ListItemIcon>{icon}</ListItemIcon>}
       <form
         className={css.form}
         onSubmit={e => {
@@ -113,7 +115,7 @@ export const InlineSetting: React.FC<Props> = ({
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
       <ListItem button onClick={triggerEdit} disabled={disabled} dense>
-        <ListItemIcon>{icon}</ListItemIcon>
+        {!hideIcon && <ListItemIcon>{icon}</ListItemIcon>}
         <Title>
           <ListItemText>
             <InputLabel shrink>{label}</InputLabel>

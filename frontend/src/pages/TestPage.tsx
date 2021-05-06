@@ -1,12 +1,13 @@
 import React from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, List } from '@material-ui/core'
+import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { Container } from '../components/Container'
 import { TestUI } from '../components/TestUI'
 import { getApiURL } from '../services/graphQL'
 import { Title } from '../components/Title'
+import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 
@@ -53,24 +54,35 @@ export const TestPage: React.FC = () => {
               emit('preferences', { ...preferences, testUI: 'OFF', allowPrerelease: false, switchApi: false })
             }
           />
-
-          <InlineTextFieldSetting
-            value={getApiURL()}
-            label="Switch GraphQL APIs"
-            disabled={false}
-            resetValue={getApiURL()}
-            maxLength={200}
-            onSave={url => onSave(url.toString())}
+          <ListItemSetting
+            label="Override default APIs"
+            subLabel={`Using ${getApiURL()}`}
+            onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
+            toggle={!!preferences.switchApi}
           />
-
-          <InlineTextFieldSetting
-            value={getApiURL(true)}
-            label="Rest Api"
-            disabled={false}
-            resetValue={getApiURL(true)}
-            maxLength={200}
-            onSave={url => onSaveRest(url.toString())}
-          />
+          <ListItem>
+            <ListItemIcon />
+            <Quote>
+              <InlineTextFieldSetting
+                value={getApiURL()}
+                label="Switch GraphQL APIs"
+                disabled={false}
+                resetValue={getApiURL()}
+                maxLength={200}
+                onSave={url => onSave(url.toString())}
+                hideIcon
+              />
+              <InlineTextFieldSetting
+                value={getApiURL(true)}
+                label="Rest Api"
+                disabled={false}
+                resetValue={getApiURL(true)}
+                maxLength={200}
+                onSave={url => onSaveRest(url.toString())}
+                hideIcon
+              />
+            </Quote>
+          </ListItem>
         </List>
         <Typography variant="subtitle1">Licensing Options</Typography>
         <List>
