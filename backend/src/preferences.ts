@@ -16,6 +16,8 @@ export class Preferences {
     allowPrerelease: false,
     useCertificate: true,
     switchApi: false,
+    apiURL: '',
+    apiGraphqlURL: '',
     testUI: 'OFF',
   }
 

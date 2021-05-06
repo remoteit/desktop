@@ -14,6 +14,7 @@ declare global {
 
     // binaries
     | 'binaries/install'
+    | 'binaries/update-api-url'
 
     // all connections update
     | 'pool'
@@ -511,6 +512,8 @@ declare global {
     allowPrerelease?: boolean
     useCertificate?: boolean
     switchApi?: boolean
+    apiURL?: ''
+    apiGraphqlURL?: ''
     testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
   }
 

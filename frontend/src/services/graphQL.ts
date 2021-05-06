@@ -1,15 +1,23 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
-import { version } from '../../package.json'
 import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
+import { version } from '../../package.json'
 
-export function getApi(): string {
-  const { backend } = store.getState()
-  const { overrides } = backend.environment
+export function getApiURL(isRest?: boolean): string {
+  const { apiGraphqlURL, apiURL } = store.getState().backend.preferences
+  const { overrides } = store.getState().backend.environment
+
   let beta = version.includes('alpha')
-  if (backend.preferences.switchApi) beta = !beta
-  return beta ? overrides?.betaApiURL || GRAPHQL_BETA_API : overrides?.apiURL || GRAPHQL_API
+  if (isRest) {
+    return apiURL || ''
+  } else {
+    return apiGraphqlURL
+      ? apiGraphqlURL
+      : beta
+      ? overrides?.betaApiURL || GRAPHQL_BETA_API
+      : overrides?.apiURL || GRAPHQL_API
+  }
 }
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
@@ -32,7 +40,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   }
 
   const request = {
-    url: getApi(),
+    url: getApiURL(),
     method: 'post' as 'post',
     headers: { Authorization: token },
     data: { query, variables },

@@ -93,6 +93,14 @@ export default {
     return '-j agent install'
   },
 
+  serviceStop() {
+    return '-j agent stop'
+  },
+
+  serviceStart() {
+    return '-j agent start'
+  },
+
   serviceUninstall() {
     return `-j agent uninstall`
   },

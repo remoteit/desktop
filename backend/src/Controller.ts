@@ -77,6 +77,7 @@ class Controller {
     socket.on('preferences', preferences.set)
     socket.on('restart', this.restart)
     socket.on('uninstall', this.uninstall)
+    socket.on('binaries/update-api-url', this.updateUrlAPIBinaries)
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
@@ -224,6 +225,13 @@ class Controller {
       await binaryInstaller.install()
     } catch (error) {
       EventBus.emit(Binary.EVENTS.error, error)
+    }
+  }
+  updateUrlAPIBinaries = async ({ apiURL, apiGraphqlURL }: { apiURL: string; apiGraphqlURL: string }) => {
+    try {
+      await binaryInstaller.changeURLRequest(apiURL, apiGraphqlURL)
+    } catch (error) {
+      EventBus.emit(Binary.EVENTS.error, apiURL)
     }
   }
 }
