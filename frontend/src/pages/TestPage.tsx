@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dispatch, ApplicationState } from '../store'
+import { Dispatch, ApplicationState, store } from '../store'
 import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -10,6 +10,7 @@ import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
+import { API_URL } from '../shared/constants'
 
 export const TestPage: React.FC = () => {
   const { tests, informed, preferences } = useSelector((state: ApplicationState) => ({
@@ -17,16 +18,17 @@ export const TestPage: React.FC = () => {
     preferences: state.backend.preferences,
   }))
   const { licensing, ui } = useDispatch<Dispatch>()
+  const apiUrl = preferences.apiURL ? preferences.apiURL : API_URL
 
   const onSave = (url: string) => {
     emit('preferences', { ...preferences, apiGraphqlURL: url })
-    emit('binaries/update-api-url', { apiURL: getApiURL(true), apiGraphqlURL: url })
+    emit('binaries/install')
     ui.refreshAll()
   }
 
   const onSaveRest = (url: string) => {
     emit('preferences', { ...preferences, apiURL: url })
-    emit('binaries/update-api-url', { apiURL: url, apiGraphqlURL: getApiURL() })
+    emit('binaries/install')
   }
 
   return (
@@ -73,10 +75,10 @@ export const TestPage: React.FC = () => {
                 hideIcon
               />
               <InlineTextFieldSetting
-                value={getApiURL(true)}
+                value={apiUrl}
                 label="Rest Api"
                 disabled={false}
-                resetValue={getApiURL(true)}
+                resetValue={apiUrl}
                 maxLength={200}
                 onSave={url => onSaveRest(url.toString())}
                 hideIcon

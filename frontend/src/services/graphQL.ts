@@ -4,20 +4,17 @@ import { store } from '../store'
 import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 import { version } from '../../package.json'
 
-export function getApiURL(isRest?: boolean): string {
-  const { apiGraphqlURL, apiURL } = store.getState().backend.preferences
+export function getApiURL(): string {
+  const { apiGraphqlURL } = store.getState().backend.preferences
   const { overrides } = store.getState().backend.environment
 
   let beta = version.includes('alpha')
-  if (isRest) {
-    return apiURL || ''
-  } else {
-    return apiGraphqlURL
-      ? apiGraphqlURL
-      : beta
-      ? overrides?.betaApiURL || GRAPHQL_BETA_API
-      : overrides?.apiURL || GRAPHQL_API
-  }
+
+  return apiGraphqlURL
+    ? apiGraphqlURL
+    : beta
+    ? overrides?.betaApiURL || GRAPHQL_BETA_API
+    : overrides?.apiURL || GRAPHQL_API
 }
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {

@@ -14,7 +14,6 @@ declare global {
 
     // binaries
     | 'binaries/install'
-    | 'binaries/update-api-url'
 
     // all connections update
     | 'pool'
