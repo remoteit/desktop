@@ -5,9 +5,11 @@ import { Color } from '../styling'
 import { Formats } from './Formats'
 import { Typography, Divider, Box } from '@material-ui/core'
 
-export const QualityDetails: React.FC<{ device: IDevice }> = ({ device }) => {
+export const QualityDetails: React.FC<{ device?: IDevice }> = ({ device }) => {
   let title: string = 'Unknown'
   let color: Color = 'gray'
+
+  if (!device) return null
 
   switch (device.quality) {
     case 'GOOD':

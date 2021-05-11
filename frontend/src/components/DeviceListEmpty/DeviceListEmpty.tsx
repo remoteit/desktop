@@ -35,7 +35,7 @@ export const DeviceListEmpty: React.FC = () => {
             Set up
           </Button>
           <Typography variant="body2" align="center" color="textSecondary">
-            Set up remote access to this {osName(os)} or any server on the network.
+            Set up remote access to this {osName(os)} or any service on the network.
           </Typography>
         </>
       ) : (

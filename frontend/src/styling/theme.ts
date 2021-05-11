@@ -16,6 +16,20 @@ const jssTheme: ThemeOptions = {
       root: { backgroundColor: colors.grayLighter },
       inset: { marginRight: spacing.md, marginLeft: spacing.md },
     },
+    MuiAccordion: {
+      root: {
+        '& + .MuiAccordion-root': { borderTop: `1px solid ${colors.grayLighter}` },
+        '&:before': { display: 'none' },
+        '&.Mui-expanded': { margin: 0, paddingBottom: spacing.md },
+      },
+    },
+    MuiAccordionDetails: {
+      root: { display: 'block', padding: 0 },
+    },
+    MuiAccordionSummary: {
+      root: { minHeight: 0, padding: 0, '&.Mui-expanded': { minHeight: 0 } },
+      content: { margin: 0, '&.Mui-expanded': { margin: 0 } },
+    },
     MuiFormHelperText: { root: { fontSize: 10 } },
     MuiIconButton: {
       root: { borderRadius: radius },

@@ -5,7 +5,7 @@ import { getActiveAccountId, getOwnDevices } from '../../models/accounts'
 import { DeviceSetupItem } from '../DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
-import { List, Divider, ListItem } from '@material-ui/core'
+import { List, Divider } from '@material-ui/core'
 import { isOffline } from '../../models/devices'
 import { LoadMore } from '../LoadMore'
 import { Notice } from '../Notice'
@@ -18,11 +18,15 @@ export interface DeviceListProps {
 
 export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {}, restore }) => {
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
-  const { myDevice, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
+  const { myDevice, loggedInUser, registeredId, columns } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
     loggedInUser: getActiveAccountId(state) === state.auth.user?.id,
     myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
+    columns: state.ui.columns || [],
   }))
+
+  const secondary: string[] = [...columns]
+  const primary = secondary?.shift() || ''
 
   return (
     <>
@@ -37,6 +41,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
                 connections={connections[registeredId]}
                 thisDevice={true}
                 setContextMenu={setContextMenu}
+                primary={primary}
               />
               <Divider variant="inset" />
             </>
@@ -62,6 +67,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
               connections={connections[device.id]}
               setContextMenu={setContextMenu}
               restore={restore && canRestore}
+              primary={primary}
+              columns={secondary}
             />
           )
         })}

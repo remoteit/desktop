@@ -96,10 +96,13 @@ declare global {
   }
 
   interface IDataDisplay {
+    name: string
     label: string
-    value?: any
+    width?: number
     help?: string
+    visible?: boolean
     format?: 'duration' | 'percent' | 'round' | 'location' | 'element' | 'chip'
+    onValue?: (device?: IDevice, connection?: IConnection, connections?: IConnection[]) => any
   }
 
   interface ILabel {

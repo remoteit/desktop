@@ -238,6 +238,7 @@ export const ServiceForm: React.FC<Props> = ({
               setForm({ ...form })
             }}
           />
+          <Typography variant="caption">Default local port to use when a device connects to this service.</Typography>
         </ListItem>
         <ServiceAttributesForm
           className={css.field}

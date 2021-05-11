@@ -129,6 +129,13 @@ export default class ConnectionPool {
     instance && instance.stop()
   }
 
+  disable = async ({ id }: IConnection) => {
+    Logger.info('REMOVE', { id })
+    const instance = this.find(id)
+    instance && instance.disable()
+    this.updated()
+  }
+
   forget = async ({ id }: IConnection) => {
     Logger.info('FORGET', { id })
     const connection = this.find(id)

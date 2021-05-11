@@ -145,6 +145,25 @@ const state: ILicensing = {
           },
         },
       },
+      {
+        id: '4a5ed500-ef07-4a98-be11-35ab8fa69a5f',
+        created: new Date('2021-03-12T05:44:32.421Z'),
+        updated: new Date('2021-04-28T17:08:25.000Z'),
+        expiration: null,
+        valid: true,
+        plan: {
+          id: 'b44f92a6-a7b9-11eb-b094-02a962787033',
+          name: 'ENTERPRISE',
+          description: 'enterprise',
+          duration: null,
+          product: {
+            id: 'b999e047-5532-11eb-8872-063ce187bcd7',
+            name: 'remote.it',
+            description: 'remote.it',
+            provider: null,
+          },
+        },
+      },
     ],
     limits: [
       {

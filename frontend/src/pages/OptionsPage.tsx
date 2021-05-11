@@ -131,7 +131,7 @@ export const OptionsPage: React.FC = () => {
               />
             )}
             <ListItemSetting
-              label="Show application logs"
+              label="Show support files"
               subLabel="Will show the folders that contain the application logs and config file."
               icon="folder"
               onClick={() => emit('showFolder', 'logs')}

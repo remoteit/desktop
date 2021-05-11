@@ -69,6 +69,10 @@ export default {
       --manufacture-id ${environment.appCode}`)
   },
 
+  stop(c: IConnection) {
+    return `-j connection disconnect --id ${c.id} --authhash ${user.authHash}`
+  },
+
   disconnect(c: IConnection) {
     return `-j connection remove --id ${c.id} --authhash ${user.authHash}`
   },

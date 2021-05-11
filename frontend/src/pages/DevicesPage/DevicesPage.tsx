@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react'
 import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ApplicationState } from '../../store'
-import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
+import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { AccountSelect } from '../../components/AccountSelect'
+import { ColumnsDrawer } from '../../components/ColumnsDrawer'
+import { FilterDrawer } from '../../components/FilterDrawer'
 import { FilterButton } from '../../buttons/FilterButton'
 import { SearchField } from '../../components/SearchField'
 import { useSelector } from 'react-redux'
@@ -47,11 +49,17 @@ export const DevicesPage: React.FC<{ singlePanel?: boolean; restore?: boolean }>
               </>
             )}
             <FilterButton />
+            <ColumnsButton />
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>
       }
-      sidebar={<FilterDrawerContent />}
+      sidebar={
+        <>
+          <FilterDrawer />
+          <ColumnsDrawer />
+        </>
+      }
     >
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." spinner={false} />

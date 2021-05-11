@@ -35,7 +35,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   if (!service || !device) return null
 
   let data: IDataDisplay[] = []
-
+  // @TODO convert to an array of detail names(keys)
   if (state === 'connected') {
     data = data.concat([
       { label: 'Host', value: connection?.host },

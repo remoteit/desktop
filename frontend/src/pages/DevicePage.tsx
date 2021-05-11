@@ -36,10 +36,12 @@ type Props = {
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
   const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
+  const { connections, setupAddingService, sortService, searched, query } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
     sortService: state.devices.sortServiceOption,
+    searched: state.devices.searched,
+    query: state.devices.query,
   }))
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           Device offline
         </Notice>
       )}
+      {searched && <Notice gutterTop>Searched for “{query}”</Notice>}
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <SortServices />

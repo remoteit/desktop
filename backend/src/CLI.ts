@@ -248,6 +248,11 @@ export default class CLI {
     await this.readConnections()
   }
 
+  async stopConnection(c: IConnection, onError: ErrorCallback) {
+    await this.exec({ cmds: [strings.stop(c)], checkAuthHash: true, onError })
+    await this.readConnections()
+  }
+
   async setConnection(c: IConnection, onError: ErrorCallback) {
     await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError })
     await this.readConnections()

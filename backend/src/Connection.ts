@@ -35,6 +35,11 @@ export default class Connection extends EventEmitter {
   }
 
   stop() {
+    cli.stopConnection(this.params, this.error)
+    EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
+  }
+
+  disable() {
     this.params.enabled = false
     if (!this.params.public) cli.setConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)

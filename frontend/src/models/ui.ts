@@ -11,7 +11,8 @@ type UIState = {
   claiming: boolean
   routingLock?: IRouteType
   routingMessage?: string
-  filterMenu: boolean
+  drawerMenu: 'FILTER' | 'COLUMNS' | null
+  columns: string[]
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -47,7 +48,8 @@ const state: UIState = {
   claiming: false,
   routingLock: undefined,
   routingMessage: undefined,
-  filterMenu: false,
+  drawerMenu: null,
+  columns: ['name', 'services'],
   redirect: undefined,
   restoring: false,
   scanEnabled: true,

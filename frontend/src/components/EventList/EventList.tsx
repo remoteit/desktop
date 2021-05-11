@@ -47,7 +47,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
         <Notice
           severity="warning"
           button={
-            <Button variant="contained" href="https://link.remote.it/licensing/plans" size="small" target="_blank">
+            <Button variant="contained" href="https://link.remote.it/portal/account" size="small" target="_blank">
               Upgrade
             </Button>
           }

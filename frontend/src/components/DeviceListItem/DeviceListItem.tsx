@@ -1,21 +1,13 @@
 import React from 'react'
+import { DeviceValue } from '../DeviceValue'
 import { DeviceLabel } from '../DeviceLabel'
 import { ServiceName } from '../ServiceName'
 import { RestoreButton } from '../../buttons/RestoreButton'
 import { ListItemLocation } from '../ListItemLocation'
-import { ServiceMiniState } from '../ServiceMiniState'
+import { ServiceIndicators } from '../ServiceIndicators'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import {
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Tooltip,
-  Chip,
-  makeStyles,
-  useMediaQuery,
-} from '@material-ui/core'
-
-const MAX_INDICATORS = 6
+import { makeStyles, Box, ListItemIcon, ListItemText, ListItemSecondaryAction, useMediaQuery } from '@material-ui/core'
+import { spacing } from '../../styling'
 
 type Props = {
   device?: IDevice
@@ -23,35 +15,22 @@ type Props = {
   thisDevice?: boolean
   restore?: boolean
   setContextMenu: React.Dispatch<React.SetStateAction<IContextMenu>>
+  primary: string
+  columns?: string[]
 }
 
-const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setContextMenu }) => {
-  const css = useStyles()
-  if (!device?.services) return null
-  const extra = Math.max(device.services.length - MAX_INDICATORS, 0)
-  const display = device.services.slice(0, MAX_INDICATORS)
-  return (
-    <>
-      {display.map(service => (
-        <ServiceMiniState
-          key={service.id}
-          service={service}
-          connection={connections.find(c => c.id === service.id)}
-          setContextMenu={setContextMenu}
-        />
-      ))}
-      {!!extra && (
-        <Tooltip className={css.chip} title={`${device.services.length} services total`} arrow placement="top">
-          <Chip label={`+${extra}`} size="small" />
-        </Tooltip>
-      )}
-    </>
-  )
-}
-
-export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, setContextMenu, restore }) => {
+export const DeviceListItem: React.FC<Props> = ({
+  device,
+  connections,
+  thisDevice,
+  setContextMenu,
+  primary,
+  columns,
+  restore,
+}) => {
   const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
+  const css = useStyles()
 
   if (!device) return null
 
@@ -61,19 +40,25 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
       <ListItemIcon>
         <ConnectionStateIcon device={device} connection={connected} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
-      <ListItemText
-        primary={<ServiceName device={device} connection={connected} />}
-        secondary={thisDevice && 'This system'}
-      />
+      <ListItemText primary={<DeviceValue device={device} connection={connected} name={primary} />} />
       {restore ? (
         <ListItemSecondaryAction>
           <RestoreButton device={device} />
         </ListItemSecondaryAction>
       ) : (
         largeScreen && (
-          <ListItemSecondaryAction>
-            <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} />
-          </ListItemSecondaryAction>
+          <Box className={css.columns}>
+            {columns?.map(column => (
+              <DeviceValue
+                key={column}
+                device={device}
+                connection={connected}
+                connections={connections}
+                name={column}
+              />
+            ))}
+            {/* <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} /> */}
+          </Box>
         )
       )}
     </ListItemLocation>
@@ -81,5 +66,19 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
 }
 
 const useStyles = makeStyles({
-  chip: { marginLeft: 6 },
+  columns: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    marginRight: spacing.sm,
+    '& > *': {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      textAlign: 'right',
+      paddingLeft: spacing.sm,
+    },
+    '& > :first-child': {
+      flexGrow: 1,
+    },
+  },
 })

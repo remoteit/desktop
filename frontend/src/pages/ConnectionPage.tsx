@@ -28,7 +28,6 @@ import { InfoButton } from '../buttons/InfoButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
-import { TestUI } from '../components/TestUI'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -103,12 +102,10 @@ export const ConnectionPage: React.FC = () => {
         <LanShareSelect connection={connection} service={service} />
         <ConnectionLogSetting connection={connection} service={service} />
       </List>
-      <TestUI>
-        <Divider variant="inset" />
-        <List>
-          <PublicSetting connection={connection} service={service} />
-        </List>
-      </TestUI>
+      <Divider variant="inset" />
+      <List>
+        <PublicSetting connection={connection} service={service} />
+      </List>
     </Container>
   )
 }

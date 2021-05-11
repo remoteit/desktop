@@ -63,7 +63,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (chip && chip.show) {
     color = chip.colorName
-    title = chip.name
+    title = chip.disabled ? chip.name : title
     disabled = !!chip.disabled
     variant = 'text'
   }

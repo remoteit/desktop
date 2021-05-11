@@ -7,7 +7,7 @@ import { Icon } from '../../components/Icon'
 
 export const FilterButton: React.FC = () => {
   const { open, changed } = useSelector((state: ApplicationState) => ({
-    open: state.ui.filterMenu,
+    open: state.ui.drawerMenu === 'FILTER',
     changed:
       state.devices.filter !== defaults.filter ||
       state.devices.sort !== defaults.sort ||
@@ -17,7 +17,7 @@ export const FilterButton: React.FC = () => {
 
   return (
     <Tooltip title={open ? 'Hide filters' : 'Show filters'}>
-      <IconButton onClick={() => ui.set({ filterMenu: !open })}>
+      <IconButton onClick={() => ui.set({ drawerMenu: open ? null : 'FILTER' })}>
         {changed ? (
           <Badge variant="dot" color="primary">
             <Icon name="filter" size="base" type="regular" />

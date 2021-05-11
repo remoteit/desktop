@@ -88,6 +88,6 @@ const useStyles = makeStyles({
     backgroundColor: colors.warning,
   },
   warningBar: {
-    backgroundColor: colors.grayLighter,
+    backgroundColor: colors.primary,
   },
 })

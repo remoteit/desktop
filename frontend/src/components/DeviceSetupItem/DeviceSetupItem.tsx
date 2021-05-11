@@ -42,7 +42,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
 
   const registered = !!targetDevice.uid
   let title = 'Set up this device'
-  let subtitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
+  let subtitle = `Add remote access to this ${osName(os)} or any service on the network.`
 
   if (registered) {
     if (thisDevice) {
