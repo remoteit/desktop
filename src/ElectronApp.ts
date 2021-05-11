@@ -1,6 +1,6 @@
 import { WEB_DIR, EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import AutoUpdater from './AutoUpdater'
-import electron from 'electron'
+import electron, { Menu } from 'electron'
 import TrayMenu from './TrayMenu'
 import debug from 'debug'
 import path from 'path'
@@ -181,6 +181,10 @@ export default class ElectronApp {
     const iconPath = path.join(__dirname, 'images', iconFile)
     this.tray = new electron.Tray(iconPath)
     new TrayMenu(this.tray)
+    const defaultMenu = Menu.getApplicationMenu()
+    const items = defaultMenu?.items.filter(item => item.role !== 'help')
+    const menu = Menu.buildFromTemplate(items || [])
+    Menu.setApplicationMenu(menu)
   }
 
   private openWindow = (location?: string, openDevTools?: boolean) => {
