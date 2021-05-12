@@ -1,4 +1,4 @@
-import { REDIRECT_URL } from '../shared/constants'
+import { REDIRECT_URL, IP_PRIVATE } from '../shared/constants'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -25,8 +25,8 @@ export function getRedirectUrl() {
 }
 
 export function isRemote() {
-  const { port } = window.location
-  return !(isElectron() || port === '29999' || port === '29998')
+  const { port, hostname } = window.location
+  return !(isElectron() || ((port === '29999' || port === '29998') && hostname === IP_PRIVATE))
 }
 
 export function isElectron() {
