@@ -5,12 +5,12 @@ import { GRAPHQL_API, GRAPHQL_BETA_API } from '../shared/constants'
 import { version } from '../../package.json'
 
 export function getApiURL(): string {
-  const { apiGraphqlURL } = store.getState().backend.preferences
+  const { apiGraphqlURL, switchApi } = store.getState().backend.preferences
   const { overrides } = store.getState().backend.environment
 
   let beta = version.includes('alpha')
 
-  return apiGraphqlURL
+  return apiGraphqlURL && switchApi
     ? apiGraphqlURL
     : beta
     ? overrides?.betaApiURL || GRAPHQL_BETA_API

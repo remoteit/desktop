@@ -97,10 +97,6 @@ export default {
     return `-j agent uninstall`
   },
 
-  serviceStop() {
-    return '-j agent stop'
-  },
-
   toolsInstall() {
     return '-j tools install --update'
   },
