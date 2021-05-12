@@ -17,7 +17,7 @@ import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { AddFromNetwork } from '../components/AddFromNetwork'
-import { SortServices } from '../components/SortServices'
+import { optionSortServices, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
@@ -36,13 +36,11 @@ type Props = {
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
   const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService, sortService = (a: number, b: number) => 0 } = useSelector(
-    (state: ApplicationState) => ({
-      connections: state.connections.all.filter(c => c.deviceID === device?.id),
-      setupAddingService: state.ui.setupAddingService,
-      sortService: state.devices.sortServiceOption?.sortService,
-    })
-  )
+  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
+    connections: state.connections.all.filter(c => c.deviceID === device?.id),
+    setupAddingService: state.ui.setupAddingService,
+    sortService: state.devices.sortServiceOption,
+  }))
 
   useEffect(() => {
     analyticsHelper.page('DevicePage')
@@ -118,7 +116,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.sort(sortService).map(s => (
+        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
           <ListItemLocation
             key={s.id}
             pathname={`/devices/${device.id}/${s.id}/details`}
