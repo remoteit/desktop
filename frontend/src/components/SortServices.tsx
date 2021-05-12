@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
-import { Badge, IconButton, Menu, MenuItem } from '@material-ui/core'
-import { Icon } from './Icon'
+import { IconButton, Menu, MenuItem } from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { makeStyles } from '@material-ui/core/styles'
 import { fontSize } from '@remote.it/components/lib/styles/variables'
+import { Icon } from './Icon'
 
 export interface ISortService {
   name: string
@@ -24,23 +24,23 @@ export const optionSortServices: IOptionServiceSort = {
     name: 'Alpha A-Z',
     sortService: (a: IService, b: IService) =>
       a.name.toLowerCase() > b.name.toLowerCase() ? 1 : a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0,
-    icon: 'up',
+    icon: 'sort-alpha-down',
   },
   ZTOA: {
     name: 'Alpha Z-A',
     sortService: (a: IService, b: IService) =>
       a.name.toLowerCase() < b.name.toLowerCase() ? 1 : a.name.toLowerCase() > b.name.toLowerCase() ? -1 : 0,
-    icon: 'down',
+    icon: 'sort-alpha-up',
   },
   NEWEST: {
     name: 'Newest first',
-    sortService: (a: IService, b: IService) => (a.createdAt > b.createdAt ? 1 : -1),
-    icon: 'up',
+    sortService: (a: IService, b: IService) => (a.createdAt < b.createdAt ? 1 : -1),
+    icon: 'sort-amount-down',
   },
   OLDEST: {
     name: 'Oldest first',
-    sortService: (a: IService, b: IService) => (a.createdAt < b.createdAt ? 1 : -1),
-    icon: 'down',
+    sortService: (a: IService, b: IService) => (a.createdAt > b.createdAt ? 1 : -1),
+    icon: 'sort-amount-up',
   },
 }
 
@@ -75,13 +75,7 @@ export const SortServices: React.FC = () => {
   return (
     <>
       <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick}>
-        {sortService !== 'ATOZ' ? (
-          <Badge variant="dot" badgeContent={true} color="primary">
-            <Icon name={`sort-amount-${option.icon}`} size="md" />
-          </Badge>
-        ) : (
-          <Icon name={`sort-amount-up`} size="md" />
-        )}
+        <Icon name={option.icon} size="md" />
       </IconButton>
       <Menu id="long-menu" anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>
         {Object.keys(optionSortServices).map((key, index) => (
