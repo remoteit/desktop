@@ -17,6 +17,7 @@ import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { AddFromNetwork } from '../components/AddFromNetwork'
+import { optionSortServices, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
@@ -35,9 +36,10 @@ type Props = {
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
   const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService } = useSelector((state: ApplicationState) => ({
+  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
+    sortService: state.devices.sortServiceOption,
   }))
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
       )}
       <Typography variant="subtitle1">
         <Title>Services</Title>
+        <SortServices />
         <AddFromNetwork allowScanning={thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
@@ -113,7 +116,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.map(s => (
+        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
           <ListItemLocation
             key={s.id}
             pathname={`/devices/${device.id}/${s.id}/details`}
