@@ -12,6 +12,7 @@ type Props = {
   disabled?: boolean
   resetValue?: string | number
   maxLength?: number
+  hideIcon?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
 }

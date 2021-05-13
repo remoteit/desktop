@@ -57,6 +57,14 @@ export class BinaryInstaller {
   }
 
   async installBinaries(): Promise<void> {
+
+    const remoteAPI = preferences.get().apiURL
+    const graphqlURL = preferences.get().apiGraphqlURL
+    let envVar = ''
+
+    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
+    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
+
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
@@ -69,7 +77,7 @@ export class BinaryInstaller {
         })
       }
 
-      commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`${envVar} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()

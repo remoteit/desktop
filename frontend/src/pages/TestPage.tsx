@@ -1,20 +1,35 @@
 import React from 'react'
-import { Dispatch, ApplicationState } from '../store'
-import { Typography, List } from '@material-ui/core'
+import { Dispatch, ApplicationState, store } from '../store'
+import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { Container } from '../components/Container'
 import { TestUI } from '../components/TestUI'
-import { getApi } from '../services/graphQL'
+import { getApiURL } from '../helpers/apiHelper'
 import { Title } from '../components/Title'
+import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
+import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
+import { API_URL } from '../shared/constants'
 
 export const TestPage: React.FC = () => {
   const { tests, informed, preferences } = useSelector((state: ApplicationState) => ({
     ...state.licensing,
     preferences: state.backend.preferences,
   }))
-  const { licensing } = useDispatch<Dispatch>()
+  const { licensing, ui } = useDispatch<Dispatch>()
+  const apiUrl = preferences.apiURL ? preferences.apiURL : API_URL
+
+  const onSave = (url: string) => {
+    emit('preferences', { ...preferences, apiGraphqlURL: url })
+    emit('binaries/install')
+    ui.refreshAll()
+  }
+
+  const onSaveRest = (url: string) => {
+    emit('preferences', { ...preferences, apiURL: url })
+    emit('binaries/install')
+  }
 
   return (
     <TestUI>
@@ -42,11 +57,34 @@ export const TestPage: React.FC = () => {
             }
           />
           <ListItemSetting
-            label="Switch GraphQL APIs"
-            subLabel={`Using ${getApi()}`}
+            label="Override default APIs"
+            subLabel={`Using ${getApiURL()}`}
             onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
             toggle={!!preferences.switchApi}
           />
+          <ListItem>
+            <ListItemIcon />
+            <Quote>
+              <InlineTextFieldSetting
+                value={getApiURL()}
+                label="Switch GraphQL APIs"
+                disabled={false}
+                resetValue={getApiURL()}
+                maxLength={200}
+                onSave={url => onSave(url.toString())}
+                hideIcon
+              />
+              <InlineTextFieldSetting
+                value={apiUrl}
+                label="Rest Api"
+                disabled={false}
+                resetValue={apiUrl}
+                maxLength={200}
+                onSave={url => onSaveRest(url.toString())}
+                hideIcon
+              />
+            </Quote>
+          </ListItem>
         </List>
         <Typography variant="subtitle1">Licensing Options</Typography>
         <List>

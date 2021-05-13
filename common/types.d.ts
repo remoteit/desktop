@@ -511,6 +511,8 @@ declare global {
     allowPrerelease?: boolean
     useCertificate?: boolean
     switchApi?: boolean
+    apiURL?: ''
+    apiGraphqlURL?: ''
     testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
   }
 
