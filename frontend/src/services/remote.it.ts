@@ -1,10 +1,11 @@
 import setup from 'remote.it'
-import { API_URL, DEVELOPER_KEY } from '../shared/constants'
+import { getApiURL } from '../helpers/apiHelper'
+import { DEVELOPER_KEY } from '../shared/constants'
 import { store } from '../store'
 
 export const r3 = setup(
   {
-    apiURL: API_URL,
+    apiURL: getApiURL(),
     developerKey: DEVELOPER_KEY,
     successURL: window.location.origin,
   },
