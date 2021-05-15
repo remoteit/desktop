@@ -3,23 +3,14 @@ import { isDev } from '../../services/Browser'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { useClipboard } from 'use-clipboard-copy'
-import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
 import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { ApplicationState } from '../../store'
-import {
-  makeStyles,
-  Divider,
-  Typography,
-  Menu,
-  MenuItem,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-} from '@material-ui/core'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { makeStyles, Typography, Menu, MenuItem, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -29,10 +20,13 @@ interface Props {
   serviceID?: string
 }
 
-export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, setEl }) => {
-  const { remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
+export const ServiceContextualMenu: React.FC<Props> = () => {
+  const { ui } = useDispatch<Dispatch>()
+  const { el, remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
+    const { el, serviceID } = state.ui.serviceContextMenu || {}
     const [service, device] = findService(getDevices(state), serviceID)
     return {
+      el,
       remoteUI: isRemoteUI(state),
       connection: state.connections.all.find(c => c.id === serviceID),
       service,
@@ -45,7 +39,7 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
 
   if (!el) return null
 
-  const handleClose = () => setEl(undefined)
+  const handleClose = () => ui.set({ serviceContextMenu: undefined })
 
   return (
     <Menu

@@ -13,11 +13,11 @@ import classnames from 'classnames'
 interface Props {
   connection?: IConnection
   service?: IService
-  setContextMenu?: React.Dispatch<React.SetStateAction<IContextMenu>>
+  onClick?: (IContextMenu) => void
   showConnected?: boolean
 }
 
-export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu, showConnected = true }) => {
+export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick, showConnected = true }) => {
   const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
   const { sessions } = useSelector((state: ApplicationState) => ({
     sessions: selectSessionsByService(state, service?.id || connection?.id),
@@ -86,15 +86,11 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       >
         <Box
           component="span"
-          className={classnames(setContextMenu && css.hasMenu, css.indicator)}
+          className={classnames(onClick && css.clickable, css.indicator)}
           onMouseEnter={() => setOpenTooltip(true)}
           onMouseLeave={() => setOpenTooltip(false)}
           onMouseDown={event => {
-            setContextMenu &&
-              setContextMenu({
-                el: event.currentTarget,
-                serviceID: service.id,
-              })
+            onClick && onClick({ el: event.currentTarget, serviceID: service.id })
             setOpenTooltip(false)
           }}
         >
@@ -128,14 +124,14 @@ const useStyles = makeStyles({
       fontSize: fontSizes.xxs,
       fontWeight: 500,
       padding: 1,
-      paddingLeft: 3,
-      paddingRight: 3,
-      marginLeft: 2,
-      marginRight: 2,
+      paddingLeft: spacing.xs,
+      paddingRight: spacing.xs,
+      marginLeft: 1,
+      marginRight: 1,
       '& svg': { marginRight: 2 },
     },
   },
-  hasMenu: {
+  clickable: {
     cursor: 'pointer',
     '&:hover > span': {
       boxShadow: `0px 1px 2px ${colors.darken}`,

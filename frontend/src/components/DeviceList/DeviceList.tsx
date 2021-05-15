@@ -2,6 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { DeviceListItem } from '../DeviceListItem'
 import { getActiveAccountId, getOwnDevices } from '../../models/accounts'
+import { masterAttributes, deviceAttributes, Attribute } from '../../helpers/attributes'
 import { DeviceSetupItem } from '../DeviceSetupItem'
 import { ApplicationState } from '../../store'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
@@ -18,15 +19,12 @@ export interface DeviceListProps {
 
 export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {}, restore }) => {
   const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
-  const { myDevice, loggedInUser, registeredId, columns } = useSelector((state: ApplicationState) => ({
+  const { myDevice, loggedInUser, registeredId, attributes } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
     loggedInUser: getActiveAccountId(state) === state.auth.user?.id,
     myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
-    columns: state.ui.columns || [],
+    attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id)),
   }))
-
-  const secondary: string[] = [...columns]
-  const primary = secondary?.shift() || ''
 
   return (
     <>
@@ -41,7 +39,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
                 connections={connections[registeredId]}
                 thisDevice={true}
                 setContextMenu={setContextMenu}
-                primary={primary}
               />
               <Divider variant="inset" />
             </>
@@ -67,8 +64,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
               connections={connections[device.id]}
               setContextMenu={setContextMenu}
               restore={restore && canRestore}
-              primary={primary}
-              columns={secondary}
+              attributes={attributes}
             />
           )
         })}

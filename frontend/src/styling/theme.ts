@@ -75,6 +75,8 @@ const jssTheme: ThemeOptions = {
         height: 20,
         borderRadius: 10,
         fontSize: fontSizes.xxs,
+        paddingLeft: spacing.xxs,
+        paddingRight: spacing.xxs,
         '& + .MuiChip-sizeSmall': { marginLeft: spacing.xxs },
       },
       outlined: {

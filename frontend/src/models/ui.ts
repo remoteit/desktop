@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import { createModel } from '@rematch/core'
+import { masterAttributes } from '../helpers/attributes'
 import { RootModel } from './rootModel'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -13,6 +15,7 @@ type UIState = {
   routingMessage?: string
   drawerMenu: 'FILTER' | 'COLUMNS' | null
   columns: string[]
+  serviceContextMenu?: IContextMenu
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -49,7 +52,8 @@ const state: UIState = {
   routingLock: undefined,
   routingMessage: undefined,
   drawerMenu: null,
-  columns: ['deviceName', 'services'],
+  columns: masterAttributes.map(a => a.id),
+  serviceContextMenu: undefined,
   redirect: undefined,
   restoring: false,
   scanEnabled: true,

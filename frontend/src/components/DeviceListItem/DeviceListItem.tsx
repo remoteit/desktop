@@ -1,13 +1,12 @@
 import React from 'react'
-import { DeviceValue } from '../DeviceValue'
+import { AttributeValue } from '../AttributeValue'
 import { DeviceLabel } from '../DeviceLabel'
-import { ServiceName } from '../ServiceName'
 import { RestoreButton } from '../../buttons/RestoreButton'
 import { ListItemLocation } from '../ListItemLocation'
-import { ServiceIndicators } from '../ServiceIndicators'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { makeStyles, Box, ListItemIcon, ListItemText, ListItemSecondaryAction, useMediaQuery } from '@material-ui/core'
-import { spacing } from '../../styling'
+import { Attribute } from '../../helpers/attributes'
+import { makeStyles, ListItemIcon, ListItemSecondaryAction, useMediaQuery } from '@material-ui/core'
+import { spacing, colors, fontSizes } from '../../styling'
 
 type Props = {
   device?: IDevice
@@ -15,8 +14,7 @@ type Props = {
   thisDevice?: boolean
   restore?: boolean
   setContextMenu: React.Dispatch<React.SetStateAction<IContextMenu>>
-  primary: string
-  columns?: string[]
+  attributes?: Attribute[]
 }
 
 export const DeviceListItem: React.FC<Props> = ({
@@ -24,13 +22,12 @@ export const DeviceListItem: React.FC<Props> = ({
   connections,
   thisDevice,
   setContextMenu,
-  primary,
-  columns,
+  attributes = [],
   restore,
 }) => {
   const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
-  const css = useStyles({ columns })
+  const css = useStyles({ attributes })
 
   if (!device) return null
 
@@ -40,43 +37,46 @@ export const DeviceListItem: React.FC<Props> = ({
       <ListItemIcon>
         <ConnectionStateIcon device={device} connection={connected} size="lg" thisDevice={thisDevice} />
       </ListItemIcon>
-      <ListItemText primary={<DeviceValue device={device} connection={connected} name={primary} />} />
       {restore ? (
-        <ListItemSecondaryAction>
-          <RestoreButton device={device} />
-        </ListItemSecondaryAction>
+        <>
+          <AttributeValue device={device} connection={connected} attribute={attributes[0]} />
+          <ListItemSecondaryAction>
+            <RestoreButton device={device} />
+          </ListItemSecondaryAction>
+        </>
       ) : (
         largeScreen &&
-        columns?.map(column => (
-          <DeviceValue
-            key={column}
-            className={css.column}
+        attributes?.map(attribute => (
+          <AttributeValue
+            key={attribute.id}
             device={device}
             connection={connected}
             connections={connections}
-            name={column}
+            attribute={attribute}
           />
         ))
-        /* <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} /> */
       )}
     </ListItemLocation>
   )
 }
 
 const useStyles = makeStyles({
-  columns: ({ columns }: { columns: Props['columns'] }) => ({
-    gridGap: spacing.sm,
-    gridTemplateColumns: `auto 2fr ${new Array(columns?.length).fill('1fr').join(' ')}`,
+  columns: ({ attributes }: { attributes: Props['attributes'] }) => ({
     display: 'grid',
+    gridGap: spacing.md,
+    gridTemplateColumns: `auto ${attributes?.map(a => a.width).join(' ')}`,
     alignItems: 'center',
-    marginRight: spacing.sm,
-    '& > *': {
+    height: 42,
+    '& .MuiBox-root': {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
+      color: colors.grayDarker,
+      fontSize: fontSizes.sm,
+    },
+    '& .attribute-deviceName': {
+      marginLeft: -spacing.md,
+      marginRight: -spacing.md,
     },
   }),
-  column: {
-    textAlign: 'right',
-  },
 })

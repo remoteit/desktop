@@ -1,31 +1,36 @@
 import React from 'react'
 import { ServiceMiniState } from './ServiceMiniState'
 import { Tooltip, Chip, Box, makeStyles } from '@material-ui/core'
+import { useDispatch } from 'react-redux'
+import { spacing } from '../styling'
+import { Dispatch } from '../store'
 
 type Props = {
   device?: IDevice
   connections?: IConnection[]
   thisDevice?: boolean
   restore?: boolean
-  setContextMenu?: React.Dispatch<React.SetStateAction<IContextMenu>>
   columns?: string[]
 }
 
 const MAX_INDICATORS = 6
 
-export const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setContextMenu }) => {
-  const css = useStyles()
+export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] }) => {
+  const css = useStyles({ device })
+  const { ui } = useDispatch<Dispatch>()
+
   if (!device?.services) return null
+
   const extra = Math.max(device.services.length - MAX_INDICATORS, 0)
   const display = device.services.slice(0, MAX_INDICATORS)
   return (
-    <Box>
+    <Box className={css.indicators + ' MuiListItemSecondaryAction-root'}>
       {display.map(service => (
         <ServiceMiniState
           key={service.id}
           service={service}
           connection={connections.find(c => c.id === service.id)}
-          setContextMenu={setContextMenu}
+          onClick={serviceContextMenu => ui.set({ serviceContextMenu })}
         />
       ))}
       {!!extra && (
@@ -38,5 +43,6 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [], s
 }
 
 const useStyles = makeStyles({
-  chip: { marginLeft: 6 },
+  indicators: { textAlign: 'right', position: 'relative', zIndex: 3 },
+  chip: ({ device }: Props) => ({ opacity: device?.state === 'active' ? 1 : 0.3 }),
 })
