@@ -23,13 +23,34 @@ export const LicenseLookup: ILicenseLookup[] = [
   },
 ]
 
+export const licenseChip: ILookup<ILicenseChip> = {
+  UNKNOWN: { name: 'Unknown', color: colors.grayDarker, colorName: 'grayDarker' },
+  EVALUATION: {
+    name: 'Evaluation',
+    color: colors.warning,
+    background: lighten(colors.warning, 0.94),
+    colorName: 'warning',
+    show: true,
+  },
+  LICENSED: { name: 'Licensed', color: colors.grayDarker, colorName: 'grayDarker' },
+  UNLICENSED: {
+    name: 'Unlicensed',
+    color: colors.warning,
+    background: lighten(colors.warning, 0.94),
+    colorName: 'warning',
+    disabled: true,
+    show: true,
+  },
+  NON_COMMERCIAL: { name: 'Non-commercial', color: colors.grayDarker, colorName: 'grayDarker' },
+  LEGACY: { name: 'Legacy', color: colors.grayDarker, colorName: 'grayDarker' },
+}
+
 const defaultLicense = LicenseLookup[0]
 
 type ILicensing = {
   licenses: ILicense[]
   limits: ILimit[]
   informed: boolean
-  chip: ILookup<ILicenseChip>
   tests: {
     license: boolean
     limit: boolean
@@ -43,27 +64,6 @@ const state: ILicensing = {
   licenses: [],
   limits: [],
   informed: false,
-  chip: {
-    UNKNOWN: { name: 'Unknown', color: colors.grayDarker, colorName: 'grayDarker' },
-    EVALUATION: {
-      name: 'Evaluation',
-      color: colors.warning,
-      background: lighten(colors.warning, 0.94),
-      colorName: 'warning',
-      show: true,
-    },
-    LICENSED: { name: 'Licensed', color: colors.grayDarker, colorName: 'grayDarker' },
-    UNLICENSED: {
-      name: 'Unlicensed',
-      color: colors.warning,
-      background: lighten(colors.warning, 0.94),
-      colorName: 'warning',
-      disabled: true,
-      show: true,
-    },
-    NON_COMMERCIAL: { name: 'Non-commercial', color: colors.grayDarker, colorName: 'grayDarker' },
-    LEGACY: { name: 'Legacy', color: colors.grayDarker, colorName: 'grayDarker' },
-  },
   tests: {
     license: false,
     limit: false,

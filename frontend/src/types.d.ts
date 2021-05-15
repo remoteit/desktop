@@ -95,15 +95,7 @@ declare global {
     analytics: AnalyticsJS
   }
 
-  interface IDataDisplay {
-    name: string
-    label: string
-    width?: number
-    help?: string
-    visible?: boolean
-    format?: 'duration' | 'percent' | 'round' | 'location' | 'element' | 'chip'
-    onValue?: (device?: IDevice, connection?: IConnection, connections?: IConnection[]) => any
-  }
+  type IDataOptions = { device?: IDevice; service?: IService; connection?: IConnection; connections?: IConnection[] }
 
   interface ILabel {
     color: string

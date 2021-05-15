@@ -4,6 +4,7 @@ import { Dispatch, ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
+import { licenseChip } from '../../models/licensing'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import { emit } from '../../services/Controller'
@@ -30,8 +31,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const chip = useSelector((state: ApplicationState) => service && state.licensing.chip[service.license])
   const { connections } = useDispatch<Dispatch>()
+  const chip = service && licenseChip[service.license]
   const state = connectionState(service, connection)
   const visible = state === 'stopping' || state === 'disconnected'
   const connecting = state === 'connecting'

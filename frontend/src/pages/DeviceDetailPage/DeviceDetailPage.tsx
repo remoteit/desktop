@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Gutters } from '../../components/Gutters'
 import { DataDisplay } from '../../components/DataDisplay'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
-import { deviceDetails } from '../../hooks/useDeviceDetails'
+import { deviceAttributes } from '../../helpers/attributes'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
@@ -16,7 +16,7 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
     <DeviceHeaderMenu device={device}>
       <Gutters>
         {/* {!editable && <AdminPanelConnect device={device} connections={connections} />} */}
-        <DataDisplay data={deviceDetails} />
+        <DataDisplay attributes={deviceAttributes} device={device} />
       </Gutters>
     </DeviceHeaderMenu>
   )

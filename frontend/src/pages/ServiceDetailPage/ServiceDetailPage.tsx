@@ -11,6 +11,7 @@ import { DataDisplay } from '../../components/DataDisplay'
 import { ComboButton } from '../../buttons/ComboButton'
 import { CopyButton } from '../../buttons/CopyButton'
 import { isRemoteUI } from '../../helpers/uiHelper'
+import { getAttributes } from '../../helpers/attributes'
 import { Gutters } from '../../components/Gutters'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
@@ -19,9 +20,8 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
   const { serviceID } = useParams<{ serviceID: string }>()
   const service = device?.services.find(s => s.id === serviceID)
-  const { connection, licenseChip, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { connection, remoteUI } = useSelector((state: ApplicationState) => ({
     connection: state.connections.all.find(c => c.id === serviceID),
-    licenseChip: state.licensing.chip[service?.license || 0],
     remoteUI: isRemoteUI(state),
   }))
   const target = targets.find(t => t.uid === serviceID)
@@ -34,26 +34,15 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
 
   if (!service || !device) return null
 
-  let data: IDataDisplay[] = []
-  // @TODO convert to an array of detail names(keys)
-  if (state === 'connected') {
-    data = data.concat([
-      { label: 'Host', value: connection?.host },
-      { label: 'Port', value: connection?.port },
-      { label: 'Restriction', value: connection?.restriction },
-    ])
-  }
-
-  data = data.concat([
-    { label: 'Last reported', value: { start: service.lastReported, ago: true }, format: 'duration' },
-    { label: 'Service Name', value: service.name },
-    { label: 'Remote Port', value: service.port },
-    { label: 'Remote Protocol', value: service.protocol },
-    { label: 'Service Type', value: service.type },
-    { label: 'Device Name', value: device.name },
-    { label: 'Owner', value: device.owner.email },
-    { label: 'Service ID', value: service.id },
-    { label: 'License', value: licenseChip, format: 'chip' },
+  const attributes = getAttributes([
+    'serviceLastReported',
+    'serviceName',
+    'servicePort',
+    'serviceProtocol',
+    'serviceType',
+    'owner',
+    'serviceId',
+    'license',
   ])
 
   return (
@@ -100,7 +89,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
         </Notice>
       )}
       <Gutters>
-        <DataDisplay data={data} />
+        <DataDisplay attributes={attributes} device={device} service={service} />
       </Gutters>
     </ServiceHeaderMenu>
   )

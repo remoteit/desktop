@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, ListSubheader, List, ListItemText, ListItem, ListItemIcon } from '@material-ui/core'
-import { deviceDetails } from '../hooks/useDeviceDetails'
+import { deviceAttributes } from '../helpers/attributes'
 import { spacing, colors } from '../styling'
 import { Drawer } from './Drawer'
 import { Icon } from './Icon'
@@ -25,10 +25,10 @@ export const ColumnsDrawer: React.FC = () => {
     <Drawer open={open}>
       <List dense className={css.list}>
         <ListSubheader>Columns</ListSubheader>
-        {deviceDetails.map(data => {
-          const checked = selected.indexOf(data.name)
+        {deviceAttributes.map(data => {
+          const checked = selected.indexOf(data.id)
           return (
-            <ListItem button dense key={data.name} onClick={() => (checked >= 0 ? remove(checked) : add(data.name))}>
+            <ListItem button dense key={data.id} onClick={() => (checked >= 0 ? remove(checked) : add(data.id))}>
               <ListItemIcon>{checked >= 0 && <Icon name="check" color="primary" />}</ListItemIcon>
               <ListItemText
                 primary={data.label}

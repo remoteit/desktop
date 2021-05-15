@@ -1,14 +1,15 @@
 import React from 'react'
 import { Box } from '@material-ui/core'
-import { useDeviceDetails } from '../hooks/useDeviceDetails'
+import { getAttribute } from '../helpers/attributes'
 
 export const DeviceValue: React.FC<{
+  name?: string
   device: IDevice
   connection?: IConnection
   connections?: IConnection[]
-  name?: string
-}> = ({ device, connection, connections, name = '' }) => {
-  const item = useDeviceDetails(name)
+  className?: string
+}> = ({ name = '', device, connection, connections, ...props }) => {
+  const item = getAttribute(name)
   if (!item) return null
-  return <Box width={item.width}>{item.value(device, connection, connections)}</Box>
+  return <Box {...props}>{item.value({ device, connection, connections })}</Box>
 }

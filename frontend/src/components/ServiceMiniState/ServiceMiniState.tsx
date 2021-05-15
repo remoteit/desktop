@@ -6,6 +6,7 @@ import { selectSessionsByService } from '../../models/sessions'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import { SessionsTooltip } from '../SessionsTooltip'
+import { licenseChip } from '../../models/licensing'
 import { Icon } from '../Icon'
 import classnames from 'classnames'
 
@@ -18,8 +19,7 @@ interface Props {
 
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, setContextMenu, showConnected = true }) => {
   const [openTooltip, setOpenTooltip] = React.useState<boolean>(false)
-  const { sessions, licensingChip } = useSelector((state: ApplicationState) => ({
-    licensingChip: state.licensing.chip,
+  const { sessions } = useSelector((state: ApplicationState) => ({
     sessions: selectSessionsByService(state, service?.id || connection?.id),
   }))
   const cState = connectionState(service, connection)
@@ -64,7 +64,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, setCont
       colorName = 'grayLight'
   }
 
-  const chip = licensingChip[service.license]
+  const chip = licenseChip[service.license]
 
   if (chip.show) {
     colorName = chip.colorName

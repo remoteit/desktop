@@ -2,32 +2,35 @@ import React from 'react'
 import { List, ListItem, Tooltip } from '@material-ui/core'
 import { colors, fontSizes } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
-import { Formats } from '../Formats'
+import { Attribute } from '../../helpers/attributes'
 import { Icon } from '../Icon'
 
-export const DataDisplay: React.FC<{ data: IDataDisplay[]; width?: number }> = ({ data, width = 140 }) => {
-  const css = useStyles(width)()
-  return (
-    <List className={css.list}>
-      {data.map(
-        item =>
-          item.value != null && (
-            <ListItem className={css.item} key={item.label} disableGutters>
-              <span>
-                {item.label}:
-                {item.help && (
-                  <Tooltip title={item.help}>
-                    <Icon name="question-circle" size="sm" inline />
-                  </Tooltip>
-                )}
-              </span>
-              {item.format ? Formats[item.format](item.value) : item.value}
-            </ListItem>
+export const DataDisplay: React.FC<{ attributes: Attribute[]; device?: IDevice; service?: IService; width?: number }> =
+  ({ attributes, device, service, width = 140 }) => {
+    const css = useStyles(width)()
+    if (!device) return null
+    return (
+      <List className={css.list}>
+        {attributes.map(attribute => {
+          return (
+            attribute.value != null && (
+              <ListItem className={css.item} key={attribute.label} disableGutters>
+                <span>
+                  {attribute.label}:
+                  {attribute.help && (
+                    <Tooltip title={attribute.help}>
+                      <Icon name="question-circle" size="sm" inline />
+                    </Tooltip>
+                  )}
+                </span>
+                {attribute.value({ device, service })}
+              </ListItem>
+            )
           )
-      )}
-    </List>
-  )
-}
+        })}
+      </List>
+    )
+  }
 
 const useStyles = minWidth =>
   makeStyles({

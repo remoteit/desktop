@@ -30,12 +30,12 @@ export const DeviceListItem: React.FC<Props> = ({
 }) => {
   const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
-  const css = useStyles()
+  const css = useStyles({ columns })
 
   if (!device) return null
 
   return (
-    <ListItemLocation pathname={`/devices/${device.id}`}>
+    <ListItemLocation pathname={`/devices/${device.id}`} className={css.columns}>
       <DeviceLabel device={device} />
       <ListItemIcon>
         <ConnectionStateIcon device={device} connection={connected} size="lg" thisDevice={thisDevice} />
@@ -46,39 +46,37 @@ export const DeviceListItem: React.FC<Props> = ({
           <RestoreButton device={device} />
         </ListItemSecondaryAction>
       ) : (
-        largeScreen && (
-          <Box className={css.columns}>
-            {columns?.map(column => (
-              <DeviceValue
-                key={column}
-                device={device}
-                connection={connected}
-                connections={connections}
-                name={column}
-              />
-            ))}
-            {/* <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} /> */}
-          </Box>
-        )
+        largeScreen &&
+        columns?.map(column => (
+          <DeviceValue
+            key={column}
+            className={css.column}
+            device={device}
+            connection={connected}
+            connections={connections}
+            name={column}
+          />
+        ))
+        /* <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} /> */
       )}
     </ListItemLocation>
   )
 }
 
 const useStyles = makeStyles({
-  columns: {
-    width: '100%',
-    display: 'flex',
+  columns: ({ columns }: { columns: Props['columns'] }) => ({
+    gridGap: spacing.sm,
+    gridTemplateColumns: `auto 2fr ${new Array(columns?.length).fill('1fr').join(' ')}`,
+    display: 'grid',
     alignItems: 'center',
     marginRight: spacing.sm,
     '& > *': {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      textAlign: 'right',
-      paddingLeft: spacing.sm,
+      whiteSpace: 'nowrap',
     },
-    '& > :first-child': {
-      flexGrow: 1,
-    },
+  }),
+  column: {
+    textAlign: 'right',
   },
 })
