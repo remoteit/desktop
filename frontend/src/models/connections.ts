@@ -7,22 +7,21 @@ import { RootModel } from './rootModel'
 import axios from 'axios'
 import { getApiURL } from '../helpers/apiHelper'
 
-type ConnectionsState = {
-  all: IConnection[]
-}
+type IConnectionsState = { all: IConnection[] }
 
-const defaultState: ConnectionsState = {
+const state: IConnectionsState = {
   all: [],
 }
 
 export default createModel<RootModel>()({
-  state: defaultState,
+  state,
   effects: dispatch => ({
-    async updateConnection(connection: IConnection, { connections }) {
-      connections.all.some((c, index) => {
+    async updateConnection(connection: IConnection, globalState) {
+      const { all } = globalState.connections
+      all.some((c, index) => {
         if (c.id === connection.id) {
-          connections.all[index] = connection
-          dispatch.backend.set({ connections: connections.all })
+          all[index] = connection
+          dispatch.connections.set({ all })
           if (connection) return true
         }
         return false
@@ -116,7 +115,7 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: ConnectionsState, params: ILookup<any>) {
+    set(state: IConnectionsState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

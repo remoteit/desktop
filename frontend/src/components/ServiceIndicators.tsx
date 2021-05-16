@@ -24,7 +24,7 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
   const extra = Math.max(device.services.length - MAX_INDICATORS, 0)
   const display = device.services.slice(0, MAX_INDICATORS)
   return (
-    <Box className={css.indicators + ' MuiListItemSecondaryAction-root'}>
+    <Box className={css.indicators}>
       {display.map(service => (
         <ServiceMiniState
           key={service.id}

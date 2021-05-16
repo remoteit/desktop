@@ -90,6 +90,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
           onMouseEnter={() => setOpenTooltip(true)}
           onMouseLeave={() => setOpenTooltip(false)}
           onMouseDown={event => {
+            event.stopPropagation()
             onClick && onClick({ el: event.currentTarget, serviceID: service.id })
             setOpenTooltip(false)
           }}

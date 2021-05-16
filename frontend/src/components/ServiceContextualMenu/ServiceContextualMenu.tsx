@@ -14,13 +14,7 @@ import { makeStyles, Typography, Menu, MenuItem, ListItem, ListItemIcon, ListIte
 import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 
-interface Props {
-  el: HTMLElement | undefined
-  setEl: (el?: HTMLElement) => void
-  serviceID?: string
-}
-
-export const ServiceContextualMenu: React.FC<Props> = () => {
+export const ServiceContextualMenu: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
   const { el, remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
     const { el, serviceID } = state.ui.serviceContextMenu || {}

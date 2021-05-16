@@ -8,6 +8,6 @@ export const AttributeValue: React.FC<{
   connection?: IConnection
   connections?: IConnection[]
 }> = ({ attribute, device, connection, connections }) => {
-  if (!attribute) return null
-  return <Box className={`attribute-${attribute.id}`}>{attribute.value({ device, connection, connections })}</Box>
+  const value = attribute?.value({ device, connection, connections }) || ''
+  return <Box className={`attribute-${attribute?.id}`}>{value}</Box>
 }

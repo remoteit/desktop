@@ -18,7 +18,6 @@ export interface DeviceListProps {
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {}, restore }) => {
-  const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
   const { myDevice, loggedInUser, registeredId, attributes } = useSelector((state: ApplicationState) => ({
     registeredId: state.backend.device.uid,
     loggedInUser: getActiveAccountId(state) === state.auth.user?.id,
@@ -38,7 +37,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
                 device={myDevice}
                 connections={connections[registeredId]}
                 thisDevice={true}
-                setContextMenu={setContextMenu}
               />
               <Divider variant="inset" />
             </>
@@ -62,7 +60,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
               key={device.id}
               device={device}
               connections={connections[device.id]}
-              setContextMenu={setContextMenu}
               restore={restore && canRestore}
               attributes={attributes}
             />
@@ -70,11 +67,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connection
         })}
       </List>
       <LoadMore />
-      <ServiceContextualMenu
-        el={contextMenu.el}
-        serviceID={contextMenu.serviceID}
-        setEl={el => setContextMenu({ ...contextMenu, el })}
-      />
+      <ServiceContextualMenu />
     </>
   )
 }

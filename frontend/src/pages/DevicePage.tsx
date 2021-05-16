@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { replaceHost } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
@@ -35,7 +35,6 @@ type Props = {
 
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
-  const [contextMenu, setContextMenu] = useState<IContextMenu>({})
   const { connections, setupAddingService, sortService, searched, query } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
@@ -132,20 +131,12 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
               secondary={host(s)}
             />
             <ListItemSecondaryAction>
-              <ServiceMiniState
-                service={s}
-                connection={connections.find(c => c.id === s.id)}
-                setContextMenu={setContextMenu}
-              />
+              <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
             </ListItemSecondaryAction>
           </ListItemLocation>
         ))}
       </List>
-      <ServiceContextualMenu
-        el={contextMenu.el}
-        serviceID={contextMenu.serviceID}
-        setEl={el => setContextMenu({ ...contextMenu, el })}
-      />
+      <ServiceContextualMenu />
     </Container>
   )
 }
