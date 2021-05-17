@@ -16,14 +16,6 @@ export function os() {
   return 'linux'
 }
 
-export function getRedirectUrl() {
-  let redirectUrl = window.origin
-  if (isElectron()) {
-    redirectUrl = REDIRECT_URL
-  }
-  return redirectUrl
-}
-
 export function isRemote() {
   const { port } = window.location
   return !(isElectron() || port === '29999' || port === '29998')
