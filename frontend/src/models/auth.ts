@@ -11,6 +11,7 @@ import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
 import { store } from '../store'
 import { emit } from '../services/Controller'
+import { REDIRECT_URL } from '../shared/constants'
 
 function sleep(ms) {
   return new Promise(resolve => {
@@ -53,9 +54,9 @@ export default createModel<RootModel>()({
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          redirectURL: Buffer.from(getRedirectUrl()).toString('hex'),
-          callbackURL: CALLBACK_URL,
-          signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL,
+          redirectURL: isElectron() ? '' : window.origin + '/v1/callback',
+          callbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          signoutCallbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
         })
 
         await sleep(500)
