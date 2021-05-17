@@ -1,12 +1,11 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
+import { labelLookup } from '../../models/labels'
 import { spacing } from '../../styling'
 
 export const DeviceLabel: React.FC<{ device: IDevice }> = ({ device }) => {
   const css = useStyles()
-  const label = useSelector((state: ApplicationState) => state.labels.find(l => l.id === device.attributes?.color))
+  const label = !!device.attributes?.color ? labelLookup[device.attributes.color] : undefined
 
   if (!label) return null
 

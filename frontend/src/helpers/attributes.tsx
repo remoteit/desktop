@@ -9,7 +9,7 @@ import { LicenseChip } from '../components/LicenseChip'
 import { DeviceGeo } from '../components/DeviceGeo'
 import { Duration } from '../components/Duration'
 import { toLookup } from './utilHelper'
-
+import { Tags } from '../components/Tags'
 // type AttributeParams = Omit<Attribute, 'value'>
 
 export class Attribute {
@@ -56,6 +56,11 @@ export const attributes: Attribute[] = [
       <ListItemText primary={<ServiceName device={device} connection={connection} />} />
     ),
     required: true,
+  }),
+  new Attribute({
+    id: 'tags',
+    label: 'Tags',
+    value: ({ device }) => <Tags ids={device?.tags || []} small />,
   }),
   new Attribute({
     id: 'services',

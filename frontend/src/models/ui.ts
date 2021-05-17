@@ -52,7 +52,7 @@ const state: UIState = {
   routingLock: undefined,
   routingMessage: undefined,
   drawerMenu: null,
-  columns: masterAttributes.map(a => a.id),
+  columns: ['deviceName', 'tags', 'services'],
   serviceContextMenu: undefined,
   redirect: undefined,
   restoring: false,

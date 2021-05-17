@@ -210,6 +210,7 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
+    tags: number[]
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
     configurable: boolean // cloudshift device

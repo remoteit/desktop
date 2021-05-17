@@ -14,7 +14,6 @@ import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
-import { ISortService } from '../components/SortServices'
 
 type DeviceParams = { [key: string]: any }
 
@@ -43,6 +42,7 @@ type IDeviceState = {
   contacts: IUserRef[]
   eventsUrl: string
   sortServiceOption?: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+  userAttributes: string[]
 }
 
 export const state: IDeviceState = {
@@ -64,7 +64,8 @@ export const state: IDeviceState = {
   from: 0,
   contacts: [],
   eventsUrl: '',
-  sortServiceOption: 'ATOZ'
+  sortServiceOption: 'ATOZ',
+  userAttributes: [],
 }
 
 export default createModel<RootModel>()({
@@ -294,6 +295,11 @@ export default createModel<RootModel>()({
         console.warn(error)
       }
       dispatch.devices.set({ destroying: false })
+    },
+
+    async userAttributes({ userAttributes }: { userAttributes: string[] }, globalState) {
+      const unique = new Set(userAttributes.concat(globalState.devices.userAttributes))
+      dispatch.devices.set({ userAttributes: [...Array.from(unique)].sort() })
     },
   }),
 

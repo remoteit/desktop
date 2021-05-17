@@ -4,7 +4,7 @@ import { spacing } from '../styling'
 import { Icon } from '../components/Icon'
 
 type Props = {
-  tag: ITag
+  tag?: ITag
   labels: ILabel[]
   dot?: boolean
   onClick?: () => void
@@ -14,6 +14,8 @@ type Props = {
 export const Tag: React.FC<Props> = ({ tag, labels, dot, onClick, onDelete }) => {
   const css = useStyles()
   const getColor = (id = 0) => labels[id].color
+
+  if (!tag) return null
 
   if (dot)
     return (

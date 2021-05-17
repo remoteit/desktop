@@ -4,32 +4,14 @@ import { ApplicationState, Dispatch } from '../store'
 import { makeStyles, Button } from '@material-ui/core'
 import { AutocompleteMenu } from './AutocompleteMenu'
 import { Icon } from './Icon'
-import { Tag } from './Tag'
+import { Tags } from './Tags'
 
 export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
-  const labels = useSelector((state: ApplicationState) => state.labels)
-  const [tempTags, setTempTags] = React.useState<ITag[]>([
-    {
-      id: 0,
-      name: 'AWS',
-      label: 1,
-    },
-    {
-      id: 1,
-      name: 'Trusted',
-      label: 5,
-    },
-    {
-      id: 2,
-      name: 'Shared',
-      label: 7,
-    },
-    {
-      id: 3,
-      name: 'Important',
-      label: 2,
-    },
-  ])
+  const { labels, tags } = useSelector((state: ApplicationState) => ({
+    labels: state.labels,
+    tags: state.tags.all,
+  }))
+  const dispatch = useDispatch<Dispatch>()
   const [newValue, setNewValue] = React.useState<ITag>()
   const [open, setOpen] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
@@ -37,26 +19,27 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
   const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
-  const handleAddTag = (tag: ITag) => setTempTags([...tempTags, tag])
-  const handleRemoveTag = index => {
-    let result = [...tempTags]
-    result.splice(index, 1)
-    setTempTags(result)
+  const handleAddTag = (tag: ITag) => {
+    device.tags.push(tag.id)
+    dispatch.accounts.setDevice({ id: device.id, device })
+  }
+  const handleRemoveTag = id => {
+    const index = device.tags.indexOf(id)
+    device.tags.splice(index, 1)
+    dispatch.accounts.setDevice({ id: device.id, device })
   }
 
   if (!device) return null
 
   return (
     <>
-      {tempTags.map((tag, index) => (
-        <Tag key={index} tag={tag} labels={labels} onDelete={() => handleRemoveTag(index)} onClick={console.log} />
-      ))}
+      <Tags ids={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />
       <Button variant="text" size="small" onClick={handleOpen} ref={buttonRef}>
         <Icon name="plus" size="sm" inlineLeft />
         add tag
       </Button>
       <AutocompleteMenu
-        items={tempTags}
+        items={tags}
         open={open}
         indicator="tag"
         placeholder="New tag..."
@@ -76,8 +59,10 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
         targetEl={buttonRef.current}
         onItemColor={item => item.color || ''}
         onSelect={(action, label) => {
+          const newTag = { ...(newValue || label), label: label.id, id: tags.length }
           setNewValue(undefined)
-          handleAddTag({ ...(newValue || label), label: label.id, id: tempTags.length })
+          handleAddTag(newTag)
+          dispatch.tags.set({ all: [...tags, newTag] })
         }}
       />
     </>

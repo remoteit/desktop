@@ -2,8 +2,7 @@ import { emit } from '../services/Controller'
 import { IP_OPEN, IP_PRIVATE, IP_LATCH } from '../shared/constants'
 import { attributeName, removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
-import { ApplicationState } from '../store'
-import { store } from '../store'
+import { ApplicationState, store } from '../store'
 
 export const DEFAULT_CONNECTION = {
   id: '',

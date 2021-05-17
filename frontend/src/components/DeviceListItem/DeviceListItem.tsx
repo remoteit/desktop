@@ -26,7 +26,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevic
   return (
     <>
       <ListItem className={css.columns} to={`/devices/${device.id}`} component={Link} button>
-        <DeviceLabel device={device} />
+        {/* <DeviceLabel device={device} /> */}
         <ListItemIcon>
           <ConnectionStateIcon device={device} connection={connected} size="lg" thisDevice={thisDevice} />
         </ListItemIcon>
