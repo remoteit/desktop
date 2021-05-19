@@ -1,8 +1,9 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, Button } from '@material-ui/core'
+import { makeStyles, Chip } from '@material-ui/core'
 import { AutocompleteMenu } from './AutocompleteMenu'
+import { colors } from '../styling'
 import { Icon } from './Icon'
 import { Tags } from './Tags'
 
@@ -14,7 +15,8 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
   const dispatch = useDispatch<Dispatch>()
   const [newValue, setNewValue] = React.useState<ITag>()
   const [open, setOpen] = React.useState<boolean>(false)
-  const buttonRef = React.useRef<HTMLButtonElement>(null)
+  const addRef = React.useRef<HTMLDivElement>(null)
+  const css = useStyles()
 
   const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
@@ -34,16 +36,24 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
   return (
     <>
       <Tags ids={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />
-      <Button variant="text" size="small" onClick={handleOpen} ref={buttonRef}>
-        <Icon name="plus" size="sm" inlineLeft />
-        add tag
-      </Button>
+      <Chip
+        label={
+          <>
+            <Icon name="plus" size="sm" inlineLeft />
+            TAG
+          </>
+        }
+        className={css.chip}
+        size="small"
+        onClick={handleOpen}
+        ref={addRef}
+      />
       <AutocompleteMenu
-        items={tags}
+        items={tags.filter(t => !device.tags.includes(t.id))}
         open={open}
         indicator="tag"
         placeholder="New tag..."
-        targetEl={buttonRef.current}
+        targetEl={addRef.current}
         onItemColor={tag => getColor(tag.label)}
         onSelect={(action, tag) => {
           if (action === 'new') setNewValue(tag)
@@ -56,7 +66,7 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
         items={labels.filter(l => !l.hidden)}
         open={Boolean(newValue)}
         placeholder="Choose a color..."
-        targetEl={buttonRef.current}
+        targetEl={addRef.current}
         onItemColor={item => item.color || ''}
         onSelect={(action, label) => {
           const newTag = { ...(newValue || label), label: label.id, id: tags.length }
@@ -68,3 +78,7 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
     </>
   )
 }
+
+const useStyles = makeStyles({
+  chip: { fontWeight: 'bold', letterSpacing: 1, color: colors.grayDarker },
+})

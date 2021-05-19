@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles, Box, Collapse, Button, Typography } from '@material-ui/core'
-import { Icon } from './Icon'
+import { ExpandIcon } from './ExpandIcon'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 
@@ -13,7 +13,7 @@ export const Collapsible: React.FC<{ title: string; open?: boolean }> = ({ title
       <Gutters {...props} className={css.container} noBottom>
         <Button onClick={() => setOpenState(!openState)} fullWidth>
           <Typography variant="subtitle1">{title}</Typography>
-          <Icon className={css.rotate} color="grayDarker" name="caret-down" type="solid" size="base" fixedWidth />
+          <ExpandIcon open={open} />
         </Button>
       </Gutters>
       <Collapse in={openState} timeout={400}>
@@ -31,7 +31,7 @@ const useStyles = open =>
         padding: 0,
       },
       '& svg': {
-        marginTop: -spacing.xxs,
+        marginTop: open ? -spacing.xs : 0,
         marginLeft: spacing.xs,
       },
       '& .MuiTypography-subtitle1': {
@@ -40,8 +40,8 @@ const useStyles = open =>
       },
     },
     rotate: {
-      transform: `rotate(${open ? 0 : 180}deg)`,
+      transform: `rotate(${open ? 0 : -90}deg)`,
       transformOrigin: 'center',
-      transition: 'transform 400ms',
+      transition: 'transform 400ms, margin-top 400ms',
     },
   })

@@ -8,7 +8,7 @@ import { Icon } from './Icon'
 interface Props {
   open: boolean
   items: ITag[]
-  targetEl: HTMLButtonElement | null
+  targetEl: HTMLDivElement | null
   placeholder: string
   allowAdding?: boolean
   indicator?: string
@@ -45,7 +45,8 @@ export const AutocompleteMenu: React.FC<Props> = ({
     <Popper anchorEl={targetEl} open={open} placement="bottom-start">
       <Paper className={css.container} elevation={1}>
         <Autocomplete
-          open
+          open={true}
+          debug={true}
           fullWidth
           disablePortal
           autoHighlight
@@ -57,6 +58,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
             option: css.option,
             input: css.input,
             popperDisablePortal: css.popperDisablePortal,
+            noOptions: css.empty,
           }}
           onClose={onClose}
           onChange={(event, value, reason) => {
@@ -116,6 +118,9 @@ const useStyles = makeStyles({
   },
   popperDisablePortal: {
     position: 'relative',
+  },
+  empty: {
+    display: 'none',
   },
   option: {
     borderRadius: radius,

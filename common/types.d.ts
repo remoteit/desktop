@@ -583,7 +583,7 @@ declare global {
     icon: string
     show: boolean
     badge?: number
-    chip?: number
+    chip?: string
   }
 }
 

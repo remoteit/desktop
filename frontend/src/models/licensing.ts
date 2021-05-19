@@ -230,7 +230,7 @@ const state: ILicensing = {
       },
       {
         name: 'iot-devices',
-        value: 100,
+        value: 10000,
         actual: 7,
         license: {
           id: '4a5ed500-ef07-4a98-be11-BUSINESS',
