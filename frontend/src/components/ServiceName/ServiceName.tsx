@@ -42,7 +42,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
           <TargetPlatform id={targetPlatformId} tooltip />
         </sup>
       )} */}
-      {device?.configurable && (
+      {device?.configurable && !device?.shared && (
         <Tooltip title="Configurable" placement="top" arrow>
           <sup>
             <Icon name="wifi" size="xxs" type="solid" fixedWidth />
