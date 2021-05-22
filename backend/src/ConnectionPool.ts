@@ -187,15 +187,10 @@ export default class ConnectionPool {
   }
 
   toJSON = (): IConnection[] => {
-    return this.pool
-      .map(c => c.params)
-      .sort((a, b) => {
-        return a.connected ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime)
-      })
+    return this.pool.map(c => c.params).sort((a, b) => this.sort(a.name, b.name))
   }
 
-  // @ts-ignore - you can do math with booleans
-  sort = (a: number | boolean = 0, b: number | boolean = 0) => a - b
+  sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
 
   nextFreePort = async () => {
     const usedPorts = this.usedPorts
