@@ -9,10 +9,11 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-type Props = { startTime?: number; endTime?: number; startDate?: Date; ago?: boolean }
+type Props = { startTime?: number; endTime?: number; startDate?: Date; endDate?: Date; ago?: boolean }
 
-export const Duration: React.FC<Props> = ({ startTime, endTime, startDate, ago = false }) => {
+export const Duration: React.FC<Props> = ({ startTime, endTime, startDate, endDate, ago = false }) => {
   startTime = startTime || startDate?.getTime()
+  endTime = endTime || endDate?.getTime()
   const [now, setNow] = useState<number>(endTime || Date.now())
   const aDay = 1000 * 60 * 60 * 24
 

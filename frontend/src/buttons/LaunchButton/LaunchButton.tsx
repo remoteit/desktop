@@ -10,7 +10,7 @@ import { Dispatch } from '../../store'
 import { FontSize } from '../../styling'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
-import { makeStyles, IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { DialogApp } from '../../components/DialogApp'
 
 type Props = {
@@ -34,7 +34,6 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   const hidden = !connection?.enabled
 
   const app = useApplication('launch', service, connection)
-  const css = useStyles()
 
   useEffect(() => {
     if (launch) {
@@ -100,7 +99,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
 
   const LaunchIcon = (
     <Icon
-      className={app.iconRotate ? css.rotate : ''}
+      rotate={app.iconRotate ? -45 : undefined}
       name={loading ? 'spinner-third' : app.icon}
       spin={loading}
       size={size}
@@ -128,7 +127,3 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     </>
   )
 }
-
-const useStyles = makeStyles({
-  rotate: { transform: 'rotate(-45deg)' },
-})

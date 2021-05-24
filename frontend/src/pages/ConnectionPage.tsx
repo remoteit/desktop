@@ -8,7 +8,7 @@ import { ProxySetting } from '../components/ProxySetting'
 import { PublicSetting } from '../components/PublicSetting'
 import { TimeoutSetting } from '../components/TimeoutSetting'
 import { LicensingNotice } from '../components/LicensingNotice'
-import { ServiceConnected } from '../components/ServiceConnected'
+import { ConnectionDetails } from '../components/ConnectionDetails'
 import { newConnection } from '../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../store'
@@ -82,7 +82,7 @@ export const ConnectionPage: React.FC = () => {
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
           <Gutters>
-            <ServiceConnected connection={connection} session={session} show={connection?.enabled} />
+            <ConnectionDetails connection={connection} session={session} show={connection?.enabled} />
             {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
           </Gutters>
         </>

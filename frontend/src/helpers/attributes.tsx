@@ -2,13 +2,16 @@ import React from 'react'
 import { TargetPlatform } from '../components/TargetPlatform'
 import { QualityDetails } from '../components/QualityDetails'
 import { ServiceIndicators } from '../components/ServiceIndicators'
+import { INITIATOR_PLATFORMS } from '../components/InitiatorPlatform'
 import { ListItemText } from '@material-ui/core'
 import { licenseChip } from '../models/licensing'
 import { ServiceName } from '../components/ServiceName'
 import { LicenseChip } from '../components/LicenseChip'
 import { DeviceGeo } from '../components/DeviceGeo'
+import { TagEditor } from '../components/TagEditor'
 import { Duration } from '../components/Duration'
 import { toLookup } from './utilHelper'
+import { TestUI } from '../components/TestUI'
 import { Tags } from '../components/Tags'
 // type AttributeParams = Omit<Attribute, 'value'>
 
@@ -19,7 +22,7 @@ export class Attribute {
   help?: string
   required?: boolean = false
   column?: boolean = true
-  type?: 'MASTER' | 'SERVICE' | 'DEVICE' = 'MASTER'
+  type?: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
   value: (options: IDataOptions) => any = () => {}
 
   constructor(options: Attribute) {
@@ -33,6 +36,10 @@ class DeviceAttribute extends Attribute {
 
 class ServiceAttribute extends Attribute {
   type: Attribute['type'] = 'SERVICE'
+}
+
+class ConnectionAttribute extends Attribute {
+  type: Attribute['type'] = 'CONNECTION'
 }
 
 const ATTRIBUTES = [
@@ -69,6 +76,15 @@ export const attributes: Attribute[] = [
     width: '2fr',
   }),
   new DeviceAttribute({
+    id: 'tagEditor',
+    label: 'tags',
+    value: ({ device }) => (
+      <TestUI>
+        <TagEditor device={device} />
+      </TestUI>
+    ),
+  }),
+  new DeviceAttribute({
     id: 'targetPlatform',
     label: 'Platform',
     value: ({ device }) => TargetPlatform({ id: device?.targetPlatform, label: true }),
@@ -98,7 +114,10 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'location',
     label: 'Location',
-    value: ({ device }) => <DeviceGeo geo={device?.geo} />,
+    value: ({ device, session }) => {
+      const geo = device?.geo || session?.geo
+      return geo && <DeviceGeo geo={geo} />
+    },
   }),
   new DeviceAttribute({
     id: 'externalAddress',
@@ -165,6 +184,38 @@ export const attributes: Attribute[] = [
     id: 'license',
     label: 'License',
     value: ({ service }) => <LicenseChip chip={licenseChip[service?.license || 0]} />,
+  }),
+  new ConnectionAttribute({
+    id: 'address',
+    label: 'Address',
+    value: ({ connection }) => connection?.address,
+  }),
+  new ConnectionAttribute({
+    id: 'duration',
+    label: 'Duration',
+    value: ({ connection, session }) => {
+      const start = connection?.startTime ? new Date(connection.startTime) : session?.timestamp
+      const end =
+        start && connection?.endTime && connection.endTime > start.getTime() ? new Date(connection.endTime) : undefined
+      return start && <Duration startDate={start} endDate={end} />
+    },
+  }),
+  new ConnectionAttribute({
+    id: 'connection',
+    label: 'Connection',
+    value: ({ connection, session }) =>
+      connection?.public
+        ? 'Public Proxy'
+        : connection?.isP2P === undefined && session?.isP2P === undefined
+        ? 'Idle'
+        : connection?.isP2P || session?.isP2P
+        ? 'Peer to peer'
+        : 'Proxy',
+  }),
+  new DeviceAttribute({
+    id: 'initiatorPlatform',
+    label: 'Platform',
+    value: ({ session }) => session && INITIATOR_PLATFORMS[session.platform],
   }),
 ]
 

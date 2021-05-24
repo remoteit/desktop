@@ -34,9 +34,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
             {/* <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" /> */}
             <Title>{device.name || 'Unknown'}</Title>
             {/* <ServiceName device={device} connection={connected} /> */}
-            <Route path="/devices/:deviceID/edit">
-              {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
-            </Route>
+            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
           </Typography>
@@ -50,13 +48,15 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               exactMatch
               dense
             />
-            <ListItemLocation
-              title="Edit"
-              icon="pen"
-              iconColor="grayDarker"
-              pathname={`/devices/${device.id}/edit`}
-              dense
-            />
+            {!device.shared && (
+              <ListItemLocation
+                title="Edit"
+                icon="pen"
+                iconColor="grayDarker"
+                pathname={`/devices/${device.id}/edit`}
+                dense
+              />
+            )}
             <UsersSelect device={device} access={access} />
             <ListItemLocation
               title="Logs"

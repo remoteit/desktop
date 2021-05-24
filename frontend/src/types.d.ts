@@ -95,7 +95,13 @@ declare global {
     analytics: AnalyticsJS
   }
 
-  type IDataOptions = { device?: IDevice; service?: IService; connection?: IConnection; connections?: IConnection[] }
+  type IDataOptions = {
+    device?: IDevice
+    service?: IService
+    connection?: IConnection
+    session?: ISession
+    connections?: IConnection[]
+  }
 
   interface ILabel {
     id: number

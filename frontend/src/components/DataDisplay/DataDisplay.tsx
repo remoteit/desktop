@@ -5,32 +5,37 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Attribute } from '../../helpers/attributes'
 import { Icon } from '../Icon'
 
-export const DataDisplay: React.FC<{ attributes: Attribute[]; device?: IDevice; service?: IService; width?: number }> =
-  ({ attributes, device, service, width = 140 }) => {
-    const css = useStyles(width)()
-    if (!device) return null
-    return (
-      <List className={css.list}>
-        {attributes.map(attribute => {
-          return (
-            attribute.value != null && (
-              <ListItem className={css.item} key={attribute.label} disableGutters>
-                <span>
-                  {attribute.label}:
-                  {attribute.help && (
-                    <Tooltip title={attribute.help}>
-                      <Icon name="question-circle" size="sm" inline />
-                    </Tooltip>
-                  )}
-                </span>
-                {attribute.value({ device, service })}
-              </ListItem>
-            )
+type Props = IDataOptions & {
+  attributes: Attribute[]
+  width?: number
+}
+
+export const DataDisplay: React.FC<Props> = ({ attributes, width = 140, ...props }) => {
+  const css = useStyles(width)()
+  if (!props) return null
+  return (
+    <List className={css.list}>
+      {attributes.map(attribute => {
+        const value = attribute.value(props)
+        return (
+          value != null && (
+            <ListItem className={css.item} key={attribute.label} disableGutters>
+              <span>
+                {attribute.label}:
+                {attribute.help && (
+                  <Tooltip title={attribute.help}>
+                    <Icon name="question-circle" size="sm" inline />
+                  </Tooltip>
+                )}
+              </span>
+              {value}
+            </ListItem>
           )
-        })}
-      </List>
-    )
-  }
+        )
+      })}
+    </List>
+  )
+}
 
 const useStyles = minWidth =>
   makeStyles({
@@ -46,9 +51,6 @@ const useStyles = minWidth =>
         color: colors.grayDark,
         textTransform: 'capitalize',
         minWidth,
-      },
-      '& svg': {
-        color: colors.grayDarker,
       },
     },
   })

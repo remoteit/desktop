@@ -1,7 +1,7 @@
 import React from 'react'
 import { Tooltip } from '@material-ui/core'
-import { Color, FontSize } from '../../styling'
-import { Icon } from '../Icon'
+import { Color, FontSize } from '../styling'
+import { Icon } from './Icon'
 
 export const INITIATOR_PLATFORMS = [
   'Generic',

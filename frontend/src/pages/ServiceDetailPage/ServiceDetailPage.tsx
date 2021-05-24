@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
 import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
-import { ServiceConnected } from '../../components/ServiceConnected'
+import { ConnectionDetails } from '../../components/ConnectionDetails'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import { LaunchButton } from '../../buttons/LaunchButton'
@@ -58,9 +58,9 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
               {/* <Icon name="neuter" /> */}
               {connection?.enabled ? (
                 <>
-                  <Tooltip title="Connection Details" arrow>
+                  <Tooltip title="Configure Connection" arrow>
                     <IconButton to={`/connections/${service.id}`} component={Link}>
-                      <Icon name="info-circle" size="md" fixedWidth />
+                      <Icon name="arrow-right" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                   <CopyButton connection={connection} service={service} />
@@ -70,14 +70,14 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
                 <>
                   <Tooltip title="Configure Connection" arrow>
                     <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
-                      <Icon name="cog" size="md" fixedWidth />
+                      <Icon name="arrow-right" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 </>
               )}
             </Gutters>
             <Gutters>
-              <ServiceConnected connection={connection} show={connection?.enabled} />
+              <ConnectionDetails connection={connection} show={connection?.enabled} />
             </Gutters>
           </>
         )

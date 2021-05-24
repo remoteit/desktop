@@ -7,7 +7,7 @@ import { colors } from '../styling'
 import { Icon } from './Icon'
 import { Tags } from './Tags'
 
-export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
+export const TagEditor: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { labels, tags } = useSelector((state: ApplicationState) => ({
     labels: state.labels,
     tags: state.tags.all,
@@ -17,6 +17,8 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
   const [open, setOpen] = React.useState<boolean>(false)
   const addRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
+
+  if (!device) return null
 
   const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
@@ -30,8 +32,6 @@ export const TagEditor: React.FC<{ device: IDevice }> = ({ device }) => {
     device.tags.splice(index, 1)
     dispatch.accounts.setDevice({ id: device.id, device })
   }
-
-  if (!device) return null
 
   return (
     <>
