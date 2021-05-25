@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { Container } from '../components/Container'
 import { TestUI } from '../components/TestUI'
-import { getApiURL } from '../helpers/apiHelper'
+import { getGraphQLApi, getRestApi } from '../helpers/apiHelper'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
@@ -18,7 +18,6 @@ export const TestPage: React.FC = () => {
     preferences: state.backend.preferences,
   }))
   const { licensing, ui } = useDispatch<Dispatch>()
-  const apiUrl = preferences.apiURL ? preferences.apiURL : API_URL
 
   const onSave = (url: string) => {
     emit('preferences', { ...preferences, apiGraphqlURL: url })
@@ -58,7 +57,7 @@ export const TestPage: React.FC = () => {
           />
           <ListItemSetting
             label="Override default APIs"
-            subLabel={`Using ${getApiURL()}`}
+            subLabel={`Using ${getGraphQLApi()}`}
             onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
             toggle={!!preferences.switchApi}
           />
@@ -66,19 +65,19 @@ export const TestPage: React.FC = () => {
             <ListItemIcon />
             <Quote>
               <InlineTextFieldSetting
-                value={getApiURL()}
+                value={getGraphQLApi()}
                 label="Switch GraphQL APIs"
                 disabled={false}
-                resetValue={getApiURL()}
+                resetValue={getGraphQLApi()}
                 maxLength={200}
                 onSave={url => onSave(url.toString())}
                 hideIcon
               />
               <InlineTextFieldSetting
-                value={apiUrl}
+                value={getRestApi()}
                 label="Rest Api"
                 disabled={false}
-                resetValue={apiUrl}
+                resetValue={getRestApi()}
                 maxLength={200}
                 onSave={url => onSaveRest(url.toString())}
                 hideIcon
