@@ -17,7 +17,11 @@ import styles from '../../styling'
 export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
   const { shares } = useDispatch<Dispatch>()
-  const { contacts = [], user, deleting } = useSelector((state: ApplicationState) => ({
+  const {
+    contacts = [],
+    user,
+    deleting,
+  } = useSelector((state: ApplicationState) => ({
     contacts: state.devices.contacts,
     user: state.devices.contacts.find(c => c.email === email),
     deleting: state.shares.deleting,
@@ -25,7 +29,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const [selected, setSelected] = React.useState<string[]>([])
   const [userSelected, setUserSelected] = React.useState<IUserRef | undefined>(user)
   const [changed, setChanged] = useState(false)
-  const permissions = device && getPermissions(device, userSelected?.email)
+  const permissions = device && getPermissions(device, email)
   const [selectedServices, setSelectedServices] = useState(permissions?.services.map(s => s.id) || [])
   const [indeterminate, setIndeterminate] = React.useState<string[]>([])
   const [scripts, setScripts] = useState(permissions?.scripting || false)
