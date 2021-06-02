@@ -44,10 +44,11 @@ export function SharingForm({
   const { email = '' } = useParams<{ email: string }>()
   const saving = useSelector((state: ApplicationState) => state.shares.sharing)
   const [hasIndeterminate, setHasIndeterminate] = useState<boolean>(false)
-  let disabled = !changed || saving
+  const [disabled, setDisabled] = useState<boolean>(!changed || saving)
 
   const handleChangeServices = (services: string[]) => {
     onChange({ scripting, services }, hasIndeterminate)
+    setDisabled(false)
   }
 
   useEffect(() => {
