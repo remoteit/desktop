@@ -98,7 +98,6 @@ export async function graphQLGetUrl(minDate: Date, maxDate: Date) {
           login {
             id
             ${EVENTS_URL}
-            }
           }
         }
       `,
