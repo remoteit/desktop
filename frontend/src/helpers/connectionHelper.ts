@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { IP_OPEN, IP_PRIVATE, IP_LATCH } from '../shared/constants'
+import { IP_OPEN, IP_LATCH } from '../shared/constants'
 import { attributeName, removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState, store } from '../store'
@@ -10,7 +10,6 @@ export const DEFAULT_CONNECTION = {
   owner: { id: '', email: '' },
   deviceID: '',
   online: false,
-  host: IP_PRIVATE,
   timeout: 15,
   restriction: IP_OPEN,
   publicRestriction: IP_LATCH,
@@ -50,7 +49,10 @@ export function connectionName(service?: nameObj, device?: nameObj): string {
     name.push(device.name)
     if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
   } else if (service) name.push(service.name)
-  return name.join(' - ')
+  return name
+    .join(' ')
+    .toLowerCase()
+    .replace(/[-\s]+/g, '-')
 }
 
 export function newConnection(service?: IService | null) {

@@ -5,7 +5,6 @@ import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ConnectionDetails } from '../../components/ConnectionDetails'
 import { ApplicationState } from '../../store'
-import { connectionState } from '../../helpers/connectionHelper'
 import { LaunchButton } from '../../buttons/LaunchButton'
 import { DataDisplay } from '../../components/DataDisplay'
 import { ComboButton } from '../../buttons/ComboButton'
@@ -25,7 +24,6 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
     remoteUI: isRemoteUI(state),
   }))
   const target = targets.find(t => t.uid === serviceID)
-  const state = connectionState(service, connection)
   const css = useStyles()
 
   useEffect(() => {

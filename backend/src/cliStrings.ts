@@ -54,8 +54,9 @@ export default {
   },
 
   connect(c: IConnection) {
-    return certify(`-j connection add \
+    return `-j connection add \
       --id ${c.id} \
+      --name "${c.name}" \
       --port ${c.port} \
       --hostname ${c.host} \
       --timeout ${c.timeout} \
@@ -63,10 +64,13 @@ export default {
       --failover ${!!c.failover} \
       --p2p ${!c.proxyOnly} \
       --servicetype ${c.typeID} \
+      --targetHostname "${c.name}" \
+      --enableCertificate ${!!preferences.get().useCertificate} \
+      --enableHTTP true \
       --authhash ${user.authHash} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
-      --manufacture-id ${environment.appCode}`)
+      --manufacture-id ${environment.appCode}`
   },
 
   stop(c: IConnection) {
@@ -78,7 +82,7 @@ export default {
   },
 
   setConnect(c: IConnection) {
-    return certify(`-j connection modify \
+    return `-j connection modify \
       --id ${c.id} \
       --name "${c.name}" \
       --port ${c.port} \
@@ -89,8 +93,13 @@ export default {
       --p2p ${!c.proxyOnly} \
       --enable ${!!c.enabled} \
       --servicetype ${c.typeID} \
+      --targetHostname "${c.name}" \
+      --enableCertificate ${!!preferences.get().useCertificate} \
+      --enableHTTP true \
       --authhash ${user.authHash} \
-      --manufacture-id ${environment.appCode}`)
+      --log ${!!c.log} \
+      --logfolder "${environment.connectionLogPath}" \
+      --manufacture-id ${environment.appCode}`
   },
 
   serviceInstall() {
@@ -124,21 +133,4 @@ export default {
   version() {
     return '-j version'
   },
-}
-
-function certify(command: string) {
-  const { useCertificate } = preferences.get()
-
-  const certCommand = ` \
-    --enableReverseHTTPSProxy \
-    --reverseHTTPSProxyDomain "${environment.certificateDomain}" \
-    --reverseHTTPSProxyCert "${environment.certificatePath}" \
-    --reverseHTTPSProxyKey "${environment.certificateKeyPath}"`
-
-  return useCertificate ? command + certCommand : command
-  //--domain ${domain} \
-  //--targetHostname ${c.targetHost} \
-  //--enableHTTP ${ /* if http(s) or lan shared */} \
-  //--cert "${environment.certificatePath}/${domain}.cert" \
-  //--Key "${environment.certificatePath}/${domain}.key"`
 }

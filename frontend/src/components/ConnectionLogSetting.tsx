@@ -9,7 +9,7 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
 }) => {
   if (!service) return null
   if (!connection) connection = newConnection(service)
-  const disabled = connection.enabled || connection.public
+  const disabled = connection.connected || connection.public
   const log = connection.public ? false : connection.log
 
   return (

@@ -34,7 +34,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const { connections } = useDispatch<Dispatch>()
   const chip = service && licenseChip[service.license]
   const state = connectionState(service, connection)
-  const visible = state === 'stopping' || state === 'disconnected'
+  const visible = !connection?.enabled
   const connecting = state === 'connecting'
   const stopping = state === 'stopping'
 
@@ -80,6 +80,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (connecting) {
     title = 'Starting'
     color = 'grayDark'
+  }
+  if (state === 'offline') {
+    title = 'Offline'
+    disabled = true
   }
 
   return (

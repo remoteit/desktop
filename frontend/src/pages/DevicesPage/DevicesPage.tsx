@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux'
 import { getDevices } from '../../models/accounts'
 import { DeviceList } from '../../components/DeviceList'
 import { Container } from '../../components/Container'
+import { TestUI } from '../../components/TestUI'
 import styles from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -49,7 +50,9 @@ export const DevicesPage: React.FC<{ singlePanel?: boolean; restore?: boolean }>
               </>
             )}
             <FilterButton />
-            <ColumnsButton />
+            <TestUI>
+              <ColumnsButton />
+            </TestUI>
           </div>
           {fetching && <LinearProgress className={css.fetching} />}
         </>

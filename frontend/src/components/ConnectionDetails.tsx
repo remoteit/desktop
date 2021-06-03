@@ -2,7 +2,6 @@ import React from 'react'
 import { getAttributes } from '../helpers/attributes'
 import { Collapse } from '@material-ui/core'
 import { DataDisplay } from './DataDisplay'
-import { Gutters } from './Gutters'
 
 type Props = {
   connection?: IConnection
@@ -11,7 +10,7 @@ type Props = {
 }
 
 export const ConnectionDetails: React.FC<Props> = ({ show, connection, session }) => {
-  const attributes = getAttributes(['address', 'connection', 'duration', 'location', 'initiatorPlatform'])
+  const attributes = getAttributes(['connection', 'duration', 'location', 'initiatorPlatform'])
 
   return (
     <Collapse in={show} timeout={800}>

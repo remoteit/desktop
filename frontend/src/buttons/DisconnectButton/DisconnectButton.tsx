@@ -26,7 +26,8 @@ export const DisconnectButton: React.FC<Props> = ({
   const { connections } = useDispatch<Dispatch>()
   const state = connectionState(service, connection)
   const connecting = state === 'connecting'
-  const visible = state === 'connecting' || state === 'connected' || state === 'ready'
+  // const visible = state === 'connecting' || state === 'connected' || state === 'ready'
+  const visible = !!connection?.enabled
   const disabled = state === 'stopping'
 
   if (connecting) color = 'grayDark'
@@ -35,6 +36,7 @@ export const DisconnectButton: React.FC<Props> = ({
   if (state === 'ready') title = 'Remove Connection'
   if (state === 'stopping') title = 'Stopping'
   if (state === 'connecting') title = 'Starting'
+  if (state === 'offline') title = 'Offline'
 
   return (
     <Fade in={visible} timeout={600}>
@@ -50,7 +52,7 @@ export const DisconnectButton: React.FC<Props> = ({
             analyticsHelper.trackConnect('connectionClosed', service)
             connection?.public
               ? connections.proxyDisconnect(connection)
-              : emit(state === 'ready' ? 'service/disable' : 'service/disconnect', connection)
+              : emit(state === 'ready' || state === 'offline' ? 'service/disable' : 'service/disconnect', connection)
           }}
         />
       </div>

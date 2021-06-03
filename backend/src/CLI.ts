@@ -44,6 +44,8 @@ type IConnectionStatus = {
   startedAt?: string
   stoppedAt?: string
   address?: string
+  namedPort?: number
+  namedHost?: string
 }
 
 export default class CLI {
@@ -152,7 +154,8 @@ export default class CLI {
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined
         c.reachable = status.reachable
         c.sessionId = status.sessionID?.toLowerCase()
-        c.address = status.address
+        c.host = status.namedHost
+        c.port = status.namedPort
 
         if (status.reachable === false) {
           c.error = {

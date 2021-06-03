@@ -21,7 +21,7 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
     <div className={css.buttons + (className ? ' ' + className : '')}>
       <DisconnectButton {...props} />
       <ConnectButton {...props} />
-      <OfflineButton {...props} />
+      {/* <OfflineButton {...props} /> */}
     </div>
   )
 }
