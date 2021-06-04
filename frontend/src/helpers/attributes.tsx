@@ -78,11 +78,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'tagEditor',
     label: 'tags',
-    value: ({ device }) => (
-      <TestUI>
-        <TagEditor device={device} />
-      </TestUI>
-    ),
+    value: ({ device }) => (TestUI({}) ? <TagEditor device={device} /> : undefined),
   }),
   new DeviceAttribute({
     id: 'targetPlatform',
