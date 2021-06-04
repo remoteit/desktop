@@ -18,16 +18,16 @@ export const TagEditor: React.FC<{ device?: IDevice }> = ({ device }) => {
   const addRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
 
-  if (!device) return null
-
   const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
   const handleAddTag = (tag: ITag) => {
+    if (!device) return
     device.tags.push(tag.id)
     dispatch.accounts.setDevice({ id: device.id, device })
   }
   const handleRemoveTag = id => {
+    if (!device) return
     const index = device.tags.indexOf(id)
     device.tags.splice(index, 1)
     dispatch.accounts.setDevice({ id: device.id, device })
@@ -35,7 +35,7 @@ export const TagEditor: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   return (
     <>
-      <Tags ids={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />
+      {device && <Tags ids={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />}
       <Chip
         label={
           <>
@@ -49,7 +49,7 @@ export const TagEditor: React.FC<{ device?: IDevice }> = ({ device }) => {
         ref={addRef}
       />
       <AutocompleteMenu
-        items={tags.filter(t => !device.tags.includes(t.id))}
+        items={tags.filter(t => (device ? !device.tags.includes(t.id) : true))}
         open={open}
         indicator="tag"
         placeholder="New tag..."

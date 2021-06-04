@@ -20,6 +20,7 @@ import { AccountMembershipPage } from '../pages/AccountMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
+import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { Panel } from '../components/Panel'
 import { UserLogPage } from '../pages/UserLogPage'
@@ -151,6 +152,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
               <Route path="/settings/logs">
                 <UserLogPage />
+              </Route>
+
+              <Route path="/settings/tags">
+                <TagsPage />
               </Route>
 
               <Route path="/settings/reports">

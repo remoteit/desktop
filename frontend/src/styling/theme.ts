@@ -235,7 +235,10 @@ const jssTheme: ThemeOptions = {
           '& svg': { display: 'none' },
         },
       },
-      underline: { '&.Mui-disabled:before': { borderColor: colors.grayLight } },
+      underline: {
+        '&.Mui-disabled:before': { borderColor: colors.grayLight },
+        '&:before, &:after': { display: 'none' },
+      },
     },
     MuiInputLabel: {
       shrink: {

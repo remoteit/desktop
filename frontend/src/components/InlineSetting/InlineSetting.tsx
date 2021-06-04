@@ -11,13 +11,14 @@ import {
 import { colors, spacing, fontSizes } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { ResetButton } from '../../buttons/ResetButton'
+import { DeleteButton } from '../../buttons/DeleteButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { Title } from '../Title'
 import { Icon } from '../Icon'
 
 type Props = {
   value?: string | number
-  label: JSX.Element | string
+  label?: JSX.Element | string
   icon?: JSX.Element | string
   actionIcon?: JSX.Element
   displayValue?: string | number
@@ -25,10 +26,13 @@ type Props = {
   resetValue?: string | number
   hideIcon?: boolean
   fieldRef: React.RefObject<HTMLInputElement>
+  debug?: boolean
+  warning?: string
   onSubmit: () => void
   onResetClick: () => void
   onCancel: () => void
   onShowEdit: () => void
+  onDelete?: () => void
 }
 
 let canceled = false
@@ -40,12 +44,15 @@ export const InlineSetting: React.FC<Props> = ({
   actionIcon,
   displayValue,
   disabled,
+  debug,
+  warning,
   resetValue,
   onSubmit,
   fieldRef,
   onResetClick,
   onCancel,
   onShowEdit,
+  onDelete,
   hideIcon,
   children,
 }) => {
@@ -66,7 +73,7 @@ export const InlineSetting: React.FC<Props> = ({
     if (edit) {
       fieldRef.current.focus()
       fieldRef.current.onblur = () => {
-        if (!canceled) setTimeout(() => setEdit(false), 200)
+        if (!canceled && !debug) setTimeout(() => setEdit(false), 200)
         canceled = false
       }
     }
@@ -118,13 +125,14 @@ export const InlineSetting: React.FC<Props> = ({
         {!hideIcon && <ListItemIcon>{icon}</ListItemIcon>}
         <Title>
           <ListItemText>
-            <InputLabel shrink>{label}</InputLabel>
+            {label && <InputLabel shrink>{label}</InputLabel>}
             {displayValue || value || '–'}
           </ListItemText>
         </Title>
         {!disabled && (
           <ListItemSecondaryAction className="hidden">
             <EditButton onClick={triggerEdit} />
+            {onDelete && <DeleteButton onDelete={onDelete} warning={warning} />}
           </ListItemSecondaryAction>
         )}
       </ListItem>
@@ -144,7 +152,7 @@ const useStyles = makeStyles({
     '& .MuiFilledInput-input': { paddingTop: 22, paddingBottom: 10, fontSize: 14 },
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .MuiTextField-root': { marginLeft: -12 },
-    '& .MuiInput-root': { marginRight: spacing.sm },
+    '& .MuiInput-root': { marginRight: spacing.sm, padding: '3px 0 2px', fontSize: 14 },
     '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },
     '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
     '& .MuiListItemSecondaryAction-root': { right: spacing.sm },

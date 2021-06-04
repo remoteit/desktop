@@ -2,6 +2,7 @@ import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import { Autocomplete } from '@material-ui/lab'
 import { makeStyles, Box, ListItemIcon, ListItemText, Paper, Popper, TextField } from '@material-ui/core'
+import { REGEX_TAG_SAFE } from '../shared/constants'
 import { spacing, colors, radius, fontSizes } from '../styling'
 import { Icon } from './Icon'
 
@@ -16,8 +17,6 @@ interface Props {
   onSelect?: (action: 'add' | 'new', value: ITag) => void
   onClose?: () => void
 }
-
-export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
 
 export const AutocompleteMenu: React.FC<Props> = ({
   open,
