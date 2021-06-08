@@ -2,8 +2,8 @@ import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import { Autocomplete } from '@material-ui/lab'
 import { makeStyles, Box, ListItemIcon, ListItemText, Paper, Popper, TextField } from '@material-ui/core'
-import { REGEX_TAG_SAFE } from '../shared/constants'
 import { spacing, colors, radius, fontSizes } from '../styling'
+import { REGEX_TAG_SAFE } from '../shared/constants'
 import { Icon } from './Icon'
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
   indicator?: string
   onItemColor?: (value: ITag) => string
   onSelect?: (action: 'add' | 'new', value: ITag) => void
+  onChange?: (value?: string) => void
   onClose?: () => void
 }
 
@@ -26,6 +27,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
   targetEl,
   onItemColor,
   onSelect,
+  onChange,
   onClose,
   allowAdding,
 }) => {
@@ -68,7 +70,11 @@ export const AutocompleteMenu: React.FC<Props> = ({
           PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
           noOptionsText={false}
           getOptionLabel={option => option.name}
-          onInputChange={(event, newValue) => setInputValue(newValue.replace(REGEX_TAG_SAFE, ''))}
+          onInputChange={(event, newValue) => {
+            const result = newValue.replace(REGEX_TAG_SAFE, '')
+            setInputValue(result)
+            if (onChange) onChange(result)
+          }}
           renderOption={option => (
             <>
               <ListItemIcon>

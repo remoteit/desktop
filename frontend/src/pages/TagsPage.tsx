@@ -28,7 +28,7 @@ export const TagsPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Tags</Title>
-            <TagEditor />
+            <TagEditor button />
           </Typography>
         </>
       }
@@ -36,6 +36,7 @@ export const TagsPage: React.FC = () => {
       <List>
         {tags.map((tag, index) => (
           <InlineTextFieldSetting
+            key={index}
             value={tag.name}
             icon={<Tag dot tag={tag} labels={labels} />}
             resetValue={tag.name}

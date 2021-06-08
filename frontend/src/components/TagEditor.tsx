@@ -3,17 +3,19 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { makeStyles, Chip } from '@material-ui/core'
 import { AutocompleteMenu } from './AutocompleteMenu'
+import { IconButton } from '../buttons/IconButton'
 import { colors } from '../styling'
 import { Icon } from './Icon'
 import { Tags } from './Tags'
 
-export const TagEditor: React.FC<{ device?: IDevice }> = ({ device }) => {
+export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ device, button }) => {
   const { labels, tags } = useSelector((state: ApplicationState) => ({
     labels: state.labels,
     tags: state.tags.all,
   }))
   const dispatch = useDispatch<Dispatch>()
   const [newValue, setNewValue] = React.useState<ITag>()
+  const [value, setValue] = React.useState<string | undefined>()
   const [open, setOpen] = React.useState<boolean>(false)
   const addRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
@@ -36,24 +38,34 @@ export const TagEditor: React.FC<{ device?: IDevice }> = ({ device }) => {
   return (
     <>
       {device && <Tags ids={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />}
-      <Chip
-        label={
-          <>
-            <Icon name="plus" size="sm" inlineLeft />
-            TAG
-          </>
-        }
-        className={css.chip}
-        size="small"
-        onClick={handleOpen}
-        ref={addRef}
-      />
+      {button ? (
+        <div ref={addRef}>
+          <IconButton title="Add Tag" icon="plus" onClick={handleOpen} disabled={open} />
+        </div>
+      ) : (
+        <Chip
+          label={
+            <>
+              <Icon name="plus" size="sm" inlineLeft />
+              TAG
+            </>
+          }
+          className={css.chip}
+          size="small"
+          onClick={handleOpen}
+          ref={addRef}
+        />
+      )}
       <AutocompleteMenu
-        items={tags.filter(t => (device ? !device.tags.includes(t.id) : true))}
+        items={tags.filter(t => (device ? !device.tags.includes(t.id) : !!value?.length))}
         open={open}
         indicator="tag"
         placeholder="New tag..."
         targetEl={addRef.current}
+        onChange={value => {
+          setValue(value)
+          console.log('onchange', value)
+        }}
         onItemColor={tag => getColor(tag.label)}
         onSelect={(action, tag) => {
           if (action === 'new') setNewValue(tag)
