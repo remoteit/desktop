@@ -20,6 +20,7 @@ type IData = {
   device: ITargetDevice
   targets: ITarget[]
   connections: IConnection[]
+  connectionDefaults: IConnectionDefaults
   errorCodes: number[]
 }
 
@@ -48,6 +49,14 @@ type IConnectionStatus = {
   namedHost?: string
 }
 
+type IConnectionDefaults = {
+  enableCertificate?: boolean
+  enableOneHTTPSListener?: boolean
+  enableOneHTTPListener?: boolean
+  oneHTTPSListenerPort?: number
+  oneHTTPListenerPort?: number
+}
+
 export default class CLI {
   data: IData = {
     user: undefined,
@@ -55,6 +64,7 @@ export default class CLI {
     device: DEFAULT_TARGET,
     targets: [DEFAULT_TARGET],
     connections: [],
+    connectionDefaults: {},
     errorCodes: [],
   }
 
@@ -72,11 +82,23 @@ export default class CLI {
 
   async checkSignIn() {
     if (this.isSignedOut()) await this.signIn()
+    if (!this.areDefaultsSet()) await this.setDefaults()
   }
 
   isSignedOut() {
     this.readUser()
     return !this.data.admin || !this.data.admin.username
+  }
+
+  areDefaultsSet() {
+    this.readConnections()
+    const result: boolean = !!(
+      this.data.connectionDefaults?.enableCertificate &&
+      this.data.connectionDefaults?.enableOneHTTPSListener &&
+      this.data.connectionDefaults?.enableOneHTTPListener
+    )
+    Logger.info('ARE CLI DEFAULTS SET?', { result, defaults: this.data.connectionDefaults })
+    return result
   }
 
   read() {
@@ -117,6 +139,8 @@ export default class CLI {
   async readConnections() {
     const config = this.readFile()
     const connections = config.connections || []
+    this.data.connectionDefaults = config.connectionDefaults
+
     this.data.connections = connections.map((c: any) => ({
       id: c.uid,
       port: c.port,
@@ -281,6 +305,12 @@ export default class CLI {
 
   async signOut() {
     if (!this.isSignedOut()) await this.exec({ cmds: [strings.signOut()], skipSignInCheck: true, checkAuthHash: true })
+    this.read()
+  }
+
+  async setDefaults() {
+    await this.exec({ cmds: [strings.setDefaults()], checkAuthHash: true, skipSignInCheck: true })
+    await this.exec({ cmds: [strings.agentRestart()], checkAuthHash: true, skipSignInCheck: true })
     this.read()
   }
 

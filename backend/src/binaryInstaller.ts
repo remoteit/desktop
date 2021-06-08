@@ -57,7 +57,6 @@ export class BinaryInstaller {
   }
 
   async installBinaries(): Promise<void> {
-
     const remoteAPI = preferences.get().apiURL
     const graphqlURL = preferences.get().apiGraphqlURL
     let envVar = ''

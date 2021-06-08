@@ -11,8 +11,16 @@ export default {
     return `-j signout --authhash ${user.authHash}`
   },
 
+  setDefaults() {
+    return `-j connection defaults --enableCertificate true --enableOneHTTPSListener true --enableOneHTTPListener true --authhash ${user.authHash}`
+  },
+
   status() {
     return `-jj status -e --authhash ${user.authHash}`
+  },
+
+  agentRestart() {
+    return `-j agent restart --authhash ${user.authHash}`
   },
 
   agentStatus() {
