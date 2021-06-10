@@ -18,7 +18,7 @@ import { Tags } from '../components/Tags'
 export class Attribute {
   id: string = ''
   label: string = ''
-  width?: string = '1fr'
+  width?: string = '130px'
   help?: string
   required?: boolean = false
   column?: boolean = true
@@ -68,12 +68,13 @@ export const attributes: Attribute[] = [
     id: 'tags',
     label: 'Tags',
     value: ({ device }) => <Tags ids={device?.tags || []} small />,
+    width: '80px',
   }),
   new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    width: '2fr',
+    width: 'auto',
   }),
   new DeviceAttribute({
     id: 'tagEditor',

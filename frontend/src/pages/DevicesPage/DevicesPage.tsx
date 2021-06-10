@@ -13,8 +13,9 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 type Props = { singlePanel?: boolean; restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ singlePanel, restore, select }) => {
-  const { devices, connections, myDevice, fetching, attributes } = useSelector((state: ApplicationState) => ({
-    attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id)),
+  const { devices, connections, myDevice, fetching, attributes, required } = useSelector((state: ApplicationState) => ({
+    attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id) && !a.required),
+    required: masterAttributes.find(a => a.required),
     fetching: state.devices.fetching,
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
     myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
@@ -40,6 +41,7 @@ export const DevicesPage: React.FC<Props> = ({ singlePanel, restore, select }) =
           devices={devices}
           connections={connections}
           attributes={attributes}
+          primary={required}
           restore={restore}
           myDevice={myDevice}
           select={select}

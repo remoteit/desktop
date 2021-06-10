@@ -194,6 +194,12 @@ const jssTheme: ThemeOptions = {
       primary: { lineHeight: 1.4 },
       secondary: { fontSize: fontSizes.xs },
     },
+    // MuiTable: {
+    //   root: {
+    //     width: `calc(100% - ${spacing.md * 2}px)`,
+    //     marginLeft: spacing.md,
+    //   },
+    // },
     MuiTableCell: {
       root: {
         borderBottomWidth: 0,
@@ -203,6 +209,25 @@ const jssTheme: ThemeOptions = {
       head: {
         borderBottom: 1,
       },
+      sizeSmall: {
+        padding: 4,
+      },
+    },
+    MuiTableRow: {
+      // root: {
+      //   '&.MuiTableRow-hover:hover': {
+      //     backgroundColor: colors.primaryHighlight,
+      //     cursor: 'pointer',
+      //   },
+      //   '& td:first-child': {
+      //     borderTopLeftRadius: radius,
+      //     borderBottomLeftRadius: radius,
+      //   },
+      //   '& td:last-child': {
+      //     borderBottomRightRadius: radius,
+      //     borderTopRightRadius: radius,
+      //   },
+      // },
     },
     MuiMenu: {
       list: {

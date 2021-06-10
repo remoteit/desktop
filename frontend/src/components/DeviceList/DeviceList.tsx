@@ -9,6 +9,7 @@ import { List } from '@material-ui/core'
 export interface DeviceListProps {
   connections: { [deviceID: string]: IConnection[] }
   attributes: Attribute[]
+  primary?: Attribute
   devices?: IDevice[]
   restore?: boolean
   select?: boolean
@@ -19,6 +20,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   devices = [],
   connections = {},
   attributes,
+  primary,
   restore,
   select,
   myDevice,
@@ -34,6 +36,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               key={device.id}
               device={device}
               connections={connections[device.id]}
+              primary={primary}
               attributes={attributes}
               thisDevice={device.id === myDevice?.id}
               restore={restore && canRestore}
