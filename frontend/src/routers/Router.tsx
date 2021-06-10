@@ -111,6 +111,12 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         </Panel>
       </Route>
 
+      <Route path="/devices/select">
+        <Panel>
+          <DevicesPage singlePanel={singlePanel} select />
+        </Panel>
+      </Route>
+
       <Route path="/devices/:deviceID">
         <DeviceRouter singlePanel={singlePanel} />
       </Route>

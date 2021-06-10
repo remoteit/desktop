@@ -198,7 +198,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       hidden,
     })
   )
-  console.log('USER ATTRIBUTES', metaData.userAttributes)
+  // console.log('USER ATTRIBUTES', metaData.userAttributes)
   store.dispatch.devices.userAttributes({ userAttributes: metaData.userAttributes })
   return updateConnections(data)
 }

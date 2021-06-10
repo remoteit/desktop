@@ -1,7 +1,7 @@
 import React from 'react'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { setConnection, connectionName } from '../../helpers/connectionHelper'
-import { REGEX_NAME_SAFE } from '../../shared/constants'
+import { REGEX_CONNECTION_NAME } from '../../shared/constants'
 
 export const NameSetting: React.FC<{ service: IService; device?: IDevice; connection: IConnection }> = ({
   service,
@@ -13,7 +13,8 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
       value={connection.name}
       label="Connection Name"
       resetValue={connectionName(service, device)}
-      filter={REGEX_NAME_SAFE}
+      disabled={connection.enabled}
+      filter={REGEX_CONNECTION_NAME}
       onSave={name =>
         connection &&
         setConnection({
