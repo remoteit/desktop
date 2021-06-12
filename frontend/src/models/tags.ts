@@ -7,7 +7,7 @@ type ITagState = ILookup<ITag[]> & {
   all: ITag[]
 }
 
-const state: ITagState = {
+const defaultState: ITagState = {
   all: [
     {
       id: 1001,
@@ -48,7 +48,7 @@ const state: ITagState = {
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
     async fetch() {
       try {
@@ -66,6 +66,10 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    reset(state: ITagState) {
+      state = defaultState
+      return state
+    },
     set(state: ITagState, params: ILookup<ITag[]>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

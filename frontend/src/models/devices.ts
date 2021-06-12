@@ -45,7 +45,7 @@ type IDeviceState = {
   userAttributes: string[]
 }
 
-export const state: IDeviceState = {
+export const defaultState: IDeviceState = {
   all: {},
   initialized: false,
   total: 0,
@@ -69,7 +69,7 @@ export const state: IDeviceState = {
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
     /* 
       GraphQL search query for all device data
@@ -304,6 +304,10 @@ export default createModel<RootModel>()({
   }),
 
   reducers: {
+    reset(state: IDeviceState) {
+      state = defaultState
+      return state
+    },
     set(state: IDeviceState, params: DeviceParams) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

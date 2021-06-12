@@ -172,6 +172,10 @@ export default createModel<RootModel>()({
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
+    reset(state: IAccountsState) {
+      state = accountsState
+      return state
+    },
     setActive(state: IAccountsState, id: string) {
       window.localStorage.setItem(ACCOUNT_KEY, JSON.stringify(id))
       state.activeId = id

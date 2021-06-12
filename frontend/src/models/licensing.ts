@@ -60,7 +60,7 @@ type ILicensing = {
   }
 }
 
-const state: ILicensing = {
+const defaultState: ILicensing = {
   licenses: [],
   limits: [],
   informed: false,
@@ -241,7 +241,7 @@ const state: ILicensing = {
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: (dispatch: any) => ({
     async fetch() {
       try {
@@ -346,6 +346,10 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    reset(state: ILicensing) {
+      state = defaultState
+      return state
+    },
     set(state: ILicensing, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

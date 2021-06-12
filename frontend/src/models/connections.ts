@@ -9,12 +9,12 @@ import { getGraphQLApi } from '../helpers/apiHelper'
 
 type IConnectionsState = { all: IConnection[] }
 
-const state: IConnectionsState = {
+const defaultState: IConnectionsState = {
   all: [],
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
     async updateConnection(connection: IConnection, globalState) {
       const { all } = globalState.connections
@@ -119,6 +119,10 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    reset(state: IConnectionsState) {
+      state = defaultState
+      return state
+    },
     set(state: IConnectionsState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
