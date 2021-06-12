@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { TARGET_PLATFORMS } from '../helpers/platformHelper'
-import { state as defaults } from '../models/devices'
+import { defaultState } from '../models/devices'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, List } from '@material-ui/core'
 import { FilterSelector } from './FilterSelector'
-import { spacing, colors } from '../styling'
 import { Drawer } from './Drawer'
-import { Body } from './Body'
 
 type IValues = {
-  sort: typeof defaults.sort
-  filter: typeof defaults.filter
-  owner: typeof defaults.owner
-  platform: typeof defaults.platform
+  sort: typeof defaultState.sort
+  filter: typeof defaultState.filter
+  owner: typeof defaultState.owner
+  platform: typeof defaultState.platform
 }
 
 const sortFilters = [
@@ -57,10 +55,10 @@ export const FilterDrawer: React.FC = () => {
 
   const handleClear = () => {
     setValues({
-      filter: defaults.filter,
-      sort: defaults.sort,
-      owner: defaults.owner,
-      platform: defaults.platform,
+      filter: defaultState.filter,
+      sort: defaultState.sort,
+      owner: defaultState.owner,
+      platform: defaultState.platform,
     })
   }
 
@@ -71,7 +69,7 @@ export const FilterDrawer: React.FC = () => {
       state.owner !== values.owner ||
       state.platform !== values.platform
     ) {
-      devices.set({ ...values, from: defaults.from })
+      devices.set({ ...values, from: defaultState.from })
       devices.fetch()
     }
   }, [values])

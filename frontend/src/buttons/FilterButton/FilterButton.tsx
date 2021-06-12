@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Tooltip, IconButton, Badge } from '@material-ui/core'
-import { state as defaults } from '../../models/devices'
+import { defaultState } from '../../models/devices'
 import { ApplicationState, Dispatch } from '../../store'
 import { Icon } from '../../components/Icon'
 
@@ -9,9 +9,9 @@ export const FilterButton: React.FC = () => {
   const { open, changed } = useSelector((state: ApplicationState) => ({
     open: state.ui.drawerMenu === 'FILTER',
     changed:
-      state.devices.filter !== defaults.filter ||
-      state.devices.sort !== defaults.sort ||
-      state.devices.owner !== defaults.owner,
+      state.devices.filter !== defaultState.filter ||
+      state.devices.sort !== defaultState.sort ||
+      state.devices.owner !== defaultState.owner,
   }))
   const { ui } = useDispatch<Dispatch>()
 
