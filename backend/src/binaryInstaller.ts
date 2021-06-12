@@ -50,10 +50,10 @@ export class BinaryInstaller {
 
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
-    this.updateVersions()
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
     this.inProgress = false
+    this.updateVersions()
   }
 
   async installBinaries(): Promise<void> {
@@ -137,7 +137,7 @@ export class BinaryInstaller {
     }
   }
 
-  cliVersionChanged() {
+  async cliVersionChanged() {
     const previousVersion = preferences.get().cliVersion
     const thisVersion = this.cliBinary.version
     let changed = true
@@ -160,8 +160,10 @@ export class BinaryInstaller {
     return changed
   }
 
-  updateVersions() {
-    preferences.update({ version: environment.version, cliVersion: this.cliBinary.installedVersion })
+  async updateVersions() {
+    const cliVersion = await cli.version()
+    Logger.info('CLI VERSION UPDATE', { cliVersion })
+    preferences.update({ version: environment.version, cliVersion })
   }
 }
 
