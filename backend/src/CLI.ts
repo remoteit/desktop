@@ -48,6 +48,8 @@ type IConnectionStatus = {
   address?: string
   namedPort?: number
   namedHost?: string
+  restrict?: ipAddress // nicolae to add
+  timeout?: number // nicolae to add
 }
 
 type IConnectionDefaults = {
@@ -107,6 +109,7 @@ export default class CLI {
     this.readDevice()
     this.readTargets()
     this.readConnections()
+    this.readConnectionDefaults()
     this.readOverrides()
   }
 
@@ -147,45 +150,48 @@ export default class CLI {
     environment.overrides = config?.overrides || {}
   }
 
+  readConnectionDefaults() {
+    const config = this.readFile()
+    this.data.connectionDefaults = config.connectionDefaults
+  }
+
   async readConnections() {
-    if (!this.data.connections.length) return
-    const connections = await this.connectionStatus()
+    const connections = (await this.connectionStatus()) || []
     if (!connections?.length) return
-    this.data.connections = this.data.connections.map(c => {
-      const status = connections?.find(s => s.id === c.id)
-      if (status) {
-        c.id = status.id
-        c.enabled = !status.isDisabled
-        c.createdTime = Date.parse(status.createdAt)
-        c.startTime = status.startedAt ? Date.parse(status.startedAt) : undefined
-        c.endTime = status.stoppedAt ? Date.parse(status.stoppedAt) : undefined
-        c.connected = status.state === 'connected'
-        c.connecting = status.state === 'connecting'
-        c.isP2P = status.state === 'connected' ? status.isP2P : undefined
-        c.reachable = status.reachable
-        c.sessionId = status.sessionID?.toLowerCase()
-        c.host = status.namedHost || c.host
-        c.port = status.namedPort || c.port
-        c.failover = status.isFailover
-        // c.restriction = status.restrict
-        // c.timeout = status.timeout
+    this.data.connections = connections.map((c, i) => {
+      let error = this.data.connections[i]?.error
 
-        if (status.reachable === false) {
-          c.error = {
-            message: 'remote.it connected, but there is no service running on the remote machine.',
-            code: REACHABLE_ERROR_CODE,
-          }
-        } else if (status.reachable === true) {
-          if (c.error && c.error.code === REACHABLE_ERROR_CODE) c.error = { code: 0, message: '' }
+      if (c.reachable === false) {
+        error = {
+          message: 'remote.it connected, but there is no service running on the remote machine.',
+          code: REACHABLE_ERROR_CODE,
         }
-
-        if (status.error?.message) {
-          c.error = { message: status.error.message, code: status.error.code }
-        }
-
-        d('UPDATE STATUS', { c, status: status.state })
+      } else if (c.reachable === true) {
+        if (error && error.code === REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
       }
-      return c
+
+      if (c.error?.message) {
+        error = { message: c.error.message, code: c.error.code }
+      }
+
+      return {
+        id: c.id,
+        host: c.namedHost,
+        port: c.namedPort,
+        enabled: !c.isDisabled,
+        createdTime: Date.parse(c.createdAt),
+        startTime: c.startedAt ? Date.parse(c.startedAt) : undefined,
+        endTime: c.stoppedAt ? Date.parse(c.stoppedAt) : undefined,
+        connected: c.state === 'connected',
+        connecting: c.state === 'connecting',
+        isP2P: c.state === 'connected' ? c.isP2P : undefined,
+        reachable: c.reachable,
+        sessionId: c.sessionID?.toLowerCase(),
+        failover: c.isFailover,
+        restriction: c.restrict,
+        timeout: c.timeout,
+        error,
+      }
     })
   }
 
