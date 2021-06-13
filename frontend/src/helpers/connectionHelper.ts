@@ -72,7 +72,7 @@ export function newConnection(service?: IService | null) {
   if (service) {
     const device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
     // @TODO The whole service obj should be in the connection
-    connection.name = attributeName(service)
+    connection.name = connectionName(service)
     connection.id = service.id
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'

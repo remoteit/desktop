@@ -55,7 +55,7 @@ export default class ConnectionPool {
   check = async () => {
     if (binaryInstaller.uninstallInitiated || !user.signedIn) return
 
-    await cli.updateConnectionStatus()
+    await cli.readConnections()
 
     // move connections: cli -> desktop
     cli.data.connections.forEach(async c => {

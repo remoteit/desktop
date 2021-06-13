@@ -34,14 +34,15 @@ type IExec = {
 }
 
 type IConnectionStatus = {
-  id?: string
+  id: string
   isDisabled?: boolean
   state?: 'offline' | 'connecting' | 'connected'
-  isFailover?: boolean
+  isFailover: boolean
   isP2P?: boolean
   error?: ISimpleError
   reachable: boolean
   sessionID?: string
+  createdAt: string
   startedAt?: string
   stoppedAt?: string
   address?: string
@@ -136,23 +137,6 @@ export default class CLI {
     }))
   }
 
-  async readConnections() {
-    const config = this.readFile()
-    const connections = config.connections || []
-    this.data.connectionDefaults = config.connectionDefaults
-
-    this.data.connections = connections.map((c: any) => ({
-      id: c.uid,
-      port: c.port,
-      host: c.hostname,
-      createdTime: Date.parse(c.createdAt),
-      restriction: c.restrict,
-      timeout: c.timeout,
-      failover: c.failover,
-    }))
-    await this.updateConnectionStatus()
-  }
-
   private readFile() {
     return this.configFile.read() || {}
   }
@@ -163,14 +147,16 @@ export default class CLI {
     environment.overrides = config?.overrides || {}
   }
 
-  async updateConnectionStatus() {
+  async readConnections() {
     if (!this.data.connections.length) return
     const connections = await this.connectionStatus()
     if (!connections?.length) return
     this.data.connections = this.data.connections.map(c => {
       const status = connections?.find(s => s.id === c.id)
       if (status) {
+        c.id = status.id
         c.enabled = !status.isDisabled
+        c.createdTime = Date.parse(status.createdAt)
         c.startTime = status.startedAt ? Date.parse(status.startedAt) : undefined
         c.endTime = status.stoppedAt ? Date.parse(status.stoppedAt) : undefined
         c.connected = status.state === 'connected'
@@ -178,8 +164,11 @@ export default class CLI {
         c.isP2P = status.state === 'connected' ? status.isP2P : undefined
         c.reachable = status.reachable
         c.sessionId = status.sessionID?.toLowerCase()
-        c.host = status.namedHost
-        c.port = status.namedPort
+        c.host = status.namedHost || c.host
+        c.port = status.namedPort || c.port
+        c.failover = status.isFailover
+        // c.restriction = status.restrict
+        // c.timeout = status.timeout
 
         if (status.reachable === false) {
           c.error = {

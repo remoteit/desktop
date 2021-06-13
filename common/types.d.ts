@@ -226,16 +226,6 @@ declare global {
     hidden?: boolean
     access: IUser[]
     attributes: ILookup<any> & {
-      categoryA?: string
-      categoryB?: string
-      categoryC?: string
-      categoryD?: string
-      categoryE?: string
-      statusA?: string
-      statusB?: string
-      statusC?: string
-      statusD?: string
-      statusE?: string
       name?: string
       color?: number
       label?: string
