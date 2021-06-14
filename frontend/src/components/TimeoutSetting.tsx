@@ -1,6 +1,7 @@
 import React from 'react'
 import { Tooltip } from '@material-ui/core'
-import { newConnection, setConnection, DEFAULT_CONNECTION, PUBLIC_CONNECTION } from '../helpers/connectionHelper'
+import { newConnection, setConnection } from '../helpers/connectionHelper'
+import { DEFAULT_CONNECTION, PUBLIC_CONNECTION } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Icon } from './Icon'
 

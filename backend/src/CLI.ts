@@ -1,16 +1,16 @@
-import { DEFAULT_TARGET } from './sharedCopy/constants'
+import { DEFAULT_TARGET, DEFAULT_CONNECTION } from './sharedCopy/constants'
+import { REACHABLE_ERROR_CODE } from './constants'
 import { cliBinary } from './Binary'
 import binaryInstaller from './binaryInstaller'
 import environment from './environment'
-import strings from './cliStrings'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
+import strings from './cliStrings'
 import Command from './Command'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
 import user from './User'
-import { REACHABLE_ERROR_CODE } from './constants'
 
 const d = debug('CLI')
 
@@ -157,9 +157,9 @@ export default class CLI {
 
   async readConnections() {
     const connections = (await this.connectionStatus()) || []
-    if (!connections?.length) return
     this.data.connections = connections.map((c, i) => {
-      let error = this.data.connections[i]?.error
+      const connection = this.data.connections[i]
+      let error = connection?.error
 
       if (c.reachable === false) {
         error = {
@@ -175,6 +175,7 @@ export default class CLI {
       }
 
       return {
+        ...connection,
         id: c.id,
         host: c.namedHost,
         port: c.namedPort,

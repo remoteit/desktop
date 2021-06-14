@@ -51,6 +51,7 @@ export const FilterDrawer: React.FC = () => {
   }))
   const { ui, devices } = useDispatch<Dispatch>()
   const [values, setValues] = useState<IValues>(state)
+  const [expanded, setExpanded] = useState<string>()
   const css = useStyles()
 
   const handleClear = () => {
@@ -79,6 +80,8 @@ export const FilterDrawer: React.FC = () => {
       <List dense className={css.list}>
         <FilterSelector
           subtitle="Sort"
+          open={expanded === 'sort'}
+          onAccordion={value => setExpanded(value ? 'sort' : undefined)}
           icon={values.sort.substr(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
           value={values.sort}
           onSelect={value => {
@@ -89,6 +92,8 @@ export const FilterDrawer: React.FC = () => {
         />
         <FilterSelector
           subtitle="State"
+          open={expanded === 'state'}
+          onAccordion={value => setExpanded(value ? 'state' : undefined)}
           icon="check"
           value={values.filter}
           onSelect={value => setValues({ ...values, filter: value })}
@@ -96,6 +101,8 @@ export const FilterDrawer: React.FC = () => {
         />
         <FilterSelector
           subtitle="Owner"
+          open={expanded === 'owner'}
+          onAccordion={value => setExpanded(value ? 'owner' : undefined)}
           icon="check"
           value={values.owner}
           onSelect={value => setValues({ ...values, owner: value })}
@@ -103,6 +110,8 @@ export const FilterDrawer: React.FC = () => {
         />
         <FilterSelector
           subtitle="Platform"
+          open={expanded === 'platform'}
+          onAccordion={value => setExpanded(value ? 'platform' : undefined)}
           icon="check"
           value={values.platform?.toString() || 'all'}
           onSelect={value => setValues({ ...values, platform: parseInt(value) || undefined })}

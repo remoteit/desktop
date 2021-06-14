@@ -10,23 +10,29 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@material-ui/core'
+import { ExpandIcon } from './ExpandIcon'
 import { Icon } from './Icon'
 
 type Props = {
   value: string
   icon: string
+  open: boolean
   subtitle: string
   filterList: { value: string; name: string }[]
   onSelect: (value: any) => void
+  onAccordion: (expanded: boolean) => void
 }
 
-export const FilterSelector: React.FC<Props> = ({ value, icon, subtitle, filterList, onSelect }) => {
+export const FilterSelector: React.FC<Props> = ({ value, icon, open, subtitle, filterList, onSelect, onAccordion }) => {
   const css = useStyles()
   return (
-    <Accordion elevation={0}>
+    <Accordion elevation={0} expanded={open} onChange={(_, expanded) => onAccordion(expanded)}>
       <AccordionSummary>
         <ButtonBase className={css.button}>
-          <ListSubheader>{subtitle}</ListSubheader>
+          <ListSubheader>
+            {subtitle}
+            <ExpandIcon open={open} />
+          </ListSubheader>
         </ButtonBase>
       </AccordionSummary>
       <AccordionDetails>

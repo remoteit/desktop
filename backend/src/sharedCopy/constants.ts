@@ -57,6 +57,27 @@ export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   uid: '',
 }
 
+export const DEFAULT_CONNECTION = {
+  id: '',
+  name: '',
+  owner: { id: '', email: '' },
+  deviceID: '',
+  online: false,
+  timeout: 15,
+  restriction: IP_OPEN,
+  publicRestriction: IP_LATCH,
+}
+
+export const PUBLIC_CONNECTION = {
+  port: undefined,
+  public: true,
+  timeout: 15,
+  isP2P: false,
+  failover: false,
+  proxyOnly: true,
+  log: false,
+}
+
 export const ROUTES: IRoute[] = [
   {
     key: 'failover',

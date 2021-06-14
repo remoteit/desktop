@@ -1,34 +1,13 @@
 import { emit } from '../services/Controller'
-import { IP_OPEN, IP_LATCH } from '../shared/constants'
-import { attributeName, removeDeviceName } from '../shared/nameHelper'
+import { DEFAULT_CONNECTION } from '../shared/constants'
+import { removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState, store } from '../store'
-
-export const DEFAULT_CONNECTION = {
-  id: '',
-  name: '',
-  owner: { id: '', email: '' },
-  deviceID: '',
-  online: false,
-  timeout: 15,
-  restriction: IP_OPEN,
-  publicRestriction: IP_LATCH,
-}
-
-export const PUBLIC_CONNECTION = {
-  port: undefined,
-  public: true,
-  timeout: 15,
-  isP2P: false,
-  failover: false,
-  proxyOnly: true,
-  log: false,
-}
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
   if (connection) {
-    if (!connection.online) return 'disconnected'
+    // if (!connection.online) return 'disconnected'
     if ((connection.connected || connection.connecting) && !connection.enabled) return 'stopping'
     if (connection.connecting) return 'connecting'
     if (connection.connected) return 'connected'

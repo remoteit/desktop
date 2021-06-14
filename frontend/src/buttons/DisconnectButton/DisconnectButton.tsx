@@ -26,7 +26,6 @@ export const DisconnectButton: React.FC<Props> = ({
   const { connections } = useDispatch<Dispatch>()
   const state = connectionState(service, connection)
   const connecting = state === 'connecting'
-  // const visible = state === 'connecting' || state === 'connected' || state === 'ready'
   const visible = !!connection?.enabled
   const disabled = state === 'stopping'
 

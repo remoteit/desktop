@@ -75,8 +75,6 @@ export const ConnectionPage: React.FC = () => {
             <InfoButton device={device} service={service} />
             <ClearButton connection={connection} />
             <ForgetButton connection={connection} />
-            <CopyButton connection={connection} service={service} />
-            <LaunchButton connection={connection} service={service} />
           </Gutters>
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
@@ -91,8 +89,18 @@ export const ConnectionPage: React.FC = () => {
       <List>
         <NameSetting connection={connection} service={service} device={device} />
         <PortSetting connection={connection} service={service} />
-        <InlineTemplateSetting connection={connection} service={service} context="launch" />
-        <InlineTemplateSetting connection={connection} service={service} context="copy" />
+        <InlineTemplateSetting
+          connection={connection}
+          service={service}
+          context="launch"
+          actionIcon={<LaunchButton connection={connection} service={service} />}
+        />
+        <InlineTemplateSetting
+          connection={connection}
+          service={service}
+          context="copy"
+          actionIcon={<CopyButton connection={connection} service={service} show />}
+        />
         <CustomAttributeSettings connection={connection} service={service} />
       </List>
       <Divider variant="inset" />
