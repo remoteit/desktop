@@ -62,7 +62,7 @@ export const DevicesHeader: React.FC<Props> = ({ singlePanel, fetching, restore,
           {registeredId ? (
             loggedInUser && !myDevice && <Notice gutterBottom>This device is not registered to you.</Notice>
           ) : (
-            <List dense>
+            <List dense disablePadding>
               <DeviceSetupItem restore={restore} />
             </List>
           )}

@@ -2,16 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import {
-  makeStyles,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Link,
-  Chip,
-  Typography,
-} from '@material-ui/core'
+import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'

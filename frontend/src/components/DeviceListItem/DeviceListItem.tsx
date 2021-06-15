@@ -37,21 +37,18 @@ export const DeviceListItem: React.FC<Props> = ({
     <>
       <ListItem className={css.columns} to={`/devices/${device.id}`} component={Link} button>
         {select && (
-          <>
-            <DeviceLabel device={device} />
-            <Checkbox
-              // checked={checked}
-              // indeterminate={indeterminate}
-              // inputRef={inputRef}
-              // onChange={event => onClick(event.target.checked)}
-              className={css.checkbox}
-              onClick={event => event.stopPropagation()}
-              checkedIcon={<Icon name="check-square" size="md" type="solid" />}
-              indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
-              icon={<Icon name="square" size="md" />}
-              color="primary"
-            />
-          </>
+          <Checkbox
+            // checked={checked}
+            // indeterminate={indeterminate}
+            // inputRef={inputRef}
+            // onChange={event => onClick(event.target.checked)}
+            className={css.checkbox}
+            onClick={event => event.stopPropagation()}
+            checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+            indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
+            icon={<Icon name="square" size="md" />}
+            color="primary"
+          />
         )}
         <DeviceLabel device={device} />
         <ListItemIcon>
@@ -91,8 +88,7 @@ const useStyles = makeStyles({
   column: ({ attributes }: { attributes: Props['attributes'] }) => ({
     // display: 'flex',
     // flexDirection: 'row-reverse',
-    // alignItems: 'center',
-    width: '60%',
+    // width: '60%',
     display: 'grid',
     gridGap: spacing.md,
     gridTemplateColumns: `${attributes?.map(a => a.width).join(' ')}`,
@@ -107,12 +103,7 @@ const useStyles = makeStyles({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
-      color: colors.grayDarker,
       fontSize: fontSizes.sm,
     },
-    // '& .attribute-deviceName': {
-    //   marginLeft: -spacing.md,
-    //   marginRight: -spacing.md,
-    // },
   },
 })

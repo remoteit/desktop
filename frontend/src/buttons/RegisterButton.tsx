@@ -20,7 +20,7 @@ const CLAIM_CODE_LENGTH = 8
 
 export const RegisterButton: React.FC = () => {
   const css = useStyles()
-  const { devices, ui } = useDispatch<Dispatch>()
+  const { devices } = useDispatch<Dispatch>()
   const [el, setEl] = useState<HTMLButtonElement | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
@@ -48,7 +48,7 @@ export const RegisterButton: React.FC = () => {
     } else {
       setValid(false)
     }
-    setCode(value)
+    setCode(value.toUpperCase())
   }
 
   return (
@@ -76,7 +76,6 @@ export const RegisterButton: React.FC = () => {
           <form
             onSubmit={e => {
               e.preventDefault()
-              ui.set({ claiming: true })
               devices.claimDevice(code)
             }}
           >

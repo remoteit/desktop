@@ -261,6 +261,7 @@ export default createModel<RootModel>()({
 
     async claimDevice(code: string) {
       console.log('CLAIM DEVICE CODE', code)
+      dispatch.ui.set({ claiming: true })
       const result = await graphQLClaimDevice(code)
       try {
         const device = result?.data?.data?.claimDevice
