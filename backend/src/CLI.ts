@@ -174,6 +174,8 @@ export default class CLI {
         error = { message: c.error.message, code: c.error.code }
       }
 
+      console.log('CONNECTION STATE', c.id, c.state)
+
       return {
         ...connection,
         id: c.id,

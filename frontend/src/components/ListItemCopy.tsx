@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, ListItemText, ListItem, ListItemIcon, IconButton, InputLabel, Tooltip } from '@material-ui/core'
+import { makeStyles, ListItemText, IconButton, InputLabel, Tooltip } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../styling'
 import { useClipboard } from 'use-clipboard-copy'
 import { Icon } from './Icon'
@@ -11,7 +11,7 @@ export const ListItemCopy: React.FC<{ value?: string; label: string }> = ({ valu
   if (!value) return null
 
   return (
-    <Tooltip title={clipboard.copied ? 'Copied!' : label} placement="top" arrow>
+    <Tooltip title={clipboard.copied ? 'Copied!' : `Copy ${label}`} enterDelay={500} placement="top" arrow>
       <IconButton className={css.box} onClick={clipboard.copy}>
         <Icon
           name={clipboard.copied ? 'check' : 'copy'}
@@ -20,7 +20,7 @@ export const ListItemCopy: React.FC<{ value?: string; label: string }> = ({ valu
           fixedWidth
         />
         <ListItemText>
-          <InputLabel shrink>License Key</InputLabel>
+          <InputLabel shrink>{label}</InputLabel>
           <pre className={css.key}>{value}</pre>
         </ListItemText>
         <input type="hidden" ref={clipboard.target} value={value} />
@@ -36,9 +36,9 @@ const useStyles = makeStyles({
     textAlign: 'left',
     marginLeft: -spacing.md,
     padding: spacing.xs,
-    paddingLeft: spacing.md,
+    paddingLeft: spacing.xxs,
     paddingRight: spacing.lg,
-    '& svg': { marginRight: spacing.md },
+    '& svg': { minWidth: 60 },
   },
   key: { fontSize: fontSizes.sm, color: colors.grayDarker, margin: 0 },
 })

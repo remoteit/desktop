@@ -18,10 +18,14 @@ const jssTheme: ThemeOptions = {
     },
     MuiAccordion: {
       root: {
-        '& + .MuiAccordion-root': { borderTop: `1px solid ${colors.grayLighter}` },
+        '&.Mui-expanded': { paddingBottom: spacing.md, marginLeft: spacing.md, marginRight: spacing.md, marginTop: 0 },
         '&:before': { display: 'none' },
-        '&.Mui-expanded': { margin: 0, paddingBottom: spacing.md },
+        width: `calc(100% - ${spacing.md * 2}px)`,
+        marginLeft: spacing.md,
+        marginRight: spacing.md,
       },
+      rounded: {},
+      expanded: {},
     },
     MuiAccordionDetails: {
       root: { display: 'block', padding: 0 },
@@ -63,6 +67,7 @@ const jssTheme: ThemeOptions = {
         padding: `${spacing.xs}px ${spacing.md}px`,
       },
     },
+    MuiButtonBase: { root: { borderRadius: radius } },
     MuiTouchRipple: {
       ripple: { color: colors.primary },
     },
@@ -193,41 +198,6 @@ const jssTheme: ThemeOptions = {
       root: { zIndex: 1 },
       primary: { lineHeight: 1.4 },
       secondary: { fontSize: fontSizes.xs },
-    },
-    // MuiTable: {
-    //   root: {
-    //     width: `calc(100% - ${spacing.md * 2}px)`,
-    //     marginLeft: spacing.md,
-    //   },
-    // },
-    MuiTableCell: {
-      root: {
-        borderBottomWidth: 0,
-        paddingLeft: 0,
-        paddingRight: spacing.xs,
-      },
-      head: {
-        borderBottom: 1,
-      },
-      sizeSmall: {
-        padding: 4,
-      },
-    },
-    MuiTableRow: {
-      // root: {
-      //   '&.MuiTableRow-hover:hover': {
-      //     backgroundColor: colors.primaryHighlight,
-      //     cursor: 'pointer',
-      //   },
-      //   '& td:first-child': {
-      //     borderTopLeftRadius: radius,
-      //     borderBottomLeftRadius: radius,
-      //   },
-      //   '& td:last-child': {
-      //     borderBottomRightRadius: radius,
-      //     borderTopRightRadius: radius,
-      //   },
-      // },
     },
     MuiMenu: {
       list: {

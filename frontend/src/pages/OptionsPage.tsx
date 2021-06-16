@@ -76,7 +76,7 @@ export const OptionsPage: React.FC = () => {
         />
         <ListItemSetting
           label="HTTPS Certificate"
-          subLabel="Use a remote.it certificate to handle https connections"
+          subLabel="Use a remote.it certificate to handle and name local connections"
           icon="file-certificate"
           toggle={!!preferences.useCertificate}
           onClick={() => emit('preferences', { ...preferences, useCertificate: !preferences.useCertificate })}

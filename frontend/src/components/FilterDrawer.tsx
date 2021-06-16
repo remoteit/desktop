@@ -4,6 +4,7 @@ import { defaultState } from '../models/devices'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, List } from '@material-ui/core'
+import { AccordionMenu } from './AccordionMenu'
 import { FilterSelector } from './FilterSelector'
 import { Drawer } from './Drawer'
 
@@ -49,9 +50,8 @@ export const FilterDrawer: React.FC = () => {
     },
     open: state.ui.drawerMenu === 'FILTER',
   }))
-  const { ui, devices } = useDispatch<Dispatch>()
+  const { devices } = useDispatch<Dispatch>()
   const [values, setValues] = useState<IValues>(state)
-  const [expanded, setExpanded] = useState<string>()
   const css = useStyles()
 
   const handleClear = () => {
@@ -78,44 +78,60 @@ export const FilterDrawer: React.FC = () => {
   return (
     <Drawer open={open}>
       <List dense className={css.list}>
-        <FilterSelector
-          subtitle="Sort"
-          open={expanded === 'sort'}
-          onAccordion={value => setExpanded(value ? 'sort' : undefined)}
-          icon={values.sort.substr(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
-          value={values.sort}
-          onSelect={value => {
-            if (values.sort === value) value = value.substr(0, 1) === '-' ? value : `-${value}`
-            setValues({ ...values, sort: value })
-          }}
-          filterList={sortFilters}
-        />
-        <FilterSelector
-          subtitle="State"
-          open={expanded === 'state'}
-          onAccordion={value => setExpanded(value ? 'state' : undefined)}
-          icon="check"
-          value={values.filter}
-          onSelect={value => setValues({ ...values, filter: value })}
-          filterList={deviceFilters}
-        />
-        <FilterSelector
-          subtitle="Owner"
-          open={expanded === 'owner'}
-          onAccordion={value => setExpanded(value ? 'owner' : undefined)}
-          icon="check"
-          value={values.owner}
-          onSelect={value => setValues({ ...values, owner: value })}
-          filterList={ownerFilters}
-        />
-        <FilterSelector
-          subtitle="Platform"
-          open={expanded === 'platform'}
-          onAccordion={value => setExpanded(value ? 'platform' : undefined)}
-          icon="check"
-          value={values.platform?.toString() || 'all'}
-          onSelect={value => setValues({ ...values, platform: parseInt(value) || undefined })}
-          filterList={platformFilter}
+        <AccordionMenu
+          menus={[
+            {
+              key: 'sort',
+              subtitle: 'Sort',
+              children: (
+                <FilterSelector
+                  icon={values.sort.substr(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
+                  value={values.sort}
+                  onSelect={value => {
+                    if (values.sort === value) value = value.substr(0, 1) === '-' ? value : `-${value}`
+                    setValues({ ...values, sort: value })
+                  }}
+                  filterList={sortFilters}
+                />
+              ),
+            },
+            {
+              key: 'state',
+              subtitle: 'State',
+              children: (
+                <FilterSelector
+                  icon="check"
+                  value={values.filter}
+                  onSelect={value => setValues({ ...values, filter: value })}
+                  filterList={deviceFilters}
+                />
+              ),
+            },
+            {
+              key: 'owner',
+              subtitle: 'Owner',
+              children: (
+                <FilterSelector
+                  icon="check"
+                  value={values.owner}
+                  onSelect={value => setValues({ ...values, owner: value })}
+                  filterList={ownerFilters}
+                />
+              ),
+            },
+            {
+              key: 'platform',
+              subtitle: 'Platform',
+              children: (
+                <FilterSelector
+                  icon="check"
+                  value={values.platform?.toString() || 'all'}
+                  onSelect={value => setValues({ ...values, platform: parseInt(value) || undefined })}
+                  filterList={platformFilter}
+                />
+              ),
+            },
+          ]}
         />
       </List>
     </Drawer>

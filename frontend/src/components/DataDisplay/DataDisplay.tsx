@@ -7,6 +7,8 @@ import { Icon } from '../Icon'
 
 type Props = IDataOptions & {
   attributes: Attribute[]
+  device?: IDevice
+  service?: IService
   width?: number
 }
 

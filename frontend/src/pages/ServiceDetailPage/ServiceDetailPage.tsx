@@ -2,15 +2,14 @@ import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
 import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
+import { ServiceAttributes } from '../../components/ServiceAttributes'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ConnectionDetails } from '../../components/ConnectionDetails'
 import { ApplicationState } from '../../store'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { DataDisplay } from '../../components/DataDisplay'
 import { ComboButton } from '../../buttons/ComboButton'
 import { CopyButton } from '../../buttons/CopyButton'
 import { isRemoteUI } from '../../helpers/uiHelper'
-import { getAttributes } from '../../helpers/attributes'
 import { Gutters } from '../../components/Gutters'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
@@ -31,17 +30,6 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   }, [])
 
   if (!service || !device) return null
-
-  const attributes = getAttributes([
-    'serviceLastReported',
-    'serviceName',
-    'servicePort',
-    'serviceProtocol',
-    'serviceType',
-    'owner',
-    'serviceId',
-    'license',
-  ])
 
   return (
     <ServiceHeaderMenu
@@ -86,9 +74,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
           Service offline
         </Notice>
       )}
-      <Gutters>
-        <DataDisplay attributes={attributes} device={device} service={service} />
-      </Gutters>
+      <ServiceAttributes service={service} />
     </ServiceHeaderMenu>
   )
 }

@@ -16,12 +16,14 @@ import { makeStyles, Divider, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../components/InlineTemplateSetting'
 import { ConnectionLogSetting } from '../components/ConnectionLogSetting'
+import { ServiceAttributes } from '../components/ServiceAttributes'
+import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NoConnectionPage } from './NoConnectionPage'
 import { LanShareSelect } from '../components/LanShareSelect'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { ForgetButton } from '../buttons/ForgetButton'
+import { ComboButton } from '../buttons/ComboButton'
 import { ClearButton } from '../buttons/ClearButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { InfoButton } from '../buttons/InfoButton'
@@ -86,34 +88,39 @@ export const ConnectionPage: React.FC = () => {
         </>
       }
     >
-      <List>
-        <NameSetting connection={connection} service={service} device={device} />
-        <PortSetting connection={connection} service={service} />
-        <InlineTemplateSetting
-          connection={connection}
-          service={service}
-          context="launch"
-          actionIcon={<LaunchButton connection={connection} service={service} />}
-        />
-        <InlineTemplateSetting
-          connection={connection}
-          service={service}
-          context="copy"
-          actionIcon={<CopyButton connection={connection} service={service} show />}
-        />
-        <CustomAttributeSettings connection={connection} service={service} />
-      </List>
+      <AccordionMenuItem subtitle="Configuration" defaultExpanded={!connection?.enabled}>
+        <List>
+          <NameSetting connection={connection} service={service} device={device} />
+          <PortSetting connection={connection} service={service} />
+          <InlineTemplateSetting
+            connection={connection}
+            service={service}
+            context="launch"
+            actionIcon={<LaunchButton connection={connection} service={service} />}
+          />
+          <InlineTemplateSetting
+            connection={connection}
+            service={service}
+            context="copy"
+            actionIcon={<CopyButton connection={connection} service={service} show />}
+          />
+          <CustomAttributeSettings connection={connection} service={service} />
+        </List>
+      </AccordionMenuItem>
       <Divider variant="inset" />
-      <List>
-        <TimeoutSetting connection={connection} service={service} />
-        <ProxySetting connection={connection} service={service} />
-        <LanShareSelect connection={connection} service={service} />
-        <ConnectionLogSetting connection={connection} service={service} />
-      </List>
+      <AccordionMenuItem subtitle="Options">
+        <List>
+          <TimeoutSetting connection={connection} service={service} />
+          <ProxySetting connection={connection} service={service} />
+          <LanShareSelect connection={connection} service={service} />
+          <ConnectionLogSetting connection={connection} service={service} />
+          <PublicSetting connection={connection} service={service} />
+        </List>
+      </AccordionMenuItem>
       <Divider variant="inset" />
-      <List>
-        <PublicSetting connection={connection} service={service} />
-      </List>
+      <AccordionMenuItem subtitle="Service Details">
+        <ServiceAttributes service={service} />
+      </AccordionMenuItem>
     </Container>
   )
 }

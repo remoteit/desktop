@@ -31,7 +31,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   const [open, setOpen] = useState<boolean>(false)
   const [openApp, setOpenApp] = useState<boolean>(false)
   const [downloadLink, setDownloadLink] = useState<string>('')
-  const hidden = !connection?.enabled
+  const disabled = !connection?.enabled
 
   const app = useApplication('launch', service, connection)
 
@@ -53,7 +53,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     }
   }, [requireInstall, launch, app])
 
-  if (hidden || !app) return null
+  if (!app) return null
 
   const launchBrowser = () => {
     let launchApp: ILaunchApp | undefined
@@ -109,20 +109,18 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   return (
     <>
       {menuItem ? (
-        <MenuItem dense onClick={() => setLaunch(true)}>
+        <MenuItem dense onClick={() => setLaunch(true)} disabled={loading || disabled}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={`Launch ${app.title}`} />
         </MenuItem>
       ) : (
         <Tooltip title={`Launch ${app.title}`}>
-          <IconButton onClick={() => setLaunch(true)} disabled={loading}>
+          <IconButton onClick={() => setLaunch(true)} disabled={loading || disabled}>
             {LaunchIcon}
           </IconButton>
         </Tooltip>
       )}
-
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
-
       <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />
     </>
   )
