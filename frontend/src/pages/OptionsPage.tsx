@@ -81,6 +81,7 @@ export const OptionsPage: React.FC = () => {
           toggle={!!preferences.useCertificate}
           onClick={() => emit('preferences', { ...preferences, useCertificate: !preferences.useCertificate })}
         />
+        <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting

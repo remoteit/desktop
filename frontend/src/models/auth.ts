@@ -165,6 +165,7 @@ export default createModel<RootModel>()({
       dispatch.search.reset()
       dispatch.licensing.reset()
       dispatch.tags.reset()
+      dispatch.ui.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''
       emit('user/sign-out-complete')

@@ -1,6 +1,4 @@
-import { useRef } from 'react'
 import { createModel } from '@rematch/core'
-import { masterAttributes } from '../helpers/attributes'
 import { RootModel } from './rootModel'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -41,9 +39,10 @@ type UIState = {
   panelWidth: ILookup<number>
   navigationBack: string[]
   navigationForward: string[]
+  guideAWS: IGuide
 }
 
-const state: UIState = {
+const defaultState: UIState = {
   navigation: {},
   connected: false,
   offline: false,
@@ -76,21 +75,18 @@ const state: UIState = {
   launchLoading: false,
   launchPath: '',
   requireInstall: '',
-  panelWidth: {
-    devices: 400,
-    connections: 600,
-    settings: 400,
-  },
+  panelWidth: { devices: 400, connections: 600, settings: 400 },
   navigationBack: [],
   navigationForward: [],
+  guideAWS: { title: 'AWS Guide', step: 0, total: 6 },
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
-    setupUpdated(count: number, globalState) {
+    async setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
-        dispatch.ui.reset()
+        dispatch.ui.updated()
         dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
     },
@@ -101,17 +97,32 @@ export default createModel<RootModel>()({
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
     },
+    async resetGuides(_, globalState) {
+      Object.keys(globalState.ui).forEach(key => {
+        if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, step: 0, done: false })
+      })
+    },
   }),
   reducers: {
     set(state: UIState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
-    reset(state: UIState) {
+    updated(state: UIState) {
       state.setupBusy = false
       state.setupAddingService = false
       state.setupServiceBusy = undefined
       state.restoring = false
+      return state
+    },
+    guide(state: UIState, { guide, ...props }: ILookup<any>) {
+      if (props.step && props.step !== state[guide].step + 1) return state
+      if (props.step > state[guide].total) props.done = true
+      state[guide] = { ...state[guide], ...props }
+      return state
+    },
+    reset(state: UIState) {
+      state = defaultState
       return state
     },
   },

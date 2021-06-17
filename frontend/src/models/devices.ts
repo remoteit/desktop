@@ -260,8 +260,9 @@ export default createModel<RootModel>()({
     },
 
     async claimDevice(code: string) {
-      console.log('CLAIM DEVICE CODE', code)
       dispatch.ui.set({ claiming: true })
+      dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
+
       const result = await graphQLClaimDevice(code)
       try {
         const device = result?.data?.data?.claimDevice
@@ -276,6 +277,8 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `An error occurred registering your device. (${error.message})` })
         console.error(error)
       }
+
+      dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
     },
 
     async destroy(device: IDevice, globalState) {

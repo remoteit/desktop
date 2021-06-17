@@ -6,6 +6,7 @@ import { launchPutty, launchVNC, launchRemoteDesktop } from '../../services/Brow
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
+import { GuideStep } from '../../components/GuideStep'
 import { Dispatch } from '../../store'
 import { FontSize } from '../../styling'
 import { Icon } from '../../components/Icon'
@@ -38,6 +39,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
   useEffect(() => {
     if (launch) {
       app.prompt ? setOpen(true) : launchBrowser()
+      ui.guide({ guide: 'guideAWS', done: true })
     }
     switch (requireInstall) {
       case 'putty':
@@ -108,18 +110,22 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
 
   return (
     <>
-      {menuItem ? (
-        <MenuItem dense onClick={() => setLaunch(true)} disabled={loading || disabled}>
-          <ListItemIcon>{LaunchIcon}</ListItemIcon>
-          <ListItemText primary={`Launch ${app.title}`} />
-        </MenuItem>
-      ) : (
-        <Tooltip title={`Launch ${app.title}`}>
-          <IconButton onClick={() => setLaunch(true)} disabled={loading || disabled}>
-            {LaunchIcon}
-          </IconButton>
-        </Tooltip>
-      )}
+      <GuideStep guide="guideAWS" step={7} instructions="Or for some services you can use the launch button.">
+        <span>
+          {menuItem ? (
+            <MenuItem dense onClick={() => setLaunch(true)} disabled={loading || disabled}>
+              <ListItemIcon>{LaunchIcon}</ListItemIcon>
+              <ListItemText primary={`Launch ${app.title}`} />
+            </MenuItem>
+          ) : (
+            <Tooltip title={`Launch ${app.title}`}>
+              <IconButton onClick={() => setLaunch(true)} disabled={loading || disabled}>
+                {LaunchIcon}
+              </IconButton>
+            </Tooltip>
+          )}
+        </span>
+      </GuideStep>
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
       <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />
     </>

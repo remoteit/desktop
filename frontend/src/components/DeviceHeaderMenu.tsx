@@ -48,7 +48,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               exactMatch
               dense
             />
-            {!device.shared && (
+            {!device.shared && device.state !== 'inactive' && (
               <ListItemLocation
                 title="Edit"
                 icon="pen"

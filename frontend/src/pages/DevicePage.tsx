@@ -22,6 +22,7 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
+import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { spacing, fontSizes } from '../styling'
@@ -118,23 +119,25 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
-          <ListItemLocation
-            key={s.id}
-            pathname={`/devices/${device.id}/${s.id}/details`}
-            match={`/devices/${device.id}/${s.id}`}
-            dense
-          >
-            <ListItemText
-              className={css.service}
-              primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
-              secondary={host(s)}
-            />
-            <ListItemSecondaryAction>
-              <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
-            </ListItemSecondaryAction>
-          </ListItemLocation>
-        ))}
+        <GuideStep guide="guideAWS" step={4} instructions="Select the first service." autoNext>
+          {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
+            <ListItemLocation
+              key={s.id}
+              pathname={`/devices/${device.id}/${s.id}/details`}
+              match={`/devices/${device.id}/${s.id}`}
+              dense
+            >
+              <ListItemText
+                className={css.service}
+                primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
+                secondary={host(s)}
+              />
+              <ListItemSecondaryAction>
+                <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
+              </ListItemSecondaryAction>
+            </ListItemLocation>
+          ))}
+        </GuideStep>
       </List>
       <ServiceContextualMenu />
     </Container>

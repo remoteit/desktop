@@ -492,6 +492,13 @@ declare global {
 
   type ISelect = { [key: string]: string | number }
 
+  type IGuide = {
+    step: number
+    total: number
+    done?: boolean
+    title?: string
+  }
+
   type IPreferences = {
     version: string
     cliVersion: string

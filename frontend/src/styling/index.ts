@@ -49,7 +49,7 @@ export const colors: { [key in Color]: string } = {
   primaryLighter: '#d7effc',
   primaryHighlight: '#edf8ff',
   secondary: '#75bd00',
-  guide: '#9651c4',
+  guide: '#001247', //'#9651c4',
   successLight: '#a4db4c',
   success: '#75bd00',
   successDark: '#436807',
