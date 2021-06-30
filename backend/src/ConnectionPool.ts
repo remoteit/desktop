@@ -69,11 +69,12 @@ export default class ConnectionPool {
             connection.startTime !== c.startTime ||
             connection.connected !== c.connected ||
             connection.connecting !== c.connecting ||
+            connection.disconnecting !== c.disconnecting ||
             connection.reachable !== c.reachable ||
             connection.sessionId !== c.sessionId))
       ) {
         // Logger.info('SYNC CLI CONNECTION', { connection, c })
-        this.set({ ...connection, ...c })
+        this.set({ ...connection, ...c }, false)
       }
     })
     // start any connections: desktop -> cli

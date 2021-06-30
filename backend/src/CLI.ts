@@ -1,8 +1,9 @@
-import { DEFAULT_TARGET, DEFAULT_CONNECTION } from './sharedCopy/constants'
 import { REACHABLE_ERROR_CODE } from './constants'
+import { DEFAULT_TARGET } from './sharedCopy/constants'
 import { cliBinary } from './Binary'
 import binaryInstaller from './binaryInstaller'
 import environment from './environment'
+import preferences from './preferences'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
 import strings from './cliStrings'
@@ -12,7 +13,7 @@ import debug from 'debug'
 import path from 'path'
 import user from './User'
 
-const d = debug('CLI')
+const d = debug('cli')
 
 type IData = {
   user?: UserCredentials
@@ -36,7 +37,7 @@ type IExec = {
 type IConnectionStatus = {
   id: string
   isDisabled?: boolean
-  state?: 'offline' | 'connecting' | 'connected'
+  state?: 'offline' | 'connecting' | 'connected' | 'disconnecting'
   isFailover: boolean
   isP2P?: boolean
   error?: ISimpleError
@@ -48,8 +49,8 @@ type IConnectionStatus = {
   address?: string
   namedPort?: number
   namedHost?: string
-  restrict?: ipAddress // nicolae to add
-  timeout?: number // nicolae to add
+  restrict?: ipAddress
+  timeout?: number
 }
 
 type IConnectionDefaults = {
@@ -85,6 +86,10 @@ export default class CLI {
 
   async checkSignIn() {
     if (this.isSignedOut()) await this.signIn()
+    this.checkDefaults()
+  }
+
+  async checkDefaults() {
     if (!this.areDefaultsSet()) await this.setDefaults()
   }
 
@@ -94,13 +99,16 @@ export default class CLI {
   }
 
   areDefaultsSet() {
-    this.readConnections()
-    const result: boolean = !!(
+    this.readConnectionDefaults()
+    // @TODO Add check useCertificate preferences state and adjust
+    const useCert: boolean = !!(
       this.data.connectionDefaults?.enableCertificate &&
       this.data.connectionDefaults?.enableOneHTTPSListener &&
       this.data.connectionDefaults?.enableOneHTTPListener
     )
-    Logger.info('ARE CLI DEFAULTS SET?', { result, defaults: this.data.connectionDefaults })
+    const result = !!preferences.get().useCertificate === useCert
+
+    d('ARE CLI DEFAULTS SET?', { result, defaults: this.data.connectionDefaults })
     return result
   }
 
@@ -174,7 +182,7 @@ export default class CLI {
         error = { message: c.error.message, code: c.error.code }
       }
 
-      console.log('CONNECTION STATE', c.id, c.state)
+      d('CONNECTION STATE', c.id, c.state)
 
       return {
         ...connection,
@@ -187,6 +195,7 @@ export default class CLI {
         endTime: c.stoppedAt ? Date.parse(c.stoppedAt) : undefined,
         connected: c.state === 'connected',
         connecting: c.state === 'connecting',
+        disconnecting: c.state === 'disconnecting',
         isP2P: c.state === 'connected' ? c.isP2P : undefined,
         reachable: c.reachable,
         sessionId: c.sessionID?.toLowerCase(),
@@ -264,21 +273,25 @@ export default class CLI {
   }
 
   async addConnection(c: IConnection, onError: ErrorCallback) {
+    d('ADD CONNECTION', strings.connect(c))
     await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
   async removeConnection(c: IConnection, onError: ErrorCallback) {
+    d('REMOVE CONNECTION', strings.disconnect(c))
     await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
   async stopConnection(c: IConnection, onError: ErrorCallback) {
+    d('STOP CONNECTION', strings.stop(c))
     await this.exec({ cmds: [strings.stop(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
   async setConnection(c: IConnection, onError: ErrorCallback) {
+    d('SET CONNECTION', strings.setConnect(c))
     await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
@@ -307,8 +320,8 @@ export default class CLI {
   }
 
   async setDefaults() {
-    await this.exec({ cmds: [strings.setDefaults()], checkAuthHash: true, skipSignInCheck: true })
-    await this.exec({ cmds: [strings.agentRestart()], checkAuthHash: true, skipSignInCheck: true })
+    await this.exec({ cmds: [strings.defaults()], checkAuthHash: true, skipSignInCheck: true })
+    await this.exec({ cmds: [strings.serviceRestart()], admin: true })
     this.read()
   }
 
@@ -328,6 +341,7 @@ export default class CLI {
 
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
+    d('COMMAND', commands.toString())
 
     if (!quiet)
       commands.onError = (e: Error) => {

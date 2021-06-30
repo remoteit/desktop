@@ -7,7 +7,7 @@ import { ApplicationState, store } from '../store'
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
   if (connection) {
-    // if (!connection.online) return 'disconnected'
+    if (connection.disconnecting) return 'disconnecting'
     if ((connection.connected || connection.connecting) && !connection.enabled) return 'stopping'
     if (connection.connecting) return 'connecting'
     if (connection.connected) return 'connected'

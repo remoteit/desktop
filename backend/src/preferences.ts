@@ -2,6 +2,7 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import JSONFile from './JSONFile'
 import environment from './environment'
+import cli from './cliInterface'
 import path from 'path'
 
 export class Preferences {
@@ -51,6 +52,7 @@ export class Preferences {
     this.data = preferences
     Logger.info('SET PREFERENCES', { preferences })
     EventBus.emit(this.EVENTS.update, this.data)
+    cli?.checkDefaults()
   }
 }
 

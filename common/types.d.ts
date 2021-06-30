@@ -129,6 +129,7 @@ declare global {
     commandTemplate?: string // command line launch template
     connected?: boolean
     connecting?: boolean
+    disconnecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
     deviceID: string
     enabled?: boolean // if the connection is active
@@ -158,7 +159,14 @@ declare global {
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
-  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping' | 'ready'
+  type IConnectionState =
+    | 'offline'
+    | 'disconnected'
+    | 'connected'
+    | 'connecting'
+    | 'disconnecting'
+    | 'stopping'
+    | 'ready'
 
   type IConnectionKey = keyof IConnection
 

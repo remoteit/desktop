@@ -11,16 +11,13 @@ export default {
     return `-j signout --authhash ${user.authHash}`
   },
 
-  setDefaults() {
-    return `-j connection defaults --enableCertificate true --enableOneHTTPSListener true --enableOneHTTPListener true --authhash ${user.authHash}`
+  defaults() {
+    const useCert = !!preferences.get().useCertificate
+    return `-j connection defaults --enableCertificate ${useCert} --enableOneHTTPSListener ${useCert} --enableOneHTTPListener ${useCert} --authhash ${user.authHash}`
   },
 
   status() {
     return `-jj status -e --authhash ${user.authHash}`
-  },
-
-  agentRestart() {
-    return `-j agent restart --authhash ${user.authHash}`
   },
 
   agentStatus() {
@@ -62,11 +59,10 @@ export default {
   },
 
   connect(c: IConnection) {
-    return `-j connection add \
+    let string = `-j connection add \
       --id ${c.id} \
       --name "${c.name}" \
-      --port ${c.port} \
-      --hostname ${c.host} \
+      --ip ${c.host} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
       --failover ${!!c.failover} \
@@ -79,6 +75,12 @@ export default {
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
       --manufacture-id ${environment.appCode}`
+
+    if (!preferences.get().useCertificate || (c.port !== 80 && c.port !== 443)) {
+      string += ` --port ${c.port}`
+    }
+
+    return string
   },
 
   stop(c: IConnection) {
@@ -90,24 +92,29 @@ export default {
   },
 
   setConnect(c: IConnection) {
-    return `-j connection modify \
-      --id ${c.id} \
-      --name "${c.name}" \
-      --port ${c.port} \
-      --hostname ${c.host} \
-      --timeout ${c.timeout} \
-      --restrict ${c.restriction} \
-      --failover ${!!c.failover} \
-      --p2p ${!c.proxyOnly} \
-      --enable ${!!c.enabled} \
-      --servicetype ${c.typeID} \
-      --targetHostname "${c.name}" \
-      --enableCertificate ${!!preferences.get().useCertificate} \
-      --enableHTTP true \
-      --authhash ${user.authHash} \
-      --log ${!!c.log} \
-      --logfolder "${environment.connectionLogPath}" \
-      --manufacture-id ${environment.appCode}`
+    let string = `-j connection modify \
+    --id ${c.id} \
+    --name "${c.name}" \
+    --ip ${c.host} \
+    --timeout ${c.timeout} \
+    --restrict ${c.restriction} \
+    --failover ${!!c.failover} \
+    --p2p ${!c.proxyOnly} \
+    --enable ${!!c.enabled} \
+    --servicetype ${c.typeID} \
+    --targetHostname "${c.name}" \
+    --enableCertificate ${!!preferences.get().useCertificate} \
+    --enableHTTP true \
+    --authhash ${user.authHash} \
+    --log ${!!c.log} \
+    --logfolder "${environment.connectionLogPath}" \
+    --manufacture-id ${environment.appCode}`
+
+    if (!preferences.get().useCertificate || (c.port !== 80 && c.port !== 443)) {
+      string += ` --port ${c.port}`
+    }
+
+    return string
   },
 
   serviceInstall() {
@@ -116,6 +123,10 @@ export default {
 
   serviceUninstall() {
     return `-j agent uninstall`
+  },
+
+  serviceRestart() {
+    return `-j agent restart`
   },
 
   toolsInstall() {
