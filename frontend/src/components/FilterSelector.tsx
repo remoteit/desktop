@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { makeStyles, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { Icon } from './Icon'
 
 type Props = {
@@ -10,8 +10,10 @@ type Props = {
 }
 
 export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSelect }) => {
+  const css = useStyles()
+
   return (
-    <>
+    <List dense className={css.list}>
       {filterList.map((f, index) => (
         <ListItem button dense key={index} onClick={() => onSelect(f.value)}>
           <ListItemIcon>{f.value === value.replace('-', '') && <Icon name={icon} color="primary" />}</ListItemIcon>
@@ -21,6 +23,13 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
           />
         </ListItem>
       ))}
-    </>
+    </List>
   )
 }
+
+const useStyles = makeStyles({
+  list: {
+    paddingTop: 0,
+    '& .MuiListItem-dense': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
+  },
+})

@@ -15,8 +15,9 @@ export const AccordionMenu: React.FC<{ menus: IAccordionMenu[] }> = ({ menus }) 
     <>
       {menus.map((menu, index) => (
         <>
-          {!!index && <Divider />}
+          {!!index && <Divider key={`${index}-div`} />}
           <AccordionMenuItem
+            key={index}
             expanded={expanded === menu.key}
             onClick={expanded => setExpanded(expanded ? menu.key : undefined)}
             subtitle={menu.subtitle}

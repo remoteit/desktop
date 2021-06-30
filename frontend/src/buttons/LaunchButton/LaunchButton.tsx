@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react'
+import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { launchPutty, launchVNC, launchRemoteDesktop } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
-import { launchPutty, launchVNC, launchRemoteDesktop } from '../../services/Browser'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
+import { DataButton } from '../DataButton'
+import { DialogApp } from '../../components/DialogApp'
 import { GuideStep } from '../../components/GuideStep'
 import { Dispatch } from '../../store'
 import { FontSize } from '../../styling'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
-import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { DialogApp } from '../../components/DialogApp'
 
 type Props = {
   connection?: IConnection
   service?: IService
   menuItem?: boolean
+  dataButton?: boolean
   size?: FontSize
 }
 
-export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, size = 'md' }) => {
+export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, size = 'md' }) => {
   const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
     path: state.ui.launchPath,
@@ -108,6 +110,8 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
     />
   )
 
+  const title = `Launch ${app.title}`
+
   return (
     <>
       <GuideStep guide="guideAWS" step={7} instructions="Or for some services you can use the launch button.">
@@ -115,10 +119,18 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, s
           {menuItem ? (
             <MenuItem dense onClick={() => setLaunch(true)} disabled={loading || disabled}>
               <ListItemIcon>{LaunchIcon}</ListItemIcon>
-              <ListItemText primary={`Launch ${app.title}`} />
+              <ListItemText primary={title} />
             </MenuItem>
+          ) : dataButton ? (
+            <DataButton
+              label={title}
+              value={app.command}
+              title={title}
+              icon={LaunchIcon}
+              onClick={() => setLaunch(true)}
+            />
           ) : (
-            <Tooltip title={`Launch ${app.title}`}>
+            <Tooltip title={title}>
               <IconButton onClick={() => setLaunch(true)} disabled={loading || disabled}>
                 {LaunchIcon}
               </IconButton>

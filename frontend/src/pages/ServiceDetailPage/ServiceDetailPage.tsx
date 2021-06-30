@@ -6,9 +6,7 @@ import { ServiceAttributes } from '../../components/ServiceAttributes'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ConnectionDetails } from '../../components/ConnectionDetails'
 import { ApplicationState } from '../../store'
-import { LaunchButton } from '../../buttons/LaunchButton'
 import { ComboButton } from '../../buttons/ComboButton'
-import { CopyButton } from '../../buttons/CopyButton'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { GuideStep } from '../../components/GuideStep'
 import { Gutters } from '../../components/Gutters'
@@ -45,23 +43,17 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
                 <ComboButton connection={connection} service={service} size="medium" fullWidth />
                 {/* <Icon name="neuter" /> */}
                 {connection?.enabled ? (
-                  <>
-                    <Tooltip title="Configure Connection" arrow>
-                      <IconButton to={`/connections/${service.id}`} component={Link}>
-                        <Icon name="arrow-right" size="md" fixedWidth />
-                      </IconButton>
-                    </Tooltip>
-                    <CopyButton connection={connection} service={service} />
-                    <LaunchButton connection={connection} service={service} />
-                  </>
+                  <Tooltip title="Configure Connection" arrow>
+                    <IconButton to={`/connections/${service.id}`} component={Link}>
+                      <Icon name="arrow-right" size="md" fixedWidth />
+                    </IconButton>
+                  </Tooltip>
                 ) : (
-                  <>
-                    <Tooltip title="Configure Connection" arrow>
-                      <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
-                        <Icon name="arrow-right" size="md" fixedWidth />
-                      </IconButton>
-                    </Tooltip>
-                  </>
+                  <Tooltip title="Configure Connection" arrow>
+                    <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
+                      <Icon name="arrow-right" size="md" fixedWidth />
+                    </IconButton>
+                  </Tooltip>
                 )}
               </Gutters>
             </GuideStep>

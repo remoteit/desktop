@@ -10,6 +10,7 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
 }) => {
   return (
     <InlineTextFieldSetting
+      icon="signature"
       value={connection.name}
       label="Connection Name"
       resetValue={connectionName(service, device)}

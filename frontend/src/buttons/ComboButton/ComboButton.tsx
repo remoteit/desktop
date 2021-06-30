@@ -2,7 +2,6 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
-import { OfflineButton } from '../OfflineButton'
 import { spacing } from '../../styling'
 
 type Props = {

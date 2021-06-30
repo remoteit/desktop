@@ -7,6 +7,7 @@ type IAccordionMenu = {
   subtitle: string
   expanded?: boolean
   defaultExpanded?: boolean
+  gutterTop?: boolean
   onClick?: (expanded: boolean) => void
   children?: React.ReactElement
 }
@@ -15,10 +16,11 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   expanded,
   defaultExpanded,
   subtitle,
+  gutterTop,
   onClick,
   children,
 }) => {
-  const css = useStyles()
+  const css = useStyles({ gutterTop })
   const [open, setOpen] = useState<boolean>(!!defaultExpanded)
   const clickHandler = state => {
     onClick && onClick(state)
@@ -28,8 +30,13 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   expanded = expanded === undefined ? open : expanded
 
   return (
-    <Accordion elevation={0} expanded={expanded} onChange={(_, state) => clickHandler(state)}>
-      <AccordionSummary>
+    <Accordion
+      elevation={0}
+      expanded={expanded}
+      defaultExpanded={defaultExpanded}
+      onChange={(_, state) => clickHandler(state)}
+    >
+      <AccordionSummary className={css.accordion}>
         <Button className={css.button}>
           <ListSubheader>
             {subtitle}
@@ -43,6 +50,10 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
 }
 
 const useStyles = makeStyles({
+  accordion: ({ gutterTop }: { gutterTop?: boolean }) => ({
+    marginTop: gutterTop ? spacing.sm : 0,
+    '&.Mui-expanded': { marginTop: gutterTop ? spacing.sm : 0 },
+  }),
   button: {
     width: '100%',
     textAlign: 'left',

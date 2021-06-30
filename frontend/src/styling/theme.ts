@@ -18,14 +18,9 @@ const jssTheme: ThemeOptions = {
     },
     MuiAccordion: {
       root: {
-        '&.Mui-expanded': { paddingBottom: spacing.md, marginLeft: spacing.md, marginRight: spacing.md, marginTop: 0 },
+        '&.Mui-expanded': { margin: 0 },
         '&:before': { display: 'none' },
-        width: `calc(100% - ${spacing.md * 2}px)`,
-        marginLeft: spacing.md,
-        marginRight: spacing.md,
       },
-      rounded: {},
-      expanded: {},
     },
     MuiAccordionDetails: {
       root: { display: 'block', padding: 0 },
@@ -141,14 +136,18 @@ const jssTheme: ThemeOptions = {
     },
     MuiListSubheader: {
       root: {
-        color: colors.grayDark,
         textTransform: 'uppercase',
-        fontSize: fontSizes.xs,
-        letterSpacing: 1,
+        fontSize: fontSizes.xxs,
+        color: colors.grayDarker,
+        letterSpacing: 2,
         fontWeight: 500,
         lineHeight: '40px',
       },
       sticky: { zIndex: 2 },
+      gutters: {
+        paddingRight: gutters - 8,
+        paddingLeft: gutters,
+      },
     },
     MuiPaper: {
       rounded: { borderRadius: radius },

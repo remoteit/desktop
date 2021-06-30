@@ -83,7 +83,7 @@ export const InlineSetting: React.FC<Props> = ({
 
   const editForm = (
     <ListItem className={css.active} dense>
-      {!hideIcon && <ListItemIcon>{icon}</ListItemIcon>}
+      <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
       <form
         className={css.form}
         onSubmit={e => {
@@ -122,7 +122,7 @@ export const InlineSetting: React.FC<Props> = ({
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
       <ListItem button onClick={triggerEdit} disabled={disabled} dense>
-        {!hideIcon && <ListItemIcon>{icon}</ListItemIcon>}
+        <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
         <Title>
           <ListItemText>
             {label && <InputLabel shrink>{label}</InputLabel>}
@@ -171,5 +171,8 @@ const useStyles = makeStyles({
     right: 'auto',
     left: 20,
     marginTop: spacing.xs,
+  },
+  hideIcon: {
+    minWidth: spacing.sm,
   },
 })

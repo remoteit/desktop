@@ -40,6 +40,7 @@ type UIState = {
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
+  accordion: ILookup<boolean>
 }
 
 const defaultState: UIState = {
@@ -78,7 +79,8 @@ const defaultState: UIState = {
   panelWidth: { devices: 400, connections: 600, settings: 400 },
   navigationBack: [],
   navigationForward: [],
-  guideAWS: { title: 'AWS Guide', step: 0, total: 6 },
+  guideAWS: { title: 'AWS Guide', step: 0, total: 7 },
+  accordion: { config: true, configConnected: false },
 }
 
 export default createModel<RootModel>()({
@@ -119,6 +121,10 @@ export default createModel<RootModel>()({
       if (props.step && props.step !== state[guide].step + 1) return state
       if (props.step > state[guide].total) props.done = true
       state[guide] = { ...state[guide], ...props }
+      return state
+    },
+    accordion(state: UIState, params: ILookup<boolean>) {
+      state.accordion = { ...state.accordion, ...params }
       return state
     },
     reset(state: UIState) {

@@ -39,8 +39,8 @@ export const ConnectionPage: React.FC = () => {
   const history = useHistory()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
-  const { devices } = useDispatch<Dispatch>()
-  const { service, device, connection, session, fetching } = useSelector((state: ApplicationState) => {
+  const { devices, ui } = useDispatch<Dispatch>()
+  const { service, device, connection, session, fetching, accordion } = useSelector((state: ApplicationState) => {
     const [service, device] = selectById(state, serviceID)
     return {
       service,
@@ -48,12 +48,15 @@ export const ConnectionPage: React.FC = () => {
       connection: state.connections.all.find(c => c.id === serviceID) || newConnection(service),
       session: state.sessions.all.find(s => s.id === sessionID),
       fetching: state.devices.fetching,
+      accordion: state.ui.accordion,
     }
   })
+  const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
 
   useEffect(() => {
     analyticsHelper.page('ServicePage')
     const id = connection?.deviceID || deviceID
+
     if (!device && id) devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
@@ -62,6 +65,7 @@ export const ConnectionPage: React.FC = () => {
 
   return (
     <Container
+      gutterBottom
       header={
         <>
           <Gutters className={css.gutters}>
@@ -82,34 +86,33 @@ export const ConnectionPage: React.FC = () => {
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
           <Gutters>
-            <ConnectionDetails connection={connection} session={session} show={connection?.enabled} />
+            <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
             {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
           </Gutters>
         </>
       }
     >
-      <AccordionMenuItem subtitle="Configuration" defaultExpanded={!connection?.enabled}>
-        <List>
+      <AccordionMenuItem
+        subtitle="Configuration"
+        expanded={accordion[accordionConfig]}
+        onClick={() => ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
+        gutterTop
+      >
+        <List disablePadding>
           <NameSetting connection={connection} service={service} device={device} />
           <PortSetting connection={connection} service={service} />
-          <InlineTemplateSetting
-            connection={connection}
-            service={service}
-            context="launch"
-            actionIcon={<LaunchButton connection={connection} service={service} />}
-          />
-          <InlineTemplateSetting
-            connection={connection}
-            service={service}
-            context="copy"
-            actionIcon={<CopyButton connection={connection} service={service} show />}
-          />
+          <InlineTemplateSetting connection={connection} service={service} context="launch" />
+          <InlineTemplateSetting connection={connection} service={service} context="copy" />
           <CustomAttributeSettings connection={connection} service={service} />
         </List>
       </AccordionMenuItem>
-      <Divider variant="inset" />
-      <AccordionMenuItem subtitle="Options">
-        <List>
+      <AccordionMenuItem
+        subtitle="Options"
+        expanded={accordion.options}
+        onClick={() => ui.accordion({ options: !accordion.options })}
+        gutterTop
+      >
+        <List disablePadding>
           <TimeoutSetting connection={connection} service={service} />
           <ProxySetting connection={connection} service={service} />
           <LanShareSelect connection={connection} service={service} />
@@ -117,9 +120,13 @@ export const ConnectionPage: React.FC = () => {
           <PublicSetting connection={connection} service={service} />
         </List>
       </AccordionMenuItem>
-      <Divider variant="inset" />
-      <AccordionMenuItem subtitle="Service Details">
-        <ServiceAttributes service={service} />
+      <AccordionMenuItem
+        subtitle="Service Details"
+        expanded={accordion.service}
+        onClick={() => ui.accordion({ service: !accordion.service })}
+        gutterTop
+      >
+        <ServiceAttributes service={service} disablePadding />
       </AccordionMenuItem>
     </Container>
   )

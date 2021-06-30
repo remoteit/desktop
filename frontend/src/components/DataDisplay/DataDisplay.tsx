@@ -9,14 +9,15 @@ type Props = IDataOptions & {
   attributes: Attribute[]
   device?: IDevice
   service?: IService
+  disablePadding?: boolean
   width?: number
 }
 
-export const DataDisplay: React.FC<Props> = ({ attributes, width = 140, ...props }) => {
+export const DataDisplay: React.FC<Props> = ({ attributes, width = 140, disablePadding, ...props }) => {
   const css = useStyles(width)()
   if (!props) return null
   return (
-    <List className={css.list}>
+    <List className={css.list} disablePadding={disablePadding}>
       {attributes.map(attribute => {
         const value = attribute.value(props)
         return (
