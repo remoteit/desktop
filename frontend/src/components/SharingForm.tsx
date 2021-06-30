@@ -5,6 +5,7 @@ import { ShareSaveActions } from './ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { useSelector } from '../hooks/reactReduxHooks'
 import { ApplicationState } from '../store'
+import { Notice } from './Notice'
 
 export interface SharingDetails {
   access: SharingAccess
@@ -95,6 +96,16 @@ export function SharingForm({
           onClick={() => handleChangeScripting(true)}
         />
       </List>
+      {disabled && (
+        <>
+          <Notice fullWidth>
+            <em>
+              Please select an option to share.
+              If you wish to remove this user click the delete button at the top
+            </em>
+          </Notice>
+        </>
+      )}
       <ShareSaveActions
         onCancel={() => history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))}
         onSave={action}
