@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../../store'
-import { connectionState } from '../../helpers/connectionHelper'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
+import { connectionState, sanitizeName } from '../../helpers/connectionHelper'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { licenseChip } from '../../models/licensing'
@@ -48,6 +48,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       analyticsHelper.trackConnect('connectionInitiated', service)
       ui.guide({ guide: 'guideAWS', step: 6 })
       connection = connection || newConnection(service)
+      connection.name = sanitizeName(connection?.name)
       connection?.public ? connections.proxyConnect(connection) : emit('service/connect', connection)
     }
   }

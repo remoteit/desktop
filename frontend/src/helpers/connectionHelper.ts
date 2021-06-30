@@ -22,16 +22,17 @@ export function findLocalConnection(state: ApplicationState, id: string, session
 
 type nameObj = { name: string }
 
+export function sanitizeName(name: string) {
+  return name.toLowerCase().replace(/[-\s]+/g, '-')
+}
+
 export function connectionName(service?: nameObj, device?: nameObj): string {
   let name: string[] = []
   if (device) {
     name.push(device.name)
     if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
   } else if (service) name.push(service.name)
-  return name
-    .join(' ')
-    .toLowerCase()
-    .replace(/[-\s]+/g, '-')
+  return sanitizeName(name.join(' '))
 }
 
 export function newConnection(service?: IService | null) {
