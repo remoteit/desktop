@@ -321,7 +321,7 @@ export default class CLI {
 
   async setDefaults() {
     await this.exec({ cmds: [strings.defaults()], checkAuthHash: true, skipSignInCheck: true })
-    await this.exec({ cmds: [strings.serviceRestart()], admin: true })
+    binaryInstaller.restart()
     this.read()
   }
 

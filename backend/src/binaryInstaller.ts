@@ -57,13 +57,6 @@ export class BinaryInstaller {
   }
 
   async installBinaries(): Promise<void> {
-    const remoteAPI = preferences.get().apiURL
-    const graphqlURL = preferences.get().apiGraphqlURL
-    let envVar = ''
-
-    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
-    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
-
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
@@ -76,7 +69,7 @@ export class BinaryInstaller {
         })
       }
 
-      commands.push(`${envVar} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()
@@ -112,6 +105,15 @@ export class BinaryInstaller {
     })
   }
 
+  async restart() {
+    const commands = new Command({ onError: e => EventBus.emit(Binary.EVENTS.error, e.toString()), admin: true })
+    commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
+
+    this.inProgress = true
+    await commands.exec()
+    this.inProgress = false
+  }
+
   async uninstall() {
     if (this.inProgress) return Logger.warn('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     Logger.info('START UNINSTALL')
@@ -135,6 +137,17 @@ export class BinaryInstaller {
         }
       })
     }
+  }
+
+  envVar() {
+    const remoteAPI = preferences.get().apiURL
+    const graphqlURL = preferences.get().apiGraphqlURL
+    let envVar = ''
+
+    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
+    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
+
+    return envVar
   }
 
   async cliVersionChanged() {
