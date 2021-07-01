@@ -19,6 +19,7 @@ export function useNavigation(): INavigationHook {
   const { ui } = useDispatch<Dispatch>()
   const {
     connections,
+    devices,
     navigation,
     remoteUI,
     licenseIndicator,
@@ -27,6 +28,7 @@ export function useNavigation(): INavigationHook {
     navigationForward,
   } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(connection => connection.enabled).length,
+    devices: state.devices.total,
     navigation: state.ui.navigation,
     navigationBack: state.ui.navigationBack,
     navigationForward: state.ui.navigationForward,
@@ -89,9 +91,16 @@ export function useNavigation(): INavigationHook {
       match: '/connections/:any?/:any?/:any?',
       icon: 'arrow-right',
       show: !remoteUI,
-      chip: connections,
+      chip: connections.toLocaleString(),
     },
-    { label: 'Devices', path: '/devices', match: '/devices', icon: 'chart-network', show: !remoteUI },
+    {
+      label: 'Devices',
+      path: '/devices',
+      match: '/devices',
+      icon: 'chart-network',
+      show: !remoteUI,
+      chip: devices.toLocaleString(),
+    },
     {
       label: 'Announcements',
       path: '/announcements',

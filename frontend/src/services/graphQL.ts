@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
-import { getApiURL } from '../helpers/apiHelper'
+import { getGraphQLApi } from '../helpers/apiHelper'
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   try {
@@ -23,7 +23,7 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   }
 
   const request = {
-    url: getApiURL(),
+    url: getGraphQLApi(),
     method: 'post' as 'post',
     headers: { Authorization: token },
     data: { query, variables },

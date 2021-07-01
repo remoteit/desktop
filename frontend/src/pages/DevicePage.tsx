@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { replaceHost } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
@@ -22,6 +22,7 @@ import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
+import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { spacing, fontSizes } from '../styling'
@@ -35,11 +36,12 @@ type Props = {
 
 export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
   const css = useStyles()
-  const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
+  const { connections, setupAddingService, sortService, searched, query } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
     sortService: state.devices.sortServiceOption,
+    searched: state.devices.searched,
+    query: state.devices.query,
   }))
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           Device offline
         </Notice>
       )}
+      {searched && <Notice gutterTop>Searched for “{query}”</Notice>}
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <SortServices />
@@ -116,33 +119,27 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
-          <ListItemLocation
-            key={s.id}
-            pathname={`/devices/${device.id}/${s.id}/details`}
-            match={`/devices/${device.id}/${s.id}`}
-            dense
-          >
-            <ListItemText
-              className={css.service}
-              primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
-              secondary={host(s)}
-            />
-            <ListItemSecondaryAction>
-              <ServiceMiniState
-                service={s}
-                connection={connections.find(c => c.id === s.id)}
-                setContextMenu={setContextMenu}
+        <GuideStep guide="guideAWS" step={4} instructions="Select the first service." autoNext>
+          {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
+            <ListItemLocation
+              key={s.id}
+              pathname={`/devices/${device.id}/${s.id}/details`}
+              match={`/devices/${device.id}/${s.id}`}
+              dense
+            >
+              <ListItemText
+                className={css.service}
+                primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
+                secondary={host(s)}
               />
-            </ListItemSecondaryAction>
-          </ListItemLocation>
-        ))}
+              <ListItemSecondaryAction>
+                <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
+              </ListItemSecondaryAction>
+            </ListItemLocation>
+          ))}
+        </GuideStep>
       </List>
-      <ServiceContextualMenu
-        el={contextMenu.el}
-        serviceID={contextMenu.serviceID}
-        setEl={el => setContextMenu({ ...contextMenu, el })}
-      />
+      <ServiceContextualMenu />
     </Container>
   )
 }

@@ -26,22 +26,38 @@ export const DisconnectButton: React.FC<Props> = ({
   const { connections } = useDispatch<Dispatch>()
   const state = connectionState(service, connection)
   const connecting = state === 'connecting'
-  const visible = state === 'connecting' || state === 'connected' || state === 'ready'
-  const disabled = state === 'stopping'
-  if (connecting) color = 'grayDark'
+  const visible = !!connection?.enabled
+  const disabled = state === 'stopping' || state === 'disconnecting'
+
+  if (connecting || disabled) color = 'grayDark'
+
+  let title = 'Stop Connection'
+  if (state === 'ready') title = 'Remove Connection'
+  if (state === 'stopping') title = 'Stopping'
+  if (state === 'connecting') title = 'Starting'
+  if (state === 'offline') title = 'Offline'
+  if (state === 'disconnecting') title = 'Disconnecting'
+
   return (
     <Fade in={visible} timeout={600}>
       <div>
         <DynamicButton
-          title={state === 'stopping' ? 'Stopping' : state === 'connecting' ? 'Starting' : 'Stop Connection'}
-          disabled={disabled}
+          title={title}
+          // disabled={disabled}
           loading={disabled || connecting}
           color={color}
           size={size}
           fullWidth={fullWidth}
           onClick={() => {
             analyticsHelper.trackConnect('connectionClosed', service)
-            connection?.public ? connections.proxyDisconnect(connection) : emit('service/disconnect', connection)
+            connection?.public
+              ? connections.proxyDisconnect(connection)
+              : emit(
+                  state === 'ready' || state === 'offline' || state === 'disconnecting'
+                    ? 'service/disable'
+                    : 'service/disconnect',
+                  connection
+                )
           }}
         />
       </div>

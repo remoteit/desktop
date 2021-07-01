@@ -133,7 +133,7 @@ export default createModel<RootModel>()({
       accountId = accountId || devices[0]?.accountId
       if (!devices) debugger
       if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const all = state.devices.all
+      const all = { ...state.devices.all }
       all[accountId] = devices
       dispatch.devices.set({ all })
     },
@@ -170,6 +170,10 @@ export default createModel<RootModel>()({
   reducers: {
     set(state: IAccountsState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
+    },
+    reset(state: IAccountsState) {
+      state = accountsState
       return state
     },
     setActive(state: IAccountsState, id: string) {

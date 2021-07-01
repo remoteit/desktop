@@ -119,6 +119,10 @@ export default createModel<RootModel>()({
       state.all.splice(index, 1)
       return state
     },
+    reset(state: ISessionsState) {
+      state = sessionsState
+      return state
+    },
     set(state, params: ILookup<ISession[]>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

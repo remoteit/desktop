@@ -23,13 +23,34 @@ export const LicenseLookup: ILicenseLookup[] = [
   },
 ]
 
+export const licenseChip: ILookup<ILicenseChip> = {
+  UNKNOWN: { name: 'Unknown', color: colors.grayDarker, colorName: 'grayDarker' },
+  EVALUATION: {
+    name: 'Evaluation',
+    color: colors.warning,
+    background: lighten(colors.warning, 0.94),
+    colorName: 'warning',
+    show: true,
+  },
+  LICENSED: { name: 'Licensed', color: colors.grayDarker, colorName: 'grayDarker' },
+  UNLICENSED: {
+    name: 'Unlicensed',
+    color: colors.warning,
+    background: lighten(colors.warning, 0.94),
+    colorName: 'warning',
+    disabled: true,
+    show: true,
+  },
+  NON_COMMERCIAL: { name: 'Non-commercial', color: colors.grayDarker, colorName: 'grayDarker' },
+  LEGACY: { name: 'Legacy', color: colors.grayDarker, colorName: 'grayDarker' },
+}
+
 const defaultLicense = LicenseLookup[0]
 
 type ILicensing = {
   licenses: ILicense[]
   limits: ILimit[]
   informed: boolean
-  chip: ILookup<ILicenseChip>
   tests: {
     license: boolean
     limit: boolean
@@ -39,31 +60,10 @@ type ILicensing = {
   }
 }
 
-const state: ILicensing = {
+const defaultState: ILicensing = {
   licenses: [],
   limits: [],
   informed: false,
-  chip: {
-    UNKNOWN: { name: 'Unknown', color: colors.grayDarker, colorName: 'grayDarker' },
-    EVALUATION: {
-      name: 'Evaluation',
-      color: colors.warning,
-      background: lighten(colors.warning, 0.94),
-      colorName: 'warning',
-      show: true,
-    },
-    LICENSED: { name: 'Licensed', color: colors.grayDarker, colorName: 'grayDarker' },
-    UNLICENSED: {
-      name: 'Unlicensed',
-      color: colors.warning,
-      background: lighten(colors.warning, 0.94),
-      colorName: 'warning',
-      disabled: true,
-      show: true,
-    },
-    NON_COMMERCIAL: { name: 'Non-commercial', color: colors.grayDarker, colorName: 'grayDarker' },
-    LEGACY: { name: 'Legacy', color: colors.grayDarker, colorName: 'grayDarker' },
-  },
   tests: {
     license: false,
     limit: false,
@@ -145,6 +145,25 @@ const state: ILicensing = {
           },
         },
       },
+      {
+        id: '4a5ed500-ef07-4a98-be11-35ab8fa69a5f',
+        created: new Date('2021-03-12T05:44:32.421Z'),
+        updated: new Date('2021-04-28T17:08:25.000Z'),
+        expiration: null,
+        valid: true,
+        plan: {
+          id: 'b44f92a6-a7b9-11eb-b094-02a962787033',
+          name: 'ENTERPRISE',
+          description: 'enterprise',
+          duration: null,
+          product: {
+            id: 'b999e047-5532-11eb-8872-063ce187bcd7',
+            name: 'remote.it',
+            description: 'remote.it',
+            provider: null,
+          },
+        },
+      },
     ],
     limits: [
       {
@@ -211,7 +230,7 @@ const state: ILicensing = {
       },
       {
         name: 'iot-devices',
-        value: 100,
+        value: 10000,
         actual: 7,
         license: {
           id: '4a5ed500-ef07-4a98-be11-BUSINESS',
@@ -222,7 +241,7 @@ const state: ILicensing = {
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: (dispatch: any) => ({
     async fetch() {
       try {
@@ -327,6 +346,10 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    reset(state: ILicensing) {
+      state = defaultState
+      return state
+    },
     set(state: ILicensing, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

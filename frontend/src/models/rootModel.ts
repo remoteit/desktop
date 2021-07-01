@@ -14,6 +14,7 @@ import logs from './logs'
 import search from './search'
 import sessions from './sessions'
 import shares from './shares'
+import tags from './tags'
 import ui from './ui'
 
 export interface RootModel extends Models<RootModel> {
@@ -32,6 +33,7 @@ export interface RootModel extends Models<RootModel> {
   search: typeof search
   sessions: typeof sessions
   shares: typeof shares
+  tags: typeof tags
   ui: typeof ui
 }
 
@@ -51,5 +53,6 @@ export const models: RootModel = {
   search,
   sessions,
   shares,
+  tags,
   ui,
 }

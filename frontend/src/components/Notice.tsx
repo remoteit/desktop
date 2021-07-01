@@ -63,7 +63,7 @@ const useStyles = ({ fullWidth, gutterBottom, gutterTop }) =>
       alignItems: 'center',
       margin: `${spacing.xxs}px ${fullWidth ? 0 : spacing.md}px`,
       marginBottom: gutterBottom ? spacing.md : 'inherit',
-      marginTop: gutterTop ? spacing.lg : 'inherit',
+      marginTop: gutterTop ? spacing.md : 'inherit',
       padding: `${spacing.sm}px ${spacing.md}px`,
       display: 'flex',
       fontWeight: 500,

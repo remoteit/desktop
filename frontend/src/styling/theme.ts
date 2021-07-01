@@ -16,6 +16,19 @@ const jssTheme: ThemeOptions = {
       root: { backgroundColor: colors.grayLighter },
       inset: { marginRight: spacing.md, marginLeft: spacing.md },
     },
+    MuiAccordion: {
+      root: {
+        '&.Mui-expanded': { margin: 0 },
+        '&:before': { display: 'none' },
+      },
+    },
+    MuiAccordionDetails: {
+      root: { display: 'block', padding: 0 },
+    },
+    MuiAccordionSummary: {
+      root: { minHeight: 0, padding: 0, '&.Mui-expanded': { minHeight: 0 } },
+      content: { margin: 0, '&.Mui-expanded': { margin: 0 } },
+    },
     MuiFormHelperText: { root: { fontSize: 10 } },
     MuiIconButton: {
       root: { borderRadius: radius },
@@ -49,6 +62,7 @@ const jssTheme: ThemeOptions = {
         padding: `${spacing.xs}px ${spacing.md}px`,
       },
     },
+    MuiButtonBase: { root: { borderRadius: radius } },
     MuiTouchRipple: {
       ripple: { color: colors.primary },
     },
@@ -61,6 +75,8 @@ const jssTheme: ThemeOptions = {
         height: 20,
         borderRadius: 10,
         fontSize: fontSizes.xxs,
+        paddingLeft: spacing.xxs,
+        paddingRight: spacing.xxs,
         '& + .MuiChip-sizeSmall': { marginLeft: spacing.xxs },
       },
       outlined: {
@@ -120,14 +136,18 @@ const jssTheme: ThemeOptions = {
     },
     MuiListSubheader: {
       root: {
-        color: colors.grayDark,
         textTransform: 'uppercase',
-        fontSize: fontSizes.xs,
-        letterSpacing: 1,
+        fontSize: fontSizes.xxs,
+        color: colors.grayDarker,
+        letterSpacing: 2,
         fontWeight: 500,
         lineHeight: '40px',
       },
       sticky: { zIndex: 2 },
+      gutters: {
+        paddingRight: gutters - 8,
+        paddingLeft: gutters,
+      },
     },
     MuiPaper: {
       rounded: { borderRadius: radius },
@@ -178,16 +198,6 @@ const jssTheme: ThemeOptions = {
       primary: { lineHeight: 1.4 },
       secondary: { fontSize: fontSizes.xs },
     },
-    MuiTableCell: {
-      root: {
-        borderBottomWidth: 0,
-        paddingLeft: 0,
-        paddingRight: spacing.xs,
-      },
-      head: {
-        borderBottom: 1,
-      },
-    },
     MuiMenu: {
       list: {
         backgroundColor: colors.grayLightest,
@@ -219,7 +229,10 @@ const jssTheme: ThemeOptions = {
           '& svg': { display: 'none' },
         },
       },
-      underline: { '&.Mui-disabled:before': { borderColor: colors.grayLight } },
+      underline: {
+        '&.Mui-disabled:before': { borderColor: colors.grayLight },
+        '&:before, &:after': { display: 'none' },
+      },
     },
     MuiInputLabel: {
       shrink: {

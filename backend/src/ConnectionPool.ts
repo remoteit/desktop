@@ -55,7 +55,7 @@ export default class ConnectionPool {
   check = async () => {
     if (binaryInstaller.uninstallInitiated || !user.signedIn) return
 
-    await cli.updateConnectionStatus()
+    await cli.readConnections()
 
     // move connections: cli -> desktop
     cli.data.connections.forEach(async c => {
@@ -63,15 +63,18 @@ export default class ConnectionPool {
       if (
         !connection ||
         (!connection.public &&
-          (connection.enabled !== c.enabled ||
+          (connection.host !== c.host ||
+            connection.port !== c.port ||
+            connection.enabled !== c.enabled ||
             connection.startTime !== c.startTime ||
             connection.connected !== c.connected ||
             connection.connecting !== c.connecting ||
+            connection.disconnecting !== c.disconnecting ||
             connection.reachable !== c.reachable ||
             connection.sessionId !== c.sessionId))
       ) {
         // Logger.info('SYNC CLI CONNECTION', { connection, c })
-        this.set({ ...connection, ...c })
+        this.set({ ...connection, ...c }, false)
       }
     })
     // start any connections: desktop -> cli
@@ -129,6 +132,13 @@ export default class ConnectionPool {
     instance && instance.stop()
   }
 
+  disable = async ({ id }: IConnection) => {
+    Logger.info('REMOVE', { id })
+    const instance = this.find(id)
+    instance && instance.disable()
+    this.updated()
+  }
+
   forget = async ({ id }: IConnection) => {
     Logger.info('FORGET', { id })
     const connection = this.find(id)
@@ -180,15 +190,10 @@ export default class ConnectionPool {
   }
 
   toJSON = (): IConnection[] => {
-    return this.pool
-      .map(c => c.params)
-      .sort((a, b) => {
-        return a.connected ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime)
-      })
+    return this.pool.map(c => c.params).sort((a, b) => this.sort(a.name, b.name))
   }
 
-  // @ts-ignore - you can do math with booleans
-  sort = (a: number | boolean = 0, b: number | boolean = 0) => a - b
+  sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
 
   nextFreePort = async () => {
     const usedPorts = this.usedPorts

@@ -12,7 +12,7 @@ type Props = {
   resize: 'devices' | 'connections' | 'settings'
 }
 
-const MIN_WIDTH = 360
+const MIN_WIDTH = 340
 const SIDEBAR_WIDTH = 9 + 250
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => {

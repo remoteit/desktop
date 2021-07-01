@@ -2,12 +2,15 @@ import React from 'react'
 import { Icon } from './Icon'
 import { Quote } from './Quote'
 import { Color } from '../styling'
-import { Formats } from './Formats'
+import { Percent } from './Percent'
+import { Round } from './Round'
 import { Typography, Divider, Box } from '@material-ui/core'
 
-export const QualityDetails: React.FC<{ device: IDevice }> = ({ device }) => {
+export const QualityDetails: React.FC<{ device?: IDevice }> = ({ device }) => {
   let title: string = 'Unknown'
   let color: Color = 'gray'
+
+  if (!device) return null
 
   switch (device.quality) {
     case 'GOOD':
@@ -29,11 +32,15 @@ export const QualityDetails: React.FC<{ device: IDevice }> = ({ device }) => {
       <Icon name="circle" color={color} size="bug" type="solid" inlineLeft /> {title}
       <Quote>
         <Divider orientation="vertical" />
-        <Typography variant="body2">Availability: {Formats.percent(device.availability)}</Typography>
+        <Typography variant="body2">
+          Availability: <Percent value={device.availability} />
+        </Typography>
         <Typography variant="caption">Average time online per day.</Typography>
         <br />
         <br />
-        <Typography variant="body2">Instability: {Formats.round(device.instability)}</Typography>
+        <Typography variant="body2">
+          Instability: <Round value={device.instability} />
+        </Typography>
         <Typography variant="caption">Average number of disconnects per day.</Typography>
       </Quote>
     </Box>

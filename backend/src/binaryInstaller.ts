@@ -50,21 +50,13 @@ export class BinaryInstaller {
 
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
-    this.updateVersions()
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
     this.inProgress = false
+    this.updateVersions()
   }
 
   async installBinaries(): Promise<void> {
-
-    const remoteAPI = preferences.get().apiURL
-    const graphqlURL = preferences.get().apiGraphqlURL
-    let envVar = ''
-
-    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
-    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
-
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
@@ -77,7 +69,7 @@ export class BinaryInstaller {
         })
       }
 
-      commands.push(`${envVar} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()
@@ -113,6 +105,15 @@ export class BinaryInstaller {
     })
   }
 
+  async restart() {
+    const commands = new Command({ onError: e => EventBus.emit(Binary.EVENTS.error, e.toString()), admin: true })
+    commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
+
+    this.inProgress = true
+    await commands.exec()
+    this.inProgress = false
+  }
+
   async uninstall() {
     if (this.inProgress) return Logger.warn('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     Logger.info('START UNINSTALL')
@@ -138,7 +139,18 @@ export class BinaryInstaller {
     }
   }
 
-  cliVersionChanged() {
+  envVar() {
+    const remoteAPI = preferences.get().apiURL
+    const graphqlURL = preferences.get().apiGraphqlURL
+    let envVar = ''
+
+    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
+    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
+
+    return envVar
+  }
+
+  async cliVersionChanged() {
     const previousVersion = preferences.get().cliVersion
     const thisVersion = this.cliBinary.version
     let changed = true
@@ -161,8 +173,10 @@ export class BinaryInstaller {
     return changed
   }
 
-  updateVersions() {
-    preferences.update({ version: environment.version, cliVersion: this.cliBinary.installedVersion })
+  async updateVersions() {
+    const cliVersion = await cli.version()
+    Logger.info('CLI VERSION UPDATE', { cliVersion })
+    preferences.update({ version: environment.version, cliVersion })
   }
 }
 

@@ -7,9 +7,8 @@ import { ListItemSetting } from './ListItemSetting'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   if (!connection) return null
-  if (service.attributes.route === 'p2p') return null
 
-  const disabled = connection.enabled
+  const disabled = connection.enabled || service.attributes.route === 'p2p'
   const subLabel =
     connection.publicRestriction === IP_LATCH
       ? 'The connection will latch onto the first device to connect with IP restriction.'

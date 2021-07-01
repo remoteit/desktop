@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME } from '../../shared/constants'
+import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME, DEFAULT_CONNECTION } from '../../shared/constants'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
-import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
 import { useDispatch, useSelector } from 'react-redux'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
@@ -238,6 +237,7 @@ export const ServiceForm: React.FC<Props> = ({
               setForm({ ...form })
             }}
           />
+          <Typography variant="caption">Default local port to use when a device connects to this service.</Typography>
         </ListItem>
         <ServiceAttributesForm
           className={css.field}

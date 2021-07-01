@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { makeStyles, IconButton } from '@material-ui/core'
 import { ApplicationState } from '../../store'
+import { useNavigation } from '../../hooks/useNavigation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { Icon } from '../Icon'
 import styles from '../../styling'
-import { useNavigation } from '../../hooks/useNavigation'
 
 export const Header: React.FC = () => {
   const { navigationBack, navigationForward } = useSelector((state: ApplicationState) => ({

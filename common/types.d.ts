@@ -24,6 +24,7 @@ declare global {
     // individual actions
     | 'service/connect'
     | 'service/disconnect'
+    | 'service/disable'
     | 'service/forget'
     | 'service/restart'
     | 'service/clear'
@@ -128,6 +129,7 @@ declare global {
     commandTemplate?: string // command line launch template
     connected?: boolean
     connecting?: boolean
+    disconnecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
     deviceID: string
     enabled?: boolean // if the connection is active
@@ -157,7 +159,14 @@ declare global {
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
-  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping' | 'ready'
+  type IConnectionState =
+    | 'offline'
+    | 'disconnected'
+    | 'connected'
+    | 'connecting'
+    | 'disconnecting'
+    | 'stopping'
+    | 'ready'
 
   type IConnectionKey = keyof IConnection
 
@@ -209,6 +218,7 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
+    tags: number[]
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
     configurable: boolean // cloudshift device
@@ -224,16 +234,6 @@ declare global {
     hidden?: boolean
     access: IUser[]
     attributes: ILookup<any> & {
-      categoryA?: string
-      categoryB?: string
-      categoryC?: string
-      categoryD?: string
-      categoryE?: string
-      statusA?: string
-      statusB?: string
-      statusC?: string
-      statusD?: string
-      statusE?: string
       name?: string
       color?: number
       label?: string
@@ -500,6 +500,13 @@ declare global {
 
   type ISelect = { [key: string]: string | number }
 
+  type IGuide = {
+    step: number
+    total: number
+    done?: boolean
+    title?: string
+  }
+
   type IPreferences = {
     version: string
     cliVersion: string
@@ -581,7 +588,7 @@ declare global {
     icon: string
     show: boolean
     badge?: number
-    chip?: number
+    chip?: string
   }
 }
 

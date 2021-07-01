@@ -76,11 +76,12 @@ export const OptionsPage: React.FC = () => {
         />
         <ListItemSetting
           label="HTTPS Certificate"
-          subLabel="Use a remote.it certificate to handle https connections"
+          subLabel="Use a remote.it certificate to handle and name local connections"
           icon="file-certificate"
           toggle={!!preferences.useCertificate}
           onClick={() => emit('preferences', { ...preferences, useCertificate: !preferences.useCertificate })}
         />
+        <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
@@ -131,7 +132,7 @@ export const OptionsPage: React.FC = () => {
               />
             )}
             <ListItemSetting
-              label="Show application logs"
+              label="Show support files"
               subLabel="Will show the folders that contain the application logs and config file."
               icon="folder"
               onClick={() => emit('showFolder', 'logs')}

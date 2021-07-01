@@ -30,6 +30,7 @@ class Controller extends EventEmitter {
       if (state.auth.backendAuthenticated) {
         ui.refreshAll()
       } else {
+        ui.set({ errorMessage: '' })
         auth.init()
       }
     }

@@ -9,7 +9,7 @@ import { UnregisterDeviceButton } from '../buttons/UnregisterDeviceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
-import { DeleteButton } from '../buttons/DeleteButton'
+import { DeleteDeviceButton } from '../buttons/DeleteDeviceButton'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Title } from './Title'
@@ -34,9 +34,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
             {/* <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" /> */}
             <Title>{device.name || 'Unknown'}</Title>
             {/* <ServiceName device={device} connection={connected} /> */}
-            <Route path="/devices/:deviceID/edit">
-              {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteButton device={device} />}
-            </Route>
+            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteDeviceButton device={device} />}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
           </Typography>
@@ -50,13 +48,15 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               exactMatch
               dense
             />
-            <ListItemLocation
-              title="Edit"
-              icon="pen"
-              iconColor="grayDarker"
-              pathname={`/devices/${device.id}/edit`}
-              dense
-            />
+            {!device.shared && device.state !== 'inactive' && (
+              <ListItemLocation
+                title="Edit"
+                icon="pen"
+                iconColor="grayDarker"
+                pathname={`/devices/${device.id}/edit`}
+                dense
+              />
+            )}
             <UsersSelect device={device} access={access} />
             <ListItemLocation
               title="Logs"

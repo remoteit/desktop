@@ -26,7 +26,6 @@ const useStyles = (inline, offline, enabled) =>
         marginLeft: spacing.xs,
         marginRight: spacing.xxs,
         color: enabled ? colors.primary : colors.grayDark,
-        opacity: offline ? 0.3 : undefined,
       },
     },
   })

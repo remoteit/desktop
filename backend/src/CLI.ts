@@ -1,18 +1,19 @@
+import { REACHABLE_ERROR_CODE } from './constants'
 import { DEFAULT_TARGET } from './sharedCopy/constants'
 import { cliBinary } from './Binary'
 import binaryInstaller from './binaryInstaller'
 import environment from './environment'
-import strings from './cliStrings'
+import preferences from './preferences'
 import JSONFile from './JSONFile'
 import EventBus from './EventBus'
+import strings from './cliStrings'
 import Command from './Command'
 import Logger from './Logger'
 import debug from 'debug'
 import path from 'path'
 import user from './User'
-import { REACHABLE_ERROR_CODE } from './constants'
 
-const d = debug('CLI')
+const d = debug('cli')
 
 type IData = {
   user?: UserCredentials
@@ -20,6 +21,7 @@ type IData = {
   device: ITargetDevice
   targets: ITarget[]
   connections: IConnection[]
+  connectionDefaults: IConnectionDefaults
   errorCodes: number[]
 }
 
@@ -33,17 +35,30 @@ type IExec = {
 }
 
 type IConnectionStatus = {
-  id?: string
+  id: string
   isDisabled?: boolean
-  state?: 'offline' | 'connecting' | 'connected'
-  isFailover?: boolean
+  state?: 'offline' | 'connecting' | 'connected' | 'disconnecting'
+  isFailover: boolean
   isP2P?: boolean
   error?: ISimpleError
   reachable: boolean
   sessionID?: string
+  createdAt: string
   startedAt?: string
   stoppedAt?: string
   address?: string
+  namedPort?: number
+  namedHost?: string
+  restrict?: ipAddress
+  timeout?: number
+}
+
+type IConnectionDefaults = {
+  enableCertificate?: boolean
+  enableOneHTTPSListener?: boolean
+  enableOneHTTPListener?: boolean
+  oneHTTPSListenerPort?: number
+  oneHTTPListenerPort?: number
 }
 
 export default class CLI {
@@ -53,6 +68,7 @@ export default class CLI {
     device: DEFAULT_TARGET,
     targets: [DEFAULT_TARGET],
     connections: [],
+    connectionDefaults: {},
     errorCodes: [],
   }
 
@@ -70,6 +86,11 @@ export default class CLI {
 
   async checkSignIn() {
     if (this.isSignedOut()) await this.signIn()
+    this.checkDefaults()
+  }
+
+  async checkDefaults() {
+    if (!this.areDefaultsSet()) await this.setDefaults()
   }
 
   isSignedOut() {
@@ -77,11 +98,26 @@ export default class CLI {
     return !this.data.admin || !this.data.admin.username
   }
 
+  areDefaultsSet() {
+    this.readConnectionDefaults()
+    // @TODO Add check useCertificate preferences state and adjust
+    const useCert: boolean = !!(
+      this.data.connectionDefaults?.enableCertificate &&
+      this.data.connectionDefaults?.enableOneHTTPSListener &&
+      this.data.connectionDefaults?.enableOneHTTPListener
+    )
+    const result = !!preferences.get().useCertificate === useCert
+
+    d('ARE CLI DEFAULTS SET?', { result, defaults: this.data.connectionDefaults })
+    return result
+  }
+
   read() {
     this.readUser()
     this.readDevice()
     this.readTargets()
     this.readConnections()
+    this.readConnectionDefaults()
     this.readOverrides()
   }
 
@@ -112,21 +148,6 @@ export default class CLI {
     }))
   }
 
-  async readConnections() {
-    const config = this.readFile()
-    const connections = config.connections || []
-    this.data.connections = connections.map((c: any) => ({
-      id: c.uid,
-      port: c.port,
-      host: c.hostname,
-      createdTime: Date.parse(c.createdAt),
-      restriction: c.restrict,
-      timeout: c.timeout,
-      failover: c.failover,
-    }))
-    await this.updateConnectionStatus()
-  }
-
   private readFile() {
     return this.configFile.read() || {}
   }
@@ -137,39 +158,52 @@ export default class CLI {
     environment.overrides = config?.overrides || {}
   }
 
-  async updateConnectionStatus() {
-    if (!this.data.connections.length) return
-    const connections = await this.connectionStatus()
-    if (!connections?.length) return
-    this.data.connections = this.data.connections.map(c => {
-      const status = connections?.find(s => s.id === c.id)
-      if (status) {
-        c.enabled = !status.isDisabled
-        c.startTime = status.startedAt ? Date.parse(status.startedAt) : undefined
-        c.endTime = status.stoppedAt ? Date.parse(status.stoppedAt) : undefined
-        c.connected = status.state === 'connected'
-        c.connecting = status.state === 'connecting'
-        c.isP2P = status.state === 'connected' ? status.isP2P : undefined
-        c.reachable = status.reachable
-        c.sessionId = status.sessionID?.toLowerCase()
-        c.address = status.address
+  readConnectionDefaults() {
+    const config = this.readFile()
+    this.data.connectionDefaults = config.connectionDefaults
+  }
 
-        if (status.reachable === false) {
-          c.error = {
-            message: 'remote.it connected, but there is no service running on the remote machine.',
-            code: REACHABLE_ERROR_CODE,
-          }
-        } else if (status.reachable === true) {
-          if (c.error && c.error.code === REACHABLE_ERROR_CODE) c.error = { code: 0, message: '' }
+  async readConnections() {
+    const connections = (await this.connectionStatus()) || []
+    this.data.connections = connections.map((c, i) => {
+      const connection = this.data.connections[i]
+      let error = connection?.error
+
+      if (c.reachable === false) {
+        error = {
+          message: 'remote.it connected, but there is no service running on the remote machine.',
+          code: REACHABLE_ERROR_CODE,
         }
-
-        if (status.error?.message) {
-          c.error = { message: status.error.message, code: status.error.code }
-        }
-
-        d('UPDATE STATUS', { c, status: status.state })
+      } else if (c.reachable === true) {
+        if (error && error.code === REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
       }
-      return c
+
+      if (c.error?.message) {
+        error = { message: c.error.message, code: c.error.code }
+      }
+
+      d('CONNECTION STATE', c.id, c.state)
+
+      return {
+        ...connection,
+        id: c.id,
+        host: c.namedHost,
+        port: c.namedPort,
+        enabled: !c.isDisabled,
+        createdTime: Date.parse(c.createdAt),
+        startTime: c.startedAt ? Date.parse(c.startedAt) : undefined,
+        endTime: c.stoppedAt ? Date.parse(c.stoppedAt) : undefined,
+        connected: c.state === 'connected',
+        connecting: c.state === 'connecting',
+        disconnecting: c.state === 'disconnecting',
+        isP2P: c.state === 'connected' ? c.isP2P : undefined,
+        reachable: c.reachable,
+        sessionId: c.sessionID?.toLowerCase(),
+        failover: c.isFailover,
+        restriction: c.restrict,
+        timeout: c.timeout,
+        error,
+      }
     })
   }
 
@@ -239,16 +273,25 @@ export default class CLI {
   }
 
   async addConnection(c: IConnection, onError: ErrorCallback) {
+    d('ADD CONNECTION', strings.connect(c))
     await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
   async removeConnection(c: IConnection, onError: ErrorCallback) {
+    d('REMOVE CONNECTION', strings.disconnect(c))
     await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
+  async stopConnection(c: IConnection, onError: ErrorCallback) {
+    d('STOP CONNECTION', strings.stop(c))
+    await this.exec({ cmds: [strings.stop(c)], checkAuthHash: true, onError })
+    await this.readConnections()
+  }
+
   async setConnection(c: IConnection, onError: ErrorCallback) {
+    d('SET CONNECTION', strings.setConnect(c))
     await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
@@ -276,6 +319,12 @@ export default class CLI {
     this.read()
   }
 
+  async setDefaults() {
+    await this.exec({ cmds: [strings.defaults()], checkAuthHash: true, skipSignInCheck: true })
+    binaryInstaller.restart()
+    this.read()
+  }
+
   async scan(ipMask?: string) {
     return await this.exec({ cmds: [strings.scan(ipMask)], skipSignInCheck: true })
   }
@@ -292,6 +341,7 @@ export default class CLI {
 
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
+    d('COMMAND', commands.toString())
 
     if (!quiet)
       commands.onError = (e: Error) => {

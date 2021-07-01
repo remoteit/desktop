@@ -158,12 +158,15 @@ export default createModel<RootModel>()({
       window.localStorage.removeItem('amplify-signin-with-hostedUI')
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
-      dispatch.accounts.set({ devices: [] })
-      dispatch.connections.set({ all: [] })
-      dispatch.devices.set({ query: '', filter: 'all', initialized: false })
-      dispatch.sessions.set({ all: [] })
+      dispatch.accounts.reset()
+      dispatch.connections.reset()
+      dispatch.devices.reset()
+      dispatch.sessions.reset()
       dispatch.logs.reset()
       dispatch.search.reset()
+      dispatch.licensing.reset()
+      dispatch.tags.reset()
+      dispatch.ui.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''
       emit('user/sign-out-complete')
@@ -220,7 +223,7 @@ export default createModel<RootModel>()({
       state.authService = authService
       return state
     },
-    setUsername(state: AuthState, username?: string) {
+    setUsername(state: AuthState, username: string | undefined) {
       state.localUsername = username
       return state
     },

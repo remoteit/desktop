@@ -68,7 +68,7 @@ export const LicensingSetting: React.FC = () => {
                       <LimitSetting key={limit.name} limit={limit} />
                     ))}
                   </Box>
-                  <ListItemCopy label="Copy key" value={license.id} />
+                  <ListItemCopy label="License Key" value={license.id} />
                 </Quote>
               </ListItem>
             )}

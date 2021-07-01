@@ -16,7 +16,6 @@ import { DeviceEditPage } from '../pages/DeviceEditPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
-import { LogPage } from '../pages/LogPage'
 import { useDispatch, useSelector } from 'react-redux'
 
 export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {

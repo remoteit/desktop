@@ -3,21 +3,21 @@ import reactStringReplace from 'react-string-replace'
 import { Autocomplete } from '@material-ui/lab'
 import { makeStyles, Box, ListItemIcon, ListItemText, Paper, Popper, TextField } from '@material-ui/core'
 import { spacing, colors, radius, fontSizes } from '../styling'
+import { REGEX_TAG_SAFE } from '../shared/constants'
 import { Icon } from './Icon'
 
 interface Props {
   open: boolean
   items: ITag[]
-  targetEl: HTMLButtonElement | null
+  targetEl: HTMLDivElement | null
   placeholder: string
   allowAdding?: boolean
   indicator?: string
   onItemColor?: (value: ITag) => string
   onSelect?: (action: 'add' | 'new', value: ITag) => void
+  onChange?: (value?: string) => void
   onClose?: () => void
 }
-
-export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
 
 export const AutocompleteMenu: React.FC<Props> = ({
   open,
@@ -27,6 +27,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
   targetEl,
   onItemColor,
   onSelect,
+  onChange,
   onClose,
   allowAdding,
 }) => {
@@ -45,7 +46,8 @@ export const AutocompleteMenu: React.FC<Props> = ({
     <Popper anchorEl={targetEl} open={open} placement="bottom-start">
       <Paper className={css.container} elevation={1}>
         <Autocomplete
-          open
+          open={true}
+          debug={true}
           fullWidth
           disablePortal
           autoHighlight
@@ -57,6 +59,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
             option: css.option,
             input: css.input,
             popperDisablePortal: css.popperDisablePortal,
+            noOptions: css.empty,
           }}
           onClose={onClose}
           onChange={(event, value, reason) => {
@@ -67,7 +70,11 @@ export const AutocompleteMenu: React.FC<Props> = ({
           PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
           noOptionsText={false}
           getOptionLabel={option => option.name}
-          onInputChange={(event, newValue) => setInputValue(newValue.replace(REGEX_TAG_SAFE, ''))}
+          onInputChange={(event, newValue) => {
+            const result = newValue.replace(REGEX_TAG_SAFE, '')
+            setInputValue(result)
+            if (onChange) onChange(result)
+          }}
           renderOption={option => (
             <>
               <ListItemIcon>
@@ -116,6 +123,9 @@ const useStyles = makeStyles({
   },
   popperDisablePortal: {
     position: 'relative',
+  },
+  empty: {
+    display: 'none',
   },
   option: {
     borderRadius: radius,

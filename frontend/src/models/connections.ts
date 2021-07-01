@@ -5,24 +5,23 @@ import { r3, getToken } from '../services/remote.it'
 import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
 import axios from 'axios'
-import { getApiURL } from '../helpers/apiHelper'
+import { getGraphQLApi } from '../helpers/apiHelper'
 
-type ConnectionsState = {
-  all: IConnection[]
-}
+type IConnectionsState = { all: IConnection[] }
 
-const defaultState: ConnectionsState = {
+const defaultState: IConnectionsState = {
   all: [],
 }
 
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async updateConnection(connection: IConnection, { connections }) {
-      connections.all.some((c, index) => {
+    async updateConnection(connection: IConnection, globalState) {
+      const { all } = globalState.connections
+      all.some((c, index) => {
         if (c.id === connection.id) {
-          connections.all[index] = connection
-          dispatch.backend.set({ connections: connections.all })
+          all[index] = connection
+          dispatch.connections.set({ all })
           if (connection) return true
         }
         return false
@@ -74,7 +73,11 @@ export default createModel<RootModel>()({
       setConnection(proxyConnection)
 
       try {
-        let result = await axios.post(`${getApiURL()}/device/connect`, data, await dispatch.connections.headerOptions())
+        let result = await axios.post(
+          `${getGraphQLApi()}/device/connect`,
+          data,
+          await dispatch.connections.headerOptions()
+        )
         const response = r3.processData(result)
         const proxyResult: ProxyConnectionResult = response.connection || {}
         console.log('PROXY CONNECTED', proxyResult)
@@ -104,7 +107,7 @@ export default createModel<RootModel>()({
       const data = { deviceaddress: connection.id, connectionid: connection.publicId }
       try {
         let result = await axios.post(
-          `${getApiURL()}/device/connect/stop`,
+          `${getGraphQLApi()}/device/connect/stop`,
           data,
           await dispatch.connections.headerOptions()
         )
@@ -116,7 +119,11 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    set(state: ConnectionsState, params: ILookup<any>) {
+    reset(state: IConnectionsState) {
+      state = defaultState
+      return state
+    },
+    set(state: IConnectionsState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

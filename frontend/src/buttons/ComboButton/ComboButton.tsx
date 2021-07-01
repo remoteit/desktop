@@ -2,7 +2,6 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
-import { OfflineButton } from '../OfflineButton'
 import { spacing } from '../../styling'
 
 type Props = {
@@ -21,7 +20,6 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
     <div className={css.buttons + (className ? ' ' + className : '')}>
       <DisconnectButton {...props} />
       <ConnectButton {...props} />
-      <OfflineButton {...props} />
     </div>
   )
 }

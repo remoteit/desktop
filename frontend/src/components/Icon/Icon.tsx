@@ -16,6 +16,7 @@ export interface IconProps {
   fixedWidth?: boolean
   onClick?: () => void
   size?: FontSize
+  rotate?: number
   spin?: boolean
   type?: IconType
   inline?: boolean
@@ -25,13 +26,14 @@ export interface IconProps {
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef(
-  ({ color, fixedWidth, name, size, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps) => {
+  ({ color, fixedWidth, name, size, rotate, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps) => {
     const styles: any = {}
     if (!name) return null
     if (color) styles.color = colors[color] || color
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
     if (size) styles.fontSize = fontSizes[size]
+    if (rotate) styles.transform = `rotate(${rotate}deg)`
 
     let fontType: IconPrefix = 'far'
 

@@ -35,6 +35,12 @@ export default class Connection extends EventEmitter {
   }
 
   stop() {
+    this.params.disconnecting = true
+    cli.stopConnection(this.params, this.error)
+    EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
+  }
+
+  disable() {
     this.params.enabled = false
     if (!this.params.public) cli.setConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.disconnected, { connection: this.params } as ConnectionMessage)
@@ -43,6 +49,7 @@ export default class Connection extends EventEmitter {
   async clear() {
     this.params.enabled = false
     this.params.connecting = false
+    this.params.disconnecting = false
     this.params.createdTime = undefined
     this.params.error = undefined
     if (!this.params.public) await cli.removeConnection(this.params, this.error)

@@ -80,6 +80,7 @@ const useStyles = makeStyles({
     position: 'relative',
   },
   sideContent: {
+    display: 'flex',
     boxShadow: `-1px 0 2px ${colors.grayLighter}`,
     position: 'relative',
     zIndex: 2,

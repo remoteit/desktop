@@ -2,16 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import {
-  makeStyles,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Link,
-  Chip,
-  Typography,
-} from '@material-ui/core'
+import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
@@ -42,7 +33,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
 
   const registered = !!targetDevice.uid
   let title = 'Set up this device'
-  let subtitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
+  let subtitle = `Add remote access to this ${osName(os)} or any service on the network.`
 
   if (registered) {
     if (thisDevice) {

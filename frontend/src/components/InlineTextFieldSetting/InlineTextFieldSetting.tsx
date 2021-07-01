@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { TextField } from '@material-ui/core'
+import { TextField, Input } from '@material-ui/core'
 import { InlineSetting } from '../InlineSetting'
 
 type Props = {
   value?: string | number
-  label: string | JSX.Element
+  label?: string | JSX.Element
   icon?: JSX.Element | string
   actionIcon?: JSX.Element
   displayValue?: string | number
@@ -13,8 +13,10 @@ type Props = {
   resetValue?: string | number
   maxLength?: number
   hideIcon?: boolean
+  warning?: string
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
+  onDelete?: () => void
 }
 
 export const InlineTextFieldSetting: React.FC<Props> = ({
@@ -35,6 +37,8 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
     onError && onError(error)
   }, [error])
 
+  const Field = label ? TextField : Input
+
   return (
     <InlineSetting
       {...props}
@@ -47,7 +51,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
       onCancel={() => setEditValue(value)}
       onShowEdit={() => setEditValue(value)}
     >
-      <TextField
+      <Field
         autoFocus
         multiline={value.toString().length > 30}
         inputRef={fieldRef}

@@ -5,7 +5,7 @@ import { colors, spacing } from '../styling'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const css = useStyles()
-  const v = (value?: number): number => value || 0
+  const v = (value?: number): string => (value || 0).toLocaleString()
   const overLimit = limit.actual > limit.value ? limit.actual - limit.value : 0
 
   let template: 'value' | 'text' | undefined
@@ -88,6 +88,6 @@ const useStyles = makeStyles({
     backgroundColor: colors.warning,
   },
   warningBar: {
-    backgroundColor: colors.grayLighter,
+    backgroundColor: colors.primary,
   },
 })

@@ -1,36 +1,13 @@
 import { emit } from '../services/Controller'
-import { IP_OPEN, IP_PRIVATE, IP_LATCH } from '../shared/constants'
-import { attributeName, removeDeviceName } from '../shared/nameHelper'
+import { DEFAULT_CONNECTION } from '../shared/constants'
+import { removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
-import { ApplicationState } from '../store'
-import { store } from '../store'
-
-export const DEFAULT_CONNECTION = {
-  id: '',
-  name: '',
-  owner: { id: '', email: '' },
-  deviceID: '',
-  online: false,
-  host: IP_PRIVATE,
-  timeout: 15,
-  restriction: IP_OPEN,
-  publicRestriction: IP_LATCH,
-}
-
-export const PUBLIC_CONNECTION = {
-  port: undefined,
-  public: true,
-  timeout: 15,
-  isP2P: false,
-  failover: false,
-  proxyOnly: true,
-  log: false,
-}
+import { ApplicationState, store } from '../store'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
   if (connection) {
-    if (!connection.online) return 'disconnected'
+    if (connection.disconnecting) return 'disconnecting'
     if ((connection.connected || connection.connecting) && !connection.enabled) return 'stopping'
     if (connection.connecting) return 'connecting'
     if (connection.connected) return 'connected'
@@ -45,13 +22,17 @@ export function findLocalConnection(state: ApplicationState, id: string, session
 
 type nameObj = { name: string }
 
+export function sanitizeName(name: string) {
+  return name.toLowerCase().replace(/[-\s]+/g, '-')
+}
+
 export function connectionName(service?: nameObj, device?: nameObj): string {
   let name: string[] = []
   if (device) {
     name.push(device.name)
     if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
   } else if (service) name.push(service.name)
-  return name.join(' - ')
+  return sanitizeName(name.join(' '))
 }
 
 export function newConnection(service?: IService | null) {
@@ -71,7 +52,7 @@ export function newConnection(service?: IService | null) {
   if (service) {
     const device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
     // @TODO The whole service obj should be in the connection
-    connection.name = attributeName(service)
+    connection.name = connectionName(service)
     connection.id = service.id
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'

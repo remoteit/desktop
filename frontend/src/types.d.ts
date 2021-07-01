@@ -95,17 +95,19 @@ declare global {
     analytics: AnalyticsJS
   }
 
-  interface IDataDisplay {
-    label: string
-    value?: any
-    help?: string
-    format?: 'duration' | 'percent' | 'round' | 'location' | 'element' | 'chip'
+  type IDataOptions = {
+    device?: IDevice
+    service?: IService
+    connection?: IConnection
+    session?: ISession
+    connections?: IConnection[]
   }
 
   interface ILabel {
-    color: string
-    name: string
     id: number
+    key: 'NONE' | 'GRAY' | 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'PURPLE'
+    name: string
+    color: string
     hidden?: boolean
   }
 
@@ -119,11 +121,6 @@ declare global {
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 
-declare module 'remote.it' {
-  // export interface IService {
-  //   connecting?: boolean
-  //   port?: number
-  // }
-}
+declare module 'remote.it' {}
 
 export {}

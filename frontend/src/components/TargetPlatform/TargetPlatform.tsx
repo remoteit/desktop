@@ -14,7 +14,7 @@ export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: 
 
   if (!name || !id) return null
 
-  const icon = <Icon {...{ name, type, size: props.size || size }} />
+  const icon = <Icon {...{ name, type, size: props.size || size }} inlineLeft={!!label} />
 
   if (tooltip)
     return (

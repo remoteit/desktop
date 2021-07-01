@@ -43,7 +43,7 @@ export const SidebarNav: React.FC = () => {
                 )}
               </ListItemIcon>
               <ListItemText primary={m.label} />
-              {!!m.chip && (
+              {!!Number(m.chip) && (
                 <ListItemSecondaryAction>
                   <Chip size="small" label={m.chip} className={css.chip} />
                 </ListItemSecondaryAction>
