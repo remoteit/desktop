@@ -2,6 +2,7 @@ import React from 'react'
 import { Icon } from '../Icon'
 import { Color } from '../../styling'
 import { EventState, EventType } from './EventMessage'
+import { ADD_EVENTS_ACTIONS } from '../../shared/constants'
 
 export function EventIcon(item: IEvent): JSX.Element {
   let color: Color = 'grayLighter'
@@ -33,7 +34,7 @@ export function EventIcon(item: IEvent): JSX.Element {
       break
 
     case EventType.device_share:
-      if (item.action === 'add') {
+      if (ADD_EVENTS_ACTIONS.includes(item.action)) {
         icon = 'user-plus'
         color = 'success'
         title = 'Device Shared'

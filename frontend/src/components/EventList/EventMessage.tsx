@@ -1,4 +1,5 @@
 import React from 'react'
+import { ADD_EVENTS_ACTIONS } from '../../shared/constants'
 
 export const EventType = {
   device_state: 'DEVICE_STATE',
@@ -55,7 +56,7 @@ export function EventMessage({
             <b>{affected}</b>
           </>
         )
-      } else if (item.action === 'add') {
+      } else if (ADD_EVENTS_ACTIONS.includes(item.action)) {
         message = (
           <>
             {actor} shared <i>{device?.name}</i> with <b>{affected}</b>
@@ -70,7 +71,7 @@ export function EventMessage({
       } else {
         message = (
           <>
-            {actor} removed sharing of <i>{device?.name}</i> with <b>{affected}</b>
+            {actor} removed sharing of <i>{device?.name}</i> from <b>{affected}</b>
           </>
         )
       }
