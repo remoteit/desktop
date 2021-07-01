@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Divider, List, Typography } from '@material-ui/core'
+import { Divider, List, ListItem, Typography } from '@material-ui/core'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { ShareSaveActions } from './ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
@@ -97,14 +97,16 @@ export function SharingForm({
         />
       </List>
       {disabled && (
-        <>
-          <Notice fullWidth>
-            <em>
-              Please select an option to share.
-              If you wish to remove this user click the delete button at the top
-            </em>
-          </Notice>
-        </>
+        <List>
+          <ListItem>
+            <Notice fullWidth>
+              <em>
+                Please select an option to share.
+                If you wish to remove this user click the trash icon at the top.
+              </em>
+            </Notice>
+          </ListItem>
+        </List>
       )}
       <ShareSaveActions
         onCancel={() => history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))}
