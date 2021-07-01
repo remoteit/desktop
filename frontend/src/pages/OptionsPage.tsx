@@ -79,7 +79,10 @@ export const OptionsPage: React.FC = () => {
           subLabel="Use a remote.it certificate to handle and name local connections"
           icon="file-certificate"
           toggle={!!preferences.useCertificate}
-          onClick={() => emit('preferences', { ...preferences, useCertificate: !preferences.useCertificate })}
+          onClick={() => emit('useCertificate', !preferences.useCertificate)}
+          confirmMessage="Changing the certificate handling will require we restart the system service. You will see a system prompt."
+          confirmTitle="Continue?"
+          confirm
         />
         <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
         {(os === 'mac' || os === 'windows') && (

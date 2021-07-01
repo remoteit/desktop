@@ -40,7 +40,7 @@ export default class Binary {
 
     if (this.isCli) {
       try {
-        version = await cli.version()
+        version = await cli.version(true)
         this.installedVersion = version
         current = semverCompare(version, this.version) >= 0
       } catch (error) {

@@ -12,8 +12,6 @@ const MAX_LOG_FILES = 5
 
 if (!fs.existsSync(environment.connectionLogPath)) fs.mkdirSync(environment.connectionLogPath, { recursive: true })
 
-console.log('DEBUG?', DEBUG)
-
 const { combine, printf } = winston.format
 const consoleFormat = printf(p => {
   const { timestamp, level, message } = p

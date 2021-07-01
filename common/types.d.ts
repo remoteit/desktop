@@ -50,6 +50,7 @@ declare global {
     | 'preferences'
     | 'osInfo'
     | 'reachablePort'
+    | 'useCertificate'
 
   type SocketEvent =
     // built-in events
