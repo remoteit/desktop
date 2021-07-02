@@ -41,7 +41,6 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   useEffect(() => {
     if (launch) {
       app.prompt ? setOpen(true) : launchBrowser()
-      ui.guide({ guide: 'guideAWS', done: true })
     }
     switch (requireInstall) {
       case 'putty':
@@ -114,30 +113,20 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
 
   return (
     <>
-      <GuideStep guide="guideAWS" step={7} instructions="Or for some services you can use the launch button.">
-        <span>
-          {menuItem ? (
-            <MenuItem dense onClick={() => setLaunch(true)} disabled={loading || disabled}>
-              <ListItemIcon>{LaunchIcon}</ListItemIcon>
-              <ListItemText primary={title} />
-            </MenuItem>
-          ) : dataButton ? (
-            <DataButton
-              label={title}
-              value={app.command}
-              title={title}
-              icon={LaunchIcon}
-              onClick={() => setLaunch(true)}
-            />
-          ) : (
-            <Tooltip title={title}>
-              <IconButton onClick={() => setLaunch(true)} disabled={loading || disabled}>
-                {LaunchIcon}
-              </IconButton>
-            </Tooltip>
-          )}
-        </span>
-      </GuideStep>
+      {menuItem ? (
+        <MenuItem dense onClick={() => setLaunch(true)} disabled={loading || disabled}>
+          <ListItemIcon>{LaunchIcon}</ListItemIcon>
+          <ListItemText primary={title} />
+        </MenuItem>
+      ) : dataButton ? (
+        <DataButton label={title} value={app.command} title={title} icon={LaunchIcon} onClick={() => setLaunch(true)} />
+      ) : (
+        <Tooltip title={title}>
+          <IconButton onClick={() => setLaunch(true)} disabled={loading || disabled}>
+            {LaunchIcon}
+          </IconButton>
+        </Tooltip>
+      )}
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
       <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />
     </>

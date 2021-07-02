@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import { ServiceAttributes } from '../../components/ServiceAttributes'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ConnectionDetails } from '../../components/ConnectionDetails'
-import { ApplicationState } from '../../store'
 import { ComboButton } from '../../buttons/ComboButton'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { GuideStep } from '../../components/GuideStep'
@@ -22,6 +22,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
     remoteUI: isRemoteUI(state),
   }))
   const target = targets.find(t => t.uid === serviceID)
+  const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
 
   useEffect(() => {
@@ -38,9 +39,15 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
       footer={
         !remoteUI && (
           <>
-            <GuideStep guide="guideAWS" step={5} instructions="Now click to start the connect on demand listener.">
+            <GuideStep guide="guideAWS" step={5} instructions="Now enable the connect on demand listener.">
               <Gutters className={css.gutters} noBottom>
-                <ComboButton connection={connection} service={service} size="medium" fullWidth />
+                <ComboButton
+                  connection={connection}
+                  service={service}
+                  size="medium"
+                  onClick={() => ui.guide({ guide: 'guideAWS', step: 6 })}
+                  fullWidth
+                />
                 {/* <Icon name="neuter" /> */}
                 {connection?.enabled ? (
                   <Tooltip title="Configure Connection" arrow>
@@ -58,14 +65,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
               </Gutters>
             </GuideStep>
             <Gutters>
-              <GuideStep
-                guide="guideAWS"
-                step={6}
-                instructions="You can now use this address in your application..."
-                autoNext
-              >
-                <ConnectionDetails connection={connection} show={connection?.enabled} />
-              </GuideStep>
+              <ConnectionDetails connection={connection} show={connection?.enabled} />
             </Gutters>
           </>
         )

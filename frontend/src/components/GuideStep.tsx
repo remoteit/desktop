@@ -12,9 +12,11 @@ type Props = {
   instructions: React.ReactElement | string
   autoNext?: boolean
   autoStart?: boolean
+  last?: boolean
   highlight?: boolean
   hideArrow?: boolean
   show?: boolean
+  hide?: boolean
 }
 
 export const GuideStep: React.FC<Props> = ({
@@ -24,16 +26,18 @@ export const GuideStep: React.FC<Props> = ({
   instructions,
   autoNext,
   autoStart,
+  last,
   highlight,
   hideArrow,
   show,
+  hide,
   children,
 }) => {
   const { ui } = useDispatch<Dispatch>()
   const state: IGuide = useSelector((state: ApplicationState) => state.ui[guide])
   const css = useStyles({ highlight })
-  const open = state.step === step || !!show
-  const start = () => ui.guide({ guide, step })
+  const open = !hide && (state.step === step || !!show)
+  const start = () => ui.guide({ guide, step, done: false })
 
   React.useEffect(() => {
     if (!state.done && autoStart) start()
@@ -64,7 +68,7 @@ export const GuideStep: React.FC<Props> = ({
         </>
       }
     >
-      <Box className={css.box} onClick={() => autoNext && ui.guide({ guide, step: step + 1 })}>
+      <Box className={css.box} onClick={() => autoNext && ui.guide({ guide, step: last ? 1 : step + 1, done: last })}>
         {!state.step && step === 1 && (
           <IconButton
             icon="sparkles"
@@ -94,6 +98,7 @@ const useStyles = makeStyles({
     padding: spacing.lg,
     paddingRight: spacing.xxl,
     position: 'relative',
+    borderRadius: radius,
     '& .MuiTypography-caption': { color: colors.white, marginTop: spacing.md, display: 'block' },
   },
   arrow: {

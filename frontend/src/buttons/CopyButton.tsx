@@ -38,14 +38,8 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
 
   if (!connection || (!show && (!connection?.enabled || !app))) return null
 
-  const check = event => {
-    event.preventDefault()
-    event.stopPropagation()
-    app.prompt ? setOpen(true) : clipboard.copy()
-  }
-  const onClose = () => {
-    setOpen(false)
-  }
+  const check = () => (app.prompt ? setOpen(true) : clipboard.copy())
+  const onClose = () => setOpen(false)
 
   const onSubmit = (tokens: ILookup<string>) => {
     setConnection({ ...connection, ...tokens })
