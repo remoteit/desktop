@@ -14,17 +14,16 @@ export const AccordionMenu: React.FC<{ menus: IAccordionMenu[] }> = ({ menus }) 
   return (
     <>
       {menus.map((menu, index) => (
-        <>
-          {!!index && <Divider key={`${index}-div`} />}
+        <React.Fragment key={index}>
+          {!!index && <Divider />}
           <AccordionMenuItem
-            key={index}
             expanded={expanded === menu.key}
             onClick={expanded => setExpanded(expanded ? menu.key : undefined)}
             subtitle={menu.subtitle}
           >
             {menu.children}
           </AccordionMenuItem>
-        </>
+        </React.Fragment>
       ))}
     </>
   )

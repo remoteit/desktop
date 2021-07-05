@@ -11,20 +11,36 @@ type Props = {
   to?: string
   color?: Color
   className?: string
-  onClick?: () => void
+  type?: IconType
+  onClick?: (e: React.MouseEvent) => void
 }
 
-export const IconButton: React.FC<Props> = ({ title, icon, disabled, to, color, className, onClick, ...props }) => {
+export const IconButton: React.FC<Props> = ({
+  title,
+  icon,
+  disabled,
+  to,
+  color,
+  type = 'regular',
+  className,
+  onClick,
+  ...props
+}) => {
   const history = useHistory()
-  const clickHandler = () => {
-    if (onClick) onClick()
+  const clickHandler = (e: React.MouseEvent) => {
+    if (onClick) onClick(e)
     if (to) history.push(to)
   }
-  return (
-    <Tooltip title={title}>
-      <MuiIconButton onClick={clickHandler} disabled={disabled} className={className}>
-        <Icon {...props} name={icon} color={color} type="regular" size="base" />
-      </MuiIconButton>
-    </Tooltip>
+  const button = (
+    <MuiIconButton
+      onClick={clickHandler}
+      disabled={disabled}
+      className={className}
+      style={{ opacity: disabled ? 0.5 : undefined }}
+    >
+      <Icon {...props} name={icon} color={color} type={type} size="base" />
+    </MuiIconButton>
   )
+
+  return disabled ? button : <Tooltip title={title}>{button}</Tooltip>
 }

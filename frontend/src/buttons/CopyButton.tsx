@@ -19,6 +19,7 @@ export interface CopyButtonProps {
   size?: FontSize
   show?: boolean
   dataButton?: boolean
+  onCopy?: () => void
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({
@@ -31,6 +32,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   size = 'md',
   show,
   dataButton,
+  onCopy,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
@@ -38,15 +40,18 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
 
   if (!connection || (!show && (!connection?.enabled || !app))) return null
 
-  const check = () => (app.prompt ? setOpen(true) : clipboard.copy())
-  const onClose = () => setOpen(false)
+  const check = () => (app.prompt ? setOpen(true) : copy())
+  const copy = () => {
+    clipboard.copy()
+    setTimeout(() => {
+      onCopy && onCopy()
+      setOpen(false)
+    }, 600)
+  }
 
   const onSubmit = (tokens: ILookup<string>) => {
     setConnection({ ...connection, ...tokens })
-    setTimeout(() => {
-      clipboard.copy()
-      onClose()
-    }, 500)
+    copy()
   }
 
   const CopyIcon = (
@@ -79,8 +84,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
           </IconButton>
         </Tooltip>
       )}
-
-      <PromptModal app={app} open={open} onClose={onClose} onSubmit={onSubmit} />
+      <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />
     </>
   )
 }

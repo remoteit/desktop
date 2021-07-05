@@ -38,6 +38,9 @@ export const GuideStep: React.FC<Props> = ({
   const css = useStyles({ highlight })
   const open = !hide && (state.step === step || !!show)
   const start = () => ui.guide({ guide, step, done: false })
+  const nav = (event: React.MouseEvent) => {
+    event.stopPropagation()
+  }
 
   React.useEffect(() => {
     if (!state.done && autoStart) start()
@@ -62,19 +65,37 @@ export const GuideStep: React.FC<Props> = ({
             className={css.close}
           />
           <Typography variant="body1">{instructions}</Typography>
+          <Box className={css.nav}>
+            <IconButton
+              icon="angle-left"
+              title="previous"
+              color="white"
+              type="light"
+              disabled={step <= 1}
+              onClick={() => ui.guide({ guide, step: step - 1 })}
+            />
+            <IconButton
+              icon="angle-right"
+              title="next"
+              color="white"
+              type="light"
+              disabled={step >= state.total}
+              onClick={() => ui.guide({ guide, step: step + 1 })}
+            />
+          </Box>
           <Typography variant="caption">
             {step} of {state.total}
           </Typography>
         </>
       }
     >
-      <Box className={css.box} onClick={() => autoNext && ui.guide({ guide, step: last ? 1 : step + 1, done: last })}>
-        {!state.step && step === 1 && (
+      <Box className={css.box} onClick={() => autoNext && ui.guide({ guide, step: last ? 0 : step + 1, done: last })}>
+        {step === 1 && (
           <IconButton
             icon="sparkles"
             title={state.title || 'Start guide'}
             onClick={start}
-            color={state.done ? 'grayLight' : 'guide'}
+            color={state.done || step === 1 ? 'grayLight' : 'guide'}
             className={css.icon}
           />
         )}
@@ -91,6 +112,11 @@ const useStyles = makeStyles({
     borderRadius: radius,
     position: 'relative',
   }),
+  nav: {
+    position: 'absolute',
+    right: spacing.sm,
+    bottom: spacing.sm,
+  },
   tip: {
     backgroundColor: colors.guide,
     color: colors.white,

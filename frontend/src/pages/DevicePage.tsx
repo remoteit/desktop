@@ -121,6 +121,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         )}
         {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
           <GuideStep
+            key={s.id}
             guide="guideAWS"
             step={4}
             instructions="Select the service below."
@@ -129,7 +130,6 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             autoNext
           >
             <ListItemLocation
-              key={s.id}
               pathname={`/devices/${device.id}/${s.id}/details`}
               match={`/devices/${device.id}/${s.id}`}
               dense

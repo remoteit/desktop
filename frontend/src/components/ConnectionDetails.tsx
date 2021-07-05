@@ -1,5 +1,7 @@
 import React from 'react'
 import { makeStyles, Collapse, Paper } from '@material-ui/core'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../store'
 import { getAttributes } from '../helpers/attributes'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { CopyButton } from '../buttons/CopyButton'
@@ -17,6 +19,7 @@ type Props = {
 
 export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, session }) => {
   const attributes = getAttributes(['connection', 'duration', 'location', 'initiatorPlatform'])
+  const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
 
   return (
@@ -28,9 +31,13 @@ export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, 
           instructions="You can now use this address in your application and it will auto-connect on demand."
           placement="left"
           highlight
-          autoNext
         >
-          <CopyButton connection={connection} service={service} dataButton />
+          <CopyButton
+            connection={connection}
+            service={service}
+            dataButton
+            onCopy={() => setTimeout(() => ui.guide({ guide: 'guideAWS', step: 7 }), 100)}
+          />
         </GuideStep>
         <GuideStep
           guide="guideAWS"
@@ -38,10 +45,13 @@ export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, 
           instructions="Or for web and some other services you can use the launch button."
           placement="left"
           highlight
-          autoNext
-          last
         >
-          <LaunchButton connection={connection} service={service} dataButton />
+          <LaunchButton
+            connection={connection}
+            service={service}
+            dataButton
+            onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+          />
         </GuideStep>
         <Gutters inset noBottom noTop>
           <DataDisplay attributes={attributes} connection={connection} session={session} width={100} />
