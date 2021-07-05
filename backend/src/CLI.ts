@@ -100,13 +100,11 @@ export default class CLI {
 
   areDefaultsSet() {
     this.readConnectionDefaults()
-    const useCert: boolean = !!(
-      this.data.connectionDefaults?.enableCertificate &&
-      this.data.connectionDefaults?.enableOneHTTPSListener &&
-      this.data.connectionDefaults?.enableOneHTTPListener
-    )
+    const defaults = this.data.connectionDefaults
+    if (defaults?.enableOneHTTPSListener || defaults?.enableOneHTTPListener) return false
+    const useCert: boolean = !!defaults?.enableCertificate
     const result = !!preferences.get().useCertificate === useCert
-    d('ARE CLI DEFAULTS SET?', { result, defaults: this.data.connectionDefaults })
+    d('ARE CLI DEFAULTS SET?', { result, defaults })
     return result
   }
 
