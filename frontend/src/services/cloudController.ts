@@ -1,8 +1,7 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
-import { WEBSOCKET_URL, WEBSOCKET_BETA_URL } from '../shared/constants'
 import { getToken } from './remote.it'
 import { AxiosResponse } from 'axios'
-import { version } from '../../package.json'
+import { getWebSocketURL } from '../helpers/apiHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectById } from '../models/devices'
@@ -20,7 +19,7 @@ class CloudController {
 
   connect() {
     if (this.socket instanceof ReconnectingWebSocket) return
-    this.socket = new ReconnectingWebSocket(version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL)
+    this.socket = new ReconnectingWebSocket(getWebSocketURL())
     this.socket.addEventListener('open', this.onOpen)
     this.socket.addEventListener('message', this.onMessage)
     this.socket.addEventListener('close', e => console.log('CLOUD WS closed', e))
