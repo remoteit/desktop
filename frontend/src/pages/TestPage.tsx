@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { Container } from '../components/Container'
 import { TestUI } from '../components/TestUI'
-import { getGraphQLApi, getRestApi } from '../helpers/apiHelper'
+import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
@@ -27,6 +27,11 @@ export const TestPage: React.FC = () => {
 
   const onSaveRest = (url: string) => {
     emit('preferences', { ...preferences, apiURL: url })
+    emit('binaries/install')
+  }
+
+  const onSaveWebSocket = (url: string) => {
+    emit('preferences', { ...preferences, webSocketURL: url })
     emit('binaries/install')
   }
 
@@ -80,6 +85,15 @@ export const TestPage: React.FC = () => {
                 resetValue={getRestApi()}
                 maxLength={200}
                 onSave={url => onSaveRest(url.toString())}
+                hideIcon
+              />
+              <InlineTextFieldSetting
+                value={getWebSocketURL()}
+                label="WebSocket URL"
+                disabled={false}
+                resetValue={getWebSocketURL()}
+                maxLength={200}
+                onSave={url => onSaveWebSocket(url.toString())}
                 hideIcon
               />
             </Quote>
