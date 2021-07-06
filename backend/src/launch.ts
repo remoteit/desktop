@@ -35,7 +35,7 @@ export const openCMDforWindows = (launchApp: ILaunchApp) => {
   })
 
   child_process.exec(
-    `DIR /S ${launchApp.application}.exe /B`,
+    `where ${launchApp.application}`,
     { cwd: 'C:\\' },
     (error: any, stdout: any, stderr: any) => {
       error && Logger.error(`error: ${error}`)

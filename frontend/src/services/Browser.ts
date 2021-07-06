@@ -45,7 +45,7 @@ export function isDev() {
 }
 
 export function launchPutty(typeID?: number) {
-  return typeID === 22 && isWindows()
+  return typeID && [22,28].includes(typeID) && isWindows()
 }
 
 export function launchVNC(typeID?: number) {
