@@ -72,6 +72,7 @@ class Controller {
     socket.on('registration', this.registration)
     socket.on('restore', this.restore)
     socket.on('scan', this.scan)
+    socket.on('useCertificate', this.useCertificate)
     socket.on(lan.EVENTS.interfaces, this.interfaces)
     socket.on('freePort', this.freePort)
     socket.on('reachablePort', this.isReachablePort)
@@ -159,6 +160,11 @@ class Controller {
   isReachablePort = async (data: IReachablePort) => {
     const result = await this.pool.reachablePort(data)
     this.io.emit(ConnectionPool.EVENTS.reachablePort, result)
+  }
+
+  useCertificate = async (use: boolean) => {
+    preferences.update({ useCertificate: use })
+    await cli.checkDefaults()
   }
 
   initBackend = async () => {

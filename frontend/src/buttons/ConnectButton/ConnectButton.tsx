@@ -31,7 +31,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const { connections, ui } = useDispatch<Dispatch>()
+  const { connections } = useDispatch<Dispatch>()
   const chip = service && licenseChip[service.license]
   const state = connectionState(service, connection)
   const visible = !connection?.enabled
@@ -46,7 +46,6 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     } else {
       onClick && onClick()
       analyticsHelper.trackConnect('connectionInitiated', service)
-      ui.guide({ guide: 'guideAWS', step: 6 })
       connection = connection || newConnection(service)
       connection.name = sanitizeName(connection?.name)
       connection?.public ? connections.proxyConnect(connection) : emit('service/connect', connection)

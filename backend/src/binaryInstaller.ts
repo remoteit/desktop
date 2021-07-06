@@ -12,6 +12,7 @@ import Binary, { binaries, cliBinary } from './Binary'
 import Logger from './Logger'
 
 export class BinaryInstaller {
+  ready = false
   inProgress = false
   uninstallInitiated = false
   binaries: Binary[]
@@ -30,6 +31,8 @@ export class BinaryInstaller {
     if (shouldInstall) {
       if (environment.isElevated) return await this.install()
       return EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
+    } else if (!this.ready) {
+      this.ready = true
     }
 
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
@@ -37,8 +40,8 @@ export class BinaryInstaller {
 
   async shouldInstall() {
     let binariesOutdated = !(await this.cliBinary.isCurrent())
-    const serviceStopped = !(await cli.agentRunning())
-    const cliChanged = this.cliVersionChanged()
+    const serviceStopped = !(await cli.agentRunning(true))
+    const cliChanged = await this.cliVersionChanged()
     Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, cliChanged })
     return binariesOutdated || serviceStopped || cliChanged
   }
@@ -52,8 +55,10 @@ export class BinaryInstaller {
 
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
-    this.inProgress = false
     this.updateVersions()
+
+    this.inProgress = false
+    this.ready = true
   }
 
   async installBinaries(): Promise<void> {
@@ -70,6 +75,8 @@ export class BinaryInstaller {
       }
 
       commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.defaults()}`) // @FIXME this should go before the service install if possible and the restart removed!
+      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
 
       await commands.exec()
       resolve()
@@ -174,7 +181,7 @@ export class BinaryInstaller {
   }
 
   async updateVersions() {
-    const cliVersion = await cli.version()
+    const cliVersion = await cli.version(true)
     Logger.info('CLI VERSION UPDATE', { cliVersion })
     preferences.update({ version: environment.version, cliVersion })
   }

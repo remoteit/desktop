@@ -118,8 +118,10 @@ export default createModel<RootModel>()({
       return state
     },
     guide(state: UIState, { guide, ...props }: ILookup<any>) {
-      if (props.step && props.step !== state[guide].step + 1) return state
-      if (props.step > state[guide].total) props.done = true
+      if (props.step > state[guide].total) {
+        props.done = true
+        props.step = 0
+      }
       state[guide] = { ...state[guide], ...props }
       return state
     },

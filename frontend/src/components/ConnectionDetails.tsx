@@ -1,9 +1,12 @@
 import React from 'react'
 import { makeStyles, Collapse, Paper } from '@material-ui/core'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../store'
 import { getAttributes } from '../helpers/attributes'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { DataDisplay } from './DataDisplay'
+import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import { colors, spacing } from '../styling'
 
@@ -16,13 +19,40 @@ type Props = {
 
 export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, session }) => {
   const attributes = getAttributes(['connection', 'duration', 'location', 'initiatorPlatform'])
+  const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
 
   return (
     <Collapse in={show} timeout={800}>
       <Paper className={css.paper} elevation={0}>
-        <LaunchButton connection={connection} service={service} dataButton />
-        <CopyButton connection={connection} service={service} dataButton />
+        <GuideStep
+          guide="guideAWS"
+          step={6}
+          instructions="You can now use this address in your application and it will auto-connect on demand."
+          placement="left"
+          highlight
+        >
+          <CopyButton
+            connection={connection}
+            service={service}
+            dataButton
+            onCopy={() => setTimeout(() => ui.guide({ guide: 'guideAWS', step: 7 }), 100)}
+          />
+        </GuideStep>
+        <GuideStep
+          guide="guideAWS"
+          step={7}
+          instructions="Or for web and some other services you can use the launch button."
+          placement="left"
+          highlight
+        >
+          <LaunchButton
+            connection={connection}
+            service={service}
+            dataButton
+            onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+          />
+        </GuideStep>
         <Gutters inset noBottom noTop>
           <DataDisplay attributes={attributes} connection={connection} session={session} width={100} />
         </Gutters>

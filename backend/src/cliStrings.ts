@@ -13,7 +13,7 @@ export default {
 
   defaults() {
     const useCert = !!preferences.get().useCertificate
-    return `-j connection defaults --enableCertificate ${useCert} --enableOneHTTPSListener ${useCert} --enableOneHTTPListener ${useCert} --authhash ${user.authHash}`
+    return `-j connection defaults --enableCertificate ${useCert} --enableOneHTTPSListener false --enableOneHTTPListener false --authhash ${user.authHash}`
   },
 
   status() {

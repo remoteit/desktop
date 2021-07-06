@@ -52,7 +52,6 @@ export class Preferences {
     this.data = preferences
     Logger.info('SET PREFERENCES', { preferences })
     EventBus.emit(this.EVENTS.update, this.data)
-    cli?.checkDefaults()
   }
 }
 

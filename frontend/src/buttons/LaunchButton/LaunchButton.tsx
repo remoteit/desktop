@@ -9,7 +9,6 @@ import { useDispatch } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
 import { DataButton } from '../DataButton'
 import { DialogApp } from '../../components/DialogApp'
-import { GuideStep } from '../../components/GuideStep'
 import { Dispatch } from '../../store'
 import { FontSize } from '../../styling'
 import { Icon } from '../../components/Icon'
@@ -21,9 +20,10 @@ type Props = {
   menuItem?: boolean
   dataButton?: boolean
   size?: FontSize
+  onLaunch?: () => void
 }
 
-export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, size = 'md' }) => {
+export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, size = 'md', onLaunch }) => {
   const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
     path: state.ui.launchPath,
@@ -41,7 +41,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   useEffect(() => {
     if (launch) {
       app.prompt ? setOpen(true) : launchBrowser()
-      ui.guide({ guide: 'guideAWS', done: true })
+      onLaunch && onLaunch()
     }
     switch (requireInstall) {
       case 'putty':
@@ -101,6 +101,8 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
     setOpenApp(false)
   }
 
+  const clickHandler = () => setLaunch(true)
+
   const LaunchIcon = (
     <Icon
       rotate={app.iconRotate ? -45 : undefined}
@@ -114,30 +116,20 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
 
   return (
     <>
-      <GuideStep guide="guideAWS" step={7} instructions="Or for some services you can use the launch button.">
-        <span>
-          {menuItem ? (
-            <MenuItem dense onClick={() => setLaunch(true)} disabled={loading || disabled}>
-              <ListItemIcon>{LaunchIcon}</ListItemIcon>
-              <ListItemText primary={title} />
-            </MenuItem>
-          ) : dataButton ? (
-            <DataButton
-              label={title}
-              value={app.command}
-              title={title}
-              icon={LaunchIcon}
-              onClick={() => setLaunch(true)}
-            />
-          ) : (
-            <Tooltip title={title}>
-              <IconButton onClick={() => setLaunch(true)} disabled={loading || disabled}>
-                {LaunchIcon}
-              </IconButton>
-            </Tooltip>
-          )}
-        </span>
-      </GuideStep>
+      {menuItem ? (
+        <MenuItem dense onClick={clickHandler} disabled={loading || disabled}>
+          <ListItemIcon>{LaunchIcon}</ListItemIcon>
+          <ListItemText primary={title} />
+        </MenuItem>
+      ) : dataButton ? (
+        <DataButton label={title} value={app.command} title={title} icon={LaunchIcon} onClick={clickHandler} />
+      ) : (
+        <Tooltip title={title}>
+          <IconButton onClick={clickHandler} disabled={loading || disabled}>
+            {LaunchIcon}
+          </IconButton>
+        </Tooltip>
+      )}
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
       <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />
     </>

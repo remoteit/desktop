@@ -31,6 +31,7 @@ type IExec = {
   skipSignInCheck?: boolean
   admin?: boolean
   quiet?: boolean
+  force?: boolean
   onError?: ErrorCallback
 }
 
@@ -86,7 +87,6 @@ export default class CLI {
 
   async checkSignIn() {
     if (this.isSignedOut()) await this.signIn()
-    this.checkDefaults()
   }
 
   async checkDefaults() {
@@ -100,15 +100,11 @@ export default class CLI {
 
   areDefaultsSet() {
     this.readConnectionDefaults()
-    // @TODO Add check useCertificate preferences state and adjust
-    const useCert: boolean = !!(
-      this.data.connectionDefaults?.enableCertificate &&
-      this.data.connectionDefaults?.enableOneHTTPSListener &&
-      this.data.connectionDefaults?.enableOneHTTPListener
-    )
+    const defaults = this.data.connectionDefaults
+    if (defaults?.enableOneHTTPSListener || defaults?.enableOneHTTPListener) return false
+    const useCert: boolean = !!defaults?.enableCertificate
     const result = !!preferences.get().useCertificate === useCert
-
-    d('ARE CLI DEFAULTS SET?', { result, defaults: this.data.connectionDefaults })
+    d('ARE CLI DEFAULTS SET?', { result, defaults })
     return result
   }
 
@@ -217,21 +213,6 @@ export default class CLI {
     return data?.connections as IConnectionStatus[]
   }
 
-  async agentRunning() {
-    let running = false
-
-    const data = await this.exec({
-      cmds: [strings.agentStatus()],
-      checkAuthHash: true,
-      skipSignInCheck: true,
-      quiet: true,
-    })
-
-    if (data) running = data.running
-    Logger.info('CLI AGENT STATUS', { running })
-    return running
-  }
-
   async addTarget(t: ITarget) {
     await this.exec({ cmds: [strings.add(t)], checkAuthHash: true })
     this.readTargets()
@@ -320,6 +301,7 @@ export default class CLI {
   }
 
   async setDefaults() {
+    Logger.info('SET CLI DEFAULTS', strings.defaults())
     await this.exec({ cmds: [strings.defaults()], checkAuthHash: true, skipSignInCheck: true })
     binaryInstaller.restart()
     this.read()
@@ -329,13 +311,37 @@ export default class CLI {
     return await this.exec({ cmds: [strings.scan(ipMask)], skipSignInCheck: true })
   }
 
-  async version() {
-    const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true })
+  async agentRunning(force?: boolean) {
+    let running = false
+
+    const data = await this.exec({
+      cmds: [strings.agentStatus()],
+      checkAuthHash: true,
+      skipSignInCheck: true,
+      quiet: true,
+      force,
+    })
+
+    if (data) running = data.running
+    Logger.info('CLI AGENT STATUS', { running })
+    return running
+  }
+
+  async version(force?: boolean) {
+    const result = await this.exec({ cmds: [strings.version()], skipSignInCheck: true, quiet: true, force })
     return result.version
   }
 
-  async exec({ cmds, checkAuthHash = false, skipSignInCheck = false, admin = false, quiet = false, onError }: IExec) {
-    if (binaryInstaller?.inProgress) return ''
+  async exec({
+    cmds,
+    checkAuthHash = false,
+    skipSignInCheck = false,
+    admin = false,
+    quiet = false,
+    force,
+    onError,
+  }: IExec) {
+    if (!force && (binaryInstaller?.inProgress || !binaryInstaller.ready)) return ''
     if (!skipSignInCheck && !binaryInstaller.uninstallInitiated) await this.checkSignIn()
     if (checkAuthHash && !user.signedIn) return ''
 

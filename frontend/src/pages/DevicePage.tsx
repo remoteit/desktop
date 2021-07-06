@@ -119,10 +119,17 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        <GuideStep guide="guideAWS" step={4} instructions="Select the first service." autoNext>
-          {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
+        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
+          <GuideStep
+            key={s.id}
+            guide="guideAWS"
+            step={4}
+            instructions="Select the service below."
+            hide={!s.name.includes('Start here')}
+            highlight
+            autoNext
+          >
             <ListItemLocation
-              key={s.id}
               pathname={`/devices/${device.id}/${s.id}/details`}
               match={`/devices/${device.id}/${s.id}`}
               dense
@@ -136,8 +143,8 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
                 <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
               </ListItemSecondaryAction>
             </ListItemLocation>
-          ))}
-        </GuideStep>
+          </GuideStep>
+        ))}
       </List>
       <ServiceContextualMenu />
     </Container>
