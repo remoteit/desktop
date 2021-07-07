@@ -38,9 +38,6 @@ export const GuideStep: React.FC<Props> = ({
   const css = useStyles({ highlight })
   const open = !hide && (state.step === step || !!show)
   const start = () => ui.guide({ guide, step, done: false })
-  const nav = (event: React.MouseEvent) => {
-    event.stopPropagation()
-  }
 
   React.useEffect(() => {
     if (!state.done && autoStart) start()
@@ -72,7 +69,7 @@ export const GuideStep: React.FC<Props> = ({
               color="white"
               type="light"
               disabled={step <= 1}
-              onClick={() => ui.guide({ guide, step: step - 1 })}
+              onClick={() => ui.guide({ guide, step: step - 1, back: true })}
             />
             <IconButton
               icon="angle-right"

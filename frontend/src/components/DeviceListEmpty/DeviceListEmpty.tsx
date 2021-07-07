@@ -39,14 +39,14 @@ export const DeviceListEmpty: React.FC = () => {
               hideArrow
             >
               <Button
-                onClick={() => devices.claimDevice('SHAREAWS')}
+                onClick={() => devices.claimDevice('GUESTVPC')}
                 variant="contained"
                 color="primary"
                 size="medium"
                 className={css.button}
                 disabled={claiming}
               >
-                <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft /> AWS DEMO
+                <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft /> AWS EXAMPLE
               </Button>
             </GuideStep>
           </GuideStep>

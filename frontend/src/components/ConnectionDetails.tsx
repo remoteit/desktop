@@ -36,7 +36,7 @@ export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, 
             connection={connection}
             service={service}
             dataButton
-            onCopy={() => setTimeout(() => ui.guide({ guide: 'guideAWS', step: 7 }), 100)}
+            onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
           />
         </GuideStep>
         <GuideStep

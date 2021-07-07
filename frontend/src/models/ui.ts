@@ -118,11 +118,13 @@ export default createModel<RootModel>()({
       return state
     },
     guide(state: UIState, { guide, ...props }: ILookup<any>) {
-      if (props.step > state[guide].total) {
-        props.done = true
-        props.step = 0
+      if (props.back || props.done || (props.step && props.step === state[guide].step + 1)) {
+        if (props.step > state[guide].total) {
+          props.done = true
+          props.step = 0
+        }
+        state[guide] = { ...state[guide], ...props }
       }
-      state[guide] = { ...state[guide], ...props }
       return state
     },
     accordion(state: UIState, params: ILookup<boolean>) {
