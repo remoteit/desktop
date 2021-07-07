@@ -115,7 +115,7 @@ export default createModel<RootModel>()({
       if (globalState.ui.setupBusy) {
         await fetch(user?.id)
         await dispatch.backend.updateDeferredAttributes()
-        dispatch.ui.reset()
+        dispatch.ui.updated()
       }
     },
     async updateDeferredAttributes(_, globalState) {
