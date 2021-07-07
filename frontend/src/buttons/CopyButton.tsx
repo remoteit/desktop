@@ -51,7 +51,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
 
   const onSubmit = (tokens: ILookup<string>) => {
     setConnection({ ...connection, ...tokens })
-    copy()
+    setTimeout(copy, 100)
   }
 
   const CopyIcon = (

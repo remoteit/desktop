@@ -33,6 +33,10 @@ export class Application {
     return this.connection ? this.connection[token] : this.service ? this.service.attributes[token] : ''
   }
 
+  preview(data: ILookup<string>) {
+    return this.parse(this.template, { ...this.lookup, ...data })
+  }
+
   get templateKey() {
     return this.context === 'copy' ? 'commandTemplate' : 'launchTemplate'
   }
@@ -50,7 +54,7 @@ export class Application {
   }
 
   get command() {
-    return this.parse(this.template)
+    return this.parse(this.template, this.lookup)
   }
 
   get prompt() {
@@ -69,14 +73,15 @@ export class Application {
     return this.tokens.filter(token => !this.defaultTokens.includes(token))
   }
 
-  get data() {
-    let data: ILookup<string> = {}
-    this.missingTokens.forEach(token => (data[token] = ''))
-    return data
+  get missingTokens() {
+    return this.extractTokens(this.parse(this.template, this.lookup)) || []
   }
 
-  get missingTokens() {
-    return this.extractTokens(this.parse(this.template)) || []
+  get lookup() {
+    let lookup: ILookup<any> = {}
+    if (this.connection) lookup = { ...this.connection, ...lookup }
+    if (this.service) lookup = { ...this.service.attributes, ...lookup }
+    return lookup
   }
 
   private get resolvedDefaultLaunchTemplate() {
@@ -99,10 +104,7 @@ export class Application {
     return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
   }
 
-  private parse(template: string = '') {
-    let lookup: ILookup<any> = this.connection || {}
-    if (this.service) lookup = { ...this.service.attributes, ...lookup }
-
+  private parse(template: string = '', lookup: ILookup<string>) {
     this.tokens.forEach(token => {
       if (lookup[token]) {
         const search = new RegExp(`\\[${token}\\]`, 'g')
