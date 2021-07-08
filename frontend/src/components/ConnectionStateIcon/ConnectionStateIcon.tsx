@@ -3,7 +3,6 @@ import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { connectionState } from '../../helpers/connectionHelper'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'
 import { getTargetPlatformIcon } from '../../helpers/platformHelper'
 import { colors, spacing, Color } from '../../styling'
@@ -13,17 +12,9 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
   service?: IService
   device?: IDevice
   mini?: boolean
-  thisDevice?: boolean
 }
 
-export function ConnectionStateIcon({
-  connection,
-  service,
-  device,
-  mini,
-  thisDevice,
-  ...props
-}: ConnectionStateIconProps) {
+export function ConnectionStateIcon({ connection, service, device, mini, ...props }: ConnectionStateIconProps) {
   const css = useStyles()
   const history = useHistory()
 
@@ -67,17 +58,6 @@ export function ConnectionStateIcon({
     element = (
       <span className={css.mini}>
         <span style={{ backgroundColor: colors[colorName] }} />
-      </span>
-    )
-  else if (thisDevice)
-    element = (
-      <span className={css.combo}>
-        <Icon {...props} name="hdd" color="grayDark" type="regular" fixedWidth />
-        {!(showQuality && device) && (
-          <sup>
-            <Icon name={name} color={colorName} spin={spin} size="sm" type={type} fixedWidth />
-          </sup>
-        )}
       </span>
     )
   else {

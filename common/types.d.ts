@@ -224,6 +224,7 @@ declare global {
     version: number // daemon version
     configurable: boolean // cloudshift device
     accountId: string
+    thisDevice?: boolean
     geo: IGeo & {
       connectionType?: string
       isp?: string
