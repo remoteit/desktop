@@ -28,9 +28,8 @@ export const ServiceHeaderMenu: React.FC<{
   const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
-  const { connection, thisDevice, access } = useSelector((state: ApplicationState) => ({
+  const { connection, access } = useSelector((state: ApplicationState) => ({
     connection: state.connections.all.find(c => c.id === serviceID),
-    thisDevice: state.backend.device?.uid === device?.id,
     access: state.accounts.access,
   }))
 
@@ -42,12 +41,10 @@ export const ServiceHeaderMenu: React.FC<{
         <>
           <OutOfBand />
           <Typography variant="h1">
-            {/* <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" /> */}
-            {/* <ServiceName connection={connection} service={service} /> */}
             <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <Route path="/devices/:deviceID/:serviceID/edit">
-              {thisDevice ? (
+              {device.thisDevice ? (
                 <UnregisterServiceButton target={target} />
               ) : (
                 <DeleteServiceButton device={device} service={service} />

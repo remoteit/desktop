@@ -2,13 +2,11 @@ import React from 'react'
 import { ServiceMiniState } from './ServiceMiniState'
 import { Tooltip, Chip, Box, makeStyles } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import { spacing } from '../styling'
 import { Dispatch } from '../store'
 
 type Props = {
   device?: IDevice
   connections?: IConnection[]
-  thisDevice?: boolean
   restore?: boolean
   columns?: string[]
 }

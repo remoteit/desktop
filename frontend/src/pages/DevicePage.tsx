@@ -54,8 +54,7 @@ export const DevicePage: React.FC<Props> = ({ targets, device }) => {
       </span>
     )
 
-  const thisDevice = device?.thisDevice
-  const editable = thisDevice || device.configurable
+  const editable = device.thisDevice || device.configurable
   const connection = connections.find(c => c.deviceID === device.id && c.enabled)
 
   // reverse sort services by creation date
@@ -100,7 +99,7 @@ export const DevicePage: React.FC<Props> = ({ targets, device }) => {
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <SortServices />
-        <AddFromNetwork allowScanning={thisDevice} button />
+        <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
       <List>

@@ -5,8 +5,7 @@ import { getTargetPlatform } from '../helpers/platformHelper'
 export function platformConfiguration() {
   const state = store.getState()
   const all = getOwnDevices(state)
-  const targetDevice: ITargetDevice = state.backend.device
-  const thisDevice = all.find(d => d.id === targetDevice.uid)
+  const thisDevice = all.find(d => d.thisDevice)
   const targetPlatform = getTargetPlatform(thisDevice?.targetPlatform)
 
   if (targetPlatform === 'AWS') {
