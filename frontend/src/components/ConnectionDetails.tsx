@@ -28,7 +28,7 @@ export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, 
         <GuideStep
           guide="guideAWS"
           step={6}
-          instructions="You can now use this address in your application and it will auto-connect on demand."
+          instructions="Copy this address for use in your application to have it connect on demand."
           placement="left"
           highlight
         >
