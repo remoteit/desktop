@@ -190,7 +190,7 @@ function getEventHandlers() {
     'cli/error': error => {
       ui.set({ errorMessage: '' }) // So we re-trigger a new error if one exists
       ui.set({ errorMessage: error })
-      ui.reset()
+      ui.updated()
     },
 
     // Connections --- TODO validate we need these three channels
