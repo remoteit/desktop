@@ -1,54 +1,45 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { TextField, Button, List, ListItemSecondaryAction } from '@material-ui/core'
 import { ListItemCheckbox } from '../../components/ListItemCheckbox'
-import { REGEX_VALID_URL } from '../../shared/constants'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 
-const is_url = str => {
-  if (str.length === 0) return false
-  return REGEX_VALID_URL.test(str) ? true : false
-}
+
 
 export function NotificationMode({ ...props }): JSX.Element {
   const [webHook, setWebhook] = useState(props.notificationUrl.length ? true : false)
   const [webHookUrl, setWebhookUrl] = useState(props.notificationUrl)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [errorFlag, setErrorFlag] = useState(false)
-  const [panelDisable, setPanelDisable] = useState(false)
+  const { loading } = useSelector((state: ApplicationState) => ({
+    loading: state.auth?.loading
+  }))
 
-  useEffect(() => {
-    !props.onlineDeviceNotification && !props.onlineSharedDeviceNotification
-      ? setPanelDisable(true)
-      : setPanelDisable(false)
-  }, [props.onlineDeviceNotification, props.onlineSharedDeviceNotification])
-
-  const handleEmailChange = (value: boolean) => {
+  const onEmailChange = (value: boolean) => {
     props.setEmailChecked(value)
     setError(false)
   }
 
-  const handleSystemChange = (value: boolean) => {
+  const onSystemChange = (value: boolean) => {
     props.setSystemChecked(value)
     setError(false)
   }
 
-  const handleWebChange = (value: boolean) => {
+  const onWebChange = (value: boolean) => {
     setWebhook(value)
     setWebhookUrl('')
     setError(false)
     value ? setErrorFlag(true) : setErrorFlag(false)
   }
 
-  const handleChange = value => {
+  const onChange = value => {
     setWebhookUrl(value)
     setError(false)
   }
 
-  const handleSave = async () => {
-    setLoading(true)
+  const onSave = async () => {
     if (errorFlag) {
       setError(true)
-      setLoading(false)
     } else {
       const metadata: IMetadata = {
         onlineDeviceNotification: props.onlineDeviceNotification,
@@ -57,25 +48,27 @@ export function NotificationMode({ ...props }): JSX.Element {
         portalUrl: webHook && webHookUrl?.length ? webHookUrl : undefined,
         notificationSystem: props.notificationSystem,
       }
-      props.handleUpdate(metadata)
+      props.onUpdate(metadata)
     }
   }
 
   return (
     <>
       <List>
-        <ListItemCheckbox label="System notification" checked={props.notificationSystem} onClick={handleSystemChange} />
+        <ListItemCheckbox label="System notification" checked={props.notificationSystem} onClick={onSystemChange} />
         <ListItemCheckbox
           label="Email"
-          disabled={panelDisable}
           checked={props.notificationEmail}
-          onClick={handleEmailChange}
+          onClick={onEmailChange}
         />
-        <ListItemCheckbox label="Webhook" disabled={panelDisable} checked={webHook} onClick={handleWebChange}>
+        <ListItemCheckbox 
+            label="Webhook" 
+            checked={webHook} 
+            onClick={onWebChange}>
           <ListItemSecondaryAction>
             <TextField
               disabled={!webHook}
-              onChange={e => handleChange(e.currentTarget.value)}
+              onChange={e => onChange(e.currentTarget.value)}
               value={webHookUrl}
               label="URL endpoint"
               placeholder="Webhook Endpoint"
@@ -89,7 +82,7 @@ export function NotificationMode({ ...props }): JSX.Element {
         </ListItemCheckbox>
       </List>
       <List>
-        <Button variant="contained" color="primary" onClick={handleSave} disabled={panelDisable} size="small">
+        <Button variant="contained" color="primary" onClick={onSave} disabled={loading} size="small">
           {loading ? 'Saving' : 'Save'}
         </Button>
       </List>

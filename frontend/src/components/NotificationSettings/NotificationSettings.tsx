@@ -31,18 +31,22 @@ enum notificationType {
 export const NotificationSettings: React.FC<Props> = ({ device }) => {
   const isOwner = !device.shared
   const { devices } = useDispatch<Dispatch>()
-  const { globalNotificationEmail } = useSelector((state: ApplicationState) => ({
+  const { globalNotificationEmail, globalNotificationSystem } = useSelector((state: ApplicationState) => ({
     globalNotificationEmail: state.auth?.user?.metadata?.notificationEmail,
+    globalNotificationSystem: state.auth?.user?.metadata?.notificationSystem
   }))
   const [emailNotification, setEmailNotification] = useState(
-    device.attributes.notificationEmail || globalNotificationEmail
+    device.attributes.notificationEmail
   )
   const [notificationInApp, setNotificationInApp] = useState(
     isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false
   )
   const [overridden, setOverridden] = useState(
-    globalNotificationEmail !==
-      (isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false)
+    globalNotificationSystem !==
+    (isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false)
+  )
+  const [emailOverridden, setEmailOverridden] = useState(
+    globalNotificationEmail !== emailNotification
   )
 
   const emailNotifications = () => {
@@ -63,15 +67,37 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
     devices.setAttributes(device)
     setNotificationInApp(!notificationInApp)
   }
-  const handleClose = () => {
-    setOverridden(false)
+  const onClose = (system: boolean) => {
     let notification = isOwner ? notificationType.OWN : notificationType.DEVICE_SHARED
+    if (system) {
+      setOverridden(false)
+      setNotificationInApp(globalNotificationSystem)
+    } else {
+      setEmailOverridden(false)
+      setEmailNotification(globalNotificationEmail)
+      notification = notificationType.EMAIL
+    }
+
     device.attributes = {
       ...device.attributes,
-      [notification]: globalNotificationEmail,
+      [notification]: system ? globalNotificationSystem : globalNotificationEmail,
     }
     devices.setAttributes(device)
-    setNotificationInApp(globalNotificationEmail)
+  }
+
+  const chipOverridden = (system: boolean = true) => {
+    return (
+      <Chip
+        label="Overridden"
+        size="small"
+        deleteIcon={
+          <IconButton>
+            <Icon name="times" size="xs" />
+          </IconButton>
+        }
+        onDelete={() => onClose(system)}
+      ></Chip>
+    )
   }
 
   if (!device) return null
@@ -93,28 +119,21 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
           </ListItemIcon>
           <ListItemText primary="System notification" />
           <ListItemSecondaryAction>
-            {overridden && (
-              <Chip
-                label="Overridden"
-                size="small"
-                deleteIcon={
-                  <IconButton>
-                    <Icon name="times" size="xs" />
-                  </IconButton>
-                }
-                onDelete={handleClose}
-              ></Chip>
-            )}
+            {overridden && chipOverridden()}
             <Switch edge="end" color="primary" checked={!!notificationInApp} onClick={inAppNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
-        <ListItemSetting
-          label="Email"
-          icon={emailNotification ? 'bell' : 'bell-slash'}
-          toggle={!!emailNotification}
-          onClick={emailNotifications}
-          quote={false}
-        />
+        <ListItem button onClick={inAppNotifications} dense>
+          <ListItemIcon>
+            <Icon name={emailNotification ? 'bell' : 'bell-slash'} size="md" />
+          </ListItemIcon>
+          <ListItemText primary="Email" />
+          <ListItemSecondaryAction>
+            {emailOverridden && chipOverridden(false)}
+            <Switch edge="end" color="primary" checked={!!emailNotification} onClick={emailNotifications} />
+          </ListItemSecondaryAction>
+        </ListItem>
+
       </List>
     </>
   )

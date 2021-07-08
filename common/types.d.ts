@@ -242,6 +242,7 @@ declare global {
       onlineDeviceNotification?: boolean
       onlineSharedDeviceNotification?: boolean
       notificationEmail?: boolean
+      notificationSystem?: boolean
     }
   }
 
@@ -528,7 +529,6 @@ declare global {
     openAtLogin?: boolean
     remoteUIOverride?: boolean
     disableLocalNetwork?: boolean
-    showNotifications?: boolean
     allowPrerelease?: boolean
     useCertificate?: boolean
     switchApi?: boolean

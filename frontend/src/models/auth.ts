@@ -33,6 +33,7 @@ export interface AuthState {
   authService?: AuthService
   user?: IUser
   localUsername?: string
+  loading?: boolean
 }
 
 const state: AuthState = {
@@ -44,6 +45,7 @@ const state: AuthState = {
   user: undefined,
   authService: undefined,
   localUsername: undefined,
+  loading: false,
 }
 
 export default createModel<RootModel>()({
@@ -89,25 +91,22 @@ export default createModel<RootModel>()({
           authHash: data.authhash,
           yoicsId: data.yoicsId,
           created: data.created,
-          metadata: {
-            onlineDeviceNotification: data.metadata.onlineDeviceNotification,
-            onlineSharedDeviceNotification: data.metadata.onlineSharedDeviceNotification,
-            portalUrl: data.metadata.portalUrl,
-            notificationEmail: data.metadata.notificationEmail,
-            notificationSystem: data.metadata.notificationSystem,
-          },
+          metadata: data.metadata,
         })
       } catch (error) {
         await graphQLCatchError(error)
       }
     },
-    async updateUserMetadata(metadata: IMetadata) {
+    async updateUserMetadata(metadata: IMetadata, rootState: any) {
+      const { auth } = dispatch as Dispatch
       try {
+        auth.setLoading(true)
         const response = await graphQLUpdateMetadata(metadata)
         graphQLGetErrors(response)
       } catch (error) {
         await graphQLCatchError(error)
       }
+      auth.setLoading(false)
     },
     async checkSession(_: void, rootState: any) {
       const { ui } = store.dispatch
@@ -242,6 +241,10 @@ export default createModel<RootModel>()({
     },
     setUsername(state: AuthState, username: string | undefined) {
       state.localUsername = username
+      return state
+    },
+    setLoading(state: AuthState, loading: boolean | undefined) {
+      state.loading = loading
       return state
     },
   },

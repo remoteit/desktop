@@ -42,7 +42,7 @@ export const NotificationsPage: React.FC = () => {
   const [email, setEmail] = useState<boolean>(notificationEmail || false)
   const [system, setSystem] = useState<boolean>(notificationSystem || false)
 
-  const handleUpdate = (metadata: IMetadata) => {
+  const onUpdate = (metadata: IMetadata) => {
     updateUserMetadata(metadata)
   }
 
@@ -81,7 +81,7 @@ export const NotificationsPage: React.FC = () => {
               notificationUrl={url}
               notificationEmail={email}
               notificationSystem={system}
-              handleUpdate={handleUpdate}
+              onUpdate={onUpdate}
             />
           </Quote>
         </ListItem>
