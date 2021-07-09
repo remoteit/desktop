@@ -123,7 +123,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
             <Switch edge="end" color="primary" checked={!!notificationInApp} onClick={inAppNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
-        <ListItem button onClick={inAppNotifications} dense>
+        <ListItem button onClick={emailNotifications} dense>
           <ListItemIcon>
             <Icon name={emailNotification ? 'bell' : 'bell-slash'} size="md" />
           </ListItemIcon>
