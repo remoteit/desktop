@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -14,7 +14,6 @@ import {
   Typography,
   Tooltip,
 } from '@material-ui/core'
-import { ListItemSetting } from '../../components/ListItemSetting'
 import { Title } from '../Title'
 import { Icon } from '../Icon'
 
@@ -41,13 +40,19 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
   const [notificationInApp, setNotificationInApp] = useState(
     isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false
   )
-  const [overridden, setOverridden] = useState(
-    globalNotificationSystem !==
-    (isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false)
-  )
-  const [emailOverridden, setEmailOverridden] = useState(
-    globalNotificationEmail !== emailNotification
-  )
+  const [overridden, setOverridden] = useState<boolean>()
+  const [emailOverridden, setEmailOverridden] = useState<boolean>()
+
+  useEffect(() => {
+    setOverridden(
+      globalNotificationSystem !==
+      (isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false)
+    )
+  }, [globalNotificationSystem, device?.attributes, isOwner])
+
+  useEffect(() => {
+    setEmailOverridden(globalNotificationEmail !== emailNotification)
+  }, [globalNotificationEmail, emailNotification])
 
   const emailNotifications = () => {
     device.attributes = {
