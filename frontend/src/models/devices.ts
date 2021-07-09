@@ -15,6 +15,8 @@ import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 
+const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
+
 type DeviceParams = { [key: string]: any }
 
 type IGetDevice = {
@@ -24,7 +26,6 @@ type IGetDevice = {
 
 type IDeviceState = {
   all: { [accountId: string]: IDevice[] }
-  initialized: boolean
   total: number
   results: number
   searched: boolean
@@ -47,7 +48,6 @@ type IDeviceState = {
 
 export const defaultState: IDeviceState = {
   all: {},
-  initialized: false,
   total: 0,
   results: 0,
   searched: false,
@@ -71,6 +71,14 @@ export const defaultState: IDeviceState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
+    async init() {
+      let states = {}
+      SAVED_STATES.forEach(key => {
+        const value = window.localStorage.getItem(`device-${key}`)
+        if (value) states[key] = value
+      })
+      dispatch.devices.set(states)
+    },
     /* 
       GraphQL search query for all device data
     */
@@ -116,7 +124,7 @@ export default createModel<RootModel>()({
       platformConfiguration()
 
       // @TODO pull contacts out into its own model / request on page load
-      set({ initialized: true, fetching: false, append: false, contacts })
+      set({ fetching: false, append: false, contacts })
     },
 
     /*
@@ -313,7 +321,10 @@ export default createModel<RootModel>()({
       return state
     },
     set(state: IDeviceState, params: DeviceParams) {
-      Object.keys(params).forEach(key => (state[key] = params[key]))
+      Object.keys(params).forEach(key => {
+        if (SAVED_STATES.includes(key)) window.localStorage.setItem(`device-${key}`, params[key] || '')
+        state[key] = params[key]
+      })
       return state
     },
   },

@@ -15,13 +15,7 @@ import { Container } from './Container'
 import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({ device, header, children }) => {
-  const { thisDevice, access } = useSelector((state: ApplicationState) => {
-    return {
-      thisDevice: state.backend.device?.uid === device?.id,
-      fetching: state.devices.fetching,
-      access: state.accounts.access,
-    }
-  })
+  const { access } = useSelector((state: ApplicationState) => ({ access: state.accounts.access }))
 
   if (!device) return <UnauthorizedPage />
 
@@ -31,10 +25,8 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
       header={
         <>
           <Typography variant="h1">
-            {/* <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" /> */}
             <Title>{device.name || 'Unknown'}</Title>
-            {/* <ServiceName device={device} connection={connected} /> */}
-            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteDeviceButton device={device} />}
+            {device.thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteDeviceButton device={device} />}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
           </Typography>

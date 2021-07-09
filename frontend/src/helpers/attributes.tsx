@@ -60,7 +60,10 @@ export const attributes: Attribute[] = [
     id: 'deviceName',
     label: 'Device Name',
     value: ({ device, connection }) => (
-      <ListItemText primary={<ServiceName device={device} connection={connection} />} />
+      <ListItemText
+        primary={<ServiceName device={device} connection={connection} />}
+        secondary={device?.thisDevice ? 'This device' : undefined}
+      />
     ),
     required: true,
   }),

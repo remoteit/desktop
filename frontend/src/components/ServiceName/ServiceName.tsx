@@ -1,12 +1,11 @@
 import React from 'react'
 import { Icon } from '../Icon'
 import { Title } from '../Title'
-import { Tooltip } from '@material-ui/core'
 import { isOffline } from '../../models/devices'
 import { useLocation } from 'react-router-dom'
-import { TargetPlatform } from '../TargetPlatform'
-import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { attributeName } from '../../shared/nameHelper'
+import { REGEX_FIRST_PATH } from '../../shared/constants'
+import { Tooltip, Typography } from '@material-ui/core'
 
 type Props = {
   connection?: IConnection

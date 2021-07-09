@@ -14,7 +14,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
   const css = useStyles()
   const history = useHistory()
   const { thisDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
-    thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+    thisDevice: getOwnDevices(state).find(d => d.thisDevice),
     targetDevice: state.backend.device,
     os: state.backend.environment.os,
     restoring: state.ui.restoring,

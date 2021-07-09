@@ -7,27 +7,18 @@ import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { Attribute } from '../../helpers/attributes'
 import { Icon } from '../Icon'
 import { makeStyles, Checkbox, ListItemSecondaryAction, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
-import { spacing, colors, fontSizes, radius } from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 
 type Props = {
   device?: IDevice
   connections?: IConnection[]
-  thisDevice?: boolean
   primary?: Attribute
   attributes?: Attribute[]
   restore?: boolean
   select?: boolean
 }
 
-export const DeviceListItem: React.FC<Props> = ({
-  device,
-  connections,
-  thisDevice,
-  primary,
-  attributes = [],
-  restore,
-  select,
-}) => {
+export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, attributes = [], restore, select }) => {
   const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
   const css = useStyles({ attributes })
@@ -52,7 +43,7 @@ export const DeviceListItem: React.FC<Props> = ({
         )}
         <DeviceLabel device={device} />
         <ListItemIcon>
-          <ConnectionStateIcon device={device} connection={connected} size="lg" thisDevice={thisDevice} />
+          <ConnectionStateIcon device={device} connection={connected} size="lg" />
         </ListItemIcon>
         <AttributeValue device={device} connection={connected} attribute={primary} />
         <ListItemSecondaryAction className={css.column}>

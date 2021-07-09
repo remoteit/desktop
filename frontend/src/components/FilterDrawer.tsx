@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { TARGET_PLATFORMS } from '../helpers/platformHelper'
 import { defaultState } from '../models/devices'
 import { ApplicationState, Dispatch } from '../store'
@@ -6,13 +6,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { AccordionMenu } from './AccordionMenu'
 import { FilterSelector } from './FilterSelector'
 import { Drawer } from './Drawer'
-
-type IValues = {
-  sort: typeof defaultState.sort
-  filter: typeof defaultState.filter
-  owner: typeof defaultState.owner
-  platform: typeof defaultState.platform
-}
 
 const sortFilters = [
   { value: 'name', name: 'Name' },
@@ -50,43 +43,28 @@ export const FilterDrawer: React.FC = () => {
     open: state.ui.drawerMenu === 'FILTER',
   }))
   const { devices } = useDispatch<Dispatch>()
-  const [values, setValues] = useState<IValues>(state)
 
-  const handleClear = () => {
-    setValues({
-      filter: defaultState.filter,
-      sort: defaultState.sort,
-      owner: defaultState.owner,
-      platform: defaultState.platform,
-    })
+  const update = values => {
+    values = { ...values, from: defaultState.from }
+    devices.set(values)
+    devices.fetch()
   }
-
-  useEffect(() => {
-    if (
-      state.sort !== values.sort ||
-      state.filter !== values.filter ||
-      state.owner !== values.owner ||
-      state.platform !== values.platform
-    ) {
-      devices.set({ ...values, from: defaultState.from })
-      devices.fetch()
-    }
-  }, [values])
 
   return (
     <Drawer open={open}>
       <AccordionMenu
+        defaultExpanded="sort"
         menus={[
           {
             key: 'sort',
             subtitle: 'Sort',
             children: (
               <FilterSelector
-                icon={values.sort.substr(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
-                value={values.sort}
+                icon={state.sort.substr(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
+                value={state.sort}
                 onSelect={value => {
-                  if (values.sort === value) value = value.substr(0, 1) === '-' ? value : `-${value}`
-                  setValues({ ...values, sort: value })
+                  if (state.sort === value) value = value.substr(0, 1) === '-' ? value : `-${value}`
+                  update({ sort: value })
                 }}
                 filterList={sortFilters}
               />
@@ -98,8 +76,8 @@ export const FilterDrawer: React.FC = () => {
             children: (
               <FilterSelector
                 icon="check"
-                value={values.filter}
-                onSelect={value => setValues({ ...values, filter: value })}
+                value={state.filter}
+                onSelect={value => update({ filter: value })}
                 filterList={deviceFilters}
               />
             ),
@@ -110,8 +88,8 @@ export const FilterDrawer: React.FC = () => {
             children: (
               <FilterSelector
                 icon="check"
-                value={values.owner}
-                onSelect={value => setValues({ ...values, owner: value })}
+                value={state.owner}
+                onSelect={value => update({ owner: value })}
                 filterList={ownerFilters}
               />
             ),
@@ -122,8 +100,8 @@ export const FilterDrawer: React.FC = () => {
             children: (
               <FilterSelector
                 icon="check"
-                value={values.platform?.toString() || 'all'}
-                onSelect={value => setValues({ ...values, platform: parseInt(value) || undefined })}
+                value={state.platform?.toString() || 'all'}
+                onSelect={value => update({ platform: parseInt(value) || undefined })}
                 filterList={platformFilter}
               />
             ),

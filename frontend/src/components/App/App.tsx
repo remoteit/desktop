@@ -13,11 +13,10 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
-  const { authInitialized, backendAuthenticated, initialized, installed, signedOut, uninstalling } = useSelector(
+  const { authInitialized, backendAuthenticated, installed, signedOut, uninstalling } = useSelector(
     (state: ApplicationState) => ({
       authInitialized: state.auth.initialized,
       backendAuthenticated: state.auth.backendAuthenticated,
-      initialized: state.devices.initialized,
       installed: state.binaries.installed,
       signedOut: state.auth.initialized && !state.auth.authenticated,
       uninstalling: state.ui.uninstalling,
@@ -69,13 +68,6 @@ export const App: React.FC = () => {
         <InstallationNotice />
       </Page>
     )
-
-  // if (!initialized)
-  //   return (
-  //     <Page>
-  //       <LoadingMessage message="Starting up..." logo />
-  //     </Page>
-  //   )
 
   return (
     <Page>
