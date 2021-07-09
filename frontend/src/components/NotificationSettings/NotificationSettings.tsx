@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import {
@@ -9,11 +8,10 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
-  IconButton,
   Switch,
   Typography,
-  Tooltip,
 } from '@material-ui/core'
+import { IconButton } from '../../buttons/IconButton'
 import { Title } from '../Title'
 import { Icon } from '../Icon'
 
@@ -32,11 +30,9 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
   const { globalNotificationEmail, globalNotificationSystem } = useSelector((state: ApplicationState) => ({
     globalNotificationEmail: state.auth?.user?.metadata?.notificationEmail,
-    globalNotificationSystem: state.auth?.user?.metadata?.notificationSystem
+    globalNotificationSystem: state.auth?.user?.metadata?.notificationSystem,
   }))
-  const [emailNotification, setEmailNotification] = useState(
-    device.attributes.notificationEmail
-  )
+  const [emailNotification, setEmailNotification] = useState(device.attributes.notificationEmail)
   const [notificationInApp, setNotificationInApp] = useState(
     isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false
   )
@@ -46,7 +42,9 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
   useEffect(() => {
     setOverridden(
       globalNotificationSystem !==
-      (isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false)
+        (isOwner
+          ? device.attributes.onlineDeviceNotification
+          : device.attributes.onlineSharedDeviceNotification || false)
     )
   }, [globalNotificationSystem, device?.attributes, isOwner])
 
@@ -95,11 +93,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
       <Chip
         label="Overridden"
         size="small"
-        deleteIcon={
-          <IconButton>
-            <Icon name="times" size="xs" />
-          </IconButton>
-        }
+        deleteIcon={<IconButton icon="times" size="xs" />}
         onDelete={() => onClose(system)}
       ></Chip>
     )
@@ -111,16 +105,19 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
     <>
       <Typography variant="subtitle1">
         <Title>Notification overrides</Title>
-        <Tooltip title="Global Settings">
-          <IconButton to="/settings/notifications" component={Link}>
-            <Icon name="ellipsis-h" size="md" />
-          </IconButton>
-        </Tooltip>
+        <IconButton
+          title="Global Settings"
+          to="/settings/notifications"
+          icon="sliders-h"
+          color="grayDark"
+          size="sm"
+          shiftDown
+        />
       </Typography>
       <List>
         <ListItem button onClick={inAppNotifications} dense>
           <ListItemIcon>
-            <Icon name={notificationInApp ? 'bell' : 'bell-slash'} size="md" />
+            <Icon name={notificationInApp ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary="System notification" />
           <ListItemSecondaryAction>
@@ -130,7 +127,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
         </ListItem>
         <ListItem button onClick={emailNotifications} dense>
           <ListItemIcon>
-            <Icon name={emailNotification ? 'bell' : 'bell-slash'} size="md" />
+            <Icon name={emailNotification ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary="Email" />
           <ListItemSecondaryAction>
@@ -138,7 +135,6 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
             <Switch edge="end" color="primary" checked={!!emailNotification} onClick={emailNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
-
       </List>
     </>
   )

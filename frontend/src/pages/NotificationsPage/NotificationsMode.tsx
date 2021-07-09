@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { TextField, Button, List, ListItemSecondaryAction } from '@material-ui/core'
+import { TextField, Button, List, ListItem, ListItemIcon } from '@material-ui/core'
 import { ListItemCheckbox } from '../../components/ListItemCheckbox'
+import { Quote } from '../../components/Quote'
+import { Gutters } from '../../components/Gutters'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-
-
 
 export function NotificationMode({ ...props }): JSX.Element {
   const [webHook, setWebhook] = useState(props.notificationUrl.length ? true : false)
@@ -12,7 +12,7 @@ export function NotificationMode({ ...props }): JSX.Element {
   const [error, setError] = useState(false)
   const [errorFlag, setErrorFlag] = useState(false)
   const { loading } = useSelector((state: ApplicationState) => ({
-    loading: state.auth?.loading
+    loading: state.auth?.loading,
   }))
 
   const onEmailChange = (value: boolean) => {
@@ -56,36 +56,31 @@ export function NotificationMode({ ...props }): JSX.Element {
     <>
       <List>
         <ListItemCheckbox label="System notification" checked={props.notificationSystem} onClick={onSystemChange} />
-        <ListItemCheckbox
-          label="Email"
-          checked={props.notificationEmail}
-          onClick={onEmailChange}
-        />
-        <ListItemCheckbox 
-            label="Webhook" 
-            checked={webHook} 
-            onClick={onWebChange}>
-          <ListItemSecondaryAction>
-            <TextField
-              disabled={!webHook}
-              onChange={e => onChange(e.currentTarget.value)}
-              value={webHookUrl}
-              label="URL endpoint"
-              placeholder="Webhook Endpoint"
-              required
-              variant="filled"
-              size="small"
-              error={error}
-              helperText={error ? 'Please provide a valid URL' : undefined}
-            />
-          </ListItemSecondaryAction>
-        </ListItemCheckbox>
+        <ListItemCheckbox label="Email" checked={props.notificationEmail} onClick={onEmailChange} />
+        <ListItemCheckbox label="Webhook" checked={webHook} onClick={onWebChange} />
       </List>
-      <List>
+      <Gutters inset noTop>
+        <Quote margin={0}>
+          <TextField
+            disabled={!webHook}
+            onChange={e => onChange(e.currentTarget.value)}
+            value={webHookUrl}
+            label="URL endpoint"
+            placeholder="Webhook Endpoint"
+            required
+            variant="filled"
+            size="small"
+            error={error}
+            fullWidth
+            helperText={error ? 'Please provide a valid URL' : undefined}
+          />
+        </Quote>
+      </Gutters>
+      <Gutters>
         <Button variant="contained" color="primary" onClick={onSave} disabled={loading} size="small">
           {loading ? 'Saving' : 'Save'}
         </Button>
-      </List>
+      </Gutters>
     </>
   )
 }

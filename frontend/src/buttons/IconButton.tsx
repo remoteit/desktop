@@ -2,16 +2,18 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { Tooltip, IconButton as MuiIconButton } from '@material-ui/core'
 import { Icon } from '../components/Icon'
-import { Color } from '../styling'
+import { Color, FontSize, spacing } from '../styling'
 
 type Props = {
-  title: string
+  title?: string
   icon: string
   disabled?: boolean
   to?: string
   color?: Color
   className?: string
   type?: IconType
+  size?: FontSize
+  shiftDown?: boolean
   onClick?: (e: React.MouseEvent) => void
 }
 
@@ -22,6 +24,8 @@ export const IconButton: React.FC<Props> = ({
   to,
   color,
   type = 'regular',
+  size = 'base',
+  shiftDown,
   className,
   onClick,
   ...props
@@ -36,11 +40,11 @@ export const IconButton: React.FC<Props> = ({
       onClick={clickHandler}
       disabled={disabled}
       className={className}
-      style={{ opacity: disabled ? 0.5 : undefined }}
+      style={{ opacity: disabled ? 0.5 : undefined, marginBottom: shiftDown ? -spacing.sm : undefined }}
     >
-      <Icon {...props} name={icon} color={color} type={type} size="base" />
+      <Icon {...props} name={icon} color={color} type={type} size={size} />
     </MuiIconButton>
   )
 
-  return disabled ? button : <Tooltip title={title}>{button}</Tooltip>
+  return disabled || !title ? button : <Tooltip title={title}>{button}</Tooltip>
 }

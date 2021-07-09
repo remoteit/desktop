@@ -2,9 +2,8 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
-import { List, ListItem, ListItemIcon, Typography, Divider } from '@material-ui/core'
+import { List, Typography } from '@material-ui/core'
 import { Title } from '../../components/Title'
-import { Quote } from '../../components/Quote'
 import { NotificationMode } from './NotificationsMode'
 import { ListItemSetting } from '../../components/ListItemSetting'
 
@@ -55,37 +54,33 @@ export const NotificationsPage: React.FC = () => {
         </Typography>
       }
     >
+      <Typography variant="subtitle1">Devices</Typography>
       <List>
         <ListItemSetting
           label="For my devices"
-          icon={deviceNotification ? 'bell' : 'bell-slash'}
+          icon={deviceNotification ? 'bell-on' : 'bell-slash'}
           toggle={deviceNotification}
           onClick={() => setDeviceNotification(!deviceNotification)}
         />
         <ListItemSetting
           label="For devices shared with me"
-          icon={sharedNotification ? 'bell' : 'bell-slash'}
+          icon={sharedNotification ? 'bell-on' : 'bell-slash'}
           toggle={sharedNotification}
           onClick={() => setSharedNotification(!sharedNotification)}
         />
-        <ListItem>
-          <ListItemIcon></ListItemIcon>
-          <Quote margin={0}>
-            <Typography variant="caption">Method</Typography>
-            <NotificationMode
-              onlineDeviceNotification={deviceNotification}
-              onlineSharedDeviceNotification={sharedNotification}
-              setUrl={setUrl}
-              setEmailChecked={setEmail}
-              setSystemChecked={setSystem}
-              notificationUrl={url}
-              notificationEmail={email}
-              notificationSystem={system}
-              onUpdate={onUpdate}
-            />
-          </Quote>
-        </ListItem>
       </List>
+      <Typography variant="subtitle1">Delivery Method</Typography>
+      <NotificationMode
+        onlineDeviceNotification={deviceNotification}
+        onlineSharedDeviceNotification={sharedNotification}
+        setUrl={setUrl}
+        setEmailChecked={setEmail}
+        setSystemChecked={setSystem}
+        notificationUrl={url}
+        notificationEmail={email}
+        notificationSystem={system}
+        onUpdate={onUpdate}
+      />
     </Container>
   )
 }
