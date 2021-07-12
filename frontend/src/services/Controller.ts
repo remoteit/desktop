@@ -116,6 +116,7 @@ function getEventHandlers() {
       await store.dispatch.licensing.fetch()
       await store.dispatch.accounts.init()
       await store.dispatch.devices.init()
+      await store.dispatch.ui.init()
       store.dispatch.applicationTypes.fetch()
       store.dispatch.announcements.fetch()
       await store.dispatch.devices.fetch()

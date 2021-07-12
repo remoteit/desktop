@@ -36,14 +36,14 @@ export const GuideStep: React.FC<Props> = ({
   const { ui } = useDispatch<Dispatch>()
   const state: IGuide = useSelector((state: ApplicationState) => state.ui[guide])
   const css = useStyles({ highlight })
-  const open = !hide && (state.step === step || !!show)
-  const start = () => ui.guide({ guide, step, done: false })
+  const open = !hide && (state.step === step || !!show) && state.active
+  const start = () => ui.guide({ guide, step, active: true, done: false })
 
   React.useEffect(() => {
     if (!state.done && autoStart) start()
   }, [])
 
-  if (step !== 1 && (!open || state.done)) return <>{children}</>
+  if (step !== 1 && !open) return <>{children}</>
 
   return (
     <Tooltip
