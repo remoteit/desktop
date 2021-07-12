@@ -2,12 +2,14 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 import { getToken } from './remote.it'
 import { AxiosResponse } from 'axios'
 import { getWebSocketURL } from '../helpers/apiHelper'
+import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectById } from '../models/devices'
 import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
 import { emit } from './Controller'
+import { agent } from '../services/Browser'
 
 class CloudController {
   socket?: ReconnectingWebSocket
@@ -87,7 +89,7 @@ class CloudController {
   authenticate = async () => {
     const message = JSON.stringify({
       action: 'subscribe',
-      headers: { authorization: await getToken() },
+      headers: { authorization: await getToken(), 'User-Agent': `remoteit/${version} ${agent()}` },
       query: `
       {
         event {
