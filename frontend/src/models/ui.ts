@@ -86,6 +86,17 @@ const defaultState: UIState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
+    async init(_, globalState) {
+      // restore guides
+      const guides = Object.keys(globalState.ui).filter(key => key.startsWith('guide'))
+      guides.forEach(guide => {
+        let item = window.localStorage.getItem(`ui-${guide}`)
+        if (item) {
+          item = JSON.parse(item)
+          dispatch.ui.set({ [guide]: item })
+        }
+      })
+    },
     async setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
         dispatch.ui.updated()
@@ -118,13 +129,18 @@ export default createModel<RootModel>()({
       return state
     },
     guide(state: UIState, { guide, ...props }: ILookup<any>) {
-      if (props.back || props.done || (props.step && props.step === state[guide].step + 1)) {
+      const active = props.active === undefined ? state[guide].active : props.active
+
+      if (active) {
         if (props.step > state[guide].total) {
           props.done = true
           props.step = 0
         }
-        state[guide] = { ...state[guide], ...props }
+        if (props.done) props.active = false
       }
+
+      state[guide] = { ...state[guide], ...props }
+      window.localStorage.setItem(`ui-${guide}`, JSON.stringify(state[guide]))
       return state
     },
     accordion(state: UIState, params: ILookup<boolean>) {
