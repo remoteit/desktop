@@ -25,6 +25,7 @@ export const SidebarNav: React.FC = () => {
               key={m.path}
               className={active ? css.active : ''}
               onClick={() => history.push(m.path)}
+              style={m.path === '/shareFeedback' ? { position: 'fixed', bottom: 0, width: 210, marginBottom: 10 } : {}}
               button
               dense
             >
@@ -65,6 +66,10 @@ const useStyles = makeStyles({
     '& .MuiListItemText-primary': { color: colors.grayDark },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: colors.black },
     '& .MuiListItem-button:hover path': { color: colors.grayDarkest },
+  },
+  listBottom: {
+    position: 'fixed',
+    bottom: 0,
   },
   active: {
     backgroundColor: colors.white,

@@ -16,7 +16,7 @@ import sessions from './sessions'
 import shares from './shares'
 import tags from './tags'
 import ui from './ui'
-
+import feedback from './feedback'
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts
   analytics: typeof analytics
@@ -35,6 +35,7 @@ export interface RootModel extends Models<RootModel> {
   shares: typeof shares
   tags: typeof tags
   ui: typeof ui
+  feedback: typeof feedback
 }
 
 export const models: RootModel = {
@@ -55,4 +56,5 @@ export const models: RootModel = {
   shares,
   tags,
   ui,
+  feedback,
 }

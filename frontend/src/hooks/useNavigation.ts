@@ -117,6 +117,13 @@ export function useNavigation(): INavigationHook {
       badge: licenseIndicator,
       show: true,
     },
+    {
+      label: 'Send Feedback',
+      path: '/shareFeedback',
+      match: '/shareFeedback',
+      icon: 'comment-smile',
+      show: true,
+    },
   ]
 
   return { menu, menuItems, handleBack, handleForward }
