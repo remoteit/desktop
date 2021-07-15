@@ -7,10 +7,12 @@ type FeedbackParams = { [key: string]: any }
 
 type IFeedbackState = {
   sending: boolean
+  sent: boolean
 }
 
 const state: IFeedbackState = {
   sending: false,
+  sent: false,
 }
 
 export default createModel<RootModel>()({
@@ -18,20 +20,22 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async sendFeedback() {
       const { set } = dispatch.feedback
+
       set({ sending: true })
       try {
-        // TODO: integrate with API
+        // TO DO
         // const response = await graphQLSendFeedback({ })
         // const errors = graphQLGetErrors(response)
         // if (!errors) {
 
-        if (true) {
-          dispatch.ui.set({ successMessage: `Feedback sent!.` })
-        }
+        await new Promise(resolve => {
+          setTimeout(resolve, 500)
+        })
+
+        set({ sending: false, sent: true })
       } catch (error) {
         await graphQLCatchError(error)
       }
-      set({ sending: false })
     },
   }),
   reducers: {

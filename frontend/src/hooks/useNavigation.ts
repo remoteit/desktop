@@ -118,7 +118,7 @@ export function useNavigation(): INavigationHook {
       show: true,
     },
     {
-      label: 'Send Feedback',
+      label: 'Share Feedback',
       path: '/shareFeedback',
       match: '/shareFeedback',
       icon: 'comment-smile',
