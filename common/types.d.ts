@@ -400,6 +400,7 @@ declare global {
     target?: (IService | IDevice)[]
     users?: IUser[]
     action: string
+    devices?:{id?: number, name?: string}[]
   }
 
   interface IEventList {
