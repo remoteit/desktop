@@ -32,25 +32,27 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
     globalNotificationEmail: state.auth?.user?.metadata?.notificationEmail,
     globalNotificationSystem: state.auth?.user?.metadata?.notificationSystem,
   }))
-  const [emailNotification, setEmailNotification] = useState(device.attributes.notificationEmail)
-  const [notificationInApp, setNotificationInApp] = useState(
-    isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification || false
-  )
+  const [emailNotification, setEmailNotification] = useState<boolean | undefined>(undefined)
+  const [notificationInApp, setNotificationInApp] = useState<boolean | undefined>(undefined)
   const [overridden, setOverridden] = useState<boolean>()
   const [emailOverridden, setEmailOverridden] = useState<boolean>()
 
   useEffect(() => {
-    setOverridden(
-      globalNotificationSystem !==
-        (isOwner
-          ? device.attributes.onlineDeviceNotification
-          : device.attributes.onlineSharedDeviceNotification || false)
+    setNotificationInApp(
+      isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification
     )
-  }, [globalNotificationSystem, device?.attributes, isOwner])
+    setEmailNotification(device.attributes.notificationEmail)
+  }, [isOwner, device?.attributes])
 
   useEffect(() => {
-    setEmailOverridden(globalNotificationEmail !== emailNotification)
-  }, [globalNotificationEmail, emailNotification])
+    console.log({ notificationInApp }, typeof notificationInApp)
+    setOverridden(typeof notificationInApp === "boolean")
+  }, [notificationInApp])
+
+  useEffect(() => {
+    console.log({ emailNotification })
+    setEmailOverridden(typeof emailNotification === "boolean")
+  }, [emailNotification])
 
   const emailNotifications = () => {
     device.attributes = {
@@ -70,22 +72,25 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
     devices.setAttributes(device)
     setNotificationInApp(!notificationInApp)
   }
+
   const onClose = (system: boolean) => {
     let notification = isOwner ? notificationType.OWN : notificationType.DEVICE_SHARED
     if (system) {
       setOverridden(false)
-      setNotificationInApp(globalNotificationSystem)
+      setNotificationInApp(undefined)
     } else {
       setEmailOverridden(false)
-      setEmailNotification(globalNotificationEmail)
+      setEmailNotification(undefined)
       notification = notificationType.EMAIL
     }
 
-    device.attributes = {
-      ...device.attributes,
-      [notification]: system ? globalNotificationSystem : globalNotificationEmail,
-    }
-    devices.setAttributes(device)
+    devices.setAttributes({
+      ...device,
+      attributes: {
+        ...device.attributes,
+        [notification]: null
+      }
+    })
   }
 
   const chipOverridden = (system: boolean = true) => {
@@ -122,7 +127,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
           <ListItemText primary="System notification" />
           <ListItemSecondaryAction>
             {overridden && chipOverridden()}
-            <Switch edge="end" color="primary" checked={!!notificationInApp} onClick={inAppNotifications} />
+            <Switch edge="end" color="primary" checked={typeof notificationInApp === "boolean" ? !!notificationInApp : globalNotificationSystem} onClick={inAppNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem button onClick={emailNotifications} dense>
@@ -132,7 +137,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
           <ListItemText primary="Email" />
           <ListItemSecondaryAction>
             {emailOverridden && chipOverridden(false)}
-            <Switch edge="end" color="primary" checked={!!emailNotification} onClick={emailNotifications} />
+            <Switch edge="end" color="primary" checked={typeof emailNotification === "boolean" ? !!emailNotification : globalNotificationEmail} onClick={emailNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
       </List>
