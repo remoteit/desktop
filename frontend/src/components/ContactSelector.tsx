@@ -1,6 +1,7 @@
 import React from 'react'
 import CreatableSelect from 'react-select/creatable'
 import { Theme } from 'react-select'
+import { Gutters } from './Gutters'
 import { makeStyles } from '@material-ui/core'
 import { contactOptions } from '../helpers/contacts'
 import { colors, spacing, fontSizes } from '../styling'
@@ -34,19 +35,21 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
   }
 
   return (
-    <CreatableSelect
-      isMulti
-      isClearable
-      options={options}
-      theme={selectTheme}
-      className={css.select}
-      classNamePrefix="select"
-      placeholder="Enter an email..."
-      onChange={handleChange}
-      isValidNewOption={v => mailFormat.test(v)}
-      formatCreateLabel={validateEmail}
-      styles={customStyles}
-    />
+    <Gutters noTop>
+      <CreatableSelect
+        isMulti
+        isClearable
+        options={options}
+        theme={selectTheme}
+        className={css.select}
+        classNamePrefix="select"
+        placeholder="Enter an email..."
+        onChange={handleChange}
+        isValidNewOption={v => mailFormat.test(v)}
+        formatCreateLabel={validateEmail}
+        styles={customStyles}
+      />
+    </Gutters>
   )
 }
 

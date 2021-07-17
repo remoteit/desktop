@@ -305,6 +305,22 @@ declare global {
     email: string
   }
 
+  type IOrganization = {
+    id: string
+    name: string
+    created: Date
+    members: IOrganizationMember[]
+  }
+
+  type IOrganizationMember = {
+    created: Date
+    role: IOrganizationRole
+    organizationId: string
+    user: IUserRef
+  }
+
+  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'GUEST' | 'MEMBER'
+
   type IGeo = {
     countryName: string
     stateName: string

@@ -13,9 +13,11 @@ import { SetupWaiting } from '../pages/SetupWaiting'
 import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
+import { OrganizationPage } from '../pages/OrganizationPage'
 import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
+import { OrganizationAddPage } from '../pages/OrganizationAddPage'
 import { AccountMembershipPage } from '../pages/AccountMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
@@ -24,10 +26,10 @@ import { BillingPage } from '../pages/BillingPage'
 import { PlansPage } from '../pages/PlansPage'
 import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { Panel } from '../components/Panel'
 import { UserLogPage } from '../pages/UserLogPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { ShareFeedback } from '../pages/ShareFeedback'
+import { Panel } from '../components/Panel'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
@@ -159,6 +161,14 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
             <Switch>
               <Route path={['/settings/membership/share', '/settings/access/share']}>
                 <AccountSharePage />
+              </Route>
+
+              <Route path="/settings/organization/share">
+                <OrganizationAddPage />
+              </Route>
+
+              <Route path="/settings/organization">
+                <OrganizationPage />
               </Route>
 
               <Route path="/settings/access">

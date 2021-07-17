@@ -7,6 +7,7 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
   try {
     const response = await graphQLRequest(query, variables)
     await graphQLGetErrors(response)
+    console.log('BASIC REQUEST GRAPHQL', response)
     return response
   } catch (error) {
     await graphQLCatchError(error)

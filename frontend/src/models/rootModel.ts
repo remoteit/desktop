@@ -13,6 +13,7 @@ import feedback from './feedback'
 import labels from './labels'
 import licensing from './licensing'
 import logs from './logs'
+import organization from './organization'
 import search from './search'
 import sessions from './sessions'
 import shares from './shares'
@@ -33,6 +34,7 @@ export interface RootModel extends Models<RootModel> {
   labels: typeof labels
   licensing: typeof licensing
   logs: typeof logs
+  organization: typeof organization
   search: typeof search
   sessions: typeof sessions
   shares: typeof shares
@@ -55,6 +57,7 @@ export const models: RootModel = {
   labels,
   licensing,
   logs,
+  organization,
   search,
   sessions,
   shares,

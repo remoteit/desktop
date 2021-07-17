@@ -60,6 +60,59 @@ export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMO
   )
 }
 
+// export async function graphQLAddOrganization(name: string) {
+//   return await graphQLBasicRequest(
+//     ` mutation query($name: String!) {
+//         createOrganization(name: $name) {
+//           id
+//           name
+//         }
+//       }`,
+//     { name }
+//   )
+// }
+export async function graphQLSetOrganization(name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($name: String!) {
+        updateOrganization(name: $name) {
+          id
+          name
+        }
+      }`,
+    { name }
+  )
+}
+
+export async function graphQLAddMembers(member: IOrganizationMember) {
+  return await graphQLBasicRequest(
+    ` mutation query($email: String!, $role: OrganizationRole) {
+        inviteMember(email: $email, role: $role) {
+          role
+          user {
+            id
+            email
+          }
+        }
+      }`,
+    { email: member.user.email, role: member.role }
+  )
+}
+
+export async function graphQLSetMembers(member: IOrganizationMember) {
+  return await graphQLBasicRequest(
+    ` mutation query($email: String!, $role: OrganizationRole) {
+        updateMember(email: $email, role: $role) {
+          role
+          user {
+            id
+            email
+          }
+        }
+      }`,
+    { email: member.user.email, role: member.role }
+  )
+}
+
 export async function graphQLClaimDevice(code: string) {
   return await graphQLBasicRequest(
     ` mutation query($code: String!) {
