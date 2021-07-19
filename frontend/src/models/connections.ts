@@ -4,8 +4,8 @@ import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { r3, getToken } from '../services/remote.it'
 import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
+import { getRestApi } from '../helpers/apiHelper'
 import axios from 'axios'
-import { getGraphQLApi } from '../helpers/apiHelper'
 
 type IConnectionsState = { all: IConnection[] }
 
@@ -74,7 +74,7 @@ export default createModel<RootModel>()({
 
       try {
         let result = await axios.post(
-          `${getGraphQLApi()}/device/connect`,
+          `${getRestApi()}/device/connect`,
           data,
           await dispatch.connections.headerOptions()
         )
@@ -107,7 +107,7 @@ export default createModel<RootModel>()({
       const data = { deviceaddress: connection.id, connectionid: connection.publicId }
       try {
         let result = await axios.post(
-          `${getGraphQLApi()}/device/connect/stop`,
+          `${getRestApi()}/device/connect/stop`,
           data,
           await dispatch.connections.headerOptions()
         )
