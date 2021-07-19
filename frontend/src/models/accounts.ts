@@ -184,6 +184,10 @@ export default createModel<RootModel>()({
   },
 })
 
+export function isUserAccount(state: ApplicationState) {
+  return getActiveAccountId(state) === state.auth.user?.id
+}
+
 export function getActiveAccount(state: ApplicationState) {
   const id = getActiveAccountId(state)
   return [state.auth.user, ...state.accounts.member].find(a => a?.id === id)
