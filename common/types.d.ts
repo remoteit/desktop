@@ -132,7 +132,7 @@ declare global {
     connecting?: boolean
     disconnecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
-    deviceID: string
+    deviceID?: string
     enabled?: boolean // if the connection is active
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
@@ -142,14 +142,14 @@ declare global {
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // deep link launch url template
     log?: boolean // if cli should log the connectd stdout to file
-    name: string
-    online: boolean // online if service is online
-    owner: IUserRef
+    name?: string
+    online?: boolean // online if service is online
+    owner?: IUserRef
     port?: number
     proxyOnly?: boolean // disabled p2p
     public?: boolean // if the connection should be a public proxy link
     publicId?: string // public proxy connection ID
-    publicRestriction: ipAddress // public proxy restriction IP
+    publicRestriction?: ipAddress // public proxy restriction IP
     reachable?: boolean // if remote connection resource is reachable
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
@@ -400,7 +400,7 @@ declare global {
     target?: (IService | IDevice)[]
     users?: IUser[]
     action: string
-    devices?:{id?: number, name?: string}[]
+    devices?: { id?: number; name?: string }[]
   }
 
   interface IEventList {

@@ -31,7 +31,7 @@ export default createModel<RootModel>()({
     async restoreConnections(connections: IConnection[], globalState) {
       connections.forEach(async connection => {
         // data missing from cli if our connections file is lost
-        if (!connection.owner) {
+        if (!connection.owner || !connection.name) {
           const [service] = selectById(globalState, connection.id)
           if (service) {
             connection = { ...newConnection(service), ...connection }

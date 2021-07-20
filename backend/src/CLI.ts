@@ -162,7 +162,7 @@ export default class CLI {
   async readConnections() {
     const connections = (await this.connectionStatus()) || []
     this.data.connections = connections.map((c, i) => {
-      const connection = this.data.connections[i]
+      const connection = this.data.connections[i] || {}
       let error = connection?.error
 
       if (c.reachable === false) {
