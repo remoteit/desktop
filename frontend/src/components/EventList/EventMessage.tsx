@@ -44,7 +44,7 @@ export function EventMessage({
 
     case EventType.device_share:
       const actor = item.actor?.email === loggedInUser?.email ? 'You' : item.actor?.email
-      const deviceName = device ? device.name : item.devices?.find((item, index) => index === 0)?.name
+      const deviceName = device ? device.name : item.devices?.length && item.devices[0]?.name
       const users = item.users && item.users.map(user => user.email || '(deleted)')
       const userList =
         users && users.length !== 1 ? users.slice(0, -1).join(', ') + ' and ' + users.slice(-1) : users && users[0]
