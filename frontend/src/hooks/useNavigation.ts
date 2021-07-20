@@ -110,18 +110,19 @@ export function useNavigation(): INavigationHook {
       show: !remoteUI,
     },
     {
+      label: 'Feedback',
+      path: '/shareFeedback',
+      match: '/shareFeedback',
+      icon: 'comment-smile',
+      footer: true,
+      show: true,
+    },
+    {
       label: 'More',
       path: '/settings',
       match: '/settings',
       icon: 'ellipsis-h',
       badge: licenseIndicator,
-      show: true,
-    },
-    {
-      label: 'Share Feedback',
-      path: '/shareFeedback',
-      match: '/shareFeedback',
-      icon: 'comment-smile',
       show: true,
     },
   ]

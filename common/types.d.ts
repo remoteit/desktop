@@ -592,6 +592,7 @@ declare global {
     show: boolean
     badge?: number
     chip?: string
+    footer?: boolean
   }
 }
 
