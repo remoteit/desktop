@@ -2,14 +2,11 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Container } from '../../components/Container'
-import { List, Typography } from '@material-ui/core'
+import { Typography } from '@material-ui/core'
 import { Title } from '../../components/Title'
 import { NotificationMode } from './NotificationsMode'
-import { ListItemSetting } from '../../components/ListItemSetting'
 
 interface State {
-  onlineDeviceNotification: boolean
-  onlineSharedDeviceNotification: boolean
   loading: boolean
   error?: string
   notificationUrl?: string
@@ -18,14 +15,10 @@ interface State {
 
 export const NotificationsPage: React.FC = () => {
   const {
-    onlineDeviceNotification,
-    onlineSharedDeviceNotification,
     notificationUrl,
     notificationEmail,
     notificationSystem,
   } = useSelector((state: ApplicationState) => ({
-    onlineDeviceNotification: state.auth?.user?.metadata?.onlineDeviceNotification,
-    onlineSharedDeviceNotification: state.auth?.user?.metadata?.onlineSharedDeviceNotification,
     notificationUrl: state.auth?.user?.metadata?.portalUrl,
     notificationEmail: state.auth?.user?.metadata?.notificationEmail,
     notificationSystem: state.auth?.user?.metadata?.notificationSystem,
@@ -35,8 +28,6 @@ export const NotificationsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { updateUserMetadata } = dispatch.auth
 
-  const [sharedNotification, setSharedNotification] = useState(onlineSharedDeviceNotification || false)
-  const [deviceNotification, setDeviceNotification] = useState(onlineDeviceNotification || false)
   const [url, setUrl] = useState<string>(notificationUrl || '')
   const [email, setEmail] = useState<boolean>(notificationEmail || false)
   const [system, setSystem] = useState<boolean>(notificationSystem || false)
@@ -54,25 +45,9 @@ export const NotificationsPage: React.FC = () => {
         </Typography>
       }
     >
-      <Typography variant="subtitle1">Devices</Typography>
-      <List>
-        <ListItemSetting
-          label="For my devices"
-          icon={deviceNotification ? 'bell-on' : 'bell-slash'}
-          toggle={deviceNotification}
-          onClick={() => setDeviceNotification(!deviceNotification)}
-        />
-        <ListItemSetting
-          label="For devices shared with me"
-          icon={sharedNotification ? 'bell-on' : 'bell-slash'}
-          toggle={sharedNotification}
-          onClick={() => setSharedNotification(!sharedNotification)}
-        />
-      </List>
+
       <Typography variant="subtitle1">Delivery Method</Typography>
       <NotificationMode
-        onlineDeviceNotification={deviceNotification}
-        onlineSharedDeviceNotification={sharedNotification}
         setUrl={setUrl}
         setEmailChecked={setEmail}
         setSystemChecked={setSystem}

@@ -239,10 +239,8 @@ declare global {
       color?: number
       label?: string
       accessDisabled?: boolean
-      onlineDeviceNotification?: boolean
-      onlineSharedDeviceNotification?: boolean
-      notificationEmail?: boolean
-      notificationSystem?: boolean
+      notificationEmail?: boolean | null
+      notificationSystem?: boolean | null
     }
   }
 
@@ -284,8 +282,6 @@ declare global {
   }
 
   type IMetadata = {
-    onlineDeviceNotification?: boolean
-    onlineSharedDeviceNotification?: boolean
     portalUrl?: string
     notificationEmail?: boolean
     notificationSystem?: boolean

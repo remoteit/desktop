@@ -9,6 +9,25 @@ export async function graphQLSetAttributes(attributes: ILookup<string | number |
   )
 }
 
+export async function graphQLSetDeviceNotification(
+  deviceID: string,
+  emailNotification?: boolean | null,
+  desktopNotifications?: boolean | null
+) {
+  return await graphQLBasicRequest(
+    `
+      mutation query($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
+        setNotificationSettings(
+          serviceId: $deviceID, 
+          emailNotifications: $emailNotifications, 
+          desktopNotifications: $desktopNotifications
+        )
+      }
+    `,
+    { emailNotification, desktopNotifications, deviceID }
+  )
+}
+
 export async function graphQLUnShareDevice(params: IShareProps) {
   return await graphQLBasicRequest(
     ` mutation query($deviceId: String!, $email: [String!]!) {

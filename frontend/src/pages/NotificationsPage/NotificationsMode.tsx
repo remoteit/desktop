@@ -42,8 +42,6 @@ export function NotificationMode({ ...props }): JSX.Element {
       setError(true)
     } else {
       const metadata: IMetadata = {
-        onlineDeviceNotification: props.onlineDeviceNotification,
-        onlineSharedDeviceNotification: props.onlineSharedDeviceNotification,
         notificationEmail: props.notificationEmail,
         portalUrl: webHook && webHookUrl?.length ? webHookUrl : undefined,
         notificationSystem: props.notificationSystem,

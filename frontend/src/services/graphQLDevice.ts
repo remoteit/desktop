@@ -61,6 +61,10 @@ const DEVICE_SELECT = `
       }
     }
   }
+  notificationSettings {
+    emailNotifications
+    desktopNotifications
+  }
 `
 
 export async function graphQLFetchDevices({

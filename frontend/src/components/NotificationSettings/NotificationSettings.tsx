@@ -32,8 +32,8 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
     globalNotificationEmail: state.auth?.user?.metadata?.notificationEmail,
     globalNotificationSystem: state.auth?.user?.metadata?.notificationSystem,
   }))
-  const [emailNotification, setEmailNotification] = useState<boolean | undefined>(undefined)
-  const [notificationInApp, setNotificationInApp] = useState<boolean | undefined>(undefined)
+  const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(undefined)
+  const [notificationInApp, setNotificationInApp] = useState<boolean | undefined | null>(undefined)
   const [overridden, setOverridden] = useState<boolean>()
   const [emailOverridden, setEmailOverridden] = useState<boolean>()
 
@@ -59,7 +59,12 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
       ...device.attributes,
       [notificationType.EMAIL]: !emailNotification,
     }
-    devices.setAttributes(device)
+    devices.setNotificationDevice({
+      ...device, attributes: {
+        ...device.attributes,
+        notificationEmail: !emailNotification
+      }
+    })
     setEmailNotification(!emailNotification)
   }
 
@@ -69,7 +74,12 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
       ...device.attributes,
       [notification]: !notificationInApp,
     }
-    devices.setAttributes(device)
+    devices.setNotificationDevice({
+      ...device, attributes: {
+        ...device.attributes,
+        notificationSystem: !notificationInApp
+      }
+    })
     setNotificationInApp(!notificationInApp)
   }
 
@@ -78,19 +88,34 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
     if (system) {
       setOverridden(false)
       setNotificationInApp(undefined)
+      devices.setNotificationDevice({
+        ...device, attributes: {
+          ...device.attributes,
+          notificationSystem: null
+        }
+      })
+
     } else {
       setEmailOverridden(false)
       setEmailNotification(undefined)
       notification = notificationType.EMAIL
+      devices.setNotificationDevice({
+        ...device, attributes: {
+          ...device.attributes,
+          notificationEmail: null
+        }
+      })
+
     }
 
-    devices.setAttributes({
-      ...device,
-      attributes: {
-        ...device.attributes,
-        [notification]: null
-      }
-    })
+    // devices.setAttributes({
+    //   ...device,
+    //   attributes: {
+    //     ...device.attributes,
+    //     [notification]: null
+    //   }
+    // })
+
   }
 
   const chipOverridden = (system: boolean = true) => {
@@ -103,6 +128,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
       ></Chip>
     )
   }
+
 
   if (!device) return null
 
