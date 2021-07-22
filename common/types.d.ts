@@ -137,8 +137,9 @@ declare global {
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
     failover?: boolean // allow proxy failover
-    host?: ipAddress // Bind address
+    host?: ipAddress // returned hostname from cli
     id: string
+    ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // deep link launch url template
     log?: boolean // if cli should log the connectd stdout to file

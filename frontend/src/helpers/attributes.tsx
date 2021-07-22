@@ -7,6 +7,8 @@ import { ListItemText } from '@material-ui/core'
 import { licenseChip } from '../models/licensing'
 import { ServiceName } from '../components/ServiceName'
 import { LicenseChip } from '../components/LicenseChip'
+import { replaceHost } from '../shared/nameHelper'
+import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from '../components/DeviceGeo'
 import { TagEditor } from '../components/TagEditor'
 import { Duration } from '../components/Duration'
@@ -211,6 +213,13 @@ export const attributes: Attribute[] = [
         : connection?.isP2P || session?.isP2P
         ? 'Peer to peer'
         : 'Proxy',
+  }),
+  new ConnectionAttribute({
+    id: 'lanShare',
+    label: 'LAN Address',
+    value: ({ connection }) => {
+      if (connection?.ip && lanShared(connection)) return `${replaceHost(connection.ip)}:${connection.port}`
+    },
   }),
   new DeviceAttribute({
     id: 'initiatorPlatform',

@@ -63,7 +63,8 @@ export default class ConnectionPool {
       if (
         !connection ||
         (!connection.public &&
-          (connection.host !== c.host ||
+          (connection.ip !== c.ip ||
+            connection.host !== c.host ||
             connection.port !== c.port ||
             connection.enabled !== c.enabled ||
             connection.startTime !== c.startTime ||
