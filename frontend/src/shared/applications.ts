@@ -30,7 +30,7 @@ export class Application {
   }
 
   value(token: string) {
-    return this.connection ? this.connection[token] : this.service ? this.service.attributes[token] : ''
+    return this.lookup[token]
   }
 
   preview(data: ILookup<string>) {
@@ -156,7 +156,7 @@ function getApplicationType(typeID?: number) {
         icon: 'terminal',
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate:
-          'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
+          'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "NoHostAuthenticationForLocalhost=yes"',
       })
       break
     case 8:
