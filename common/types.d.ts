@@ -242,6 +242,10 @@ declare global {
       notificationEmail?: boolean | null
       notificationSystem?: boolean | null
     }
+    notificationSettings: {
+      emailNotifications?: boolean | null
+      desktopNotifications?: boolean | null
+    }
   }
 
   interface IService {
@@ -278,13 +282,14 @@ declare global {
     created?: Date
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
-    metadata?: IMetadata
   }
 
-  type IMetadata = {
-    portalUrl?: string
-    notificationEmail?: boolean
-    notificationSystem?: boolean
+  type INotificationSetting = {
+    emailNotifications?: boolean
+    desktopNotifications?: boolean
+    urlNotifications?: boolean
+    notificationEmail?: string
+    notificationUrl?: string
   }
 
   type IUserRef = {
@@ -375,7 +380,7 @@ declare global {
     platform: IUser['platform']
     authUserId: string
     geo?: IGeo
-    metadata?: IUser['metadata']
+    metadata?: INotificationSetting
     target: {
       id: string
       name: string

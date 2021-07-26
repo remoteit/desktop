@@ -167,7 +167,7 @@ class CloudController {
         platform: event.platform,
         sessionId: event.session,
         geo: event.sourceGeo,
-        metadata: state.auth.user?.metadata,
+        metadata: state.auth.notificationSettings,
         target: event.target.map(t => {
           const [service, device] = selectById(state, t.id)
           const connection = findLocalConnection(state, t.id, event.session)

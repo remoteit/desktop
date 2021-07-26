@@ -11,7 +11,7 @@ export async function graphQLSetAttributes(attributes: ILookup<string | number |
 
 export async function graphQLSetDeviceNotification(
   deviceID: string,
-  emailNotification?: boolean | null,
+  emailNotifications?: boolean | null,
   desktopNotifications?: boolean | null
 ) {
   return await graphQLBasicRequest(
@@ -24,7 +24,7 @@ export async function graphQLSetDeviceNotification(
         )
       }
     `,
-    { emailNotification, desktopNotifications, deviceID }
+    { emailNotifications, desktopNotifications, deviceID }
   )
 }
 
@@ -126,7 +126,7 @@ export async function graphQLReadNotice(id: string) {
   )
 }
 
-export async function graphQLUpdateMetadata(params: IMetadata) {
+export async function graphQLUpdateMetadata(params: INotificationSetting) {
   //@TODO: to add $notificationSystem: Boolean waiting API support
   return await graphQLBasicRequest(
     `
@@ -145,6 +145,27 @@ export async function graphQLUpdateMetadata(params: IMetadata) {
               notificationEmail: $notificationEmail
               notificationSystem: $notificationSystem
             }
+          )
+        }
+      `,
+    params
+  )
+}
+
+export async function graphQLUpdateNotification(params: INotificationSetting) {
+  return await graphQLBasicRequest(
+    `
+        mutation UpdateUserMetadata(
+          $emailNotifications: Boolean
+          $desktopNotifications: Boolean
+          $urlNotifications: Boolean
+          $notificationUrl: String
+        ) {
+          setNotificationSettings(
+            emailNotifications: $emailNotifications, 
+            desktopNotifications: $desktopNotifications, 
+            urlNotifications: $urlNotifications, 
+            notificationUrl: $notificationUrl
           )
         }
       `,

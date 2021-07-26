@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextField, Button, List, ListItem, ListItemIcon } from '@material-ui/core'
+import { TextField, Button, List } from '@material-ui/core'
 import { ListItemCheckbox } from '../../components/ListItemCheckbox'
 import { Quote } from '../../components/Quote'
 import { Gutters } from '../../components/Gutters'
@@ -41,10 +41,10 @@ export function NotificationMode({ ...props }): JSX.Element {
     if (errorFlag) {
       setError(true)
     } else {
-      const metadata: IMetadata = {
-        notificationEmail: props.notificationEmail,
-        portalUrl: webHook && webHookUrl?.length ? webHookUrl : undefined,
-        notificationSystem: props.notificationSystem,
+      const metadata: INotificationSetting = {
+        notificationUrl: webHook && webHookUrl?.length ? webHookUrl : undefined,
+        emailNotifications: props.emailNotifications,
+        desktopNotifications: props.desktopNotifications,
       }
       props.onUpdate(metadata)
     }
@@ -53,8 +53,8 @@ export function NotificationMode({ ...props }): JSX.Element {
   return (
     <>
       <List>
-        <ListItemCheckbox label="System notification" checked={props.notificationSystem} onClick={onSystemChange} />
-        <ListItemCheckbox label="Email" checked={props.notificationEmail} onClick={onEmailChange} />
+        <ListItemCheckbox label="System notification" checked={props.desktopNotifications} onClick={onSystemChange} />
+        <ListItemCheckbox label="Email" checked={props.emailNotifications} onClick={onEmailChange} />
         <ListItemCheckbox label="Webhook" checked={webHook} onClick={onWebChange} />
       </List>
       <Gutters inset noTop>

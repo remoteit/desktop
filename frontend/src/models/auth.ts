@@ -12,7 +12,7 @@ import { Dispatch } from '../store'
 import { store } from '../store'
 import { emit } from '../services/Controller'
 import { REDIRECT_URL } from '../shared/constants'
-import { graphQLUpdateMetadata } from '../services/graphQLMutation'
+import { graphQLUpdateNotification } from '../services/graphQLMutation'
 
 function sleep(ms) {
   return new Promise(resolve => {
@@ -34,6 +34,7 @@ export interface AuthState {
   user?: IUser
   localUsername?: string
   loading?: boolean
+  notificationSettings: INotificationSetting
 }
 
 const state: AuthState = {
@@ -46,6 +47,7 @@ const state: AuthState = {
   authService: undefined,
   localUsername: undefined,
   loading: false,
+  notificationSettings: {},
 }
 
 export default createModel<RootModel>()({
@@ -79,7 +81,13 @@ export default createModel<RootModel>()({
                 authhash
                 yoicsId
                 created
-                metadata: attributes
+                notificationSettings {
+                  emailNotifications
+                  desktopNotifications
+                  urlNotifications
+                  notificationEmail
+                  notificationUrl
+                }
               }
             }`
         )
@@ -91,17 +99,19 @@ export default createModel<RootModel>()({
           authHash: data.authhash,
           yoicsId: data.yoicsId,
           created: data.created,
-          metadata: data.metadata,
         })
+        console.log({data})
+        auth.setNotificationSettings(data.notificationSettings)
       } catch (error) {
         await graphQLCatchError(error)
       }
     },
-    async updateUserMetadata(metadata: IMetadata, rootState: any) {
+    async updateUserMetadata(metadata: INotificationSetting, rootState: any) {
       const { auth } = dispatch as Dispatch
       try {
         auth.setLoading(true)
-        const response = await graphQLUpdateMetadata(metadata)
+        const response = await graphQLUpdateNotification(metadata)
+        auth.setNotificationSettings(metadata)
         graphQLGetErrors(response)
       } catch (error) {
         await graphQLCatchError(error)
@@ -245,6 +255,11 @@ export default createModel<RootModel>()({
     },
     setLoading(state: AuthState, loading: boolean | undefined) {
       state.loading = loading
+      return state
+    },
+    setNotificationSettings(state: AuthState, notificationSettings: INotificationSetting) {
+      console.log({notificationSettings})
+      state.notificationSettings = notificationSettings
       return state
     },
   },

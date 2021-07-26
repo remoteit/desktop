@@ -19,102 +19,70 @@ type Props = {
   device: IDevice
 }
 
-enum notificationType {
-  'OWN' = 'onlineDeviceNotification',
-  'DEVICE_SHARED' = 'onlineSharedDeviceNotification',
-  'EMAIL' = 'notificationEmail',
-}
 
 export const NotificationSettings: React.FC<Props> = ({ device }) => {
-  const isOwner = !device.shared
   const { devices } = useDispatch<Dispatch>()
   const { globalNotificationEmail, globalNotificationSystem } = useSelector((state: ApplicationState) => ({
-    globalNotificationEmail: state.auth?.user?.metadata?.notificationEmail,
-    globalNotificationSystem: state.auth?.user?.metadata?.notificationSystem,
+    globalNotificationEmail: state.auth?.notificationSettings?.emailNotifications,
+    globalNotificationSystem: state.auth?.notificationSettings?.desktopNotifications,
   }))
-  const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(undefined)
-  const [notificationInApp, setNotificationInApp] = useState<boolean | undefined | null>(undefined)
+  const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(device?.notificationSettings?.emailNotifications)
+  const [notificationInApp, setNotificationInApp] = useState<boolean | undefined | null>(device?.notificationSettings?.desktopNotifications)
   const [overridden, setOverridden] = useState<boolean>()
   const [emailOverridden, setEmailOverridden] = useState<boolean>()
 
-  useEffect(() => {
-    setNotificationInApp(
-      isOwner ? device.attributes.onlineDeviceNotification : device.attributes.onlineSharedDeviceNotification
-    )
-    setEmailNotification(device.attributes.notificationEmail)
-  }, [isOwner, device?.attributes])
 
   useEffect(() => {
-    console.log({ notificationInApp }, typeof notificationInApp)
     setOverridden(typeof notificationInApp === "boolean")
   }, [notificationInApp])
 
   useEffect(() => {
-    console.log({ emailNotification })
     setEmailOverridden(typeof emailNotification === "boolean")
   }, [emailNotification])
 
-  const emailNotifications = () => {
-    device.attributes = {
-      ...device.attributes,
-      [notificationType.EMAIL]: !emailNotification,
-    }
+  const handleEmailNotifications = () => {
     devices.setNotificationDevice({
-      ...device, attributes: {
-        ...device.attributes,
-        notificationEmail: !emailNotification
+      ...device,
+      notificationSettings: {
+        ...device.notificationSettings,
+        emailNotifications: !emailNotification
       }
     })
     setEmailNotification(!emailNotification)
   }
 
-  const inAppNotifications = () => {
-    let notification = isOwner ? notificationType.OWN : notificationType.DEVICE_SHARED
-    device.attributes = {
-      ...device.attributes,
-      [notification]: !notificationInApp,
-    }
+  const handleInAppNotifications = () => {
     devices.setNotificationDevice({
-      ...device, attributes: {
-        ...device.attributes,
-        notificationSystem: !notificationInApp
+      ...device,
+      notificationSettings: {
+        ...device.notificationSettings,
+        desktopNotifications: !notificationInApp
       }
     })
     setNotificationInApp(!notificationInApp)
   }
 
   const onClose = (system: boolean) => {
-    let notification = isOwner ? notificationType.OWN : notificationType.DEVICE_SHARED
     if (system) {
       setOverridden(false)
       setNotificationInApp(undefined)
       devices.setNotificationDevice({
-        ...device, attributes: {
-          ...device.attributes,
-          notificationSystem: null
+        ...device,
+        notificationSettings: {
+          desktopNotifications: null
         }
       })
 
     } else {
       setEmailOverridden(false)
       setEmailNotification(undefined)
-      notification = notificationType.EMAIL
       devices.setNotificationDevice({
-        ...device, attributes: {
-          ...device.attributes,
-          notificationEmail: null
+        ...device,
+        notificationSettings: {
+          emailNotifications: null
         }
       })
-
     }
-
-    // devices.setAttributes({
-    //   ...device,
-    //   attributes: {
-    //     ...device.attributes,
-    //     [notification]: null
-    //   }
-    // })
 
   }
 
@@ -146,24 +114,24 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
         />
       </Typography>
       <List>
-        <ListItem button onClick={inAppNotifications} dense>
+        <ListItem button onClick={handleInAppNotifications} dense>
           <ListItemIcon>
             <Icon name={notificationInApp ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary="System notification" />
           <ListItemSecondaryAction>
             {overridden && chipOverridden()}
-            <Switch edge="end" color="primary" checked={typeof notificationInApp === "boolean" ? !!notificationInApp : globalNotificationSystem} onClick={inAppNotifications} />
+            <Switch edge="end" color="primary" checked={overridden ? notificationInApp || false : globalNotificationSystem} onClick={handleInAppNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
-        <ListItem button onClick={emailNotifications} dense>
+        <ListItem button onClick={handleEmailNotifications} dense>
           <ListItemIcon>
             <Icon name={emailNotification ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary="Email" />
           <ListItemSecondaryAction>
             {emailOverridden && chipOverridden(false)}
-            <Switch edge="end" color="primary" checked={typeof emailNotification === "boolean" ? !!emailNotification : globalNotificationEmail} onClick={emailNotifications} />
+            <Switch edge="end" color="primary" checked={emailOverridden ? emailNotification || false : globalNotificationEmail} onClick={handleEmailNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
       </List>
