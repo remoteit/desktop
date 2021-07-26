@@ -18,7 +18,7 @@ type Props = {
 }
 
 export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, session }) => {
-  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
+  const attributes = getAttributes(['local', 'lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
 

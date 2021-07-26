@@ -72,7 +72,7 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'tags',
     label: 'Tags',
-    value: ({ device }) => <Tags ids={device?.tags || []} small />,
+    value: ({ device }) => (TestUI({}) ? <Tags ids={device?.tags || []} small /> : undefined),
     width: '80px',
   }),
   new Attribute({
@@ -213,6 +213,11 @@ export const attributes: Attribute[] = [
         : connection?.isP2P || session?.isP2P
         ? 'Peer to peer'
         : 'Proxy',
+  }),
+  new ConnectionAttribute({
+    id: 'local',
+    label: 'Local Address',
+    value: ({ connection }) => (connection ? `${connection.host}:${connection.port}` : undefined),
   }),
   new ConnectionAttribute({
     id: 'lanShare',
