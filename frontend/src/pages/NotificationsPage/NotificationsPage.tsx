@@ -9,13 +9,12 @@ import { NotificationMode } from './NotificationsMode'
 export const NotificationsPage: React.FC = () => {
   const {
     notificationUrl,
+    urlNotifications,
     emailNotifications,
     desktopNotifications,
-  } = useSelector((state: ApplicationState) =>  state.auth.notificationSettings)
+  } = useSelector((state: ApplicationState) => state.auth.notificationSettings)
   const dispatch = useDispatch<Dispatch>()
   const { updateUserMetadata } = dispatch.auth
-
-  const [url, setUrl] = useState<string>(notificationUrl || '')
   const [email, setEmail] = useState<boolean>(emailNotifications || false)
   const [system, setSystem] = useState<boolean>(desktopNotifications || false)
 
@@ -35,10 +34,10 @@ export const NotificationsPage: React.FC = () => {
 
       <Typography variant="subtitle1">Delivery Method</Typography>
       <NotificationMode
-        setUrl={setUrl}
-        setEmailChecked={setEmail}
+        urlNotifications={urlNotifications}
+        notificationUrl={notificationUrl}
         setSystemChecked={setSystem}
-        notificationUrl={url}
+        setEmailChecked={setEmail}
         emailNotifications={email}
         desktopNotifications={system}
         onUpdate={onUpdate}

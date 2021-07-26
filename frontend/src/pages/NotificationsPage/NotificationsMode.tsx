@@ -5,9 +5,10 @@ import { Quote } from '../../components/Quote'
 import { Gutters } from '../../components/Gutters'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
+import { REGEX_VALID_URL } from '../../shared/constants'
 
 export function NotificationMode({ ...props }): JSX.Element {
-  const [webHook, setWebhook] = useState(props.notificationUrl.length ? true : false)
+  const [webHook, setWebhook] = useState<boolean>(props.urlNotifications)
   const [webHookUrl, setWebhookUrl] = useState(props.notificationUrl)
   const [error, setError] = useState(false)
   const [errorFlag, setErrorFlag] = useState(false)
@@ -29,12 +30,11 @@ export function NotificationMode({ ...props }): JSX.Element {
     setWebhook(value)
     setWebhookUrl('')
     setError(false)
-    value ? setErrorFlag(true) : setErrorFlag(false)
   }
 
   const onChange = value => {
     setWebhookUrl(value)
-    setError(false)
+    REGEX_VALID_URL.test(value) ? setError(false) : setError(true)
   }
 
   const onSave = async () => {
@@ -42,9 +42,10 @@ export function NotificationMode({ ...props }): JSX.Element {
       setError(true)
     } else {
       const metadata: INotificationSetting = {
-        notificationUrl: webHook && webHookUrl?.length ? webHookUrl : undefined,
+        notificationUrl: webHook && webHookUrl?.length ? webHookUrl : '',
         emailNotifications: props.emailNotifications,
         desktopNotifications: props.desktopNotifications,
+        urlNotifications: webHook
       }
       props.onUpdate(metadata)
     }

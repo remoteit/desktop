@@ -11,12 +11,11 @@ const actions = {
 
 export function notify(event: ICloudEvent) {
   const target = event.target[0]
-  const onlineDeviceNotification = target.device?.attributes.onlineDeviceNotification
-    ? target.device?.attributes.onlineDeviceNotification
-    : event.metadata?.notificationSystem
+  const onlineDeviceNotification = target.device?.notificationSettings.desktopNotifications
+    ? target.device?.attributes.notificationSystem
+    : event.metadata?.desktopNotifications
 
-  const onlineSharedDeviceNotification = target.device?.attributes.onlineSharedDeviceNotification
-  if (!onlineDeviceNotification && !onlineSharedDeviceNotification) return
+  if (!onlineDeviceNotification) return
 
   switch (event.type) {
     case 'DEVICE_STATE':

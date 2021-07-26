@@ -100,7 +100,6 @@ export default createModel<RootModel>()({
           yoicsId: data.yoicsId,
           created: data.created,
         })
-        console.log({data})
         auth.setNotificationSettings(data.notificationSettings)
       } catch (error) {
         await graphQLCatchError(error)
@@ -258,7 +257,6 @@ export default createModel<RootModel>()({
       return state
     },
     setNotificationSettings(state: AuthState, notificationSettings: INotificationSetting) {
-      console.log({notificationSettings})
       state.notificationSettings = notificationSettings
       return state
     },
