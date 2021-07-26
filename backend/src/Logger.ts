@@ -6,6 +6,7 @@ import { ENVIRONMENT } from './constants'
 import * as winston from 'winston'
 
 const ENV = process.env.NODE_ENV
+const DEBUG = process.env.DEBUG
 const MAX_LOG_SIZE_BYTES = 100 * 1000 // 10mb
 const MAX_LOG_FILES = 5
 
@@ -40,7 +41,7 @@ const transports = [
   }),
   new winston.transports.Console({
     format: combine(winston.format.colorize(), consoleFormat),
-    silent: ENV === 'test',
+    silent: ENV === 'test' || !!DEBUG,
   }),
 ]
 

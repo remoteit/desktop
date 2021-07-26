@@ -10,6 +10,7 @@ import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
+import headlessUpdater from './headlessUpdater'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import Binary from './Binary'
@@ -59,6 +60,7 @@ class Controller {
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
+    socket.on('service/disable', this.disable)
     socket.on('service/clear', this.pool.clear)
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.forget)
@@ -70,6 +72,7 @@ class Controller {
     socket.on('registration', this.registration)
     socket.on('restore', this.restore)
     socket.on('scan', this.scan)
+    socket.on('useCertificate', this.useCertificate)
     socket.on(lan.EVENTS.interfaces, this.interfaces)
     socket.on('freePort', this.freePort)
     socket.on('reachablePort', this.isReachablePort)
@@ -83,6 +86,7 @@ class Controller {
     this.initBackend()
     this.check()
     binaryInstaller.check()
+    headlessUpdater.check()
   }
 
   recapitate = () => {
@@ -103,6 +107,10 @@ class Controller {
 
   disconnect = async (connection: IConnection) => {
     await this.pool.stop(connection)
+  }
+
+  disable = async (connection: IConnection) => {
+    await this.pool.disable(connection)
     this.freePort()
   }
 
@@ -154,9 +162,15 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.reachablePort, result)
   }
 
+  useCertificate = async (use: boolean) => {
+    preferences.update({ useCertificate: use })
+    await cli.checkDefaults()
+  }
+
   initBackend = async () => {
     cli.read()
     this.pool.init()
+    this.freePort()
     this.io.emit('targets', cli.data.targets)
     this.io.emit('device', cli.data.device)
     this.io.emit('scan', lan.data)
@@ -164,7 +178,6 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
-    this.freePort()
     this.io.emit('dataReady', true)
   }
 

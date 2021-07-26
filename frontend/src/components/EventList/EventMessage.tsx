@@ -1,4 +1,5 @@
 import React from 'react'
+import { ADD_EVENTS_ACTIONS } from '../../shared/constants'
 
 export const EventType = {
   device_state: 'DEVICE_STATE',
@@ -43,6 +44,7 @@ export function EventMessage({
 
     case EventType.device_share:
       const actor = item.actor?.email === loggedInUser?.email ? 'You' : item.actor?.email
+      const deviceName = device ? device.name : item.devices?.length && item.devices[0]?.name
       const users = item.users && item.users.map(user => user.email || '(deleted)')
       const userList =
         users && users.length !== 1 ? users.slice(0, -1).join(', ') + ' and ' + users.slice(-1) : users && users[0]
@@ -51,26 +53,26 @@ export function EventMessage({
       if (item.shared) {
         message = (
           <>
-            {actor} shared <i>{device?.name}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
+            {actor} shared <i>{deviceName}</i> and {item.scripting ? 'allowed' : 'restricted'} script execution with
             <b>{affected}</b>
           </>
         )
-      } else if (item.action === 'add') {
+      } else if (ADD_EVENTS_ACTIONS.includes(item.action)) {
         message = (
           <>
-            {actor} shared <i>{device?.name}</i> with <b>{affected}</b>
+            {actor} shared <i>{deviceName}</i> with <b>{affected}</b>
           </>
         )
       } else if (actor === affected) {
         message = (
           <>
-            You left the shared device <i>{device?.name}</i>
+            You left the shared device <i>{deviceName}</i>
           </>
         )
       } else {
         message = (
           <>
-            {actor} removed sharing of <i>{device?.name}</i> with <b>{affected}</b>
+            {actor} removed sharing of <i>{deviceName}</i> from <b>{affected}</b>
           </>
         )
       }

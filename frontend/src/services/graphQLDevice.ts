@@ -1,7 +1,7 @@
 import { graphQLRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
-import { LEGACY_ATTRIBUTES } from '../shared/constants'
 import { updateConnections } from '../helpers/connectionHelper'
+import { store } from '../store'
 
 const DEVICE_SELECT = `
   id
@@ -14,7 +14,6 @@ const DEVICE_SELECT = `
   version
   configurable
   attributes
-  ${LEGACY_ATTRIBUTES.join('\n')}
   access {
     user {
       id
@@ -147,6 +146,8 @@ export async function graphQLFetchDevice(id: string) {
 
 export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: string, hidden?: boolean): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
+  const thisDeviceId = store.getState().backend.device.uid
+  let metaData = { userAttributes: new Array<string>() }
   let data: IDevice[] = gqlDevices?.map(
     (d: any): IDevice => ({
       id: d.id,
@@ -167,7 +168,8 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       quality: d.endpoint?.quality,
       version: d.version,
       geo: d.endpoint?.geo,
-      attributes: processDeviceAttributes(d),
+      attributes: processDeviceAttributes(d, metaData),
+      tags: labelsToTags(d),
       services: d.services.map(
         (s: any): IService => ({
           id: s.id,
@@ -193,29 +195,37 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
         email: e.user?.email,
         scripting: e.scripting,
       })),
+      thisDevice: d.id === thisDeviceId,
       accountId,
       hidden,
     })
   )
+  // console.log('USER ATTRIBUTES', metaData.userAttributes)
+  store.dispatch.devices.userAttributes({ userAttributes: metaData.userAttributes })
   return updateConnections(data)
 }
 
-function processDeviceAttributes(response: any): IDevice['attributes'] {
-  let result = processAttributes(response)
-  LEGACY_ATTRIBUTES.forEach(attribute => {
-    if (response[attribute]) result[attribute] = response[attribute]
-  })
-  return result
+function processDeviceAttributes(response: any, metaData): IDevice['attributes'] {
+  const attributes = processAttributes(response)
+  metaData.userAttributes = metaData.userAttributes.concat(Object.keys(attributes).filter(c => c !== '$remoteit'))
+  return attributes
 }
 
 function processServiceAttributes(response: any): IService['attributes'] {
   return processAttributes(response)
 }
 
-function processAttributes(response: any) {
+function processAttributes(response: any): ILookup<any> {
   const root = response.attributes || {}
   const $ = root.$remoteit || {}
   let result = { ...root, ...$ }
   delete result.$remoteit
   return result
+}
+
+function labelsToTags(response: any): IDevice['tags'] {
+  let tags: IDevice['tags'] = []
+  const attributes = processAttributes(response)
+  if (attributes.color) tags.push(1000 + attributes.color)
+  return tags
 }

@@ -43,9 +43,11 @@ export const PLATFORM_CODES = {
   WINDOWS: 0,
 }
 
-// Web directory
+// Asset directories
 export const WEB_DIR = path.resolve(__dirname, '../build')
 export const SSL_DIR = path.resolve(__dirname, '../ssl')
+export const CERT_DIR = path.resolve(__dirname, '../../../../cert')
+export const CERT_DIR_DEV = path.resolve(__dirname, '../cert')
 
 // Port for the Socket.io websocket server
 export const WEB_PORT = Number(process.env.PORT || 29999)

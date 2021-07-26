@@ -1,5 +1,5 @@
 import React from 'react'
-import { selectLicense, lookupLicenseProductId, evaluationDays } from '../models/licensing'
+import { selectLicense, lookupLicenseProductId, humanizeDays } from '../models/licensing'
 import { Link, Button } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { LicensingTitle } from './LicensingTitle'
@@ -40,8 +40,8 @@ export const LicensingServiceNotice: React.FC<Props> = props => {
       >
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
-          This service will be accessible for {evaluationDays(evaluationLimit?.value)} days unless you upgrade your
-          license.{learnMoreLink}
+          This service will be accessible for {humanizeDays(evaluationLimit?.value)}, unless you upgrade your license.
+          {learnMoreLink}
         </em>
       </Notice>
     )

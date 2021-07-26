@@ -15,6 +15,7 @@ import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
+import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
@@ -38,6 +39,9 @@ export const AccountAccessPage: React.FC = () => {
         </Typography>
       }
     >
+      <Gutters noBottom>
+        <Typography variant="body2">Share all the devices you own to another user</Typography>
+      </Gutters>
       {access.length ? (
         <List>
           <ListItem>
@@ -59,7 +63,7 @@ export const AccountAccessPage: React.FC = () => {
               <ListItemSecondaryAction>
                 <Tooltip title="Remove Account">
                   <IconButton onClick={() => accounts.removeAccess(user.email)}>
-                    <Icon name="times-circle" size="md" fixedWidth />
+                    <Icon name="times" size="md" fixedWidth />
                   </IconButton>
                 </Tooltip>
               </ListItemSecondaryAction>

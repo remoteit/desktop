@@ -9,6 +9,9 @@ export const LicensingIcon: React.FC<{ license: ILicense }> = ({ license }) => {
     case 'AWS':
       name = 'aws'
       break
+    case null:
+      name = 'r3'
+      break
   }
 
   if (!name) return null

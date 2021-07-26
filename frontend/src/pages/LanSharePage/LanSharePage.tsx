@@ -7,7 +7,7 @@ import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { getDevices } from '../../models/accounts'
-import { colors, spacing, fontSizes } from '../../styling'
+import { spacing } from '../../styling'
 import { ApplicationState } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -19,22 +19,24 @@ type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
-  const { service, privateIP, connection } = useSelector((state: ApplicationState) => {
-    let connection = state.backend.connections.find(c => c.id === serviceID)
+  const { service, lanIP, connection } = useSelector((state: ApplicationState) => {
+    let connection = state.connections.all.find(c => c.id === serviceID)
     const [service] = findService(getDevices(state), serviceID)
     return {
       service,
-      privateIP: state.backend.environment.privateIP,
+      lanIP: state.backend.environment.privateIP,
       connection: connection || newConnection(service),
     }
   })
 
+  const [currentIp, setCurrentIp] = useState((connection && connection.ip) || IP_PRIVATE)
+
   // prettier-ignore
   const selections: Selections[] = [
     { value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
-    { value: maskIPClass(privateIP, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
-    { value: maskIPClass(privateIP, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
-    { value: maskIPClass(privateIP, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
+    { value: maskIPClass(currentIp, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
+    { value: maskIPClass(currentIp, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
+    { value: maskIPClass(currentIp, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
     { value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
     { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
@@ -43,7 +45,7 @@ export const LanSharePage: React.FC = () => {
     analyticsHelper.page('LanSharePage')
   }, [])
 
-  const [enabledLocalSharing, setEnabledLocalSharing] = useState<boolean>(connection.host !== IP_PRIVATE)
+  const [enabledLocalSharing, setEnabledLocalSharing] = useState<boolean>(connection.ip !== IP_PRIVATE)
   const restriction: ipAddress = enabledLocalSharing && connection.restriction ? connection.restriction : IP_LATCH
   const [selection, setSelection] = useState<number>(() => {
     let s = selections.findIndex(s => s.value === restriction)
@@ -54,7 +56,6 @@ export const LanSharePage: React.FC = () => {
   const selected = selections[selection] || {}
   const history = useHistory()
   const css = useStyles()
-  const [currentHost, setCurrentHost] = useState((connection && connection.host) || IP_PRIVATE)
   const [error, setError] = useState<string>()
   const [disabled, setDisabled] = useState(true)
 
@@ -69,7 +70,7 @@ export const LanSharePage: React.FC = () => {
   const save = () => {
     setConnection({
       ...connection,
-      host: enabledLocalSharing ? currentHost : IP_PRIVATE,
+      ip: enabledLocalSharing ? currentIp : IP_PRIVATE,
       restriction: getSelectionValue(),
     })
     history.push(`/connections/${serviceID}`)
@@ -82,7 +83,7 @@ export const LanSharePage: React.FC = () => {
 
   const handleBindIP = event => {
     const { value } = event.target
-    setCurrentHost(value)
+    setCurrentIp(value)
 
     if (!REGEX_VALID_HOSTNAME.test(value)) {
       setError('invalid IP')
@@ -94,7 +95,7 @@ export const LanSharePage: React.FC = () => {
   }
 
   const handleEnableLocalSharing = () => {
-    setCurrentHost(enabledLocalSharing ? IP_PRIVATE : IP_OPEN)
+    setCurrentIp(enabledLocalSharing ? IP_PRIVATE : IP_OPEN)
     setEnabledLocalSharing(!enabledLocalSharing)
     setDisabled(false)
   }
@@ -113,7 +114,7 @@ export const LanSharePage: React.FC = () => {
       <div className={css.container}>
         <p>
           <Typography variant="caption">Your local IP address</Typography>
-          <Typography variant="h2">{privateIP}</Typography>
+          <Typography variant="h2">{lanIP}</Typography>
         </p>
         <Typography variant="body2" color="textSecondary">
           Allow users to connect to your remote device through your IP address using a custom port.
@@ -122,10 +123,10 @@ export const LanSharePage: React.FC = () => {
           <>
             <TextField
               className={css.textField}
-              multiline={currentHost.toString().length > 30}
+              multiline={currentIp.toString().length > 30}
               label="Bind IP Address"
               error={!!error}
-              defaultValue={currentHost}
+              defaultValue={currentIp}
               variant="filled"
               helperText={error}
               onChange={handleBindIP}

@@ -48,8 +48,8 @@ export const ServiceAddPage: React.FC<Props> = ({ targetDevice, device }) => {
         </Body>
       ) : (
         <ServiceForm
-          thisDevice={device?.id === targetDevice.uid}
-          editable={device?.configurable || device?.id === targetDevice.uid}
+          thisDevice={!!device?.thisDevice}
+          editable={device?.configurable || !!device?.thisDevice}
           onSubmit={async form => {
             if (device?.configurable) {
               // CloudShift

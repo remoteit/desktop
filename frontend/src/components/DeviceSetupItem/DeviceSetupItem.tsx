@@ -1,16 +1,8 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../../store'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Link,
-  Button,
-  Typography,
-} from '@material-ui/core'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
+import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip, Typography } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
@@ -19,9 +11,10 @@ import { osName } from '../../shared/nameHelper'
 import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
+  const css = useStyles()
   const history = useHistory()
   const { thisDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
-    thisDevice: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+    thisDevice: getOwnDevices(state).find(d => d.thisDevice),
     targetDevice: state.backend.device,
     os: state.backend.environment.os,
     restoring: state.ui.restoring,
@@ -39,27 +32,20 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
     )
 
   const registered = !!targetDevice.uid
-  let title = 'Set up remote access'
-  let subtitle = `Set up remote access to this ${osName(os)} or any other service on the network.`
+  let title = 'Set up this device'
+  let subtitle = `Add remote access to this ${osName(os)} or any service on the network.`
 
   if (registered) {
     if (thisDevice) {
       title = attributeName(thisDevice) || targetDevice.name || ''
-      subtitle = `Configure remote access to this ${osName(os)} or any other service on the network.`
+      subtitle = `Configure this system.`
     } else {
-      return (
-        <ListItem>
-          <Notice>This device is not registered to you.</Notice>
-        </ListItem>
-      )
+      return <Notice>This device is not registered to you.</Notice>
     }
   }
 
   return (
-    <ListItemLocation pathname="/devices/setup">
-      <ListItemIcon>
-        <Icon name="hdd" size="md" type="regular" />
-      </ListItemIcon>
+    <ListItemLocation icon="hdd" pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
       <ListItemText primary={title} secondary={subtitle} />
       {canRestore && (
         <ListItemSecondaryAction>
@@ -69,12 +55,19 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
               <Link onClick={() => history.push('/devices')}>cancel</Link>
             </Typography>
           ) : (
-            <Button variant="outlined" size="small" onClick={() => history.push('/devices/restore')}>
-              Restore Device
-            </Button>
+            <Chip
+              label="Restore Device"
+              variant="default"
+              size="small"
+              onClick={() => history.push('/devices/restore')}
+            />
           )}
         </ListItemSecondaryAction>
       )}
     </ListItemLocation>
   )
 }
+
+const useStyles = makeStyles({
+  margin: { paddingRight: 125 },
+})

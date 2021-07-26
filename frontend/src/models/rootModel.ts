@@ -6,6 +6,7 @@ import applicationTypes from './applicationTypes'
 import auth from './auth'
 import backend from './backend'
 import binaries from './binaries'
+import connections from './connections'
 import devices from './devices'
 import labels from './labels'
 import licensing from './licensing'
@@ -13,6 +14,7 @@ import logs from './logs'
 import search from './search'
 import sessions from './sessions'
 import shares from './shares'
+import tags from './tags'
 import ui from './ui'
 
 export interface RootModel extends Models<RootModel> {
@@ -23,6 +25,7 @@ export interface RootModel extends Models<RootModel> {
   auth: typeof auth
   backend: typeof backend
   binaries: typeof binaries
+  connections: typeof connections
   devices: typeof devices
   labels: typeof labels
   licensing: typeof licensing
@@ -30,6 +33,7 @@ export interface RootModel extends Models<RootModel> {
   search: typeof search
   sessions: typeof sessions
   shares: typeof shares
+  tags: typeof tags
   ui: typeof ui
 }
 
@@ -41,6 +45,7 @@ export const models: RootModel = {
   auth,
   backend,
   binaries,
+  connections,
   devices,
   labels,
   licensing,
@@ -48,5 +53,6 @@ export const models: RootModel = {
   search,
   sessions,
   shares,
+  tags,
   ui,
 }

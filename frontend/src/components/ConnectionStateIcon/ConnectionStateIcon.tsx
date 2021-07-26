@@ -3,7 +3,6 @@ import { Icon } from '../Icon'
 import { IconProps } from '../Icon/Icon'
 import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
-import { connectionState } from '../../helpers/connectionHelper'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'
 import { getTargetPlatformIcon } from '../../helpers/platformHelper'
 import { colors, spacing, Color } from '../../styling'
@@ -13,20 +12,11 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
   service?: IService
   device?: IDevice
   mini?: boolean
-  thisDevice?: boolean
 }
 
-export function ConnectionStateIcon({
-  connection,
-  service,
-  device,
-  mini,
-  thisDevice,
-  ...props
-}: ConnectionStateIconProps) {
+export function ConnectionStateIcon({ connection, service, device, mini, ...props }: ConnectionStateIconProps) {
   const css = useStyles()
   const history = useHistory()
-  const state = connectionState(service || device, connection)
 
   let { name, type } = getTargetPlatformIcon(device?.targetPlatform)
 
@@ -37,24 +27,22 @@ export function ConnectionStateIcon({
   let title: any = 'Online'
   let spin = false
 
-  if (state === 'connected' || state === 'ready') {
+  if (connection?.enabled) {
     colorName = 'primary'
     title = 'Connected'
   }
-  if (state === 'connecting' || state === 'stopping') {
+  if (connection?.connecting) {
     name = 'spinner-third'
     type = 'regular'
     colorName = 'grayLight'
     showQuality = false
-    title = state
+    title = 'Connecting'
     spin = true
   }
-  if (state === 'offline') {
+  if (service?.state === 'inactive' || device?.state === 'inactive') {
     opacity = 0.3
     title = 'Offline'
     showQuality = false
-    // name = 'minus'
-    // type = 'light'
   }
 
   if (service?.license === 'EVALUATION') {
@@ -62,7 +50,7 @@ export function ConnectionStateIcon({
     title = 'Evaluation'
   }
   if (service?.license === 'UNLICENSED') {
-    colorName = 'grayLight'
+    colorName = 'warning'
     title = 'Unlicensed'
   }
 
@@ -70,17 +58,6 @@ export function ConnectionStateIcon({
     element = (
       <span className={css.mini}>
         <span style={{ backgroundColor: colors[colorName] }} />
-      </span>
-    )
-  else if (thisDevice)
-    element = (
-      <span className={css.combo}>
-        <Icon {...props} name="hdd" color="grayDark" type="regular" fixedWidth />
-        {!(showQuality && device) && (
-          <sup>
-            <Icon name={name} color={colorName} spin={spin} size="sm" type={type} fixedWidth />
-          </sup>
-        )}
       </span>
     )
   else {
@@ -103,7 +80,7 @@ export function ConnectionStateIcon({
           type="solid"
           inlineLeft
         />
-        Internet connectivity {device.quality.toLowerCase()}
+        Connectivity {device.quality.toLowerCase()}
       </>
     )
     element = (

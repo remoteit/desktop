@@ -1,6 +1,5 @@
 import { createModel } from '@rematch/core'
 import { selectById } from '../models/devices'
-import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { DEFAULT_TARGET } from '../shared/constants'
 import { platformConfiguration } from '../services/platformConfiguration'
 import { RootModel } from './rootModel'
@@ -9,7 +8,6 @@ import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type IBackendState = {
-  connections: IConnection[]
   device: ITargetDevice
   targets: ITarget[]
   scanData: IScanData
@@ -28,6 +26,7 @@ type IBackendState = {
     privateIP: ipAddress
     hostname: string
     oobAvailable: boolean
+    overrides: IOverrides
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
@@ -36,7 +35,6 @@ type IBackendState = {
 }
 
 const state: IBackendState = {
-  connections: [],
   device: DEFAULT_TARGET,
   targets: [],
   scanData: { wlan0: { data: [], timestamp: 0 } },
@@ -55,8 +53,12 @@ const state: IBackendState = {
     privateIP: '',
     hostname: '',
     oobAvailable: false,
+    overrides: {},
   },
-  preferences: {},
+  preferences: {
+    version: '',
+    cliVersion: '',
+  },
   deferredAttributes: undefined,
   reachablePort: true,
   reachablePortLoading: false,
@@ -113,7 +115,7 @@ export default createModel<RootModel>()({
       if (globalState.ui.setupBusy) {
         await fetch(user?.id)
         await dispatch.backend.updateDeferredAttributes()
-        dispatch.ui.reset()
+        dispatch.ui.updated()
       }
     },
     async updateDeferredAttributes(_, globalState) {
@@ -158,31 +160,6 @@ export default createModel<RootModel>()({
       const tIndex = targets?.findIndex(t => t.uid === target.uid)
       targets[tIndex] = target
       emit('targets', targets)
-    },
-
-    async updateConnection(connection: IConnection, globalState) {
-      const state = globalState.backend
-      state.connections.some((c, index) => {
-        if (c.id === connection.id) {
-          state.connections[index] = connection
-          dispatch.backend.set({ connections: state.connections })
-          if (connection) return true
-        }
-        return false
-      })
-    },
-    async updateConnections(connections: IConnection[], globalState) {
-      connections.forEach(connection => {
-        // data missing from cli if our connections file is lost
-        if (!connection.owner) {
-          const [service] = selectById(globalState, connection.id)
-          if (service) {
-            connection = { ...newConnection(service), ...connection }
-            setConnection(connection)
-          }
-        }
-      })
-      dispatch.backend.set({ connections })
     },
   }),
 

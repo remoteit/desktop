@@ -1,28 +1,36 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { version } from '../../package.json'
-import { emit } from '../services/Controller'
 import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/core'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
+import { ApplicationState } from '../store'
 import { ListItemSetting } from './ListItemSetting'
 import { colors, spacing } from '../styling'
+import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { version } from '../../package.json'
 import { Avatar } from './Avatar'
+import { emit } from '../services/Controller'
 
 export interface Props {}
 
 export const AvatarMenu: React.FC<Props> = ({}) => {
   const [el, setEl] = React.useState<HTMLButtonElement | null>()
+  const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
-  const { user, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { user, remoteUI, preferences } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     remoteUI: isRemoteUI(state),
+    preferences: state.backend.preferences,
   }))
 
   const css = useStyles()
-  const handleClose = () => setEl(null)
-  const handleOpen = () => setEl(buttonRef.current)
+  const handleClose = () => {
+    setEl(null)
+    setAltMenu(false)
+  }
+  const handleOpen = event => {
+    if (event.altKey && event.shiftKey) setAltMenu(true)
+    setEl(buttonRef.current)
+  }
 
   return (
     <>
@@ -47,17 +55,31 @@ export const AvatarMenu: React.FC<Props> = ({}) => {
           onClick={() => window.open('https://link.remote.it/portal/account')}
         />
         <ListItemSetting
-          label="Documentation"
-          icon="books"
-          onClick={() => window.open('https://link.remote.it/documentation-desktop/overview')}
-        />
-        <ListItemSetting
           label="Feedback"
           icon="envelope"
           onClick={() =>
             (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
           }
         />
+        <ListItemSetting
+          label="Documentation"
+          icon="books"
+          onClick={() => window.open('https://link.remote.it/documentation-desktop/overview')}
+        />
+        <ListItemSetting label="API" icon="cube" onClick={() => window.open('https://link.remote.it/docs/api')} />
+        {altMenu && (
+          <ListItemSetting
+            confirm
+            label="Enable Test UI"
+            icon="vial"
+            confirmTitle="Are you sure?"
+            confirmMessage="Enabling alpha features may be unstable. It is only intended for testing and development."
+            onClick={() => {
+              emit('preferences', { ...preferences, testUI: 'HIGHLIGHT' })
+              handleClose()
+            }}
+          />
+        )}
         <Divider />
         <ListItemSetting
           confirm

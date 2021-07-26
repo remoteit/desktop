@@ -1,4 +1,5 @@
 import { AnalyticsJS } from 'segment-analytics'
+import { Color } from './styling'
 
 declare global {
   type ConnectionState = IService['state'] | 'connecting' | 'disconnected' | 'unknown'
@@ -23,6 +24,15 @@ declare global {
     | 'service/throughput'
     | 'service/uptime'
     | 'connectd/install/error'
+
+  type ILicenseChip = {
+    name: string
+    color: string
+    colorName: Color
+    background?: string
+    disabled?: boolean
+    show?: boolean
+  }
 
   type LogType = 'general' | 'connectd' | 'alert'
 
@@ -85,27 +95,32 @@ declare global {
     analytics: AnalyticsJS
   }
 
-  interface IDataDisplay {
-    label: string
-    value?: any
-    help?: string
-    format?: 'duration' | 'percent' | 'round' | 'location' | 'element'
+  type IDataOptions = {
+    device?: IDevice
+    service?: IService
+    connection?: IConnection
+    session?: ISession
+    connections?: IConnection[]
   }
 
   interface ILabel {
-    color: string
-    name: string
     id: number
+    key: 'NONE' | 'GRAY' | 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'PURPLE'
+    name: string
+    color: string
+    hidden?: boolean
+  }
+
+  interface ITag {
+    id: number
+    name: string
+    label?: ILabel['id']
+    color?: string
   }
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 
-declare module 'remote.it' {
-  // export interface IService {
-  //   connecting?: boolean
-  //   port?: number
-  // }
-}
+declare module 'remote.it' {}
 
 export {}

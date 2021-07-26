@@ -24,8 +24,13 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
 
   if (!session) return null
 
+  let icon = 'ellipsis-h'
+  if (connected) icon = 'arrow-right'
+  if (recent) icon = 'minus'
+  if (session.public) icon = 'globe-americas'
+
   return (
-    <ListItemLocation pathname={pathname} selected={`/connections/${session.target.id}`} dense>
+    <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>
       <ListItemIcon>
         {merge ? (
           <Divider orientation="vertical" className={css.vertical} />
@@ -48,7 +53,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
             <Tooltip title={recent ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="top" arrow>
               <span className={css.icon}>
                 <Icon
-                  name={recent ? 'minus' : connected ? 'arrow-right' : 'ellipsis-h'}
+                  name={icon}
                   color={recent ? 'gray' : connected ? 'primary' : 'primaryLight'}
                   size="md"
                   type="regular"

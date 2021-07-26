@@ -1,6 +1,7 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
-import { WEBSOCKET_URL, WEBSOCKET_BETA_URL } from '../shared/constants'
 import { getToken } from './remote.it'
+import { AxiosResponse } from 'axios'
+import { getWebSocketURL } from '../helpers/apiHelper'
 import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -8,6 +9,7 @@ import { selectById } from '../models/devices'
 import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
 import { emit } from './Controller'
+import { agent } from '../services/Browser'
 
 class CloudController {
   socket?: ReconnectingWebSocket
@@ -18,7 +20,8 @@ class CloudController {
   }
 
   connect() {
-    this.socket = new ReconnectingWebSocket(version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL)
+    if (this.socket instanceof ReconnectingWebSocket) return
+    this.socket = new ReconnectingWebSocket(getWebSocketURL())
     this.socket.addEventListener('open', this.onOpen)
     this.socket.addEventListener('message', this.onMessage)
     this.socket.addEventListener('close', e => console.log('CLOUD WS closed', e))
@@ -86,7 +89,7 @@ class CloudController {
   authenticate = async () => {
     const message = JSON.stringify({
       action: 'subscribe',
-      headers: { authorization: await getToken() },
+      headers: { authorization: await getToken(), 'User-Agent': `remoteit/${version} ${agent()}` },
       query: `
       {
         event {
@@ -129,7 +132,6 @@ class CloudController {
       }`,
       // "variables": {}
     })
-    // console.log('SUBSCRIBE', message)
     this.socket?.send(message)
   }
 
@@ -144,7 +146,7 @@ class CloudController {
   }
 
   errors(data) {
-    const errors = graphQLGetErrors({ data }, true)
+    const errors = graphQLGetErrors({ data } as AxiosResponse, true)
     return !!errors?.length
   }
 
@@ -172,7 +174,7 @@ class CloudController {
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
-            name: connectionName(t.device, t),
+            name: connectionName(t, t.device),
             owner: t.owner,
             typeID: t.application,
             platform: t.platform,
@@ -218,6 +220,10 @@ class CloudController {
         event.target.forEach(target => {
           // Local connection state
           if (target.connection) {
+            if (target.connection.public) {
+              target.connection.enabled = event.state === 'connected'
+              if (event.state !== 'connected') target.connection.endTime = Date.now()
+            }
             target.connection.connected = event.state === 'connected'
             target.connection.connecting = false
             setConnection(target.connection)
@@ -232,6 +238,7 @@ class CloudController {
               isP2P: event.isP2P,
               user: event.actor,
               geo: event.geo,
+              public: !!target.connection?.public,
               target: {
                 id: target.id,
                 deviceId: target.deviceId,

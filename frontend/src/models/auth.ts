@@ -11,11 +11,12 @@ import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
 import { store } from '../store'
 import { emit } from '../services/Controller'
+import { REDIRECT_URL } from '../shared/constants'
 
 function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
 }
 
 const USER_KEY = 'user'
@@ -53,12 +54,12 @@ export default createModel<RootModel>()({
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          redirectURL: Buffer.from(getRedirectUrl()).toString('hex'),
-          callbackURL: CALLBACK_URL,
-          signoutCallbackURL: isElectron() ? getRedirectUrl() : CALLBACK_URL,
+          redirectURL: isElectron() ? '' : window.origin + '/v1/callback',
+          callbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          signoutCallbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
         })
 
-        await sleep(500);
+        await sleep(500)
 
         dispatch.auth.setAuthService(authService)
         dispatch.auth.setInitialized()
@@ -129,15 +130,7 @@ export default createModel<RootModel>()({
     async authenticated(_: void, rootState) {
       if (rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
-        await cloudController.init()
-        await dispatch.licensing.fetch()
-        await dispatch.accounts.init()
-        dispatch.applicationTypes.fetch()
-        dispatch.announcements.fetch()
       }
-      // always fetch on connect
-      await dispatch.devices.fetch()
-      dispatch.sessions.fetch()
     },
     async disconnect(_: void, rootState: any) {
       console.log('DISCONNECT')
@@ -165,11 +158,15 @@ export default createModel<RootModel>()({
       window.localStorage.removeItem('amplify-signin-with-hostedUI')
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
-      dispatch.accounts.set({ devices: [] })
-      dispatch.backend.set({ connections: [] })
-      dispatch.devices.set({ query: '', filter: 'all', initialized: false })
-      dispatch.sessions.set({ all: [] })
+      dispatch.accounts.reset()
+      dispatch.connections.reset()
+      dispatch.devices.reset()
+      dispatch.sessions.reset()
       dispatch.logs.reset()
+      dispatch.search.reset()
+      dispatch.licensing.reset()
+      dispatch.tags.reset()
+      dispatch.ui.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''
       emit('user/sign-out-complete')
@@ -226,7 +223,7 @@ export default createModel<RootModel>()({
       state.authService = authService
       return state
     },
-    setUsername(state: AuthState, username?: string) {
+    setUsername(state: AuthState, username: string | undefined) {
       state.localUsername = username
       return state
     },

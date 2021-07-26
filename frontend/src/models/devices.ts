@@ -15,6 +15,8 @@ import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 
+const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
+
 type DeviceParams = { [key: string]: any }
 
 type IGetDevice = {
@@ -24,7 +26,6 @@ type IGetDevice = {
 
 type IDeviceState = {
   all: { [accountId: string]: IDevice[] }
-  initialized: boolean
   total: number
   results: number
   searched: boolean
@@ -41,11 +42,12 @@ type IDeviceState = {
   from: number
   contacts: IUserRef[]
   eventsUrl: string
+  sortServiceOption?: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+  userAttributes: string[]
 }
 
-export const state: IDeviceState = {
+export const defaultState: IDeviceState = {
   all: {},
-  initialized: false,
   total: 0,
   results: 0,
   searched: false,
@@ -62,11 +64,21 @@ export const state: IDeviceState = {
   from: 0,
   contacts: [],
   eventsUrl: '',
+  sortServiceOption: 'ATOZ',
+  userAttributes: [],
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
+    async init() {
+      let states = {}
+      SAVED_STATES.forEach(key => {
+        const value = window.localStorage.getItem(`device-${key}`)
+        if (value) states[key] = value
+      })
+      dispatch.devices.set(states)
+    },
     /* 
       GraphQL search query for all device data
     */
@@ -112,7 +124,7 @@ export default createModel<RootModel>()({
       platformConfiguration()
 
       // @TODO pull contacts out into its own model / request on page load
-      set({ initialized: true, fetching: false, append: false, contacts })
+      set({ fetching: false, append: false, contacts })
     },
 
     /*
@@ -256,7 +268,9 @@ export default createModel<RootModel>()({
     },
 
     async claimDevice(code: string) {
-      console.log('CLAIM DEVICE CODE', code)
+      dispatch.ui.set({ claiming: true })
+      dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
+
       const result = await graphQLClaimDevice(code)
       try {
         const device = result?.data?.data?.claimDevice
@@ -271,6 +285,8 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `An error occurred registering your device. (${error.message})` })
         console.error(error)
       }
+
+      dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
     },
 
     async destroy(device: IDevice, globalState) {
@@ -292,11 +308,23 @@ export default createModel<RootModel>()({
       }
       dispatch.devices.set({ destroying: false })
     },
+
+    async userAttributes({ userAttributes }: { userAttributes: string[] }, globalState) {
+      const unique = new Set(userAttributes.concat(globalState.devices.userAttributes))
+      dispatch.devices.set({ userAttributes: [...Array.from(unique)].sort() })
+    },
   }),
 
   reducers: {
+    reset(state: IDeviceState) {
+      state = defaultState
+      return state
+    },
     set(state: IDeviceState, params: DeviceParams) {
-      Object.keys(params).forEach(key => (state[key] = params[key]))
+      Object.keys(params).forEach(key => {
+        if (SAVED_STATES.includes(key)) window.localStorage.setItem(`device-${key}`, params[key] || '')
+        state[key] = params[key]
+      })
       return state
     },
   },

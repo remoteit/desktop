@@ -9,7 +9,7 @@ export const fontSizes: { [key in FontSize]: number } = {
   base: 14,
   md: 16,
   lg: 19,
-  xl: 28,
+  xl: 24,
   xxl: 36,
   xxxl: 48,
   max: 64,
@@ -21,6 +21,7 @@ export type Color =
   | 'primaryLighter'
   | 'primaryHighlight'
   | 'secondary'
+  | 'guide'
   | 'successLight'
   | 'success'
   | 'successDark'
@@ -40,6 +41,7 @@ export type Color =
   | 'darken'
   | 'screen'
   | 'rpi'
+  | 'test'
 
 export const colors: { [key in Color]: string } = {
   primary: '#0096e7',
@@ -47,6 +49,7 @@ export const colors: { [key in Color]: string } = {
   primaryLighter: '#d7effc',
   primaryHighlight: '#edf8ff',
   secondary: '#75bd00',
+  guide: '#001247', //'#9651c4',
   successLight: '#a4db4c',
   success: '#75bd00',
   successDark: '#436807',
@@ -65,7 +68,8 @@ export const colors: { [key in Color]: string } = {
   black: '#000',
   darken: 'rgba(0,0,0,0.15)',
   screen: 'rgba(0,0,0,0.03)',
-  rpi: '#C51A4A',
+  rpi: '#c51a4a',
+  test: '#fffcf0',
 }
 
 export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'

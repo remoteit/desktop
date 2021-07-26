@@ -15,6 +15,7 @@ export class Application {
   context?: 'copy' | 'launch'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
+  defaultPublicTemplate: string = '[address]'
   defaultTokens: string[] = ['host', 'port', 'id']
   iconRotate: boolean = false
   localhost?: boolean
@@ -29,7 +30,11 @@ export class Application {
   }
 
   value(token: string) {
-    return this.connection ? this.connection[token] : this.service ? this.service.attributes[token] : ''
+    return this.lookup[token]
+  }
+
+  preview(data: ILookup<string>) {
+    return this.parse(this.template, { ...this.lookup, ...data })
   }
 
   get templateKey() {
@@ -37,7 +42,7 @@ export class Application {
   }
 
   get contextTitle() {
-    return this.context === 'copy' ? 'Copy Command' : 'Launch URL'
+    return this.context === 'copy' ? 'Command' : 'Launch URL'
   }
 
   get defaultTemplate() {
@@ -49,7 +54,7 @@ export class Application {
   }
 
   get command() {
-    return this.parse(this.template)
+    return this.parse(this.template, this.lookup)
   }
 
   get prompt() {
@@ -68,22 +73,27 @@ export class Application {
     return this.tokens.filter(token => !this.defaultTokens.includes(token))
   }
 
-  get data() {
-    let data: ILookup<string> = {}
-    this.missingTokens.forEach(token => (data[token] = ''))
-    return data
+  get missingTokens() {
+    return this.extractTokens(this.parse(this.template, this.lookup)) || []
   }
 
-  get missingTokens() {
-    return this.extractTokens(this.parse(this.template)) || []
+  get lookup() {
+    let lookup: ILookup<any> = {}
+    if (this.connection) lookup = { ...this.connection, ...lookup }
+    if (this.service) lookup = { ...this.service.attributes, ...lookup }
+    return lookup
   }
 
   private get resolvedDefaultLaunchTemplate() {
-    return this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
+    return this.connection?.public
+      ? this.defaultPublicTemplate
+      : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate() {
-    return this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
+    return this.connection?.public
+      ? this.defaultPublicTemplate
+      : this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
   }
 
   private get launchTemplate() {
@@ -94,10 +104,7 @@ export class Application {
     return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
   }
 
-  private parse(template: string = '') {
-    let lookup: ILookup<any> = this.connection || {}
-    if (this.service) lookup = { ...this.service.attributes, ...lookup }
-
+  private parse(template: string = '', lookup: ILookup<string>) {
     this.tokens.forEach(token => {
       if (lookup[token]) {
         const search = new RegExp(`\\[${token}\\]`, 'g')
@@ -149,7 +156,7 @@ function getApplicationType(typeID?: number) {
         icon: 'terminal',
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate:
-          'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile /dev/null"',
+          'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "NoHostAuthenticationForLocalhost=yes"',
       })
       break
     case 8:

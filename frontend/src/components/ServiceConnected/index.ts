@@ -1,1 +1,0 @@
-export { ServiceConnected } from './ServiceConnected'

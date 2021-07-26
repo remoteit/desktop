@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItemText, ListItemIcon, makeStyles } from '@material-ui/core'
+import { ListItemText, ListItemIcon } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
 import { InitiatorPlatform } from '../InitiatorPlatform'
 import { Duration } from '../Duration'

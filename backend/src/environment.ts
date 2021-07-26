@@ -1,4 +1,11 @@
-import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
+import {
+  PATHS,
+  CERT_DIR,
+  CERT_DIR_DEV,
+  MANUFACTURE_ID_HEADLESS,
+  MANUFACTURE_ID_STANDARD,
+  PLATFORM_CODES,
+} from './constants'
 import isElectron from 'is-electron'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
@@ -28,11 +35,15 @@ export class Environment {
   binPath: string
   symlinkPath: string
   logPath: string
+  certificateDomain: string
+  certificatePath: string
+  certificateKeyPath: string
   connectionLogPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   oobAvailable: boolean
   version: string
+  overrides: IOverrides
 
   EVENTS = { send: 'environment' }
 
@@ -51,6 +62,7 @@ export class Environment {
     this.version = this.getAppVersion()
     this.isHeadless = !isElectron()
     this.symlinkPath = ''
+    this.overrides = {}
 
     if (this.isWindows) {
       this.userPath = PATHS.WIN_USER_SETTINGS
@@ -72,6 +84,10 @@ export class Environment {
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
+    const certPath = this.isDev ? CERT_DIR_DEV : CERT_DIR
+    this.certificateDomain = 'dt.rt3.io'
+    this.certificatePath = path.resolve(certPath, `${this.certificateDomain}.cert`)
+    this.certificateKeyPath = path.resolve(certPath, `${this.certificateDomain}.key`)
     this.logPath = path.resolve(this.userPath, 'log')
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()
@@ -89,6 +105,7 @@ export class Environment {
       privateIP: this.privateIP,
       hostname: os.hostname(),
       oobAvailable: this.oobAvailable,
+      overrides: this.overrides,
     }
   }
 

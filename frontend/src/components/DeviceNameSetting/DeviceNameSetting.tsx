@@ -40,10 +40,13 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
         maxLength={MAX_NAME_LENGTH}
         filter={REGEX_NAME_SAFE}
         onSave={name => {
-          devices.renameDevice({ ...device, name: name.toString() })
-          // if we use device attributes:
-          // device.attributes = { ...device.attributes, name: name.toString() }
-          // devices.setAttributes(device)
+          if (device.shared) {
+            // we use device attributes:
+            device.attributes = { ...device.attributes, name: name.toString() }
+            devices.setAttributes(device)
+          } else {
+            devices.renameDevice({ ...device, name: name.toString() })
+          }
         }}
       />
     </>

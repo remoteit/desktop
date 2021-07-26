@@ -1,42 +1,39 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { Typography } from '@material-ui/core'
+import { Typography, Tooltip, IconButton } from '@material-ui/core'
 import { EventList } from '../../components/EventList'
-import { eventLogs } from '../../models/logs'
+import { EventHeader } from '../../components/EventList/EventHeader'
+import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
+import { Icon } from '../../components/Icon'
 
 export const UserLogPage: React.FC = () => {
-  const { events, fetchingMore, fetching } = useSelector((state: ApplicationState) => ({
-    events: state.logs.events,
-    fetchingMore: state.logs.fetchingMore,
-    fetching: state.logs.fetching,
-  }))
-  const dispatch = useDispatch<Dispatch>()
-  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null)
-  const { getEventsLogs } = dispatch.logs
+  const { fetching } = useSelector((state: ApplicationState) => state.logs)
+  const { logs } = useDispatch<Dispatch>()
 
-  const onChangeDate = (date: any) => {
-    setSelectedDate(date)
-  }
-
-  const getDeviceLogs = (data: eventLogs) => {
-    getEventsLogs(data)
+  const refresh = () => {
+    logs.set({ from: 0 })
+    logs.fetch()
   }
 
   return (
-    <EventList
-      title={
-        <Typography variant="h1">
-          <Title>Logs</Title>
-        </Typography>
+    <Container
+      header={
+        <>
+          <Typography variant="h1">
+            <Title>Logs</Title>
+            <Tooltip title="Refresh List">
+              <IconButton onClick={refresh}>
+                <Icon name="sync" spin={fetching} size="sm" fixedWidth />
+              </IconButton>
+            </Tooltip>
+          </Typography>
+          <EventHeader />
+        </>
       }
-      fetching={fetching}
-      fetchLogs={getDeviceLogs}
-      events={events}
-      selectedDate={selectedDate}
-      onChangeDate={onChangeDate}
-      fetchingMore={fetchingMore}
-    />
+    >
+      <EventList />
+    </Container>
   )
 }

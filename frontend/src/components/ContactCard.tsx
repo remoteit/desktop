@@ -75,7 +75,7 @@ export const ContactCard: React.FC<Props> = ({
       users={selected}
       update={handleSharingUpdate}
       share={handleShare}
-      changed={changed && (selected?.length > 0 || !!user)}
+      changed={!changed || ((selected?.length > 0 || !!user) && selectedServices.length > 1)}
     />
   )
 }

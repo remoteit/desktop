@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { Switch, Route, Redirect, useParams, useHistory } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Switch, Route, useParams, useHistory } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
 import { selectDevice } from '../models/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { NetworkPage } from '../pages/NetworkPage'
@@ -17,7 +16,7 @@ import { DeviceEditPage } from '../pages/DeviceEditPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
-import { LogPage } from '../pages/LogPage'
+import { useDispatch, useSelector } from 'react-redux'
 
 export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
@@ -45,7 +44,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
     }
   }, [fetching, device, targetDevice, history])
 
-  if (fetching) return <LoadingMessage message="Fetching device..." />
+  if (fetching && !device) return <LoadingMessage message="Fetching device..." />
 
   return (
     <DynamicPanel
@@ -64,7 +63,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             <SharePage device={device} />
           </Route>
           <Route path="/devices/:deviceID/edit">
-            <DeviceEditPage targetDevice={targetDevice} targets={targets} device={device} />
+            <DeviceEditPage targetDevice={targetDevice} device={device} />
           </Route>
           <Route path="/devices/:deviceID/users">
             <UsersPageDevice device={device} />
@@ -72,7 +71,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Route path="/devices/:deviceID/logs">
             <DeviceLogPage device={device} />
           </Route>
-          <Route path="/devices/:deviceID/details">
+          <Route path={['/devices/:deviceID', '/devices/:deviceID/details']} exact>
             <DeviceDetailPage device={device} />
           </Route>
           <Route
@@ -87,17 +86,11 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Route path="/devices/:deviceID/:serviceID/users">
             <UsersPageService device={device} />
           </Route>
-          <Route path="/devices/:deviceID/:serviceID/log">
-            <LogPage />
-          </Route>
           <Route path="/devices/:deviceID/:serviceID/edit">
             <ServiceEditPage targetDevice={targetDevice} targets={targets} device={device} />
           </Route>
           <Route path="/devices/:deviceID/:serviceID">
             <ServiceDetailPage targets={targets} device={device} />
-          </Route>
-          <Route path="/devices/:deviceID">
-            <Redirect to={`/devices/${deviceID}/details`} />
           </Route>
         </Switch>
       }

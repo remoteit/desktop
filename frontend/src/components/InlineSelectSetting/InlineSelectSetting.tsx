@@ -6,7 +6,7 @@ type Props = {
   label: string
   value: string | number
   values: ISelect[]
-  icon?: JSX.Element
+  icon?: JSX.Element | string
   displayValue?: string | number
   disabled?: boolean
   resetValue?: string | number
@@ -22,7 +22,6 @@ export const InlineSelectSetting: React.FC<Props> = ({
   ...props
 }) => {
   const fieldRef = useRef<HTMLInputElement>(null)
-  const [open, setOpen] = useState<boolean>(true)
   const [editValue, setEditValue] = useState<string | number>('')
 
   return (
@@ -38,20 +37,14 @@ export const InlineSelectSetting: React.FC<Props> = ({
       onShowEdit={() => setEditValue(value)}
     >
       <FormControl className="select">
-        <InputLabel>{label}</InputLabel>
+        <InputLabel shrink>{label}</InputLabel>
         <Select
           native
           autoFocus
-          open={open}
           inputRef={fieldRef}
           disableUnderline
           value={editValue}
-          onOpen={() => setOpen(true)}
-          onClose={() => setOpen(false)}
-          onChange={event => {
-            setOpen(false)
-            setEditValue(event.target.value as number | string)
-          }}
+          onChange={event => setEditValue(event.target.value as number | string)}
         >
           {values.map(type => (
             <option value={type.key} key={type.key}>

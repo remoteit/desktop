@@ -1,13 +1,14 @@
 import React from 'react'
 import { selectLicense, lookupLicenseProductId } from '../models/licensing'
-import { ListItem, Link, Button } from '@material-ui/core'
-import { ApplicationState } from '../store'
+import { ListItem, Link, Button, Tooltip, IconButton } from '@material-ui/core'
+import { ApplicationState, Dispatch } from '../store'
 import { LicensingTitle } from './LicensingTitle'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
 import { Notice } from './Notice'
+import { Icon } from './Icon'
 
-type Props = { device?: IDevice; license?: ILicense }
+type Props = { device?: IDevice; license?: ILicense; fullWidth?: boolean }
 
 const learnMoreLink = (
   <Link href="https://link.remote.it/documentation-aws/setup" target="_blank">
@@ -16,20 +17,30 @@ const learnMoreLink = (
 )
 
 export const LicensingNotice: React.FC<Props> = props => {
-  const { noticeType, license, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) => {
+  const { licensing } = useDispatch<Dispatch>()
+  const { noticeType, license, informed, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
     return selectLicense(state, productId)
   })
 
-  if (!license || !noticeType) return null
+  if (!license || !noticeType || informed) return null
+
+  const onClose = () => licensing.set({ informed: true })
 
   let notice
   const title = `Your ${license.plan.description} plan of ${license.plan.product.name}`
   const UpgradeButton = (
-    <Button color="primary" variant="contained" href={upgradeUrl} size="small" target="_blank">
-      Upgrade
-    </Button>
+    <>
+      <Button color="primary" variant="contained" href={upgradeUrl} size="small" target="_blank">
+        Upgrade
+      </Button>
+      <Tooltip title="Close">
+        <IconButton onClick={onClose}>
+          <Icon name="times" size="md" color="primary" />
+        </IconButton>
+      </Tooltip>
+    </>
   )
 
   if (noticeType === 'EXPIRATION_WARNING' && license.expiration)
@@ -58,5 +69,5 @@ export const LicensingNotice: React.FC<Props> = props => {
       </Notice>
     )
 
-  return <ListItem>{notice}</ListItem>
+  return props.fullWidth ? notice : <ListItem>{notice}</ListItem>
 }

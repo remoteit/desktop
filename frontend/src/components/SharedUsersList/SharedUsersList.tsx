@@ -23,32 +23,44 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
 
   return (
     <>
-      <List>
-        {!!connected.length && (
+      {!!connected.length && (
+        <>
           <Typography variant="subtitle1" color="primary">
             Connected
           </Typography>
-        )}
-        {connected.map(user => (
-          <UserListItem key={user.email} user={user} isConnected={true}>
-            <ShareDetails user={user} device={device} connected />
-          </UserListItem>
-        ))}
-        {!!listUserLinked.length && !!filtered.length && (
-          <Typography variant="subtitle1"> Single Device Shared</Typography>
-        )}
-        {filtered.map(user => (
-          <UserListItem key={user.email} user={user}>
-            <ShareDetails user={user} device={device} />
-          </UserListItem>
-        ))}
-        {!!listUserLinked.length && <Typography variant="subtitle1">Device List Shared</Typography>}
-        {listUserLinked.map(user => (
-          <UserListItem key={user.email} user={user} isUserLinked={true}>
-            <ShareDetails user={user} device={device} />
-          </UserListItem>
-        ))}
-      </List>
+          <List>
+            {connected.map(user => (
+              <UserListItem key={user.email} user={user} isConnected={true}>
+                <ShareDetails user={user} device={device} connected />
+              </UserListItem>
+            ))}
+          </List>
+        </>
+      )}
+      {!!listUserLinked.length && !!filtered.length && (
+        <>
+          <Typography variant="subtitle1">Shared</Typography>
+          <List>
+            {filtered.map(user => (
+              <UserListItem key={user.email} user={user}>
+                <ShareDetails user={user} device={device} />
+              </UserListItem>
+            ))}
+          </List>
+        </>
+      )}
+      {!!listUserLinked.length && (
+        <>
+          <Typography variant="subtitle1">Device List Shared</Typography>
+          <List>
+            {listUserLinked.map(user => (
+              <UserListItem key={user.email} user={user} isUserLinked={true}>
+                <ShareDetails user={user} device={device} />
+              </UserListItem>
+            ))}
+          </List>
+        </>
+      )}
     </>
   )
 }

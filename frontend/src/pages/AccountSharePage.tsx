@@ -34,13 +34,9 @@ export const AccountSharePage = () => {
     <Container
       bodyProps={{ inset: true }}
       header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="user-plus" size="lg" />
-            <Title inline>Add Users</Title>
-          </Typography>
-        </>
+        <Typography variant="h1">
+          <Title>Add Device List Users</Title>
+        </Typography>
       }
     >
       <ContactSelector contacts={contacts.filter(c => !access.find(s => s.email === c.email))} onChange={setEmails} />

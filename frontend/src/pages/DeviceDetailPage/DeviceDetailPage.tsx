@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react'
-import { LEGACY_ATTRIBUTES } from '../../shared/constants'
-import { TargetPlatform } from '../../components/TargetPlatform'
-import { Columns } from '../../components/Columns'
+import { Gutters } from '../../components/Gutters'
 import { DataDisplay } from '../../components/DataDisplay'
-import { QualityDetails } from '../../components/QualityDetails'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
+import { Attribute, deviceAttributes } from '../../helpers/attributes'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
@@ -16,31 +14,11 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
 
   return (
     <DeviceHeaderMenu device={device}>
-      <Columns count={1} inset>
+      <Gutters noBottom></Gutters>
+      <Gutters>
         {/* {!editable && <AdminPanelConnect device={device} connections={connections} />} */}
-        <DataDisplay
-          data={[
-            { label: 'Device Name', value: device.name },
-            { label: 'Platform', value: TargetPlatform({ id: device.targetPlatform, label: true }), format: 'element' },
-            {
-              label: 'Internet Connectivity',
-              format: 'element',
-              value: <QualityDetails device={device} />,
-            },
-            { label: 'Owner', value: device.owner.email },
-            { label: 'Last reported', value: { start: device.lastReported, ago: true }, format: 'duration' },
-            { label: 'ISP', value: device.geo?.isp },
-            { label: 'Connection type', value: device.geo?.connectionType },
-            { label: 'Location', value: device.geo, format: 'location' },
-            { label: 'External IP address', value: device.externalAddress },
-            { label: 'Internal IP address', value: device.internalAddress },
-            { label: 'Device ID', value: device.id },
-            { label: 'Hardware ID', value: device.hardwareID },
-            { label: 'Daemon version', value: device.version },
-            ...LEGACY_ATTRIBUTES.map(label => ({ label, value: device.attributes[label] })),
-          ]}
-        />
-      </Columns>
+        <DataDisplay attributes={deviceAttributes} device={device} />
+      </Gutters>
     </DeviceHeaderMenu>
   )
 }

@@ -9,16 +9,17 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
 }) => {
   if (!service) return null
   if (!connection) connection = newConnection(service)
-  const disabled = connection.enabled
+  const disabled = connection.connected || connection.public
+  const log = connection.public ? false : connection.log
 
   return (
     <ListItemSetting
       label="Connection Logging"
-      subLabel={connection.log ? `Filename ${connection.id.replace(/:/g, '')}_<timestamp>.log` : undefined}
+      subLabel={log ? `Filename ${connection.id.replace(/:/g, '')}_<timestamp>.log` : undefined}
       disabled={disabled}
       icon="file-alt"
-      toggle={!!connection.log}
-      button={connection.log ? 'Show Log' : undefined}
+      toggle={!!log}
+      button={log ? 'Show Log' : undefined}
       onButtonClick={() => emit('showFolder', 'connections')}
       onClick={() =>
         connection &&

@@ -1,8 +1,8 @@
 import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { makeStyles, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText, Badge } from '@material-ui/core'
 import { Icon } from '../Icon'
-import { colors, Color } from '../../styling'
+import { Color } from '../../styling'
 
 export type Props = {
   pathname: string
@@ -11,9 +11,12 @@ export type Props = {
   icon?: string
   iconColor?: Color
   disabled?: boolean
+  showDisabled?: boolean
   dense?: boolean
   className?: string
-  selected?: string | string[]
+  match?: string | string[]
+  exactMatch?: boolean
+  badge?: number
 }
 
 export const ListItemLocation: React.FC<Props> = ({
@@ -22,33 +25,42 @@ export const ListItemLocation: React.FC<Props> = ({
   subtitle,
   icon,
   iconColor,
-  disabled = false,
-  selected,
+  disabled,
+  showDisabled,
+  match,
+  exactMatch,
+  badge,
   children,
   ...props
 }) => {
-  const css = useStyles()
   const history = useHistory()
   const location = useLocation()
 
-  if (!selected) selected = pathname
-  if (typeof selected === 'string') selected = [selected]
-  const matches = selected?.find(s => location.pathname.includes(s))
+  if (!match) match = pathname
+  if (typeof match === 'string') match = [match]
+  const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.includes(s)))
 
   const onClick = () => !disabled && history.push(pathname)
+  const iconEl = icon && <Icon name={icon} size="md" color={iconColor} fixedWidth />
+
   return (
     <ListItem
       {...props}
       button
       selected={!!matches}
       onClick={onClick}
-      disabled={disabled}
-      style={{ opacity: 1 }}
-      classes={{ selected: css.selected }}
+      disabled={disabled || !!matches}
+      style={showDisabled ? undefined : { opacity: 1 }}
     >
       {icon && (
         <ListItemIcon>
-          <Icon name={icon} size="md" color={iconColor} fixedWidth />
+          {badge ? (
+            <Badge variant={badge > 1 ? undefined : 'dot'} badgeContent={badge} color="error">
+              {iconEl}
+            </Badge>
+          ) : (
+            iconEl
+          )}
         </ListItemIcon>
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}
@@ -56,10 +68,3 @@ export const ListItemLocation: React.FC<Props> = ({
     </ListItem>
   )
 }
-
-const useStyles = makeStyles({
-  selected: {
-    '&.Mui-selected': { backgroundColor: colors.primaryHighlight },
-    '&.Mui-selected:hover': { backgroundColor: colors.primaryLighter },
-  },
-})

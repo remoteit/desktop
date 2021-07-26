@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { FontSize, Color } from '../styling'
 import { setConnection } from '../helpers/connectionHelper'
 import { useApplication } from '../hooks/useApplication'
 import { useClipboard } from 'use-clipboard-copy'
 import { PromptModal } from '../components/PromptModal'
 import { Application } from '../shared/applications'
-import { FontSize, Color } from '../styling'
+import { DataButton } from './DataButton'
 import { Icon } from '../components/Icon'
 
 export interface CopyButtonProps {
@@ -17,6 +18,8 @@ export interface CopyButtonProps {
   menuItem?: boolean
   size?: FontSize
   show?: boolean
+  dataButton?: boolean
+  onCopy?: () => void
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({
@@ -28,6 +31,8 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   title = 'Copy',
   size = 'md',
   show,
+  dataButton,
+  onCopy,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
@@ -35,21 +40,18 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
 
   if (!connection || (!show && (!connection?.enabled || !app))) return null
 
-  const check = event => {
-    event.preventDefault()
-    event.stopPropagation()
-    app.prompt ? setOpen(true) : clipboard.copy()
-  }
-  const onClose = () => {
-    setOpen(false)
+  const check = () => (app.prompt ? setOpen(true) : copy())
+  const copy = () => {
+    clipboard.copy()
+    setTimeout(() => {
+      onCopy && onCopy()
+      setOpen(false)
+    }, 600)
   }
 
   const onSubmit = (tokens: ILookup<string>) => {
     setConnection({ ...connection, ...tokens })
-    setTimeout(() => {
-      clipboard.copy()
-      onClose()
-    }, 500)
+    setTimeout(copy, 100)
   }
 
   const CopyIcon = (
@@ -63,22 +65,26 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
       <input type="hidden" ref={clipboard.target} value={app.command} />
     </>
   )
+
+  title = clipboard.copied ? 'Copied!' : title
+
   return (
     <>
       {menuItem ? (
         <MenuItem dense onClick={check}>
           <ListItemIcon>{CopyIcon}</ListItemIcon>
-          <ListItemText primary={clipboard.copied ? 'Copied!' : title} />
+          <ListItemText primary={title} />
         </MenuItem>
+      ) : dataButton ? (
+        <DataButton label="Command" value={app.command} title={title} icon={CopyIcon} onClick={check} />
       ) : (
-        <Tooltip title={clipboard.copied ? 'Copied!' : title}>
+        <Tooltip title={title}>
           <IconButton onClick={check} onMouseEnter={event => event.stopPropagation()}>
             {CopyIcon}
           </IconButton>
         </Tooltip>
       )}
-
-      <PromptModal app={app} open={open} onClose={onClose} onSubmit={onSubmit} />
+      <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />
     </>
   )
 }

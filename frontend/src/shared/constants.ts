@@ -35,25 +35,19 @@ export const REGEX_IP_SAFE = /[^0-9.]+/g
 export const REGEX_PORT_SAFE = /[^0-9]+/g
 export const REGEX_NUMERIC_VALUE = /=(\d+)/
 export const REGEX_LAST_NUMBER = /-*\d*$/
-export const REGEX_VALID_IP = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
-export const REGEX_VALID_HOSTNAME = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
+export const REGEX_VALID_IP =
+  /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
+export const REGEX_VALID_HOSTNAME =
+  /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
+export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
+export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]/g
 
 export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_NAME_LENGTH = 100
+
 export const SIDEBAR_WIDTH = 250
 
-export const LEGACY_ATTRIBUTES = [
-  'categoryA',
-  'categoryB',
-  'categoryC',
-  'categoryD',
-  'categoryE',
-  'statusA',
-  'statusB',
-  'statusC',
-  'statusD',
-  'statusE',
-]
+export const ADD_EVENTS_ACTIONS = ['add', 'update']
 
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',
@@ -64,6 +58,27 @@ export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   secret: '',
   type: 1,
   uid: '',
+}
+
+export const DEFAULT_CONNECTION = {
+  id: '',
+  name: '',
+  owner: { id: '', email: '' },
+  deviceID: '',
+  online: false,
+  timeout: 15,
+  restriction: IP_OPEN,
+  publicRestriction: IP_LATCH,
+}
+
+export const PUBLIC_CONNECTION = {
+  port: undefined,
+  public: true,
+  timeout: 15,
+  isP2P: false,
+  failover: false,
+  proxyOnly: true,
+  log: false,
 }
 
 export const ROUTES: IRoute[] = [

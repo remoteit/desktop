@@ -1,21 +1,21 @@
 import React from 'react'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { attributeName } from '../../shared/nameHelper'
-import { REGEX_NAME_SAFE } from '../../shared/constants'
-import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { setConnection, connectionName } from '../../helpers/connectionHelper'
+import { REGEX_CONNECTION_NAME } from '../../shared/constants'
 
-export const NameSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  if (!service) return null
-  if (!connection) connection = newConnection(service)
-
-  const currentName = connection?.name || attributeName(service)
-
+export const NameSetting: React.FC<{ service: IService; device?: IDevice; connection: IConnection }> = ({
+  service,
+  device,
+  connection,
+}) => {
   return (
     <InlineTextFieldSetting
-      value={currentName}
+      icon="signature"
+      value={connection.name}
       label="Connection Name"
-      resetValue={attributeName(service)}
-      filter={REGEX_NAME_SAFE}
+      resetValue={connectionName(service, device)}
+      disabled={connection.enabled}
+      filter={REGEX_CONNECTION_NAME}
       onSave={name =>
         connection &&
         setConnection({

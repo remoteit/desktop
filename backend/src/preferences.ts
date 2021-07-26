@@ -2,16 +2,24 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import JSONFile from './JSONFile'
 import environment from './environment'
+import cli from './cliInterface'
 import path from 'path'
 
 export class Preferences {
   data: IPreferences = {
-    version: 'unknown',
+    version: '',
+    cliVersion: '',
     autoUpdate: false,
     openAtLogin: true,
     remoteUIOverride: false,
     disableLocalNetwork: false,
     showNotifications: true,
+    allowPrerelease: false,
+    useCertificate: true,
+    switchApi: false,
+    apiURL: '',
+    apiGraphqlURL: '',
+    testUI: 'OFF',
   }
 
   private file: JSONFile<IPreferences>

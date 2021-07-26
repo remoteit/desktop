@@ -12,7 +12,6 @@ import {
 } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { InitiatorPlatform } from '../components/InitiatorPlatform'
-import { Breadcrumbs } from '../components/Breadcrumbs'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
 import { Notice } from '../components/Notice'
@@ -32,13 +31,9 @@ export const AccountMembershipPage: React.FC = () => {
   return (
     <Container
       header={
-        <>
-          <Breadcrumbs />
-          <Typography variant="h1">
-            <Icon name="list-ul" size="lg" />
-            <Title inline>Manage Device Lists</Title>
-          </Typography>
-        </>
+        <Typography variant="h1">
+          <Title>Manage Device Lists</Title>
+        </Typography>
       }
     >
       {member.length ? (

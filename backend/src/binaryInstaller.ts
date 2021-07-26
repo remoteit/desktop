@@ -4,14 +4,15 @@ import strings from './cliStrings'
 import EventBus from './EventBus'
 import environment from './environment'
 import preferences from './preferences'
+import ConnectionPool from './ConnectionPool'
 import semverCompare from 'semver/functions/compare'
 import { existsSync, lstatSync } from 'fs'
 import Command from './Command'
 import Binary, { binaries, cliBinary } from './Binary'
 import Logger from './Logger'
-import checkupdateheadless from './CheckUpdateHeadless'
 
 export class BinaryInstaller {
+  ready = false
   inProgress = false
   uninstallInitiated = false
   binaries: Binary[]
@@ -30,17 +31,19 @@ export class BinaryInstaller {
     if (shouldInstall) {
       if (environment.isElevated) return await this.install()
       return EventBus.emit(Binary.EVENTS.notInstalled, this.cliBinary.name)
+    } else if (!this.ready) {
+      this.ready = true
     }
+
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
   }
 
   async shouldInstall() {
-    const binariesOutdated = !(await this.cliBinary.isCurrent())
-    const serviceStopped = !(await cli.agentRunning())
-    const desktopOutdated = !this.isDesktopCurrent()
-    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, desktopOutdated })
-    environment.isHeadless && checkupdateheadless.checkUpdate()
-    return binariesOutdated || serviceStopped || desktopOutdated
+    let binariesOutdated = !(await this.cliBinary.isCurrent())
+    const serviceStopped = !(await cli.agentRunning(true))
+    const cliChanged = await this.cliVersionChanged()
+    Logger.info('SHOULD INSTALL?', { binariesOutdated, serviceStopped, cliChanged })
+    return binariesOutdated || serviceStopped || cliChanged
   }
 
   async install() {
@@ -50,12 +53,15 @@ export class BinaryInstaller {
 
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
 
-    preferences.update({ version: environment.version })
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
+    EventBus.emit(ConnectionPool.EVENTS.clearErrors)
+    this.updateVersions()
+
     this.inProgress = false
+    this.ready = true
   }
 
-  async installBinaries() {
+  async installBinaries(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       await this.migrateBinaries()
       const commands = new Command({ onError: reject, admin: true })
@@ -68,7 +74,9 @@ export class BinaryInstaller {
         })
       }
 
-      commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.defaults()}`) // @FIXME this should go before the service install if possible and the restart removed!
+      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
 
       await commands.exec()
       resolve()
@@ -104,6 +112,15 @@ export class BinaryInstaller {
     })
   }
 
+  async restart() {
+    const commands = new Command({ onError: e => EventBus.emit(Binary.EVENTS.error, e.toString()), admin: true })
+    commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
+
+    this.inProgress = true
+    await commands.exec()
+    this.inProgress = false
+  }
+
   async uninstall() {
     if (this.inProgress) return Logger.warn('UNINSTALL IN PROGRESS', { error: 'Can not uninstall while in progress' })
     Logger.info('START UNINSTALL')
@@ -129,23 +146,44 @@ export class BinaryInstaller {
     }
   }
 
-  isDesktopCurrent() {
-    let desktopVersion = preferences.get().version
-    let current = desktopVersion && semverCompare(desktopVersion, environment.version) >= 0
+  envVar() {
+    const remoteAPI = preferences.get().apiURL
+    const graphqlURL = preferences.get().apiGraphqlURL
+    let envVar = ''
 
-    if (environment.isWindows && !current) {
-      // Windows as an installer script to update so doesn't need this check
-      preferences.update({ version: environment.version })
-      return true
+    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
+    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
+
+    return envVar
+  }
+
+  async cliVersionChanged() {
+    const previousVersion = preferences.get().cliVersion
+    const thisVersion = this.cliBinary.version
+    let changed = true
+
+    try {
+      changed = semverCompare(previousVersion, thisVersion) < 0
+    } catch (error) {
+      Logger.warn('CLI VERSION COMPARE FAILED', { error, previousVersion, thisVersion })
     }
 
-    if (current) {
-      Logger.info('DESKTOP CURRENT', { desktopVersion })
-    } else {
-      Logger.info('DESKTOP UPDATE DETECTED', { oldVersion: desktopVersion, thisVersion: environment.version })
+    if (environment.isWindows && changed) {
+      // Windows has an installer script to update so doesn't need this check
+      this.updateVersions()
+      return false
     }
 
-    return current
+    if (changed) Logger.info('CLI UPDATE DETECTED', { previousVersion, thisVersion })
+    else Logger.info('CLI NOT UPDATED', { previousVersion, thisVersion })
+
+    return changed
+  }
+
+  async updateVersions() {
+    const cliVersion = await cli.version(true)
+    Logger.info('CLI VERSION UPDATE', { cliVersion })
+    preferences.update({ version: environment.version, cliVersion })
   }
 }
 

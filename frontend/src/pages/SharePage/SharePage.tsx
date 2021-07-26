@@ -15,9 +15,13 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 import styles from '../../styling'
 
 export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
-  const { email = '' } = useParams<{ email: string }>()
+  const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
   const { shares } = useDispatch<Dispatch>()
-  const { contacts = [], user, deleting } = useSelector((state: ApplicationState) => ({
+  const {
+    contacts = [],
+    user,
+    deleting,
+  } = useSelector((state: ApplicationState) => ({
     contacts: state.devices.contacts,
     user: state.devices.contacts.find(c => c.email === email),
     deleting: state.shares.deleting,
@@ -25,7 +29,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const [selected, setSelected] = React.useState<string[]>([])
   const [userSelected, setUserSelected] = React.useState<IUserRef | undefined>(user)
   const [changed, setChanged] = useState(false)
-  const permissions = device && getPermissions(device, userSelected?.email)
+  const permissions = device && getPermissions(device, email)
   const [selectedServices, setSelectedServices] = useState(permissions?.services.map(s => s.id) || [])
   const [indeterminate, setIndeterminate] = React.useState<string[]>([])
   const [scripts, setScripts] = useState(permissions?.scripting || false)
@@ -45,12 +49,12 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
     history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
   }
 
-  const handleShare = (share: SharingDetails, isNew: boolean) => {
+  const handleShare = async (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
     const { scripting, services } = share.access
-    if (shareData) shares.share(shareData)
+    if (shareData) await shares.share(shareData)
     if (device && shareData) {
-      shares.updateDeviceState({ device, emails: shareData.email, scripting, services, isNew })
+      await shares.updateDeviceState({ device, emails: shareData.email, scripting, services, isNew })
     }
     goToNext()
   }
@@ -83,7 +87,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
       setScriptIndeterminate(false)
     }
 
-    setSelectedServices(matchServices)
+    matchServices ? setSelectedServices([...matchServices, serviceID]) : setSelectedServices([serviceID])
     setIndeterminate(indeterminateServices)
     setUserSelected(contacts.find(c => emails.includes(c.email)))
     setSelected(emails)

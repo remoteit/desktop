@@ -1,8 +1,6 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
-import { useLocation } from 'react-router-dom'
 import { Tooltip, IconButton, Button } from '@material-ui/core'
-import { connectionState } from '../../helpers/connectionHelper'
 import { Icon } from '../../components/Icon'
 
 type Props = {
@@ -11,13 +9,11 @@ type Props = {
   all?: boolean
 }
 
-export const ClearButton: React.FC<Props> = ({ disabled = false, connection, all }) => {
-  const state = connectionState(undefined, connection)
-  const location = useLocation()
-  if (!all && (!connection || state === 'connected' || !connection.createdTime)) return null
-  if (!location.pathname.includes('connections')) return null
+export const ClearButton: React.FC<Props> = ({ disabled, connection, all }) => {
+  if (!all && (!connection || connection.enabled || !connection.createdTime)) return null
 
   const forget = () => {
+    // @TODO add confirm to clear all
     emit(all ? 'service/clear-recent' : 'service/clear', connection)
   }
 
@@ -26,7 +22,7 @@ export const ClearButton: React.FC<Props> = ({ disabled = false, connection, all
       Clear all
     </Button>
   ) : (
-    <Tooltip title="Clear this connection">
+    <Tooltip title="Remove from recent">
       <IconButton disabled={disabled} onClick={forget}>
         <Icon name="times" size="md" fixedWidth />
       </IconButton>

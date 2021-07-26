@@ -10,9 +10,19 @@ type Props = {
   integrated?: boolean
   bodyProps?: any
   bodyRef?: React.RefObject<HTMLDivElement>
+  gutterBottom?: boolean
 }
 
-export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated, bodyProps, bodyRef, children }) => {
+export const Container: React.FC<Props> = ({
+  header,
+  sidebar,
+  footer,
+  integrated,
+  bodyProps,
+  bodyRef,
+  gutterBottom,
+  children,
+}) => {
   const css = useStyles()
 
   return (
@@ -23,11 +33,13 @@ export const Container: React.FC<Props> = ({ header, sidebar, footer, integrated
       </div>
       {sidebar ? (
         <div className={css.sidebar}>
-          <Body {...bodyProps}>{children}</Body>
+          <Body {...bodyProps} gutterBottom={gutterBottom}>
+            {children}
+          </Body>
           <div className={css.sideContent}>{sidebar}</div>
         </div>
       ) : (
-        <Body bodyRef={bodyRef} {...bodyProps}>
+        <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom}>
           {children}
         </Body>
       )}
@@ -68,7 +80,8 @@ const useStyles = makeStyles({
     position: 'relative',
   },
   sideContent: {
-    boxShadow: `-1px 0 2px ${colors.darken}`,
+    display: 'flex',
+    boxShadow: `-1px 0 2px ${colors.grayLighter}`,
     position: 'relative',
     zIndex: 2,
   },

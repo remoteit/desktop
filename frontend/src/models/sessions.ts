@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { connectionName } from '../helpers/connectionHelper'
+import { connectionName, findLocalConnection, setConnection } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -53,6 +53,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(response)
         const all = await dispatch.sessions.parse(response)
         console.log('SESSIONS', all)
+        dispatch.sessions.updatePublicConnections(all)
         dispatch.sessions.set({ all })
       } catch (error) {
         await graphQLCatchError(error)
@@ -65,7 +66,8 @@ export default createModel<RootModel>()({
       - Filter out this user's sessions
       - Combine same user sessions
     */
-    async parse(response: any): Promise<ISession[]> {
+    async parse(response: AxiosResponse | void, globalState): Promise<ISession[]> {
+      if (!response) return []
       const data = response?.data?.data?.login?.sessions
       if (!data) return []
       console.log('SESSION DATA', data)
@@ -73,6 +75,7 @@ export default createModel<RootModel>()({
       const sorted = dates.sort((a: any, b: any) => a.timestamp - b.timestamp)
       return sorted.reduce((sessions: ISession[], e: any) => {
         // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
+        const connection = findLocalConnection(globalState, e.target.id, e.id)
         sessions.push({
           id: e.id,
           timestamp: new Date(e.timestamp),
@@ -80,6 +83,7 @@ export default createModel<RootModel>()({
           platform: e.endpoint?.platform,
           user: e.user,
           geo: e.endpoint?.geo,
+          public: !!connection?.public,
           target: {
             id: e.target.id,
             deviceId: e.target.device.id,
@@ -89,6 +93,18 @@ export default createModel<RootModel>()({
         })
         return sessions
       }, [])
+    },
+    async updatePublicConnections(all: ISession[], globalState) {
+      const publicConnections = globalState.connections.all.filter(c => c.public)
+      console.log('PUBLIC CONNECTIONS', publicConnections)
+      publicConnections.forEach(connection => {
+        const session = all.find(s => s.id === connection.sessionId)
+        console.log('PUBLIC CONNECTION SESSION', session, connection)
+        connection.connecting = false
+        connection.enabled = !!session
+        connection.connected = !!session
+        setConnection(connection)
+      })
     },
   }),
   reducers: {
@@ -101,6 +117,10 @@ export default createModel<RootModel>()({
     removeSession(state, sessionId: string) {
       const index = state.all.findIndex(s => s.id === sessionId)
       state.all.splice(index, 1)
+      return state
+    },
+    reset(state: ISessionsState) {
+      state = sessionsState
       return state
     },
     set(state, params: ILookup<ISession[]>) {
@@ -116,8 +136,16 @@ export function selectSessionsByService(state: ApplicationState, id?: string) {
 }
 
 export function selectSessionUsers(state: ApplicationState, id?: string) {
+  let ids: string[] = []
   return state.sessions.all.reduce((users: IUserRef[], session) => {
-    if (session.target.id === id || session.target.deviceId === id) users.push(session.user)
+    if (
+      session.user &&
+      !ids.includes(session.user.id) &&
+      (session.target.id === id || session.target.deviceId === id)
+    ) {
+      ids.push(session.user.id)
+      users.push(session.user)
+    }
     return users
   }, [])
 }

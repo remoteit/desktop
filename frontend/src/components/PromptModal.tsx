@@ -8,11 +8,12 @@ export const PromptModal: React.FC<{
   onClose: () => void
   onSubmit: (tokens: ILookup<string>) => void
 }> = ({ app, open, onSubmit, onClose }) => {
-  const [tokens, setTokens] = useState<ILookup<string>>(app.data)
+  const toLookup = () => app.missingTokens.reduce((obj, item) => ({ ...obj, [item]: '' }), {})
+  const [tokens, setTokens] = useState<ILookup<string>>(toLookup())
   const [error, setError] = useState<string>()
 
   useEffect(() => {
-    setTokens(app.data)
+    setTokens(toLookup())
   }, [app])
 
   return (
@@ -33,7 +34,7 @@ export const PromptModal: React.FC<{
         >
           <DialogTitle>Missing info found</DialogTitle>
           <DialogContent>
-            <Typography variant="h4">{app.command}</Typography>
+            <Typography variant="h4">{app.preview(tokens)}</Typography>
             {app.missingTokens.map((token, index) => (
               <TextField
                 fullWidth
@@ -43,7 +44,6 @@ export const PromptModal: React.FC<{
                 label={token}
                 value={tokens[token]}
                 error={token === error}
-                InputProps={{ disableUnderline: true }}
                 onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
               />
             ))}

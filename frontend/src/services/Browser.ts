@@ -1,4 +1,4 @@
-import { REDIRECT_URL } from '../shared/constants'
+import { REDIRECT_URL, IP_PRIVATE } from '../shared/constants'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -16,17 +16,14 @@ export function os() {
   return 'linux'
 }
 
-export function getRedirectUrl() {
-  let redirectUrl = window.origin
-  if (isElectron()) {
-    redirectUrl = REDIRECT_URL
-  }
-  return redirectUrl
+export function agent() {
+  const result = navigator.userAgent.match(/\(.*?\)/)
+  return result?.length ? result[0] : ''
 }
 
 export function isRemote() {
-  const { port } = window.location
-  return !(isElectron() || port === '29999' || port === '29998')
+  const { port, hostname } = window.location
+  return !(isElectron() || ((port === '29999' || port === '29998') && hostname === IP_PRIVATE))
 }
 
 export function isElectron() {
@@ -53,9 +50,13 @@ export function isDev() {
 }
 
 export function launchPutty(typeID?: number) {
-  return typeID === 22 && isWindows()
+  return typeID && [22, 28].includes(typeID) && isWindows()
 }
 
 export function launchVNC(typeID?: number) {
   return typeID === 4 && isWindows()
+}
+
+export function launchRemoteDesktop(typeID?: number) {
+  return typeID === 5 && isWindows()
 }

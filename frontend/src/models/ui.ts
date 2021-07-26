@@ -11,7 +11,9 @@ type UIState = {
   claiming: boolean
   routingLock?: IRouteType
   routingMessage?: string
-  filterMenu: boolean
+  drawerMenu: 'FILTER' | 'COLUMNS' | null
+  columns: string[]
+  serviceContextMenu?: IContextMenu
   redirect?: string
   restoring: boolean
   scanEnabled: boolean
@@ -34,11 +36,14 @@ type UIState = {
   launchLoading: boolean
   launchPath: string
   requireInstall: string
-  devicesPanelWidth: number
-  connectionsPanelWidth: number
+  panelWidth: ILookup<number>
+  navigationBack: string[]
+  navigationForward: string[]
+  guideAWS: IGuide
+  accordion: ILookup<boolean>
 }
 
-const state: UIState = {
+const defaultState: UIState = {
   navigation: {},
   connected: false,
   offline: false,
@@ -46,7 +51,9 @@ const state: UIState = {
   claiming: false,
   routingLock: undefined,
   routingMessage: undefined,
-  filterMenu: false,
+  drawerMenu: null,
+  columns: ['deviceName', 'services'],
+  serviceContextMenu: undefined,
   redirect: undefined,
   restoring: false,
   scanEnabled: true,
@@ -69,16 +76,30 @@ const state: UIState = {
   launchLoading: false,
   launchPath: '',
   requireInstall: '',
-  devicesPanelWidth: 400,
-  connectionsPanelWidth: 600,
+  panelWidth: { devices: 400, connections: 600, settings: 400 },
+  navigationBack: [],
+  navigationForward: [],
+  guideAWS: { title: 'AWS Guide', step: 0, total: 7 },
+  accordion: { config: true, configConnected: false },
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
-    setupUpdated(count: number, globalState) {
+    async init(_, globalState) {
+      // restore guides
+      const guides = Object.keys(globalState.ui).filter(key => key.startsWith('guide'))
+      guides.forEach(guide => {
+        let item = window.localStorage.getItem(`ui-${guide}`)
+        if (item) {
+          item = JSON.parse(item)
+          dispatch.ui.set({ [guide]: item })
+        }
+      })
+    },
+    async setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
-        dispatch.ui.reset()
+        dispatch.ui.updated()
         dispatch.ui.set({ setupServicesCount: count, setupAdded: undefined, setupServicesNew: true })
       }
     },
@@ -89,17 +110,45 @@ export default createModel<RootModel>()({
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
     },
+    async resetGuides(_, globalState) {
+      Object.keys(globalState.ui).forEach(key => {
+        if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, step: 0, done: false })
+      })
+    },
   }),
   reducers: {
     set(state: UIState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
-    reset(state: UIState) {
+    updated(state: UIState) {
       state.setupBusy = false
       state.setupAddingService = false
       state.setupServiceBusy = undefined
       state.restoring = false
+      return state
+    },
+    guide(state: UIState, { guide, ...props }: ILookup<any>) {
+      const active = props.active === undefined ? state[guide].active : props.active
+
+      if (active) {
+        if (props.step > state[guide].total) {
+          props.done = true
+          props.step = 0
+        }
+        if (props.done) props.active = false
+      }
+
+      state[guide] = { ...state[guide], ...props }
+      window.localStorage.setItem(`ui-${guide}`, JSON.stringify(state[guide]))
+      return state
+    },
+    accordion(state: UIState, params: ILookup<boolean>) {
+      state.accordion = { ...state.accordion, ...params }
+      return state
+    },
+    reset(state: UIState) {
+      state = defaultState
       return state
     },
   },

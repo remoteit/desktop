@@ -53,7 +53,7 @@ export default createModel<RootModel>()({
             successMessage:
               data.email.length > 1
                 ? `${data.email.length} accounts successfully shared to ${attributeName(device)}.`
-                : `${data.email[0]} successfully shared to ${attributeName(device)}.`,
+                : `${attributeName(device)} successfully shared to ${data.email[0]}.`,
           })
       } catch (error) {
         await graphQLCatchError(error)
@@ -70,7 +70,10 @@ export default createModel<RootModel>()({
     }) {
       const { device, emails, scripting, services, isNew } = infoUpdate
 
-      const newUsers: IUser[] = emails.map(email => ({ email, id: '', scripting }))
+      const sharedUsers = device.access.map(item => item.email)
+      const newUsers: IUser[] = emails
+        .map(email => ({ email, id: '', scripting }))
+        .filter(item => !sharedUsers.includes(item.email) && item)
       if (isNew) {
         const access = device.access.filter(i => emails.includes(i.email))
         device.access =
@@ -81,16 +84,15 @@ export default createModel<RootModel>()({
         device.access = device.access.map(_ac => ({ ..._ac, scripting }))
       }
 
-      services.length &&
-        device.services.map(service => {
-          if (!service.access) {
-            service.access = []
-          }
-          service.access = services.includes(service.id)
-            ? service.access.concat(newUsers)
-            : service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
-          return service
-        })
+      device.services.map(service => {
+        if (!service.access) {
+          service.access = []
+        }
+        service.access = services.includes(service.id)
+          ? service.access.concat(newUsers)
+          : service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
+        return service
+      })
       dispatch.devices.updateShareDevice(device)
     },
   }),

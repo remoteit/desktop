@@ -36,9 +36,9 @@ elif [ "$(uname)" = "Linux" ]; then
 
     #Linux
     curl -L https://${URL_CLI}${CLI}/remoteit_linux_x86_64 --output ./bin/remoteit
-    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-ubuntu16.04 --output ./bin/connectd
-    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-ubuntu16.04 --output ./bin/demuxer
-    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-ubuntu16.04 --output ./bin/muxer
+    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
+    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
+    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
 
 else
 

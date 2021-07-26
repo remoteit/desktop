@@ -1,85 +1,100 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import { AttributeValue } from '../AttributeValue'
 import { DeviceLabel } from '../DeviceLabel'
-import { ServiceName } from '../ServiceName'
 import { RestoreButton } from '../../buttons/RestoreButton'
-import { ListItemLocation } from '../ListItemLocation'
-import { ServiceMiniState } from '../ServiceMiniState'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import {
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Tooltip,
-  Chip,
-  makeStyles,
-  useMediaQuery,
-} from '@material-ui/core'
-
-const MAX_INDICATORS = 6
+import { Attribute } from '../../helpers/attributes'
+import { Icon } from '../Icon'
+import { makeStyles, Checkbox, ListItemSecondaryAction, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
+import { spacing, fontSizes } from '../../styling'
 
 type Props = {
   device?: IDevice
   connections?: IConnection[]
-  thisDevice?: boolean
+  primary?: Attribute
+  attributes?: Attribute[]
   restore?: boolean
-  setContextMenu: React.Dispatch<React.SetStateAction<IContextMenu>>
+  select?: boolean
 }
 
-const ServiceIndicators: React.FC<Props> = ({ device, connections = [], setContextMenu }) => {
-  const css = useStyles()
-  if (!device?.services) return null
-  const extra = Math.max(device.services.length - MAX_INDICATORS, 0)
-  const display = device.services.slice(0, MAX_INDICATORS)
+export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, attributes = [], restore, select }) => {
+  const connected = connections && connections.find(c => c.enabled)
+  const largeScreen = useMediaQuery('(min-width:600px)')
+  const css = useStyles({ attributes })
+  if (!device) return null
+
   return (
     <>
-      {display.map(service => (
-        <ServiceMiniState
-          key={service.id}
-          service={service}
-          connection={connections.find(c => c.id === service.id)}
-          setContextMenu={setContextMenu}
-        />
-      ))}
-      {!!extra && (
-        <Tooltip className={css.chip} title={`${device.services.length} services total`} arrow placement="top">
-          <Chip label={`+${extra}`} size="small" />
-        </Tooltip>
-      )}
+      <ListItem className={css.columns} to={`/devices/${device.id}`} component={Link} button>
+        {select && (
+          <Checkbox
+            // checked={checked}
+            // indeterminate={indeterminate}
+            // inputRef={inputRef}
+            // onChange={event => onClick(event.target.checked)}
+            className={css.checkbox}
+            onClick={event => event.stopPropagation()}
+            checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+            indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
+            icon={<Icon name="square" size="md" />}
+            color="primary"
+          />
+        )}
+        <DeviceLabel device={device} />
+        <ListItemIcon>
+          <ConnectionStateIcon device={device} connection={connected} size="lg" />
+        </ListItemIcon>
+        <AttributeValue device={device} connection={connected} attribute={primary} />
+        <ListItemSecondaryAction className={css.column}>
+          {restore ? (
+            <RestoreButton device={device} />
+          ) : (
+            largeScreen &&
+            attributes?.map(attribute => (
+              <AttributeValue
+                key={attribute.id}
+                device={device}
+                connection={connected}
+                connections={connections}
+                attribute={attribute}
+              />
+            ))
+          )}
+        </ListItemSecondaryAction>
+      </ListItem>
     </>
   )
 }
 
-export const DeviceListItem: React.FC<Props> = ({ device, connections, thisDevice, setContextMenu, restore }) => {
-  const connected = connections && connections.find(c => c.enabled)
-  const largeScreen = useMediaQuery('(min-width:600px)')
-
-  if (!device) return null
-
-  return (
-    <ListItemLocation pathname={`/devices/${device.id}`}>
-      <DeviceLabel device={device} />
-      <ListItemIcon>
-        <ConnectionStateIcon device={device} connection={connected} size="lg" thisDevice={thisDevice} />
-      </ListItemIcon>
-      <ListItemText
-        primary={<ServiceName device={device} connection={connected} />}
-        secondary={thisDevice && 'This system'}
-      />
-      {restore ? (
-        <ListItemSecondaryAction>
-          <RestoreButton device={device} />
-        </ListItemSecondaryAction>
-      ) : (
-        largeScreen && (
-          <ListItemSecondaryAction>
-            <ServiceIndicators device={device} connections={connections} setContextMenu={setContextMenu} />
-          </ListItemSecondaryAction>
-        )
-      )}
-    </ListItemLocation>
-  )
-}
-
 const useStyles = makeStyles({
-  chip: { marginLeft: 6 },
+  button: {
+    position: 'absolute',
+    height: '100%',
+    zIndex: 0,
+  },
+  checkbox: {
+    maxWidth: 60,
+  },
+  column: ({ attributes }: { attributes: Props['attributes'] }) => ({
+    // display: 'flex',
+    // flexDirection: 'row-reverse',
+    // width: '60%',
+    display: 'grid',
+    gridGap: spacing.md,
+    gridTemplateColumns: `${attributes?.map(a => a.width).join(' ')}`,
+  }),
+  columns: {
+    // display: 'grid',
+    // gridGap: spacing.md,
+    // gridTemplateColumns: `auto ${attributes?.map(a => a.width).join(' ')}`,
+    alignItems: 'center',
+    height: 42,
+    '& .MuiBox-root': {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      fontSize: fontSizes.sm,
+    },
+  },
 })

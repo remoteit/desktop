@@ -13,6 +13,7 @@ import { ConnectionErrorMessage } from './ConnectionErrorMessage'
 import { UnregisterServiceButton } from '../buttons/UnregisterServiceButton'
 import { DeleteServiceButton } from '../buttons/DeleteServiceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { ErrorButton } from '../buttons/ErrorButton'
@@ -22,14 +23,13 @@ export const ServiceHeaderMenu: React.FC<{
   device?: IDevice
   service?: IService
   target?: ITarget
-  footer?: React.ReactElement
+  footer?: React.ReactNode
 }> = ({ device, service, target, footer, children }) => {
   const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
-  const { connection, thisDevice, access } = useSelector((state: ApplicationState) => ({
-    connection: state.backend.connections.find(c => c.id === serviceID),
-    thisDevice: state.backend.device?.uid === device?.id,
+  const { connection, access } = useSelector((state: ApplicationState) => ({
+    connection: state.connections.all.find(c => c.id === serviceID),
     access: state.accounts.access,
   }))
 
@@ -41,30 +41,30 @@ export const ServiceHeaderMenu: React.FC<{
         <>
           <OutOfBand />
           <Typography variant="h1">
-            {/* <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" /> */}
-            {/* <ServiceName connection={connection} service={service} /> */}
             <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} />
             <Route path="/devices/:deviceID/:serviceID/edit">
-              {thisDevice ? (
+              {device.thisDevice ? (
                 <UnregisterServiceButton target={target} />
               ) : (
                 <DeleteServiceButton device={device} service={service} />
               )}
             </Route>
+            <RefreshButton device={device} />
+            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
           </Typography>
+          {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
             <ListItemLocation
-              title="Service Details"
+              title="Details"
               icon="info-circle"
               iconColor="grayDarker"
               pathname={`/devices/${device.id}/${serviceID}/details`}
               dense
             />
-            {!device.shared && (
+            {!device.shared && device.state !== 'inactive' && (
               <ListItemLocation
-                title="Edit Service"
+                title="Edit"
                 icon="pen"
                 iconColor="grayDarker"
                 pathname={`/devices/${device.id}/${serviceID}/edit`}
@@ -76,7 +76,6 @@ export const ServiceHeaderMenu: React.FC<{
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
-          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
         </>
       }
       footer={footer}

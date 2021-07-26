@@ -42,7 +42,7 @@ export const Notice: React.FC<Props> = ({
   return (
     <Paper
       elevation={0}
-      style={{ backgroundColor: lighten(color, 0.9), color: darken(color, 0.2) }}
+      style={{ backgroundColor: lighten(color, 0.9), color: darken(color, 0.1) }}
       className={css.notice}
     >
       {loading ? (
@@ -63,13 +63,13 @@ const useStyles = ({ fullWidth, gutterBottom, gutterTop }) =>
       alignItems: 'center',
       margin: `${spacing.xxs}px ${fullWidth ? 0 : spacing.md}px`,
       marginBottom: gutterBottom ? spacing.md : 'inherit',
-      marginTop: gutterTop ? spacing.lg : 'inherit',
+      marginTop: gutterTop ? spacing.md : 'inherit',
       padding: `${spacing.sm}px ${spacing.md}px`,
       display: 'flex',
       fontWeight: 500,
-      '& .MuiBox-root': { flexGrow: 1 },
+      '& .MuiBox-root': { flexGrow: 1, alignSelf: 'flex-start', marginTop: spacing.xxs },
       '& .MuiButton-root': { minWidth: 90, marginLeft: spacing.md },
-      '& svg': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
+      '& > svg': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
       '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
     },
   })

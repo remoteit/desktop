@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { replaceHost } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
@@ -17,10 +17,12 @@ import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { AddFromNetwork } from '../components/AddFromNetwork'
+import { optionSortServices, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
 import { ServiceName } from '../components/ServiceName'
+import { GuideStep } from '../components/GuideStep'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { spacing, fontSizes } from '../styling'
@@ -28,16 +30,17 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
-  targetDevice: ITargetDevice
   device?: IDevice
 }
 
-export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
+export const DevicePage: React.FC<Props> = ({ targets, device }) => {
   const css = useStyles()
-  const [contextMenu, setContextMenu] = useState<IContextMenu>({})
-  const { connections, setupAddingService } = useSelector((state: ApplicationState) => ({
-    connections: state.backend.connections.filter(c => c.deviceID === device?.id),
+  const { connections, setupAddingService, sortService, searched, query } = useSelector((state: ApplicationState) => ({
+    connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
+    sortService: state.devices.sortServiceOption,
+    searched: state.devices.searched,
+    query: state.devices.query,
   }))
 
   useEffect(() => {
@@ -51,14 +54,8 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
       </span>
     )
 
-  const thisDevice = device.id === targetDevice.uid
-  const editable = thisDevice || device.configurable
+  const editable = device.thisDevice || device.configurable
   const connection = connections.find(c => c.deviceID === device.id && c.enabled)
-
-  function host(service: IService) {
-    const target = targets.find(t => t.uid === service.id)
-    if (target) return `${replaceHost(target.hostname)}:${target.port}`
-  }
 
   // reverse sort services by creation date
   device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -69,16 +66,18 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
         <List>
           <ListItemLocation
             pathname={`/devices/${device.id}/details`}
-            selected={[
+            match={[
               `/devices/${device.id}/details`,
               `/devices/${device.id}/edit`,
               `/devices/${device.id}/users`,
               `/devices/${device.id}/logs`,
+              `/devices/${device.id}`,
             ]}
+            exactMatch
             dense
           >
             <ListItemIcon>
-              <ConnectionStateIcon device={device} connection={connection} thisDevice={thisDevice} size="lg" />
+              <ConnectionStateIcon device={device} connection={connection} size="lg" />
             </ListItemIcon>
             <ListItemText
               primary={
@@ -96,9 +95,11 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           Device offline
         </Notice>
       )}
+      {searched && <Notice gutterTop>Searched for “{query}”</Notice>}
       <Typography variant="subtitle1">
         <Title>Services</Title>
-        <AddFromNetwork allowScanning={thisDevice} button />
+        <SortServices />
+        <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
       <List>
@@ -107,37 +108,37 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
           <ListItem disabled dense>
             <ListItemText className={css.service} primary="Registering..." />
             <ListItemSecondaryAction>
-              <CircularProgress color="inherit" size={fontSizes.md} />
+              <CircularProgress color="primary" size={fontSizes.md} />
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.map(s => (
-          <ListItemLocation
+        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
+          <GuideStep
             key={s.id}
-            pathname={`/devices/${device.id}/${s.id}/details`}
-            selected={`/devices/${device.id}/${s.id}`}
-            dense
+            guide="guideAWS"
+            step={4}
+            instructions="Select the service below."
+            hide={!s.name.includes('Start here')}
+            highlight
+            autoNext
           >
-            <ListItemText
-              className={css.service}
-              primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
-              secondary={host(s)}
-            />
-            <ListItemSecondaryAction>
-              <ServiceMiniState
-                service={s}
-                connection={connections.find(c => c.id === s.id)}
-                setContextMenu={setContextMenu}
+            <ListItemLocation
+              pathname={`/devices/${device.id}/${s.id}/details`}
+              match={`/devices/${device.id}/${s.id}`}
+              dense
+            >
+              <ListItemText
+                className={css.service}
+                primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
               />
-            </ListItemSecondaryAction>
-          </ListItemLocation>
+              <ListItemSecondaryAction>
+                <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />
+              </ListItemSecondaryAction>
+            </ListItemLocation>
+          </GuideStep>
         ))}
       </List>
-      <ServiceContextualMenu
-        el={contextMenu.el}
-        serviceID={contextMenu.serviceID}
-        setEl={el => setContextMenu({ ...contextMenu, el })}
-      />
+      <ServiceContextualMenu />
     </Container>
   )
 }

@@ -3,6 +3,7 @@ import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
+import cloudController from './cloudController'
 
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
@@ -29,6 +30,7 @@ class Controller extends EventEmitter {
       if (state.auth.backendAuthenticated) {
         ui.refreshAll()
       } else {
+        ui.set({ errorMessage: '' })
         auth.init()
       }
     }
@@ -92,7 +94,7 @@ class Controller extends EventEmitter {
 type EventHandlers = { [event: string]: (data?: any) => any }
 
 function getEventHandlers() {
-  const { binaries, auth, backend, logs, ui } = store.dispatch
+  const { connections, binaries, auth, backend, ui } = store.dispatch
 
   return {
     connect: () => {
@@ -107,18 +109,32 @@ function getEventHandlers() {
 
     disconnect: () => auth.disconnect(),
 
+    dataReady: async (result: boolean) => {
+      console.log('Data ready')
+      backend.set({ dataReady: result })
+      await cloudController.init()
+      await store.dispatch.licensing.fetch()
+      await store.dispatch.accounts.init()
+      await store.dispatch.devices.init()
+      await store.dispatch.ui.init()
+      store.dispatch.applicationTypes.fetch()
+      store.dispatch.announcements.fetch()
+      await store.dispatch.devices.fetch()
+      store.dispatch.sessions.fetch()
+    },
+
     connect_error: () => {
       backend.set({ error: true })
     },
 
     pool: (result: IConnection[]) => {
       console.log('socket pool', result)
-      backend.updateConnections(result)
+      connections.restoreConnections(result)
     },
 
     connection: (result: IConnection) => {
       console.log('socket connection', result)
-      backend.updateConnection(result)
+      connections.updateConnection(result)
     },
 
     targets: (result: ITarget[]) => {
@@ -149,7 +165,9 @@ function getEventHandlers() {
 
     freePort: (result: number) => backend.set({ freePort: result }),
 
-    dataReady: (result: boolean) => backend.set({ dataReady: result }),
+    reachablePort: (result: boolean) => {
+      backend.set({ reachablePort: result, loading: false })
+    },
 
     environment: (result: ILookup<any>) => {
       backend.set({ environment: result })
@@ -174,22 +192,19 @@ function getEventHandlers() {
     'cli/error': error => {
       ui.set({ errorMessage: '' }) // So we re-trigger a new error if one exists
       ui.set({ errorMessage: error })
-      ui.reset()
+      ui.updated()
     },
 
     // Connections --- TODO validate we need these three channels
     'service/connected': (msg: ConnectionMessage) => {
-      logs.add({ id: msg.connection.id, log: msg.raw })
-      backend.updateConnection(msg.connection)
+      connections.updateConnection(msg.connection)
       analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
-      logs.add({ id: msg.connection.id, log: msg.raw })
-      backend.updateConnection(msg.connection)
+      connections.updateConnection(msg.connection)
     },
     'service/error': (msg: ConnectionErrorMessage) => {
-      logs.add({ id: msg.connection.id, log: `\nCONNECTION ERROR\n${msg.message}\n` })
-      backend.updateConnection(msg.connection)
+      connections.updateConnection(msg.connection)
       analyticsHelper.trackConnect('connectionFailed', msg.connection, msg)
     },
 
@@ -203,9 +218,6 @@ function getEventHandlers() {
         launchLoading: result.loading,
         launchPath: result.path,
       })
-    },
-    reachablePort: (result: boolean) => {
-      backend.set({ reachablePort: result, loading: false })
     },
   } as EventHandlers
 }

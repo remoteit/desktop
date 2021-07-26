@@ -21,6 +21,7 @@ export const LogPage: React.FC = () => {
 
   return (
     <Container
+      gutterBottom
       header={
         <>
           <Breadcrumbs />

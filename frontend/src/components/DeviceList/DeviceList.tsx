@@ -1,79 +1,59 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { DeviceListItem } from '../DeviceListItem'
-import { getActiveAccountId, getOwnDevices } from '../../models/accounts'
-import { DeviceSetupItem } from '../DeviceSetupItem'
-import { ApplicationState } from '../../store'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
-import { List, Divider, ListItem } from '@material-ui/core'
+import { DeviceListItem } from '../DeviceListItem'
+import { Attribute } from '../../helpers/attributes'
 import { isOffline } from '../../models/devices'
+import { GuideStep } from '../GuideStep'
 import { LoadMore } from '../LoadMore'
-import { Notice } from '../Notice'
+import { List } from '@material-ui/core'
 
 export interface DeviceListProps {
   connections: { [deviceID: string]: IConnection[] }
+  attributes: Attribute[]
+  primary?: Attribute
   devices?: IDevice[]
   restore?: boolean
+  select?: boolean
 }
 
-export const DeviceList: React.FC<DeviceListProps> = ({ devices = [], connections = {}, restore }) => {
-  const [contextMenu, setContextMenu] = React.useState<IContextMenu>({})
-  const { myDevice, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
-    registeredId: state.backend.device.uid,
-    loggedInUser: getActiveAccountId(state) === state.auth.user?.id,
-    myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
-  }))
-
+export const DeviceList: React.FC<DeviceListProps> = ({
+  devices = [],
+  connections = {},
+  attributes,
+  primary,
+  restore,
+  select,
+}) => {
   return (
     <>
       <List>
-        {registeredId ? (
-          loggedInUser &&
-          (myDevice ? (
-            <>
+        <GuideStep
+          guide="guideAWS"
+          step={3}
+          placement="bottom"
+          instructions="Click on the Guest VPC device to continue."
+          highlight
+          autoNext
+        >
+          {devices?.map(device => {
+            const canRestore = isOffline(device) && !device.shared
+            if (restore && !canRestore) return
+            return (
               <DeviceListItem
-                key={registeredId}
-                device={myDevice}
-                connections={connections[registeredId]}
-                thisDevice={true}
-                setContextMenu={setContextMenu}
+                key={device.id}
+                device={device}
+                connections={connections[device.id]}
+                primary={primary}
+                attributes={attributes}
+                restore={restore && canRestore}
+                select={select}
               />
-              <Divider variant="inset" />
-            </>
-          ) : (
-            <>
-              <ListItem>
-                <Notice>This device is not registered to you.</Notice>
-              </ListItem>
-              <Divider variant="inset" />
-            </>
-          ))
-        ) : (
-          <>
-            <DeviceSetupItem restore={restore} />
-            <Divider variant="inset" />
-          </>
-        )}
-        {devices?.map(device => {
-          const canRestore = isOffline(device) && !device.shared
-          if (device.id === myDevice?.id || (restore && !canRestore)) return
-          return (
-            <DeviceListItem
-              key={device.id}
-              device={device}
-              connections={connections[device.id]}
-              setContextMenu={setContextMenu}
-              restore={restore && canRestore}
-            />
-          )
-        })}
+            )
+          })}
+        </GuideStep>
       </List>
       <LoadMore />
-      <ServiceContextualMenu
-        el={contextMenu.el}
-        serviceID={contextMenu.serviceID}
-        setEl={el => setContextMenu({ ...contextMenu, el })}
-      />
+      <ServiceContextualMenu />
     </>
   )
 }

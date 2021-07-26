@@ -60,7 +60,8 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async parse(gqlResponse: AxiosResponse<any>, state) {
+    async parse(gqlResponse: AxiosResponse<any> | void, state) {
+      if (!gqlResponse) return
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts
@@ -128,10 +129,11 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {
+    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, state) {
       accountId = accountId || devices[0]?.accountId
+      if (!devices) debugger
       if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const all = state.devices.all
+      const all = { ...state.devices.all }
       all[accountId] = devices
       dispatch.devices.set({ all })
     },
@@ -170,6 +172,10 @@ export default createModel<RootModel>()({
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
+    reset(state: IAccountsState) {
+      state = accountsState
+      return state
+    },
     setActive(state: IAccountsState, id: string) {
       window.localStorage.setItem(ACCOUNT_KEY, JSON.stringify(id))
       state.activeId = id
@@ -177,6 +183,10 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function isUserAccount(state: ApplicationState) {
+  return getActiveAccountId(state) === state.auth.user?.id
+}
 
 export function getActiveAccount(state: ApplicationState) {
   const id = getActiveAccountId(state)

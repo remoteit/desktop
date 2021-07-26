@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME } from '../../shared/constants'
+import { DEFAULT_TARGET, REGEX_VALID_IP, REGEX_VALID_HOSTNAME, DEFAULT_CONNECTION } from '../../shared/constants'
 import { makeStyles, Divider, Typography, TextField, List, ListItem, MenuItem, Button } from '@material-ui/core'
 import { Dispatch } from '../../store'
 import { AddFromNetwork } from '../AddFromNetwork'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ApplicationState } from '../../store'
-import { DEFAULT_CONNECTION } from '../../helpers/connectionHelper'
 import { useDispatch, useSelector } from 'react-redux'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
+import { AccordionMenuItem } from '../AccordionMenuItem'
 import { findType } from '../../models/applicationTypes'
-import { Columns } from '../Columns'
+import { Gutters } from '../Gutters'
 import { spacing } from '../../styling'
 import { Notice } from '../Notice'
 import { emit } from '../../services/Controller'
@@ -112,7 +112,6 @@ export const ServiceForm: React.FC<Props> = ({
               value={form.type}
               disabled={disabled}
               variant="filled"
-              InputProps={{ disableUnderline: true }}
               onChange={event => {
                 const type = Number(event.target.value)
                 const updatedAppType = findType(applicationTypes, type)
@@ -154,7 +153,6 @@ export const ServiceForm: React.FC<Props> = ({
             variant="filled"
             helperText={error || ''}
             placeholder={appType.description}
-            InputProps={{ disableUnderline: true }}
             onChange={event => {
               const validation = serviceNameValidation(event.target.value)
               setForm({ ...form, name: validation.value })
@@ -173,7 +171,6 @@ export const ServiceForm: React.FC<Props> = ({
                 variant="filled"
                 onChange={event => setForm({ ...form, port: validPort(event) })}
                 InputProps={{
-                  disableUnderline: true,
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
@@ -187,7 +184,6 @@ export const ServiceForm: React.FC<Props> = ({
                 variant="filled"
                 onChange={event => setForm({ ...form, hostname: event.target.value })}
                 InputProps={{
-                  disableUnderline: true,
                   endAdornment: thisDevice && <CheckIcon />,
                 }}
               />
@@ -225,84 +221,79 @@ export const ServiceForm: React.FC<Props> = ({
             )}
           </>
         )}
-      </List>
-      <Divider />
-
-      <Typography variant="subtitle1">Connection defaults</Typography>
-      <List>
-        <ListItem className={css.field}>
-          <TextField
-            size="small"
-            label="Default Connection Port"
-            value={form.attributes.defaultPort || ''}
+        {editable && (
+          <ListItemCheckbox
+            checked={!form.disabled}
+            label="Enable service"
+            subLabel={
+              <>
+                Disabling your service will take it offline.{' '}
+                <i>
+                  Service is
+                  {form.disabled ? ' disabled' : ' enabled'}
+                </i>
+              </>
+            }
             disabled={disabled}
-            variant="filled"
-            InputProps={{ disableUnderline: true }}
-            onChange={event => {
-              form.attributes.defaultPort = validPort(event)
-              setForm({ ...form })
+            onClick={() => {
+              setForm({ ...form, disabled: !form.disabled })
             }}
           />
-        </ListItem>
-        <ServiceAttributesForm
-          className={css.field}
-          subClassName={css.fieldSub}
-          connection={{
-            ...DEFAULT_CONNECTION,
-            ...form.attributes,
-            typeID: form.type,
-            port: form.attributes.defaultPort,
-          }}
-          disabled={disabled}
-          attributes={form.attributes}
-          onUpdate={attributes => setForm({ ...form, attributes })}
-        />
+        )}
       </List>
-      {editable && (
+      <AccordionMenuItem subtitle="Connection defaults" gutterTop={false}>
         <>
-          <Divider />
           <List>
-            <ListItemCheckbox
-              checked={!form.disabled}
-              label="Enable service"
-              subLabel={
-                <>
-                  Disabling your service will take it offline.{' '}
-                  <i>
-                    Service is
-                    {form.disabled ? ' disabled' : ' enabled'}
-                  </i>
-                </>
-              }
-              disabled={disabled}
-              onClick={() => {
-                setForm({ ...form, disabled: !form.disabled })
+            <ListItem className={css.field}>
+              <TextField
+                size="small"
+                label="Default Connection Port"
+                value={form.attributes.defaultPort || ''}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => {
+                  form.attributes.defaultPort = validPort(event)
+                  setForm({ ...form })
+                }}
+              />
+              <Typography variant="caption">
+                Default local port to use when a device connects to this service.
+              </Typography>
+            </ListItem>
+            <ServiceAttributesForm
+              className={css.field}
+              subClassName={css.fieldSub}
+              connection={{
+                ...DEFAULT_CONNECTION,
+                ...form.attributes,
+                typeID: form.type,
+                port: form.attributes.defaultPort,
               }}
+              disabled={disabled}
+              attributes={form.attributes}
+              onUpdate={attributes => setForm({ ...form, attributes })}
             />
           </List>
         </>
-      )}
-      <Columns inset count={1}>
-        <span>
-          <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
-            Save
-          </Button>
-          <Button onClick={onCancel}>Cancel</Button>
-        </span>
-      </Columns>
+      </AccordionMenuItem>
+      <Gutters>
+        <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
+          Save
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
+      </Gutters>
     </form>
   )
 }
 
 const useStyles = makeStyles({
   field: {
-    paddingLeft: 54,
     paddingRight: spacing.xl,
     alignItems: 'flex-start',
     '& .MuiFormControl-root': { minWidth: 300, marginRight: spacing.lg },
   },
   fieldSub: {
-    padding: `0 ${spacing.xl}px 0 60px`,
+    padding: `0 ${spacing.xl}px 0 ${spacing.xxs}px`,
     '& .MuiFormControl-root': {
       minWidth: 300 - spacing.lg,
       display: 'block',

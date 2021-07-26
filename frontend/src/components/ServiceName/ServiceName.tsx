@@ -1,12 +1,11 @@
 import React from 'react'
 import { Icon } from '../Icon'
 import { Title } from '../Title'
-import { Tooltip } from '@material-ui/core'
 import { isOffline } from '../../models/devices'
 import { useLocation } from 'react-router-dom'
-import { TargetPlatform } from '../TargetPlatform'
-import { REGEX_FIRST_PATH } from '../../shared/constants'
 import { attributeName } from '../../shared/nameHelper'
+import { REGEX_FIRST_PATH } from '../../shared/constants'
+import { Tooltip, Typography } from '@material-ui/core'
 
 type Props = {
   connection?: IConnection
@@ -42,10 +41,10 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
           <TargetPlatform id={targetPlatformId} tooltip />
         </sup>
       )} */}
-      {device?.configurable && (
-        <Tooltip title="CloudShift Configurable" placement="top" arrow>
+      {device?.configurable && !device?.shared && (
+        <Tooltip title="Configurable" placement="top" arrow>
           <sup>
-            <Icon name="pencil" size="xxs" type="solid" fixedWidth />
+            <Icon name="wifi" size="xxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )}

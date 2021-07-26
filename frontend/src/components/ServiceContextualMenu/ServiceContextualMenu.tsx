@@ -1,49 +1,44 @@
 import React from 'react'
 import { isDev } from '../../services/Browser'
 import { useHistory } from 'react-router-dom'
+import { isRemoteUI } from '../../helpers/uiHelper'
 import { useClipboard } from 'use-clipboard-copy'
-import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
 import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { ApplicationState } from '../../store'
-import {
-  makeStyles,
-  Divider,
-  Typography,
-  Menu,
-  MenuItem,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-} from '@material-ui/core'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { makeStyles, Typography, Menu, MenuItem, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { spacing, colors } from '../../styling'
 import { Icon } from '../Icon'
 
-interface Props {
-  el: HTMLElement | undefined
-  setEl: (el?: HTMLElement) => void
-  serviceID?: string
-}
-
-export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, setEl }) => {
-  const connection = useSelector((state: ApplicationState) => state.backend.connections.find(c => c.id === serviceID))
-  const [service, device] = useSelector((state: ApplicationState) => findService(getDevices(state), serviceID))
+export const ServiceContextualMenu: React.FC = () => {
+  const { ui } = useDispatch<Dispatch>()
+  const { el, remoteUI, connection, service, device } = useSelector((state: ApplicationState) => {
+    const { el, serviceID } = state.ui.serviceContextMenu || {}
+    const [service, device] = findService(getDevices(state), serviceID)
+    return {
+      el,
+      remoteUI: isRemoteUI(state),
+      connection: state.connections.all.find(c => c.id === serviceID),
+      service,
+      device,
+    }
+  })
   const clipboard = useClipboard({ copiedTimeout: 1000 })
   const history = useHistory()
   const css = useStyles()
 
   if (!el) return null
 
-  const handleClose = () => setEl(undefined)
+  const handleClose = () => ui.set({ serviceContextMenu: undefined })
 
   return (
     <Menu
       anchorEl={el}
       open={Boolean(el)}
-      // classes={{ paper: css.menu }}
       className={css.menu}
       onClose={handleClose}
       anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
@@ -55,11 +50,13 @@ export const ServiceContextualMenu: React.FC<Props> = ({ serviceID = '', el, set
           {service?.name}
         </Typography>
       </ListItem>
-      <ListItem className={css.connect} dense>
-        <ComboButton connection={connection} service={service} size="small" />
-        <CopyButton connection={connection} service={service} size="base" />
-        <LaunchButton connection={connection} service={service} size="base" />
-      </ListItem>
+      {!remoteUI && (
+        <ListItem className={css.connect} dense>
+          <ComboButton connection={connection} service={service} size="small" />
+          <CopyButton connection={connection} service={service} size="base" />
+          <LaunchButton connection={connection} service={service} size="base" />
+        </ListItem>
+      )}
       {connection?.enabled && (
         <MenuItem dense onClick={() => history.push(`/connections/${service?.id}`)}>
           <ListItemIcon>

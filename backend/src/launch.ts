@@ -35,7 +35,7 @@ export const openCMDforWindows = (launchApp: ILaunchApp) => {
   })
 
   child_process.exec(
-    `DIR /S ${launchApp.application}.exe /B`,
+    `where ${launchApp.application}`,
     { cwd: 'C:\\' },
     (error: any, stdout: any, stderr: any) => {
       error && Logger.error(`error: ${error}`)
@@ -55,6 +55,11 @@ function launchApplication(cwd: string, launchApp: ILaunchApp) {
       break
     case 'vncviewer':
       command = `start ${launchApp.application}.exe -Username ${launchApp.username} ${launchApp.host}:${launchApp.port}`
+      break
+    case 'remoteDesktop':
+      command = `cmdkey /generic:${launchApp.host} /user:${launchApp.username} && 
+        mstsc /v: ${launchApp.host} &&
+        cmdkey /delete:TERMSRV/${launchApp.host}`
       break
   }
   child_process.exec(`${command}`, { cwd }, (error: any) => {

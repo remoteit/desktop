@@ -11,6 +11,7 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
 import user from './User'
+import Binary from './Binary'
 
 const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
@@ -25,6 +26,16 @@ export default class ConnectionPool {
     updated: 'pool',
     freePort: 'freePort',
     reachablePort: 'reachablePort',
+    clearErrors: 'clearErrors',
+  }
+
+  constructor() {
+    EventBus.on(Connection.EVENTS.disconnected, this.updated)
+    EventBus.on(Connection.EVENTS.connected, this.updated)
+    EventBus.on(electronInterface.EVENTS.ready, this.updated)
+    EventBus.on(electronInterface.EVENTS.clear, this.clear)
+    EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
+    EventBus.on(ConnectionPool.EVENTS.clearErrors, this.clearErrors)
   }
 
   init() {
@@ -38,44 +49,39 @@ export default class ConnectionPool {
 
     // load connection data
     connections.map(c => this.set(c))
-
-    // init freeport
-    this.nextFreePort()
-
-    // Listen to events to synchronize state
-    EventBus.on(Connection.EVENTS.disconnected, this.updated)
-    EventBus.on(Connection.EVENTS.connected, this.updated)
-    EventBus.on(electronInterface.EVENTS.ready, this.updated)
-    EventBus.on(electronInterface.EVENTS.clear, this.clear)
-    EventBus.on(electronInterface.EVENTS.clearRecent, this.clearRecent)
   }
 
   // Sync with CLI
   check = async () => {
     if (binaryInstaller.uninstallInitiated || !user.signedIn) return
 
-    await cli.updateConnectionStatus()
+    await cli.readConnections()
 
     // move connections: cli -> desktop
     cli.data.connections.forEach(async c => {
       const connection = this.find(c.id)?.params
       if (
         !connection ||
-        connection.enabled !== c.enabled ||
-        connection.startTime !== c.startTime ||
-        connection.connected !== c.connected ||
-        connection.connecting !== c.connecting ||
-        connection.reachable !== c.reachable ||
-        connection.sessionId !== c.sessionId
+        (!connection.public &&
+          (connection.ip !== c.ip ||
+            connection.host !== c.host ||
+            connection.port !== c.port ||
+            connection.enabled !== c.enabled ||
+            connection.startTime !== c.startTime ||
+            connection.connected !== c.connected ||
+            connection.connecting !== c.connecting ||
+            connection.disconnecting !== c.disconnecting ||
+            connection.reachable !== c.reachable ||
+            connection.sessionId !== c.sessionId))
       ) {
         // Logger.info('SYNC CLI CONNECTION', { connection, c })
-        this.set({ ...connection, ...c })
+        this.set({ ...connection, ...c }, false)
       }
     })
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
       const cliConnection = cli.data.connections.find(c => c.id === connection.params.id)
-      if (!cliConnection && connection.params.connected) {
+      if (!cliConnection && connection.params.connected && !connection.params.public) {
         Logger.info('SYNC START CONNECTION', { connection: connection.params })
         connection.start()
       }
@@ -86,6 +92,7 @@ export default class ConnectionPool {
   set = (connection: IConnection, setCLI?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
+    d('SET SINGLE CONNECTION', { name: connection.name, id: connection.id })
     if (instance) {
       if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
         instance.set(connection, setCLI)
@@ -126,6 +133,13 @@ export default class ConnectionPool {
     instance && instance.stop()
   }
 
+  disable = async ({ id }: IConnection) => {
+    Logger.info('REMOVE', { id })
+    const instance = this.find(id)
+    instance && instance.disable()
+    this.updated()
+  }
+
   forget = async ({ id }: IConnection) => {
     Logger.info('FORGET', { id })
     const connection = this.find(id)
@@ -156,31 +170,31 @@ export default class ConnectionPool {
     this.updated()
   }
 
+  clearErrors = async () => {
+    this.pool.forEach(connection => (connection.params.error = undefined))
+    Logger.info('CLEARING ERRORS')
+    this.updated()
+  }
+
   clearMemory = async () => {
     Logger.info('CLEARING CONNECTIONS')
     this.pool = []
+    EventBus.emit(ConnectionPool.EVENTS.updated, [])
   }
 
   updated = () => {
     const json = this.toJSON()
     if (!user.signedIn) return
     this.file?.write(json)
+    d('CONNECTION POOL UPDATED')
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
 
   toJSON = (): IConnection[] => {
-    return this.pool
-      .map(c => c.params)
-      .sort((a, b) => {
-        return (
-          this.sort(a.connected, b.connected) ||
-          (a.connected ? this.sort(a.startTime, b.startTime) : this.sort(a.endTime, b.endTime))
-        )
-      })
+    return this.pool.map(c => c.params).sort((a, b) => this.sort(a.name || '', b.name || ''))
   }
 
-  //@ts-ignore - you can do math with booleans
-  sort = (a: number | boolean = 0, b: number | boolean = 0) => b - a
+  sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
 
   nextFreePort = async () => {
     const usedPorts = this.usedPorts
@@ -225,7 +239,9 @@ export default class ConnectionPool {
   private migrateConnectionData(connections: IConnection[]) {
     // migrate active to enabled and connected
     return connections.map(c => {
+      // @ts-ignore
       const enabled = c.active
+      // @ts-ignore
       delete c.active
       return { ...c, enabled, connected: enabled }
     })

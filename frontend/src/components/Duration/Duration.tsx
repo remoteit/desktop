@@ -9,23 +9,25 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-export const Duration: React.FC<{ startTime?: number; endTime?: number; ago?: boolean }> = ({
-  startTime,
-  endTime = Date.now(),
-  ago = false,
-}) => {
-  const [now, setNow] = useState<number>(endTime)
+type Props = { startTime?: number; endTime?: number; startDate?: Date; endDate?: Date; ago?: boolean }
+
+export const Duration: React.FC<Props> = ({ startTime, endTime, startDate, endDate, ago = false }) => {
+  startTime = startTime || startDate?.getTime()
+  endTime = endTime || endDate?.getTime()
+  const [now, setNow] = useState<number>(endTime || Date.now())
   const aDay = 1000 * 60 * 60 * 24
 
   useInterval(() => {
-    if (startTime) setNow(endTime)
+    if (startTime && !endTime) setNow(Date.now())
   }, 1000)
 
   if (!startTime) return null
+
   const duration = Math.round((now - startTime) / 1000) * 1000
   const display =
     duration > aDay
       ? new Date(startTime).toLocaleString(undefined, dateOptions)
       : humanize(duration, { largest: 2 }) + (ago ? ' ago' : '')
+
   return <>{display || '-'}</>
 }

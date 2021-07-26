@@ -24,6 +24,7 @@ declare global {
     // individual actions
     | 'service/connect'
     | 'service/disconnect'
+    | 'service/disable'
     | 'service/forget'
     | 'service/restart'
     | 'service/clear'
@@ -49,6 +50,7 @@ declare global {
     | 'preferences'
     | 'osInfo'
     | 'reachablePort'
+    | 'useCertificate'
 
   type SocketEvent =
     // built-in events
@@ -124,35 +126,49 @@ declare global {
     accountEmail: string
   }
   interface IConnection {
-    id: string
-    name: string
-    owner: IUserRef
-    deviceID: string
-    online: boolean // online if service is online
-    port?: number
-    connected?: boolean
-    enabled?: boolean // if the connection is active
-    host?: ipAddress // Bind address
-    typeID?: number // service type ID
-    restriction?: ipAddress // Restriction IP address
-    timeout?: number // timeout to disconnect in minutes
-    isP2P?: boolean // if the connection was made with peer to peer vs failover
-    failover?: boolean // allow proxy failover
-    proxyOnly?: boolean // disabled p2p
-    connecting?: boolean
-    sessionId?: string //the connection session id
-    username?: string // support for launching where username could be saved
-    launchTemplate?: string // deep link launch url template
+    address?: string // the connection url returned from cli
     commandTemplate?: string // command line launch template
+    connected?: boolean
+    connecting?: boolean
+    disconnecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
-    startTime?: number // unix timestamp connection start time
+    deviceID?: string
+    enabled?: boolean // if the connection is active
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
+    failover?: boolean // allow proxy failover
+    host?: ipAddress // returned hostname from cli
+    id: string
+    ip?: ipAddress // bind address
+    isP2P?: boolean // if the connection was made with peer to peer vs failover
+    launchTemplate?: string // deep link launch url template
     log?: boolean // if cli should log the connectd stdout to file
+    name?: string
+    online?: boolean // online if service is online
+    owner?: IUserRef
+    port?: number
+    proxyOnly?: boolean // disabled p2p
+    public?: boolean // if the connection should be a public proxy link
+    publicId?: string // public proxy connection ID
+    publicRestriction?: ipAddress // public proxy restriction IP
+    reachable?: boolean // if remote connection resource is reachable
+    restriction?: ipAddress // Restriction IP address
+    sessionId?: string //the connection session id
+    startTime?: number // unix timestamp connection start time
+    timeout?: number // timeout to disconnect in minutes
+    typeID?: number // service type ID
+    username?: string // support for launching where username could be saved
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
-  type IConnectionState = 'offline' | 'disconnected' | 'connected' | 'connecting' | 'stopping' | 'ready'
+  type IConnectionState =
+    | 'offline'
+    | 'disconnected'
+    | 'connected'
+    | 'connecting'
+    | 'disconnecting'
+    | 'stopping'
+    | 'ready'
 
   type IConnectionKey = keyof IConnection
 
@@ -204,10 +220,12 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
+    tags: number[]
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
     configurable: boolean // cloudshift device
     accountId: string
+    thisDevice?: boolean
     geo: IGeo & {
       connectionType?: string
       isp?: string
@@ -281,6 +299,7 @@ declare global {
     state?: IConnectionState
     user?: IUserRef
     geo?: IGeo
+    public?: boolean
     target: {
       id: string
       deviceId: string
@@ -301,26 +320,26 @@ declare global {
     name: string
     value: any
     actual: any
-    license?: { id: string }
+    license: { id: string } | null
   }
 
   type ILicense = {
     id: string
     created: Date
     updated: Date
-    expiration?: Date
+    expiration: Date | null
     valid: boolean
-    value: object
+    upgradeUrl?: string
     plan: {
       id: string
       name: string
       description: string
-      duration: string
+      duration: string | null
       product: {
         id: string
         name: string
         description: string
-        provider: string
+        provider: string | null
       }
     }
   }
@@ -382,13 +401,14 @@ declare global {
     target?: (IService | IDevice)[]
     users?: IUser[]
     action: string
+    devices?: { id?: number; name?: string }[]
   }
 
   interface IEventList {
     total: number
     items: IEvent[]
     hasMore: boolean
-    deviceId: string
+    deviceId?: string
   }
 
   type gqlOptions = {
@@ -427,6 +447,11 @@ declare global {
       timestamp: number
       data: IScan[]
     }
+  }
+
+  type IOverrides = {
+    apiURL?: string
+    betaApiURL?: string
   }
 
   type IScanDataRaw = {
@@ -479,13 +504,28 @@ declare global {
 
   type ISelect = { [key: string]: string | number }
 
+  type IGuide = {
+    step: number
+    total: number
+    done?: boolean
+    title?: string
+    active?: boolean
+  }
+
   type IPreferences = {
-    version?: string
+    version: string
+    cliVersion: string
     autoUpdate?: boolean
     openAtLogin?: boolean
     remoteUIOverride?: boolean
     disableLocalNetwork?: boolean
     showNotifications?: boolean
+    allowPrerelease?: boolean
+    useCertificate?: boolean
+    switchApi?: boolean
+    apiURL?: ''
+    apiGraphqlURL?: ''
+    testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
   }
 
   type SegmentContext = {
@@ -553,6 +593,7 @@ declare global {
     icon: string
     show: boolean
     badge?: number
+    chip?: string
   }
 }
 

@@ -1,79 +1,51 @@
 import React, { useEffect } from 'react'
-import { makeStyles, LinearProgress } from '@material-ui/core'
+import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { FilterDrawerContent } from '../../components/FilterDrawerContent'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { RegisterButton } from '../../buttons/RegisterButton'
-import { RefreshButton } from '../../buttons/RefreshButton'
-import { AccountSelect } from '../../components/AccountSelect'
-import { FilterButton } from '../../buttons/FilterButton'
-import { SearchField } from '../../components/SearchField'
-import { useSelector } from 'react-redux'
-import { getDevices } from '../../models/accounts'
+import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
-import { Container } from '../../components/Container'
-import styles from '../../styling'
+import { getDevices, getOwnDevices } from '../../models/accounts'
+import { masterAttributes, deviceAttributes } from '../../helpers/attributes'
+
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const DevicesPage: React.FC<{ singlePanel?: boolean; restore?: boolean }> = ({ singlePanel, restore }) => {
-  const { devices, connections, fetching } = useSelector((state: ApplicationState) => ({
+type Props = { singlePanel?: boolean; restore?: boolean; select?: boolean }
+
+export const DevicesPage: React.FC<Props> = ({ singlePanel, restore, select }) => {
+  const { devices, connections, myDevice, fetching, attributes, required } = useSelector((state: ApplicationState) => ({
+    attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id) && !a.required),
+    required: masterAttributes.find(a => a.required),
     fetching: state.devices.fetching,
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
-    connections: state.backend.connections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
+    myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
+    connections: state.connections.all.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
       return lookup
     }, {}),
   }))
 
-  const css = useStyles()
-
   useEffect(() => {
     analyticsHelper.page('DevicesPage')
   }, [])
 
   return (
-    <Container
-      header={
-        <>
-          <div className={css.header}>
-            <SearchField />
-            <AccountSelect />
-            {singlePanel && (
-              <>
-                <RegisterButton />
-                <RefreshButton />
-              </>
-            )}
-            <FilterButton />
-          </div>
-          {fetching && <LinearProgress className={css.fetching} />}
-        </>
-      }
-      sidebar={<FilterDrawerContent />}
-    >
+    <DevicesHeader fetching={fetching} singlePanel={singlePanel} myDevice={myDevice} restore={restore}>
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." spinner={false} />
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList devices={devices} connections={connections} restore={restore} />
+        <DeviceList
+          devices={devices}
+          connections={connections}
+          attributes={attributes}
+          primary={required}
+          restore={restore}
+          select={select}
+        />
       )}
-    </Container>
+    </DevicesHeader>
   )
 }
-
-const useStyles = makeStyles({
-  header: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: `0 ${styles.spacing.md}px ${styles.spacing.sm}px`,
-  },
-  fetching: {
-    position: 'absolute',
-    width: '100%',
-    height: 2,
-  },
-})
