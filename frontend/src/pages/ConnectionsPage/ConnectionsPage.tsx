@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { Body } from '../../components/Body'
 import { matchPath, useHistory, useLocation } from 'react-router-dom'
 import { makeStyles, Typography, Collapse, Link } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
@@ -41,6 +40,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     for (const connection of allConnections) {
       const [service, device] = selectById(state, connection.id)
       const session: ISession = {
+        state: connectionState(service, connection),
         timestamp: new Date(connection.createdTime || 0),
         platform: 0,
         user: state.auth.user,
@@ -90,7 +90,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
         </>
       )}
       <SessionsList
-        title="This Network"
+        title="Local Network"
         sessions={local}
         action={<IconButton title="Add to Network" icon="plus" to="/connections/new" color="primary" />}
       />
