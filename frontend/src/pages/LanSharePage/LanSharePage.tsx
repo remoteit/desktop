@@ -19,12 +19,12 @@ type Selections = { value: string | Function; name: string; note: string }
 
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
-  const { service, lanIP, connection } = useSelector((state: ApplicationState) => {
+  const { service, lanIp, connection } = useSelector((state: ApplicationState) => {
     let connection = state.connections.all.find(c => c.id === serviceID)
     const [service] = findService(getDevices(state), serviceID)
     return {
       service,
-      lanIP: state.backend.environment.privateIP,
+      lanIp: state.backend.environment.privateIP,
       connection: connection || newConnection(service),
     }
   })
@@ -34,9 +34,9 @@ export const LanSharePage: React.FC = () => {
   // prettier-ignore
   const selections: Selections[] = [
     { value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
-    { value: maskIPClass(currentIp, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
-    { value: maskIPClass(currentIp, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
-    { value: maskIPClass(currentIp, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
+    { value: maskIPClass(lanIp, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
+    { value: maskIPClass(lanIp, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
+    { value: maskIPClass(lanIp, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
     { value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
     { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
@@ -114,7 +114,7 @@ export const LanSharePage: React.FC = () => {
       <div className={css.container}>
         <p>
           <Typography variant="caption">Your local IP address</Typography>
-          <Typography variant="h2">{lanIP}</Typography>
+          <Typography variant="h2">{lanIp}</Typography>
         </p>
         <Typography variant="body2" color="textSecondary">
           Allow users to connect to your remote device through your IP address using a custom port.
@@ -147,7 +147,7 @@ export const LanSharePage: React.FC = () => {
               ))}
             </TextField>
             <Typography variant="body2" color="textSecondary">
-              {selected.note}
+              {selected.note} <br />
               <span className={css.mask}>Mask {getSelectionValue()}</span>
             </Typography>
             {typeof selected.value === 'function' && (
@@ -186,6 +186,5 @@ const useStyles = makeStyles({
   },
   mask: {
     fontStyle: 'italic',
-    marginLeft: spacing.sm,
   },
 })
