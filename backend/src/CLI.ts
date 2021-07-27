@@ -39,8 +39,8 @@ type IConnectionStatus = {
   id: string
   isDisabled?: boolean
   state?: 'offline' | 'connecting' | 'connected' | 'disconnecting'
-  isFailover: boolean
-  isP2P?: boolean
+  isFailoverAllowed?: boolean
+  isP2PAllowed?: boolean
   error?: ISimpleError
   reachable: boolean
   sessionID?: string
@@ -192,10 +192,10 @@ export default class CLI {
         connected: c.state === 'connected',
         connecting: c.state === 'connecting',
         disconnecting: c.state === 'disconnecting',
-        isP2P: c.state === 'connected' ? c.isP2P : undefined,
+        isP2P: c.isP2PAllowed,
         reachable: c.reachable,
         sessionId: c.sessionID?.toLowerCase(),
-        failover: c.isFailover,
+        failover: c.isFailoverAllowed,
         restriction: c.restrict,
         timeout: c.timeout,
         error,
