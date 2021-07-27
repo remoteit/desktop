@@ -52,13 +52,13 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
                 {connection?.enabled ? (
                   <Tooltip title="Configure Connection" arrow>
                     <IconButton to={`/connections/${service.id}`} component={Link}>
-                      <Icon name="arrow-right" size="md" fixedWidth />
+                      <Icon name="chart-network" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 ) : (
                   <Tooltip title="Configure Connection" arrow>
                     <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
-                      <Icon name="arrow-right" size="md" fixedWidth />
+                      <Icon name="chart-network" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 )}

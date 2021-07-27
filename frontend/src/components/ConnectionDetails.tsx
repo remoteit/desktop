@@ -53,7 +53,7 @@ export const ConnectionDetails: React.FC<Props> = ({ show, connection, service, 
             onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
           />
         </GuideStep>
-        <Gutters inset noBottom noTop>
+        <Gutters inset="sm" noBottom noTop>
           <DataDisplay attributes={attributes} connection={connection} session={session} width={100} />
         </Gutters>
       </Paper>

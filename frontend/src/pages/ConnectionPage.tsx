@@ -99,8 +99,8 @@ export const ConnectionPage: React.FC = () => {
         <List disablePadding>
           <NameSetting connection={connection} service={service} device={device} />
           <PortSetting connection={connection} service={service} />
-          <InlineTemplateSetting connection={connection} service={service} context="launch" />
           <InlineTemplateSetting connection={connection} service={service} context="copy" />
+          <InlineTemplateSetting connection={connection} service={service} context="launch" />
           <CustomAttributeSettings connection={connection} service={service} />
         </List>
       </AccordionMenuItem>

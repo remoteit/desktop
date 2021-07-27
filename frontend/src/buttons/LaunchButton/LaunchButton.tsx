@@ -103,28 +103,25 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
 
   const clickHandler = () => setLaunch(true)
 
-  const LaunchIcon = (
-    <Icon
-      rotate={app.iconRotate ? -45 : undefined}
-      name={loading ? 'spinner-third' : app.icon}
-      spin={loading}
-      size={size}
-    />
-  )
-
-  const title = `Launch ${app.title}`
+  const LaunchIcon = <Icon rotate={-45} name={loading ? 'spinner-third' : 'arrow-right'} spin={loading} size={size} />
 
   return (
     <>
       {menuItem ? (
         <MenuItem dense onClick={clickHandler} disabled={loading || disabled}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
-          <ListItemText primary={title} />
+          <ListItemText primary={app.contextTitle} />
         </MenuItem>
       ) : dataButton ? (
-        <DataButton label={title} value={app.command} title={title} icon={LaunchIcon} onClick={clickHandler} />
+        <DataButton
+          value={app.command}
+          label={app.contextTitle}
+          title={app.contextTitle}
+          icon={LaunchIcon}
+          onClick={clickHandler}
+        />
       ) : (
-        <Tooltip title={title}>
+        <Tooltip title={app.contextTitle}>
           <IconButton onClick={clickHandler} disabled={loading || disabled}>
             {LaunchIcon}
           </IconButton>
