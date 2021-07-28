@@ -1,68 +1,88 @@
 import React, { useState } from 'react'
-import { TextField, Button, List } from '@material-ui/core'
-import { ListItemCheckbox } from '../../components/ListItemCheckbox'
-import { Quote } from '../../components/Quote'
+import { TextField, List } from '@material-ui/core'
 import { Gutters } from '../../components/Gutters'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
 import { REGEX_VALID_URL } from '../../shared/constants'
+import { ListItemSwitch } from '../../components/ListItemSwitch'
+import { Quote } from '../../components/Quote'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../../store'
 
-export function NotificationMode({ ...props }): JSX.Element {
-  const [webHook, setWebhook] = useState<boolean>(props.urlNotifications)
-  const [webHookUrl, setWebhookUrl] = useState(props.notificationUrl)
+export function NotificationMode(): JSX.Element {
+
+  const {
+    notificationUrl,
+    urlNotifications,
+    emailNotifications,
+    desktopNotifications,
+  } = useSelector((state: ApplicationState) => state.auth.notificationSettings)
+  const dispatch = useDispatch<Dispatch>()
+  const { updateUserMetadata } = dispatch.auth
+  const [email, setEmail] = useState<boolean>(emailNotifications || false)
+  const [system, setSystem] = useState<boolean>(desktopNotifications || false)
+
+  const [webHook, setWebhook] = useState<boolean | undefined>(urlNotifications)
+  const [webHookUrl, setWebhookUrl] = useState(notificationUrl || '')
   const [error, setError] = useState(false)
-  const [errorFlag, setErrorFlag] = useState(false)
-  const { loading } = useSelector((state: ApplicationState) => ({
-    loading: state.auth?.loading,
-  }))
+  const metadata: INotificationSetting = {
+    desktopNotifications: system,
+    emailNotifications: email,
+    urlNotifications: webHook,
+    notificationUrl: webHookUrl
+  }
 
   const onEmailChange = (value: boolean) => {
-    props.setEmailChecked(value)
+    setEmail(value)
+    updateUserMetadata({ ...metadata, emailNotifications: value })
     setError(false)
   }
 
   const onSystemChange = (value: boolean) => {
-    props.setSystemChecked(value)
+    setSystem(value)
+    updateUserMetadata({ ...metadata, desktopNotifications: value })
     setError(false)
   }
 
   const onWebChange = (value: boolean) => {
     setWebhook(value)
     setWebhookUrl('')
+    if (!value) {
+      updateUserMetadata({
+        ...metadata,
+        notificationUrl: '',
+        urlNotifications: false
+      })
+    }
     setError(false)
   }
 
-  const onChange = value => {
+  const onChange = (value: string) => {
+    if (value === webHookUrl) return
     setWebhookUrl(value)
-    REGEX_VALID_URL.test(value) ? setError(false) : setError(true)
-  }
-
-  const onSave = async () => {
-    if (errorFlag) {
+    if (!REGEX_VALID_URL.test(value) && /\s/.test(value) && value.length > 10) {
       setError(true)
     } else {
-      const metadata: INotificationSetting = {
+      setError(false)
+      updateUserMetadata({
+        ...metadata,
         notificationUrl: webHook && webHookUrl?.length ? webHookUrl : '',
-        emailNotifications: props.emailNotifications,
-        desktopNotifications: props.desktopNotifications,
         urlNotifications: webHook
-      }
-      props.onUpdate(metadata)
+      })
     }
   }
 
   return (
     <>
       <List>
-        <ListItemCheckbox label="System notification" checked={props.desktopNotifications} onClick={onSystemChange} />
-        <ListItemCheckbox label="Email" checked={props.emailNotifications} onClick={onEmailChange} />
-        <ListItemCheckbox label="Webhook" checked={webHook} onClick={onWebChange} />
+        <ListItemSwitch label='System notification' checked={system} onClick={onSystemChange} />
+        <ListItemSwitch label='Email' checked={email} onClick={onEmailChange} />
+        <ListItemSwitch label="Webhook" checked={webHook} onClick={onWebChange} />
       </List>
       <Gutters inset noTop>
         <Quote margin={0}>
           <TextField
             disabled={!webHook}
-            onChange={e => onChange(e.currentTarget.value)}
+            onChange={e => onChange(e.currentTarget.value?.trim())}
+            onBlur={e => onChange(e.currentTarget.value?.trim())}
             value={webHookUrl}
             label="URL endpoint"
             placeholder="Webhook Endpoint"
@@ -76,9 +96,7 @@ export function NotificationMode({ ...props }): JSX.Element {
         </Quote>
       </Gutters>
       <Gutters>
-        <Button variant="contained" color="primary" onClick={onSave} disabled={loading} size="small">
-          {loading ? 'Saving' : 'Save'}
-        </Button>
+
       </Gutters>
     </>
   )

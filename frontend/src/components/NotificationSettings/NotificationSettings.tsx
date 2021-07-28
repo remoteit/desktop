@@ -41,25 +41,27 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
   }, [emailNotification])
 
   const handleEmailNotifications = () => {
+    const currentEmailNotification = emailOverridden ? emailNotification || false : globalNotificationEmail
     devices.setNotificationDevice({
       ...device,
       notificationSettings: {
         ...device.notificationSettings,
-        emailNotifications: !emailNotification
+        emailNotifications: !currentEmailNotification
       }
     })
-    setEmailNotification(!emailNotification)
+    setEmailNotification(!currentEmailNotification)
   }
 
   const handleInAppNotifications = () => {
+    const currentDesktopNotification = overridden ? notificationInApp || false : globalNotificationSystem
     devices.setNotificationDevice({
       ...device,
       notificationSettings: {
         ...device.notificationSettings,
-        desktopNotifications: !notificationInApp
+        desktopNotifications: !currentDesktopNotification
       }
     })
-    setNotificationInApp(!notificationInApp)
+    setNotificationInApp(!currentDesktopNotification)
   }
 
   const onClose = (system: boolean) => {
