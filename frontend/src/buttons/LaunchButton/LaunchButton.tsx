@@ -10,7 +10,7 @@ import { PromptModal } from '../../components/PromptModal'
 import { DataButton } from '../DataButton'
 import { DialogApp } from '../../components/DialogApp'
 import { Dispatch } from '../../store'
-import { FontSize } from '../../styling'
+import { FontSize, Color } from '../../styling'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 
@@ -20,10 +20,21 @@ type Props = {
   menuItem?: boolean
   dataButton?: boolean
   size?: FontSize
+  color?: Color
+  type?: IconType
   onLaunch?: () => void
 }
 
-export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, size = 'md', onLaunch }) => {
+export const LaunchButton: React.FC<Props> = ({
+  connection,
+  service,
+  menuItem,
+  dataButton,
+  size = 'md',
+  type,
+  color,
+  onLaunch,
+}) => {
   const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
     path: state.ui.launchPath,
@@ -103,7 +114,9 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
 
   const clickHandler = () => setLaunch(true)
 
-  const LaunchIcon = <Icon rotate={-45} name={loading ? 'spinner-third' : 'arrow-right'} spin={loading} size={size} />
+  const LaunchIcon = (
+    <Icon name={loading ? 'spinner-third' : app.icon} spin={loading} size={size} color={color} type={type} fixedWidth />
+  )
 
   return (
     <>

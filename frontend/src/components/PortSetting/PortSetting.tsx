@@ -22,7 +22,7 @@ export const PortSetting: React.FC<{ service: IService; connection: IConnection 
 
   return (
     <InlineTextFieldSetting
-      icon="circle"
+      icon="port"
       value={connection.port}
       label="Local Port"
       disabled={disabled}

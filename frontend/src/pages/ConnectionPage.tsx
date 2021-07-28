@@ -66,7 +66,15 @@ export const ConnectionPage: React.FC = () => {
       gutterBottom
       header={
         <>
-          <Gutters className={css.gutters}>
+          <ConnectionDetails
+            details
+            connection={connection}
+            service={service}
+            session={session}
+            show={connection?.enabled}
+          />
+          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+          <Gutters className={css.gutters} top="sm">
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
               connection={connection}
@@ -83,10 +91,6 @@ export const ConnectionPage: React.FC = () => {
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
-          <Gutters>
-            <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
-            {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-          </Gutters>
         </>
       }
     >

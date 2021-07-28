@@ -14,7 +14,7 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
 
   return (
     <DeviceHeaderMenu device={device}>
-      <Gutters noBottom></Gutters>
+      <Gutters bottom={null}></Gutters>
       <Gutters>
         {/* {!editable && <AdminPanelConnect device={device} connections={connections} />} */}
         <DataDisplay attributes={deviceAttributes} device={device} />

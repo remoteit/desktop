@@ -3,7 +3,7 @@ import { isDev } from '../../services/Browser'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { useClipboard } from 'use-clipboard-copy'
-import { CopyButton } from '../../buttons/CopyButton'
+import { CommandButton } from '../../buttons/CommandButton'
 import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
@@ -53,7 +53,7 @@ export const ServiceContextualMenu: React.FC = () => {
       {!remoteUI && (
         <ListItem className={css.connect} dense>
           <ComboButton connection={connection} service={service} size="small" />
-          <CopyButton connection={connection} service={service} size="base" />
+          <CommandButton connection={connection} service={service} size="base" />
           <LaunchButton connection={connection} service={service} size="base" />
         </ListItem>
       )}

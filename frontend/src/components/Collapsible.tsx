@@ -10,7 +10,7 @@ export const Collapsible: React.FC<{ title: string; open?: boolean }> = ({ title
 
   return (
     <>
-      <Gutters {...props} className={css.container} noBottom>
+      <Gutters {...props} className={css.container} bottom={null}>
         <Button onClick={() => setOpenState(!openState)} fullWidth>
           <Typography variant="subtitle1">{title}</Typography>
           <ExpandIcon open={openState} />

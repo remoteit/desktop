@@ -1,12 +1,18 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles } from '@material-ui/core/styles'
-import { spacing } from '../styling'
+import { spacing, Spacing } from '../styling'
 
-type Props = { inset?: string; noBottom?: boolean; noTop?: boolean; className?: string }
+type Props = {
+  inset?: Spacing | 'icon'
+  size?: Spacing
+  bottom?: Spacing | null
+  top?: Spacing | null
+  className?: string
+}
 
-export const Gutters: React.FC<Props> = ({ inset, className, noBottom, noTop, children, ...props }) => {
-  const css = useStyles({ inset, noBottom, noTop })
+export const Gutters: React.FC<Props> = ({ inset, size, className, bottom, top, children, ...props }) => {
+  const css = useStyles({ inset, size, bottom, top })
   return (
     <div className={classnames(css.gutters, className)} {...props}>
       {children}
@@ -15,10 +21,8 @@ export const Gutters: React.FC<Props> = ({ inset, className, noBottom, noTop, ch
 }
 
 const useStyles = makeStyles({
-  gutters: ({ inset, noBottom, noTop }: Props) => ({
-    margin: inset
-      ? `${noTop ? 0 : spacing.md}px ${spacing[inset]}px ${noBottom ? 0 : spacing.lg}px`
-      : `${noTop ? 0 : spacing.md}px ${spacing.xl}px ${noBottom ? 0 : spacing.lg}px`,
-    paddingLeft: inset ? spacing[inset] : 0,
+  gutters: ({ inset, size = 'xl', bottom = 'md', top = 'md' }: Props) => ({
+    margin: `${top ? spacing[top] : 0}px ${spacing[size]}px ${bottom ? spacing[bottom] : 0}px`,
+    paddingLeft: inset ? (inset === 'icon' ? 44 : spacing[inset]) : 0,
   }),
 })

@@ -12,11 +12,12 @@ export const DEVICE_TYPE = 35
 export class Application {
   context?: 'copy' | 'launch'
   title: string = 'URL'
-  launchIcon: string = 'link'
+  launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
+  publicTemplate: string = '[address]'
+  addressTemplate: string = '[host]:[port]'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
-  defaultPublicTemplate: string = '[address]'
   defaultTokens: string[] = ['host', 'port', 'id']
   localhost?: boolean
 
@@ -61,6 +62,10 @@ export class Application {
     return this.parse(this.template, this.lookup)
   }
 
+  get address() {
+    return this.parse(this.resolvedAddressTemplate, this.lookup)
+  }
+
   get prompt() {
     return this.missingTokens.length
   }
@@ -88,15 +93,19 @@ export class Application {
     return lookup
   }
 
+  private get resolvedAddressTemplate() {
+    return this.connection?.public ? this.publicTemplate : this.addressTemplate
+  }
+
   private get resolvedDefaultLaunchTemplate() {
     return this.connection?.public
-      ? this.defaultPublicTemplate
+      ? this.publicTemplate
       : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate() {
     return this.connection?.public
-      ? this.defaultPublicTemplate
+      ? this.publicTemplate
       : this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
   }
 
@@ -148,11 +157,9 @@ function getApplicationType(typeID?: number) {
     case 28:
       return new Application({
         title: 'SSH',
-        launchIcon: 'terminal',
-        commandIcon: 'clipboard',
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        defaultCommandTemplate:
-          'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "NoHostAuthenticationForLocalhost=yes"',
+        defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
+        //'ssh -l [username] [host] -p [port] -o "NoHostAuthenticationForLocalhost=yes"',
       })
     case 8:
     case 10:

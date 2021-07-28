@@ -27,7 +27,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
   let icon = 'ellipsis-h'
   if (connected) icon = 'arrow-right'
   if (recent) icon = 'minus'
-  if (session.public) icon = 'globe-americas'
+  if (session.public) icon = 'share-alt'
 
   return (
     <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>

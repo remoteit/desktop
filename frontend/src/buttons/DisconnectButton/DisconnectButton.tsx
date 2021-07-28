@@ -43,7 +43,7 @@ export const DisconnectButton: React.FC<Props> = ({
       <div>
         <DynamicButton
           title={title}
-          // disabled={disabled}
+          variant="text"
           loading={disabled || connecting}
           color={color}
           size={size}

@@ -19,6 +19,7 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
     <>
       <ListItemSetting
         label="Shareable Link"
+        subLabel="Publicly sharable proxy connection"
         disabled={disabled}
         icon="share-alt"
         toggle={!!connection.public}
@@ -47,7 +48,7 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
               })
           }}
         />
-        <Gutters inset="xl" noTop>
+        <Gutters inset="icon" top={null}>
           <ListItemText secondary={subLabel} />
         </Gutters>
       </Collapse>

@@ -39,8 +39,9 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
       footer={
         !remoteUI && (
           <>
+            <ConnectionDetails connection={connection} show={connection?.enabled} />
             <GuideStep guide="guideAWS" step={5} instructions="Now enable the connect on demand listener.">
-              <Gutters className={css.gutters} noBottom>
+              <Gutters className={css.gutters}>
                 <ComboButton
                   connection={connection}
                   service={service}
@@ -64,9 +65,6 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
                 )}
               </Gutters>
             </GuideStep>
-            <Gutters>
-              <ConnectionDetails connection={connection} show={connection?.enabled} />
-            </Gutters>
           </>
         )
       }
