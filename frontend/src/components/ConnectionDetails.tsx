@@ -22,9 +22,9 @@ type Props = {
 
 export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, service, session }) => {
   const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
-  const [hover, setHover] = React.useState<'name' | 'port' | undefined>()
-  const app = useApplication('copy', service, connection)
+  const [hover, setHover] = React.useState<'name' | 'port' | 'copy' | 'launch' | undefined>()
   const { ui } = useDispatch<Dispatch>()
+  const app = useApplication('copy', service, connection)
   const css = useStyles()
 
   if (!connection) return null
@@ -32,25 +32,39 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const address = app.address.split(':')
   const name = address[0]
   const port = address[1]
+  let h2Css = css.h2
+  let label = 'Address'
+  let display: JSX.Element | string = (
+    <>
+      {name && <span className={hover === 'name' ? css.active : undefined}>{name}</span>}
+      {port && (
+        <>
+          :<span className={hover === 'port' ? css.active : undefined}>{port}</span>
+        </>
+      )}
+    </>
+  )
+
+  if (hover === 'launch' || hover === 'copy') {
+    label = hover === 'copy' ? 'Command' : 'Launch'
+    app.context = hover
+    display = app.command
+    h2Css += ' ' + css.active
+  }
 
   return (
     <Collapse in={show} timeout={800}>
-      <Gutters bottom="xxs">
+      <Gutters bottom={null}>
         <Paper className={css.address} elevation={0}>
           <Gutters size="md" bottom={null}>
-            <InputLabel shrink>Address</InputLabel>
-            <Typography variant="h2">
-              {name && <span className={hover === 'name' ? css.active : css.text}>{name}</span>}
-              {port && (
-                <>
-                  :<span className={hover === 'port' ? css.active : css.text}>{port}</span>
-                </>
-              )}
+            <InputLabel shrink>{label}</InputLabel>
+            <Typography variant="h2" className={h2Css}>
+              {display}
             </Typography>
           </Gutters>
-          <Gutters size="md" top="sm" bottom="sm" className={css.buttons}>
+          <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
             <span>
-              {/* <InputLabel shrink>Copy</InputLabel> */}
+              <InputLabel shrink>Copy</InputLabel>
               <GuideStep
                 guide="guideAWS"
                 step={6}
@@ -65,6 +79,8 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
                   connection={connection}
                   service={service}
                   onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
+                  onMouseEnter={() => setHover('copy')}
+                  onMouseLeave={() => setHover(undefined)}
                 />
               </GuideStep>
               <CopyButton
@@ -89,7 +105,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
               />
             </span>
             <span>
-              {/* <InputLabel shrink>Launch</InputLabel> */}
+              <InputLabel shrink>Launch</InputLabel>
               <GuideStep
                 guide="guideAWS"
                 step={7}
@@ -104,12 +120,18 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
                   connection={connection}
                   service={service}
                   onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+                  onMouseEnter={() => setHover('launch')}
+                  onMouseLeave={() => setHover(undefined)}
                 />
               </GuideStep>
             </span>
           </Gutters>
         </Paper>
-        {details && <DataDisplay attributes={attributes} connection={connection} session={session} width={100} />}
+        {details && (
+          <Gutters size={null} bottom="xs">
+            <DataDisplay attributes={attributes} connection={connection} session={session} width={100} disablePadding />
+          </Gutters>
+        )}
       </Gutters>
     </Collapse>
   )
@@ -117,17 +139,26 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
 
 const useStyles = makeStyles({
   active: {
+    borderRadius: 4,
     backgroundColor: colors.darken,
-    borderRadius: 2,
   },
-  text: {},
+  h2: {
+    wordBreak: 'break-all',
+    overflow: 'hidden',
+    fontWeight: 500,
+    lineHeight: '1.33em',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
+    transition: 'height 200ms',
+    '-webkit-line-clamp': 2,
+    '-webkit-box-orient': 'vertical',
+    '& span': { wordBreak: 'break-word' },
+  },
   address: {
     backgroundColor: colors.primary,
     color: colors.white,
     padding: spacing.xs,
-    marginBottom: spacing.xs,
     '& label': { color: colors.white },
-    '& h2': { fontWeight: 500, lineHeight: '1.33em' /* wordBreak: 'break-all' */ },
   },
   buttons: {
     display: 'flex',

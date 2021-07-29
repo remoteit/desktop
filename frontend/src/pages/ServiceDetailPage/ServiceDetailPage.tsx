@@ -49,7 +49,6 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
                   onClick={() => ui.guide({ guide: 'guideAWS', step: 6 })}
                   fullWidth
                 />
-                {/* <Icon name="neuter" /> */}
                 {connection?.enabled ? (
                   <Tooltip title="Configure Connection" arrow>
                     <IconButton to={`/connections/${service.id}`} component={Link}>

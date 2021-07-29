@@ -20,6 +20,8 @@ export interface CommandButtonProps {
   type?: IconType
   show?: boolean
   dataButton?: boolean
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
   onCopy?: () => void
 }
 
@@ -34,6 +36,8 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
   type,
   show,
   dataButton,
+  onMouseEnter,
+  onMouseLeave,
   onCopy,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
@@ -82,7 +86,7 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
         <DataButton label="Command" value={app.command} title={title} icon={CopyIcon} onClick={check} />
       ) : (
         <Tooltip title={title}>
-          <IconButton onClick={check} onMouseEnter={event => event.stopPropagation()}>
+          <IconButton onClick={check} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
             {CopyIcon}
           </IconButton>
         </Tooltip>

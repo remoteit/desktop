@@ -22,6 +22,8 @@ type Props = {
   size?: FontSize
   color?: Color
   type?: IconType
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
   onLaunch?: () => void
 }
 
@@ -33,6 +35,8 @@ export const LaunchButton: React.FC<Props> = ({
   size = 'md',
   type,
   color,
+  onMouseEnter,
+  onMouseLeave,
   onLaunch,
 }) => {
   const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
@@ -135,7 +139,12 @@ export const LaunchButton: React.FC<Props> = ({
         />
       ) : (
         <Tooltip title={app.contextTitle}>
-          <IconButton onClick={clickHandler} disabled={loading || disabled}>
+          <IconButton
+            onClick={clickHandler}
+            disabled={loading || disabled}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
             {LaunchIcon}
           </IconButton>
         </Tooltip>
