@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams, Route } from 'react-router-dom'
+import { isDev } from '../services/Browser'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
@@ -17,6 +18,7 @@ import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { ErrorButton } from '../buttons/ErrorButton'
+import { CopyButton } from '../buttons/CopyButton'
 import { Container } from './Container'
 
 export const ServiceHeaderMenu: React.FC<{
@@ -52,6 +54,11 @@ export const ServiceHeaderMenu: React.FC<{
             </Route>
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
+            <CopyButton
+              icon="share-alt"
+              title="Copy sharable Link"
+              value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
+            />
           </Typography>
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>

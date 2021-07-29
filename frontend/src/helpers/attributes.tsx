@@ -153,6 +153,11 @@ export const attributes: Attribute[] = [
       })
   ),
   new ServiceAttribute({
+    id: 'sharableLink',
+    label: 'Shareable Link',
+    value: ({ service }) => `remoteit://connect/${service?.id}`,
+  }),
+  new ServiceAttribute({
     id: 'serviceName',
     label: 'Service Name',
     value: ({ service }) => service?.name,
@@ -208,7 +213,7 @@ export const attributes: Attribute[] = [
     value: ({ connection, session }) =>
       connection?.public
         ? 'Public Proxy'
-        : connection?.isP2P === undefined && session?.isP2P === undefined
+        : !connection?.connected
         ? 'Idle'
         : connection?.isP2P || session?.isP2P
         ? 'Peer to peer'

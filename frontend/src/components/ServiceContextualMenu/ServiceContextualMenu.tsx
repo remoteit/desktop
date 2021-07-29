@@ -75,9 +75,13 @@ export const ServiceContextualMenu: React.FC = () => {
       )}
       <MenuItem dense onClick={clipboard.copy}>
         <ListItemIcon>
-          <Icon name={clipboard.copied ? 'check' : 'link'} color={clipboard.copied ? 'success' : undefined} size="md" />
+          <Icon
+            name={clipboard.copied ? 'check' : 'share-alt'}
+            color={clipboard.copied ? 'success' : undefined}
+            size="md"
+          />
         </ListItemIcon>
-        <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy Desktop Link'} />
+        <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy Sharable Link'} />
         <input
           type="hidden"
           ref={clipboard.target}
