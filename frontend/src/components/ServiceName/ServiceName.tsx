@@ -22,7 +22,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   const instance = service || device
   const accessDisabled = !!device?.attributes?.accessDisabled
   const offline = isOffline(instance, connection)
-  const proxy = service && connection?.isP2P === false
+  const proxy = service && connection?.connected && connection?.isP2P === false
 
   let name = ''
 
