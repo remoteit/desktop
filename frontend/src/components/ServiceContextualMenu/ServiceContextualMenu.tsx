@@ -3,7 +3,7 @@ import { isDev } from '../../services/Browser'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { useClipboard } from 'use-clipboard-copy'
-import { CopyButton } from '../../buttons/CopyButton'
+import { CommandButton } from '../../buttons/CommandButton'
 import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
@@ -34,6 +34,10 @@ export const ServiceContextualMenu: React.FC = () => {
   if (!el) return null
 
   const handleClose = () => ui.set({ serviceContextMenu: undefined })
+  const handleGo = path => {
+    handleClose()
+    history.push(path)
+  }
 
   return (
     <Menu
@@ -53,20 +57,20 @@ export const ServiceContextualMenu: React.FC = () => {
       {!remoteUI && (
         <ListItem className={css.connect} dense>
           <ComboButton connection={connection} service={service} size="small" />
-          <CopyButton connection={connection} service={service} size="base" />
+          <CommandButton connection={connection} service={service} size="base" />
           <LaunchButton connection={connection} service={service} size="base" />
         </ListItem>
       )}
       {connection?.enabled && (
-        <MenuItem dense onClick={() => history.push(`/connections/${service?.id}`)}>
+        <MenuItem dense onClick={() => handleGo(`/connections/${service?.id}`)}>
           <ListItemIcon>
-            <Icon name="arrow-right" size="md" color="primary" />
+            <Icon name="chart-network" size="md" color="primary" />
           </ListItemIcon>
           <ListItemText primary="Connection Details" color="primary" classes={{ primary: css.connected }} />
         </MenuItem>
       )}
       {!device?.shared && (
-        <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/users/share`)}>
+        <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/users/share`)}>
           <ListItemIcon>
             <Icon name="user-plus" size="md" />
           </ListItemIcon>
@@ -75,9 +79,13 @@ export const ServiceContextualMenu: React.FC = () => {
       )}
       <MenuItem dense onClick={clipboard.copy}>
         <ListItemIcon>
-          <Icon name={clipboard.copied ? 'check' : 'link'} color={clipboard.copied ? 'success' : undefined} size="md" />
+          <Icon
+            name={clipboard.copied ? 'check' : 'share-alt'}
+            color={clipboard.copied ? 'success' : undefined}
+            size="md"
+          />
         </ListItemIcon>
-        <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy Desktop Link'} />
+        <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy Sharable Link'} />
         <input
           type="hidden"
           ref={clipboard.target}
@@ -85,14 +93,14 @@ export const ServiceContextualMenu: React.FC = () => {
         />
       </MenuItem>
       {!device?.shared && (
-        <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/edit`)}>
+        <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/edit`)}>
           <ListItemIcon>
             <Icon name="pen" size="md" />
           </ListItemIcon>
           <ListItemText primary="Edit Service" />
         </MenuItem>
       )}
-      <MenuItem dense onClick={() => history.push(`/devices/${device?.id}/${service?.id}/details`)}>
+      <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/details`)}>
         <ListItemIcon>
           <Icon name="info-circle" size="md" />
         </ListItemIcon>

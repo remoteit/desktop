@@ -48,7 +48,7 @@ export const NewConnection: React.FC = () => {
   return (
     <>
       <Typography variant="subtitle1">
-        <Title enabled={true}>New Connection</Title>
+        <Title enabled={true}>Add to Network</Title>
         <Link to="/connections">
           <IconButton className={css.button}>
             <Icon name="times" size="sm" color="gray" />

@@ -39,7 +39,7 @@ export const AccountAccessPage: React.FC = () => {
         </Typography>
       }
     >
-      <Gutters noBottom>
+      <Gutters bottom={null}>
         <Typography variant="body2">Share all the devices you own to another user</Typography>
       </Gutters>
       {access.length ? (

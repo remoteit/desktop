@@ -39,8 +39,9 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
       footer={
         !remoteUI && (
           <>
+            <ConnectionDetails connection={connection} show={connection?.enabled} />
             <GuideStep guide="guideAWS" step={5} instructions="Now enable the connect on demand listener.">
-              <Gutters className={css.gutters} noBottom>
+              <Gutters className={css.gutters}>
                 <ComboButton
                   connection={connection}
                   service={service}
@@ -48,25 +49,21 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
                   onClick={() => ui.guide({ guide: 'guideAWS', step: 6 })}
                   fullWidth
                 />
-                {/* <Icon name="neuter" /> */}
                 {connection?.enabled ? (
                   <Tooltip title="Configure Connection" arrow>
                     <IconButton to={`/connections/${service.id}`} component={Link}>
-                      <Icon name="arrow-right" size="md" fixedWidth />
+                      <Icon name="chart-network" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 ) : (
                   <Tooltip title="Configure Connection" arrow>
                     <IconButton to={`/connections/new/${device.id}/${service.id}`} component={Link}>
-                      <Icon name="arrow-right" size="md" fixedWidth />
+                      <Icon name="chart-network" size="md" fixedWidth />
                     </IconButton>
                   </Tooltip>
                 )}
               </Gutters>
             </GuideStep>
-            <Gutters>
-              <ConnectionDetails connection={connection} show={connection?.enabled} />
-            </Gutters>
           </>
         )
       }

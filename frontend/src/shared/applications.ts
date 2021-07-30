@@ -10,14 +10,15 @@ import { replaceHost } from './nameHelper'
 export const DEVICE_TYPE = 35
 
 export class Application {
-  title: string = 'URL'
-  icon: string = 'arrow-right'
   context?: 'copy' | 'launch'
+  title: string = 'URL'
+  launchIcon: string = 'launch'
+  commandIcon: string = 'terminal'
+  publicTemplate: string = '[address]'
+  addressTemplate: string = '[host]:[port]'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
-  defaultPublicTemplate: string = '[address]'
   defaultTokens: string[] = ['host', 'port', 'id']
-  iconRotate: boolean = false
   localhost?: boolean
 
   connection?: IConnection
@@ -37,12 +38,16 @@ export class Application {
     return this.parse(this.template, { ...this.lookup, ...data })
   }
 
+  get icon() {
+    return this.context === 'copy' ? this.commandIcon : this.launchIcon
+  }
+
   get templateKey() {
     return this.context === 'copy' ? 'commandTemplate' : 'launchTemplate'
   }
 
   get contextTitle() {
-    return this.context === 'copy' ? 'Command' : 'Launch URL'
+    return this.context === 'copy' ? 'Command' : `Launch ${this.title}`
   }
 
   get defaultTemplate() {
@@ -55,6 +60,10 @@ export class Application {
 
   get command() {
     return this.parse(this.template, this.lookup)
+  }
+
+  get address() {
+    return this.parse(this.resolvedAddressTemplate, this.lookup)
   }
 
   get prompt() {
@@ -84,15 +93,19 @@ export class Application {
     return lookup
   }
 
+  private get resolvedAddressTemplate() {
+    return this.connection?.public ? this.publicTemplate : this.addressTemplate
+  }
+
   private get resolvedDefaultLaunchTemplate() {
     return this.connection?.public
-      ? this.defaultPublicTemplate
+      ? this.publicTemplate
       : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate() {
     return this.connection?.public
-      ? this.defaultPublicTemplate
+      ? this.publicTemplate
       : this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
   }
 
@@ -123,12 +136,6 @@ export class Application {
   }
 }
 
-class DefaultApp extends Application {
-  title = 'URL'
-  icon = 'arrow-right'
-  iconRotate = true
-}
-
 export function getApplication(context: Application['context'], service?: IService, connection?: IConnection) {
   const app = getApplicationType(service?.typeID || connection?.typeID)
 
@@ -140,56 +147,43 @@ export function getApplication(context: Application['context'], service?: IServi
 }
 
 function getApplicationType(typeID?: number) {
-  let app: Application
-
   switch (typeID) {
     case 4:
-      app = new Application({
+      return new Application({
         title: 'VNC',
-        icon: 'desktop',
+        launchIcon: 'desktop',
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
       })
-      break
     case 28:
-      app = new Application({
+      return new Application({
         title: 'SSH',
-        icon: 'terminal',
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        defaultCommandTemplate:
-          'ssh -l [username] [host] -p [port] -o "StrictHostKeyChecking=no" -o "NoHostAuthenticationForLocalhost=yes"',
+        defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
+        //'ssh -l [username] [host] -p [port] -o "NoHostAuthenticationForLocalhost=yes"',
       })
-      break
     case 8:
     case 10:
     case 33:
-      app = new Application({
+      return new Application({
         title: 'Secure Browser',
-        icon: 'arrow-right',
-        iconRotate: true,
         defaultLaunchTemplate: 'https://[host]:[port]',
       })
-      break
     case 7:
     case 30:
     case 38:
     case 42:
-      app = new Application({
+      return new Application({
         title: 'Browser',
-        icon: 'arrow-right',
-        iconRotate: true,
       })
-      break
     case 34:
-      app = new Application({
+      return new Application({
         title: 'Samba',
-        icon: 'folder',
+        launchIcon: 'folder',
+        commandIcon: 'clipboard',
         localhost: true,
         defaultLaunchTemplate: 'smb://[host]:[port]',
       })
-      break
     default:
-      app = new DefaultApp({})
+      return new Application({})
   }
-
-  return app
 }

@@ -17,11 +17,10 @@ type Props = {
 export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, context, actionIcon, disabled }) => {
   if (!connection) connection = newConnection(service)
   const app = useApplication(context, service, connection)
-  const icon = context === 'launch' ? <Icon rotate={-45} name="arrow-right" size="md" /> : 'copy'
 
   return (
     <InlineTextFieldSetting
-      icon={icon}
+      icon={app.icon}
       disabled={disabled}
       value={app.template}
       displayValue={app.command}
