@@ -49,7 +49,6 @@ export const LaunchButton: React.FC<Props> = ({
   const [open, setOpen] = useState<boolean>(false)
   const [openApp, setOpenApp] = useState<boolean>(false)
   const [downloadLink, setDownloadLink] = useState<string>('')
-  const disabled = !connection?.enabled
 
   const app = useApplication('launch', service, connection)
 
@@ -72,7 +71,7 @@ export const LaunchButton: React.FC<Props> = ({
     }
   }, [requireInstall, launch, app])
 
-  if (!app) return null
+  if (!app || !connection?.enabled) return null
 
   const launchBrowser = () => {
     let launchApp: ILaunchApp | undefined
@@ -125,7 +124,7 @@ export const LaunchButton: React.FC<Props> = ({
   return (
     <>
       {menuItem ? (
-        <MenuItem dense onClick={clickHandler} disabled={loading || disabled}>
+        <MenuItem dense onClick={clickHandler} disabled={loading}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={app.contextTitle} />
         </MenuItem>
@@ -139,12 +138,7 @@ export const LaunchButton: React.FC<Props> = ({
         />
       ) : (
         <Tooltip title={app.contextTitle}>
-          <IconButton
-            onClick={clickHandler}
-            disabled={loading || disabled}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-          >
+          <IconButton onClick={clickHandler} disabled={loading} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
             {LaunchIcon}
           </IconButton>
         </Tooltip>
