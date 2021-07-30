@@ -1,37 +1,34 @@
 import { createModel } from '@rematch/core'
-import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { ApplicationState } from '../store'
+import { createTicketZendesk } from '../services/Feedback'
+import { graphQLCatchError } from '../services/graphQL'
 import { RootModel } from './rootModel'
 
 type FeedbackParams = { [key: string]: any }
 
-type IFeedbackState = {
+export type IFeedbackState = {
   sending: boolean
   sent: boolean
+  body: string
+  subject: string
 }
 
 const state: IFeedbackState = {
   sending: false,
   sent: false,
+  body: '',
+  subject: 'App Desktop',
 }
 
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async sendFeedback() {
+    async sendFeedback(_, globalState) {
       const { set } = dispatch.feedback
-
+      const { body, subject } = globalState.feedback
       set({ sending: true })
       try {
-        // TO DO
-        // const response = await graphQLSendFeedback({ })
-        // const errors = graphQLGetErrors(response)
-        // if (!errors) {
-
-        await new Promise(resolve => {
-          setTimeout(resolve, 500)
-        })
-
+        const params: IFeedbackState = { subject, body, sending: true, sent: true }
+        await createTicketZendesk(params)
         set({ sending: false, sent: true })
       } catch (error) {
         await graphQLCatchError(error)

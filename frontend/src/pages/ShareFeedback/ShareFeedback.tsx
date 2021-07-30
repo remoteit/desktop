@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
-import { makeStyles, Button, Divider, InputBase, Box, Grid, Typography, List } from '@material-ui/core'
+import { makeStyles, Button, Divider, Box, Grid, Typography, List, TextareaAutosize } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import styles from '../../styling'
 import { Icon } from '../../components/Icon'
@@ -17,7 +17,7 @@ export const ShareFeedback: React.FC<{}> = () => {
   }))
   const history = useHistory()
   const css = useStyles()
-  const [preview, setPreview] = React.useState('')
+  const [text, setText] = React.useState('')
 
   useEffect(() => {
     if (sent) {
@@ -30,11 +30,13 @@ export const ShareFeedback: React.FC<{}> = () => {
   }, [sent]);
 
   const sendFeedback = () => {
+    feedback.set({ body: text })
     feedback.sendFeedback()
   }
 
-  const onChange = (e) => {
-    setPreview(URL.createObjectURL(e.target.files[0]))
+
+  const onChangeText = (e) => {
+    setText(e.target.value)
   }
 
   return (
@@ -55,36 +57,17 @@ export const ShareFeedback: React.FC<{}> = () => {
               How can we improve remote.it? If you have a feature request,
               can you also let us know how you would use it and why it’s important to you?
             </Typography>
-            <Box pl={1} pb={2} minHeight={200} borderRadius={3} borderColor="#ccc" border={0}>
-              <InputBase
-                autoFocus={true}
-                margin="none"
-                required={true}
-                placeholder=""
-                id="name"
-                multiline={true}
-                fullWidth
+            <Box pl={1} pb={2} mt={2}>
+
+              <TextareaAutosize
+                aria-label="minimum height"
+                rowsMin={12}
                 className={css.inputText}
-                inputProps={{ 'aria-label': 'naked' }}
-                rowsMax={10}
+                autoFocus={true}
+                onChange={onChangeText}
               />
             </Box>
-            <Box mt={2} mb={2}>
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<Icon name="paperclip" size="md" fixedWidth />}
-                className={css.buttonUpload}
-                size="small"
-              >
-                Attach images, files or videos
-                <input type="file" hidden onChange={onChange} />
-              </Button>
 
-            </Box>
-            {preview && (<Box m={1}>
-              <img src={preview} className={css.img}></img>
-            </Box>)}
             <Divider></Divider>
             <Box paddingLeft={2} paddingRight={2}>
               <Grid container>
@@ -95,7 +78,7 @@ export const ShareFeedback: React.FC<{}> = () => {
                 <Grid item xs={4} md={4}>
                   <Box m={2} textAlign="right">
                     <Button
-                      disabled={sending}
+                      disabled={sending || text.length === 0}
                       onClick={sendFeedback}
                       color="primary"
                       variant="contained"
@@ -119,7 +102,21 @@ const useStyles = makeStyles({
   loading: { color: styles.colors.danger, margin: styles.spacing.sm },
   inputText: {
     overflow: 'hidden',
+    width: '95%',
+    border: 0,
+    background: '#f9f9f9',
+    outline: 'none',
+    padding: 10,
+    fontFamily: "'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    fontWeight: 300,
+    '&:focus': {
+      background: "#edf8ff",
+      border: 0,
+
+    },
   },
+
   buttonUpload: {
     textTransform: 'capitalize',
     fontWeight: 400,
