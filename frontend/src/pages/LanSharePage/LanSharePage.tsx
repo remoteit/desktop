@@ -15,7 +15,7 @@ import { maskIPClass } from '../../helpers/lanSharing'
 import { Quote } from '../../components/Quote'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-type Selections = { value: string | Function; name: string; note: string }
+type Selections = { value: string | Function; name: string; note: string; id: number }
 
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
@@ -33,12 +33,12 @@ export const LanSharePage: React.FC = () => {
 
   // prettier-ignore
   const selections: Selections[] = [
-    { value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
-    { value: maskIPClass(lanIp, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
-    { value: maskIPClass(lanIp, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
-    { value: maskIPClass(lanIp, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
-    { value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
-    { value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
+    { id: 0, value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
+    { id: 1, value: maskIPClass(lanIp, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
+    { id: 2, value: maskIPClass(lanIp, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
+    { id: 3, value: maskIPClass(lanIp, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
+    { id: 4, value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
+    { id: 5, value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
   ]
 
   useEffect(() => {
@@ -63,6 +63,19 @@ export const LanSharePage: React.FC = () => {
     if (!enabledLocalSharing) return IP_PRIVATE
     const value = selected.value
     return typeof value === 'function' ? value() : value
+  }
+
+  const getSelectionMask = () => {
+    switch (selected.id) {
+      case 1:
+        return '/8'
+      case 2:
+        return '/16'
+      case 3:
+        return '/24'
+      default:
+        return ''
+    }
   }
 
   if (!connection || !service) return null
@@ -131,6 +144,7 @@ export const LanSharePage: React.FC = () => {
               helperText={error}
               onChange={handleBindIP}
             />
+            <br />
             <TextField
               select
               size="small"
@@ -148,7 +162,10 @@ export const LanSharePage: React.FC = () => {
             </TextField>
             <Typography variant="body2" color="textSecondary">
               {selected.note} <br />
-              <span className={css.mask}>Mask {getSelectionValue()}</span>
+              <span className={css.mask}>
+                Mask {getSelectionValue()}
+                {getSelectionMask()}
+              </span>
             </Typography>
             {typeof selected.value === 'function' && (
               <Quote>

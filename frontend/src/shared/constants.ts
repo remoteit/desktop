@@ -67,6 +67,7 @@ export const DEFAULT_CONNECTION = {
   deviceID: '',
   online: false,
   timeout: 15,
+  ip: IP_PRIVATE,
   restriction: IP_OPEN,
   publicRestriction: IP_LATCH,
 }
