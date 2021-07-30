@@ -41,6 +41,8 @@ class Server {
 
     this.app.use(cors())
     this.app.use(express.static(WEB_DIR))
+    this.app.use('/v1/callback', express.static(WEB_DIR))
+    this.app.use('/authCallback', express.static(WEB_DIR))
     this.app.use('/', router)
 
     router.get('/system', async (request, response) => {
