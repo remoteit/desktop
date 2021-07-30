@@ -12,6 +12,7 @@ export const ServiceAttributes: React.FC<{ service?: IService; disablePadding?: 
     'serviceType',
     'owner',
     'serviceId',
+    'sharableLink',
     'license',
   ])
 

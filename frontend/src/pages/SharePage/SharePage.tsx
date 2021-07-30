@@ -49,12 +49,12 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
     history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))
   }
 
-  const handleShare = (share: SharingDetails, isNew: boolean) => {
+  const handleShare = async (share: SharingDetails, isNew: boolean) => {
     const shareData = mapShareData(share, isNew)
     const { scripting, services } = share.access
-    if (shareData) shares.share(shareData)
+    if (shareData) await shares.share(shareData)
     if (device && shareData) {
-      shares.updateDeviceState({ device, emails: shareData.email, scripting, services, isNew })
+      await shares.updateDeviceState({ device, emails: shareData.email, scripting, services, isNew })
     }
     goToNext()
   }

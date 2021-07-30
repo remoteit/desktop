@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, Dialog, DialogActions, Button } from '@material-ui/core'
+import { DialogTitle, Dialog, DialogActions, Button } from '@material-ui/core'
 
 export const DialogApp: React.FC<{
   openApp: boolean
@@ -15,14 +15,14 @@ export const DialogApp: React.FC<{
   return (
     <>
       <Dialog open={openApp} onClose={closeAll} maxWidth="xs" fullWidth>
-        <Typography variant="h1">
+        <DialogTitle>
           Please install {App} to launch {type} connections.
-        </Typography>
+        </DialogTitle>
         <DialogActions>
-          <Button onClick={closeAll} color="primary" size="small" type="button">
+          <Button onClick={closeAll} color="primary">
             Cancel
           </Button>
-          <Button onClick={getApp} variant="contained" color="primary" size="small" type="button">
+          <Button onClick={getApp} variant="contained" color="primary">
             Download {App}
           </Button>
         </DialogActions>

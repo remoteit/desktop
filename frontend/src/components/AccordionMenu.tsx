@@ -8,8 +8,11 @@ type IAccordionMenu = {
   children: React.ReactElement
 }
 
-export const AccordionMenu: React.FC<{ menus: IAccordionMenu[] }> = ({ menus }) => {
-  const [expanded, setExpanded] = useState<string | number>()
+export const AccordionMenu: React.FC<{ menus: IAccordionMenu[]; defaultExpanded?: string | number }> = ({
+  menus,
+  defaultExpanded,
+}) => {
+  const [expanded, setExpanded] = useState<string | number | undefined>(defaultExpanded)
 
   return (
     <>

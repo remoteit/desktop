@@ -19,8 +19,7 @@ const separator = ' - '
 
 export function attributeName(instance?: IDevice | IService) {
   if (!instance) return ''
-  // return instance.attributes.name || instance.name // disable while we decide if we want to use attributes for names
-  return instance.name
+  return instance.attributes.name || instance.name
 }
 
 export function replaceHost(url: string, localhost?: boolean) {

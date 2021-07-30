@@ -115,6 +115,8 @@ function getEventHandlers() {
       await cloudController.init()
       await store.dispatch.licensing.fetch()
       await store.dispatch.accounts.init()
+      await store.dispatch.devices.init()
+      await store.dispatch.ui.init()
       store.dispatch.applicationTypes.fetch()
       store.dispatch.announcements.fetch()
       await store.dispatch.devices.fetch()
@@ -190,7 +192,7 @@ function getEventHandlers() {
     'cli/error': error => {
       ui.set({ errorMessage: '' }) // So we re-trigger a new error if one exists
       ui.set({ errorMessage: error })
-      ui.reset()
+      ui.updated()
     },
 
     // Connections --- TODO validate we need these three channels

@@ -20,8 +20,8 @@ export default class Connection extends EventEmitter {
     this.set(connection)
   }
 
-  set({ host = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
-    this.params = { host, restriction, failover, ...connection }
+  set({ ip = IP_PRIVATE, restriction = IP_OPEN, failover = true, ...connection }: IConnection, setCLI?: boolean) {
+    this.params = { ip, restriction, failover, ...connection }
     d('SET CONNECTION', { params: this.params })
     if (setCLI && !this.params.public) cli.setConnection(this.params, this.error)
   }

@@ -7,6 +7,8 @@ import { ListItemText } from '@material-ui/core'
 import { licenseChip } from '../models/licensing'
 import { ServiceName } from '../components/ServiceName'
 import { LicenseChip } from '../components/LicenseChip'
+import { replaceHost } from '../shared/nameHelper'
+import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from '../components/DeviceGeo'
 import { TagEditor } from '../components/TagEditor'
 import { Duration } from '../components/Duration'
@@ -60,14 +62,17 @@ export const attributes: Attribute[] = [
     id: 'deviceName',
     label: 'Device Name',
     value: ({ device, connection }) => (
-      <ListItemText primary={<ServiceName device={device} connection={connection} />} />
+      <ListItemText
+        primary={<ServiceName device={device} connection={connection} />}
+        secondary={device?.thisDevice ? 'This device' : undefined}
+      />
     ),
     required: true,
   }),
   new Attribute({
     id: 'tags',
     label: 'Tags',
-    value: ({ device }) => <Tags ids={device?.tags || []} small />,
+    value: ({ device }) => (TestUI({}) ? <Tags ids={device?.tags || []} small /> : undefined),
     width: '80px',
   }),
   new Attribute({
@@ -148,6 +153,11 @@ export const attributes: Attribute[] = [
       })
   ),
   new ServiceAttribute({
+    id: 'sharableLink',
+    label: 'Shareable Link',
+    value: ({ service }) => `remoteit://connect/${service?.id}`,
+  }),
+  new ServiceAttribute({
     id: 'serviceName',
     label: 'Service Name',
     value: ({ service }) => service?.name,
@@ -203,11 +213,23 @@ export const attributes: Attribute[] = [
     value: ({ connection, session }) =>
       connection?.public
         ? 'Public Proxy'
-        : connection?.isP2P === undefined && session?.isP2P === undefined
+        : !connection?.connected
         ? 'Idle'
         : connection?.isP2P || session?.isP2P
         ? 'Peer to peer'
         : 'Proxy',
+  }),
+  new ConnectionAttribute({
+    id: 'local',
+    label: 'Local Address',
+    value: ({ connection }) => (connection ? `${connection.host}:${connection.port}` : undefined),
+  }),
+  new ConnectionAttribute({
+    id: 'lanShare',
+    label: 'LAN Address',
+    value: ({ connection }) => {
+      if (connection?.ip && lanShared(connection)) return `${replaceHost(connection.ip)}:${connection.port}`
+    },
   }),
   new DeviceAttribute({
     id: 'initiatorPlatform',

@@ -2,7 +2,7 @@ import { IP_OPEN, IP_LATCH, IP_PRIVATE } from '../shared/constants'
 import { store } from '../store'
 
 export function lanShareRestriction(connection?: IConnection) {
-  if (!connection || connection.public || connection.host === IP_PRIVATE) return 'Off'
+  if (!connection || connection.public || connection.ip === IP_PRIVATE) return 'Off'
   const { privateIP } = store.getState().backend.environment
 
   if (connection.restriction === undefined) return 'Off'
@@ -15,7 +15,7 @@ export function lanShareRestriction(connection?: IConnection) {
 }
 
 export function lanShared(connection?: IConnection) {
-  return !connection?.public && !!(connection && connection.host !== IP_PRIVATE)
+  return !connection?.public && !!(connection && connection.ip !== IP_PRIVATE)
 }
 
 export function isIPClass(checkIP: ipAddress, privateIP: ipAddress, type: ipClass) {

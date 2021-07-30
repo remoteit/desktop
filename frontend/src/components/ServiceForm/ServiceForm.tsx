@@ -8,6 +8,7 @@ import { ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { ServiceAttributesForm } from '../ServiceAttributesForm'
 import { serviceNameValidation } from '../../shared/nameHelper'
+import { AccordionMenuItem } from '../AccordionMenuItem'
 import { findType } from '../../models/applicationTypes'
 import { Gutters } from '../Gutters'
 import { spacing } from '../../styling'
@@ -220,63 +221,61 @@ export const ServiceForm: React.FC<Props> = ({
             )}
           </>
         )}
-      </List>
-      <Divider />
-
-      <Typography variant="subtitle1">Connection defaults</Typography>
-      <List>
-        <ListItem className={css.field}>
-          <TextField
-            size="small"
-            label="Default Connection Port"
-            value={form.attributes.defaultPort || ''}
+        {editable && (
+          <ListItemCheckbox
+            checked={!form.disabled}
+            label="Enable service"
+            subLabel={
+              <>
+                Disabling your service will take it offline.{' '}
+                <i>
+                  Service is
+                  {form.disabled ? ' disabled' : ' enabled'}
+                </i>
+              </>
+            }
             disabled={disabled}
-            variant="filled"
-            onChange={event => {
-              form.attributes.defaultPort = validPort(event)
-              setForm({ ...form })
+            onClick={() => {
+              setForm({ ...form, disabled: !form.disabled })
             }}
           />
-          <Typography variant="caption">Default local port to use when a device connects to this service.</Typography>
-        </ListItem>
-        <ServiceAttributesForm
-          className={css.field}
-          subClassName={css.fieldSub}
-          connection={{
-            ...DEFAULT_CONNECTION,
-            ...form.attributes,
-            typeID: form.type,
-            port: form.attributes.defaultPort,
-          }}
-          disabled={disabled}
-          attributes={form.attributes}
-          onUpdate={attributes => setForm({ ...form, attributes })}
-        />
+        )}
       </List>
-      {editable && (
+      <AccordionMenuItem subtitle="Connection defaults" gutterTop={false}>
         <>
-          <Divider />
           <List>
-            <ListItemCheckbox
-              checked={!form.disabled}
-              label="Enable service"
-              subLabel={
-                <>
-                  Disabling your service will take it offline.{' '}
-                  <i>
-                    Service is
-                    {form.disabled ? ' disabled' : ' enabled'}
-                  </i>
-                </>
-              }
-              disabled={disabled}
-              onClick={() => {
-                setForm({ ...form, disabled: !form.disabled })
+            <ListItem className={css.field}>
+              <TextField
+                size="small"
+                label="Default Connection Port"
+                value={form.attributes.defaultPort || ''}
+                disabled={disabled}
+                variant="filled"
+                onChange={event => {
+                  form.attributes.defaultPort = validPort(event)
+                  setForm({ ...form })
+                }}
+              />
+              <Typography variant="caption">
+                Default local port to use when a device connects to this service.
+              </Typography>
+            </ListItem>
+            <ServiceAttributesForm
+              className={css.field}
+              subClassName={css.fieldSub}
+              connection={{
+                ...DEFAULT_CONNECTION,
+                ...form.attributes,
+                typeID: form.type,
+                port: form.attributes.defaultPort,
               }}
+              disabled={disabled}
+              attributes={form.attributes}
+              onUpdate={attributes => setForm({ ...form, attributes })}
             />
           </List>
         </>
-      )}
+      </AccordionMenuItem>
       <Gutters>
         <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error}>
           Save

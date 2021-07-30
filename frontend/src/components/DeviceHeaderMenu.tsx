@@ -1,7 +1,7 @@
 import React from 'react'
-import { Route } from 'react-router-dom'
 import { Typography } from '@material-ui/core'
 import { useSelector } from 'react-redux'
+import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { ApplicationState } from '../store'
@@ -15,13 +15,7 @@ import { Container } from './Container'
 import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({ device, header, children }) => {
-  const { thisDevice, access } = useSelector((state: ApplicationState) => {
-    return {
-      thisDevice: state.backend.device?.uid === device?.id,
-      fetching: state.devices.fetching,
-      access: state.accounts.access,
-    }
-  })
+  const { access } = useSelector((state: ApplicationState) => ({ access: state.accounts.access }))
 
   if (!device) return <UnauthorizedPage />
 
@@ -31,10 +25,8 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
       header={
         <>
           <Typography variant="h1">
-            {/* <ConnectionStateIcon device={device} connection={connected} thisDevice={thisDevice} size="lg" /> */}
-            <Title>{device.name || 'Unknown'}</Title>
-            {/* <ServiceName device={device} connection={connected} /> */}
-            {thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteDeviceButton device={device} />}
+            <Title>{attributeName(device) || 'Unknown'}</Title>
+            {device.thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteDeviceButton device={device} />}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
           </Typography>
@@ -48,15 +40,14 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               exactMatch
               dense
             />
-            {!device.shared && device.state !== 'inactive' && (
-              <ListItemLocation
-                title="Edit"
-                icon="pen"
-                iconColor="grayDarker"
-                pathname={`/devices/${device.id}/edit`}
-                dense
-              />
-            )}
+            <ListItemLocation
+              title="Edit"
+              icon="pen"
+              iconColor="grayDarker"
+              disabled={device.state === 'inactive'}
+              pathname={`/devices/${device.id}/edit`}
+              dense
+            />
             <UsersSelect device={device} access={access} />
             <ListItemLocation
               title="Logs"

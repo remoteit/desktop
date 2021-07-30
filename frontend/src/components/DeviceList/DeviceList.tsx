@@ -14,7 +14,6 @@ export interface DeviceListProps {
   devices?: IDevice[]
   restore?: boolean
   select?: boolean
-  myDevice?: IDevice
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
@@ -24,7 +23,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   primary,
   restore,
   select,
-  myDevice,
 }) => {
   return (
     <>
@@ -33,7 +31,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           guide="guideAWS"
           step={3}
           placement="bottom"
-          instructions="Click on the AWS Demo device to continue."
+          instructions="Click on the Guest VPC device to continue."
           highlight
           autoNext
         >
@@ -47,7 +45,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 connections={connections[device.id]}
                 primary={primary}
                 attributes={attributes}
-                thisDevice={device.id === myDevice?.id}
                 restore={restore && canRestore}
                 select={select}
               />

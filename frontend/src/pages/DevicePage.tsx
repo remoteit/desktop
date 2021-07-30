@@ -30,11 +30,10 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
   targets: ITarget[]
-  targetDevice: ITargetDevice
   device?: IDevice
 }
 
-export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) => {
+export const DevicePage: React.FC<Props> = ({ targets, device }) => {
   const css = useStyles()
   const { connections, setupAddingService, sortService, searched, query } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
@@ -55,14 +54,8 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
       </span>
     )
 
-  const thisDevice = device.id === targetDevice.uid
-  const editable = thisDevice || device.configurable
+  const editable = device.thisDevice || device.configurable
   const connection = connections.find(c => c.deviceID === device.id && c.enabled)
-
-  function host(service: IService) {
-    const target = targets.find(t => t.uid === service.id)
-    if (target) return `${replaceHost(target.hostname)}:${target.port}`
-  }
 
   // reverse sort services by creation date
   device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -84,7 +77,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
             dense
           >
             <ListItemIcon>
-              <ConnectionStateIcon device={device} connection={connection} thisDevice={thisDevice} size="lg" />
+              <ConnectionStateIcon device={device} connection={connection} size="lg" />
             </ListItemIcon>
             <ListItemText
               primary={
@@ -106,7 +99,7 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <SortServices />
-        <AddFromNetwork allowScanning={thisDevice} button />
+        <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
       </Typography>
       <List>
@@ -137,7 +130,6 @@ export const DevicePage: React.FC<Props> = ({ targetDevice, targets, device }) =
               <ListItemText
                 className={css.service}
                 primary={<ServiceName service={s} connection={connections.find(c => c.id === s.id)} />}
-                secondary={host(s)}
               />
               <ListItemSecondaryAction>
                 <ServiceMiniState service={s} connection={connections.find(c => c.id === s.id)} />

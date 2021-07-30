@@ -62,7 +62,7 @@ export default {
     let string = `-j connection add \
       --id ${c.id} \
       --name "${c.name}" \
-      --ip ${c.host} \
+      --ip ${c.ip} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
       --failover ${!!c.failover} \
@@ -95,7 +95,7 @@ export default {
     let string = `-j connection modify \
     --id ${c.id} \
     --name "${c.name}" \
-    --ip ${c.host} \
+    --ip ${c.ip} \
     --timeout ${c.timeout} \
     --restrict ${c.restriction} \
     --failover ${!!c.failover} \

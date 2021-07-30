@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams, Route } from 'react-router-dom'
+import { isDev } from '../services/Browser'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { makeStyles } from '@material-ui/core/styles'
@@ -17,6 +18,7 @@ import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
 import { ErrorButton } from '../buttons/ErrorButton'
+import { CopyButton } from '../buttons/CopyButton'
 import { Container } from './Container'
 
 export const ServiceHeaderMenu: React.FC<{
@@ -28,9 +30,8 @@ export const ServiceHeaderMenu: React.FC<{
   const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
-  const { connection, thisDevice, access } = useSelector((state: ApplicationState) => ({
+  const { connection, access } = useSelector((state: ApplicationState) => ({
     connection: state.connections.all.find(c => c.id === serviceID),
-    thisDevice: state.backend.device?.uid === device?.id,
     access: state.accounts.access,
   }))
 
@@ -42,12 +43,10 @@ export const ServiceHeaderMenu: React.FC<{
         <>
           <OutOfBand />
           <Typography variant="h1">
-            {/* <ConnectionStateIcon connection={connection} service={service} thisDevice={thisDevice} size="lg" /> */}
-            {/* <ServiceName connection={connection} service={service} /> */}
             <Title>{service.name || 'unknown'}</Title>
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <Route path="/devices/:deviceID/:serviceID/edit">
-              {thisDevice ? (
+              {device.thisDevice ? (
                 <UnregisterServiceButton target={target} />
               ) : (
                 <DeleteServiceButton device={device} service={service} />
@@ -55,6 +54,11 @@ export const ServiceHeaderMenu: React.FC<{
             </Route>
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
+            <CopyButton
+              icon="share-alt"
+              title="Copy sharable Link"
+              value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
+            />
           </Typography>
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>

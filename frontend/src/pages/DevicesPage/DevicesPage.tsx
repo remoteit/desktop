@@ -4,8 +4,8 @@ import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesHeader } from '../../components/DevicesHeader'
-import { getDevices, getOwnDevices } from '../../models/accounts'
 import { DeviceList } from '../../components/DeviceList'
+import { getDevices, getOwnDevices } from '../../models/accounts'
 import { masterAttributes, deviceAttributes } from '../../helpers/attributes'
 
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -43,7 +43,6 @@ export const DevicesPage: React.FC<Props> = ({ singlePanel, restore, select }) =
           attributes={attributes}
           primary={required}
           restore={restore}
-          myDevice={myDevice}
           select={select}
         />
       )}

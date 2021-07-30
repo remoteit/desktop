@@ -1,17 +1,15 @@
 import React, { useEffect } from 'react'
-import { Body } from '../../components/Body'
 import { matchPath, useHistory, useLocation } from 'react-router-dom'
 import { makeStyles, Typography, Collapse, Link } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
-import { NewConnectionButton } from '../../buttons/NewConnectionButton'
 import { ApplicationState } from '../../store'
 import { NewConnection } from '../../components/NewConnection'
 import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
 import { useSelector } from 'react-redux'
+import { IconButton } from '../../buttons/IconButton'
 import { selectById } from '../../models/devices'
 import { Container } from '../../components/Container'
-import { Gutters } from '../../components/Gutters'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
@@ -40,8 +38,9 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     }
 
     for (const connection of allConnections) {
-      const [_, device] = selectById(state, connection.id)
+      const [service, device] = selectById(state, connection.id)
       const session: ISession = {
+        state: connectionState(service, connection),
         timestamp: new Date(connection.createdTime || 0),
         platform: 0,
         user: state.auth.user,
@@ -51,7 +50,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
           id: connection.id,
           deviceId: device?.id || '',
           platform: device?.targetPlatform || 0,
-          name: connection.name,
+          name: connection.name || service?.name || '',
         },
       }
       if (connection.enabled) local.push(session)
@@ -73,18 +72,9 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     <Container
       integrated
       header={
-        <>
-          {singlePanel && (
-            <Collapse in={!showNew} timeout={800}>
-              <Gutters inset>
-                <NewConnectionButton />
-              </Gutters>
-            </Collapse>
-          )}
-          <Collapse in={!!showNew} timeout={800}>
-            <NewConnection />
-          </Collapse>
-        </>
+        <Collapse in={!!showNew} timeout={800}>
+          <NewConnection />
+        </Collapse>
       }
     >
       {noConnections && (
@@ -99,7 +89,11 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
           </Typography>
         </>
       )}
-      <SessionsList title="Current" sessions={local} />
+      <SessionsList
+        title="Local Network"
+        sessions={local}
+        action={<IconButton title="Add to Network" icon="plus" to="/connections/new" color="primary" />}
+      />
       <SessionsList title="Others" sessions={other} other />
       <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
     </Container>

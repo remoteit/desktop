@@ -9,24 +9,28 @@ type Props = {
   icon: string
   disabled?: boolean
   to?: string
-  color?: Color
   className?: string
+  color?: Color
   type?: IconType
   size?: FontSize
   shiftDown?: boolean
+  onMouseEnter?: (e: React.MouseEvent) => void
+  onMouseLeave?: (e: React.MouseEvent) => void
   onClick?: (e: React.MouseEvent) => void
 }
 
 export const IconButton: React.FC<Props> = ({
   title,
   icon,
+  size = 'base',
   disabled,
   to,
   color,
   type = 'regular',
-  size = 'base',
   shiftDown,
   className,
+  onMouseEnter,
+  onMouseLeave,
   onClick,
   ...props
 }) => {
@@ -38,6 +42,8 @@ export const IconButton: React.FC<Props> = ({
   const button = (
     <MuiIconButton
       onClick={clickHandler}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       disabled={disabled}
       className={className}
       style={{ opacity: disabled ? 0.5 : undefined, marginBottom: shiftDown ? -spacing.sm : undefined }}

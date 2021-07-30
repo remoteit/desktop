@@ -24,7 +24,7 @@ export const DeviceListEmpty: React.FC = () => {
         <Typography variant="body1" color="textSecondary" align="center">
           Your search returned no results
         </Typography>
-      ) : !targetDevice.uid ? (
+      ) : (
         <>
           <GuideStep
             step={1}
@@ -39,26 +39,22 @@ export const DeviceListEmpty: React.FC = () => {
               hideArrow
             >
               <Button
-                onClick={() => devices.claimDevice('SHAREAWS')}
+                onClick={() => devices.claimDevice('GUESTVPC')}
                 variant="contained"
                 color="primary"
                 size="medium"
                 className={css.button}
                 disabled={claiming}
               >
-                <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft /> AWS DEMO
+                <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft /> GUEST VPC
               </Button>
             </GuideStep>
           </GuideStep>
           <Typography variant="body2" align="center" color="textSecondary">
-            Try our AWS example VPC and services. <br />
+            Try our AWS example system. <br />
             Our device will be shared to you and appear in your device list.
           </Typography>
         </>
-      ) : (
-        <Typography variant="body1" color="textSecondary" align="center">
-          You have no devices.
-        </Typography>
       )}
     </Body>
   )

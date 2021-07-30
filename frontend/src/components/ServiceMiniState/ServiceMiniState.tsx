@@ -28,12 +28,12 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
 
   let colorName: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
-  let failover: boolean = false
+  let proxy: boolean = false
   let opacity: number = 1
   let label: string = ''
 
   if (connection) {
-    failover = connection.isP2P === false
+    proxy = !!connection.connected && connection.isP2P === false
     if (cState === 'connecting' || cState === 'stopping') state = 'transition'
     if (cState === 'connected' || cState === 'ready') state = 'connected'
     if (connection.error?.message) state = 'error'
@@ -104,7 +104,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
             }}
           >
             {connected && <Icon name="user" type="solid" size="xxxs" color="primary" fixedWidth />}
-            {failover && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
+            {proxy && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}
           </span>
         </Box>

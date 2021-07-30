@@ -12,7 +12,7 @@ import { ConnectionDetails } from '../components/ConnectionDetails'
 import { newConnection } from '../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, Divider, List } from '@material-ui/core'
+import { makeStyles, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../components/InlineTemplateSetting'
 import { ConnectionLogSetting } from '../components/ConnectionLogSetting'
@@ -21,13 +21,11 @@ import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NoConnectionPage } from './NoConnectionPage'
 import { LanShareSelect } from '../components/LanShareSelect'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { LaunchButton } from '../buttons/LaunchButton'
 import { ForgetButton } from '../buttons/ForgetButton'
 import { ComboButton } from '../buttons/ComboButton'
 import { ClearButton } from '../buttons/ClearButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { InfoButton } from '../buttons/InfoButton'
-import { CopyButton } from '../buttons/CopyButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
@@ -68,7 +66,15 @@ export const ConnectionPage: React.FC = () => {
       gutterBottom
       header={
         <>
-          <Gutters className={css.gutters}>
+          <ConnectionDetails
+            details
+            connection={connection}
+            service={service}
+            session={session}
+            show={connection?.enabled}
+          />
+          {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
+          <Gutters className={css.gutters} top="sm">
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
               connection={connection}
@@ -85,10 +91,6 @@ export const ConnectionPage: React.FC = () => {
           <List className={css.errorMessage}>
             <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
           </List>
-          <Gutters>
-            <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
-            {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-          </Gutters>
         </>
       }
     >
@@ -101,8 +103,8 @@ export const ConnectionPage: React.FC = () => {
         <List disablePadding>
           <NameSetting connection={connection} service={service} device={device} />
           <PortSetting connection={connection} service={service} />
-          <InlineTemplateSetting connection={connection} service={service} context="launch" />
           <InlineTemplateSetting connection={connection} service={service} context="copy" />
+          <InlineTemplateSetting connection={connection} service={service} context="launch" />
           <CustomAttributeSettings connection={connection} service={service} />
         </List>
       </AccordionMenuItem>

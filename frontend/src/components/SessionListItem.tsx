@@ -16,7 +16,7 @@ export interface Props {
 
 export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent }) => {
   const connected = session.state === 'connected'
-  const css = useStyles(recent)()
+  const css = useStyles({ state: session.state, recent })
 
   let pathname = `/connections/${session.target.id}`
   if (session.id) pathname += `/${session.id}`
@@ -27,7 +27,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
   let icon = 'ellipsis-h'
   if (connected) icon = 'arrow-right'
   if (recent) icon = 'minus'
-  if (session.public) icon = 'globe-americas'
+  if (session.public) icon = 'share-alt'
 
   return (
     <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>
@@ -43,12 +43,8 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
         primary={
           <>
             <span className={css.from}>
-              {merge || (
-                <Title enabled={!recent}>
-                  {other ? session.user?.email : 'This device'}
-                  {/* {session.id} */}
-                </Title>
-              )}
+              {merge || <Title enabled={!recent}>{other ? session.user?.email : 'This device'}</Title>}
+              {/* session?.state */}
             </span>
             <Tooltip title={recent ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="top" arrow>
               <span className={css.icon}>
@@ -76,21 +72,21 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
   )
 }
 
-const useStyles = recent =>
-  makeStyles({
-    title: {
-      display: 'flex',
-      alignItems: 'flex-start',
-      '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
-    },
-    from: { width: '25%' },
-    to: { width: '60%' },
-    vertical: {
-      height: '2.8em',
-      backgroundColor: recent ? colors.grayLight : colors.primaryLight,
-      marginTop: -spacing.sm,
-      marginBottom: -spacing.sm,
-    },
-    icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
-    targetPlatform: { opacity: 0.8 },
-  })
+const useStyles = makeStyles({
+  title: ({ state }: any) => ({
+    opacity: state === 'offline' ? 0.5 : 1,
+    display: 'flex',
+    alignItems: 'flex-start',
+    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
+  }),
+  from: { width: '25%' },
+  to: { width: '60%' },
+  vertical: ({ recent }: any) => ({
+    height: '2.8em',
+    backgroundColor: recent ? colors.grayLight : colors.primaryLight,
+    marginTop: -spacing.sm,
+    marginBottom: -spacing.sm,
+  }),
+  icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
+  targetPlatform: { opacity: 0.8 },
+})
