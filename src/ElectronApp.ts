@@ -163,10 +163,10 @@ export default class ElectronApp {
           port: '3000',
         })
       : url.format({
-          pathname: path.join(WEB_DIR, 'index.html'),
-          protocol: 'file',
-          slashes: true,
-        })
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '29999',
+      })
   }
 
   private createSystemTray() {
