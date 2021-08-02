@@ -153,7 +153,7 @@ export class AnalyticsHelper {
 
   public trackConnect(
     name: string,
-    data?: { id: string; name: string; typeID?: number; isP2P?: boolean },
+    data?: { id: string; name?: string; typeID?: number; isP2P?: boolean },
     error?: ISimpleError
   ) {
     const connectionType =

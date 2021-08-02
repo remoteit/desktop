@@ -1,7 +1,7 @@
 import React from 'react'
-import { Route } from 'react-router-dom'
 import { Typography } from '@material-ui/core'
 import { useSelector } from 'react-redux'
+import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { ApplicationState } from '../store'
@@ -25,7 +25,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
       header={
         <>
           <Typography variant="h1">
-            <Title>{device.name || 'Unknown'}</Title>
+            <Title>{attributeName(device) || 'Unknown'}</Title>
             {device.thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteDeviceButton device={device} />}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
@@ -40,15 +40,14 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               exactMatch
               dense
             />
-            {!device.shared && device.state !== 'inactive' && (
-              <ListItemLocation
-                title="Edit"
-                icon="pen"
-                iconColor="grayDarker"
-                pathname={`/devices/${device.id}/edit`}
-                dense
-              />
-            )}
+            <ListItemLocation
+              title="Edit"
+              icon="pen"
+              iconColor="grayDarker"
+              disabled={device.state === 'inactive'}
+              pathname={`/devices/${device.id}/edit`}
+              dense
+            />
             <UsersSelect device={device} access={access} />
             <ListItemLocation
               title="Logs"

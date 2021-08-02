@@ -10,7 +10,7 @@ import { PromptModal } from '../../components/PromptModal'
 import { DataButton } from '../DataButton'
 import { DialogApp } from '../../components/DialogApp'
 import { Dispatch } from '../../store'
-import { FontSize } from '../../styling'
+import { FontSize, Color } from '../../styling'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 
@@ -20,10 +20,25 @@ type Props = {
   menuItem?: boolean
   dataButton?: boolean
   size?: FontSize
+  color?: Color
+  type?: IconType
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
   onLaunch?: () => void
 }
 
-export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, size = 'md', onLaunch }) => {
+export const LaunchButton: React.FC<Props> = ({
+  connection,
+  service,
+  menuItem,
+  dataButton,
+  size = 'md',
+  type,
+  color,
+  onMouseEnter,
+  onMouseLeave,
+  onLaunch,
+}) => {
   const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
     path: state.ui.launchPath,
@@ -34,7 +49,6 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   const [open, setOpen] = useState<boolean>(false)
   const [openApp, setOpenApp] = useState<boolean>(false)
   const [downloadLink, setDownloadLink] = useState<string>('')
-  const disabled = !connection?.enabled
 
   const app = useApplication('launch', service, connection)
 
@@ -57,7 +71,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
     }
   }, [requireInstall, launch, app])
 
-  if (!app) return null
+  if (!app || !connection?.enabled) return null
 
   const launchBrowser = () => {
     let launchApp: ILaunchApp | undefined
@@ -104,28 +118,27 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   const clickHandler = () => setLaunch(true)
 
   const LaunchIcon = (
-    <Icon
-      rotate={app.iconRotate ? -45 : undefined}
-      name={loading ? 'spinner-third' : app.icon}
-      spin={loading}
-      size={size}
-    />
+    <Icon name={loading ? 'spinner-third' : app.icon} spin={loading} size={size} color={color} type={type} fixedWidth />
   )
-
-  const title = `Launch ${app.title}`
 
   return (
     <>
       {menuItem ? (
-        <MenuItem dense onClick={clickHandler} disabled={loading || disabled}>
+        <MenuItem dense onClick={clickHandler} disabled={loading}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
-          <ListItemText primary={title} />
+          <ListItemText primary={app.contextTitle} />
         </MenuItem>
       ) : dataButton ? (
-        <DataButton label={title} value={app.command} title={title} icon={LaunchIcon} onClick={clickHandler} />
+        <DataButton
+          value={app.command}
+          label={app.contextTitle}
+          title={app.contextTitle}
+          icon={LaunchIcon}
+          onClick={clickHandler}
+        />
       ) : (
-        <Tooltip title={title}>
-          <IconButton onClick={clickHandler} disabled={loading || disabled}>
+        <Tooltip title={app.contextTitle}>
+          <IconButton onClick={clickHandler} disabled={loading} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
             {LaunchIcon}
           </IconButton>
         </Tooltip>

@@ -63,7 +63,8 @@ export default class ConnectionPool {
       if (
         !connection ||
         (!connection.public &&
-          (connection.host !== c.host ||
+          (connection.ip !== c.ip ||
+            connection.host !== c.host ||
             connection.port !== c.port ||
             connection.enabled !== c.enabled ||
             connection.startTime !== c.startTime ||
@@ -190,7 +191,7 @@ export default class ConnectionPool {
   }
 
   toJSON = (): IConnection[] => {
-    return this.pool.map(c => c.params).sort((a, b) => this.sort(a.name, b.name))
+    return this.pool.map(c => c.params).sort((a, b) => this.sort(a.name || '', b.name || ''))
   }
 
   sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)

@@ -86,18 +86,19 @@ export function useNavigation(): INavigationHook {
   const menuItems: INavigation[] = [
     { label: 'This Device', path: '/devices', match: '/devices/:any?/:any?/:any?', icon: 'hdd', show: remoteUI },
     {
-      label: 'Connections',
+      label: 'Network',
       path: '/connections', // recallPath('/connections')
       match: '/connections/:any?/:any?/:any?',
-      icon: 'arrow-right',
+      icon: 'chart-network',
       show: !remoteUI,
       chip: connections.toLocaleString(),
+      chipPrimary: true,
     },
     {
       label: 'Devices',
       path: '/devices',
       match: '/devices',
-      icon: 'chart-network',
+      icon: 'hdd',
       show: !remoteUI,
       chip: devices.toLocaleString(),
     },

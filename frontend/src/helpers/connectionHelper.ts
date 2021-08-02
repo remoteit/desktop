@@ -23,7 +23,7 @@ export function findLocalConnection(state: ApplicationState, id: string, session
 type nameObj = { name: string }
 
 export function sanitizeName(name: string) {
-  return name.toLowerCase().replace(/[-\s]+/g, '-')
+  return name?.toLowerCase().replace(/[-\s]+/g, '-')
 }
 
 export function connectionName(service?: nameObj, device?: nameObj): string {

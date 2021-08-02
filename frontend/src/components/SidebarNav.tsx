@@ -46,7 +46,12 @@ export const SidebarNav: React.FC = () => {
               <ListItemText primary={m.label} />
               {!!Number(m.chip) && (
                 <ListItemSecondaryAction>
-                  <Chip size="small" label={m.chip} className={css.chip} />
+                  <Chip
+                    size="small"
+                    label={m.chip}
+                    className={m.chipPrimary ? css.chip : undefined}
+                    color={m.chipPrimary ? 'primary' : undefined}
+                  />
                 </ListItemSecondaryAction>
               )}
             </ListItem>
@@ -59,8 +64,7 @@ export const SidebarNav: React.FC = () => {
 
 const useStyles = makeStyles({
   chip: {
-    fontWeight: 600,
-    color: colors.primary,
+    fontWeight: 500,
   },
   list: {
     marginTop: spacing.sm,
