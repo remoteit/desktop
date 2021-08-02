@@ -23,6 +23,7 @@ type DeviceParams = { [key: string]: any }
 type IGetDevice = {
   id: string
   hidden?: boolean
+  thisDevice?: boolean
 }
 
 type IDeviceState = {
@@ -131,7 +132,7 @@ export default createModel<RootModel>()({
     /*
       Fetches a single device and merges in the state
     */
-    async fetchSingle({ id, hidden }: IGetDevice, globalState: any): Promise<IDevice | undefined> {
+    async fetchSingle({ id, hidden, thisDevice }: IGetDevice, globalState: any): Promise<IDevice | undefined> {
       const { set } = dispatch.devices
       const device = selectDevice(globalState, id)
       const accountId = device?.accountId || getActiveAccountId(globalState)
@@ -151,6 +152,7 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
 
+      if (result) result.thisDevice = result.thisDevice || thisDevice
       await dispatch.accounts.setDevice({ id: id, accountId, device: result })
       set({ fetching: false })
 

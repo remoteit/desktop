@@ -74,7 +74,7 @@ export default createModel<RootModel>()({
       if (targetDevice?.uid !== device.uid) {
         // register
         if (targetDevice.uid && globalState.ui.setupRegisteringDevice) {
-          const result = await devices.fetchSingle({ id: targetDevice.uid })
+          const result = await devices.fetchSingle({ id: targetDevice.uid, thisDevice: true })
           if (!result) {
             // Instances were reported where a device wasn't returned
             await sleep(2000)

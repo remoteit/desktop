@@ -15,8 +15,8 @@ export const PROTOCOL =
 export const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const CALLBACK_URL =
   process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || process.env.NODE_ENV === 'development'
-    ? 'https://dev-auth.internal.remote.it/v1/callback'
-    : 'https://auth.api.remote.it/v1/callback'
+    ? 'https://dev-auth.internal.remote.it/v1/callback/'
+    : 'https://auth.api.remote.it/v1/callback/'
 export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://ws.remote.it/v1'
 export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL || 'wss://ws.remote.it/beta'
 

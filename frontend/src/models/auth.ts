@@ -59,7 +59,7 @@ export default createModel<RootModel>()({
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          redirectURL: isElectron() ? '' : window.origin + '/v1/callback',
+          redirectURL: isElectron() ? '' : window.origin + '/v1/callback/',
           callbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
           signoutCallbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
         })

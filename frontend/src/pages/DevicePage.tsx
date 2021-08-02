@@ -29,11 +29,10 @@ import { spacing, fontSizes } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
-  targets: ITarget[]
   device?: IDevice
 }
 
-export const DevicePage: React.FC<Props> = ({ targets, device }) => {
+export const DevicePage: React.FC<Props> = ({ device }) => {
   const css = useStyles()
   const { connections, setupAddingService, sortService, searched, query } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),

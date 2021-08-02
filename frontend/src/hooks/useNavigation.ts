@@ -92,6 +92,7 @@ export function useNavigation(): INavigationHook {
       icon: 'chart-network',
       show: !remoteUI,
       chip: connections.toLocaleString(),
+      chipPrimary: true,
     },
     {
       label: 'Devices',
