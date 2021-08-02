@@ -69,7 +69,7 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
       size = 'xs'
       break
     case 1201:
-      name = 'fighter-jet'
+      name = 'nvidia'
       type = 'regular'
       break
     case 1202:

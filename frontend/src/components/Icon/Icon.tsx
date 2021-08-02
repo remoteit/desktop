@@ -6,6 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
+import { Nvidia } from '../../assets/Nvidia'
 import { R3 } from '../../assets/R3'
 
 library.add(fal, fab, far, fas)
@@ -28,10 +29,7 @@ export type Ref = HTMLSpanElement
 export const Icon = React.forwardRef(
   ({ color, fixedWidth, name, size, rotate, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps) => {
     const styles: any = {}
-    if (!name) return null
 
-    // Special Icon Handling
-    if (name === 'r3') return <R3 style={styles} height={styles.fontSize} {...props} />
     if (name === 'port') {
       name = 'neuter'
       rotate = 90
@@ -41,11 +39,16 @@ export const Icon = React.forwardRef(
       rotate = -45
     }
 
+    if (!name) return null
     if (color) styles.color = colors[color] || color
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
     if (size) styles.fontSize = fontSizes[size]
     if (rotate) styles.transform = `rotate(${rotate}deg)`
+
+    // Special Icon Handling
+    if (name === 'r3') return <R3 style={styles} height={styles.fontSize} {...props} />
+    if (name === 'nvidia') return <Nvidia style={styles} height={styles.fontSize} {...props} />
 
     let fontType: IconPrefix = 'far'
 
