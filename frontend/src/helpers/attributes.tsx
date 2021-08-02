@@ -168,6 +168,11 @@ export const attributes: Attribute[] = [
     value: ({ service }) => service?.port,
   }),
   new ServiceAttribute({
+    id: 'serviceHost',
+    label: 'Remote Host',
+    value: ({ service }) => service?.host,
+  }),
+  new ServiceAttribute({
     id: 'serviceProtocol',
     label: 'Remote Protocol',
     value: ({ service }) => service?.protocol,
