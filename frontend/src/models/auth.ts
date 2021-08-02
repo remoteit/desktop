@@ -99,8 +99,8 @@ export default createModel<RootModel>()({
         if (result.authUser) {
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
-          console.error('SESSION ERROR', result.error)
-          ui.set({ errorMessage: result.error.message })
+          console.error('SESSION ERROR', result.error, result)
+          if (result.error?.message) ui.set({ errorMessage: result.error.message })
         }
       } catch (err) {
         console.log('check sign in error:')
