@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextField, List } from '@material-ui/core'
+import { TextField, Button, List } from '@material-ui/core'
 import { Gutters } from '../../components/Gutters'
 import { REGEX_VALID_URL } from '../../shared/constants'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
@@ -7,7 +7,7 @@ import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 
-export function NotificationMode(): JSX.Element {
+export function NotificationMode({ ...props }): JSX.Element {
 
   const {
     notificationUrl,
@@ -29,39 +29,38 @@ export function NotificationMode(): JSX.Element {
     urlNotifications: webHook,
     notificationUrl: webHookUrl
   }
+  const { loading } = useSelector((state: ApplicationState) => ({
+    loading: state.auth?.loading,
+  }))
+
+
 
   const onEmailChange = (value: boolean) => {
     setEmail(value)
     updateUserMetadata({ ...metadata, emailNotifications: value })
-    setError(false)
   }
 
   const onSystemChange = (value: boolean) => {
     setSystem(value)
     updateUserMetadata({ ...metadata, desktopNotifications: value })
-    setError(false)
   }
 
   const onWebChange = (value: boolean) => {
     setWebhook(value)
     setWebhookUrl('')
-    if (!value) {
-      updateUserMetadata({
-        ...metadata,
-        notificationUrl: '',
-        urlNotifications: false
-      })
-    }
-    setError(false)
   }
 
   const onChange = (value: string) => {
-    if (value === webHookUrl) return
     setWebhookUrl(value)
-    if (!REGEX_VALID_URL.test(value) && /\s/.test(value) && value.length > 10) {
+    if (!REGEX_VALID_URL.test(value)) {
       setError(true)
     } else {
       setError(false)
+    }
+  }
+
+  const onSave = () => {
+    if (!error) {
       updateUserMetadata({
         ...metadata,
         notificationUrl: webHook && webHookUrl?.length ? webHookUrl : '',
@@ -81,8 +80,7 @@ export function NotificationMode(): JSX.Element {
         <Quote margin={0}>
           <TextField
             disabled={!webHook}
-            onChange={e => onChange(e.currentTarget.value?.trim())}
-            onBlur={e => onChange(e.currentTarget.value?.trim())}
+            onChange={e => onChange(e.currentTarget.value.trim())}
             value={webHookUrl}
             label="URL endpoint"
             placeholder="Webhook Endpoint"
@@ -96,7 +94,9 @@ export function NotificationMode(): JSX.Element {
         </Quote>
       </Gutters>
       <Gutters>
-
+        <Button variant="contained" color="primary" onClick={onSave} disabled={error || loading} size="small">
+          {loading ? 'Saving' : 'Save'}
+        </Button>
       </Gutters>
     </>
   )
