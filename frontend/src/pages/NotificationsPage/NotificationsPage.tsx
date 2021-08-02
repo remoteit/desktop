@@ -6,7 +6,6 @@ import { Title } from '../../components/Title'
 import { NotificationMode } from './NotificationsMode'
 
 export const NotificationsPage: React.FC = () => {
-
   return (
     <Container
       gutterBottom
@@ -16,8 +15,7 @@ export const NotificationsPage: React.FC = () => {
         </Typography>
       }
     >
-
-      <Typography variant="subtitle1">Delivery Method</Typography>
+      <Typography variant="subtitle1">Method</Typography>
       <NotificationMode />
     </Container>
   )

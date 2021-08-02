@@ -8,13 +8,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 
 export function NotificationMode({ ...props }): JSX.Element {
-
-  const {
-    notificationUrl,
-    urlNotifications,
-    emailNotifications,
-    desktopNotifications,
-  } = useSelector((state: ApplicationState) => state.auth.notificationSettings)
+  const { notificationUrl, urlNotifications, emailNotifications, desktopNotifications } = useSelector(
+    (state: ApplicationState) => state.auth.notificationSettings
+  )
   const dispatch = useDispatch<Dispatch>()
   const { updateUserMetadata } = dispatch.auth
   const [email, setEmail] = useState<boolean>(emailNotifications || false)
@@ -27,13 +23,11 @@ export function NotificationMode({ ...props }): JSX.Element {
     desktopNotifications: system,
     emailNotifications: email,
     urlNotifications: webHook,
-    notificationUrl: webHookUrl
+    notificationUrl: webHookUrl,
   }
   const { loading } = useSelector((state: ApplicationState) => ({
     loading: state.auth?.loading,
   }))
-
-
 
   const onEmailChange = (value: boolean) => {
     setEmail(value)
@@ -50,13 +44,9 @@ export function NotificationMode({ ...props }): JSX.Element {
     setWebhookUrl('')
   }
 
-  const onChange = (value: string) => {
+  const checkWebHookUrl = (value: string) => {
     setWebhookUrl(value)
-    if (!REGEX_VALID_URL.test(value)) {
-      setError(true)
-    } else {
-      setError(false)
-    }
+    setError(!REGEX_VALID_URL.test(value))
   }
 
   const onSave = () => {
@@ -64,23 +54,27 @@ export function NotificationMode({ ...props }): JSX.Element {
       updateUserMetadata({
         ...metadata,
         notificationUrl: webHook && webHookUrl?.length ? webHookUrl : '',
-        urlNotifications: webHook
+        urlNotifications: webHook,
       })
     }
   }
 
+  React.useEffect(() => {
+    checkWebHookUrl(webHookUrl)
+  }, [])
+
   return (
     <>
       <List>
-        <ListItemSwitch label='System notification' checked={system} onClick={onSystemChange} />
-        <ListItemSwitch label='Email' checked={email} onClick={onEmailChange} />
+        <ListItemSwitch label="System notification" checked={system} onClick={onSystemChange} />
+        <ListItemSwitch label="Email" checked={email} onClick={onEmailChange} />
         <ListItemSwitch label="Webhook" checked={webHook} onClick={onWebChange} />
       </List>
-      <Gutters inset noTop>
+      <Gutters inset="icon" top={null}>
         <Quote margin={0}>
           <TextField
             disabled={!webHook}
-            onChange={e => onChange(e.currentTarget.value.trim())}
+            onChange={e => checkWebHookUrl(e.currentTarget.value.trim())}
             value={webHookUrl}
             label="URL endpoint"
             placeholder="Webhook Endpoint"
@@ -92,8 +86,7 @@ export function NotificationMode({ ...props }): JSX.Element {
             helperText={error ? 'Please provide a valid URL' : undefined}
           />
         </Quote>
-      </Gutters>
-      <Gutters>
+        <br />
         <Button variant="contained" color="primary" onClick={onSave} disabled={error || loading} size="small">
           {loading ? 'Saving' : 'Save'}
         </Button>
