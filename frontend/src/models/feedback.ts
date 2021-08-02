@@ -10,6 +10,8 @@ export type IFeedbackState = {
   sent: boolean
   body: string
   subject: string
+  name?: string
+  email?: string
 }
 
 const state: IFeedbackState = {
@@ -17,6 +19,8 @@ const state: IFeedbackState = {
   sent: false,
   body: '',
   subject: 'App Desktop',
+  name: '',
+  email: '',
 }
 
 export default createModel<RootModel>()({
@@ -25,9 +29,17 @@ export default createModel<RootModel>()({
     async sendFeedback(_, globalState) {
       const { set } = dispatch.feedback
       const { body, subject } = globalState.feedback
+      const { user } = globalState.auth
       set({ sending: true })
       try {
-        const params: IFeedbackState = { subject, body, sending: true, sent: true }
+        const params: IFeedbackState = {
+          subject,
+          body,
+          sending: true,
+          sent: true,
+          name: user?.email,
+          email: user?.email,
+        }
         await createTicketZendesk(params)
         set({ sending: false, sent: true })
       } catch (error) {
