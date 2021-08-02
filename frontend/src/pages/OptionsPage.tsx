@@ -14,7 +14,6 @@ import { isRemote } from '../services/Browser'
 import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
-import { useHistory } from 'react-router-dom'
 
 export const OptionsPage: React.FC = () => {
   const { os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
@@ -28,7 +27,6 @@ export const OptionsPage: React.FC = () => {
       remoteUI: isRemoteUI(state),
     })
   )
-  const history = useHistory()
 
   const { binaries, ui } = useDispatch<Dispatch>()
 
