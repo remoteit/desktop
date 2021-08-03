@@ -109,6 +109,7 @@ export default class TrayMenu {
       more = list.length - MAX_MENU_SIZE
       list = list.slice(0, MAX_MENU_SIZE)
     }
+    // list = list.sort((a, b) => Number(b.connected || 0) - Number(a.connected || 0))
     let menu = list.reduce((result: any[], connection) => {
       if (connection.createdTime || connection.enabled) {
         result.push({
@@ -116,7 +117,9 @@ export default class TrayMenu {
           icon: connection.connected ? iconConnected : connection.online ? iconOnline : iconOffline,
           submenu: [
             connection.enabled
-              ? { label: 'Remove from network', click: () => this.disconnect(connection) }
+              ? connection.connected
+                ? { label: 'Stop connection', click: () => this.disconnect(connection) }
+                : { label: 'Remove from network', click: () => this.remove(connection) }
               : connection.online
               ? { label: 'Add to network', click: () => this.connect(connection) }
               : { label: 'Offline', enabled: false },
@@ -163,6 +166,10 @@ export default class TrayMenu {
 
   private disconnect(connection: IConnection) {
     headless.pool.stop(connection)
+  }
+
+  private remove(connection: IConnection) {
+    headless.pool.disable(connection)
   }
 
   private copy(connection: IConnection) {
