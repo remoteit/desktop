@@ -13,6 +13,7 @@ const DEVICE_SELECT = `
   platform
   version
   configurable
+  license
   attributes
   access {
     user {
@@ -168,6 +169,7 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
       quality: d.endpoint?.quality,
       version: d.version,
       geo: d.endpoint?.geo,
+      license: d.license,
       attributes: processDeviceAttributes(d, metaData),
       tags: labelsToTags(d),
       services: d.services.map(

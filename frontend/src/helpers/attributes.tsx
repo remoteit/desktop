@@ -143,6 +143,11 @@ export const attributes: Attribute[] = [
     value: ({ device }) => device?.version,
     width: '30px',
   }),
+  new DeviceAttribute({
+    id: 'license',
+    label: 'License',
+    value: ({ device }) => <LicenseChip chip={licenseChip[device?.license || 0]} />,
+  }),
   // @TODO add attributes to the device model on graphql request
   ...ATTRIBUTES.map(
     id =>

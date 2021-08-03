@@ -226,6 +226,7 @@ declare global {
     configurable: boolean // cloudshift device
     accountId: string
     thisDevice?: boolean
+    license: ILicenseTypes
     geo: IGeo & {
       connectionType?: string
       isp?: string
@@ -260,7 +261,7 @@ declare global {
     host?: ipAddress
     protocol?: string
     access: IUser[]
-    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
+    license: ILicenseTypes
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy
@@ -343,6 +344,8 @@ declare global {
       }
     }
   }
+
+  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
 
   type IAnnouncement = {
     id: string

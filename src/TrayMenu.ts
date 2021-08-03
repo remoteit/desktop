@@ -109,7 +109,6 @@ export default class TrayMenu {
       more = list.length - MAX_MENU_SIZE
       list = list.slice(0, MAX_MENU_SIZE)
     }
-    // list = list.sort((a, b) => Number(b.connected || 0) - Number(a.connected || 0))
     let menu = list.reduce((result: any[], connection) => {
       if (connection.createdTime || connection.enabled) {
         result.push({
