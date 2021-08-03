@@ -24,6 +24,7 @@ import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { Panel } from '../components/Panel'
 import { UserLogPage } from '../pages/UserLogPage'
+import { ShareFeedback } from '../pages/ShareFeedback'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
@@ -140,6 +141,12 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       <Route path="/announcements">
         <Panel>
           <AnnouncementsPage />
+        </Panel>
+      </Route>
+
+      <Route path="/shareFeedback">
+        <Panel>
+          <ShareFeedback dialogOpen={true} />
         </Panel>
       </Route>
 

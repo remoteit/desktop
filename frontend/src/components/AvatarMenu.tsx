@@ -6,7 +6,6 @@ import { ListItemSetting } from './ListItemSetting'
 import { colors, spacing } from '../styling'
 import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
-import { version } from '../../package.json'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
@@ -53,13 +52,6 @@ export const AvatarMenu: React.FC<Props> = ({}) => {
           label="Account"
           icon="user"
           onClick={() => window.open('https://link.remote.it/portal/account')}
-        />
-        <ListItemSetting
-          label="Feedback"
-          icon="envelope"
-          onClick={() =>
-            (window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`))
-          }
         />
         <ListItemSetting
           label="Documentation"

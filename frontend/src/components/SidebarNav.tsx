@@ -3,8 +3,9 @@ import { useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useNavigation } from '../hooks/useNavigation'
 import { List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction, Chip, Badge } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { colors } from '../styling'
+import { colors, spacing } from '../styling'
 import { Icon } from './Icon'
+import classnames from 'classnames'
 
 export const SidebarNav: React.FC = () => {
   const { menuItems } = useNavigation()
@@ -23,7 +24,7 @@ export const SidebarNav: React.FC = () => {
           items.push(
             <ListItem
               key={m.path}
-              className={active ? css.active : ''}
+              className={classnames(active && css.active, m.footer && css.footer)}
               onClick={() => history.push(m.path)}
               button
               dense
@@ -66,14 +67,20 @@ const useStyles = makeStyles({
     fontWeight: 500,
   },
   list: {
+    marginTop: spacing.sm,
     '& .MuiListItemText-primary': { color: colors.grayDark },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: colors.black },
     '& .MuiListItem-button:hover path': { color: colors.grayDarkest },
+    height: '100%',
   },
   active: {
     backgroundColor: colors.white,
     '& .MuiListItemText-primary': {
       color: colors.black,
     },
+  },
+  footer: {
+    position: 'absolute',
+    bottom: spacing.lg,
   },
 })

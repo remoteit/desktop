@@ -31,12 +31,13 @@ export const Sidebar: React.FC = () => {
 const useStyles = addSpace =>
   makeStyles({
     sidebar: {
-      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
       backgroundColor: colors.grayLighter,
       width: SIDEBAR_WIDTH,
       minWidth: SIDEBAR_WIDTH,
       height: '100%',
-      '& section': { margin: `${spacing.xl}px ${spacing.md}px` },
+      '& section': { margin: `${spacing.xl}px ${spacing.md}px ${spacing.sm}px` },
       '& section:first-child': { marginTop: addSpace ? spacing.xxl : spacing.md },
     },
     header: {
