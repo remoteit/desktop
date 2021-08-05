@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { FontSize, Color } from '../styling'
 import { setConnection } from '../helpers/connectionHelper'
 import { useApplication } from '../hooks/useApplication'
 import { useClipboard } from 'use-clipboard-copy'
 import { PromptModal } from '../components/PromptModal'
+import { IconButton } from '../buttons/IconButton'
 import { Application } from '../shared/applications'
 import { DataButton } from './DataButton'
 import { Icon } from '../components/Icon'
@@ -29,16 +30,13 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
   connection,
   service,
   menuItem,
-  color,
   context = 'copy',
-  title = 'Command',
+  title,
   size = 'md',
-  type,
   show,
   dataButton,
-  onMouseEnter,
-  onMouseLeave,
   onCopy,
+  ...props
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
@@ -64,9 +62,9 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
     <>
       <Icon
         name={clipboard.copied ? 'check' : app.icon}
-        color={clipboard.copied ? color || 'success' : color}
+        color={clipboard.copied ? props.color || 'success' : props.color}
         size={size}
-        type={type}
+        type={props.type}
         fixedWidth
       />
       <input type="hidden" ref={clipboard.target} value={app.command} />
@@ -83,13 +81,9 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
           <ListItemText primary={title} />
         </MenuItem>
       ) : dataButton ? (
-        <DataButton label="Command" value={app.command} title={title} icon={CopyIcon} onClick={check} />
+        <DataButton label="Command" value={app.command} title={title || 'Command'} icon={CopyIcon} onClick={check} />
       ) : (
-        <Tooltip title={title}>
-          <IconButton onClick={check} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-            {CopyIcon}
-          </IconButton>
-        </Tooltip>
+        <IconButton {...props} onClick={check} icon={clipboard.copied ? 'check' : app.icon} />
       )}
       <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />
     </>

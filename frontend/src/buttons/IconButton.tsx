@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon'
 import { Color, FontSize } from '../styling'
 
 type Props = {
-  title: string
+  title?: string
   icon: string
   disabled?: boolean
   to?: string
@@ -48,5 +48,5 @@ export const IconButton: React.FC<Props> = ({
     </MuiIconButton>
   )
 
-  return disabled ? button : <Tooltip title={title}>{button}</Tooltip>
+  return disabled || !title ? button : <Tooltip title={title}>{button}</Tooltip>
 }

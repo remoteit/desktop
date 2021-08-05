@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { launchPutty, launchVNC, launchRemoteDesktop } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { useApplication } from '../../hooks/useApplication'
@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
 import { DataButton } from '../DataButton'
+import { IconButton } from '../../buttons/IconButton'
 import { DialogApp } from '../../components/DialogApp'
 import { Dispatch } from '../../store'
 import { FontSize, Color } from '../../styling'
@@ -33,11 +34,8 @@ export const LaunchButton: React.FC<Props> = ({
   menuItem,
   dataButton,
   size = 'md',
-  type,
-  color,
-  onMouseEnter,
-  onMouseLeave,
   onLaunch,
+  ...props
 }) => {
   const { requireInstall, loading, path } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
@@ -118,7 +116,14 @@ export const LaunchButton: React.FC<Props> = ({
   const clickHandler = () => setLaunch(true)
 
   const LaunchIcon = (
-    <Icon name={loading ? 'spinner-third' : app.icon} spin={loading} size={size} color={color} type={type} fixedWidth />
+    <Icon
+      name={loading ? 'spinner-third' : app.icon}
+      spin={loading}
+      size={size}
+      color={props.color}
+      type={props.type}
+      fixedWidth
+    />
   )
 
   return (
@@ -137,11 +142,7 @@ export const LaunchButton: React.FC<Props> = ({
           onClick={clickHandler}
         />
       ) : (
-        <Tooltip title={app.contextTitle}>
-          <IconButton onClick={clickHandler} disabled={loading} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-            {LaunchIcon}
-          </IconButton>
-        </Tooltip>
+        <IconButton {...props} onClick={clickHandler} disabled={loading} icon={loading ? 'spinner-third' : app.icon} />
       )}
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
       <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />
