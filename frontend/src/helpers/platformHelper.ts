@@ -70,7 +70,9 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
       break
     case 1201:
       name = 'nvidia'
-      type = 'regular'
+      break
+    case 1205:
+      name = 'openwrt'
       break
     case 1202:
       name = 'router'

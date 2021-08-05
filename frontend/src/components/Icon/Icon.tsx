@@ -6,6 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
+import { OpenWrt } from '../../assets/OpenWrt'
 import { Nvidia } from '../../assets/Nvidia'
 import { R3 } from '../../assets/R3'
 
@@ -49,6 +50,7 @@ export const Icon = React.forwardRef(
     // Special Icon Handling
     if (name === 'r3') return <R3 style={styles} height={styles.fontSize} {...props} />
     if (name === 'nvidia') return <Nvidia style={styles} height={styles.fontSize} {...props} />
+    if (name === 'openwrt') return <OpenWrt style={styles} height={styles.fontSize} {...props} />
 
     let fontType: IconPrefix = 'far'
 
