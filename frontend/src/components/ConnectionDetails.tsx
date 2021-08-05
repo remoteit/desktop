@@ -126,9 +126,9 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
               <GuideStep
                 guide="guideAWS"
                 step={6}
-                instructions="Copy this address for use in your application to have it connect on demand."
+                instructions="Copy this address for use in your application. It will connect on demand even if you close remoteit."
                 placement="left"
-                highlight
+                component="span"
               >
                 <CommandButton
                   color="white"
@@ -166,7 +166,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
                 step={7}
                 instructions="Or for web and some other services you can use the launch button."
                 placement="left"
-                highlight
               >
                 <LaunchButton
                   color="white"
