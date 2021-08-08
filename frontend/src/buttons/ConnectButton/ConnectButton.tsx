@@ -48,6 +48,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       analyticsHelper.trackConnect('connectionInitiated', service)
       connection = connection || newConnection(service)
       connection.name = sanitizeName(connection?.name || '')
+      connection.host = ''
       connection?.public ? connections.proxyConnect(connection) : emit('service/connect', connection)
     }
   }
