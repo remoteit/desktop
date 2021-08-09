@@ -19,6 +19,8 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
   const filtered = sort(users.filter(user => !connected.find(_u => _u.email === user.email)))
   const listUserLinked = sort(access.filter(user => !connected.find(_u => _u.email === user.email)))
 
+  const listUserShared = sort(users.filter(user => !connected.find(_u => _u.email === user.email)))
+
   if (!users?.length && !access.length) return null
 
   return (
@@ -37,7 +39,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
           </List>
         </>
       )}
-      {!!listUserLinked.length && !!filtered.length && (
+      {!!listUserShared.length && !!filtered.length && (
         <>
           <Typography variant="subtitle1">Shared</Typography>
           <List>
