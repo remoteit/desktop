@@ -20,6 +20,7 @@ export const DevicesPage: React.FC<Props> = ({ singlePanel, restore, select }) =
     devices: getDevices(state).filter((d: IDevice) => !d.hidden),
     myDevice: getOwnDevices(state).find(device => device.id === state.backend.device.uid),
     connections: state.connections.all.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
+      if (!c.deviceID) return lookup
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
       return lookup

@@ -27,10 +27,10 @@ type Props = {
 }
 
 export const DevicesHeader: React.FC<Props> = ({ singlePanel, fetching, restore, myDevice, children }) => {
-  const { loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
+  const { initialized, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
+    initialized: state.devices.initialized,
     registeredId: state.backend.device.uid,
     loggedInUser: getActiveAccountId(state) === state.auth.user?.id,
-    fetching: state.devices.fetching,
   }))
   const css = useStyles()
 
@@ -59,13 +59,14 @@ export const DevicesHeader: React.FC<Props> = ({ singlePanel, fetching, restore,
               <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
             </TestUI>
           </div>
-          {registeredId ? (
-            loggedInUser && !myDevice && <Notice gutterBottom>This device is not registered to you.</Notice>
-          ) : (
-            <List dense disablePadding>
-              <DeviceSetupItem restore={restore} />
-            </List>
-          )}
+          {initialized &&
+            (registeredId ? (
+              loggedInUser && !myDevice && <Notice gutterBottom>This device is not registered to you.</Notice>
+            ) : (
+              <List dense disablePadding>
+                <DeviceSetupItem restore={restore} />
+              </List>
+            ))}
           {fetching && <LinearProgress className={css.fetching} />}
         </>
       }
