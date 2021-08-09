@@ -47,7 +47,7 @@ export const LaunchButton: React.FC<Props> = ({
   const [open, setOpen] = useState<boolean>(false)
   const [openApp, setOpenApp] = useState<boolean>(false)
   const [downloadLink, setDownloadLink] = useState<string>('')
-
+  const disabled = !connection || !connection.host || connection.connecting || !connection.enabled
   const app = useApplication('launch', service, connection)
 
   useEffect(() => {
@@ -142,7 +142,12 @@ export const LaunchButton: React.FC<Props> = ({
           onClick={clickHandler}
         />
       ) : (
-        <IconButton {...props} onClick={clickHandler} disabled={loading} icon={loading ? 'spinner-third' : app.icon} />
+        <IconButton
+          {...props}
+          onClick={clickHandler}
+          disabled={loading || disabled}
+          icon={loading ? 'spinner-third' : app.icon}
+        />
       )}
       <PromptModal app={app} open={open} onClose={closeAll} onSubmit={onSubmit} />
       <DialogApp openApp={openApp} closeAll={closeAll} link={downloadLink} type={service?.type} />

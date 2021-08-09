@@ -1,11 +1,14 @@
 import React from 'react'
-import { makeStyles, Divider, Tooltip, ListItemText, ListItemIcon } from '@material-ui/core'
+import { makeStyles, Tooltip, ListItem, ListItemText, ListItemIcon } from '@material-ui/core'
 import { InitiatorPlatform } from './InitiatorPlatform'
 import { ListItemLocation } from './ListItemLocation'
 import { TargetPlatform } from './TargetPlatform'
+import { spacing, colors } from '../styling'
+import { ApplicationState } from '../store'
+import { useSelector } from 'react-redux'
+import { selectById } from '../models/devices'
 import { Title } from './Title'
 import { Icon } from './Icon'
-import { spacing, colors } from '../styling'
 
 export interface Props {
   session: ISession
@@ -15,6 +18,7 @@ export interface Props {
 }
 
 export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent }) => {
+  const [service, device] = useSelector((state: ApplicationState) => selectById(state, session.target.id))
   const connected = session.state === 'connected'
   const css = useStyles({ state: session.state, recent })
 
@@ -24,69 +28,79 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
 
   if (!session) return null
 
-  let icon = 'ellipsis-h'
-  if (connected) icon = 'arrow-right'
-  if (recent) icon = 'minus'
-  if (session.public) icon = 'share-alt'
+  let icon: React.ReactElement | null = null
+  if (connected) {
+    icon = <Icon color="primary" name="chevron-right" type="light" size="md" />
+    if (session.public) icon = <Icon color="primary" name="chevron-double-right" type="light" size="md" />
+  }
 
   return (
-    <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>
-      <ListItemIcon>
-        {merge ? (
-          <Divider orientation="vertical" className={css.vertical} />
-        ) : (
-          <InitiatorPlatform id={session.platform} connected={!recent} />
-        )}
-      </ListItemIcon>
-      <ListItemText
-        classes={{ primary: css.title }}
-        primary={
-          <>
-            <span className={css.from}>
-              {merge || <Title enabled={!recent}>{other ? session.user?.email : 'This device'}</Title>}
-              {/* session?.state */}
-            </span>
-            <Tooltip title={recent ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="top" arrow>
-              <span className={css.icon}>
-                <Icon
-                  name={icon}
-                  color={recent ? 'gray' : connected ? 'primary' : 'primaryLight'}
-                  size="md"
-                  type="regular"
-                  fixedWidth
-                />
-              </span>
-            </Tooltip>
-            <span className={css.to}>
-              <Title enabled={!recent}>
-                {session.target.name}
-                <sup className={css.targetPlatform}>
-                  <TargetPlatform id={session.target.platform} tooltip />
-                </sup>
-              </Title>
-            </span>
-          </>
-        }
-      />
-    </ListItemLocation>
+    <>
+      {merge || (
+        <ListItem dense>
+          <ListItemIcon className={css.mergeIcon}>
+            <InitiatorPlatform id={session.platform} connected={!recent} />
+          </ListItemIcon>
+          <ListItemText primary={<Title enabled={!recent}>{other ? session.user?.email : 'This device'}</Title>} />
+        </ListItem>
+      )}
+      <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>
+        <Tooltip title={recent ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="left" arrow>
+          <ListItemIcon className={css.connectIcon}>
+            <div className={css.connection} />
+            {icon}
+          </ListItemIcon>
+        </Tooltip>
+        <ListItemIcon className={css.platform + ' ' + css.title}>
+          <TargetPlatform id={session.target.platform} size="md" color={recent ? 'gray' : 'primary'} tooltip />
+        </ListItemIcon>
+        <ListItemText
+          className={css.title}
+          primary={
+            <Title>
+              {service ? (
+                <>
+                  <span className={css.service}>{service?.name}</span> - {device?.name}
+                </>
+              ) : (
+                session.target.name
+              )}
+            </Title>
+          }
+        />
+      </ListItemLocation>
+    </>
   )
 }
 
 const useStyles = makeStyles({
-  title: ({ state }: any) => ({
+  title: ({ state, recent }: any) => ({
     opacity: state === 'offline' ? 0.5 : 1,
-    display: 'flex',
-    alignItems: 'flex-start',
-    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap' },
+    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap', color: recent ? colors.grayDark : colors.primaryLight },
   }),
-  from: { width: '25%' },
-  to: { width: '60%' },
-  vertical: ({ recent }: any) => ({
-    height: '2.8em',
-    backgroundColor: recent ? colors.grayLight : colors.primaryLight,
-    marginTop: -spacing.sm,
-    marginBottom: -spacing.sm,
+  connection: ({ recent, state }: any) => ({
+    borderColor: recent ? colors.grayLight : colors.primary,
+    borderWidth: '0 0 1px 1px',
+    borderBottomWidth: state === 'offline' ? 0 : 1,
+    borderBottomColor: state === 'connected' ? colors.primary : recent ? colors.grayLight : colors.primary,
+    borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',
+    borderStyle: 'solid',
+    height: '2.6em',
+    marginTop: '-2.6em',
+    width: '1.5em',
+    marginRight: '-1.5em',
   }),
+  service: ({ recent }: any) => ({
+    color: recent ? colors.grayDarker : colors.primary,
+    fontWeight: 500,
+  }),
+  connectIcon: {
+    position: 'relative',
+    '& > svg': { position: 'absolute', right: 6, bottom: -7 },
+  },
+  platform: {
+    minWidth: 48,
+  },
+  mergeIcon: { zIndex: 2, backgroundColor: colors.white },
   icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
-  targetPlatform: { opacity: 0.8 },
 })
