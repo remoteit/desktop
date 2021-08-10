@@ -36,11 +36,10 @@ const state: IShareState = {
   currentDevice: undefined,
 }
 
-
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async fetch(data: { email?: string, serviceID: string, device?: IDevice }, globalState) {
+    async fetch(data: { email?: string; serviceID: string; device?: IDevice }, globalState) {
       const { set } = dispatch.shares
       const user = globalState.devices.contacts.find(c => c.email === data.email)
       const permissions = data.device && getPermissions(data.device, data.email)
@@ -53,24 +52,18 @@ export default createModel<RootModel>()({
           selectedServices: permissions?.services.map(s => s.id).filter(v => v) || [],
           script: permissions?.scripting || false,
           indeterminate: [],
-          scriptIndeterminate: false
-        }
+          scriptIndeterminate: false,
+        },
       })
-
     },
     async delete(userDevice: { deviceId: string; email: string }) {
       const { deviceId, email } = userDevice
       const { set } = dispatch.shares
       set({ deleting: true })
-      try {
-        const response = await graphQLUnShareDevice({ deviceId, email: [email] })
-        const errors = graphQLGetErrors(response)
-        if (!errors) {
-          await dispatch.devices.fetchSingle({ id: deviceId })
-          dispatch.ui.set({ successMessage: `${email} successfully removed.` })
-        }
-      } catch (error) {
-        await graphQLCatchError(error)
+      const response = await graphQLUnShareDevice({ deviceId, email: [email] })
+      if (response !== 'ERROR') {
+        await dispatch.devices.fetchSingle({ id: deviceId })
+        dispatch.ui.set({ successMessage: `${email} successfully removed.` })
       }
       set({ deleting: false })
     },
@@ -100,11 +93,10 @@ export default createModel<RootModel>()({
       const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
-        currentDevice:
-        {
+        currentDevice: {
           ...state.shares.currentDevice,
-          script
-        }
+          script,
+        },
       })
     },
 
@@ -112,11 +104,10 @@ export default createModel<RootModel>()({
       const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
-        currentDevice:
-        {
+        currentDevice: {
           ...state.shares.currentDevice,
-          selectedServices
-        }
+          selectedServices,
+        },
       })
     },
 
@@ -124,11 +115,10 @@ export default createModel<RootModel>()({
       const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
-        currentDevice:
-        {
+        currentDevice: {
           ...state.shares.currentDevice,
-          indeterminate
-        }
+          indeterminate,
+        },
       })
     },
 
@@ -136,11 +126,10 @@ export default createModel<RootModel>()({
       const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
-        currentDevice:
-        {
+        currentDevice: {
           ...state.shares.currentDevice,
-          indeterminate: []
-        }
+          indeterminate: [],
+        },
       })
     },
 
@@ -148,11 +137,10 @@ export default createModel<RootModel>()({
       const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
-        currentDevice:
-        {
+        currentDevice: {
           ...state.shares.currentDevice,
-          scriptIndeterminate
-        }
+          scriptIndeterminate,
+        },
       })
     },
 
@@ -190,40 +178,38 @@ export default createModel<RootModel>()({
         case 1: {
           scriptsValue = {
             scriptIndeterminate: false,
-            script: userSelectedScript[0]
+            script: userSelectedScript[0],
           }
-          break;
+          break
         }
         case 0: {
           scriptsValue = {
             scriptIndeterminate: false,
-            script: false
+            script: false,
           }
-          break;
+          break
         }
         default: {
           scriptsValue = {
             scriptIndeterminate: true,
-            script: undefined
+            script: undefined,
           }
         }
       }
 
-      const selectedServices = [...matchServices ? [...matchServices, serviceID] : [serviceID]].filter(v => v)
+      const selectedServices = [...(matchServices ? [...matchServices, serviceID] : [serviceID])].filter(v => v)
 
-      set(
-        {
-          currentDevice: {
-            ...currentDevice,
-            ...scriptsValue,
-            userSelected: contacts.find(c => emails.includes(c.email)),
-            users: emails,
-            indeterminate: indeterminateServices,
-            selectedServices,
-          }
-        })
+      set({
+        currentDevice: {
+          ...currentDevice,
+          ...scriptsValue,
+          userSelected: contacts.find(c => emails.includes(c.email)),
+          users: emails,
+          indeterminate: indeterminateServices,
+          selectedServices,
+        },
+      })
     },
-
 
     async updateDeviceState(infoUpdate: {
       device: IDevice
@@ -258,7 +244,7 @@ export default createModel<RootModel>()({
         return service
       })
       await dispatch.devices.updateShareDevice(device)
-      await dispatch.devices.fetchSingle({id : device.id})
+      await dispatch.devices.fetchSingle({ id: device.id })
     },
   }),
   reducers: {
@@ -268,4 +254,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-

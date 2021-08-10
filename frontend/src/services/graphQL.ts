@@ -6,9 +6,9 @@ import { getGraphQLApi } from '../helpers/apiHelper'
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   try {
     const response = await graphQLRequest(query, variables)
-    await graphQLGetErrors(response)
-    console.log('BASIC REQUEST GRAPHQL', response)
-    return response
+    const errors = await graphQLGetErrors(response)
+    console.log('BASIC REQUEST GRAPHQL', response, errors)
+    return errors ? 'ERROR' : response
   } catch (error) {
     await graphQLCatchError(error)
   }

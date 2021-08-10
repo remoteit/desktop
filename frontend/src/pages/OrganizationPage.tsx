@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
+import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
@@ -57,7 +58,9 @@ export const OrganizationPage: React.FC = () => {
         </>
       }
     >
-      {organization.member.length ? (
+      {!organization.initialized ? (
+        <LoadingMessage />
+      ) : organization.member.length ? (
         <List>
           {/* <ListItem>
             <Notice>These users have access to all the organization devices.</Notice>
@@ -71,7 +74,7 @@ export const OrganizationPage: React.FC = () => {
                 primary={member.user.email}
                 secondary={
                   <>
-                    Added <Duration startTime={member?.created?.getTime()} ago />
+                    Added <Duration startDate={member?.created} ago />
                   </>
                 }
               />
@@ -82,7 +85,7 @@ export const OrganizationPage: React.FC = () => {
                   icon="times"
                   disabled={member.role === 'OWNER'}
                   onClick={() => {
-                    /* accounts.removeAccess(member.user.email) */
+                    dispatch.organization.removeMember(member)
                   }}
                 />
               </ListItemSecondaryAction>
@@ -92,7 +95,7 @@ export const OrganizationPage: React.FC = () => {
       ) : (
         <Body center>
           <Typography variant="body2" gutterBottom>
-            Your organization {organization.name} has no members.
+            Your organization <strong>{organization.name}</strong> has no members.
           </Typography>
           <Button variant="contained" color="primary" component={Link} to="/settings/organization/share">
             Add member

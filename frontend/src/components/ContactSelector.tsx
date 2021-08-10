@@ -35,7 +35,7 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
   }
 
   return (
-    <Gutters noTop>
+    <Gutters top={null}>
       <CreatableSelect
         isMulti
         isClearable

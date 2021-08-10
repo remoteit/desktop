@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLSetOrganization, graphQLSetMembers, graphQLAddMembers } from '../services/graphQLMutation'
+import { graphQLSetOrganization, graphQLSetMembers } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -19,6 +19,7 @@ export type IOrganizationState = {
   member: IOrganizationMember[] // members of this org
   access: IOrganizationMember[] // orgs you belong too
   activeId?: string
+  initialized: boolean
 }
 
 const organizationState: IOrganizationState = {
@@ -28,6 +29,7 @@ const organizationState: IOrganizationState = {
   member: [],
   access: [],
   activeId: undefined,
+  initialized: false,
 }
 
 export default createModel<RootModel>()({
@@ -91,9 +93,16 @@ export default createModel<RootModel>()({
         id: org.id,
         name: org.name,
         created: new Date(org.created),
-        member: [owner, ...org.members],
+        member: [
+          owner,
+          ...org.members.map(m => ({
+            ...m,
+            created: new Date(m.created),
+          })),
+        ],
         access: [],
         activeId: undefined,
+        initialized: true,
       })
     },
 
@@ -114,50 +123,43 @@ export default createModel<RootModel>()({
 
     async setOrganization(name: string, state) {
       dispatch.organization.set({ name })
-      const gqlResponse = await graphQLSetOrganization(name)
-      const result = gqlResponse?.data?.data?.updateOrganization
-      if (result) {
-        dispatch.organization.set({ name: result.name, id: result.id })
+      const result = await graphQLSetOrganization(name)
+      if (result !== 'ERROR') {
+        dispatch.organization.set({ name: name, id: state.auth.user?.id })
         dispatch.ui.set({ successMessage: `Your organization '${name}' has been set.` })
       }
     },
 
     async setMembers(members: IOrganizationMember[] = [], state) {
       let updated = [...state.organization.member]
+
       members.forEach(m => {
         const index = updated.findIndex(u => u.user.email === m.user.email)
         if (index > -1) updated[index] = m
         else updated.push(m)
       })
 
-      console.log('UPDATE MEMBERS', updated)
-      dispatch.organization.set({ member: updated })
-
-      console.log('NEW MEMBER?', updated.length, '>', state.organization.member.length)
-
-      if (updated.length > state.organization.member.length) {
-        await graphQLAddMembers(members[0])
-        dispatch.ui.set({ successMessage: `The member '${members[0].user.email}' has been added.` })
-      } else {
-        await graphQLSetMembers(members[0])
-        dispatch.ui.set({ successMessage: `The member '${members[0].user.email}' has been updated.` })
+      const action = updated.length > state.organization.member.length ? 'added' : 'updated'
+      const result = await graphQLSetMembers(members, members[0].role)
+      if (result !== 'ERROR') {
+        dispatch.organization.set({ member: updated })
+        dispatch.ui.set({
+          successMessage:
+            members.length > 1
+              ? `${members.length} members have been ${action}.`
+              : `The member '${members[0].user.email}' has been ${action}.`,
+        })
       }
     },
 
-    async removeAccess(email: string, state) {
-      // const { access } = state.accounts as ApplicationState['accounts']
-      // try {
-      //   const result = await graphQLLinkAccount([email], 'REMOVE')
-      //   const errors = graphQLGetErrors(result)
-      //   if (!errors?.length) {
-      //     analyticsHelper.track('removedAccess')
-      //     dispatch.organization.set({ access: access.filter(user => user.email !== email) })
-      //     dispatch.ui.set({ successMessage: `${email} successfully removed.` })
-      //   }
-      // } catch (error) {
-      //   await graphQLCatchError(error)
-      // }
+    async removeMember(member: IOrganizationMember, state) {
+      const result = await graphQLSetMembers([member], 'REMOVE')
+      if (result !== 'ERROR') {
+        dispatch.organization.set({ member: state.organization.member.filter(m => m.user.email !== member.user.email) })
+        dispatch.ui.set({ successMessage: `Successfully removed ${member?.user?.email}.` })
+      }
     },
+
     async leaveMembership(email: string, state) {
       // const { member } = state.accounts as ApplicationState['accounts']
       // try {

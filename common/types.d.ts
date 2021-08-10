@@ -319,7 +319,7 @@ declare global {
     user: IUserRef
   }
 
-  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'GUEST' | 'MEMBER'
+  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'GUEST' | 'MEMBER' | 'REMOVE'
 
   type IGeo = {
     countryName: string

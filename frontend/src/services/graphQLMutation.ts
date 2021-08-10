@@ -71,6 +71,7 @@ export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMO
 //     { name }
 //   )
 // }
+
 export async function graphQLSetOrganization(name: string) {
   return await graphQLBasicRequest(
     ` mutation query($name: String!) {
@@ -83,33 +84,12 @@ export async function graphQLSetOrganization(name: string) {
   )
 }
 
-export async function graphQLAddMembers(member: IOrganizationMember) {
+export async function graphQLSetMembers(members: IOrganizationMember[], role: IOrganizationRole) {
   return await graphQLBasicRequest(
-    ` mutation query($email: String!, $role: OrganizationRole) {
-        inviteMember(email: $email, role: $role) {
-          role
-          user {
-            id
-            email
-          }
-        }
+    ` mutation query($email: [String!]!, $role: OrganizationRole) {
+        setMember(email: $email, role: $role)
       }`,
-    { email: member.user.email, role: member.role }
-  )
-}
-
-export async function graphQLSetMembers(member: IOrganizationMember) {
-  return await graphQLBasicRequest(
-    ` mutation query($email: String!, $role: OrganizationRole) {
-        updateMember(email: $email, role: $role) {
-          role
-          user {
-            id
-            email
-          }
-        }
-      }`,
-    { email: member.user.email, role: member.role }
+    { email: members.map(member => member.user.email), role }
   )
 }
 
