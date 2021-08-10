@@ -11,7 +11,6 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
 import user from './User'
-import Binary from './Binary'
 
 const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]

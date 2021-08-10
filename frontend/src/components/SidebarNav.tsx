@@ -67,11 +67,11 @@ const useStyles = makeStyles({
     fontWeight: 500,
   },
   list: {
+    position: 'static',
     marginTop: spacing.sm,
     '& .MuiListItemText-primary': { color: colors.grayDark },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: colors.black },
     '& .MuiListItem-button:hover path': { color: colors.grayDarkest },
-    height: '100%',
   },
   active: {
     backgroundColor: colors.white,
