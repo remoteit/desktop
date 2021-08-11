@@ -159,7 +159,7 @@ export default class CLI {
   }
 
   async readConnections() {
-    const connections = (await this.connectionStatus()) || []
+    const connections = await this.connectionStatus()
     this.data.connections = connections.map((c, i) => {
       const connection = this.data.connections[i] || {}
       let error = connection?.error
@@ -208,7 +208,7 @@ export default class CLI {
       skipSignInCheck: true,
       quiet: true,
     })
-    return data?.connections as IConnectionStatus[]
+    return (data?.connections || []) as IConnectionStatus[]
   }
 
   async addTarget(t: ITarget) {
