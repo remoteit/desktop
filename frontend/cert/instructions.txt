@@ -1,5 +1,0 @@
-[Tue Jan  8 22:11:32 PST 2019] Your cert is in  /home/mike/.acme.sh/desktop.rt3.io/desktop.rt3.io.cer 
-[Tue Jan  8 22:11:32 PST 2019] Your cert key is in  /home/mike/.acme.sh/desktop.rt3.io/desktop.rt3.io.key 
-[Tue Jan  8 22:11:32 PST 2019] The intermediate CA cert is in  /home/mike/.acme.sh/desktop.rt3.io/ca.cer 
-[Tue Jan  8 22:11:32 PST 2019] And the full chain certs is there:  /home/mike/.acme.sh/desktop.rt3.io/fullchain.cer 
-

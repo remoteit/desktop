@@ -35,9 +35,6 @@ export class Environment {
   binPath: string
   symlinkPath: string
   logPath: string
-  certificateDomain: string
-  certificatePath: string
-  certificateKeyPath: string
   connectionLogPath: string
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
@@ -84,10 +81,6 @@ export class Environment {
       this.symlinkPath = PATHS.LINUX_SYMLINKS
     }
 
-    const certPath = this.isDev ? CERT_DIR_DEV : CERT_DIR
-    this.certificateDomain = 'dt.rt3.io'
-    this.certificatePath = path.resolve(certPath, `${this.certificateDomain}.cert`)
-    this.certificateKeyPath = path.resolve(certPath, `${this.certificateDomain}.key`)
     this.logPath = path.resolve(this.userPath, 'log')
     this.connectionLogPath = path.resolve(this.userPath, 'log/connections')
     this.manufacturerDetails = this.getManufacturerDetails()
