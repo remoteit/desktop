@@ -1,11 +1,4 @@
-import {
-  PATHS,
-  CERT_DIR,
-  CERT_DIR_DEV,
-  MANUFACTURE_ID_HEADLESS,
-  MANUFACTURE_ID_STANDARD,
-  PLATFORM_CODES,
-} from './constants'
+import { PATHS, MANUFACTURE_ID_HEADLESS, MANUFACTURE_ID_STANDARD, PLATFORM_CODES } from './constants'
 import isElectron from 'is-electron'
 import isElevated from 'is-elevated'
 import detectRPi from 'detect-rpi'
