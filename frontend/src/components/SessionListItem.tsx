@@ -5,6 +5,7 @@ import { ListItemLocation } from './ListItemLocation'
 import { TargetPlatform } from './TargetPlatform'
 import { spacing, colors } from '../styling'
 import { ApplicationState } from '../store'
+import { attributeName } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { selectById } from '../models/devices'
 import { Title } from './Title'
@@ -60,7 +61,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
             <Title>
               {service ? (
                 <>
-                  <span className={css.service}>{service?.name}</span> - {device?.name}
+                  <span className={css.service}>{attributeName(service)}</span> - {attributeName(device)}
                 </>
               ) : (
                 session.target.name

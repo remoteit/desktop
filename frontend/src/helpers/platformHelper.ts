@@ -22,8 +22,8 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   65535: 'Unknown',
 }
 
-export function getTargetPlatform(targetPlatformId?: number) {
-  return TARGET_PLATFORMS[targetPlatformId || -1] || TARGET_PLATFORMS[65535]
+export function getTargetPlatform(targetPlatformId = -1) {
+  return TARGET_PLATFORMS[targetPlatformId] || TARGET_PLATFORMS[65535]
 }
 
 export function getTargetPlatformIcon(id?: number): { name: string; type: IconType; size: FontSize } {
