@@ -5,7 +5,7 @@ import { isOffline } from '../../models/devices'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '../../shared/nameHelper'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
-import { Tooltip, Typography } from '@material-ui/core'
+import { Tooltip } from '@material-ui/core'
 
 type Props = {
   connection?: IConnection
