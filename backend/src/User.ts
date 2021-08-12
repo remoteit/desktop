@@ -1,3 +1,4 @@
+import windowsRootCerts from 'node-windows-root-certs'
 import environment from './environment'
 import cli from './cliInterface'
 import rimraf from 'rimraf'
@@ -42,6 +43,11 @@ export class User {
     if (!credentials) {
       Logger.warn('No user, sign in failed')
       return false
+    }
+
+    if (environment.isWindows) {
+      windowsRootCerts.useWindowsCerts()
+      Logger.info('USING WINDOWS ROOT CERTS')
     }
 
     Logger.info('Attempting auth hash login', { username: credentials.username })

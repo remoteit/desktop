@@ -34,6 +34,7 @@
     "lolex": "^6.0.0",
     "netmask": "^2.0.1",
     "network": "^0.5.0",
+    "node-windows-root-certs": "^1.0.0",
     "plist": "^3.0.1",
     "portfinder": "^1.0.28",
     "realpath-native": "^3.0.0",
