@@ -59,9 +59,10 @@ export default {
   },
 
   connect(c: IConnection) {
-    let string = `-j connection add \
+    return `-j connection add \
       --id ${c.id} \
       --name "${c.name}" \
+      --port ${c.port} \
       --ip ${c.ip} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
@@ -75,12 +76,6 @@ export default {
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
       --manufacture-id ${environment.appCode}`
-
-    if (!preferences.get().useCertificate || (c.port !== 80 && c.port !== 443)) {
-      string += ` --port ${c.port}`
-    }
-
-    return string
   },
 
   stop(c: IConnection) {
@@ -92,9 +87,10 @@ export default {
   },
 
   setConnect(c: IConnection) {
-    let string = `-j connection modify \
+    return `-j connection modify \
     --id ${c.id} \
     --name "${c.name}" \
+    --port ${c.port} \
     --ip ${c.ip} \
     --timeout ${c.timeout} \
     --restrict ${c.restriction} \
@@ -109,12 +105,6 @@ export default {
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \
     --manufacture-id ${environment.appCode}`
-
-    if (!preferences.get().useCertificate || (c.port !== 80 && c.port !== 443)) {
-      string += ` --port ${c.port}`
-    }
-
-    return string
   },
 
   serviceInstall() {
