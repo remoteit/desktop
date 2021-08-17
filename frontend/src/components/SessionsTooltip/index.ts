@@ -1,1 +1,0 @@
-export { SessionsTooltip } from './SessionsTooltip'

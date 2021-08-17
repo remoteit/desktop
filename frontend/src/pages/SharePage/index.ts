@@ -1,1 +1,0 @@
-export { SharePage } from './SharePage'

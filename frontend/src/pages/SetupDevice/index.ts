@@ -1,1 +1,0 @@
-export { SetupDevice } from './SetupDevice'

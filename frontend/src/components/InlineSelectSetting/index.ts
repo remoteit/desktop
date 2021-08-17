@@ -1,1 +1,0 @@
-export { InlineSelectSetting } from './InlineSelectSetting'

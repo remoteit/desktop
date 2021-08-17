@@ -1,1 +1,0 @@
-export { UpdateNotice } from './UpdateNotice'

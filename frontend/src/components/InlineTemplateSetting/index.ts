@@ -1,1 +1,0 @@
-export { InlineTemplateSetting } from './InlineTemplateSetting'

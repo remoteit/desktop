@@ -1,1 +1,0 @@
-export { LabelButton } from './LabelButton'

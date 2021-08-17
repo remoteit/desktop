@@ -1,1 +1,0 @@
-export { SharedUsersList } from './SharedUsersList'

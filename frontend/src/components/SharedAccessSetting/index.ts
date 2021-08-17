@@ -1,1 +1,0 @@
-export { SharedAccessSetting } from './SharedAccessSetting'
