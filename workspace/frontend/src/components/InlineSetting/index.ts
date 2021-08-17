@@ -1,0 +1,1 @@
+export { InlineSetting } from './InlineSetting'

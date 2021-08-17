@@ -1,0 +1,77 @@
+{
+  "name": "@remote/account",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@aws-amplify/auth": "^4.0.3",
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/free-brands-svg-icons": "^5.15.2",
+    "@fortawesome/pro-light-svg-icons": "^5.15.2",
+    "@fortawesome/pro-regular-svg-icons": "^5.15.2",
+    "@fortawesome/pro-solid-svg-icons": "^5.15.2",
+    "@fortawesome/react-fontawesome": "^0.1.14",
+    "@material-ui/core": "^4.11.4",
+    "@rematch/core": "^2.0.0-next.6",
+    "@rematch/immer": "^1.2.0",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.2",
+    "@types/react": "^17.0.9",
+    "@types/react-dom": "^17.0.6",
+    "axios": "^0.21.1",
+    "classnames": "2.2.6",
+    "i18next": "17.0.6",
+    "i18next-browser-languagedetector": "3.0.1",
+    "i18next-locize-backend": "2.0.2",
+    "md5": "^2.3.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-i18next": "10.11.4",
+    "react-redux": "^7.2.4",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "redux": "^4.1.0",
+    "redux-logger": "^3.0.6",
+    "typescript": "^4.3.2",
+    "web-vitals": "^1.0.1",
+    "zxcvbn": "^4.4.2",
+    "@remote.it/components": "^0.31.0",
+    "@remote.it/services": "^0.9.0",
+    "@remote.it/types": "^0.5.0",
+    "@types/google.analytics": "0.0.41"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/classnames": "2.2.9",
+    "@types/debug": "^4.1.5",
+    "@types/js-cookie": "^2.2.6",
+    "@types/md5": "^2.3.0",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/redux-logger": "^3.0.8",
+    "@types/zxcvbn": "^4.4.1"
+  }
+}
