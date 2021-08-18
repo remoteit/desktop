@@ -1,8 +1,10 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import { WEB_PORT } from './constants'
+import { IP_PRIVATE } from './sharedCopy/constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
+import preferences from './preferences'
 import environment from './environment'
 import PortScanner from './PortScanner'
 import Connection from './Connection'
@@ -83,6 +85,10 @@ export default class ConnectionPool {
       if (!cliConnection && connection.params.connected && !connection.params.public) {
         Logger.info('SYNC START CONNECTION', { connection: connection.params })
         connection.start()
+      }
+      if (connection.params.host === IP_PRIVATE && connection.params.enabled && preferences.get().useCertificate) {
+        Logger.info('UPDATE CONNECTION HOSTNAME FOR CERTIFICATES', { connection: connection.params })
+        connection.disable()
       }
     })
   }
@@ -245,6 +251,9 @@ export default class ConnectionPool {
       const enabled = c.active
       // @ts-ignore
       delete c.active
+      // setup safe names for hostname
+      c.name = c.name?.toLowerCase().replace(/[-\s]+/g, '-')
+
       return { ...c, enabled, connected: enabled }
     })
   }
