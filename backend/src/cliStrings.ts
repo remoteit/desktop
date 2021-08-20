@@ -69,13 +69,12 @@ export default {
       --failover ${!!c.failover} \
       --p2p ${!c.proxyOnly} \
       --servicetype ${c.typeID} \
-      --targetHostname "${c.name}" \
+      --targetHostname ${c.targetHost} \
       --enableCertificate ${!!preferences.get().useCertificate} \
-      --enableHTTP true \
-      --authhash ${user.authHash} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
-      --manufacture-id ${environment.appCode}`
+      --manufacture-id ${environment.appCode} \
+      --authhash ${user.authHash}`
   },
 
   stop(c: IConnection) {
@@ -98,13 +97,12 @@ export default {
     --p2p ${!c.proxyOnly} \
     --enable ${!!c.enabled} \
     --servicetype ${c.typeID} \
-    --targetHostname "${c.name}" \
+    --targetHostname ${c.targetHost} \
     --enableCertificate ${!!preferences.get().useCertificate} \
-    --enableHTTP true \
-    --authhash ${user.authHash} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \
-    --manufacture-id ${environment.appCode}`
+    --manufacture-id ${environment.appCode} \
+    --authhash ${user.authHash}`
   },
 
   serviceInstall() {

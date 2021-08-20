@@ -155,6 +155,7 @@ declare global {
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
     startTime?: number // unix timestamp connection start time
+    targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved

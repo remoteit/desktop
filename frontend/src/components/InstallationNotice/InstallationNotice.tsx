@@ -47,9 +47,9 @@ export const InstallationNotice = connect(
         </Alert>
       )}
       <Typography className={css.space} variant="h2" align="center">
-        We need to install or update our service
+        We need to install or update our system
         <br />
-        in order to maintain background connections.
+        agent in order to maintain background connections.
       </Typography>
       <Button
         className={css.space}
@@ -66,8 +66,8 @@ export const InstallationNotice = connect(
           </>
         ) : (
           <>
-            Install Service
-            <Icon name="arrow-to-bottom" type="regular" inline />
+            Install Agent
+            <Icon name="terminal" type="regular" inline />
           </>
         )}
       </Button>

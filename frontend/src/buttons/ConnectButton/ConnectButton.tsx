@@ -72,15 +72,15 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (state === 'ready') {
-    title = '1 Connecting'
+    title = 'Connecting'
     color = 'grayDarker'
   }
   if (stopping) {
-    title = '2 Removing'
+    title = 'Removing'
     color = 'grayDark'
   }
   if (connecting) {
-    title = '3 Connecting'
+    title = 'Connecting'
     color = 'grayDark'
   }
   if (state === 'offline') {
