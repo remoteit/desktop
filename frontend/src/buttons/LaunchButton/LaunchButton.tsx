@@ -47,7 +47,8 @@ export const LaunchButton: React.FC<Props> = ({
   const [open, setOpen] = useState<boolean>(false)
   const [openApp, setOpenApp] = useState<boolean>(false)
   const [downloadLink, setDownloadLink] = useState<string>('')
-  const disabled = !connection || !connection.host || connection.connecting || !connection.enabled
+  const disabled =
+    !connection || !(connection.host || connection.address) || connection.connecting || !connection.enabled
   const app = useApplication('launch', service, connection)
 
   useEffect(() => {
