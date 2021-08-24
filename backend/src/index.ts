@@ -1,4 +1,5 @@
 require('dotenv').config()
+require('win-ca')
 
 import debug from 'debug'
 import AirBrake from './AirBrake'

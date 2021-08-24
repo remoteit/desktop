@@ -1,4 +1,3 @@
-import 'win-ca'
 import environment from './environment'
 import cli from './cliInterface'
 import rimraf from 'rimraf'

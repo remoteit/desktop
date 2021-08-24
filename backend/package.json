@@ -99,6 +99,7 @@
     "socketio-auth",
     "sudo-prompt",
     "tmp",
+    "win-ca",
     "winston"
   ]
 }

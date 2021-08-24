@@ -49,7 +49,7 @@ export function findType(all: IApplicationType[], typeId?: number) {
 }
 
 export function getTypeId(all: IApplicationType[], port: number) {
-  const type = all.find(t => t.port === port)
+  const type = all?.find(t => t.port === port)
   return type ? type.id : DEFAULT_TARGET.type
 }
 
