@@ -3,8 +3,8 @@ import { TargetPlatform } from '../components/TargetPlatform'
 import { QualityDetails } from '../components/QualityDetails'
 import { ServiceIndicators } from '../components/ServiceIndicators'
 import { INITIATOR_PLATFORMS } from '../components/InitiatorPlatform'
+import { licenseChipLookup } from '../components/LicenseChip'
 import { ListItemText } from '@material-ui/core'
-import { licenseChip } from '../models/licensing'
 import { ServiceName } from '../components/ServiceName'
 import { LicenseChip } from '../components/LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
@@ -146,7 +146,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'license',
     label: 'License',
-    value: ({ device }) => <LicenseChip chip={licenseChip[device?.license || 0]} />,
+    value: ({ device }) => <LicenseChip chip={licenseChipLookup[device?.license || 0]} />,
   }),
   // @TODO add attributes to the device model on graphql request
   ...ATTRIBUTES.map(
@@ -200,7 +200,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'license',
     label: 'License',
-    value: ({ service }) => <LicenseChip chip={licenseChip[service?.license || 0]} />,
+    value: ({ service }) => <LicenseChip chip={licenseChipLookup[service?.license || 0]} />,
   }),
   new ConnectionAttribute({
     id: 'address',

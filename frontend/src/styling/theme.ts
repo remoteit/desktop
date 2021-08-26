@@ -43,7 +43,7 @@ const jssTheme: ThemeOptions = {
         fontSize: fontSizes.xs,
         padding: `${spacing.sm}px ${spacing.md}px`,
         '&.MuiSvgIcon-root': { marginLeft: spacing.sm },
-        '&+.MuiButton-root': { marginLeft: spacing.sm },
+        '& + .MuiButton-root': { marginLeft: spacing.sm },
       },
       contained: {
         '&:hover': { backgroundColor: colors.grayDark },
@@ -60,6 +60,12 @@ const jssTheme: ThemeOptions = {
         borderRadius: spacing.md,
         fontSize: fontSizes.xxs,
         padding: `${spacing.xs}px ${spacing.md}px`,
+      },
+    },
+    MuiButtonGroup: {
+      root: {
+        borderRadius: spacing.md,
+        '& .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
       },
     },
     MuiButtonBase: { root: { borderRadius: radius } },

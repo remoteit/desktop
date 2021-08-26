@@ -1,15 +1,17 @@
 import React from 'react'
+import { REMOTEIT_PRODUCT_ID, AWS_PRODUCT_ID } from '../models/licensing'
 import { Icon } from './Icon'
 
 export const LicensingIcon: React.FC<{ license: ILicense }> = ({ license }) => {
   let type: IconType = 'brands'
   let name: string = ''
 
-  switch (license.plan.product.provider) {
-    case 'AWS':
+  switch (license.id) {
+    case AWS_PRODUCT_ID:
       name = 'aws'
       break
-    case null:
+    case REMOTEIT_PRODUCT_ID:
+    default:
       name = 'r3'
       break
   }

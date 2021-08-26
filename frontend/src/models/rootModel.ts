@@ -5,9 +5,11 @@ import announcements from './announcements'
 import applicationTypes from './applicationTypes'
 import auth from './auth'
 import backend from './backend'
+import billing from './billing'
 import binaries from './binaries'
 import connections from './connections'
 import devices from './devices'
+import feedback from './feedback'
 import labels from './labels'
 import licensing from './licensing'
 import logs from './logs'
@@ -16,7 +18,6 @@ import sessions from './sessions'
 import shares from './shares'
 import tags from './tags'
 import ui from './ui'
-import feedback from './feedback'
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts
   analytics: typeof analytics
@@ -24,9 +25,11 @@ export interface RootModel extends Models<RootModel> {
   applicationTypes: typeof applicationTypes
   auth: typeof auth
   backend: typeof backend
+  billing: typeof billing
   binaries: typeof binaries
   connections: typeof connections
   devices: typeof devices
+  feedback: typeof feedback
   labels: typeof labels
   licensing: typeof licensing
   logs: typeof logs
@@ -35,7 +38,6 @@ export interface RootModel extends Models<RootModel> {
   shares: typeof shares
   tags: typeof tags
   ui: typeof ui
-  feedback: typeof feedback
 }
 
 export const models: RootModel = {
@@ -45,9 +47,11 @@ export const models: RootModel = {
   applicationTypes,
   auth,
   backend,
+  billing,
   binaries,
   connections,
   devices,
+  feedback,
   labels,
   licensing,
   logs,
@@ -56,5 +60,4 @@ export const models: RootModel = {
   shares,
   tags,
   ui,
-  feedback,
 }

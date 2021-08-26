@@ -107,6 +107,7 @@ export default createModel<RootModel>()({
       dispatch.devices.set({ from: 0 })
       await dispatch.devices.fetch()
       dispatch.sessions.fetch()
+      dispatch.billing.fetch()
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
     },

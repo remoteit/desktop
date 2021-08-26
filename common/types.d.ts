@@ -331,6 +331,7 @@ declare global {
     updated: Date
     expiration: Date | null
     valid: boolean
+    quantity: number | null
     upgradeUrl?: string
     plan: {
       id: string
@@ -341,12 +342,30 @@ declare global {
         id: string
         name: string
         description: string
-        provider: string | null
       }
     }
   }
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
+
+  type ICreditCard = {
+    id: string
+    brand: string
+    month: number
+    year: number
+    last: string
+  }
+
+  type IInvoice = {
+    id: string
+    plan: ILicense['plan']
+    quantity: number
+    total: number
+    currency: string
+    paid: boolean
+    url: string
+    date: Date
+  }
 
   type IAnnouncement = {
     id: string
