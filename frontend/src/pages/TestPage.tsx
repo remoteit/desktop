@@ -72,7 +72,7 @@ export const TestPage: React.FC = () => {
               <InlineTextFieldSetting
                 value={getGraphQLApi()}
                 label="Switch GraphQL APIs"
-                disabled={false}
+                disabled={!preferences.switchApi}
                 resetValue={getGraphQLApi()}
                 maxLength={200}
                 onSave={url => onSave(url.toString())}
@@ -81,7 +81,7 @@ export const TestPage: React.FC = () => {
               <InlineTextFieldSetting
                 value={getRestApi()}
                 label="Rest Api"
-                disabled={false}
+                disabled={!preferences.switchApi}
                 resetValue={getRestApi()}
                 maxLength={200}
                 onSave={url => onSaveRest(url.toString())}
@@ -90,7 +90,7 @@ export const TestPage: React.FC = () => {
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
                 label="WebSocket URL"
-                disabled={false}
+                disabled={!preferences.switchApi}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
                 onSave={url => onSaveWebSocket(url.toString())}
