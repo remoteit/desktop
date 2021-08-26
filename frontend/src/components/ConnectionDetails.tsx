@@ -88,6 +88,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     </div>
   )
 
+  app.context = 'copy'
   const copyDisplay = (
     <div ref={copyRef} className={hover === 'copy' ? css.show : css.hide}>
       <InputLabel shrink>Copy Command</InputLabel>
