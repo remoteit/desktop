@@ -46,16 +46,16 @@ export const LicensingSetting: React.FC = () => {
                 }
               />
               <ListItemSecondaryAction>
-                {!license.id ? (
-                  <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
-                    Free Trial
-                  </Button>
-                ) : (
+                {license.id ? (
                   license.upgradeUrl && (
                     <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
                       Manage Subscription
                     </Button>
                   )
+                ) : (
+                  <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
+                    Free Trial
+                  </Button>
                 )}
               </ListItemSecondaryAction>
             </ListItem>
