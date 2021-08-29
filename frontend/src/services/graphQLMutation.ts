@@ -53,6 +53,18 @@ export async function graphQLClaimDevice(code: string) {
   )
 }
 
+export async function graphQLPurchase(params: IPurchase) {
+  return await graphQLBasicRequest(
+    ` mutation query($priceId: String!, $quantity: Int, $successUrl: String, $cancelUrl: String) {
+        updateSubscription(priceId: $priceId, quantity: $quantity, successUrl: $successUrl, cancelUrl: $cancelUrl) {
+          id
+          url
+        }
+      }`,
+    params
+  )
+}
+
 export async function graphQLAddService(form: ICloudAddService) {
   return await graphQLBasicRequest(
     ` mutation query($deviceId: String!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean) {

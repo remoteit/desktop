@@ -33,6 +33,107 @@ declare global {
     disabled?: boolean
     show?: boolean
   }
+  type ILimit = {
+    name: string
+    value: any
+    actual: any
+    license: { id: string } | null
+  }
+
+  type ILicense = {
+    id: string
+    created: Date
+    updated: Date
+    expiration: Date | null
+    valid: boolean
+    quantity: number | null
+    upgradeUrl?: string
+    plan: {
+      id: string
+      name: string
+      description: string
+      duration: string | null
+      product: {
+        id: string
+        name: string
+        description: string
+      }
+    }
+  }
+
+  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
+
+  type IPlan = {
+    id?: string
+    name: IPlanName
+    description: string
+    product: {
+      id: string
+      name: string
+      description: string
+    }
+    prices: IPrice[]
+  }
+
+  type IPrice = {
+    id: string
+    amount: number
+    currency: string
+    interval: IPlanInterval
+  }
+  type IPlanName = 'PERSONAL' | 'PROFESSIONAL' | string
+  type IPlanInterval = 'MONTH' | 'YEAR'
+
+  type ICreditCard = {
+    id: string
+    brand: string
+    month: number
+    year: number
+    last: string
+  }
+
+  type IInvoice = {
+    id: string
+    plan: ILicense['plan']
+    quantity: number
+    total: number
+    currency: string
+    paid: boolean
+    url: string
+    date: Date
+  }
+
+  type IAnnouncement = {
+    id: string
+    type: INoticeType
+    title: string
+    link: string
+    image: string
+    body: string
+    modified?: Date
+    read?: Date
+  }
+
+  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
+
+  type IPurchase = {
+    planId?: string
+    priceId?: string
+    quantity: number
+    successUrl: string
+    cancelUrl: string
+  }
+
+  type ISubscription = {
+    id: string
+    plan: IPlan
+    price: IPrice
+    quantity: number
+    total: number
+    status: 'ACTIVE' | 'CANCELED' | 'INCOMPLETE' | 'INCOMPLETE_EXPIRED' | 'PAST_DUE' | 'TRIALING' | 'UNPAID'
+    created: Date
+    expiration: Date
+  }
 
   type LogType = 'general' | 'connectd' | 'alert'
 

@@ -318,67 +318,6 @@ declare global {
     protocol: 'TCP' | 'UDP'
     description: string
   }
-  type ILimit = {
-    name: string
-    value: any
-    actual: any
-    license: { id: string } | null
-  }
-
-  type ILicense = {
-    id: string
-    created: Date
-    updated: Date
-    expiration: Date | null
-    valid: boolean
-    quantity: number | null
-    upgradeUrl?: string
-    plan: {
-      id: string
-      name: string
-      description: string
-      duration: string | null
-      product: {
-        id: string
-        name: string
-        description: string
-      }
-    }
-  }
-
-  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
-
-  type ICreditCard = {
-    id: string
-    brand: string
-    month: number
-    year: number
-    last: string
-  }
-
-  type IInvoice = {
-    id: string
-    plan: ILicense['plan']
-    quantity: number
-    total: number
-    currency: string
-    paid: boolean
-    url: string
-    date: Date
-  }
-
-  type IAnnouncement = {
-    id: string
-    type: INoticeType
-    title: string
-    link: string
-    image: string
-    body: string
-    modified?: Date
-    read?: Date
-  }
-
-  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
 
   interface ICloudEvent {
     sessionId: string
