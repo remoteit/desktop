@@ -5,7 +5,6 @@ import debug from 'debug'
 import Logger from './Logger'
 import EventBus from './EventBus'
 import path from 'path'
-import { r3 } from './remote.it'
 
 const d = debug('r3:backend:User')
 
@@ -22,15 +21,15 @@ export class User {
   signedIn: boolean = false
 
   get hasCredentials() {
-    return this.authHash && this.username
+    return this.authHash && this.username && this.id
   }
 
   get credentials() {
-    return { username: this.username, authHash: this.authHash }
+    return { username: this.username, authHash: this.authHash, id: this.id }
   }
 
   is(user: UserCredentials) {
-    return user.username === this.username && user.authHash === this.authHash
+    return user.username === this.username && user.authHash === this.authHash && user.guid === this.id
   }
 
   authenticated() {
@@ -44,28 +43,28 @@ export class User {
       return false
     }
 
-    Logger.info('Attempting auth hash login', { username: credentials.username })
+    Logger.info('Attempting auth hash login', { username: credentials.username, credential: credentials.authHash, id: credentials.guid })
 
     try {
-      const user = await r3.user.authHashLogin(credentials.username, credentials.authHash)
 
-      Logger.info('CHECK SIGN IN', { username: user.username, id: user.id })
 
-      if (!user) {
+      Logger.info('CHECK SIGN IN', { username: credentials.username, id: credentials.guid, hash: credentials.authHash})
+
+      if (!credentials) {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
         return false
       }
 
       this.signedIn = true
-      this.username = user.username
-      this.authHash = user.authHash
-      this.id = user.id
+      this.username = credentials.username
+      this.authHash = credentials.authHash
+      this.id = credentials.guid
 
       Logger.info('CHECK CLI SIGN IN')
       await cli.checkSignIn()
-      EventBus.emit(User.EVENTS.signedIn, user)
+      EventBus.emit(User.EVENTS.signedIn, credentials)
 
-      Logger.info('BACKEND SIGNED IN', { username: user.username })
+      Logger.info('BACKEND SIGNED IN', { username: credentials.username })
       return true
     } catch (error) {
       Logger.warn('LOGIN AUTH FAILURE', { username: credentials.username, error })
