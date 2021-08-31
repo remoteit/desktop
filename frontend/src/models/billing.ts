@@ -118,7 +118,7 @@ export default createModel<RootModel>()({
         cards: data.cards,
         invoices: data.invoices.map(i => ({
           ...i,
-          date: new Date(i.date),
+          created: new Date(i.created),
         })),
       })
     },

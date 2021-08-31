@@ -93,6 +93,12 @@ declare global {
   }
 
   type IInvoice = {
+    price: {
+      id: string
+      amount: number
+      currency: string
+      interval: IPlanInterval
+    }
     id: string
     plan: ILicense['plan']
     quantity: number
@@ -100,7 +106,7 @@ declare global {
     currency: string
     paid: boolean
     url: string
-    date: Date
+    created: Date
   }
 
   type IAnnouncement = {
