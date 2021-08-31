@@ -11,7 +11,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   let template: 'value' | 'text' | undefined
   let message: React.ReactElement | string | undefined
 
-  if (limit.value === 0) return null
+  if (limit.value === 0 && limit.actual === 0) return null
 
   switch (limit.name) {
     case 'aws-services':
@@ -29,15 +29,15 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       break
     case 'iot-devices':
       template = 'value'
-      message = limit.value !== null ? `${v(limit.actual)} of ${v(limit.value)} licensed devices` : 'Unlimited devices'
+      message = limit.value === null ? 'Unlimited devices' : `${v(limit.actual)} of ${v(limit.value)} licensed devices`
       if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device limit`
       break
     case 'iot-nc-devices':
       template = 'value'
       message =
-        limit.value !== null
-          ? `${v(limit.actual)} of ${v(limit.value)} non-commercial devices`
-          : 'Unlimited non-commercial devices'
+        limit.value === null
+          ? 'Unlimited non-commercial devices'
+          : `${v(limit.actual)} of ${v(limit.value)} non-commercial devices`
       if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device non-commercial limit`
       break
   }
