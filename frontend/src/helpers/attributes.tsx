@@ -158,8 +158,8 @@ export const attributes: Attribute[] = [
       })
   ),
   new ServiceAttribute({
-    id: 'sharableLink',
-    label: 'Shareable Link',
+    id: 'connectLink',
+    label: 'Connect Link',
     value: ({ service }) => `remoteit://connect/${service?.id}`,
   }),
   new ServiceAttribute({

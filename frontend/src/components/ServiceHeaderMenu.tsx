@@ -56,7 +56,7 @@ export const ServiceHeaderMenu: React.FC<{
             <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
             <CopyButton
               icon="share-alt"
-              title="Copy sharable Link"
+              title="Copy connection link"
               value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
             />
           </Typography>
