@@ -49,7 +49,9 @@ export default class ElectronApp {
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
-  check = () => this.autoUpdater.check()
+  check = () => {
+    if (!environment.isHeadless) this.autoUpdater.check()
+  }
 
   get url() {
     if (!this.window) return
