@@ -28,6 +28,7 @@ type IGetDevice = {
 
 type IDeviceState = {
   all: { [accountId: string]: IDevice[] }
+  initialized: boolean
   total: number
   results: number
   searched: boolean
@@ -50,6 +51,7 @@ type IDeviceState = {
 
 export const defaultState: IDeviceState = {
   all: {},
+  initialized: false,
   total: 0,
   results: 0,
   searched: false,
@@ -126,7 +128,7 @@ export default createModel<RootModel>()({
       platformConfiguration()
 
       // @TODO pull contacts out into its own model / request on page load
-      set({ fetching: false, append: false, contacts })
+      set({ fetching: false, append: false, initialized: true, contacts })
     },
 
     /*

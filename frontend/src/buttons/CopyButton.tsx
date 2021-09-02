@@ -5,7 +5,7 @@ import { IconButton } from './IconButton'
 
 export interface CopyButtonProps {
   icon: string
-  title: string
+  title?: string
   value?: string | number
   color?: Color
   size?: FontSize

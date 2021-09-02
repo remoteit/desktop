@@ -59,28 +59,22 @@ export default {
   },
 
   connect(c: IConnection) {
-    let string = `-j connection add \
+    return `-j connection add \
       --id ${c.id} \
       --name "${c.name}" \
+      --port ${c.port} \
       --ip ${c.ip} \
       --timeout ${c.timeout} \
       --restrict ${c.restriction} \
       --failover ${!!c.failover} \
       --p2p ${!c.proxyOnly} \
       --servicetype ${c.typeID} \
-      --targetHostname "${c.name}" \
+      --targetHostname ${c.targetHost} \
       --enableCertificate ${!!preferences.get().useCertificate} \
-      --enableHTTP true \
-      --authhash ${user.authHash} \
       --log ${!!c.log} \
       --logfolder "${environment.connectionLogPath}" \
-      --manufacture-id ${environment.appCode}`
-
-    if (!preferences.get().useCertificate || (c.port !== 80 && c.port !== 443)) {
-      string += ` --port ${c.port}`
-    }
-
-    return string
+      --manufacture-id ${environment.appCode} \
+      --authhash ${user.authHash}`
   },
 
   stop(c: IConnection) {
@@ -92,9 +86,10 @@ export default {
   },
 
   setConnect(c: IConnection) {
-    let string = `-j connection modify \
+    return `-j connection modify \
     --id ${c.id} \
     --name "${c.name}" \
+    --port ${c.port} \
     --ip ${c.ip} \
     --timeout ${c.timeout} \
     --restrict ${c.restriction} \
@@ -102,19 +97,12 @@ export default {
     --p2p ${!c.proxyOnly} \
     --enable ${!!c.enabled} \
     --servicetype ${c.typeID} \
-    --targetHostname "${c.name}" \
+    --targetHostname ${c.targetHost} \
     --enableCertificate ${!!preferences.get().useCertificate} \
-    --enableHTTP true \
-    --authhash ${user.authHash} \
     --log ${!!c.log} \
     --logfolder "${environment.connectionLogPath}" \
-    --manufacture-id ${environment.appCode}`
-
-    if (!preferences.get().useCertificate || (c.port !== 80 && c.port !== 443)) {
-      string += ` --port ${c.port}`
-    }
-
-    return string
+    --manufacture-id ${environment.appCode} \
+    --authhash ${user.authHash}`
   },
 
   serviceInstall() {

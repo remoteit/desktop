@@ -16,6 +16,7 @@ import { makeStyles, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../components/InlineTemplateSetting'
 import { ConnectionLogSetting } from '../components/ConnectionLogSetting'
+import { TargetHostSetting } from '../components/TargetHostSetting'
 import { ServiceAttributes } from '../components/ServiceAttributes'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { NoConnectionPage } from './NoConnectionPage'
@@ -120,6 +121,7 @@ export const ConnectionPage: React.FC = () => {
           <LanShareSelect connection={connection} service={service} />
           <ConnectionLogSetting connection={connection} service={service} />
           <PublicSetting connection={connection} service={service} />
+          <TargetHostSetting connection={connection} service={service} />
         </List>
       </AccordionMenuItem>
       <AccordionMenuItem

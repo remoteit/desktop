@@ -1,8 +1,10 @@
 import debug from 'debug'
 import cli from './cliInterface'
 import { WEB_PORT } from './constants'
+import { IP_PRIVATE } from './sharedCopy/constants'
 import electronInterface from './electronInterface'
 import binaryInstaller from './binaryInstaller'
+import preferences from './preferences'
 import environment from './environment'
 import PortScanner from './PortScanner'
 import Connection from './Connection'
@@ -11,7 +13,6 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import path from 'path'
 import user from './User'
-import Binary from './Binary'
 
 const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
@@ -84,6 +85,12 @@ export default class ConnectionPool {
       if (!cliConnection && connection.params.connected && !connection.params.public) {
         Logger.info('SYNC START CONNECTION', { connection: connection.params })
         connection.start()
+      }
+      if (connection.params.host === IP_PRIVATE && connection.params.enabled && preferences.get().useCertificate) {
+        if (!connection.params.error) {
+          Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: connection.params })
+          connection.error(new Error('Connection certificate error, unable to use custom hostname.'))
+        }
       }
     })
   }
@@ -191,7 +198,10 @@ export default class ConnectionPool {
   }
 
   toJSON = (): IConnection[] => {
-    return this.pool.map(c => c.params).sort((a, b) => this.sort(a.name || '', b.name || ''))
+    return this.pool
+      .map(c => c.params)
+      .sort((a, b) => this.sort(a.name || '', b.name || ''))
+      .sort((a, b) => Number(b.connected || 0) - Number(a.connected || 0))
   }
 
   sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
@@ -243,6 +253,9 @@ export default class ConnectionPool {
       const enabled = c.active
       // @ts-ignore
       delete c.active
+      // setup safe names for hostname
+      c.name = c.name?.toLowerCase().replace(/[-\s]+/g, '-')
+
       return { ...c, enabled, connected: enabled }
     })
   }

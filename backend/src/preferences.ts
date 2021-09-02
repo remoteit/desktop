@@ -2,7 +2,6 @@ import EventBus from './EventBus'
 import Logger from './Logger'
 import JSONFile from './JSONFile'
 import environment from './environment'
-import cli from './cliInterface'
 import path from 'path'
 
 export class Preferences {

@@ -155,6 +155,7 @@ declare global {
     restriction?: ipAddress // Restriction IP address
     sessionId?: string //the connection session id
     startTime?: number // unix timestamp connection start time
+    targetHost?: ipAddress // default localhost
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
@@ -226,6 +227,7 @@ declare global {
     configurable: boolean // cloudshift device
     accountId: string
     thisDevice?: boolean
+    license: ILicenseTypes
     geo: IGeo & {
       connectionType?: string
       isp?: string
@@ -266,7 +268,7 @@ declare global {
     host?: ipAddress
     protocol?: string
     access: IUser[]
-    license: 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
+    license: ILicenseTypes
     attributes: ILookup<any> & {
       // altname?: string // can't have this collide with service name
       route?: IRouteType // p2p with failover | p2p | proxy
@@ -357,6 +359,8 @@ declare global {
       }
     }
   }
+
+  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
 
   type IAnnouncement = {
     id: string
@@ -608,6 +612,8 @@ declare global {
     show: boolean
     badge?: number
     chip?: string
+    footer?: boolean
+    chipPrimary?: boolean
   }
 }
 

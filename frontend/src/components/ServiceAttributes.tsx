@@ -8,6 +8,7 @@ export const ServiceAttributes: React.FC<{ service?: IService; disablePadding?: 
     'serviceLastReported',
     'serviceName',
     'servicePort',
+    'serviceHost',
     'serviceProtocol',
     'serviceType',
     'owner',

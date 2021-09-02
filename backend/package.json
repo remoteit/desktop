@@ -1,10 +1,10 @@
 {
   "name": "remoteit-headless",
-  "version": "3.1.0-beta.1",
+  "version": "3.1.5",
   "private": true,
   "main": "build/index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 run-s clean copy-and-lock compile build-frontend pack",
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=4096 SKIP_PREFLIGHT_CHECK=true run-s clean copy-and-lock compile build-frontend pack",
     "build-frontend": "cd ../frontend && npm run build && cp -R build/* ../backend/build",
     "copy-and-lock": "chmod +w src/sharedCopy/* && cp -R ../frontend/src/shared/* ./src/sharedCopy && chmod -w src/sharedCopy/* && cp ./src/cli-version.json ./build",
     "clean": "rimraf build && mkdir build",
@@ -44,6 +44,7 @@
     "socketio-auth": "^0.1.1",
     "sudo-prompt": "^9.2.1",
     "tmp": "^0.2.1",
+    "win-ca": "^3.4.5",
     "winston": "3.3.3"
   },
   "devDependencies": {
@@ -98,6 +99,7 @@
     "socketio-auth",
     "sudo-prompt",
     "tmp",
+    "win-ca",
     "winston"
   ]
 }

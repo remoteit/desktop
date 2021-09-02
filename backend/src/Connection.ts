@@ -57,8 +57,6 @@ export default class Connection extends EventEmitter {
 
   error = (e: Error) => {
     this.params.error = { message: e.message }
-    this.params.connected = false
-    this.params.endTime = Date.now()
     EventBus.emit(Connection.EVENTS.error, { ...this.params.error, connection: this.params } as ConnectionErrorMessage)
   }
 }

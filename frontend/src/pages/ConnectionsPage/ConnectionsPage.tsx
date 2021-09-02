@@ -72,7 +72,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     <Container
       integrated
       header={
-        <Collapse in={!!showNew} timeout={800}>
+        <Collapse in={noConnections || !!showNew} timeout={800}>
           <NewConnection />
         </Collapse>
       }
@@ -80,12 +80,11 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
       {noConnections && (
         <>
           <Typography className={css.message} variant="h2" align="center">
-            Use this page to manage frequently used connections
+            Use this page to add services to your local network.
           </Typography>
           <Typography variant="body2" align="center" color="textSecondary">
-            Once you've made a connection to a service from the
-            <Link onClick={() => history.push('/devices')}> Devices </Link> tab, <br />
-            active and recent connections will appear here.
+            Once you've added a service from the<Link onClick={() => history.push('/devices')}>Devices</Link>tab, <br />
+            active and recent services will appear here.
           </Typography>
         </>
       )}

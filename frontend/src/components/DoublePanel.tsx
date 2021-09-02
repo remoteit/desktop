@@ -75,7 +75,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     return function cleanup() {
       window.removeEventListener('resize', measure)
     }
-  })
+  }, [])
 
   return (
     <>

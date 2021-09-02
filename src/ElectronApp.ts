@@ -49,7 +49,9 @@ export default class ElectronApp {
     EventBus.on(EVENTS.open, this.openWindow)
   }
 
-  check = () => this.autoUpdater.check()
+  check = () => {
+    if (!environment.isHeadless) this.autoUpdater.check()
+  }
 
   get url() {
     if (!this.window) return
@@ -122,7 +124,7 @@ export default class ElectronApp {
   private createMainWindow = () => {
     d('Create main window')
     if (this.window) return
-    this.app.setAppUserModelId(process.execPath)
+    this.app.setAppUserModelId('it.remote.desktop')
 
     this.window = new electron.BrowserWindow({
       width: 1280,

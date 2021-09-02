@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, Box, Tooltip, Typography, TooltipProps } from '@material-ui/core'
+import { makeStyles, Box, Tooltip, Typography, TooltipProps, BoxProps } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { IconButton } from '../buttons/IconButton'
@@ -10,6 +10,7 @@ type Props = {
   step: number
   placement?: TooltipProps['placement']
   instructions: React.ReactElement | string
+  component?: BoxProps['component']
   autoNext?: boolean
   autoStart?: boolean
   last?: boolean
@@ -24,6 +25,7 @@ export const GuideStep: React.FC<Props> = ({
   step,
   placement,
   instructions,
+  component = 'div',
   autoNext,
   autoStart,
   last,
@@ -86,7 +88,11 @@ export const GuideStep: React.FC<Props> = ({
         </>
       }
     >
-      <Box className={css.box} onClick={() => autoNext && ui.guide({ guide, step: last ? 0 : step + 1, done: last })}>
+      <Box
+        className={css.box}
+        onClick={() => autoNext && ui.guide({ guide, step: last ? 0 : step + 1, done: last })}
+        component={component}
+      >
         {step === 1 && (
           <IconButton
             icon="sparkles"

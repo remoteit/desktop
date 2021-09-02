@@ -4,17 +4,18 @@ import { Tooltip, Box } from '@material-ui/core'
 import { FontSize } from '../../styling'
 import { Icon } from '../Icon'
 
-export const TargetPlatform: React.FC<{ id?: number; size?: FontSize; tooltip?: boolean; label?: boolean }> = ({
-  id,
-  tooltip,
-  label,
-  ...props
-}) => {
+export const TargetPlatform: React.FC<{
+  id?: number
+  size?: FontSize
+  tooltip?: boolean
+  label?: boolean
+  color?: string
+}> = ({ id, tooltip, label, color, ...props }) => {
   const { name, type, size } = getTargetPlatformIcon(id)
 
-  if (!name || !id) return null
+  if (!name) return null
 
-  const icon = <Icon {...{ name, type, size: props.size || size }} inlineLeft={!!label} />
+  const icon = <Icon {...{ name, type, size: props.size || size, color }} inlineLeft={!!label} />
 
   if (tooltip)
     return (

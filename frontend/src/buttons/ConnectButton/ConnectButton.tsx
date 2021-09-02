@@ -48,6 +48,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       analyticsHelper.trackConnect('connectionInitiated', service)
       connection = connection || newConnection(service)
       connection.name = sanitizeName(connection?.name || '')
+      connection.host = ''
       connection?.public ? connections.proxyConnect(connection) : emit('service/connect', connection)
     }
   }
@@ -71,15 +72,15 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   if (state === 'ready') {
-    title = '1 Connecting'
+    title = 'Connecting'
     color = 'grayDarker'
   }
   if (stopping) {
-    title = '2 Removing'
+    title = 'Removing'
     color = 'grayDark'
   }
   if (connecting) {
-    title = '3 Connecting'
+    title = 'Connecting'
     color = 'grayDark'
   }
   if (state === 'offline') {

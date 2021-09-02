@@ -122,7 +122,9 @@ class Server {
       // User not allowed
       else {
         return callback(
-          new Error(`${admin.username} is currently signed in. They must sign out to grant access.`),
+          new Error(
+            `${admin.username} is currently signed in. They must first sign out to allow ${credentials.username} to sign in.`
+          ),
           false
         )
       }

@@ -1,10 +1,10 @@
 {
   "name": "remoteit-desktop-frontend",
-  "version": "3.1.0-beta.1",
+  "version": "3.1.5",
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
-    "start": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 npm-run-all -p watch-*",
+    "start": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 SKIP_PREFLIGHT_CHECK=true npm-run-all -p watch-*",
     "build": "react-scripts build",
     "test": "NODE_ENV=test react-scripts test",
     "eject": "react-scripts eject",
@@ -68,6 +68,7 @@
     "socket.io-client": "2.3.1",
     "url": "^0.11.0",
     "use-clipboard-copy": "^0.1.2",
+    "use-resize-observer": "^7.0.1",
     "web-vitals": "^1.1.0",
     "yup": "^0.32.8"
   },

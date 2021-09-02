@@ -74,7 +74,7 @@ export const OptionsPage: React.FC = () => {
           icon="file-certificate"
           toggle={!!preferences.useCertificate}
           onClick={() => emit('useCertificate', !preferences.useCertificate)}
-          confirmMessage="Changing the certificate handling will require we restart the system service. You will see a system prompt."
+          confirmMessage="Changing the certificate handling will require we restart the system agent. You will see a system prompt."
           confirmTitle="Continue?"
           confirm
         />
@@ -105,19 +105,19 @@ export const OptionsPage: React.FC = () => {
             <SettingsDisableNetworkItem />
             <ListItemSetting
               confirm
-              label={installing ? 'Installing...' : 'Re-install system service'}
+              label={installing ? 'Installing...' : 'Re-install system agent'}
               subLabel={`Version ${cliVersion}`}
               disabled={installing}
               icon="terminal"
               confirmTitle="Are you sure?"
-              confirmMessage="This will stop and attempt to re-install the system service."
+              confirmMessage="This will stop and attempt to re-install the system agent."
               onClick={() => binaries.install()}
             />
             {!notOwner && (
               <ListItemSetting
                 confirm
                 label="Uninstall"
-                subLabel={`De-register this device, completely remove all saved data, and uninstall the system service and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
+                subLabel={`De-register this device, completely remove all saved data, and uninstall the system agent and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
                 icon="trash"
                 confirmTitle="Are you sure?"
                 confirmMessage="You will remove this system as a host, your connections and command line utilities."

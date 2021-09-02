@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { DEFAULT_CONNECTION } from '../shared/constants'
+import { DEFAULT_CONNECTION, IP_PRIVATE } from '../shared/constants'
 import { removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState, store } from '../store'
@@ -57,6 +57,7 @@ export function newConnection(service?: IService | null) {
     connection.deviceID = service.deviceID
     connection.online = service.state === 'active'
     connection.typeID = service.typeID
+    connection.targetHost = service?.host || IP_PRIVATE
     if (device) connection.name = connectionName(service, device)
   }
 

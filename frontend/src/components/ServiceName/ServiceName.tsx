@@ -5,7 +5,7 @@ import { isOffline } from '../../models/devices'
 import { useLocation } from 'react-router-dom'
 import { attributeName } from '../../shared/nameHelper'
 import { REGEX_FIRST_PATH } from '../../shared/constants'
-import { Tooltip, Typography } from '@material-ui/core'
+import { Tooltip } from '@material-ui/core'
 
 type Props = {
   connection?: IConnection
@@ -42,7 +42,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
         </sup>
       )} */}
       {device?.configurable && !device?.shared && (
-        <Tooltip title="Configurable" placement="top" arrow>
+        <Tooltip title="Remote configurable" placement="top" arrow>
           <sup>
             <Icon name="wifi" size="xxs" type="solid" fixedWidth />
           </sup>
