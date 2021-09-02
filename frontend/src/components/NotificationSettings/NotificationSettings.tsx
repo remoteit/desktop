@@ -22,79 +22,94 @@ type Props = {
 
 export const NotificationSettings: React.FC<Props> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
-  const { globalNotificationEmail, globalNotificationSystem } = useSelector((state: ApplicationState) => ({
+  const { globalNotificationEmail, globalNotificationSystem, loading } = useSelector((state: ApplicationState) => ({
     globalNotificationEmail: state.auth?.notificationSettings?.emailNotifications,
     globalNotificationSystem: state.auth?.notificationSettings?.desktopNotifications,
+    loading: state.auth.loading
   }))
   const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(device?.notificationSettings?.emailNotifications)
-  const [notificationInApp, setNotificationInApp] = useState<boolean | undefined | null>(device?.notificationSettings?.desktopNotifications)
-  const [overridden, setOverridden] = useState<boolean>()
+  const [inAppNotification, setInAppNotification] = useState<boolean | undefined | null>(device?.notificationSettings?.desktopNotifications)
+  const [inAppOverridden, setInAppOverridden] = useState<boolean>()
   const [emailOverridden, setEmailOverridden] = useState<boolean>()
 
 
   useEffect(() => {
-    setOverridden(typeof notificationInApp === "boolean")
-  }, [notificationInApp])
+    setInAppOverridden(typeof inAppNotification === "boolean")
+  }, [inAppNotification])
 
   useEffect(() => {
     setEmailOverridden(typeof emailNotification === "boolean")
   }, [emailNotification])
 
-  const handleEmailNotifications = () => {
-    const currentEmailNotification = emailOverridden ? emailNotification || false : globalNotificationEmail
-    devices.setNotificationDevice({
-      ...device,
-      notificationSettings: {
-        ...device.notificationSettings,
-        emailNotifications: !currentEmailNotification
-      }
-    })
-    setEmailNotification(!currentEmailNotification)
-  }
-
-  const handleInAppNotifications = () => {
-    const currentDesktopNotification = overridden ? notificationInApp || false : globalNotificationSystem
-    devices.setNotificationDevice({
-      ...device,
-      notificationSettings: {
-        ...device.notificationSettings,
-        desktopNotifications: !currentDesktopNotification
-      }
-    })
-    setNotificationInApp(!currentDesktopNotification)
-  }
-
-  const onClose = (system: boolean) => {
-    if (system) {
-      setOverridden(false)
-      setNotificationInApp(undefined)
-      devices.setNotificationDevice({
+  const handleEmailNotifications = async () => {
+    if (!loading) {
+      const currentEmailNotification = emailOverridden ? emailNotification || false : globalNotificationEmail
+      setEmailNotification(!currentEmailNotification)
+      const item = {
         ...device,
         notificationSettings: {
-          desktopNotifications: null
+          ...device.notificationSettings,
+          emailNotifications: !currentEmailNotification
         }
-      })
+      }
+      await devices.setNotificationDevice(item)
+    }
+  }
 
-    } else {
-      setEmailOverridden(false)
-      setEmailNotification(undefined)
-      devices.setNotificationDevice({
+  const handleInAppNotifications = async () => {
+    if (!loading) {
+      const currentDesktopNotification = inAppOverridden ? inAppNotification || false : globalNotificationSystem
+      setInAppNotification(!currentDesktopNotification)
+      const item = {
         ...device,
         notificationSettings: {
-          emailNotifications: null
+          ...device.notificationSettings,
+          desktopNotifications: !currentDesktopNotification
         }
-      })
+      }
+      await devices.setNotificationDevice(item)
+    }
+  }
+
+  const onClose = (value: string) => {
+    switch (value) {
+
+      case 'inapp':
+        setInAppOverridden(false)
+        setInAppNotification(undefined)
+        const itemInApp = {
+          ...device,
+          notificationSettings: {
+            desktopNotifications: null
+          }
+        }
+        devices.setNotificationDevice(itemInApp)
+        break;
+
+      case 'email':
+        setEmailOverridden(false)
+        setEmailNotification(undefined)
+        const itemEmail = {
+          ...device,
+          notificationSettings: {
+            emailNotifications: null
+          }
+        }
+        devices.setNotificationDevice(itemEmail)
+        break;
+
     }
 
+
   }
 
-  const chipOverridden = (system: boolean = true) => {
+  const chipOverridden = (value: string = 'inapp') => {
     return (
       <Chip
         label="Overridden"
         size="small"
         deleteIcon={<IconButton icon="times" size="xs" />}
-        onDelete={() => onClose(system)}
+        onDelete={() => onClose(value)}
       ></Chip>
     )
   }
@@ -118,12 +133,12 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
       <List>
         <ListItem button onClick={handleInAppNotifications} dense>
           <ListItemIcon>
-            <Icon name={notificationInApp ? 'bell-on' : 'bell-slash'} size="md" />
+            <Icon name={inAppNotification ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary="System notification" />
           <ListItemSecondaryAction>
-            {overridden && chipOverridden()}
-            <Switch edge="end" color="primary" checked={overridden ? notificationInApp || false : globalNotificationSystem} onClick={handleInAppNotifications} />
+            {inAppOverridden && chipOverridden('inapp')}
+            <Switch edge="end" color="primary" checked={inAppOverridden ? inAppNotification || false : globalNotificationSystem} onClick={handleInAppNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem button onClick={handleEmailNotifications} dense>
@@ -132,7 +147,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
           </ListItemIcon>
           <ListItemText primary="Email" />
           <ListItemSecondaryAction>
-            {emailOverridden && chipOverridden(false)}
+            {emailOverridden && chipOverridden('email')}
             <Switch edge="end" color="primary" checked={emailOverridden ? emailNotification || false : globalNotificationEmail} onClick={handleEmailNotifications} />
           </ListItemSecondaryAction>
         </ListItem>
