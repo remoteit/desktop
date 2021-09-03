@@ -9,6 +9,25 @@ export async function graphQLSetAttributes(attributes: ILookup<string | number |
   )
 }
 
+export async function graphQLSetDeviceNotification(
+  deviceID: string,
+  emailNotifications?: boolean | null,
+  desktopNotifications?: boolean | null
+) {
+  return await graphQLBasicRequest(
+    `
+      mutation query($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
+        setNotificationSettings(
+          serviceId: $deviceID, 
+          emailNotifications: $emailNotifications, 
+          desktopNotifications: $desktopNotifications
+        )
+      }
+    `,
+    { emailNotifications, desktopNotifications, deviceID }
+  )
+}
+
 export async function graphQLUnShareDevice(params: IShareProps) {
   return await graphQLBasicRequest(
     ` mutation query($deviceId: String!, $email: [String!]!) {
@@ -104,5 +123,52 @@ export async function graphQLReadNotice(id: string) {
         readNotice(id: $id)
       }`,
     { id }
+  )
+}
+
+export async function graphQLUpdateMetadata(params: INotificationSetting) {
+  //@TODO: to add $notificationSystem: Boolean waiting API support
+  return await graphQLBasicRequest(
+    `
+        mutation UpdateUserMetadata(
+          $onlineDeviceNotification: Boolean
+          $onlineSharedDeviceNotification: Boolean
+          $portalUrl: String
+          $notificationEmail: Boolean
+          $notificationSystem: Boolean
+        ) {
+          setAttributes(
+            attributes: {
+              onlineDeviceNotification: $onlineDeviceNotification
+              onlineSharedDeviceNotification: $onlineSharedDeviceNotification
+              portalUrl: $portalUrl
+              notificationEmail: $notificationEmail
+              notificationSystem: $notificationSystem
+            }
+          )
+        }
+      `,
+    params
+  )
+}
+
+export async function graphQLUpdateNotification(params: INotificationSetting) {
+  return await graphQLBasicRequest(
+    `
+        mutation UpdateUserMetadata(
+          $emailNotifications: Boolean
+          $desktopNotifications: Boolean
+          $urlNotifications: Boolean
+          $notificationUrl: String
+        ) {
+          setNotificationSettings(
+            emailNotifications: $emailNotifications, 
+            desktopNotifications: $desktopNotifications, 
+            urlNotifications: $urlNotifications, 
+            notificationUrl: $notificationUrl
+          )
+        }
+      `,
+    params
   )
 }

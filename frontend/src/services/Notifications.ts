@@ -10,7 +10,12 @@ const actions = {
 }
 
 export function notify(event: ICloudEvent) {
-  if (!store.getState().backend.preferences.showNotifications) return
+  const target = event.target[0]
+  const onlineDeviceNotification = target.device?.notificationSettings.desktopNotifications
+    ? target.device?.attributes.notificationSystem
+    : event.metadata?.desktopNotifications
+
+  if (!onlineDeviceNotification) return
 
   switch (event.type) {
     case 'DEVICE_STATE':

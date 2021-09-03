@@ -243,6 +243,12 @@ declare global {
       color?: number
       label?: string
       accessDisabled?: boolean
+      notificationEmail?: boolean | null
+      notificationSystem?: boolean | null
+    }
+    notificationSettings: {
+      emailNotifications?: boolean | null
+      desktopNotifications?: boolean | null
     }
   }
 
@@ -280,6 +286,14 @@ declare global {
     created?: Date
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
+  }
+
+  type INotificationSetting = {
+    emailNotifications?: boolean
+    desktopNotifications?: boolean
+    urlNotifications?: boolean
+    notificationEmail?: string
+    notificationUrl?: string
   }
 
   type IUserRef = {
@@ -372,6 +386,7 @@ declare global {
     platform: IUser['platform']
     authUserId: string
     geo?: IGeo
+    metadata?: INotificationSetting
     target: {
       id: string
       name: string
@@ -523,7 +538,6 @@ declare global {
     openAtLogin?: boolean
     remoteUIOverride?: boolean
     disableLocalNetwork?: boolean
-    showNotifications?: boolean
     allowPrerelease?: boolean
     useCertificate?: boolean
     switchApi?: boolean

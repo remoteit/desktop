@@ -62,6 +62,10 @@ const DEVICE_SELECT = `
       }
     }
   }
+  notificationSettings {
+    emailNotifications
+    desktopNotifications
+  }
 `
 
 export async function graphQLFetchDevices({
@@ -192,6 +196,10 @@ export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: st
           access: s.access.map((e: any) => ({ email: e.user?.email, id: e.user?.id })),
         })
       ),
+      notificationSettings: {
+        emailNotifications: d.notificationSettings.emailNotifications,
+        desktopNotifications: d.notificationSettings.desktopNotifications,
+      },
       access: d.access.map((e: any) => ({
         id: e.user?.id,
         email: e.user?.email,

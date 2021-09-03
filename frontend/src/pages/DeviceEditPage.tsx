@@ -7,6 +7,7 @@ import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { List } from '@material-ui/core'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { NotificationSettings } from '../components/NotificationSettings'
 
 type Props = {
   targetDevice: ITargetDevice
@@ -31,6 +32,7 @@ export const DeviceEditPage: React.FC<Props> = ({ targetDevice, device }) => {
         <DeviceNameSetting device={device} targetDevice={targetDevice} />
         {/* <TagList device={device} /> */}
       </List>
+      <NotificationSettings device={device} />
     </DeviceHeaderMenu>
   )
 }
