@@ -28,8 +28,6 @@ export const Plans: React.FC = () => {
     setForm({ ...form, quantity: Math.max(Math.min(+value, 9999), 0) })
   }
 
-  console.log('PLAN', form, subscription)
-
   const unchanged = () =>
     form.planId === subscription?.plan?.id &&
     form.priceId === subscription?.price?.id &&
@@ -38,113 +36,143 @@ export const Plans: React.FC = () => {
   const selectedPlan = plans.find(plan => plan.id === form.planId)
 
   return (
-    <Gutters size="md" top="xl">
-      <PlanCard
-        name="Personal"
-        description="For personal use"
-        price={0}
-        caption="Free"
-        feature="Up to 5 devices*"
-        features={[
-          'Prototyping / POC',
-          '7 days of activity logs',
-          'Web support',
-          'Scripts',
-          'APIs',
-          'Mobile app',
-          'Non-commercial',
-          'SSO with Google',
-        ]}
-      />
-
-      <List>
-        <ListItem>
-          Selected plan
-          <ListItemSecondaryAction>
-            <span className={css.group}>
-              {plans.map((plan: IPlan, index) => (
-                <Button
-                  key={index}
-                  size="small"
-                  variant={form.planId === plan.id ? 'contained' : undefined}
-                  color={form.planId === plan.id ? 'primary' : undefined}
-                  onClick={() => setForm({ ...form, planId: plan.id, priceId: plan.prices[0]?.id })}
-                >
-                  {plan.description}
-                </Button>
-              ))}
-            </span>
-          </ListItemSecondaryAction>
-        </ListItem>
-        <Collapse in={!!selectedPlan?.prices.length} timeout={400}>
+    <>
+      <Gutters size="md" top="xl" className={css.plans}>
+        <PlanCard
+          name="Personal"
+          description="For non-commercial use"
+          price={0}
+          caption="Free"
+          feature="Up to 5 devices*"
+          features={[
+            'Prototyping / POC',
+            '7 days of activity logs',
+            'Web support',
+            'Scripts',
+            'APIs',
+            'Mobile app',
+            'Non-commercial',
+            'SSO with Google',
+          ]}
+        />
+        <PlanCard
+          name="Professional"
+          description="For business use"
+          price={5}
+          caption="per month / per user"
+          feature="Endpoints are not limited.*"
+          features={[
+            '30 days of activity logs',
+            'User groups - comming soon',
+            'Commercial use',
+            'APIs',
+            'Mobile app',
+            'Non-commercial',
+            'SSO with Google',
+          ]}
+        />
+        <PlanCard
+          name="Enterprise"
+          description="For large volume and OEM"
+          caption="Large-scale solutions or custom usee cases."
+          feature="Volume endpoints or user accounts*"
+          features={['1 year of activity logs', 'Slack support', 'Analytics and reporting']}
+        />
+      </Gutters>
+      <Gutters>
+        <List>
           <ListItem>
-            Subscription type
+            Selected plan
             <ListItemSecondaryAction>
               <span className={css.group}>
-                {selectedPlan?.prices?.map(price => (
+                {plans.map((plan: IPlan, index) => (
                   <Button
-                    key={price.id}
+                    key={index}
                     size="small"
-                    variant={form.priceId === price.id ? 'contained' : undefined}
-                    color={form.priceId === price.id ? 'primary' : undefined}
-                    onClick={() => setForm({ ...form, priceId: price.id })}
+                    variant={form.planId === plan.id ? 'contained' : undefined}
+                    color={form.planId === plan.id ? 'primary' : undefined}
+                    onClick={() => setForm({ ...form, planId: plan.id, priceId: plan.prices[0]?.id })}
                   >
-                    {price.interval}
+                    {plan.description}
                   </Button>
                 ))}
               </span>
             </ListItemSecondaryAction>
           </ListItem>
+          <Collapse in={!!selectedPlan?.prices.length} timeout={400}>
+            <ListItem>
+              Subscription type
+              <ListItemSecondaryAction>
+                <span className={css.group}>
+                  {selectedPlan?.prices?.map(price => (
+                    <Button
+                      key={price.id}
+                      size="small"
+                      variant={form.priceId === price.id ? 'contained' : undefined}
+                      color={form.priceId === price.id ? 'primary' : undefined}
+                      onClick={() => setForm({ ...form, priceId: price.id })}
+                    >
+                      {price.interval}
+                    </Button>
+                  ))}
+                </span>
+              </ListItemSecondaryAction>
+            </ListItem>
+            <ListItem>
+              Number of seats
+              <ListItemSecondaryAction>
+                <span className={css.group}>
+                  <Button
+                    className={css.icon}
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setQuantity(form.quantity - 1)}
+                  >
+                    <Icon name="minus" size="sm" />
+                  </Button>
+                  <TextField
+                    size="small"
+                    value={form.quantity}
+                    hiddenLabel
+                    color="primary"
+                    onChange={e => setQuantity(e.target.value)}
+                    className={css.quantity}
+                  />
+                  <Button
+                    className={css.icon}
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setQuantity(form.quantity + 1)}
+                  >
+                    <Icon name="plus" size="sm" />
+                  </Button>
+                </span>
+              </ListItemSecondaryAction>
+            </ListItem>
+          </Collapse>
           <ListItem>
-            Number of seats
-            <ListItemSecondaryAction>
-              <span className={css.group}>
-                <Button
-                  className={css.icon}
-                  size="small"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => setQuantity(form.quantity - 1)}
-                >
-                  <Icon name="minus" size="sm" />
-                </Button>
-                <TextField
-                  size="small"
-                  value={form.quantity}
-                  hiddenLabel
-                  color="primary"
-                  onChange={e => setQuantity(e.target.value)}
-                  className={css.quantity}
-                />
-                <Button
-                  className={css.icon}
-                  size="small"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => setQuantity(form.quantity + 1)}
-                >
-                  <Icon name="plus" size="sm" />
-                </Button>
-              </span>
-            </ListItemSecondaryAction>
+            <Button
+              onClick={() => dispatch.licensing.subscribe(form)}
+              color="primary"
+              variant="contained"
+              disabled={purchasing || unchanged() || !form.quantity}
+            >
+              {purchasing ? 'Processing...' : 'Purchase'}
+            </Button>
           </ListItem>
-        </Collapse>
-        <ListItem>
-          <Button
-            onClick={() => dispatch.licensing.subscribe(form)}
-            color="primary"
-            variant="contained"
-            disabled={purchasing || unchanged() || !form.quantity}
-          >
-            {purchasing ? 'Processing...' : 'Purchase'}
-          </Button>
-        </ListItem>
-      </List>
-    </Gutters>
+        </List>
+      </Gutters>
+    </>
   )
 }
 
 const useStyles = makeStyles({
+  plans: {
+    display: 'flex',
+    '& > div': { width: '33%' },
+  },
   group: {
     border: `1px solid ${colors.grayLighter}`,
     borderRadius: spacing.md,

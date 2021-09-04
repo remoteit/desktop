@@ -5,6 +5,7 @@ import {
   Typography,
   List,
   ListItem,
+  ListItemIcon,
   ListItemSecondaryAction,
   TextField,
   Collapse,
@@ -19,7 +20,7 @@ import { Icon } from './Icon'
 type Props = {
   name: string
   description: string
-  price: number
+  price?: number
   caption: string
   feature: string
   features: string[]
@@ -34,37 +35,58 @@ export const PlanCard: React.FC<Props> = ({ name, description, price, caption, f
   }))
 
   return (
-    <Gutters>
+    <div>
       <div className={css.plan}>
         <Typography variant="h2">{name}</Typography>
-        <Typography variant="body2">{description}</Typography>
+        <Typography variant="caption">{description}</Typography>
       </div>
       <div className={css.price}>
-        <Typography variant="h1">${price}</Typography>
+        {price !== undefined && <Typography variant="h1">${price}</Typography>}
         <Typography variant="body2">{caption}</Typography>
-        <Button onClick={() => console.log('purchase')} color="primary" variant="contained" disabled={purchasing}>
+        <Button
+          onClick={() => console.log('purchase')}
+          size="small"
+          color="primary"
+          variant="contained"
+          disabled={purchasing}
+        >
           {purchasing ? 'Processing...' : 'Purchase'}
         </Button>
       </div>
       <div className={css.features}>
-        {feature}
-        Features:
-        {features.map((f, index) => (
-          <li key={index}>
-            <Icon name="check" color="success" />
-            {f}
-          </li>
-        ))}
+        <Item>{feature}</Item>
+        <Typography variant="body2">Features:</Typography>
+        <List dense>
+          {features.map((f, index) => (
+            <Item key={index}>{f}</Item>
+          ))}
+        </List>
       </div>
-    </Gutters>
+    </div>
+  )
+}
+
+export const Item: React.FC<{ key?: string | number }> = ({ key, children }) => {
+  return (
+    <ListItem key={key} disableGutters dense>
+      <ListItemIcon>
+        <Icon name="check" color="success" />
+      </ListItemIcon>
+      {children}
+    </ListItem>
   )
 }
 
 const useStyles = makeStyles({
   plan: {
     // display: 'flex',
+    backgroundColor: colors.grayLightest,
+    padding: spacing.md,
+    textAlign: 'center',
   },
   price: {
+    padding: spacing.md,
+    textAlign: 'center',
     // display: 'flex',
   },
   features: {},
