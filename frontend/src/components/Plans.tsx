@@ -1,24 +1,24 @@
 import React from 'react'
 import { Gutters } from './Gutters'
+import { PlanCard } from './PlanCard'
 import { makeStyles, List, ListItem, ListItemSecondaryAction, TextField, Collapse, Button } from '@material-ui/core'
 import { REMOTEIT_PRODUCT_ID } from '../models/licensing'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { spacing, fontSizes, colors } from '../styling'
-import { selectPlans } from '../models/billing'
 import { Icon } from './Icon'
 
-export const PlanSettings: React.FC = () => {
+export const Plans: React.FC = () => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const { plans, subscription, purchasing } = useSelector((state: ApplicationState) => ({
-    plans: selectPlans(state, REMOTEIT_PRODUCT_ID),
-    subscription: state.billing.subscription,
-    purchasing: state.billing.purchasing,
+    plans: state.licensing.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
+    subscription: state.licensing.license,
+    purchasing: state.licensing.purchasing,
   }))
   const [form, setForm] = React.useState<IPurchase>({
-    planId: subscription?.plan.id,
-    priceId: subscription?.price.id,
+    planId: subscription?.plan?.id,
+    priceId: subscription?.price?.id,
     quantity: subscription?.quantity || 1,
     successUrl: window.location.href,
     cancelUrl: window.location.href, //TODO add the state to the url?
@@ -28,15 +28,35 @@ export const PlanSettings: React.FC = () => {
     setForm({ ...form, quantity: Math.max(Math.min(+value, 9999), 0) })
   }
 
+  console.log('PLAN', form, subscription)
+
   const unchanged = () =>
-    form.planId === subscription?.plan.id &&
-    form.priceId === subscription?.price.id &&
+    form.planId === subscription?.plan?.id &&
+    form.priceId === subscription?.price?.id &&
     form.quantity === (subscription?.quantity || 1)
 
   const selectedPlan = plans.find(plan => plan.id === form.planId)
 
   return (
     <Gutters size="md" top="xl">
+      <PlanCard
+        name="Personal"
+        description="For personal use"
+        price={0}
+        caption="Free"
+        feature="Up to 5 devices*"
+        features={[
+          'Prototyping / POC',
+          '7 days of activity logs',
+          'Web support',
+          'Scripts',
+          'APIs',
+          'Mobile app',
+          'Non-commercial',
+          'SSO with Google',
+        ]}
+      />
+
       <List>
         <ListItem>
           Selected plan
@@ -56,7 +76,7 @@ export const PlanSettings: React.FC = () => {
             </span>
           </ListItemSecondaryAction>
         </ListItem>
-        <Collapse in={!!selectedPlan?.prices.length} timeout={200}>
+        <Collapse in={!!selectedPlan?.prices.length} timeout={400}>
           <ListItem>
             Subscription type
             <ListItemSecondaryAction>
@@ -111,12 +131,12 @@ export const PlanSettings: React.FC = () => {
         </Collapse>
         <ListItem>
           <Button
-            onClick={() => dispatch.billing.purchase(form)}
+            onClick={() => dispatch.licensing.subscribe(form)}
             color="primary"
             variant="contained"
             disabled={purchasing || unchanged() || !form.quantity}
           >
-            {purchasing ? 'Please wait...' : 'Purchase'}
+            {purchasing ? 'Processing...' : 'Purchase'}
           </Button>
         </ListItem>
       </List>

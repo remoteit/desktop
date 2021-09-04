@@ -2,6 +2,9 @@ import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
+import { STRIPE_PUBLIC_KEY } from '../shared/constants'
+import { Stripe, loadStripe } from '@stripe/stripe-js'
+import { graphQLSubscribe, graphQLUnsubscribe } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
@@ -28,8 +31,13 @@ export const LicenseLookup: ILicenseLookup[] = [
 const defaultLicense = LicenseLookup[0]
 
 type ILicensing = {
+  plans: IPlan[]
+  license: ILicense | null
   licenses: ILicense[]
   limits: ILimit[]
+  invoices: IInvoice[]
+  stripePromise: Promise<Stripe | null> | null
+  purchasing: boolean
   informed: boolean
   tests: {
     license: boolean
@@ -41,8 +49,11 @@ type ILicensing = {
 }
 
 const defaultState: ILicensing = {
+  plans: [],
+  license: null,
   licenses: [],
   limits: [],
+  invoices: [],
   informed: false,
   tests: testData,
 }
@@ -50,11 +61,66 @@ const defaultState: ILicensing = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: (dispatch: any) => ({
+    async init() {
+      const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_API_KEY || STRIPE_PUBLIC_KEY)
+      dispatch.licensing.set({ stripePromise })
+      await dispatch.licensing.fetch()
+    },
     async fetch() {
       try {
         const result: any = await graphQLRequest(
           ` {
+              plans {
+                id
+                name
+                description
+                product {
+                  name
+                }
+                prices {
+                  id
+                  amount
+                  currency
+                  interval
+                }
+              }          
               login {
+                license {
+                  id
+                  updated
+                  created
+                  expiration
+                  total
+                  status
+                  valid
+                  quantity
+                  plan {
+                    id
+                    name
+                    description
+                    product {
+                      name
+                    }
+                  }
+                  price {
+                    id
+                    amount
+                    currency
+                    interval
+                  }
+                  card {
+                    brand
+                    month
+                    year
+                    last
+                    name
+                    email
+                    phone
+                    postal
+                    country
+                    expiration            
+                  }
+                }
                 licenses {
                   id
                   created
@@ -82,11 +148,27 @@ export default createModel<RootModel>()({
                     id
                   }
                 }
+                invoices {
+                  plan {
+                    name
+                  }
+                  quantity
+                  price {
+                    id
+                    amount
+                    currency
+                    interval
+                  }
+                  total
+                  paid
+                  url
+                  created
+                }
               }
             }`
         )
         graphQLGetErrors(result)
-        dispatch.licensing.parse(result?.data?.data?.login)
+        dispatch.licensing.parse(result?.data?.data)
       } catch (error) {
         await graphQLCatchError(error)
       }
@@ -95,14 +177,31 @@ export default createModel<RootModel>()({
       if (!data) return
       console.log('LICENSING', data)
       dispatch.licensing.set({
-        licenses: data.licenses.map((l: any) => ({
-          ...l,
-          created: new Date(l.created),
-          updated: new Date(l.updated),
-          expiration: l.expiration && new Date(l.expiration),
+        plans: data.plans,
+        license: parseLicense(data?.login.license),
+        licenses: data?.login.licenses.map(l => parseLicense(l)),
+        limits: data?.login.limits,
+        invoices: data?.login.invoices.map(i => ({
+          ...i,
+          created: new Date(i.created),
         })),
-        limits: data.limits,
       })
+    },
+    async subscribe(form: IPurchase) {
+      dispatch.licensing.set({ purchasing: true })
+
+      if (!form.planId) {
+        await graphQLUnsubscribe(form)
+        console.log('CANCEL PLAN')
+      } else {
+        const response = await graphQLSubscribe(form)
+        const checkout = response?.data?.data?.updateSubscription
+        console.log('PURCHASE', checkout)
+        if (checkout?.url) window.location.href = checkout.url
+      }
+
+      await dispatch.licensing.fetch()
+      dispatch.licensing.set({ purchasing: false })
     },
     async testServiceLicensing(_, globalState) {
       const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']
@@ -134,6 +233,16 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function parseLicense(data) {
+  if (!data) return null
+  return {
+    ...data,
+    created: new Date(data.created),
+    updated: new Date(data.updated),
+    expiration: data.expiration && new Date(data.expiration),
+  }
+}
 
 export function getLicenses(state: ApplicationState) {
   let licenses: ILicense[]

@@ -165,7 +165,6 @@ export default createModel<RootModel>()({
       dispatch.logs.reset()
       dispatch.search.reset()
       dispatch.licensing.reset()
-      dispatch.billing.reset()
       dispatch.tags.reset()
       dispatch.ui.reset()
       dispatch.accounts.setActive('')

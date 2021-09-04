@@ -48,25 +48,18 @@ declare global {
     valid: boolean
     quantity: number | null
     upgradeUrl?: string
-    plan: {
-      id: string
-      name: string
-      description: string
-      duration: string | null
-      product: {
-        id: string
-        name: string
-        description: string
-      }
-    }
+    total: number | null
+    status: 'ACTIVE' | 'CANCELED' | 'INCOMPLETE' | 'INCOMPLETE_EXPIRED' | 'PAST_DUE' | 'TRIALING' | 'UNPAID' | null
+    plan: IPlan
+    price: IPrice | null
+    card: ICard | null
   }
-
-  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
 
   type IPlan = {
     id?: string
     name: IPlanName
     description: string
+    duration: string | null
     product: {
       id: string
       name: string
@@ -74,6 +67,8 @@ declare global {
     }
     prices: IPrice[]
   }
+
+  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
 
   type IPrice = {
     id: string
@@ -128,17 +123,6 @@ declare global {
     quantity: number
     successUrl: string
     cancelUrl: string
-  }
-
-  type ISubscription = {
-    id: string
-    plan: IPlan
-    price: IPrice
-    quantity: number
-    total: number
-    status: 'ACTIVE' | 'CANCELED' | 'INCOMPLETE' | 'INCOMPLETE_EXPIRED' | 'PAST_DUE' | 'TRIALING' | 'UNPAID'
-    created: Date
-    expiration: Date
   }
 
   type LogType = 'general' | 'connectd' | 'alert'
