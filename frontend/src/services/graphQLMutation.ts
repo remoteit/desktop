@@ -57,7 +57,6 @@ export async function graphQLSubscribe(params: IPurchase) {
   return await graphQLBasicRequest(
     ` mutation query($priceId: String!, $quantity: Int, $successUrl: String, $cancelUrl: String) {
         updateSubscription(priceId: $priceId, quantity: $quantity, successUrl: $successUrl, cancelUrl: $cancelUrl) {
-          id
           url
         }
       }`,

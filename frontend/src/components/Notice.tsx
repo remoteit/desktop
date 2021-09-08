@@ -4,7 +4,7 @@ import { spacing, colors, fontSizes } from '../styling'
 import { makeStyles, Paper, Box, lighten, darken } from '@material-ui/core'
 
 type Props = {
-  severity?: 'info' | 'warning' | 'success'
+  severity?: 'info' | 'warning' | 'danger' | 'success'
   button?: React.ReactElement
   gutterTop?: boolean
   gutterBottom?: boolean
@@ -28,6 +28,10 @@ export const Notice: React.FC<Props> = ({
     case 'info':
       icon = 'info-circle'
       color = colors.primary
+      break
+    case 'danger':
+      icon = 'exclamation-triangle'
+      color = colors.danger
       break
     case 'warning':
       icon = 'exclamation-triangle'

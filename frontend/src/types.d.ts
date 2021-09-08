@@ -55,6 +55,19 @@ declare global {
     card: ICard | null
   }
 
+  type ICard = {
+    brand: string
+    country: string
+    email: string
+    expiration: Date
+    last: string
+    month: number
+    name: string
+    phone: string
+    postal: string
+    year: number
+  }
+
   type IPlan = {
     id?: string
     name: IPlanName
@@ -78,14 +91,6 @@ declare global {
   }
   type IPlanName = 'PERSONAL' | 'PROFESSIONAL' | string
   type IPlanInterval = 'MONTH' | 'YEAR'
-
-  type ICreditCard = {
-    id: string
-    brand: string
-    month: number
-    year: number
-    last: string
-  }
 
   type IInvoice = {
     price: {

@@ -13,7 +13,7 @@ const CARD_OPTIONS: StripeCardElementOptions = {
       iconColor: colors.grayDark,
       color: colors.grayDarkest,
       '::placeholder': {
-        color: colors.gray,
+        color: colors.grayDark,
       },
     },
     invalid: {
@@ -24,11 +24,11 @@ const CARD_OPTIONS: StripeCardElementOptions = {
 }
 
 type Props = {
-  data: ICreditCard
+  card: ICard | null
   onCancel: () => void
 }
 
-export const CreditCardForm: React.FC<Props> = ({ data, onCancel }) => {
+export const CreditCardForm: React.FC<Props> = ({ card, onCancel }) => {
   const css = useStyles()
   const stripe = useStripe()
   const elements = useElements()
@@ -36,11 +36,21 @@ export const CreditCardForm: React.FC<Props> = ({ data, onCancel }) => {
   const [cardComplete, setCardComplete] = useState<boolean>(false)
   const [processing, setProcessing] = useState<boolean>(false)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodResult['paymentMethod']>()
-  const [billingDetails, setBillingDetails] = useState({
-    email: '',
-    phone: '',
-    name: '',
-  })
+  const [billingDetails, setBillingDetails] = useState<{ email?: string; phone?: string; name?: string }>(
+    getCardDefaults()
+  )
+
+  function getCardDefaults() {
+    return {
+      email: card?.email,
+      phone: card?.phone,
+      name: card?.name,
+    }
+  }
+
+  React.useEffect(() => {
+    setBillingDetails(getCardDefaults())
+  }, [card])
 
   const handleSubmit = async event => {
     event.preventDefault()
@@ -84,7 +94,9 @@ export const CreditCardForm: React.FC<Props> = ({ data, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div>
+      {/* <pre>{JSON.stringify(card, null, 2)}</pre>
+      <pre>{JSON.stringify(billingDetails, null, 2)}</pre> */}
+      <div className={css.details}>
         <TextField
           required
           fullWidth
@@ -108,7 +120,6 @@ export const CreditCardForm: React.FC<Props> = ({ data, onCancel }) => {
           onChange={e => setBillingDetails({ ...billingDetails, email: e.target.value })}
         />
         <TextField
-          required
           fullWidth
           variant="filled"
           label="Phone"
@@ -140,6 +151,8 @@ export const CreditCardForm: React.FC<Props> = ({ data, onCancel }) => {
 const useStyles = makeStyles({
   card: {
     // minHeight: spacing.xxl,
+    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
     padding: spacing.sm,
     backgroundColor: colors.grayLightest,
     // position: 'relative',
@@ -147,5 +160,10 @@ const useStyles = makeStyles({
     // display: 'flex',
     // alignItems: 'center',
     // justifyContent: 'center',
+  },
+  details: {
+    '& .MuiInputBase-root': {
+      marginBottom: spacing.xxs,
+    },
   },
 })

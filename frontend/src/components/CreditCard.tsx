@@ -5,6 +5,7 @@ import { CreditCardForm } from './CreditCardForm'
 import { makeStyles, Collapse, Typography, Button, ListItem, ListItemText, ListItemIcon } from '@material-ui/core'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
+import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 const ELEMENTS_OPTIONS = {
@@ -16,6 +17,7 @@ export const CreditCard: React.FC = () => {
   const [update, setUpdate] = React.useState<boolean>(false)
   const { license, stripePromise } = useSelector((state: ApplicationState) => state.licensing)
   const card = license?.card
+  const expired = !!card && card.expiration < new Date()
 
   if (!card) return null
 
@@ -25,19 +27,25 @@ export const CreditCard: React.FC = () => {
       <Collapse in={update} timeout={400}>
         <Gutters>
           <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-            <CreditCardForm data={card} onCancel={() => setUpdate(false)} />
+            <CreditCardForm card={card} onCancel={() => setUpdate(false)} />
           </Elements>
         </Gutters>
       </Collapse>
       <Collapse in={!update} timeout={400}>
+        {expired && (
+          <ListItem>
+            <Notice severity="danger" gutterTop>
+              Credit Card Expired. <em> Please update your card to continue service.</em>
+            </Notice>
+          </ListItem>
+        )}
         <ListItem>
           <ListItemIcon>
             <Icon name="credit-card" size="md" />
           </ListItemIcon>
-          {/* <pre>{JSON.stringify(card, undefined, 2)}</pre> */}
           <ListItemText
-            primary={`${card.brand} ending in ${card.last}`}
-            secondary={`Expiring ${card.month}/${card.year}`}
+            primary={`${card.brand.toUpperCase()} ending in ${card.last}`}
+            secondary={expired ? `Expired ${card.month}/${card.year}` : `Expiring ${card.month}/${card.year}`}
           />
         </ListItem>
         <Gutters>

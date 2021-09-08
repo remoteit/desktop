@@ -11,8 +11,10 @@ import {
   Typography,
   Link,
 } from '@material-ui/core'
+import { currencyFormatter } from '../helpers/utilHelper'
 import { ApplicationState } from '../store'
 import { useSelector } from 'react-redux'
+import { colors, spacing } from '../styling'
 import { Icon } from './Icon'
 
 const dateOptions: Intl.DateTimeFormatOptions = {
@@ -21,14 +23,6 @@ const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   // hour: '2-digit',
   // minute: '2-digit',
-}
-
-const currencyFormatter = (currency: string, value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    currency,
-    style: 'currency',
-    minimumFractionDigits: 2,
-  }).format(value)
 }
 
 export const Invoices: React.FC = () => {
@@ -44,7 +38,7 @@ export const Invoices: React.FC = () => {
             <TableRow>
               <TableCell>Date</TableCell>
               <TableCell>Plan</TableCell>
-              <TableCell>Amount</TableCell>
+              <TableCell className={css.amount}>Amount</TableCell>
               <TableCell>Invoice</TableCell>
             </TableRow>
           </TableHead>
@@ -52,10 +46,12 @@ export const Invoices: React.FC = () => {
             {invoices.map((invoice: IInvoice, index) => (
               <TableRow key={index}>
                 <TableCell>{invoice.created.toLocaleString(undefined, dateOptions)}</TableCell>
-                <TableCell>
-                  {invoice.plan.name} / {invoice.price.interval}
+                <TableCell className={css.plan}>
+                  {invoice.plan.name.toLowerCase()} / {invoice.price.interval.toLowerCase()}
                 </TableCell>
-                <TableCell>{currencyFormatter(invoice.price.currency, invoice.price.amount / 100)}</TableCell>
+                <TableCell className={css.amount} style={{ color: invoice.total < 0 ? colors.danger : undefined }}>
+                  {currencyFormatter(invoice.price.currency, invoice.total)}
+                </TableCell>
                 <TableCell>
                   <Tooltip title="See invoice">
                     <Link href={invoice.url} target="_blank">
@@ -72,4 +68,7 @@ export const Invoices: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({})
+const useStyles = makeStyles({
+  amount: { paddingRight: spacing.md, textAlign: 'right' },
+  plan: { textTransform: 'capitalize' },
+})

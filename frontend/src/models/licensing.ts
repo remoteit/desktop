@@ -14,6 +14,7 @@ type ILicenseLookup = { productId: string; platform?: number; upgradeUrl: string
 
 export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
 export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
+export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
@@ -75,7 +76,7 @@ export default createModel<RootModel>()({
                 name
                 description
                 product {
-                  name
+                  id
                 }
                 prices {
                   id
@@ -241,6 +242,10 @@ function parseLicense(data) {
     created: new Date(data.created),
     updated: new Date(data.updated),
     expiration: data.expiration && new Date(data.expiration),
+    card: data.card && {
+      ...data.card,
+      expiration: data.card.expiration && new Date(data.card.expiration),
+    },
   }
 }
 
