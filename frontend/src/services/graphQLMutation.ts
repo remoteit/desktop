@@ -64,12 +64,20 @@ export async function graphQLSubscribe(params: IPurchase) {
   )
 }
 
-export async function graphQLUnsubscribe(params: IPurchase) {
+export async function graphQLUnsubscribe() {
   return await graphQLBasicRequest(
     ` mutation {
         cancelSubscription
+      }`
+  )
+}
+
+export async function graphQLCreditCard(id: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($successUrl: String, $cancelUrl: String) {
+        setupPayment(successUrl: $successUrl, cancelUrl: $cancelUrl) {
       }`,
-    params
+    { id }
   )
 }
 

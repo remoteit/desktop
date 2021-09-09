@@ -1,21 +1,31 @@
-import React, { useEffect } from 'react'
-import { Invoices } from '../components/Invoices'
+import React from 'react'
 import { Container } from '../components/Container'
-import { CreditCard } from '../components/CreditCard'
+import { LoadingMessage } from '../components/LoadingMessage'
+import { ApplicationState } from '../store'
+import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
+import { Gutters } from '../components/Gutters'
 import { Plans } from '../components/Plans'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 export const PlansPage: React.FC = () => {
-  useEffect(() => {
-    analyticsHelper.page('PlansPage')
-  }, [])
+  const { initialized } = useSelector((state: ApplicationState) => state.licensing)
+
+  if (!initialized) return <LoadingMessage message="Loading plans..." />
 
   return (
-    <Container gutterBottom header={<Typography variant="h1">Plans</Typography>}>
+    <Container
+      gutterBottom
+      header={<Typography variant="h1">Plans</Typography>}
+      footer={
+        <Gutters>
+          <Typography variant="caption">
+            * Devices are virtual (like AWS EC2) or physical (like Raspberry Pi, Nvidia Jetson, Windows PC, etc) <br />
+            &nbsp; Pricing is represented and billed in US$ on most popular credit cards.
+          </Typography>
+        </Gutters>
+      }
+    >
       <Plans />
-      <CreditCard />
-      <Invoices />
     </Container>
   )
 }

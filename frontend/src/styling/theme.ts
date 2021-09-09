@@ -13,7 +13,7 @@ const jssTheme: ThemeOptions = {
   },
   overrides: {
     MuiDivider: {
-      root: { backgroundColor: colors.grayLighter },
+      root: { backgroundColor: colors.grayLighter, '&.MuiDivider-flexItem': { height: 1 } },
       inset: { marginRight: spacing.md, marginLeft: spacing.md },
     },
     MuiAccordion: {
@@ -325,6 +325,9 @@ const jssTheme: ThemeOptions = {
     MuiDialogContent: { root: { margin: `${spacing.sm}px ${gutters}px`, padding: 0 } },
     MuiDialogActions: { root: { margin: `${spacing.sm}px ${spacing.md}px`, padding: 0 } },
     MuiTooltip: { tooltip: { '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 } } },
+    MuiTableCell: {
+      root: { padding: `${spacing.sm}px ${gutters}px`, borderBottom: `1px solid ${colors.grayLighter}` },
+    },
   },
 }
 

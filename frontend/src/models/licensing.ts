@@ -3,8 +3,8 @@ import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { STRIPE_PUBLIC_KEY } from '../shared/constants'
-import { Stripe, loadStripe } from '@stripe/stripe-js'
-import { graphQLSubscribe, graphQLUnsubscribe } from '../services/graphQLMutation'
+import { Stripe, loadStripe, PaymentMethodResult } from '@stripe/stripe-js'
+import { graphQLSubscribe, graphQLUnsubscribe, graphQLCreditCard } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
@@ -32,6 +32,7 @@ export const LicenseLookup: ILicenseLookup[] = [
 const defaultLicense = LicenseLookup[0]
 
 type ILicensing = {
+  initialized: boolean
   plans: IPlan[]
   license: ILicense | null
   licenses: ILicense[]
@@ -50,6 +51,7 @@ type ILicensing = {
 }
 
 const defaultState: ILicensing = {
+  initialized: false,
   plans: [],
   license: null,
   licenses: [],
@@ -178,8 +180,9 @@ export default createModel<RootModel>()({
       if (!data) return
       console.log('LICENSING', data)
       dispatch.licensing.set({
+        initialized: true,
         plans: data.plans,
-        license: parseLicense(data?.login.license),
+        license: parseLicense(data?.login?.license),
         licenses: data?.login.licenses.map(l => parseLicense(l)),
         limits: data?.login.limits,
         invoices: data?.login.invoices.map(i => ({
@@ -191,18 +194,53 @@ export default createModel<RootModel>()({
     async subscribe(form: IPurchase) {
       dispatch.licensing.set({ purchasing: true })
 
-      if (!form.planId) {
-        await graphQLUnsubscribe(form)
-        console.log('CANCEL PLAN')
-      } else {
-        const response = await graphQLSubscribe(form)
-        const checkout = response?.data?.data?.updateSubscription
-        console.log('PURCHASE', checkout)
-        if (checkout?.url) window.location.href = checkout.url
+      const response = await graphQLSubscribe(form)
+      const checkout = response?.data?.data?.updateSubscription
+      console.log('PURCHASE', checkout)
+      if (checkout?.url) window.location.href = checkout.url
+      await dispatch.licensing.fetch()
+
+      dispatch.licensing.set({ purchasing: false })
+    },
+    async unsubscribe() {
+      dispatch.licensing.set({ purchasing: true })
+
+      await graphQLUnsubscribe()
+      console.log('UNSUBSCRIBE')
+      await dispatch.licensing.fetch()
+
+      dispatch.licensing.set({ purchasing: false })
+    },
+    async updateCreditCard(result: PaymentMethodResult, globalState) {
+      console.log('UPDATE CREDIT CARD', result)
+
+      if (result.error) {
+        dispatch.ui.set({ errorMessage: 'Stripe: ' + result.error.message })
+        return
       }
 
-      await dispatch.licensing.fetch()
-      dispatch.licensing.set({ purchasing: false })
+      const { id, card, billing_details } = result.paymentMethod
+
+      if (!card) return
+
+      await graphQLCreditCard(id)
+      dispatch.licensing.set({
+        license: {
+          ...globalState.licensing.license,
+          card: {
+            brand: card.brand,
+            country: card.country,
+            email: billing_details.email,
+            expiration: new Date(`${card.exp_year}/${card.exp_month}/01`),
+            last: card.last4,
+            month: card.exp_month,
+            name: billing_details.name,
+            phone: billing_details.phone,
+            postal: billing_details.address?.postal_code,
+            year: card.exp_year,
+          },
+        },
+      })
     },
     async testServiceLicensing(_, globalState) {
       const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']

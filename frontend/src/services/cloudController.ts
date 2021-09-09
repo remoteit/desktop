@@ -36,54 +36,6 @@ class CloudController {
     console.log('\n-------------------------> SOCKET OPEN\n\n')
     console.log('CLOUD WS opened', event)
     this.authenticate()
-    // const unshare = {
-    //   data: {
-    //     event: {
-    //       type: 'DEVICE_SHARE',
-    //       state: null,
-    //       timestamp: '2020-12-24T00:47:47.000Z',
-    //       target: [
-    //         {
-    //           id: '80:00:00:00:01:09:62:19',
-    //           name: 'ubuntu vm',
-    //           application: 35,
-    //           platform: 1120,
-    //           owner: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
-    //         },
-    //       ],
-    //       actor: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
-    //       users: [{ id: 'C3DEBA49-1019-4571-AA34-4F2D58B69A7F', email: 'jamie@remote.it' }],
-    //       scripting: false,
-    //     },
-    //   },
-    // }
-    // const share = {
-    //   data: {
-    //     event: {
-    //       type: 'DEVICE_SHARE',
-    //       state: null,
-    //       timestamp: '2020-12-24T00:44:15.000Z',
-    //       actor: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
-    //       users: [{ id: 'C3DEBA49-1019-4571-AA34-4F2D58B69A7F', email: 'jamie@remote.it' }],
-    //       target: [
-    //         {
-    //           id: '80:00:00:00:01:09:62:19',
-    //           name: 'ubuntu vm',
-    //           application: 35,
-    //           platform: 1120,
-    //           owner: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
-    //         },
-    //         {
-    //           id: '80:00:00:00:01:09:62:1B',
-    //           name: 'remoteit admin',
-    //           application: 42,
-    //           platform: 1120,
-    //           owner: { id: 'E62083B2-91D8-4113-8778-3C77BFDCA1F7', email: 'jamieruderman@gmail.com' },
-    //         },
-    //       ],
-    //     },
-    //   },
-    // }
   }
 
   authenticate = async () => {

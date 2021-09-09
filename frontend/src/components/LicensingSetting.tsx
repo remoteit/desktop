@@ -6,6 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
+  Typography,
   Button,
   Box,
   Divider,
@@ -29,6 +30,7 @@ export const LicensingSetting: React.FC = () => {
 
   return (
     <>
+      <Typography variant="subtitle1">Licensing</Typography>
       {licenses.map((license, index) => (
         <React.Fragment key={index}>
           <List>

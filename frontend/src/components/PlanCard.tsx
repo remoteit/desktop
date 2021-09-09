@@ -1,6 +1,6 @@
 import React from 'react'
-import { makeStyles, Typography, List, ListItem, ListItemIcon, Collapse, Button } from '@material-ui/core'
-import { spacing, fontSizes, colors } from '../styling'
+import { makeStyles, Typography, List, ListItem, ListItemIcon, Divider, Button } from '@material-ui/core'
+import { spacing, fontSizes, colors, radius } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
@@ -13,8 +13,7 @@ type Props = {
   button: string
   selected?: boolean
   loading?: boolean
-  showChildren?: boolean
-  onClick?: () => void
+  onSelect?: () => void
 }
 
 export const PlanCard: React.FC<Props> = ({
@@ -27,46 +26,35 @@ export const PlanCard: React.FC<Props> = ({
   button,
   selected,
   loading,
-  showChildren,
-  onClick,
-  children,
+  onSelect,
 }) => {
   const css = useStyles()
-  // const dispatch = useDispatch<Dispatch>()
-
   return (
-    <div>
+    <div className={selected ? css.selected : undefined}>
+      {selected && <header>Current plan</header>}
       <div className={css.plan}>
         <Typography variant="h2">{name}</Typography>
         <Typography variant="caption">{description}</Typography>
       </div>
+      <Divider flexItem variant="inset" />
       <div className={css.price}>
         {price !== undefined && <Typography variant="h1">${price}</Typography>}
         <Typography variant="body2">{caption}</Typography>
-        <Button
-          onClick={() => onClick && onClick()}
-          size="small"
-          color="primary"
-          variant={selected ? 'outlined' : 'contained'}
-          disabled={loading || selected}
-        >
-          {loading ? 'Processing...' : selected ? 'Selected' : button}
+        <Button onClick={onSelect} size="small" color="primary" variant={'contained'} disabled={loading}>
+          {loading ? 'Processing...' : selected ? 'Update' : button}
         </Button>
       </div>
-      <Collapse in={showChildren} timeout={400}>
-        {children}
-      </Collapse>
-      <Collapse in={!showChildren} timeout={400}>
-        <div className={css.features}>
-          <Item>{feature}</Item>
-          <Typography variant="body2">Features:</Typography>
-          <List dense>
-            {features.map((f, index) => (
-              <Item key={index}>{f}</Item>
-            ))}
-          </List>
-        </div>
-      </Collapse>
+      <div className={css.features}>
+        {/* <Typography variant="body2">Features:</Typography> */}
+        <List dense>
+          <Item>
+            <b>{feature}</b>
+          </Item>
+          {features.map((f, index) => (
+            <Item key={index}>{f}</Item>
+          ))}
+        </List>
+      </div>
     </div>
   )
 }
@@ -75,7 +63,7 @@ export const Item: React.FC = ({ children }) => {
   return (
     <ListItem disableGutters dense>
       <ListItemIcon>
-        <Icon name="check" color="success" />
+        <Icon name="check" color="primary" />
       </ListItemIcon>
       {children}
     </ListItem>
@@ -83,18 +71,50 @@ export const Item: React.FC = ({ children }) => {
 }
 
 const useStyles = makeStyles({
+  selected: {
+    backgroundColor: colors.primaryHighlight,
+    borderRadius: radius,
+    overflow: 'hidden',
+    position: 'relative',
+    '& .MuiDivider-root': { backgroundColor: colors.primaryLighter },
+    '& header': {
+      width: '100%',
+      position: 'absolute',
+      textTransform: 'uppercase',
+      textAlign: 'center',
+      backgroundColor: colors.primaryLight,
+      letterSpacing: spacing.xxs,
+      fontSize: fontSizes.xxs,
+      color: colors.white,
+      fontWeight: 500,
+      lineHeight: 2,
+    },
+  },
   plan: {
-    backgroundColor: colors.grayLightest,
     padding: spacing.md,
+    paddingTop: spacing.xxl,
     textAlign: 'center',
     '& h2': {
       textTransform: 'capitalize',
+      fontSize: fontSizes.lg,
     },
   },
   price: {
     padding: spacing.md,
     textAlign: 'center',
-    // display: 'flex',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 140,
+    '& .MuiButton-root': { marginTop: spacing.sm },
   },
-  features: {},
+  features: {
+    paddingBottom: spacing.lg,
+    color: colors.grayDarker,
+    maxWidth: 250,
+    lineHeight: 1.3,
+    '& b': { fontWeight: 400, color: colors.grayDarkest },
+    '& .MuiListItemIcon-root': { minWidth: 40 },
+  },
 })

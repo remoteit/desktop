@@ -123,6 +123,7 @@ declare global {
   type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
 
   type IPurchase = {
+    checkout?: boolean
     planId?: string
     priceId?: string
     quantity: number

@@ -64,15 +64,17 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         {remoteUI || <AccountLinkingSettings />}
+        <TestUI>
+          <ListItemLocation title="Plans" pathname="/settings/plans" icon="shopping-cart" dense />
+        </TestUI>
         <ListItemLocation
-          title="Licensing"
+          title="Billing"
           pathname="/settings/licensing"
           icon="credit-card-front"
           badge={licenseIndicator}
           dense
         />
         <TestUI>
-          <ListItemLocation title="Plans" pathname="/settings/plans" icon="shopping-cart" dense />
           <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
           <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />
