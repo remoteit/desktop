@@ -41,7 +41,6 @@ type UIState = {
   navigationForward: string[]
   guideAWS: IGuide
   accordion: ILookup<boolean>
-  plansForm: IPurchase
 }
 
 const defaultState: UIState = {
@@ -77,12 +76,11 @@ const defaultState: UIState = {
   launchLoading: false,
   launchPath: '',
   requireInstall: '',
-  panelWidth: { devices: 400, connections: 550, settings: 400 },
+  panelWidth: { devices: 400, connections: 550, settings: 350 },
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 0, total: 7 },
   accordion: { config: true, configConnected: false },
-  plansForm: {},
 }
 
 export default createModel<RootModel>()({

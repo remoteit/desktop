@@ -11,6 +11,7 @@ type Props = {
   feature: string
   features: string[]
   button: string
+  allowUpdate?: boolean
   selected?: boolean
   loading?: boolean
   onSelect?: () => void
@@ -24,6 +25,7 @@ export const PlanCard: React.FC<Props> = ({
   feature,
   features = [],
   button,
+  allowUpdate,
   selected,
   loading,
   onSelect,
@@ -40,8 +42,20 @@ export const PlanCard: React.FC<Props> = ({
       <div className={css.price}>
         {price !== undefined && <Typography variant="h1">${price}</Typography>}
         <Typography variant="body2">{caption}</Typography>
-        <Button onClick={onSelect} size="small" color="primary" variant={'contained'} disabled={loading}>
-          {loading ? 'Processing...' : selected ? 'Update' : button}
+        <Button
+          onClick={onSelect}
+          size="small"
+          color="primary"
+          variant={'contained'}
+          disabled={loading || (selected && !allowUpdate)}
+        >
+          {selected && !allowUpdate
+            ? 'Current Plan'
+            : loading
+            ? 'Processing...'
+            : selected && allowUpdate
+            ? 'Update'
+            : button}
         </Button>
       </div>
       <div className={css.features}>
