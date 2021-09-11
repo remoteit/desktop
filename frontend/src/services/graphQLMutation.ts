@@ -55,12 +55,30 @@ export async function graphQLClaimDevice(code: string) {
 
 export async function graphQLSubscribe(params: IPurchase) {
   return await graphQLBasicRequest(
-    ` mutation query($priceId: String!, $quantity: Int, $successUrl: String, $cancelUrl: String) {
+    ` mutation query($priceId: String!, $quantity: Int, $successUrl: String!, $cancelUrl: String!) {
         createSubscription(priceId: $priceId, quantity: $quantity, successUrl: $successUrl, cancelUrl: $cancelUrl) {
           url
         }
       }`,
-    params
+    {
+      ...params,
+      successUrl: window.location.href,
+      cancelUrl: window.location.href,
+    }
+  )
+}
+
+export async function graphQLCreditCard() {
+  return await graphQLBasicRequest(
+    ` mutation query($successUrl: String!, $cancelUrl: String!) {
+        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl) {
+          url
+        }
+      }`,
+    {
+      successUrl: window.location.href,
+      cancelUrl: window.location.href,
+    }
   )
 }
 
@@ -80,15 +98,6 @@ export async function graphQLUnsubscribe() {
     ` mutation {
         cancelSubscription
       }`
-  )
-}
-
-export async function graphQLCreditCard(params: { successUrl: string; cancelUrl: string }) {
-  return await graphQLBasicRequest(
-    ` mutation query($successUrl: String, $cancelUrl: String) {
-        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl) {
-      }`,
-    params
   )
 }
 

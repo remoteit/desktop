@@ -20,6 +20,7 @@ import { AccountMembershipPage } from '../pages/AccountMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
+import { BillingPage } from '../pages/BillingPage'
 import { PlansPage } from '../pages/PlansPage'
 import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
@@ -182,6 +183,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
               <Route path="/settings/licensing">
                 <LicensingPage />
+              </Route>
+
+              <Route path="/settings/billing">
+                <BillingPage />
               </Route>
 
               <Route path="/settings/test">

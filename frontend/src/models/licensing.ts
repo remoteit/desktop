@@ -38,7 +38,7 @@ type ILicensing = {
   licenses: ILicense[]
   limits: ILimit[]
   invoices: IInvoice[]
-  stripePromise: Promise<Stripe | null> | null
+  updating: boolean
   purchasing: boolean
   informed: boolean
   tests: {
@@ -57,6 +57,8 @@ const defaultState: ILicensing = {
   licenses: [],
   limits: [],
   invoices: [],
+  updating: false,
+  purchasing: false,
   informed: false,
   tests: testData,
 }
@@ -65,8 +67,8 @@ export default createModel<RootModel>()({
   state: defaultState,
   effects: (dispatch: any) => ({
     async init() {
-      const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_API_KEY || STRIPE_PUBLIC_KEY)
-      dispatch.licensing.set({ stripePromise })
+      // const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_API_KEY || STRIPE_PUBLIC_KEY)
+      // dispatch.licensing.set({ stripePromise })
       await dispatch.licensing.fetch()
     },
     async fetch() {
@@ -195,10 +197,9 @@ export default createModel<RootModel>()({
       dispatch.licensing.set({ purchasing: true })
 
       const response = await graphQLSubscribe(form)
-      const checkout = response?.data?.data?.updateSubscription
+      const checkout = response?.data?.data?.createSubscription
       console.log('PURCHASE', checkout)
       if (checkout?.url) window.location.href = checkout.url
-      await dispatch.licensing.fetch()
 
       dispatch.licensing.set({ purchasing: false })
     },
@@ -211,36 +212,15 @@ export default createModel<RootModel>()({
 
       dispatch.licensing.set({ purchasing: false })
     },
-    async updateCreditCard(result: PaymentMethodResult, globalState) {
+    async updateCreditCard() {
+      dispatch.licensing.set({ updating: true })
+
+      const response = await graphQLCreditCard()
+      const result = response?.data?.data?.updateCreditCard
       console.log('UPDATE CREDIT CARD', result)
+      if (result?.url) window.location.href = result.url
 
-      if (result.error) {
-        dispatch.ui.set({ errorMessage: 'Stripe: ' + result.error.message })
-        return
-      }
-
-      const { id, card, billing_details } = result.paymentMethod
-
-      if (!card) return
-
-      await graphQLCreditCard(id)
-      dispatch.licensing.set({
-        license: {
-          ...globalState.licensing.license,
-          card: {
-            brand: card.brand,
-            country: card.country,
-            email: billing_details.email,
-            expiration: new Date(`${card.exp_year}/${card.exp_month}/01`),
-            last: card.last4,
-            month: card.exp_month,
-            name: billing_details.name,
-            phone: billing_details.phone,
-            postal: billing_details.address?.postal_code,
-            year: card.exp_year,
-          },
-        },
-      })
+      dispatch.licensing.set({ updating: false })
     },
     async testServiceLicensing(_, globalState) {
       const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']

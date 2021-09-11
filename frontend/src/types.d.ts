@@ -127,8 +127,6 @@ declare global {
     planId?: string
     priceId?: string
     quantity: number
-    successUrl: string
-    cancelUrl: string
   }
 
   type LogType = 'general' | 'connectd' | 'alert'

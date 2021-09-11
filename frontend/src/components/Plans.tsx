@@ -20,8 +20,6 @@ export const Plans: React.FC = () => {
     planId: license?.plan?.id,
     priceId: license?.price?.id,
     quantity: license?.quantity || 1,
-    successUrl: window.location.href,
-    cancelUrl: window.location.href, //TODO add the state to the url?
   })
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
 
@@ -68,7 +66,8 @@ export const Plans: React.FC = () => {
           description="For business use"
           price={5}
           caption="per month / per user"
-          button="Select"
+          button="Upgrade"
+          allowUpdate={true}
           selected={license?.plan?.id === plan.id}
           onSelect={() => setForm({ ...form, checkout: true, planId: plan.id, priceId: plan.prices[0].id })}
           feature="Devices are not limited*"
