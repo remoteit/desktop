@@ -20,6 +20,7 @@ import { LicensingNotice } from './LicensingNotice'
 import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
 import { spacing } from '../styling'
+import { target } from '../helpers/utilHelper'
 import { Quote } from './Quote'
 
 export const LicensingSetting: React.FC = () => {
@@ -48,15 +49,9 @@ export const LicensingSetting: React.FC = () => {
                 }
               />
               <ListItemSecondaryAction>
-                {license.id ? (
-                  license.upgradeUrl && (
-                    <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
-                      Manage Subscription
-                    </Button>
-                  )
-                ) : (
+                {license.upgradeUrl && (
                   <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
-                    Free Trial
+                    {license.id ? 'Manage' : 'Free Trial'}
                   </Button>
                 )}
               </ListItemSecondaryAction>

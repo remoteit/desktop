@@ -326,7 +326,7 @@ const jssTheme: ThemeOptions = {
     MuiDialogActions: { root: { margin: `${spacing.sm}px ${spacing.md}px`, padding: 0 } },
     MuiTooltip: { tooltip: { '& .MuiDivider-root': { margin: `${spacing.xxs}px -${spacing.sm}px`, opacity: 0.2 } } },
     MuiTableCell: {
-      root: { padding: `${spacing.sm}px ${gutters}px`, borderBottom: `1px solid ${colors.grayLighter}` },
+      root: { padding: `${spacing.xs}px ${gutters}px`, borderBottom: `1px solid ${colors.grayLighter}` },
     },
   },
 }

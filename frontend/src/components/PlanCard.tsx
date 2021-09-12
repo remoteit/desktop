@@ -126,6 +126,7 @@ const useStyles = makeStyles({
   features: {
     paddingBottom: spacing.lg,
     color: colors.grayDarker,
+    fontSize: fontSizes.sm,
     maxWidth: 250,
     lineHeight: 1.3,
     '& b': { fontWeight: 400, color: colors.grayDarkest },
