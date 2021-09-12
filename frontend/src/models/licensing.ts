@@ -205,12 +205,12 @@ export default createModel<RootModel>()({
     },
     async unsubscribe() {
       dispatch.licensing.set({ purchasing: true })
-
       await graphQLUnsubscribe()
       console.log('UNSUBSCRIBE')
-      await dispatch.licensing.fetch()
-
-      dispatch.licensing.set({ purchasing: false })
+      setTimeout(async () => {
+        await dispatch.licensing.fetch()
+        dispatch.licensing.set({ purchasing: false })
+      }, 2000)
     },
     async updateCreditCard() {
       dispatch.licensing.set({ updating: true })
