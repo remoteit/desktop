@@ -45,6 +45,7 @@ export const REGEX_VALID_IP =
 export const REGEX_VALID_HOSTNAME =
   /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
+export const REGEX_VALID_URL = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/
 export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]/g
 
 export const FRONTEND_RETRY_DELAY = 20000

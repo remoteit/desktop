@@ -12,7 +12,6 @@ export class Preferences {
     openAtLogin: true,
     remoteUIOverride: false,
     disableLocalNetwork: false,
-    showNotifications: true,
     allowPrerelease: false,
     useCertificate: true,
     switchApi: false,

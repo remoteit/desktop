@@ -64,6 +64,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         {remoteUI || <AccountLinkingSettings />}
+        <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Licensing"
           pathname="/settings/licensing"

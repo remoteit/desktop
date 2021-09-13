@@ -12,6 +12,7 @@ import { Dispatch } from '../store'
 import { store } from '../store'
 import { emit } from '../services/Controller'
 import { REDIRECT_URL } from '../shared/constants'
+import { graphQLUpdateNotification } from '../services/graphQLMutation'
 
 function sleep(ms) {
   return new Promise(resolve => {
@@ -32,6 +33,8 @@ export interface AuthState {
   authService?: AuthService
   user?: IUser
   localUsername?: string
+  loading?: boolean
+  notificationSettings: INotificationSetting
 }
 
 const state: AuthState = {
@@ -43,6 +46,8 @@ const state: AuthState = {
   user: undefined,
   authService: undefined,
   localUsername: undefined,
+  loading: false,
+  notificationSettings: {},
 }
 
 export default createModel<RootModel>()({
@@ -76,6 +81,13 @@ export default createModel<RootModel>()({
                 authhash
                 yoicsId
                 created
+                notificationSettings {
+                  emailNotifications
+                  desktopNotifications
+                  urlNotifications
+                  notificationEmail
+                  notificationUrl
+                }
               }
             }`
         )
@@ -88,9 +100,22 @@ export default createModel<RootModel>()({
           yoicsId: data.yoicsId,
           created: data.created,
         })
+        auth.setNotificationSettings(data.notificationSettings)
       } catch (error) {
         await graphQLCatchError(error)
       }
+    },
+    async updateUserMetadata(metadata: INotificationSetting, rootState: any) {
+      const { auth } = dispatch as Dispatch
+      try {
+        auth.setLoading(true)
+        const response = await graphQLUpdateNotification(metadata)
+        auth.setNotificationSettings(metadata)
+        graphQLGetErrors(response)
+      } catch (error) {
+        await graphQLCatchError(error)
+      }
+      auth.setLoading(false)
     },
     async checkSession(_: void, rootState: any) {
       const { ui } = store.dispatch
@@ -225,6 +250,14 @@ export default createModel<RootModel>()({
     },
     setUsername(state: AuthState, username: string | undefined) {
       state.localUsername = username
+      return state
+    },
+    setLoading(state: AuthState, loading: boolean | undefined) {
+      state.loading = loading
+      return state
+    },
+    setNotificationSettings(state: AuthState, notificationSettings: INotificationSetting) {
+      state.notificationSettings = notificationSettings
       return state
     },
   },

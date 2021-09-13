@@ -26,7 +26,7 @@ const useStyles = makeStyles({
   center: {
     alignItems: 'stretch',
   },
-  inset: { margin: `${spacing.md}px  ${spacing.sm}px ${spacing.lg}px 60px` },
+  inset: { margin: `${spacing.md}px ${spacing.sm}px ${spacing.lg}px 60px` },
   two: {
     flexDirection: 'row',
     justifyContent: 'space-between',

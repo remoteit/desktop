@@ -4,6 +4,7 @@ import {
   graphQLAddService,
   graphQLUpdateService,
   graphQLRemoveService,
+  graphQLSetDeviceNotification,
 } from '../services/graphQLMutation'
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
@@ -215,6 +216,15 @@ export default createModel<RootModel>()({
 
     async setAttributes(device: IDevice) {
       graphQLSetAttributes(device.attributes, device.id)
+      dispatch.accounts.setDevice({ id: device.id, device })
+    },
+
+    async setNotificationDevice(device: IDevice) {
+      graphQLSetDeviceNotification(
+        device.id,
+        device.notificationSettings.emailNotifications,
+        device.notificationSettings.desktopNotifications
+      )
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 

@@ -12,10 +12,6 @@ export const PromptModal: React.FC<{
   const [tokens, setTokens] = useState<ILookup<string>>(toLookup())
   const [error, setError] = useState<string>()
 
-  useEffect(() => {
-    setTokens(toLookup())
-  }, [app])
-
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>

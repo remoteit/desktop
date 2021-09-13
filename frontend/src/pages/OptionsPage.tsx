@@ -63,12 +63,6 @@ export const OptionsPage: React.FC = () => {
           />
         )}
         <ListItemSetting
-          label="System notifications"
-          icon="bell"
-          toggle={!!preferences.showNotifications}
-          onClick={() => emit('preferences', { ...preferences, showNotifications: !preferences.showNotifications })}
-        />
-        <ListItemSetting
           label="Open at login"
           icon="door-open"
           toggle={!!preferences.openAtLogin}
