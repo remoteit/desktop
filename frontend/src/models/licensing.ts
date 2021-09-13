@@ -70,6 +70,45 @@ export default createModel<RootModel>()({
       await dispatch.licensing.fetch()
     },
     async fetch() {
+      const graphQLLicense = `
+        id
+        updated
+        created
+        expiration
+        total
+        status
+        valid
+        quantity
+        plan {
+          id
+          name
+          description
+          duration
+          product {
+            id
+            name
+            description
+          }
+        }
+        price {
+          id
+          amount
+          currency
+          interval
+        }
+        card {
+          brand
+          month
+          year
+          last
+          name
+          email
+          phone
+          postal
+          country
+          expiration
+        }`
+
       try {
         const result: any = await graphQLRequest(
           ` {
@@ -89,59 +128,10 @@ export default createModel<RootModel>()({
               }          
               login {
                 license {
-                  id
-                  updated
-                  created
-                  expiration
-                  total
-                  status
-                  valid
-                  quantity
-                  plan {
-                    id
-                    name
-                    description
-                    product {
-                      name
-                    }
-                  }
-                  price {
-                    id
-                    amount
-                    currency
-                    interval
-                  }
-                  card {
-                    brand
-                    month
-                    year
-                    last
-                    name
-                    email
-                    phone
-                    postal
-                    country
-                    expiration            
-                  }
+                  ${graphQLLicense}
                 }
                 licenses {
-                  id
-                  created
-                  updated
-                  expiration
-                  valid
-                  quantity
-                  plan {
-                    id
-                    name
-                    description
-                    duration
-                    product {
-                      id
-                      name
-                      description
-                    }
-                  }
+                  ${graphQLLicense}
                 }
                 limits {
                   name

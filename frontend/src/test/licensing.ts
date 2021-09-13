@@ -10,6 +10,7 @@ export const testData = {
       expiration: new Date('2020-11-05T01:03:48.000Z'),
       valid: true,
       quantity: null,
+      status: 'ACTIVE',
       plan: {
         id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
         name: 'TRIAL',
@@ -29,6 +30,7 @@ export const testData = {
       expiration: new Date('2021-02-12T05:44:32.421Z'),
       valid: false,
       quantity: null,
+      status: 'CANCELED',
       plan: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'PERSONAL',
@@ -48,6 +50,7 @@ export const testData = {
       expiration: new Date('2021-02-12T05:44:32.421Z'),
       valid: false,
       quantity: null,
+      status: 'INCOMPLETE',
       plan: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'PROFESSIONAL',
@@ -67,6 +70,7 @@ export const testData = {
       expiration: null,
       valid: true,
       quantity: null,
+      status: 'INCOMPLETE_EXPIRED',
       plan: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'BUSINESS',
@@ -86,6 +90,7 @@ export const testData = {
       expiration: null,
       valid: true,
       quantity: null,
+      status: 'PAST_DUE',
       plan: {
         id: 'b44f92a6-a7b9-11eb-b094-02a962787033',
         name: 'ENTERPRISE',

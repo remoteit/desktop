@@ -1,6 +1,7 @@
 import React from 'react'
 import {
   makeStyles,
+  Chip,
   List,
   ListItem,
   ListItemIcon,
@@ -20,7 +21,6 @@ import { LicensingNotice } from './LicensingNotice'
 import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
 import { spacing } from '../styling'
-import { target } from '../helpers/utilHelper'
 import { Quote } from './Quote'
 
 export const LicensingSetting: React.FC = () => {
@@ -60,6 +60,12 @@ export const LicensingSetting: React.FC = () => {
               <ListItem>
                 <ListItemIcon></ListItemIcon>
                 <Quote margin={0}>
+                  {license.status && (
+                    <Typography variant="caption" gutterBottom>
+                      Status: {license.status} <br />
+                      <br />
+                    </Typography>
+                  )}
                   <Box width={400}>
                     {license.limits.map(limit => (
                       <LimitSetting key={limit.name} limit={limit} />
