@@ -155,11 +155,18 @@ Will need to Install:
   - Git Bash
   - VS Code (recommended)
 
-To build the whole app for production: `npm run build`
+To build the whole app for production: `npm run build --arch = 'XXX' ` (possible options: win, mac, linux, armv7l, arm64)
 - But this requires the physical signing key.
 To build without signing you must remove the signing credentials from `package.json`
   - Remove these two attributes under Build > Win: `certificateSubjectName` and  `certificateSha1`
-  - Then run `npm run build`
+  - Then run `npm run build --arch = 'XXX'`
+
+- Example
+  - npm run build --arch=arm64
+  - npm run build --arch=win
+  - npm run build --arch=mac
+  - npm run build --arch=armv7l
+
 To build only for the `installer.nsh` you can run `npm run copy-install && npm run build-electron`
 The final build will be produced in the `dist` directory
 
