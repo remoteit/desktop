@@ -6,7 +6,7 @@ import { Icon } from './Icon'
 type Props = {
   name: string
   description: string
-  price?: number
+  price?: string
   caption: string | React.ReactElement
   feature: string
   features: string[]
@@ -40,7 +40,7 @@ export const PlanCard: React.FC<Props> = ({
       </div>
       <Divider flexItem variant="inset" />
       <div className={css.price}>
-        {price !== undefined && <Typography variant="h1">${price}</Typography>}
+        {price !== undefined && <Typography variant="h1">{price}</Typography>}
         <Typography variant="body2">{caption}</Typography>
         <Button
           onClick={onSelect}

@@ -2,8 +2,9 @@ import React from 'react'
 import { Overlay } from './Overlay'
 import { Gutters } from './Gutters'
 import { PlanCard } from './PlanCard'
+import { makeStyles } from '@material-ui/core'
 import { PlanCheckout } from './PlanCheckout'
-import { makeStyles, Typography } from '@material-ui/core'
+import { currencyFormatter } from '../helpers/utilHelper'
 import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID } from '../models/licensing'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -42,7 +43,7 @@ export const Plans: React.FC = () => {
       <PlanCard
         name="Personal"
         description="For non-commercial use"
-        price={0}
+        price="$0"
         caption="Free"
         button="Select"
         selected={license?.plan?.id === PERSONAL_PLAN_ID}
@@ -59,29 +60,39 @@ export const Plans: React.FC = () => {
           'SSO with Google',
         ]}
       />
-      {plans.map(plan => (
-        <PlanCard
-          key={plan.id}
-          name={plan.description}
-          description="For business use"
-          price={5}
-          caption="per month / per user"
-          button="Upgrade"
-          allowUpdate={true}
-          selected={license?.plan?.id === plan.id}
-          onSelect={() => setForm({ ...form, checkout: true, planId: plan.id, priceId: plan.prices[0].id })}
-          feature="Devices are not limited*"
-          features={[
-            '30 days of activity logs',
-            'User groups - coming soon',
-            'Commercial use',
-            'APIs',
-            'Mobile app',
-            'Non-commercial',
-            'SSO with Google',
-          ]}
-        ></PlanCard>
-      ))}
+      {plans.map(plan => {
+        let price = '$5'
+        let caption = 'per month / per user'
+        const selected = license?.plan?.id === plan.id
+        if (selected && license?.total && license.price?.amount) {
+          price =
+            currencyFormatter(license.price.currency, license.total, 0) + ` / ${license.price.interval.toLowerCase()}`
+          caption = `${license.quantity} user${(license.quantity || 0) > 1 ? 's' : ''}`
+        }
+        return (
+          <PlanCard
+            key={plan.id}
+            name={plan.description}
+            description="For business use"
+            price={price}
+            caption={caption}
+            button="Upgrade"
+            allowUpdate={true}
+            selected={selected}
+            onSelect={() => setForm({ ...form, checkout: true, planId: plan.id, priceId: plan.prices[0].id })}
+            feature="Devices* are not limited"
+            features={[
+              '30 days of activity logs',
+              'User groups (coming soon)',
+              'Commercial use',
+              'APIs',
+              'Mobile app',
+              'Non-commercial',
+              'SSO with Google',
+            ]}
+          />
+        )
+      })}
       <PlanCard
         name="Enterprise"
         description="For large volume and OEM"
@@ -93,8 +104,8 @@ export const Plans: React.FC = () => {
         }
         button="Contact Us"
         selected={false}
-        onSelect={() => (window.location.href = 'https://remote.it/contact-us/')}
-        feature="Volume devices or user accounts*"
+        onSelect={() => window.open('https://remote.it/contact-us/', '_blank')}
+        feature="Volume devices* or user accounts"
         features={['1 year of activity logs', 'Slack support', 'Analytics and reporting']}
       />
     </Gutters>

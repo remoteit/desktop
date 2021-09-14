@@ -22,11 +22,14 @@ export const PlanCheckout: React.FC<Props> = ({ form, license, onChange, onCance
     license: state.licensing.license,
     purchasing: state.licensing.purchasing,
   }))
-
-  const onSubmit = () => dispatch.licensing.subscribe(form)
   const setQuantity = value => onChange({ ...form, quantity: Math.max(Math.min(+value, 9999), 0) })
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices.find(price => price.id === form.priceId)
+
+  const onSubmit = () => {
+    if (license?.plan?.id === form.planId) dispatch.licensing.updateSubscription(form)
+    else dispatch.licensing.subscribe(form)
+  }
 
   const unchanged = () =>
     form.planId === license?.plan?.id &&
@@ -41,7 +44,9 @@ export const PlanCheckout: React.FC<Props> = ({ form, license, onChange, onCance
             <Typography variant="h1">Personal plan</Typography>
           </ListItem>
           <ListItem>
-            <Typography variant="body1"> Are you sure you want to switch to the Personal plan?</Typography>
+            <Typography variant="body1">
+              Are you sure you want to switch to the Personal plan? This will cancel your subscription.
+            </Typography>
           </ListItem>
         </List>
         <List className={css.list}>

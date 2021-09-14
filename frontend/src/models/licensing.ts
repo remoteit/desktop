@@ -2,7 +2,12 @@ import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLSubscribe, graphQLUnsubscribe, graphQLCreditCard } from '../services/graphQLMutation'
+import {
+  graphQLSubscribe,
+  graphQLUnsubscribe,
+  graphQLUpdateSubscription,
+  graphQLCreditCard,
+} from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
@@ -191,14 +196,23 @@ export default createModel<RootModel>()({
 
       dispatch.licensing.set({ purchasing: false })
     },
+    async updateSubscription({ priceId, quantity }: IPurchase) {
+      if (!priceId) return dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
+      dispatch.licensing.set({ purchasing: true })
+      await graphQLUpdateSubscription({ priceId, quantity })
+      console.log('UPDATE SUBSCRIPTION', { priceId, quantity })
+      await dispatch.licensing.fetch()
+      dispatch.licensing.set({ purchasing: false })
+    },
     async unsubscribe() {
       dispatch.licensing.set({ purchasing: true })
       await graphQLUnsubscribe()
       console.log('UNSUBSCRIBE')
+      // @FIXME update state
       setTimeout(async () => {
         await dispatch.licensing.fetch()
         dispatch.licensing.set({ purchasing: false })
-      }, 2000)
+      }, 5000)
     },
     async updateCreditCard() {
       dispatch.licensing.set({ updating: true })

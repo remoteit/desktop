@@ -104,9 +104,7 @@ export async function graphQLCreditCard() {
 export async function graphQLUpdateSubscription(params: { priceId: string; quantity: number }) {
   return await graphQLBasicRequest(
     ` mutation query($priceId: String!, $quantity: Int) {
-        updateSubscription(priceId: $priceId, quantity: $quantity) {
-          url
-        }
+        updateSubscription(priceId: $priceId, quantity: $quantity)
       }`,
     params
   )
