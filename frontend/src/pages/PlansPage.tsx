@@ -15,7 +15,7 @@ export const PlansPage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      header={<Typography variant="h1">Plans</Typography>}
+      header={<Typography variant="h1">Subscriptions</Typography>}
       footer={
         <Gutters>
           <Typography variant="caption">

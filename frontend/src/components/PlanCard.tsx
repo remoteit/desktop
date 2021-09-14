@@ -8,6 +8,7 @@ type Props = {
   description: string
   price?: string
   caption: string | React.ReactElement
+  note?: string
   feature: string
   features: string[]
   button: string
@@ -22,6 +23,7 @@ export const PlanCard: React.FC<Props> = ({
   description,
   price,
   caption,
+  note,
   feature,
   features = [],
   button,
@@ -42,22 +44,24 @@ export const PlanCard: React.FC<Props> = ({
       <div className={css.price}>
         {price !== undefined && <Typography variant="h1">{price}</Typography>}
         <Typography variant="body2">{caption}</Typography>
-        <Button
-          onClick={onSelect}
-          size="small"
-          color="primary"
-          variant={'contained'}
-          disabled={loading || (selected && !allowUpdate)}
-        >
-          {selected && !allowUpdate
-            ? 'Current Plan'
-            : loading
-            ? 'Processing...'
-            : selected && allowUpdate
-            ? 'Update'
-            : button}
-        </Button>
+        {note !== undefined && <Typography variant="caption">{note}</Typography>}
       </div>
+      <Button
+        onClick={onSelect}
+        size="small"
+        color="primary"
+        variant={'contained'}
+        disabled={loading || (selected && !allowUpdate)}
+        className={css.select}
+      >
+        {selected && !allowUpdate
+          ? 'Current Plan'
+          : loading
+          ? 'Processing...'
+          : selected && allowUpdate
+          ? 'Update'
+          : button}
+      </Button>
       <div className={css.features}>
         {/* <Typography variant="body2">Features:</Typography> */}
         <List dense>
@@ -120,8 +124,11 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 140,
+    minHeight: 100,
     '& .MuiButton-root': { marginTop: spacing.sm },
+  },
+  select: {
+    marginBottom: spacing.sm,
   },
   features: {
     paddingBottom: spacing.lg,

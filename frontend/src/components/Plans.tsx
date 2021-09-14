@@ -63,11 +63,13 @@ export const Plans: React.FC = () => {
       {plans.map(plan => {
         let price = '$5'
         let caption = 'per month / per user'
+        let note: string | undefined = 'billed annually'
         const selected = license?.plan?.id === plan.id
         if (selected && license?.total && license.price?.amount) {
           price =
             currencyFormatter(license.price.currency, license.total, 0) + ` / ${license.price.interval.toLowerCase()}`
           caption = `${license.quantity} user${(license.quantity || 0) > 1 ? 's' : ''}`
+          note = undefined
         }
         return (
           <PlanCard
@@ -76,6 +78,7 @@ export const Plans: React.FC = () => {
             description="For business use"
             price={price}
             caption={caption}
+            note={note}
             button="Upgrade"
             allowUpdate={true}
             selected={selected}
@@ -85,10 +88,7 @@ export const Plans: React.FC = () => {
               '30 days of activity logs',
               'User groups (coming soon)',
               'Commercial use',
-              'APIs',
-              'Mobile app',
-              'Non-commercial',
-              'SSO with Google',
+              'Email or Zoom support',
             ]}
           />
         )

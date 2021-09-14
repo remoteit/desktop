@@ -22,9 +22,14 @@ export const PlanCheckout: React.FC<Props> = ({ form, license, onChange, onCance
     license: state.licensing.license,
     purchasing: state.licensing.purchasing,
   }))
-  const setQuantity = value => onChange({ ...form, quantity: Math.max(Math.min(+value, 9999), 0) })
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices.find(price => price.id === form.priceId)
+
+  const setQuantity = (value: string | number) => {
+    let quantity = Math.max(Math.min(+value, 9999), 1)
+    if (isNaN(quantity)) quantity = 1
+    onChange({ ...form, quantity })
+  }
 
   const onSubmit = () => {
     if (license?.plan?.id === form.planId) dispatch.licensing.updateSubscription(form)
@@ -129,7 +134,7 @@ export const PlanCheckout: React.FC<Props> = ({ form, license, onChange, onCance
                 <>
                   {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
                   &nbsp;/&nbsp;
-                  {selectedPrice?.interval}
+                  {selectedPrice?.interval.toLowerCase()}
                 </>
               ) : (
                 <em>Free</em>

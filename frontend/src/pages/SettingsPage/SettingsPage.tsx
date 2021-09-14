@@ -72,7 +72,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           badge={licenseIndicator}
           dense
         />
-        <ListItemLocation title="Plans" pathname="/settings/plans" icon="shopping-cart" dense />
+        <ListItemLocation title="Subscriptions" pathname="/settings/plans" icon="shopping-cart" dense />
         <ListItemLocation title="Billing" pathname="/settings/billing" icon="credit-card-front" dense />
         <TestUI>
           <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />
