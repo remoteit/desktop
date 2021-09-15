@@ -1,5 +1,5 @@
 import React from 'react'
-import { isDev } from '../../services/Browser'
+import { PROTOCOL } from '../../shared/constants'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { useClipboard } from 'use-clipboard-copy'
@@ -86,11 +86,7 @@ export const ServiceContextualMenu: React.FC = () => {
           />
         </ListItemIcon>
         <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy Sharable Link'} />
-        <input
-          type="hidden"
-          ref={clipboard.target}
-          value={`${isDev() ? 'remoteitdev' : 'remoteit'}://connect/${service?.id}`}
-        />
+        <input type="hidden" ref={clipboard.target} value={`${PROTOCOL}connect/${service?.id}`} />
       </MenuItem>
       {!device?.shared && (
         <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/edit`)}>

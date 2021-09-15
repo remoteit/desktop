@@ -1,6 +1,6 @@
 import React from 'react'
+import { PERSONAL_PLAN_ID } from '../models/licensing'
 import { makeStyles, List, ListItem, ListItemSecondaryAction, Typography, TextField, Button } from '@material-ui/core'
-import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID } from '../models/licensing'
 import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes, colors } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'

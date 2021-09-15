@@ -151,6 +151,11 @@ export default class ElectronApp {
       }
     })
 
+    this.window.webContents.on('will-prevent-unload', event => {
+      // Don't allow stripe to prevent unload (it tries to stop to confirm changes)
+      event.preventDefault()
+    })
+
     this.window.webContents.on('new-window', (event, url) => {
       event.preventDefault()
       electron.shell.openExternal(url)
@@ -165,10 +170,10 @@ export default class ElectronApp {
           port: '3000',
         })
       : url.format({
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '29999',
-      })
+          protocol: 'http',
+          hostname: 'localhost',
+          port: '29999',
+        })
   }
 
   private createSystemTray() {
@@ -216,7 +221,9 @@ export default class ElectronApp {
       }
       Logger.info('Opening', { url: fullUrl })
       this.window.loadURL(fullUrl)
-    } else if (location) this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
+    } else if (location) {
+      this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
+    }
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
   }
 
