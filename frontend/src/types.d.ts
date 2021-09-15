@@ -105,7 +105,7 @@ declare global {
     total: number
     currency: string
     paid: boolean
-    url: string
+    url?: string
     created: Date
   }
 

@@ -5,6 +5,7 @@ import announcements from './announcements'
 import applicationTypes from './applicationTypes'
 import auth from './auth'
 import backend from './backend'
+import billing from './billing'
 import binaries from './binaries'
 import connections from './connections'
 import devices from './devices'
@@ -24,6 +25,7 @@ export interface RootModel extends Models<RootModel> {
   applicationTypes: typeof applicationTypes
   auth: typeof auth
   backend: typeof backend
+  billing: typeof billing
   binaries: typeof binaries
   connections: typeof connections
   devices: typeof devices
@@ -45,6 +47,7 @@ export const models: RootModel = {
   applicationTypes,
   auth,
   backend,
+  billing,
   binaries,
   connections,
   devices,

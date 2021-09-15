@@ -12,9 +12,10 @@ import {
   Link,
 } from '@material-ui/core'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { ApplicationState } from '../store'
-import { useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { colors, spacing } from '../styling'
+import { LoadingMessage } from './LoadingMessage'
 import { Icon } from './Icon'
 
 const dateOptions: Intl.DateTimeFormatOptions = {
@@ -27,7 +28,14 @@ const dateOptions: Intl.DateTimeFormatOptions = {
 
 export const Invoices: React.FC = () => {
   const css = useStyles()
-  const { invoices } = useSelector((state: ApplicationState) => state.licensing)
+  const dispatch = useDispatch<Dispatch>()
+  const { invoices, loading } = useSelector((state: ApplicationState) => state.billing)
+
+  React.useEffect(() => {
+    dispatch.billing.fetch()
+  }, [])
+
+  if (!invoices.length && loading) return <LoadingMessage message="Loading invoices..." />
 
   return (
     <>
@@ -53,11 +61,13 @@ export const Invoices: React.FC = () => {
                   {currencyFormatter(invoice.price.currency, invoice.total)}
                 </TableCell>
                 <TableCell>
-                  <Tooltip title="See invoice">
-                    <Link href={invoice.url} target="_blank">
-                      <Icon name="receipt" />
-                    </Link>
-                  </Tooltip>
+                  {invoice.url && (
+                    <Tooltip title="See invoice">
+                      <Link href={invoice.url} target="_blank">
+                        <Icon name="receipt" />
+                      </Link>
+                    </Tooltip>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

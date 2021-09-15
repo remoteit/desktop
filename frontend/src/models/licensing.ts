@@ -40,7 +40,6 @@ type ILicensing = {
   license: ILicense | null
   licenses: ILicense[]
   limits: ILimit[]
-  invoices: IInvoice[]
   updating: boolean
   purchasing: boolean
   informed: boolean
@@ -59,7 +58,6 @@ const defaultState: ILicensing = {
   license: null,
   licenses: [],
   limits: [],
-  invoices: [],
   updating: false,
   purchasing: false,
   informed: false,
@@ -69,11 +67,6 @@ const defaultState: ILicensing = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: (dispatch: any) => ({
-    async init() {
-      // const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_API_KEY || STRIPE_PUBLIC_KEY)
-      // dispatch.licensing.set({ stripePromise })
-      await dispatch.licensing.fetch()
-    },
     async fetch() {
       const graphQLLicense = `
         id
@@ -146,22 +139,6 @@ export default createModel<RootModel>()({
                     id
                   }
                 }
-                invoices {
-                  plan {
-                    name
-                  }
-                  quantity
-                  price {
-                    id
-                    amount
-                    currency
-                    interval
-                  }
-                  total
-                  paid
-                  url
-                  created
-                }
               }
             }`
         )
@@ -180,10 +157,6 @@ export default createModel<RootModel>()({
         license: parseLicense(data?.login?.license),
         licenses: data?.login.licenses.map(l => parseLicense(l)),
         limits: data?.login.limits,
-        invoices: data?.login.invoices.map(i => ({
-          ...i,
-          created: new Date(i.created),
-        })),
       })
     },
     async subscribe(form: IPurchase) {
