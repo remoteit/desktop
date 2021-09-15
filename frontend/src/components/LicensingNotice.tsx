@@ -18,7 +18,13 @@ const learnMoreLink = (
 
 export const LicensingNotice: React.FC<Props> = props => {
   const { licensing } = useDispatch<Dispatch>()
-  const { noticeType, license, informed, serviceLimit, upgradeUrl = '' } = useSelector((state: ApplicationState) => {
+  const {
+    noticeType,
+    license,
+    informed,
+    serviceLimit,
+    upgradeUrl = '',
+  } = useSelector((state: ApplicationState) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
     return selectLicense(state, productId)
@@ -46,7 +52,7 @@ export const LicensingNotice: React.FC<Props> = props => {
   if (noticeType === 'EXPIRATION_WARNING' && license.expiration)
     notice = (
       <Notice severity="info" button={UpgradeButton}>
-        {title} will expire on {/* replace with countdown */}
+        {title} will renew on {/* replace with countdown */}
         {license.expiration.toLocaleString(undefined, dateOptions)}.
       </Notice>
     )

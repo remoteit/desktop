@@ -7,7 +7,7 @@ import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 
-export function NotificationMode({ ...props }): JSX.Element {
+export const NotificationMode: React.FC = () => {
   const { notificationUrl, urlNotifications, emailNotifications, desktopNotifications } = useSelector(
     (state: ApplicationState) => state.auth.notificationSettings
   )
@@ -15,19 +15,17 @@ export function NotificationMode({ ...props }): JSX.Element {
   const { updateUserMetadata } = dispatch.auth
   const [email, setEmail] = useState<boolean>(emailNotifications || false)
   const [system, setSystem] = useState<boolean>(desktopNotifications || false)
-
   const [webHook, setWebhook] = useState<boolean | undefined>(urlNotifications)
   const [webHookUrl, setWebhookUrl] = useState(notificationUrl || '')
+  const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState(false)
+  const changed = webHookUrl !== notificationUrl
   const metadata: INotificationSetting = {
     desktopNotifications: system,
     emailNotifications: email,
     urlNotifications: webHook,
     notificationUrl: webHookUrl,
   }
-  const { loading } = useSelector((state: ApplicationState) => ({
-    loading: state.auth?.loading,
-  }))
 
   const onEmailChange = (value: boolean) => {
     setEmail(value)
@@ -46,16 +44,18 @@ export function NotificationMode({ ...props }): JSX.Element {
 
   const checkWebHookUrl = (value: string) => {
     setWebhookUrl(value)
-    setError(!REGEX_VALID_URL.test(value))
+    if (webHook) setError(!REGEX_VALID_URL.test(value))
   }
 
-  const onSave = () => {
+  const onSave = async () => {
     if (!error) {
-      updateUserMetadata({
+      setLoading(true)
+      await updateUserMetadata({
         ...metadata,
         notificationUrl: webHook && webHookUrl?.length ? webHookUrl : '',
         urlNotifications: webHook,
       })
+      setLoading(false)
     }
   }
 
@@ -85,11 +85,18 @@ export function NotificationMode({ ...props }): JSX.Element {
             fullWidth
             helperText={error ? 'Please provide a valid URL' : undefined}
           />
+          <br />
+          <br />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={onSave}
+            disabled={error || loading || !changed || !webHook}
+            size="small"
+          >
+            {loading ? 'Saving' : 'Save'}
+          </Button>
         </Quote>
-        <br />
-        <Button variant="contained" color="primary" onClick={onSave} disabled={error || loading} size="small">
-          {loading ? 'Saving' : 'Save'}
-        </Button>
       </Gutters>
     </>
   )
