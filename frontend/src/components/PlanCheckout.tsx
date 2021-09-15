@@ -8,20 +8,17 @@ import { currencyFormatter } from '../helpers/utilHelper'
 import { Icon } from './Icon'
 
 type Props = {
+  plans: IPlan[]
   form: IPurchase
   license: ILicense | null
   onChange: (form: IPurchase) => void
   onCancel: () => void
 }
 
-export const PlanCheckout: React.FC<Props> = ({ form, license, onChange, onCancel }) => {
+export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
-  const { plans, purchasing } = useSelector((state: ApplicationState) => ({
-    plans: state.licensing.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
-    license: state.licensing.license,
-    purchasing: state.licensing.purchasing,
-  }))
+  const purchasing = useSelector((state: ApplicationState) => state.licensing.purchasing)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices.find(price => price.id === form.priceId)
 

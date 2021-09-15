@@ -4,17 +4,17 @@ import { Gutters } from './Gutters'
 import { PlanCard } from './PlanCard'
 import { makeStyles } from '@material-ui/core'
 import { PlanCheckout } from './PlanCheckout'
+import { getRemoteitLicense } from '../models/licensing'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID } from '../models/licensing'
-import { ApplicationState, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState } from '../store'
+import { useSelector } from 'react-redux'
 
 export const Plans: React.FC = () => {
   const css = useStyles()
-  const dispatch = useDispatch<Dispatch>()
   const { plans, license } = useSelector((state: ApplicationState) => ({
     plans: state.licensing.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
-    license: state.licensing.license,
+    license: getRemoteitLicense(state),
   }))
   const getDefaults = () => ({
     checkout: false,
@@ -33,6 +33,7 @@ export const Plans: React.FC = () => {
       {form.checkout && (
         <Overlay>
           <PlanCheckout
+            plans={plans}
             form={form}
             license={license}
             onChange={form => setForm(form)}
@@ -63,7 +64,7 @@ export const Plans: React.FC = () => {
       {plans.map(plan => {
         let price = '$5'
         let caption = 'per month / per user'
-        let note: string | undefined = 'billed annually'
+        let note: string | undefined = 'when billed annually'
         const selected = license?.plan?.id === plan.id
         if (selected && license?.total && license.price?.amount) {
           price =

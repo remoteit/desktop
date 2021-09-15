@@ -37,7 +37,6 @@ const defaultLicense = LicenseLookup[0]
 type ILicensing = {
   initialized: boolean
   plans: IPlan[]
-  license: ILicense | null
   licenses: ILicense[]
   limits: ILimit[]
   updating: boolean
@@ -55,7 +54,6 @@ type ILicensing = {
 const defaultState: ILicensing = {
   initialized: false,
   plans: [],
-  license: null,
   licenses: [],
   limits: [],
   updating: false,
@@ -125,9 +123,6 @@ export default createModel<RootModel>()({
                 }
               }          
               login {
-                license {
-                  ${graphQLLicense}
-                }
                 licenses {
                   ${graphQLLicense}
                 }
@@ -154,7 +149,6 @@ export default createModel<RootModel>()({
       dispatch.licensing.set({
         initialized: true,
         plans: data.plans,
-        license: parseLicense(data?.login?.license),
         licenses: data?.login.licenses.map(l => parseLicense(l)),
         limits: data?.login.limits,
       })
@@ -240,6 +234,10 @@ function parseLicense(data) {
       expiration: data.card.expiration && new Date(data.card.expiration),
     },
   }
+}
+
+export function getRemoteitLicense(state: ApplicationState) {
+  return getLicenses(state).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 }
 
 export function getLicenses(state: ApplicationState) {
