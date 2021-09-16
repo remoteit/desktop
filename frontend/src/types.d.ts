@@ -47,10 +47,13 @@ declare global {
     expiration: Date | null
     valid: boolean
     quantity: number | null
-    upgradeUrl?: string
+    plan: IPlan
+    subscription?: ISubscription
+  }
+
+  type ISubscription = {
     total: number | null
     status: 'ACTIVE' | 'CANCELED' | 'INCOMPLETE' | 'INCOMPLETE_EXPIRED' | 'PAST_DUE' | 'TRIALING' | 'UNPAID' | null
-    plan: IPlan
     price: IPrice | null
     card: ICard | null
   }

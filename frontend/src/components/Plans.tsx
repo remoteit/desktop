@@ -19,7 +19,7 @@ export const Plans: React.FC = () => {
   const getDefaults = () => ({
     checkout: false,
     planId: license?.plan?.id,
-    priceId: license?.price?.id,
+    priceId: license?.subscription?.price?.id,
     quantity: license?.quantity || 1,
   })
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
@@ -66,9 +66,10 @@ export const Plans: React.FC = () => {
         let caption = 'per month / per user'
         let note: string | undefined = 'when billed annually'
         const selected = license?.plan?.id === plan.id
-        if (selected && license?.total && license.price?.amount) {
+        if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
           price =
-            currencyFormatter(license.price.currency, license.total, 0) + ` / ${license.price.interval.toLowerCase()}`
+            currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
+            ` / ${license?.subscription?.price.interval.toLowerCase()}`
           caption = `${license.quantity} user${(license.quantity || 0) > 1 ? 's' : ''}`
           note = undefined
         }

@@ -71,8 +71,6 @@ export default createModel<RootModel>()({
         updated
         created
         expiration
-        total
-        status
         valid
         quantity
         plan {
@@ -86,24 +84,29 @@ export default createModel<RootModel>()({
             description
           }
         }
-        price {
-          id
-          amount
-          currency
-          interval
+        subscription {
+          total
+          status
+          price {
+            id
+            amount
+            currency
+            interval
+          }
+          card {
+            brand
+            month
+            year
+            last
+            name
+            email
+            phone
+            postal
+            country
+            expiration
+          }
         }
-        card {
-          brand
-          month
-          year
-          last
-          name
-          email
-          phone
-          postal
-          country
-          expiration
-        }`
+  `
 
       try {
         const result: any = await graphQLRequest(
@@ -229,9 +232,12 @@ function parseLicense(data) {
     created: new Date(data.created),
     updated: new Date(data.updated),
     expiration: data.expiration && new Date(data.expiration),
-    card: data.card && {
-      ...data.card,
-      expiration: data.card.expiration && new Date(data.card.expiration),
+    subscription: data.subscription && {
+      ...data.subscription,
+      card: data.subscription.card && {
+        ...data.subscription.card,
+        expiration: data.subscription.card.expiration && new Date(data.subscription.card.expiration),
+      },
     },
   }
 }

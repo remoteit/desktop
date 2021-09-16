@@ -1,7 +1,6 @@
 import React from 'react'
 import {
   makeStyles,
-  Chip,
   List,
   ListItem,
   ListItemIcon,
@@ -60,9 +59,9 @@ export const LicensingSetting: React.FC = () => {
               <ListItem>
                 <ListItemIcon></ListItemIcon>
                 <Quote margin={0}>
-                  {license.status && (
+                  {license.subscription?.status && (
                     <Typography variant="caption" gutterBottom>
-                      Status: {license.status} <br />
+                      Status: {license.subscription?.status} <br />
                       <br />
                     </Typography>
                   )}

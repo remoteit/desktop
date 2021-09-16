@@ -10,13 +10,17 @@ import {
 } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { getRemoteitLicense } from '../models/licensing'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 export const CreditCard: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { license, updating } = useSelector((state: ApplicationState) => state.licensing)
-  const card = license?.card
+  const { license, updating } = useSelector((state: ApplicationState) => ({
+    license: getRemoteitLicense(state),
+    updating: state.licensing.updating,
+  }))
+  const card = license?.subscription?.card
   const expired = !!card && card.expiration < new Date()
   const update = () => dispatch.licensing.updateCreditCard()
 
