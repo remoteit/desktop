@@ -3,17 +3,21 @@ import { Overlay } from './Overlay'
 import { Gutters } from './Gutters'
 import { PlanCard } from './PlanCard'
 import { makeStyles } from '@material-ui/core'
+import { useLocation } from 'react-router-dom'
 import { PlanCheckout } from './PlanCheckout'
 import { getRemoteitLicense } from '../models/licensing'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID } from '../models/licensing'
-import { ApplicationState } from '../store'
-import { useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 
 export const Plans: React.FC = () => {
   const css = useStyles()
-  const { plans, license } = useSelector((state: ApplicationState) => ({
+  const location = useLocation()
+  const dispatch = useDispatch<Dispatch>()
+  const { plans, license, purchasing } = useSelector((state: ApplicationState) => ({
     plans: state.licensing.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
+    purchasing: !!state.licensing.purchasing,
     license: getRemoteitLicense(state),
   }))
   const getDefaults = () => ({
@@ -27,6 +31,10 @@ export const Plans: React.FC = () => {
   React.useEffect(() => {
     setForm(getDefaults())
   }, [license])
+
+  React.useEffect(() => {
+    if (location.pathname.includes('success')) dispatch.licensing.restore()
+  }, [])
 
   return (
     <Gutters size="md" top="xxl" className={css.plans}>
@@ -84,6 +92,7 @@ export const Plans: React.FC = () => {
             button="Upgrade"
             allowUpdate={true}
             selected={selected}
+            loading={purchasing}
             onSelect={() => setForm({ ...form, checkout: true, planId: plan.id, priceId: plan.prices[0].id })}
             feature="Devices* are not limited"
             features={[

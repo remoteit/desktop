@@ -8,6 +8,7 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
 } from '@material-ui/core'
+import { useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getRemoteitLicense } from '../models/licensing'
@@ -15,6 +16,7 @@ import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 export const CreditCard: React.FC = () => {
+  const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { license, updating } = useSelector((state: ApplicationState) => ({
     license: getRemoteitLicense(state),
@@ -22,7 +24,11 @@ export const CreditCard: React.FC = () => {
   }))
   const card = license?.subscription?.card
   const expired = !!card && card.expiration < new Date()
-  const update = () => dispatch.licensing.updateCreditCard()
+  const update = () => dispatch.licensing.updateCreditCard(license?.subscription?.card?.last)
+
+  React.useEffect(() => {
+    if (location.pathname.includes('success')) dispatch.licensing.restore()
+  }, [])
 
   if (!card) return null
 

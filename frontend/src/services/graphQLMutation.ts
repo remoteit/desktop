@@ -81,7 +81,7 @@ export async function graphQLSubscribe(params: IPurchase) {
       }`,
     {
       ...params,
-      successUrl: window.location.href,
+      successUrl: window.location.href + '/success',
       cancelUrl: window.location.href,
     }
   )
@@ -95,7 +95,7 @@ export async function graphQLCreditCard() {
         }
       }`,
     {
-      successUrl: window.location.href,
+      successUrl: window.location.href + '/success',
       cancelUrl: window.location.href,
     }
   )

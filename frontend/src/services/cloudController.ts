@@ -80,9 +80,18 @@ class CloudController {
           ... on DeviceShareEvent {
             scripting
           }
+          ... on LicenseUpdatedEvent {
+            plan {
+              name
+              product {
+                name
+              }
+            }
+            quantity
+            expiration
+          }
         }
       }`,
-      // "variables": {}
     })
     this.socket?.send(message)
   }
@@ -122,6 +131,9 @@ class CloudController {
         sessionId: event.session,
         geo: event.sourceGeo,
         metadata: state.auth.notificationSettings,
+        quantity: event.quantity,
+        expiration: event.expiration && new Date(event.expiration),
+        plan: event.plan,
         target: event.target.map(t => {
           const [service, device] = selectById(state, t.id)
           const connection = findLocalConnection(state, t.id, event.session)
@@ -144,7 +156,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions } = store.dispatch
+    const { accounts, sessions, licensing } = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -211,7 +223,13 @@ class CloudController {
         break
 
       case 'DEVICE_SHARE':
-      // @TODO parse and display notice
+        // @TODO parse and display notice
+        break
+
+      case 'LICENSE_UPDATED':
+        console.log('LICENSE UPDATED EVENT', event)
+        licensing.updated()
+        break
     }
     return event
   }

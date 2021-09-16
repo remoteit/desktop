@@ -112,12 +112,12 @@ function getEventHandlers() {
     dataReady: async (result: boolean) => {
       console.log('Data ready')
       backend.set({ dataReady: result })
+      store.dispatch.licensing.init()
       await cloudController.init()
       await store.dispatch.accounts.init()
       await store.dispatch.devices.init()
       await store.dispatch.ui.init()
       await store.dispatch.devices.fetch()
-      store.dispatch.licensing.fetch()
       store.dispatch.applicationTypes.fetch()
       store.dispatch.announcements.fetch()
       store.dispatch.sessions.fetch()

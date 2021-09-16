@@ -335,7 +335,7 @@ declare global {
 
   interface ICloudEvent {
     sessionId: string
-    type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
+    type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE' | 'LICENSE_UPDATED'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
     isP2P: boolean
@@ -356,6 +356,15 @@ declare global {
       service?: IService
       connection?: IConnection
     }[]
+    // For license events
+    plan?: {
+      name: string
+      product: {
+        name: string
+      }
+    }
+    quantity?: number
+    expiration?: Date
   }
 
   interface IRoute {

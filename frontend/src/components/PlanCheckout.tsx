@@ -18,7 +18,7 @@ type Props = {
 export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
-  const purchasing = useSelector((state: ApplicationState) => state.licensing.purchasing)
+  const purchasing = useSelector((state: ApplicationState) => !!state.licensing.purchasing)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices.find(price => price.id === form.priceId)
 
@@ -35,7 +35,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
 
   const unchanged = () =>
     form.planId === license?.plan?.id &&
-    form.priceId === license?.price?.id &&
+    form.priceId === license?.subscription?.price?.id &&
     form.quantity === (license?.quantity || 1)
 
   if (form.planId === PERSONAL_PLAN_ID)

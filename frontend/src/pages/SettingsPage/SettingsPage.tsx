@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { makeStyles, List, Typography, Tooltip, ButtonBase, Divider } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { selectLicenseIndicator } from '../../models/licensing'
+import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
 import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
@@ -18,7 +18,8 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
-  const { preferences, remoteUI, licenseIndicator } = useSelector((state: ApplicationState) => ({
+  const { billing, preferences, remoteUI, licenseIndicator } = useSelector((state: ApplicationState) => ({
+    billing: !!getRemoteitLicense(state)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
     remoteUI: isRemoteUI(state),
@@ -72,8 +73,8 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           badge={licenseIndicator}
           dense
         />
-        <ListItemLocation title="Subscriptions" pathname="/settings/plans" icon="shopping-cart" dense />
-        <ListItemLocation title="Billing" pathname="/settings/billing" icon="credit-card-front" dense />
+        {billing && <ListItemLocation title="Subscriptions" pathname="/settings/plans" icon="shopping-cart" dense />}
+        {billing && <ListItemLocation title="Billing" pathname="/settings/billing" icon="credit-card-front" dense />}
         <TestUI>
           <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />

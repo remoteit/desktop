@@ -39,8 +39,8 @@ type ILicensing = {
   plans: IPlan[]
   licenses: ILicense[]
   limits: ILimit[]
-  updating: boolean
-  purchasing: boolean
+  updating?: string
+  purchasing?: string
   informed: boolean
   tests: {
     license: boolean
@@ -56,8 +56,8 @@ const defaultState: ILicensing = {
   plans: [],
   licenses: [],
   limits: [],
-  updating: false,
-  purchasing: false,
+  updating: undefined,
+  purchasing: undefined,
   informed: false,
   tests: testData,
 }
@@ -65,6 +65,32 @@ const defaultState: ILicensing = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: (dispatch: any) => ({
+    async init() {
+      await dispatch.licensing.fetch()
+      dispatch.licensing.set({ initialized: true })
+    },
+
+    async restore(_, globalState) {
+      const license = getRemoteitLicense(globalState)
+      const last = license?.subscription?.card?.last
+      const planId = license?.plan.id
+
+      console.log('INIT LICENSING', {
+        last,
+        lastStored: localStorage.getItem('licencing.updating'),
+        planId,
+        planIdStored: localStorage.getItem('licencing.purchasing'),
+      })
+
+      dispatch.licensing.set({
+        purchasing: localStorage.getItem('licencing.purchasing') !== planId ? planId : undefined,
+        updating: localStorage.getItem('licensing.updating') === last ? last : undefined,
+      })
+    },
+    /* 
+    e147a026-81d7-11eb-afc8-02f048730623 
+    e147a026-81d7-11eb-afc8-02f048730623
+    */
     async fetch() {
       const graphQLLicense = `
         id
@@ -78,6 +104,8 @@ export default createModel<RootModel>()({
           name
           description
           duration
+          commercial
+          billing
           product {
             id
             name
@@ -146,54 +174,55 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
+
     async parse(data: any) {
       if (!data) return
       console.log('LICENSING', data)
       dispatch.licensing.set({
-        initialized: true,
         plans: data.plans,
         licenses: data?.login.licenses.map(l => parseLicense(l)),
         limits: data?.login.limits,
+        purchasing: undefined,
+        updating: undefined,
       })
     },
-    async subscribe(form: IPurchase) {
-      dispatch.licensing.set({ purchasing: true })
 
+    async subscribe(form: IPurchase) {
+      dispatch.licensing.set({ purchasing: form.planId })
+      localStorage.setItem('licencing.purchasing', form.planId || '')
       const response = await graphQLSubscribe(form)
       const checkout = response?.data?.data?.createSubscription
       console.log('PURCHASE', checkout)
       if (checkout?.url) window.location.href = checkout.url
-
-      dispatch.licensing.set({ purchasing: false })
     },
+
     async updateSubscription({ priceId, quantity }: IPurchase) {
       if (!priceId) return dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
-      dispatch.licensing.set({ purchasing: true })
+      dispatch.licensing.set({ purchasing: 'true' })
       await graphQLUpdateSubscription({ priceId, quantity })
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity })
-      await dispatch.licensing.fetch()
-      dispatch.licensing.set({ purchasing: false })
     },
+
     async unsubscribe() {
-      dispatch.licensing.set({ purchasing: true })
+      dispatch.licensing.set({ purchasing: 'true' })
       await graphQLUnsubscribe()
       console.log('UNSUBSCRIBE')
-      // @FIXME update state
-      setTimeout(async () => {
-        await dispatch.licensing.fetch()
-        dispatch.licensing.set({ purchasing: false })
-      }, 5000)
     },
-    async updateCreditCard() {
-      dispatch.licensing.set({ updating: true })
 
+    async updateCreditCard(last: string | undefined, globalState) {
+      dispatch.licensing.set({ updating: last || true })
+      localStorage.setItem('licensing.updating', last || '')
       const response = await graphQLCreditCard()
       const result = response?.data?.data?.updateCreditCard
       console.log('UPDATE CREDIT CARD', result)
       if (result?.url) window.location.href = result.url
-
-      dispatch.licensing.set({ updating: false })
     },
+
+    async updated() {
+      await dispatch.licensing.fetch()
+      dispatch.licensing.set({ purchasing: undefined, updating: undefined })
+    },
+
     async testServiceLicensing(_, globalState) {
       const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']
       const devices = getDevices(globalState)
@@ -206,6 +235,7 @@ export default createModel<RootModel>()({
       }))
       dispatch.accounts.setDevices({ devices: updated })
     },
+
     async testClearLicensing() {
       dispatch.licensing.set({
         licenses: [],

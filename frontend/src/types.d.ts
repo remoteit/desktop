@@ -76,12 +76,14 @@ declare global {
     name: IPlanName
     description: string
     duration: string | null
+    commercial?: boolean
+    billing?: boolean
     product: {
       id: string
       name: string
       description: string
     }
-    prices: IPrice[]
+    prices?: IPrice[]
   }
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
