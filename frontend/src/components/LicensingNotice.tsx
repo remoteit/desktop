@@ -1,20 +1,15 @@
 import React from 'react'
 import { selectLicense, lookupLicenseProductId } from '../models/licensing'
-import { ListItem, Link, Button, Tooltip, IconButton } from '@material-ui/core'
+import { ListItem, Button, Tooltip, IconButton } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { LicensingTitle } from './LicensingTitle'
 import { useDispatch, useSelector } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
+import { Link } from 'react-router-dom'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 type Props = { device?: IDevice; license?: ILicense; fullWidth?: boolean }
-
-const learnMoreLink = (
-  <Link href="https://link.remote.it/documentation-aws/setup" target="_blank">
-    Learn more.
-  </Link>
-)
 
 export const LicensingNotice: React.FC<Props> = props => {
   const { licensing } = useDispatch<Dispatch>()
@@ -23,7 +18,7 @@ export const LicensingNotice: React.FC<Props> = props => {
     license,
     informed,
     serviceLimit,
-    upgradeUrl = '',
+    managePath = '',
   } = useSelector((state: ApplicationState) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
@@ -38,9 +33,11 @@ export const LicensingNotice: React.FC<Props> = props => {
   const title = `Your ${license.plan.description} plan of ${license.plan.product.name}`
   const UpgradeButton = (
     <>
-      <Button color="primary" variant="contained" href={upgradeUrl} size="small" target="_blank">
-        Upgrade
-      </Button>
+      <Link to={managePath}>
+        <Button color="primary" variant="contained" size="small">
+          Upgrade
+        </Button>
+      </Link>
       <Tooltip title="Close">
         <IconButton onClick={onClose}>
           <Icon name="times" size="md" color="primary" />
@@ -62,7 +59,8 @@ export const LicensingNotice: React.FC<Props> = props => {
       <Notice severity="warning" button={UpgradeButton}>
         {title} <LicensingTitle count={serviceLimit?.value} />
         <em>
-          You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{learnMoreLink}
+          You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{' '}
+          <Link to={managePath}>Learn more.</Link>
         </em>
       </Notice>
     )
@@ -71,7 +69,9 @@ export const LicensingNotice: React.FC<Props> = props => {
     notice = (
       <Notice severity="warning" button={UpgradeButton}>
         {title} has expired.
-        <em>Please upgrade your license.{learnMoreLink}</em>
+        <em>
+          Please upgrade your license. <Link to={managePath}>Learn more.</Link>
+        </em>
       </Notice>
     )
 

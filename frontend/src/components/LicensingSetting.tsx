@@ -19,6 +19,7 @@ import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
+import { Link } from 'react-router-dom'
 import { spacing } from '../styling'
 import { Quote } from './Quote'
 
@@ -48,10 +49,12 @@ export const LicensingSetting: React.FC = () => {
                 }
               />
               <ListItemSecondaryAction>
-                {license.upgradeUrl && (
-                  <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
-                    {license.id ? 'Manage' : 'Free Trial'}
-                  </Button>
+                {license.managePath && (
+                  <Link to={license.managePath}>
+                    <Button color="primary" size="small">
+                      {license.id ? 'Manage' : 'Free Trial'}
+                    </Button>
+                  </Link>
                 )}
               </ListItemSecondaryAction>
             </ListItem>

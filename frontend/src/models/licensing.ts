@@ -13,7 +13,7 @@ import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
 import humanize from 'humanize-duration'
 
-type ILicenseLookup = { productId: string; platform?: number; upgradeUrl: string }
+type ILicenseLookup = { productId: string; platform?: number; managePath: string }
 
 export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
 export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
@@ -23,12 +23,12 @@ export const LicenseLookup: ILicenseLookup[] = [
   {
     productId: REMOTEIT_PRODUCT_ID,
     platform: undefined,
-    upgradeUrl: 'https://link.remote.it/portal/account',
+    managePath: '/settings/plans',
   },
   {
     productId: AWS_PRODUCT_ID,
     platform: 1185,
-    upgradeUrl: 'https://link.remote.it/aws-marketplace/saas',
+    managePath: '/settings/plans',
   },
 ]
 
@@ -288,10 +288,10 @@ export function getLimits(state: ApplicationState) {
   else return state.licensing.limits
 }
 
-export function lookupLicenseUpgradeUrl(productId?: string) {
+export function lookupLicensemanagePath(productId?: string) {
   let lookup = LicenseLookup.find(l => l.productId === productId)
   if (!lookup) lookup = defaultLicense
-  return lookup.upgradeUrl
+  return lookup.managePath
 }
 
 export function lookupLicenseProductId(device?: IDevice) {
@@ -307,7 +307,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
-  const upgradeUrl = lookupLicenseUpgradeUrl(productId)
+  const managePath = lookupLicensemanagePath(productId)
 
   if (!license) return {}
 
@@ -326,7 +326,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
     limits,
     serviceLimit,
     evaluationLimit,
-    upgradeUrl,
+    managePath,
   }
 }
 
@@ -334,7 +334,7 @@ export function selectLicenses(state: ApplicationState) {
   return {
     licenses: getLicenses(state).map(license => ({
       ...license,
-      upgradeUrl: lookupLicenseUpgradeUrl(license.plan.product.id),
+      managePath: lookupLicensemanagePath(license.plan.product.id),
       limits: getLimits(state).filter(limit => limit.license?.id === license.id),
     })),
     limits: getLimits(state).filter(limit => !limit.license),

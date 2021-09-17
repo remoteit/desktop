@@ -78,7 +78,6 @@ export const OptionsPage: React.FC = () => {
           confirmTitle="Continue?"
           confirm
         />
-        <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
@@ -102,6 +101,7 @@ export const OptionsPage: React.FC = () => {
       {remoteUI || (
         <Collapsible title="Advanced">
           <List>
+            <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
             <SettingsDisableNetworkItem />
             <ListItemSetting
               confirm
