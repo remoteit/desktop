@@ -1,6 +1,15 @@
 import React from 'react'
 import { PERSONAL_PLAN_ID } from '../models/licensing'
-import { makeStyles, List, ListItem, ListItemSecondaryAction, Typography, TextField, Button } from '@material-ui/core'
+import {
+  makeStyles,
+  Divider,
+  List,
+  ListItem,
+  ListItemSecondaryAction,
+  Typography,
+  TextField,
+  Button,
+} from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes, colors } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
@@ -20,12 +29,20 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   const dispatch = useDispatch<Dispatch>()
   const purchasing = useSelector((state: ApplicationState) => !!state.licensing.purchasing)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
-  const selectedPrice = selectedPlan?.prices.find(price => price.id === form.priceId)
+  const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
 
   const setQuantity = (value: string | number) => {
-    let quantity = Math.max(Math.min(+value, 9999), 1)
+    let quantity = Math.max(Math.min(+value, 9999), 0)
     if (isNaN(quantity)) quantity = 1
     onChange({ ...form, quantity })
+  }
+
+  const setNextInterval = () => {
+    const priceArray = selectedPlan?.prices || []
+    const next = priceArray.findIndex(p => form.priceId === p.id) + 1
+    const index = priceArray.length <= next ? 0 : next
+    const priceId = priceArray[index]?.id
+    onChange({ ...form, priceId })
   }
 
   const onSubmit = () => {
@@ -72,7 +89,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
         </ListItem>
       </List>
       <List className={css.list}>
-        <ListItem>
+        <ListItem button onClick={() => setNextInterval()}>
           <Typography variant="h2">Interval</Typography>
           <ListItemSecondaryAction>
             <div className={css.group}>
@@ -90,7 +107,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             </div>
           </ListItemSecondaryAction>
         </ListItem>
-        <ListItem>
+        <ListItem button onClick={() => setQuantity(form.quantity + 1)}>
           <Typography variant="h2">Seats</Typography>
           <ListItemSecondaryAction>
             <div className={css.group}>
@@ -123,6 +140,9 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             </div>
           </ListItemSecondaryAction>
         </ListItem>
+      </List>
+      <List className={css.list}>
+        <Divider />
         <ListItem>
           <Typography variant="h2">Total</Typography>
           <ListItemSecondaryAction>
@@ -163,12 +183,13 @@ const useStyles = makeStyles({
   list: {
     width: '50%',
     minWidth: 400,
-    '& .MuiListItem-root': { marginBottom: spacing.sm },
+    '& .MuiListItem-root': { padding: spacing.sm },
     '& h1': { textTransform: 'capitalize' },
   },
   group: {
     border: `1px solid ${colors.grayLighter}`,
     borderRadius: spacing.md,
+    backgroundColor: colors.white,
     display: 'inline-block',
     '& > .MuiButton-root': { height: 30, borderRadius: 0 },
     '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },

@@ -105,7 +105,7 @@ declare global {
       interval: IPlanInterval
     }
     id: string
-    plan: ILicense['plan']
+    plan: IPlan
     quantity: number
     total: number
     currency: string
