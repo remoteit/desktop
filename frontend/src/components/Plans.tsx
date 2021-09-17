@@ -27,6 +27,8 @@ export const Plans: React.FC = () => {
     quantity: license?.quantity || 1,
   })
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
+  const enterprise = !license?.plan?.billing
+  const personal = license?.plan?.id === PERSONAL_PLAN_ID
 
   React.useEffect(() => {
     setForm(getDefaults())
@@ -49,75 +51,91 @@ export const Plans: React.FC = () => {
           />
         </Overlay>
       )}
-      <PlanCard
-        name="Personal"
-        description="For non-commercial use"
-        price="$0"
-        caption="Free"
-        button="Select"
-        selected={license?.plan?.id === PERSONAL_PLAN_ID}
-        onSelect={() => setForm({ ...form, checkout: true, planId: PERSONAL_PLAN_ID })}
-        feature="Up to 5 devices*"
-        features={[
-          'Prototyping / POC',
-          '7 days of activity logs',
-          'Web support',
-          'Scripts',
-          'APIs',
-          'Mobile app',
-          'Non-commercial',
-          'SSO with Google',
-        ]}
-      />
-      {plans.map(plan => {
-        let price = '$5'
-        let caption = 'per month / per user'
-        let note: string | undefined = 'when billed annually'
-        const selected = license?.plan?.id === plan.id
-        if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
-          price =
-            currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
-            ` / ${license?.subscription?.price.interval.toLowerCase()}`
-          caption = `${license.quantity} user${(license.quantity || 0) > 1 ? 's' : ''}`
-          note = undefined
-        }
-        return (
+      {!enterprise && (
+        <>
           <PlanCard
-            key={plan.id}
-            name={plan.description}
-            description="For business use"
-            price={price}
-            caption={caption}
-            note={note}
-            button="Upgrade"
-            allowUpdate={true}
-            selected={selected}
-            loading={purchasing}
-            onSelect={() => setForm({ ...form, checkout: true, planId: plan.id, priceId: plan.prices[0].id })}
-            feature="Devices* are not limited"
+            name="Personal"
+            description="For non-commercial use"
+            price="$0"
+            caption="Free"
+            button={personal ? 'Current Plan' : 'Select'}
+            selected={personal}
+            disabled={personal}
+            onSelect={() => setForm({ ...form, checkout: true, planId: PERSONAL_PLAN_ID })}
+            feature="Up to 5 devices*"
             features={[
-              '30 days of activity logs',
-              'User groups (coming soon)',
-              'Commercial use',
-              'Email or Zoom support',
+              'Prototyping / POC',
+              '7 days of activity logs',
+              'Web support',
+              'Scripts',
+              'APIs',
+              'Mobile app',
+              'Non-commercial',
+              'SSO with Google',
             ]}
           />
-        )
-      })}
+          {plans.map(plan => {
+            let price = '$5'
+            let caption = 'per month / per user'
+            let note: string | undefined = 'when billed annually'
+            const selected = license?.plan?.id === plan.id
+            if (selected && license?.subscription?.total && license?.subscription?.price?.amount) {
+              price =
+                currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
+                ` / ${license?.subscription?.price.interval.toLowerCase()}`
+              caption = `${license.quantity} user${(license.quantity || 0) > 1 ? 's' : ''}`
+              note = undefined
+            }
+            return (
+              <PlanCard
+                key={plan.id}
+                name={plan.description}
+                description="For business use"
+                price={price}
+                caption={caption}
+                note={note}
+                button={selected ? 'Update' : 'Upgrade'}
+                selected={selected}
+                loading={purchasing}
+                onSelect={() =>
+                  setForm({ ...form, checkout: true, planId: plan.id, priceId: plan.prices && plan.prices[0].id })
+                }
+                feature="Devices* are not limited"
+                features={[
+                  '30 days of activity logs',
+                  'User groups (coming soon)',
+                  'Commercial use',
+                  'Email or Zoom support',
+                ]}
+              />
+            )
+          })}
+        </>
+      )}
       <PlanCard
         name="Enterprise"
         description="For large volume and OEM"
         caption={
-          <>
-            Large-scale solutions
-            <br /> or custom use cases
-          </>
+          enterprise ? (
+            <>
+              For changes, talk to
+              <br /> your administrator or
+            </>
+          ) : (
+            <>
+              Large-scale solutions
+              <br /> or custom use cases
+            </>
+          )
         }
         button="Contact Us"
-        selected={false}
-        onSelect={() => window.open('https://remote.it/contact-us/', '_blank')}
-        feature="Volume devices* or user accounts"
-        features={['1 year of activity logs', 'Slack support', 'Analytics and reporting']}
+        selected={enterprise}
+        onSelect={() => {
+          if (enterprise) window.location.href = encodeURI(`mailto:sales@remote.it?subject=Enterprise Plan`)
+          else window.open('https://remote.it/contact-us/', '_blank')
+        }}
+        feature={enterprise ? undefined : 'Volume devices* or user accounts'}
+        features={enterprise ? undefined : ['1 year of activity logs', 'Slack support', 'Analytics and reporting']}
       />
     </Gutters>
   )
@@ -127,6 +145,6 @@ const useStyles = makeStyles({
   plans: {
     display: 'flex',
     position: 'relative',
-    '& > div': { width: '33%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+    justifyContent: 'center',
   },
 })

@@ -1,4 +1,5 @@
 import React from 'react'
+import classnames from 'classnames'
 import { makeStyles, Typography, List, ListItem, ListItemIcon, Divider, Button } from '@material-ui/core'
 import { spacing, fontSizes, colors, radius } from '../styling'
 import { Icon } from './Icon'
@@ -9,10 +10,10 @@ type Props = {
   price?: string
   caption: string | React.ReactElement
   note?: string
-  feature: string
-  features: string[]
+  feature?: string
+  features?: string[]
   button: string
-  allowUpdate?: boolean
+  disabled?: boolean
   selected?: boolean
   loading?: boolean
   onSelect?: () => void
@@ -27,14 +28,14 @@ export const PlanCard: React.FC<Props> = ({
   feature,
   features = [],
   button,
-  allowUpdate,
+  disabled,
   selected,
   loading,
   onSelect,
 }) => {
   const css = useStyles()
   return (
-    <div className={selected ? css.selected : undefined}>
+    <div className={classnames(css.card, selected && css.selected)}>
       {selected && <header>Current plan</header>}
       <div className={css.plan}>
         <Typography variant="h2">{name}</Typography>
@@ -51,23 +52,19 @@ export const PlanCard: React.FC<Props> = ({
         size="small"
         color="primary"
         variant={'contained'}
-        disabled={loading || (selected && !allowUpdate)}
+        disabled={loading || disabled}
         className={css.select}
       >
-        {selected && !allowUpdate
-          ? 'Current Plan'
-          : loading
-          ? 'Processing...'
-          : selected && allowUpdate
-          ? 'Update'
-          : button}
+        {loading ? 'Processing...' : button}
       </Button>
       <div className={css.features}>
         {/* <Typography variant="body2">Features:</Typography> */}
         <List dense>
-          <Item>
-            <b>{feature}</b>
-          </Item>
+          {feature && (
+            <Item>
+              <b>{feature}</b>
+            </Item>
+          )}
           {features.map((f, index) => (
             <Item key={index}>{f}</Item>
           ))}
@@ -89,6 +86,7 @@ export const Item: React.FC = ({ children }) => {
 }
 
 const useStyles = makeStyles({
+  card: { display: 'flex', width: '100%', maxWidth: 260, flexDirection: 'column', alignItems: 'center' },
   selected: {
     backgroundColor: colors.primaryHighlight,
     borderRadius: radius,

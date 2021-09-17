@@ -87,10 +87,6 @@ export default createModel<RootModel>()({
         updating: localStorage.getItem('licensing.updating') === last ? last : undefined,
       })
     },
-    /* 
-    e147a026-81d7-11eb-afc8-02f048730623 
-    e147a026-81d7-11eb-afc8-02f048730623
-    */
     async fetch() {
       const graphQLLicense = `
         id
@@ -315,7 +311,8 @@ export function selectLicense(state: ApplicationState, productId?: string) {
   let warnDate = new Date()
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
-  if (license.expiration && warnDate > license.expiration) noticeType = 'EXPIRATION_WARNING' // && license.plan.name === 'TRIAL'
+  if (license.expiration && warnDate > license.expiration && license.plan.name === 'TRIAL')
+    noticeType = 'EXPIRATION_WARNING'
   if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value) noticeType = 'LIMIT_EXCEEDED'
   if (!license.valid) noticeType = 'EXPIRED'
 

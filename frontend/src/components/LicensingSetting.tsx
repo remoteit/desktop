@@ -45,7 +45,7 @@ export const LicensingSetting: React.FC = () => {
                 secondary={
                   !license.id
                     ? 'Not subscribed'
-                    : license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
+                    : license.expiration && `Renews ${license.expiration.toLocaleString(undefined, dateOptions)}`
                 }
               />
               <ListItemSecondaryAction>
@@ -62,13 +62,7 @@ export const LicensingSetting: React.FC = () => {
               <ListItem>
                 <ListItemIcon></ListItemIcon>
                 <Quote margin={0}>
-                  {license.subscription?.status && (
-                    <Typography variant="caption" gutterBottom>
-                      Status: {license.subscription?.status} <br />
-                      <br />
-                    </Typography>
-                  )}
-                  <Box width={400}>
+                  <Box width={400} marginBottom>
                     {license.limits.map(limit => (
                       <LimitSetting key={limit.name} limit={limit} />
                     ))}

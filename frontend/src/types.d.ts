@@ -94,7 +94,7 @@ declare global {
     currency: string
     interval: IPlanInterval
   }
-  type IPlanName = 'PERSONAL' | 'PROFESSIONAL' | string
+  type IPlanName = 'PERSONAL' | 'PROFESSIONAL' | 'TRIAL' | string
   type IPlanInterval = 'MONTH' | 'YEAR'
 
   type IInvoice = {
