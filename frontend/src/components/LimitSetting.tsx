@@ -30,7 +30,8 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
     case 'iot-devices':
       template = 'value'
       message = limit.value === null ? 'Unlimited devices' : `${v(limit.actual)} of ${v(limit.value)} licensed devices`
-      if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device limit`
+      if (overLimit)
+        message = `You are ${v(overLimit)} device${overLimit > 1 ? 's' : ''} over your ${v(limit.value)} device limit`
       break
     case 'iot-nc-devices':
       template = 'value'
@@ -38,7 +39,10 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
         limit.value === null
           ? 'Unlimited non-commercial devices'
           : `${v(limit.actual)} of ${v(limit.value)} non-commercial devices`
-      if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device non-commercial limit`
+      if (overLimit)
+        message = `You are ${v(overLimit)} device${overLimit > 1 ? 's' : ''} over your ${v(
+          limit.value
+        )} device non-commercial limit`
       break
   }
 
