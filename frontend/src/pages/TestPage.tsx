@@ -62,13 +62,12 @@ export const TestPage: React.FC = () => {
           />
           <ListItemSetting
             label="Override default APIs"
-            subLabel={`Using ${getGraphQLApi()}`}
             onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
             toggle={!!preferences.switchApi}
           />
           <ListItem>
             <ListItemIcon />
-            <Quote>
+            <Quote margin={0}>
               <InlineTextFieldSetting
                 value={getGraphQLApi()}
                 label="Switch GraphQL APIs"
