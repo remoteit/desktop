@@ -5,7 +5,7 @@ import { colors, spacing } from '../styling'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const css = useStyles()
-  const v = (value?: number): string => (value || '').toLocaleString()
+  const v = (value?: number): string => (value || 0).toLocaleString()
   const overLimit = limit.value !== null && limit.actual > limit.value ? limit.actual - limit.value : 0
 
   let template: 'value' | 'text' | undefined
