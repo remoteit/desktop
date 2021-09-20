@@ -33,6 +33,106 @@ declare global {
     disabled?: boolean
     show?: boolean
   }
+  type ILimit = {
+    name: string
+    value: any
+    actual: any
+    license: { id: string } | null
+  }
+
+  type ILicense = {
+    id: string
+    created: Date
+    updated: Date
+    expiration: Date | null
+    valid: boolean
+    quantity: number | null
+    plan: IPlan
+    subscription?: ISubscription
+  }
+
+  type ISubscription = {
+    total: number | null
+    status: 'ACTIVE' | 'CANCELED' | 'INCOMPLETE' | 'INCOMPLETE_EXPIRED' | 'PAST_DUE' | 'TRIALING' | 'UNPAID' | null
+    price: IPrice | null
+    card: ICard | null
+  }
+
+  type ICard = {
+    brand: string
+    country: string
+    email: string
+    expiration: Date
+    last: string
+    month: number
+    name: string
+    phone: string
+    postal: string
+    year: number
+  }
+
+  type IPlan = {
+    id?: string
+    name: IPlanName
+    description: string
+    duration: string | null
+    commercial?: boolean
+    billing?: boolean
+    product: {
+      id: string
+      name: string
+      description: string
+    }
+    prices?: IPrice[]
+  }
+
+  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
+
+  type IPrice = {
+    id: string
+    amount: number
+    currency: string
+    interval: IPlanInterval
+  }
+  type IPlanName = 'PERSONAL' | 'PROFESSIONAL' | 'TRIAL' | string
+  type IPlanInterval = 'MONTH' | 'YEAR'
+
+  type IInvoice = {
+    price: {
+      id: string
+      amount: number
+      currency: string
+      interval: IPlanInterval
+    }
+    id: string
+    plan: IPlan
+    quantity: number
+    total: number
+    currency: string
+    paid: boolean
+    url?: string
+    created: Date
+  }
+
+  type IAnnouncement = {
+    id: string
+    type: INoticeType
+    title: string
+    link: string
+    image: string
+    body: string
+    modified?: Date
+    read?: Date
+  }
+
+  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
+
+  type IPurchase = {
+    checkout?: boolean
+    planId?: string
+    priceId?: string
+    quantity: number
+  }
 
   type LogType = 'general' | 'connectd' | 'alert'
 

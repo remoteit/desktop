@@ -3,7 +3,7 @@ import { makeStyles, List, ListItem, ListItemIcon, ListItemText } from '@materia
 import { Icon } from './Icon'
 
 type Props = {
-  value: string
+  value: string | number
   icon: string
   filterList: { value: string; name: string }[]
   onSelect: (value: any) => void
@@ -11,15 +11,16 @@ type Props = {
 
 export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSelect }) => {
   const css = useStyles()
+  const isActive = v => v === value.toString().replace('-', '')
 
   return (
     <List dense className={css.list}>
       {filterList.map((f, index) => (
         <ListItem button dense key={index} onClick={() => onSelect(f.value)}>
-          <ListItemIcon>{f.value === value.replace('-', '') && <Icon name={icon} color="primary" />}</ListItemIcon>
+          <ListItemIcon>{isActive(f.value) && <Icon name={icon} color="primary" />}</ListItemIcon>
           <ListItemText
             primary={f.name}
-            primaryTypographyProps={{ color: f.value === value.replace('-', '') ? 'primary' : undefined }}
+            primaryTypographyProps={{ color: isActive(f.value) ? 'primary' : undefined }}
           />
         </ListItem>
       ))}

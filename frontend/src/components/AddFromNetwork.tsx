@@ -24,6 +24,6 @@ export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
       </IconButton>
     </Tooltip>
   ) : (
-    <Link onClick={() => history.push(`/devices/${deviceID}/add/scan`)}>Scan network</Link>
+    <Link onClick={() => history.push(`/devices/${deviceID}/add/scan`)}>Scan&nbsp;network</Link>
   )
 }

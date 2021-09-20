@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { connectionState, sanitizeName } from '../../helpers/connectionHelper'
+import { licenseChipLookup } from '../../components/LicenseChip'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
-import { licenseChip } from '../../models/licensing'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import { emit } from '../../services/Controller'
@@ -32,7 +32,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
   const { connections } = useDispatch<Dispatch>()
-  const chip = service && licenseChip[service.license]
+  const chip = service && licenseChipLookup[service.license]
   const state = connectionState(service, connection)
   const visible = !connection?.enabled
   const connecting = state === 'connecting'

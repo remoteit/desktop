@@ -19,7 +19,6 @@ export const CALLBACK_URL =
     : 'https://auth.api.remote.it/v1/callback/'
 export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://ws.remote.it/v1'
 export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL || 'wss://ws.remote.it/beta'
-
 export const PORT = process.env.REACT_APP_PORT || 29999
 export const HEARTBEAT_INTERVAL = 1000 * 15 // 15 SEC
 
@@ -40,8 +39,10 @@ export const REGEX_IP_SAFE = /[^0-9.]+/g
 export const REGEX_PORT_SAFE = /[^0-9]+/g
 export const REGEX_NUMERIC_VALUE = /=(\d+)/
 export const REGEX_LAST_NUMBER = /-*\d*$/
-export const REGEX_VALID_IP = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
-export const REGEX_VALID_HOSTNAME = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
+export const REGEX_VALID_IP =
+  /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/
+export const REGEX_VALID_HOSTNAME =
+  /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
 export const REGEX_VALID_URL = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/
 export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]/g

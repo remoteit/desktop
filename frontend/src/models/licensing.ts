@@ -1,55 +1,46 @@
 import { Duration } from 'luxon'
+import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
+import {
+  graphQLSubscribe,
+  graphQLUnsubscribe,
+  graphQLUpdateSubscription,
+  graphQLCreditCard,
+} from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { colors, Color } from '../styling'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
-import { lighten } from '@material-ui/core'
 import humanize from 'humanize-duration'
 
-type ILicenseLookup = { productId: string; platform?: number; upgradeUrl: string }
+type ILicenseLookup = { productId: string; platform?: number; managePath: string }
+
+export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
+export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
+export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
-    productId: 'b999e047-5532-11eb-8872-063ce187bcd7',
+    productId: REMOTEIT_PRODUCT_ID,
     platform: undefined,
-    upgradeUrl: 'https://link.remote.it/portal/account',
+    managePath: '/settings/plans',
   },
   {
-    productId: '55d9e884-05fd-11eb-bda8-021f403e8c27',
+    productId: AWS_PRODUCT_ID,
     platform: 1185,
-    upgradeUrl: 'https://link.remote.it/aws-marketplace/saas',
+    managePath: '/settings/plans',
   },
 ]
-
-export const licenseChip: ILookup<ILicenseChip> = {
-  UNKNOWN: { name: 'Unknown', color: colors.grayDarker, colorName: 'grayDarker' },
-  EVALUATION: {
-    name: 'Evaluation',
-    color: colors.warning,
-    background: lighten(colors.warning, 0.94),
-    colorName: 'warning',
-    show: true,
-  },
-  LICENSED: { name: 'Licensed', color: colors.grayDarker, colorName: 'grayDarker' },
-  UNLICENSED: {
-    name: 'Unlicensed',
-    color: colors.warning,
-    background: lighten(colors.warning, 0.94),
-    colorName: 'warning',
-    disabled: true,
-    show: true,
-  },
-  NON_COMMERCIAL: { name: 'Non-commercial', color: colors.grayDarker, colorName: 'grayDarker' },
-  LEGACY: { name: 'Legacy', color: colors.grayDarker, colorName: 'grayDarker' },
-}
 
 const defaultLicense = LicenseLookup[0]
 
 type ILicensing = {
+  initialized: boolean
+  plans: IPlan[]
   licenses: ILicense[]
   limits: ILimit[]
+  updating?: string
+  purchasing?: string
   informed: boolean
   tests: {
     license: boolean
@@ -61,211 +52,106 @@ type ILicensing = {
 }
 
 const defaultState: ILicensing = {
+  initialized: false,
+  plans: [],
   licenses: [],
   limits: [],
+  updating: undefined,
+  purchasing: undefined,
   informed: false,
-  tests: {
-    license: false,
-    limit: false,
-    unlicensed: false,
-    licenses: [
-      {
-        id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
-        created: new Date('2020-10-17T01:03:47.976Z'),
-        updated: new Date('2020-10-17T01:03:47.976Z'),
-        expiration: new Date('2020-11-05T01:03:48.000Z'),
-        valid: true,
-        plan: {
-          id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
-          name: 'TRIAL',
-          description: 'trial',
-          duration: 'P30D',
-          product: {
-            id: '55d9e884-05fd-11eb-bda8-021f403e8c27',
-            name: 'AWS',
-            description: 'AWS',
-            provider: 'AWS',
-          },
-        },
-      },
-      {
-        id: '4a5ed500-ef07-4a98-be11-PERSONAL',
-        created: new Date('2021-03-12T05:44:32.421Z'),
-        updated: new Date('2021-03-12T05:44:32.421Z'),
-        expiration: new Date('2021-02-12T05:44:32.421Z'),
-        valid: false,
-        plan: {
-          id: 'e147a026-81d7-11eb-afc8-02f048730623',
-          name: 'PERSONAL',
-          description: 'personal',
-          duration: null,
-          product: {
-            id: 'b999e047-5532-11eb-8872-063ce187bcd7',
-            name: 'remote.it',
-            description: 'remote.it',
-            provider: null,
-          },
-        },
-      },
-      {
-        id: '4a5ed500-ef07-4a98-be11-PROFESSIONAL',
-        created: new Date('2021-03-12T05:44:32.421Z'),
-        updated: new Date('2021-03-12T05:44:32.421Z'),
-        expiration: new Date('2021-02-12T05:44:32.421Z'),
-        valid: false,
-        plan: {
-          id: 'e147a026-81d7-11eb-afc8-02f048730623',
-          name: 'PROFESSIONAL',
-          description: 'professional',
-          duration: null,
-          product: {
-            id: 'b999e047-5532-11eb-8872-063ce187bcd7',
-            name: 'remote.it',
-            description: 'remote.it',
-            provider: null,
-          },
-        },
-      },
-      {
-        id: '4a5ed500-ef07-4a98-be11-BUSINESS',
-        created: new Date('2021-03-12T05:44:32.421Z'),
-        updated: new Date('2021-03-12T05:44:32.421Z'),
-        expiration: null,
-        valid: true,
-        plan: {
-          id: 'e147a026-81d7-11eb-afc8-02f048730623',
-          name: 'BUSINESS',
-          description: 'business',
-          duration: null,
-          product: {
-            id: 'b999e047-5532-11eb-8872-063ce187bcd7',
-            name: 'remote.it',
-            description: 'remote.it',
-            provider: null,
-          },
-        },
-      },
-      {
-        id: '4a5ed500-ef07-4a98-be11-35ab8fa69a5f',
-        created: new Date('2021-03-12T05:44:32.421Z'),
-        updated: new Date('2021-04-28T17:08:25.000Z'),
-        expiration: null,
-        valid: true,
-        plan: {
-          id: 'b44f92a6-a7b9-11eb-b094-02a962787033',
-          name: 'ENTERPRISE',
-          description: 'enterprise',
-          duration: null,
-          product: {
-            id: 'b999e047-5532-11eb-8872-063ce187bcd7',
-            name: 'remote.it',
-            description: 'remote.it',
-            provider: null,
-          },
-        },
-      },
-    ],
-    limits: [
-      {
-        name: 'log-limit',
-        value: 'P1Y',
-        actual: null,
-        license: null,
-      },
-      {
-        name: 'aws-evaluation',
-        value: 'P7D',
-        actual: null,
-        license: {
-          id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
-        },
-      },
-      {
-        name: 'aws-services',
-        value: null,
-        actual: 0,
-        license: {
-          id: 'e46e5c55-7d12-46c5-aee3-493e29e604db',
-        },
-      },
-      {
-        name: 'iot-devices',
-        value: 0,
-        actual: 0,
-        license: {
-          id: '4a5ed500-ef07-4a98-be11-PERSONAL',
-        },
-      },
-      {
-        name: 'iot-nc-devices',
-        value: 5,
-        actual: 2,
-        license: {
-          id: '4a5ed500-ef07-4a98-be11-PERSONAL',
-        },
-      },
-      {
-        name: 'iot-nc-devices',
-        value: 5,
-        actual: 5,
-        license: {
-          id: '4a5ed500-ef07-4a98-be11-PROFESSIONAL',
-        },
-      },
-      {
-        name: 'iot-devices',
-        value: 25,
-        actual: 30,
-        license: {
-          id: '4a5ed500-ef07-4a98-be11-PROFESSIONAL',
-        },
-      },
-      {
-        name: 'iot-nc-devices',
-        value: 5,
-        actual: 1,
-        license: {
-          id: '4a5ed500-ef07-4a98-be11-BUSINESS',
-        },
-      },
-      {
-        name: 'iot-devices',
-        value: 10000,
-        actual: 7,
-        license: {
-          id: '4a5ed500-ef07-4a98-be11-BUSINESS',
-        },
-      },
-    ],
-  },
+  tests: testData,
 }
 
 export default createModel<RootModel>()({
   state: defaultState,
   effects: (dispatch: any) => ({
+    async init() {
+      await dispatch.licensing.fetch()
+      dispatch.licensing.set({ initialized: true })
+    },
+
+    async restore(_, globalState) {
+      const license = getRemoteitLicense(globalState)
+      const last = license?.subscription?.card?.last
+      const planId = license?.plan.id
+
+      console.log('INIT LICENSING', {
+        last,
+        lastStored: localStorage.getItem('licencing.updating'),
+        planId,
+        planIdStored: localStorage.getItem('licencing.purchasing'),
+      })
+
+      dispatch.licensing.set({
+        purchasing: localStorage.getItem('licencing.purchasing') !== planId ? planId : undefined,
+        updating: localStorage.getItem('licensing.updating') === last ? last : undefined,
+      })
+    },
     async fetch() {
+      const graphQLLicense = `
+        id
+        updated
+        created
+        expiration
+        valid
+        quantity
+        plan {
+          id
+          name
+          description
+          duration
+          commercial
+          billing
+          product {
+            id
+            name
+            description
+          }
+        }
+        subscription {
+          total
+          status
+          price {
+            id
+            amount
+            currency
+            interval
+          }
+          card {
+            brand
+            month
+            year
+            last
+            name
+            email
+            phone
+            postal
+            country
+            expiration
+          }
+        }
+  `
+
       try {
         const result: any = await graphQLRequest(
           ` {
+              plans {
+                id
+                name
+                description
+                product {
+                  id
+                }
+                prices {
+                  id
+                  amount
+                  currency
+                  interval
+                }
+              }          
               login {
                 licenses {
-                  id
-                  created
-                  updated
-                  expiration
-                  valid
-                  plan {
-                    id
-                    name
-                    description
-                    duration
-                    product {
-                      id
-                      name
-                      description
-                      provider
-                    }
-                  }
+                  ${graphQLLicense}
                 }
                 limits {
                   name
@@ -279,53 +165,60 @@ export default createModel<RootModel>()({
             }`
         )
         graphQLGetErrors(result)
-        dispatch.licensing.parse(result?.data?.data?.login)
-        dispatch.licensing.fillMissing()
+        dispatch.licensing.parse(result?.data?.data)
       } catch (error) {
         await graphQLCatchError(error)
       }
     },
+
     async parse(data: any) {
       if (!data) return
       console.log('LICENSING', data)
       dispatch.licensing.set({
-        licenses: data.licenses.map((l: any) => ({
-          ...l,
-          created: new Date(l.created),
-          updated: new Date(l.updated),
-          expiration: l.expiration && new Date(l.expiration),
-        })),
-        limits: data.limits,
+        plans: data.plans,
+        licenses: data?.login.licenses.map(l => parseLicense(l)),
+        limits: data?.login.limits,
+        purchasing: undefined,
+        updating: undefined,
       })
     },
-    async fillMissing(_, globalState) {
-      const licenses = globalState.licensing.licenses
-      let missing: ILicense[] = []
-      LicenseLookup.forEach(lookup => {
-        if (!licenses.some(l => l.plan.product.id === lookup.productId)) {
-          missing.push({
-            id: '',
-            created: new Date(),
-            updated: new Date(),
-            expiration: null,
-            valid: true,
-            plan: {
-              id: '',
-              name: '',
-              description: '',
-              duration: null,
-              product: {
-                id: lookup.productId,
-                name: 'AWS',
-                description: 'AWS',
-                provider: 'AWS',
-              },
-            },
-          })
-        }
-      })
-      dispatch.licensing.set({ licenses: [...licenses, ...missing] })
+
+    async subscribe(form: IPurchase) {
+      dispatch.licensing.set({ purchasing: form.planId })
+      localStorage.setItem('licencing.purchasing', form.planId || '')
+      const response = await graphQLSubscribe(form)
+      const checkout = response?.data?.data?.createSubscription
+      console.log('PURCHASE', checkout)
+      if (checkout?.url) window.location.href = checkout.url
     },
+
+    async updateSubscription({ priceId, quantity }: IPurchase) {
+      if (!priceId) return dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
+      dispatch.licensing.set({ purchasing: 'true' })
+      await graphQLUpdateSubscription({ priceId, quantity })
+      console.log('UPDATE SUBSCRIPTION', { priceId, quantity })
+    },
+
+    async unsubscribe() {
+      dispatch.licensing.set({ purchasing: 'true' })
+      await graphQLUnsubscribe()
+      console.log('UNSUBSCRIBE')
+    },
+
+    async updateCreditCard(last: string | undefined, globalState) {
+      dispatch.licensing.set({ updating: last || true })
+      localStorage.setItem('licensing.updating', last || '')
+      const response = await graphQLCreditCard()
+      const result = response?.data?.data?.updateCreditCard
+      console.log('UPDATE CREDIT CARD', result)
+      if (result?.url) window.location.href = result.url
+    },
+
+    async updated() {
+      await dispatch.licensing.fetch()
+      dispatch.licensing.set({ purchasing: undefined, updating: undefined })
+    },
+
     async testServiceLicensing(_, globalState) {
       const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']
       const devices = getDevices(globalState)
@@ -338,6 +231,7 @@ export default createModel<RootModel>()({
       }))
       dispatch.accounts.setDevices({ devices: updated })
     },
+
     async testClearLicensing() {
       dispatch.licensing.set({
         licenses: [],
@@ -357,6 +251,27 @@ export default createModel<RootModel>()({
   },
 })
 
+function parseLicense(data) {
+  if (!data) return null
+  return {
+    ...data,
+    created: new Date(data.created),
+    updated: new Date(data.updated),
+    expiration: data.expiration && new Date(data.expiration),
+    subscription: data.subscription && {
+      ...data.subscription,
+      card: data.subscription.card && {
+        ...data.subscription.card,
+        expiration: data.subscription.card.expiration && new Date(data.subscription.card.expiration),
+      },
+    },
+  }
+}
+
+export function getRemoteitLicense(state: ApplicationState) {
+  return getLicenses(state).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
+}
+
 export function getLicenses(state: ApplicationState) {
   let licenses: ILicense[]
   if (state.licensing.tests.license) licenses = state.licensing.tests.licenses
@@ -369,10 +284,10 @@ export function getLimits(state: ApplicationState) {
   else return state.licensing.limits
 }
 
-export function lookupLicenseUpgradeUrl(productId?: string) {
+export function lookupLicensemanagePath(productId?: string) {
   let lookup = LicenseLookup.find(l => l.productId === productId)
   if (!lookup) lookup = defaultLicense
-  return lookup.upgradeUrl
+  return lookup.managePath
 }
 
 export function lookupLicenseProductId(device?: IDevice) {
@@ -388,7 +303,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
-  const upgradeUrl = lookupLicenseUpgradeUrl(productId)
+  const managePath = lookupLicensemanagePath(productId)
 
   if (!license) return {}
 
@@ -396,7 +311,8 @@ export function selectLicense(state: ApplicationState, productId?: string) {
   let warnDate = new Date()
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
-  if (license.expiration && warnDate > license.expiration) noticeType = 'EXPIRATION_WARNING' // && license.plan.name === 'TRIAL'
+  if (license.expiration && warnDate > license.expiration && license.plan.name === 'TRIAL')
+    noticeType = 'EXPIRATION_WARNING'
   if (serviceLimit?.value !== null && serviceLimit?.actual > serviceLimit?.value) noticeType = 'LIMIT_EXCEEDED'
   if (!license.valid) noticeType = 'EXPIRED'
 
@@ -407,7 +323,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
     limits,
     serviceLimit,
     evaluationLimit,
-    upgradeUrl,
+    managePath,
   }
 }
 
@@ -415,7 +331,7 @@ export function selectLicenses(state: ApplicationState) {
   return {
     licenses: getLicenses(state).map(license => ({
       ...license,
-      upgradeUrl: lookupLicenseUpgradeUrl(license.plan.product.id),
+      managePath: lookupLicensemanagePath(license.plan.product.id),
       limits: getLimits(state).filter(limit => limit.license?.id === license.id),
     })),
     limits: getLimits(state).filter(limit => !limit.license),

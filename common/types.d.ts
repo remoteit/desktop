@@ -332,52 +332,10 @@ declare global {
     protocol: 'TCP' | 'UDP'
     description: string
   }
-  type ILimit = {
-    name: string
-    value: any
-    actual: any
-    license: { id: string } | null
-  }
-
-  type ILicense = {
-    id: string
-    created: Date
-    updated: Date
-    expiration: Date | null
-    valid: boolean
-    upgradeUrl?: string
-    plan: {
-      id: string
-      name: string
-      description: string
-      duration: string | null
-      product: {
-        id: string
-        name: string
-        description: string
-        provider: string | null
-      }
-    }
-  }
-
-  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
-
-  type IAnnouncement = {
-    id: string
-    type: INoticeType
-    title: string
-    link: string
-    image: string
-    body: string
-    modified?: Date
-    read?: Date
-  }
-
-  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
 
   interface ICloudEvent {
     sessionId: string
-    type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE'
+    type: 'DEVICE_STATE' | 'DEVICE_CONNECT' | 'DEVICE_SHARE' | 'LICENSE_UPDATED'
     state: IDevice['state'] | 'connected' | 'disconnected'
     timestamp: Date
     isP2P: boolean
@@ -398,6 +356,15 @@ declare global {
       service?: IService
       connection?: IConnection
     }[]
+    // For license events
+    plan?: {
+      name: string
+      product: {
+        name: string
+      }
+    }
+    quantity?: number
+    expiration?: Date
   }
 
   interface IRoute {
@@ -541,8 +508,9 @@ declare global {
     allowPrerelease?: boolean
     useCertificate?: boolean
     switchApi?: boolean
-    apiURL?: ''
-    apiGraphqlURL?: ''
+    apiURL?: string
+    apiGraphqlURL?: string
+    webSocketURL?: string
     testUI?: 'OFF' | 'ON' | 'HIGHLIGHT'
   }
 

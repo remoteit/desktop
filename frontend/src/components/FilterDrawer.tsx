@@ -100,7 +100,7 @@ export const FilterDrawer: React.FC = () => {
             children: (
               <FilterSelector
                 icon="check"
-                value={state.platform?.toString() || 'all'}
+                value={state.platform || 'all'}
                 onSelect={value => update({ platform: parseInt(value) || undefined })}
                 filterList={platformFilter}
               />

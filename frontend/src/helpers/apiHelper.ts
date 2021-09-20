@@ -7,23 +7,22 @@ export function getGraphQLApi(): string {
 
   const { apiGraphqlURL, switchApi } = store.getState().backend.preferences
   const { overrides } = store.getState().backend.environment
-  const apiUrl = version.includes('alpha')
+  const defaultURL = version.includes('alpha')
     ? overrides?.betaApiURL || GRAPHQL_BETA_API
     : overrides?.apiURL || GRAPHQL_API
-  return apiGraphqlURL && switchApi ? apiGraphqlURL : apiUrl
+  return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
 }
 
 export function getRestApi(): string {
   if (!store) return API_URL
-  const { preferences } = store.getState().backend
-  return preferences.apiURL ? preferences.apiURL : API_URL
+  const { apiURL, switchApi } = store.getState().backend.preferences
+  return apiURL && switchApi ? apiURL : API_URL
 }
 
 export function getWebSocketURL(): string {
-  if (!store) return version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
+  if (!store) return WEBSOCKET_URL
 
-  const { webSocketURL } = store.getState().backend.preferences
-
-  const webSocket = webSocketURL ? webSocketURL : version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
-  return webSocket
+  const { webSocketURL, switchApi } = store.getState().backend.preferences
+  const defaultURL = version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
+  return webSocketURL && switchApi ? webSocketURL : defaultURL
 }

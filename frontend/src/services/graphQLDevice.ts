@@ -149,7 +149,12 @@ export async function graphQLFetchDevice(id: string) {
   )
 }
 
-export function graphQLAdaptor(gqlDevices: any[], loginId: string, accountId: string, hidden?: boolean): IDevice[] {
+export function graphQLAdaptor(
+  gqlDevices: any[],
+  loginId: string,
+  accountId: string,
+  hidden: boolean = false
+): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const thisDeviceId = store.getState().backend.device.uid
   let metaData = { userAttributes: new Array<string>() }

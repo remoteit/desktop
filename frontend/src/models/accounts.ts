@@ -141,8 +141,16 @@ export default createModel<RootModel>()({
       if (!devices) return
       accountId = accountId || devices[0]?.accountId
       if (!accountId) return console.error('APPEND DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const existingDevices = getDevices(state, accountId)
-      devices = devices.filter(d => !existingDevices.find(e => e.id === d.id))
+      const existingDevices = getDevices(state, accountId).filter(
+        ed =>
+          !devices.find(d => {
+            if (d.id === ed.id) {
+              d.hidden = d.hidden && ed.hidden
+              return true
+            }
+            return false
+          })
+      )
       dispatch.accounts.setDevices({
         devices: [...existingDevices, ...devices],
         accountId,

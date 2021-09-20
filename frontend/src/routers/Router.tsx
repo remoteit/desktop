@@ -20,6 +20,8 @@ import { AccountMembershipPage } from '../pages/AccountMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
+import { BillingPage } from '../pages/BillingPage'
+import { PlansPage } from '../pages/PlansPage'
 import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { Panel } from '../components/Panel'
@@ -147,7 +149,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
       <Route path="/shareFeedback">
         <Panel>
-          <ShareFeedback dialogOpen={true} />
+          <ShareFeedback />
         </Panel>
       </Route>
 
@@ -172,6 +174,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
                 <TagsPage />
               </Route>
 
+              <Route path="/settings/plans">
+                <PlansPage />
+              </Route>
+
               <Route path="/settings/reports">
                 <ReportsPage />
               </Route>
@@ -181,6 +187,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
               <Route path="/settings/licensing">
                 <LicensingPage />
+              </Route>
+
+              <Route path="/settings/billing">
+                <BillingPage />
               </Route>
 
               <Route path="/settings/test">

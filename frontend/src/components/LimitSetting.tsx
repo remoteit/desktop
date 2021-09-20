@@ -6,12 +6,12 @@ import { colors, spacing } from '../styling'
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const css = useStyles()
   const v = (value?: number): string => (value || 0).toLocaleString()
-  const overLimit = limit.actual > limit.value ? limit.actual - limit.value : 0
+  const overLimit = limit.value !== null && limit.actual > limit.value ? limit.actual - limit.value : 0
 
   let template: 'value' | 'text' | undefined
   let message: React.ReactElement | string | undefined
 
-  if (limit.value === 0) return null
+  if (limit.value === 0 && limit.actual === 0) return null
 
   switch (limit.name) {
     case 'aws-services':
@@ -29,16 +29,20 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       break
     case 'iot-devices':
       template = 'value'
-      message = limit.value !== null ? `${v(limit.actual)} of ${v(limit.value)} licensed devices` : 'Unlimited devices'
-      if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device limit`
+      message = limit.value === null ? 'Unlimited devices' : `${v(limit.actual)} of ${v(limit.value)} licensed devices`
+      if (overLimit)
+        message = `You are ${v(overLimit)} device${overLimit > 1 ? 's' : ''} over your ${v(limit.value)} device limit`
       break
     case 'iot-nc-devices':
       template = 'value'
       message =
-        limit.value !== null
-          ? `${v(limit.actual)} of ${v(limit.value)} non-commercial devices`
-          : 'Unlimited non-commercial devices'
-      if (overLimit) message = `You are ${v(overLimit)} devices over your ${v(limit.value)} device non-commercial limit`
+        limit.value === null
+          ? 'Unlimited non-commercial devices'
+          : `${v(limit.actual)} of ${v(limit.value)} non-commercial devices`
+      if (overLimit)
+        message = `You are ${v(overLimit)} device${overLimit > 1 ? 's' : ''} over your ${v(
+          limit.value
+        )} device non-commercial limit`
       break
   }
 

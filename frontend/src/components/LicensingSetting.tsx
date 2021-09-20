@@ -6,6 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
+  Typography,
   Button,
   Box,
   Divider,
@@ -18,6 +19,7 @@ import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
+import { Link } from 'react-router-dom'
 import { spacing } from '../styling'
 import { Quote } from './Quote'
 
@@ -29,6 +31,7 @@ export const LicensingSetting: React.FC = () => {
 
   return (
     <>
+      <Typography variant="subtitle1">Licensing</Typography>
       {licenses.map((license, index) => (
         <React.Fragment key={index}>
           <List>
@@ -42,20 +45,16 @@ export const LicensingSetting: React.FC = () => {
                 secondary={
                   !license.id
                     ? 'Not subscribed'
-                    : license.expiration && `Valid until ${license.expiration.toLocaleString(undefined, dateOptions)}`
+                    : license.expiration && `Renews ${license.expiration.toLocaleString(undefined, dateOptions)}`
                 }
               />
               <ListItemSecondaryAction>
-                {!license.id ? (
-                  <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
-                    Free Trial
-                  </Button>
-                ) : (
-                  license.upgradeUrl && (
-                    <Button color="primary" href={license.upgradeUrl} size="small" target="_blank">
-                      Manage Subscription
+                {license.managePath && (
+                  <Link to={license.managePath}>
+                    <Button color="primary" size="small">
+                      {license.id ? 'Manage' : 'Free Trial'}
                     </Button>
-                  )
+                  </Link>
                 )}
               </ListItemSecondaryAction>
             </ListItem>
@@ -63,7 +62,7 @@ export const LicensingSetting: React.FC = () => {
               <ListItem>
                 <ListItemIcon></ListItemIcon>
                 <Quote margin={0}>
-                  <Box width={400}>
+                  <Box width={400} marginBottom>
                     {license.limits.map(limit => (
                       <LimitSetting key={limit.name} limit={limit} />
                     ))}
