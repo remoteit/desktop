@@ -97,9 +97,7 @@ export const Plans: React.FC = () => {
                 button={selected ? 'Update' : 'Upgrade'}
                 selected={selected}
                 loading={purchasing}
-                onSelect={() =>
-                  setForm({ ...form, checkout: true, planId: plan.id, priceId: plan.prices && plan.prices[0].id })
-                }
+                onSelect={() => setForm({ ...form, checkout: true, planId: plan.id })}
                 feature="Devices* are not limited"
                 features={[
                   '30 days of activity logs',
@@ -118,7 +116,7 @@ export const Plans: React.FC = () => {
         caption={
           enterprise ? (
             <>
-              For changes, talk to
+              For changes, see
               <br /> your administrator or
             </>
           ) : (
