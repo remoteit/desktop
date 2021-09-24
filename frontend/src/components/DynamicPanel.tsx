@@ -7,15 +7,15 @@ import { Panel } from './Panel'
 type Props = {
   primary: React.ReactElement
   secondary?: React.ReactElement
-  single?: boolean
+  singlePanel?: boolean
   root?: string | string[]
 }
 
-export const DynamicPanel: React.FC<Props> = ({ single, root, ...props }) => {
+export const DynamicPanel: React.FC<Props> = ({ singlePanel, root, ...props }) => {
   const location = useLocation()
   const match = matchPath(location.pathname, { path: root, exact: true })
 
-  if (single) {
+  if (singlePanel) {
     return (
       <Panel>
         <Breadcrumbs />

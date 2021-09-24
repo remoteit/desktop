@@ -3,31 +3,21 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { makeStyles, LinearProgress, List } from '@material-ui/core'
 import { DeviceSetupItem } from './DeviceSetupItem'
-import { SearchedNotice } from './SearchedNotice'
-import { RegisterButton } from '../buttons/RegisterButton'
-import { RefreshButton } from '../buttons/RefreshButton'
-import { ColumnsButton } from '../buttons/ColumnsButton'
-import { AccountSelect } from './AccountSelect'
 import { ColumnsDrawer } from './ColumnsDrawer'
 import { FilterDrawer } from './FilterDrawer'
-import { FilterButton } from '../buttons/FilterButton'
-import { IconButton } from '../buttons/IconButton'
 import { Container } from './Container'
 import { Notice } from './Notice'
-import { TestUI } from './TestUI'
-import { Title } from './Title'
 import styles from '../styling'
 import { getActiveAccountId } from '../models/accounts'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
-  singlePanel?: boolean
   fetching?: boolean
   restore?: boolean
   myDevice?: IDevice
 }
 
-export const DevicesHeader: React.FC<Props> = ({ singlePanel, fetching, restore, myDevice, children }) => {
+export const DevicesHeader: React.FC<Props> = ({ fetching, restore, myDevice, children }) => {
   const { initialized, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
     initialized: state.devices.initialized,
     registeredId: state.backend.device.uid,
@@ -43,25 +33,6 @@ export const DevicesHeader: React.FC<Props> = ({ singlePanel, fetching, restore,
     <Container
       header={
         <>
-          <div className={css.header}>
-            {/* <SearchedNotice /> */}
-            <Title>
-              <AccountSelect />
-            </Title>
-            {singlePanel && (
-              <>
-                <RegisterButton />
-                <RefreshButton />
-              </>
-            )}
-            <FilterButton />
-            <TestUI>
-              <ColumnsButton />
-            </TestUI>
-            <TestUI>
-              <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
-            </TestUI>
-          </div>
           {initialized &&
             (registeredId ? (
               loggedInUser && !myDevice && <Notice gutterBottom>This device is not registered to you.</Notice>

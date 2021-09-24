@@ -32,6 +32,7 @@ export const IconButton: React.FC<Props> = ({
   onMouseEnter,
   onMouseLeave,
   onClick,
+  children,
   ...props
 }) => {
   const history = useHistory()
@@ -49,6 +50,7 @@ export const IconButton: React.FC<Props> = ({
       style={{ opacity: disabled ? 0.5 : undefined, marginBottom: shiftDown ? -spacing.sm : undefined }}
     >
       <Icon {...props} name={icon} color={color} type={type} size={size} />
+      {children}
     </MuiIconButton>
   )
 

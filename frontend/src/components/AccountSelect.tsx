@@ -23,6 +23,7 @@ export const AccountSelect: React.FC = () => {
   return (
     <TextField
       select
+      fullWidth
       className={css.field}
       label="Device lists"
       value={activeId}
@@ -52,7 +53,7 @@ export const AccountSelect: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  field: { width: 300, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
+  field: { '& .MuiListItemSecondaryAction-root': { display: 'none' } },
   primary: { color: colors.primary },
   divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
   action: { right: spacing.xs, marginLeft: spacing.sm },

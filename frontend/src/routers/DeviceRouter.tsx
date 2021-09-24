@@ -94,7 +94,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </Route>
         </Switch>
       }
-      single={singlePanel}
+      singlePanel={singlePanel}
       root="/devices/:deviceID"
     />
   )

@@ -1,17 +1,25 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles, IconButton, Collapse } from '@material-ui/core'
+import { makeStyles, Collapse } from '@material-ui/core'
 import { ApplicationState } from '../../store'
-import { usePanelWidth } from '../../hooks/usePanelWidth'
 import { useNavigation } from '../../hooks/useNavigation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
-import { Icon } from '../Icon'
+import { SearchedNotice } from '../SearchedNotice'
+import { RegisterButton } from '../../buttons/RegisterButton'
+import { RefreshButton } from '../../buttons/RefreshButton'
+import { ColumnsButton } from '../../buttons/ColumnsButton'
+import { AccountSelect } from '../AccountSelect'
+import { FilterButton } from '../../buttons/FilterButton'
+import { IconButton } from '../../buttons/IconButton'
+import { TestUI } from '../TestUI'
+import { Title } from '../Title'
+import { Route } from 'react-router-dom'
 import styles from '../../styling'
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { searched, navigationBack, navigationForward } = useSelector((state: ApplicationState) => ({
     searched: state.devices.searched,
     navigationBack: state.ui.navigationBack,
@@ -48,34 +56,55 @@ export const Header: React.FC = () => {
 
   console.log(`show:${showSearch.toString()} searched:${searched.toString()}`)
   return (
-    <>
-      <Collapse in={!showSearch && !searched} timeout={300}>
-        <div className={css.header}>
-          <IconButton disabled={disabledBack} onClick={handleBack}>
-            <Icon name="chevron-left" size="lg" color={disabledBack ? 'grayLight' : 'grayDark'} />
-          </IconButton>
-          <IconButton disabled={disabledForward} onClick={handleForward}>
-            <Icon name="chevron-right" size="lg" color={disabledForward ? 'grayLight' : 'grayDark'} />
-          </IconButton>
+    <div className={css.header}>
+      <IconButton
+        disabled={disabledBack}
+        onClick={handleBack}
+        icon="chevron-left"
+        size="lg"
+        color={disabledBack ? 'grayLight' : 'grayDark'}
+      />
+      <IconButton
+        disabled={disabledForward}
+        onClick={handleForward}
+        icon="chevron-right"
+        size="lg"
+        color={disabledForward ? 'grayLight' : 'grayDark'}
+      />
+      <Title className={css.search}>
+        {!showSearch && !searched && (
           <IconButton
+            icon="search"
+            size="lg"
             onClick={() => {
               setShowSearch(true)
-              setTimeout(() => inputRef.current?.focus(), 300)
+              setTimeout(() => inputRef.current?.focus(), 20)
             }}
           >
-            <Icon name="search" size="lg" />
             <Typography variant="body2" color="textSecondary">
               {device ? attributeName(device) : 'remote.it'}
             </Typography>
           </IconButton>
-        </div>
-      </Collapse>
-      <Collapse in={!!showSearch || searched} timeout={300}>
-        <div className={css.header}>
-          <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />
-        </div>
-      </Collapse>
-    </>
+        )}
+        {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
+      </Title>
+      <Route path="/devices" exact>
+        {singlePanel && (
+          <>
+            <AccountSelect />
+            <RegisterButton />
+            <RefreshButton />
+          </>
+        )}
+        <FilterButton />
+        <TestUI>
+          <ColumnsButton />
+        </TestUI>
+        <TestUI>
+          <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
+        </TestUI>
+      </Route>
+    </div>
   )
 }
 
@@ -85,12 +114,18 @@ const useStyles = makeStyles({
     padding: `${styles.spacing.md}px ${styles.spacing.md}px`,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    minHeight: 40,
+    minHeight: 50,
     width: '100%',
     opacity: ({ hasFocus }: any) => (hasFocus ? 1 : 0.2),
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
     '& .MuiTypography-root': { marginLeft: styles.spacing.md, fontWeight: 500 },
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
+  },
+  search: {
+    cursor: 'pointer',
+    '-webkit-app-region': 'no-drag',
+    flexGrow: 1,
+    zIndex: 1,
   },
 })
