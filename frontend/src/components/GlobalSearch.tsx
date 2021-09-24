@@ -18,7 +18,7 @@ type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => voi
 export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   const { enabledIds, fetching, query, data } = useSelector((state: ApplicationState) => ({
     enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
-    fetching: state.search.fetching || state.devices.fetching,
+    fetching: state.search.fetching,
     query: state.devices.query,
     data: selectAllSearch(state),
   }))
@@ -103,7 +103,10 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         getOptionSelected={(option, value) => option.serviceId === value.serviceId}
         filterOptions={createFilterOptions({ stringify: option => option.serviceName + ' ' + option.deviceName })}
         closeIcon={
-          fetching ? <Icon name="sync" size="base" spin fixedWidth /> : <Icon name="times" size="base" fixedWidth />
+          <>
+            {fetching && <Icon name="sync" size="sm" type="solid" spin fixedWidth inlineLeft />}
+            <Icon name="times" size="md" fixedWidth />
+          </>
         }
         renderInput={params => (
           <TextField
@@ -150,7 +153,7 @@ const useStyles = makeStyles({
   },
   email: {
     float: 'right',
-    color: colors.grayLight,
+    color: colors.gray,
     textTransform: 'none',
     letterSpacing: 0,
   },

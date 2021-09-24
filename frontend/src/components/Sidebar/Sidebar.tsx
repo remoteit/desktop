@@ -8,7 +8,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { AccountSelect } from '../AccountSelect'
 import { SidebarNav } from '../SidebarNav'
 import { AvatarMenu } from '../AvatarMenu'
-import { colors, spacing } from '../../styling'
+import { colors, spacing, fontSizes } from '../../styling'
 
 export const Sidebar: React.FC = () => {
   const addSpace = isMac() && isElectron()
@@ -23,8 +23,8 @@ export const Sidebar: React.FC = () => {
           <RefreshButton />
         </span>
       </section>
-      <ListItem>
-        <AccountSelect />
+      <ListItem className={css.select}>
+        <AccountSelect hiddenLabel size="small" />
       </ListItem>
       <SidebarNav />
       <RemoteManagement />
@@ -48,5 +48,11 @@ const useStyles = addSpace =>
     header: {
       display: 'flex',
       justifyContent: 'space-between',
+    },
+    select: {
+      marginTop: spacing.md,
+      '& .MuiInputBase-root': {
+        fontSize: fontSizes.base,
+      },
     },
   })

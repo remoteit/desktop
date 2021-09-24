@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles, Collapse } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import { ApplicationState } from '../../store'
 import { useNavigation } from '../../hooks/useNavigation'
 import { getOwnDevices } from '../../models/accounts'
@@ -7,7 +7,6 @@ import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
-import { SearchedNotice } from '../SearchedNotice'
 import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -76,6 +75,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           <IconButton
             icon="search"
             size="lg"
+            className={css.button}
             onClick={() => {
               setShowSearch(true)
               setTimeout(() => inputRef.current?.focus(), 20)
@@ -111,10 +111,12 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 const useStyles = makeStyles({
   header: {
     display: 'flex',
-    padding: `${styles.spacing.md}px ${styles.spacing.md}px`,
+    margin: `${styles.spacing.md}px 0 ${styles.spacing.xs}px`,
+    padding: `0 ${styles.spacing.md}px`,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    minHeight: 50,
+    height: 45,
+    maxHeight: 45,
     width: '100%',
     opacity: ({ hasFocus }: any) => (hasFocus ? 1 : 0.2),
     // pointerEvents: 'none',
@@ -127,5 +129,10 @@ const useStyles = makeStyles({
     '-webkit-app-region': 'no-drag',
     flexGrow: 1,
     zIndex: 1,
+  },
+  button: {
+    justifyContent: 'flex-start',
+    width: '100%',
+    minHeight: styles.spacing.xxl,
   },
 })
