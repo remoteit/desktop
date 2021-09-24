@@ -69,14 +69,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
   }, [])
 
   return (
-    <Container
-      integrated
-      header={
-        <Collapse in={noConnections || !!showNew} timeout={800}>
-          <NewConnection />
-        </Collapse>
-      }
-    >
+    <>
       {noConnections && (
         <>
           <Typography className={css.message} variant="h2" align="center">
@@ -91,11 +84,11 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
       <SessionsList
         title="Local Network"
         sessions={local}
-        action={<IconButton title="Add to Network" icon="plus" to="/connections/new" color="primary" />}
+        action={<IconButton title="Add to Network" icon="plus" to="/connections/new" color="primary" shiftDown />}
       />
       <SessionsList title="Others" sessions={other} other />
-      <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
-    </Container>
+      <SessionsList title="Recent" sessions={recent} action={!!recent && <ClearButton all />} recent />
+    </>
   )
 }
 

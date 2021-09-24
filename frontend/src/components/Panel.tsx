@@ -6,12 +6,10 @@ export const Panel: React.FC = ({ children }) => {
   const css = useStyles()
 
   return (
-    <>
-      <div className={css.panel}>
-        <Header />
-        {children}
-      </div>
-    </>
+    <div className={css.panel}>
+      <Header />
+      {children}
+    </div>
   )
 }
 

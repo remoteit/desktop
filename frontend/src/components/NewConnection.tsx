@@ -136,6 +136,6 @@ const useStyles = makeStyles({
   },
   button: { marginBottom: -spacing.sm },
   enabled: { color: colors.primary },
-  option: { display: 'block' },
+  option: { display: 'block', marginLeft: spacing.md },
   loading: { color: colors.grayDarker, position: 'absolute', right: 70, top: 0, height: '100%' },
 })

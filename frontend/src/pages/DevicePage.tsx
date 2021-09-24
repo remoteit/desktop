@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { replaceHost } from '../shared/nameHelper'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import {
@@ -34,12 +33,10 @@ type Props = {
 
 export const DevicePage: React.FC<Props> = ({ device }) => {
   const css = useStyles()
-  const { connections, setupAddingService, sortService, searched, query } = useSelector((state: ApplicationState) => ({
+  const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
     sortService: state.devices.sortServiceOption,
-    searched: state.devices.searched,
-    query: state.devices.query,
   }))
 
   useEffect(() => {
@@ -94,7 +91,6 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
           Device offline
         </Notice>
       )}
-      {searched && <Notice gutterTop>Searched for “{query}”</Notice>}
       <Typography variant="subtitle1">
         <Title>Services</Title>
         <SortServices />

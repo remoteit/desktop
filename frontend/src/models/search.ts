@@ -134,9 +134,10 @@ export function selectAllSearch(state: ApplicationState) {
   const { search, devices } = state.search
   const searchIds = search.map(s => s.serviceId)
   const all = search.concat(devices.filter(item => !searchIds.includes(item.serviceId)))
-  return all.sort((a, b) => {
+  const sorted = all.sort((a, b) => {
     if (a.deviceName.toLowerCase() > b.deviceName.toLowerCase()) return 1
     if (a.deviceName.toLowerCase() < b.deviceName.toLowerCase()) return -1
     return 0
   })
+  return sorted || []
 }

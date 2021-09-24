@@ -81,7 +81,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          resize="connections"
           single={singlePanel}
           root={['/connections', '/connections/new']}
         />
@@ -202,7 +201,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          resize="settings"
           single={singlePanel}
           root={['/settings', '/settings/options']}
         />

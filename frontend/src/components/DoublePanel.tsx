@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { ApplicationState, Dispatch } from '../store'
 import { colors, spacing } from '../styling'
+import { usePanelWidth } from '../hooks/usePanelWidth'
 import { makeStyles } from '@material-ui/core'
 import { Header } from './Header'
 import classnames from 'classnames'
@@ -9,19 +8,17 @@ import classnames from 'classnames'
 type Props = {
   primary: React.ReactElement
   secondary?: React.ReactElement
-  resize: 'devices' | 'connections' | 'settings'
 }
 
 const MIN_WIDTH = 320
 const SIDEBAR_WIDTH = 9 + 250
 
-export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => {
-  const { ui } = useDispatch<Dispatch>()
-  const panelWidth = useSelector((state: ApplicationState) => state.ui.panelWidth)
-  const handleRef = useRef<number>(panelWidth[resize])
+export const DoublePanel: React.FC<Props> = ({ primary, secondary }) => {
+  const [panelWidth, setPanelWidth] = usePanelWidth()
+  const handleRef = useRef<number>(panelWidth)
   const primaryRef = useRef<HTMLDivElement>(null)
   const moveRef = useRef<number>(0)
-  const [width, setWidth] = useState<number>(panelWidth[resize])
+  const [width, setWidth] = useState<number>(panelWidth)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
   const [grab, setGrab] = useState<boolean>(false)
   const css = useStyles()
@@ -57,17 +54,12 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, resize }) => 
     event.preventDefault()
     window.removeEventListener('mousemove', onMove)
     window.removeEventListener('mouseup', onUp)
-    console.log('SET PANEL WIDTH', resize, panelWidth, primaryRef.current?.offsetWidth || width)
-    ui.set({
-      panelWidth: {
-        ...panelWidth,
-        [resize]: primaryRef.current?.offsetWidth || width,
-      },
-    })
+    setPanelWidth(primaryRef.current?.offsetWidth || width)
   }
+
   useEffect(() => {
-    setWidth(panelWidth[resize])
-  }, [resize])
+    setWidth(panelWidth)
+  }, [panelWidth])
 
   useEffect(() => {
     measure()

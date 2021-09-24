@@ -94,7 +94,7 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
         <Badge
           variant="dot"
           color="error"
-          overlap="circle"
+          overlap="circular"
           classes={{ colorError: device.quality === 'POOR' ? css.poor : css.moderate }}
         >
           {element}
