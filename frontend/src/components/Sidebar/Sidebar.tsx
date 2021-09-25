@@ -24,7 +24,7 @@ export const Sidebar: React.FC = () => {
         </span>
       </section>
       <ListItem className={css.select}>
-        <AccountSelect hiddenLabel size="small" />
+        <AccountSelect fullWidth hiddenLabel size="small" />
       </ListItem>
       <SidebarNav />
       <RemoteManagement />

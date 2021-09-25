@@ -53,7 +53,6 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
     setDisabledForward(!navigationForward?.length)
   }, [navigationBack, navigationForward])
 
-  console.log(`show:${showSearch.toString()} searched:${searched.toString()}`)
   return (
     <div className={css.header}>
       <IconButton
@@ -89,13 +88,6 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
       <Route path="/devices" exact>
-        {singlePanel && (
-          <>
-            <AccountSelect />
-            <RegisterButton />
-            <RefreshButton />
-          </>
-        )}
         <FilterButton />
         <TestUI>
           <ColumnsButton />
@@ -103,6 +95,13 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         <TestUI>
           <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
         </TestUI>
+        {singlePanel && (
+          <>
+            <RegisterButton />
+            <RefreshButton />
+            <AccountSelect label="Device List" />
+          </>
+        )}
       </Route>
     </div>
   )

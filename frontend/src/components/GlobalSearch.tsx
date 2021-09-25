@@ -123,19 +123,21 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         )}
         renderOption={option => {
           const parts = reactStringReplace(option.serviceName, new RegExp(`(${query})`, 'i'), (match, i) => (
-            <span key={i} style={{ fontWeight: 500, color: colors.success }}>
+            <span key={i} className={css.highlight}>
               {match}
             </span>
           ))
           return enabledIds.includes(option.serviceId) ? <span className={css.enabled}>{parts}</span> : parts
         }}
         renderGroup={option => [
-          <ListSubheader className="MuiAutocomplete-groupLabel" key={option.key}>
-            {reactStringReplace(option.group, new RegExp(`(${query})`, 'i'), (match, i) => (
-              <span key={i} style={{ fontWeight: 500, color: colors.success }}>
-                {match}
-              </span>
-            ))}
+          <ListSubheader disableGutters className={css.group + ' MuiAutocomplete-groupLabel'} key={option.key}>
+            <span>
+              {reactStringReplace(option.group, new RegExp(`(${query})`, 'i'), (match, i) => (
+                <span key={i} className={css.highlight}>
+                  {match}
+                </span>
+              ))}
+            </span>
             <span className={css.email}>{data[option.key].accountEmail}</span>
           </ListSubheader>,
           option.children,
@@ -152,12 +154,22 @@ const useStyles = makeStyles({
     zIndex: 1,
   },
   email: {
-    float: 'right',
     color: colors.gray,
     textTransform: 'none',
     letterSpacing: 0,
   },
   button: { marginBottom: -spacing.sm },
   enabled: { color: colors.primary },
-  option: { display: 'block', marginLeft: spacing.md },
+  group: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: `0 ${spacing.md}px`,
+    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
+  },
+  option: { display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' },
+  highlight: {
+    backgroundColor: colors.primaryLighter,
+    color: colors.black,
+    borderRadius: 4,
+  },
 })

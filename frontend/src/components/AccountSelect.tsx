@@ -24,7 +24,6 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
     <TextField
       {...props}
       select
-      fullWidth
       variant="filled"
       className={css.field}
       value={activeId}
