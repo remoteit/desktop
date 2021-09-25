@@ -104,13 +104,13 @@ export default createModel<RootModel>()({
         .filter(d => !d.hidden)
         .map(device =>
           device.services
-            // .filter(service => service.state === 'active')
             .map(service => ({
               deviceName: device.name,
               serviceName: service.name,
               deviceId: device.id,
               serviceId: service.id,
               accountEmail: account.email,
+              offline: service.state === 'inactive',
             }))
             .flat()
         )

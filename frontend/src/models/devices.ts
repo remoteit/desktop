@@ -93,7 +93,7 @@ export default createModel<RootModel>()({
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
       const { updateSearch } = dispatch.search
       const { set, graphQLFetchProcessor } = dispatch.devices
-      const { setDevices, appendUniqueDevices } = dispatch.accounts
+      const { setDevices, mergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, sort, owner, filter, size, from, append, searched, platform } = globalState.devices
       const options: gqlOptions = {
         size,
@@ -120,7 +120,7 @@ export default createModel<RootModel>()({
         await appendUniqueDevices({ devices, accountId })
       } else {
         await setDevices({ devices, accountId })
-        await appendUniqueDevices({ devices: connections, accountId: userId })
+        await mergeDevices({ devices: connections, accountId: userId })
       }
 
       updateSearch()

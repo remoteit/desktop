@@ -72,8 +72,8 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       <Title className={css.search}>
         {!showSearch && !searched && (
           <IconButton
-            icon="search"
             size="lg"
+            icon="search"
             className={css.button}
             onClick={() => {
               setShowSearch(true)
@@ -81,13 +81,13 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
             }}
           >
             <Typography variant="body2" color="textSecondary">
-              {device ? attributeName(device) : 'remote.it'}
+              &nbsp;{device ? attributeName(device) : 'remote.it'}
             </Typography>
           </IconButton>
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
-      <Route path="/devices" exact>
+      <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <TestUI>
           <ColumnsButton />

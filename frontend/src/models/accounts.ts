@@ -137,6 +137,20 @@ export default createModel<RootModel>()({
       all[accountId] = devices
       dispatch.devices.set({ all })
     },
+    async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
+      if (!devices) return
+      accountId = accountId || devices[0]?.accountId
+      if (!accountId) return console.error('MERGE DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
+      const updatedDevices = getDevices(state, accountId).map(ud => {
+        const index = devices.findIndex(d => d.id === ud.id)
+        if (index >= 0) devices.splice(index, 1)
+        return ud
+      })
+      dispatch.accounts.setDevices({
+        devices: [...updatedDevices, ...devices],
+        accountId,
+      })
+    },
     async appendUniqueDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
       if (!devices) return
       accountId = accountId || devices[0]?.accountId

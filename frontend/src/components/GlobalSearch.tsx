@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from 'react'
-import debounce from 'lodash.debounce'
 import reactStringReplace from 'react-string-replace'
+import debounce from 'lodash.debounce'
+import classnames from 'classnames'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { TextField, ListSubheader } from '@material-ui/core'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
-import { useHistory, useParams } from 'react-router-dom'
+import { colors, spacing } from '../styling'
 import { connectionName } from '../helpers/connectionHelper'
 import { makeStyles } from '@material-ui/core/styles'
+import { useHistory } from 'react-router-dom'
 import { Icon } from './Icon'
-import { colors, spacing } from '../styling'
-import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => void }
 
 export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
-  const { enabledIds, fetching, query, data } = useSelector((state: ApplicationState) => ({
+  const { showAccount, enabledIds, fetching, query, data } = useSelector((state: ApplicationState) => ({
+    showAccount: !!state.accounts.member.length,
+    test: console.log('state.accounts.member.length', state.accounts.member.length),
     enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
     fetching: state.search.fetching,
     query: state.devices.query,
@@ -25,7 +27,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   const css = useStyles()
   const history = useHistory()
   const { search, devices } = useDispatch<Dispatch>()
-  const { serviceID } = useParams<{ serviceID?: string }>()
   const [value, setValue] = useState<ISearch | null>(null)
 
   const fetch = React.useMemo(
@@ -46,7 +47,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   }
 
   const select = (selection: ISearch) => {
-    console.log('SELECT', selection)
     setValue(selection)
     devices.set({ query: '' })
     history.push(`/devices/${selection?.deviceId}/${selection?.serviceId}`)
@@ -59,13 +59,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   }
 
   useEffect(() => {
-    analyticsHelper.track('newConnection')
-    console.log('SERVICE ID', serviceID)
-    if (serviceID) setValue(data.find(d => d.serviceId === serviceID) || null)
-  }, [])
-
-  useEffect(() => {
-    if (query && !serviceID) fetch(query)
+    if (query) fetch(query)
   }, [query])
 
   return (
@@ -85,17 +79,12 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         options={data}
         loading={fetching}
         classes={{ option: css.option }}
-        onClose={(event, reason: string) => {
-          console.log('AUTOCOMPLETE CLOSE EVENT', reason, value?.serviceId)
-        }}
         onChange={(event, newValue: any | ISearch | null, reason: string) => {
-          console.log('AUTOCOMPLETE CHANGE EVENT', reason, newValue)
           if (reason === 'select-option') select(newValue)
           if (reason === 'create-option') submit()
         }}
         groupBy={option => option.deviceName}
         onInputChange={(event, newQuery, reason) => {
-          console.log('INPUT CHANGE EVENT', reason, newQuery)
           if (reason === 'input') change(newQuery)
           if (reason === 'clear') clear()
         }}
@@ -121,13 +110,14 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             }}
           />
         )}
-        renderOption={option => {
+        renderOption={(option: ISearch) => {
           const parts = reactStringReplace(option.serviceName, new RegExp(`(${query})`, 'i'), (match, i) => (
             <span key={i} className={css.highlight}>
               {match}
             </span>
           ))
-          return enabledIds.includes(option.serviceId) ? <span className={css.enabled}>{parts}</span> : parts
+          const enabled = enabledIds.includes(option.serviceId)
+          return <span className={classnames(enabled && css.enabled, option.offline && css.offline)}>{parts}</span>
         }}
         renderGroup={option => [
           <ListSubheader disableGutters className={css.group + ' MuiAutocomplete-groupLabel'} key={option.key}>
@@ -138,7 +128,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
                 </span>
               ))}
             </span>
-            <span className={css.email}>{data[option.key].accountEmail}</span>
+            {showAccount && <span className={css.email}>{data[option.key].accountEmail}</span>}
           </ListSubheader>,
           option.children,
         ]}
@@ -160,6 +150,7 @@ const useStyles = makeStyles({
   },
   button: { marginBottom: -spacing.sm },
   enabled: { color: colors.primary },
+  offline: { opacity: 0.3 },
   group: {
     display: 'flex',
     justifyContent: 'space-between',
