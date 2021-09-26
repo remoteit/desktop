@@ -121,11 +121,10 @@ const useStyles = makeStyles({
     // opacity: ({ hasFocus }: any) => (hasFocus ? 1 : 0.2),
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
-    '& .MuiTypography-root': { marginLeft: styles.spacing.sm, letterSpacing: '0.1em' },
+    '& .MuiTypography-root': { marginLeft: styles.spacing.sm },
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {
-    cursor: 'pointer',
     '-webkit-app-region': 'no-drag',
     flexGrow: 1,
     zIndex: 1,
