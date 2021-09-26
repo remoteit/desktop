@@ -72,7 +72,7 @@ export const OrganizationAddPage = () => {
       <List>
         <ListItemRadio label="Admin" checked={role === 'ADMIN'} onClick={() => setRole('ADMIN')} />
         <ListItemRadio label="Member" checked={role === 'MEMBER'} onClick={() => setRole('MEMBER')} />
-        <ListItemRadio label="Guest" checked={role === 'GUEST'} onClick={() => setRole('GUEST')} />
+        <ListItemRadio label="Guest" checked={role === 'LIMITED'} onClick={() => setRole('LIMITED')} />
       </List>
       <Gutters>
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length}>

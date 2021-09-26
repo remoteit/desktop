@@ -54,7 +54,7 @@ export async function graphQLShareDevice(params: IShareProps) {
 export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMOVE' | 'LEAVE') {
   return await graphQLBasicRequest(
     ` mutation query($emails: [String!]!, $action: SharingAction) {
-        link(email: $emails, action: $action, scripting: true)
+        link(email: $emails, action: $action)
       }`,
     { emails, action }
   )

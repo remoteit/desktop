@@ -313,13 +313,13 @@ declare global {
   }
 
   type IOrganizationMember = {
-    created: Date
-    role: IOrganizationRole
-    organizationId: string
     user: IUserRef
+    organizationId: string
+    role: IOrganizationRole
+    created: Date
   }
 
-  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'GUEST' | 'MEMBER' | 'REMOVE'
+  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'LIMITED' | 'MEMBER' | 'REMOVE'
 
   type IGeo = {
     countryName: string

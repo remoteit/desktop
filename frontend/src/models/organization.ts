@@ -9,13 +9,14 @@ export const ROLE = {
   OWNER: 'Admin / Owner',
   ADMIN: 'Admin',
   MEMBER: 'Member',
-  GUEST: 'Guest',
+  LIMITED: 'Limited',
 }
 
 export type IOrganizationState = {
   id?: string
   name?: string
   created?: Date
+  account?: IUserRef
   member: IOrganizationMember[] // members of this org
   access: IOrganizationMember[] // orgs you belong too
   activeId?: string
@@ -26,6 +27,7 @@ const organizationState: IOrganizationState = {
   id: undefined,
   name: undefined,
   created: undefined,
+  account: undefined,
   member: [],
   access: [],
   activeId: undefined,
