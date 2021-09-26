@@ -71,19 +71,20 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       />
       <Title className={css.search}>
         {!showSearch && !searched && (
-          <IconButton
-            size="lg"
-            icon="search"
-            className={css.button}
-            onClick={() => {
-              setShowSearch(true)
-              setTimeout(() => inputRef.current?.focus(), 20)
-            }}
-          >
-            <Typography variant="body2" color="textSecondary">
+          <>
+            <IconButton
+              size="lg"
+              icon="search"
+              className={css.button}
+              onClick={() => {
+                setShowSearch(true)
+                setTimeout(() => inputRef.current?.focus(), 20)
+              }}
+            />
+            <Typography variant="caption" color="textSecondary">
               &nbsp;{device ? attributeName(device) : 'remote.it'}
             </Typography>
-          </IconButton>
+          </>
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
@@ -110,17 +111,17 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 const useStyles = makeStyles({
   header: {
     display: 'flex',
-    margin: `${styles.spacing.md}px 0 ${styles.spacing.xs}px`,
+    margin: `${styles.spacing.sm}px 0`,
     padding: `0 ${styles.spacing.md}px`,
     justifyContent: 'flex-start',
     alignItems: 'center',
     height: 45,
     maxHeight: 45,
     width: '100%',
-    opacity: ({ hasFocus }: any) => (hasFocus ? 1 : 0.2),
+    // opacity: ({ hasFocus }: any) => (hasFocus ? 1 : 0.2),
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
-    '& .MuiTypography-root': { marginLeft: styles.spacing.md, fontWeight: 500 },
+    '& .MuiTypography-root': { marginLeft: styles.spacing.sm, letterSpacing: '0.1em' },
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {
@@ -131,7 +132,8 @@ const useStyles = makeStyles({
   },
   button: {
     justifyContent: 'flex-start',
-    width: '100%',
+    // width: '100%',
+    // maxWidth: 400,
     minHeight: styles.spacing.xxl,
   },
 })
