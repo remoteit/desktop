@@ -81,8 +81,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          resize="connections"
-          single={singlePanel}
+          singlePanel={singlePanel}
           root={['/connections', '/connections/new']}
         />
       </Route>
@@ -110,14 +109,14 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       </Route>
 
       <Route path="/devices/restore">
-        <Panel>
-          <DevicesPage singlePanel={singlePanel} restore />
+        <Panel singlePanel={singlePanel}>
+          <DevicesPage restore />
         </Panel>
       </Route>
 
       <Route path="/devices/select">
-        <Panel>
-          <DevicesPage singlePanel={singlePanel} select />
+        <Panel singlePanel={singlePanel}>
+          <DevicesPage select />
         </Panel>
       </Route>
 
@@ -135,8 +134,8 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
             </Panel>
           )
         ) : (
-          <Panel>
-            <DevicesPage singlePanel={singlePanel} />
+          <Panel singlePanel={singlePanel}>
+            <DevicesPage />
           </Panel>
         )}
       </Route>
@@ -202,8 +201,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          resize="settings"
-          single={singlePanel}
+          singlePanel={singlePanel}
           root={['/settings', '/settings/options']}
         />
       </Route>

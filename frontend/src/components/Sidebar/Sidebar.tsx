@@ -1,13 +1,14 @@
 import React from 'react'
 import { SIDEBAR_WIDTH } from '../../shared/constants'
-import { makeStyles, Box } from '@material-ui/core'
+import { makeStyles, Box, List, ListItem } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { RemoteManagement } from '../RemoteManagement'
 import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
+import { AccountSelect } from '../AccountSelect'
 import { SidebarNav } from '../SidebarNav'
 import { AvatarMenu } from '../AvatarMenu'
-import { colors, spacing } from '../../styling'
+import { colors, spacing, fontSizes } from '../../styling'
 
 export const Sidebar: React.FC = () => {
   const addSpace = isMac() && isElectron()
@@ -22,6 +23,9 @@ export const Sidebar: React.FC = () => {
           <RefreshButton />
         </span>
       </section>
+      <ListItem className={css.select}>
+        <AccountSelect fullWidth hiddenLabel size="small" />
+      </ListItem>
       <SidebarNav />
       <RemoteManagement />
     </Box>
@@ -44,5 +48,11 @@ const useStyles = addSpace =>
     header: {
       display: 'flex',
       justifyContent: 'space-between',
+    },
+    select: {
+      marginTop: spacing.md,
+      '& .MuiInputBase-root': {
+        fontSize: fontSizes.base,
+      },
     },
   })

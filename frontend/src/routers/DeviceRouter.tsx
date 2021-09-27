@@ -48,7 +48,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
 
   return (
     <DynamicPanel
-      primary={<DevicePage targetDevice={targetDevice} targets={targets} device={device} />}
+      primary={<DevicePage device={device} />}
       secondary={
         <Switch>
           <Route path="/devices/:deviceID/add/scan">
@@ -94,8 +94,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </Route>
         </Switch>
       }
-      resize="devices"
-      single={singlePanel}
+      singlePanel={singlePanel}
       root="/devices/:deviceID"
     />
   )

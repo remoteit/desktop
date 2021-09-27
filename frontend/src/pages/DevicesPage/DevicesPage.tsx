@@ -10,9 +10,9 @@ import { masterAttributes, deviceAttributes } from '../../helpers/attributes'
 
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-type Props = { singlePanel?: boolean; restore?: boolean; select?: boolean }
+type Props = { restore?: boolean; select?: boolean }
 
-export const DevicesPage: React.FC<Props> = ({ singlePanel, restore, select }) => {
+export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { devices, connections, myDevice, fetching, attributes, required } = useSelector((state: ApplicationState) => ({
     attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id) && !a.required),
     required: masterAttributes.find(a => a.required),
@@ -32,7 +32,7 @@ export const DevicesPage: React.FC<Props> = ({ singlePanel, restore, select }) =
   }, [])
 
   return (
-    <DevicesHeader fetching={fetching} singlePanel={singlePanel} myDevice={myDevice} restore={restore}>
+    <DevicesHeader fetching={fetching} myDevice={myDevice} restore={restore}>
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." spinner={false} />
       ) : !devices.length ? (

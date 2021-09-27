@@ -124,6 +124,7 @@ declare global {
     deviceId: string
     serviceId: string
     accountEmail: string
+    offline: boolean
   }
   interface IConnection {
     address?: string // the connection url returned from cli

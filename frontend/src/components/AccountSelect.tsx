@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, TextField, MenuItem, Divider } from '@material-ui/core'
+import { makeStyles, TextField, MenuItem, Divider, TextFieldProps } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
@@ -7,7 +7,7 @@ import { getActiveAccountId } from '../models/accounts'
 import { spacing, colors } from '../styling'
 import classnames from 'classnames'
 
-export const AccountSelect: React.FC = () => {
+export const AccountSelect: React.FC<TextFieldProps> = props => {
   const css = useStyles()
   const history = useHistory()
   const { accounts, devices } = useDispatch<Dispatch>()
@@ -22,12 +22,12 @@ export const AccountSelect: React.FC = () => {
 
   return (
     <TextField
+      {...props}
       select
+      variant="filled"
       className={css.field}
-      label="Device lists"
       value={activeId}
       disabled={fetching}
-      variant="filled"
       onChange={async event => {
         const id = event.target.value
         if (id) {
@@ -52,7 +52,7 @@ export const AccountSelect: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  field: { width: 300, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
+  field: { '& .MuiListItemSecondaryAction-root': { display: 'none' } },
   primary: { color: colors.primary },
   divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
   action: { right: spacing.xs, marginLeft: spacing.sm },

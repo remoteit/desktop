@@ -104,13 +104,13 @@ export default createModel<RootModel>()({
         .filter(d => !d.hidden)
         .map(device =>
           device.services
-            .filter(service => service.state === 'active')
             .map(service => ({
               deviceName: device.name,
               serviceName: service.name,
               deviceId: device.id,
               serviceId: service.id,
               accountEmail: account.email,
+              offline: service.state === 'inactive',
             }))
             .flat()
         )
@@ -134,9 +134,10 @@ export function selectAllSearch(state: ApplicationState) {
   const { search, devices } = state.search
   const searchIds = search.map(s => s.serviceId)
   const all = search.concat(devices.filter(item => !searchIds.includes(item.serviceId)))
-  return all.sort((a, b) => {
+  const sorted = all.sort((a, b) => {
     if (a.deviceName.toLowerCase() > b.deviceName.toLowerCase()) return 1
     if (a.deviceName.toLowerCase() < b.deviceName.toLowerCase()) return -1
     return 0
   })
+  return sorted || []
 }

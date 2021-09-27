@@ -1,15 +1,12 @@
 import React, { useEffect } from 'react'
 import { matchPath, useHistory, useLocation } from 'react-router-dom'
-import { makeStyles, Typography, Collapse, Link } from '@material-ui/core'
+import { makeStyles, Typography, Link } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
-import { NewConnection } from '../../components/NewConnection'
 import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
 import { useSelector } from 'react-redux'
-import { IconButton } from '../../buttons/IconButton'
 import { selectById } from '../../models/devices'
-import { Container } from '../../components/Container'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
@@ -69,14 +66,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
   }, [])
 
   return (
-    <Container
-      integrated
-      header={
-        <Collapse in={noConnections || !!showNew} timeout={800}>
-          <NewConnection />
-        </Collapse>
-      }
-    >
+    <>
       {noConnections && (
         <>
           <Typography className={css.message} variant="h2" align="center">
@@ -88,14 +78,10 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
           </Typography>
         </>
       )}
-      <SessionsList
-        title="Local Network"
-        sessions={local}
-        action={<IconButton title="Add to Network" icon="plus" to="/connections/new" color="primary" />}
-      />
+      <SessionsList title="Local Network" sessions={local} />
       <SessionsList title="Others" sessions={other} other />
-      <SessionsList title="Recent" sessions={recent} action={<ClearButton all />} recent />
-    </Container>
+      <SessionsList title="Recent" sessions={recent} action={!!recent && <ClearButton all />} recent />
+    </>
   )
 }
 

@@ -1,18 +1,15 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { Tooltip, IconButton as MuiIconButton } from '@material-ui/core'
-import { Icon } from '../components/Icon'
+import { Icon, IconProps } from '../components/Icon/Icon'
 import { Color, FontSize, spacing } from '../styling'
 
-type Props = {
+type Props = IconProps & {
   title?: string
   icon: string
   disabled?: boolean
   to?: string
   className?: string
-  color?: Color
-  type?: IconType
-  size?: FontSize
   shiftDown?: boolean
   onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: (e: React.MouseEvent) => void
@@ -22,16 +19,17 @@ type Props = {
 export const IconButton: React.FC<Props> = ({
   title,
   icon,
-  size = 'base',
   disabled,
   to,
   color,
+  size = 'base',
   type = 'regular',
   shiftDown,
   className,
   onMouseEnter,
   onMouseLeave,
   onClick,
+  children,
   ...props
 }) => {
   const history = useHistory()
@@ -49,6 +47,7 @@ export const IconButton: React.FC<Props> = ({
       style={{ opacity: disabled ? 0.5 : undefined, marginBottom: shiftDown ? -spacing.sm : undefined }}
     >
       <Icon {...props} name={icon} color={color} type={type} size={size} />
+      {children}
     </MuiIconButton>
   )
 
