@@ -70,17 +70,23 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
       {noConnections && (
         <>
           <Typography className={css.message} variant="h2" align="center">
-            Use this page to add services to your local network.
+            Connections added to your local network appear here.
           </Typography>
           <Typography variant="body2" align="center" color="textSecondary">
-            Once you've added a service from the<Link onClick={() => history.push('/devices')}>Devices</Link>tab, <br />
-            active and recent services will appear here.
+            Once you've added connections from the<Link onClick={() => history.push('/devices')}>Devices</Link>tab,{' '}
+            <br />
+            active and recent connections will appear here.
           </Typography>
         </>
       )}
       <SessionsList title="Local Network" sessions={local} />
       <SessionsList title="Others" sessions={other} other />
-      <SessionsList title="Recent" sessions={recent} action={!!recent && <ClearButton all />} recent />
+      <SessionsList
+        title="Recent"
+        sessions={recent}
+        action={!!recent.length ? <ClearButton all /> : undefined}
+        recent
+      />
     </>
   )
 }
