@@ -3,7 +3,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
 import { getRedirectUrl, isElectron } from '../services/Browser'
-import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
+import { CLIENT_ID, CALLBACK_URL, COGNITO_USER_POOL_ID, COGNITO_AUTH_DOMAIN, AUTH_API_URL } from '../shared/constants'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
@@ -57,9 +57,13 @@ export default createModel<RootModel>()({
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
+          cognitoRegion: process.env.COGNITO_REGION || 'US-WEST-2',
           redirectURL: isElectron() ? '' : window.origin + '/v1/callback/',
           callbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
           signoutCallbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          cognitoUserPoolID: COGNITO_USER_POOL_ID,
+          cognitoAuthDomain: COGNITO_AUTH_DOMAIN,
+          checkSamlURL: `${AUTH_API_URL}/checkSaml`
         })
 
         await sleep(500)
