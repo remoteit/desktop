@@ -20,7 +20,7 @@ set -x
 
 rm -r ./bin/*
 
-if [ "$1" = "mac" ]; then
+if [ "$(uname)" = "Darwin" ]; then
 
     mkdir -m 777 ./bin/
 
@@ -30,38 +30,36 @@ if [ "$1" = "mac" ]; then
     curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-osx --output ./bin/demuxer
     curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-osx --output ./bin/muxer
 
-
-elif [ "$1" = "linux"]; then
+elif [ "$(uname)" = "Linux" ]; then
     
     mkdir -m 777 ./bin/
 
-    #Linux
-    curl -L https://${URL_CLI}${CLI}/remoteit_linux_x86_64 --output ./bin/remoteit
-    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
-    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
-    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
+    if ["$(uname -m)" = "arm64"]; then
 
- 
+        #RPI arm64
+        curl -L https://${URL_CLI}${CLI}/remoteit_linux_arm64 --output ./bin/remoteit
+        curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
+        curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
+        curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
 
-elif [ "$1" = "armv7l" ]; then
+    elif ["$(uname -m)" = "armv7l"]; then
+
+         #RPI armv7
+        curl -L https://${URL_CLI}${CLI}/remoteit_linux_armv7 --output ./bin/remoteit
+        curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
+        curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
+        curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
+
+    else
+
+        #Linux
+        curl -L https://${URL_CLI}${CLI}/remoteit_linux_x86_64 --output ./bin/remoteit
+        curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
+        curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
+        curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
+        
+    fi
     
-    mkdir -m 777 ./bin/
-
-    #RPI armv7
-    curl -L https://${URL_CLI}${CLI}/remoteit_linux_armv7 --output ./bin/remoteit
-    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
-    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
-    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
-
-elif ["$1"  = "arm64"]; then
-
-    mkdir -m 777 ./bin/
-
-    #RPI arm64
-    curl -L https://${URL_CLI}${CLI}/remoteit_linux_arm64 --output ./bin/remoteit
-    curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
-    curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
-    curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
 
 else
 
@@ -84,9 +82,7 @@ else
     # curl -L https://${URL_CLI}${CLI}/remoteit_windows_x86_64.exe --output ./bin/x64/remoteit.exe
     # curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-win.exe --output ./bin/x64/connectd.exe
     # curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-win.exe --output ./bin/x64/demuxer.exe
-    # curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-win.exe --output ./bin/x64/muxer.exe   
-
-  echo "Warning !!! There are no indicators defined for the system architecture to build, therefore it will be built for windows, to change the platform specify an option: npm run build --arch = 'XXX' (possible options: win, mac, linux, armv7l, arm64)"
+    # curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-win.exe --output ./bin/x64/muxer.exe
 
 fi
 
