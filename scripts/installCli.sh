@@ -38,17 +38,17 @@ elif [ "$(uname)" = "Linux" ]; then
 
         #RPI arm64
         curl -L https://${URL_CLI}${CLI}/remoteit_linux_arm64 --output ./bin/remoteit
-        curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
-        curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
-        curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
+        curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.aarch64-ubuntu20.04 --output ./bin/connectd
+        curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.aarch64-ubuntu20.04 --output ./bin/demuxer
+        curl -L https://${URL_MUXER}${MUXER}/muxer.aarch64-ubuntu20.04 --output ./bin/muxer
 
     elif ["$(uname -m)" = "armv7l"]; then
 
          #RPI armv7
         curl -L https://${URL_CLI}${CLI}/remoteit_linux_armv7 --output ./bin/remoteit
-        curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.x86_64-etch --output ./bin/connectd
-        curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.x86_64-etch --output ./bin/demuxer
-        curl -L https://${URL_MUXER}${MUXER}/muxer.x86_64-etch --output ./bin/muxer
+        curl -L https://${URL_CONNECTD}${CONNECTD}/connectd.arm-linaro-pi --output ./bin/connectd
+        curl -L https://${URL_DEMUXER}${DEMUXER}/demuxer.arm-linaro-pi --output ./bin/demuxer
+        curl -L https://${URL_MUXER}${MUXER}/muxer.arm-linaro-pi --output ./bin/muxer
 
     else
 
