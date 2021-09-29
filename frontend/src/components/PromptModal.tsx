@@ -2,30 +2,36 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, T
 import React, { useState, useEffect } from 'react'
 import { Application } from '../shared/applications'
 
-export const PromptModal: React.FC<{
+type Props = {
   app: Application
   open: boolean
   onClose: () => void
   onSubmit: (tokens: ILookup<string>) => void
-}> = ({ app, open, onSubmit, onClose }) => {
+}
+
+export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) => {
   const toLookup = () => app.missingTokens.reduce((obj, item) => ({ ...obj, [item]: '' }), {})
   const [tokens, setTokens] = useState<ILookup<string>>(toLookup())
   const [error, setError] = useState<string>()
+
+  useEffect(() => {
+    setTokens(toLookup())
+  }, [open])
 
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
         <form
           onSubmit={event => {
-            let error = false
+            let foundError = false
             Object.keys(tokens).forEach(key => {
               if (!tokens[key]) {
                 setError(key)
-                error = true
+                foundError = true
               }
             })
             event.preventDefault()
-            if (!error) onSubmit(tokens)
+            if (!foundError) onSubmit(tokens)
           }}
         >
           <DialogTitle>Missing info found</DialogTitle>
