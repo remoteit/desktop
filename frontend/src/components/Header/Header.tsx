@@ -25,28 +25,15 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
     navigationForward: state.ui.navigationForward,
   }))
   const { handleBack, handleForward } = useNavigation()
-  const [hasFocus, setHasFocus] = useState<boolean>(true)
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const css = useStyles({ hasFocus })
+  const css = useStyles()
 
   const { device } = useSelector((state: ApplicationState) => ({
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
   }))
-
-  const focus = () => setHasFocus(true)
-  const blur = () => setHasFocus(false)
-
-  useEffect(() => {
-    window.addEventListener('focus', focus)
-    window.addEventListener('blur', blur)
-    return function cleanup() {
-      window.removeEventListener('focus', focus)
-      window.removeEventListener('blur', blur)
-    }
-  })
 
   useEffect(() => {
     setDisabledBack(!(navigationBack?.length > 1))
@@ -118,7 +105,6 @@ const useStyles = makeStyles({
     height: 45,
     maxHeight: 45,
     width: '100%',
-    // opacity: ({ hasFocus }: any) => (hasFocus ? 1 : 0.2),
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
     '& .MuiTypography-root': { marginLeft: styles.spacing.sm },
@@ -131,8 +117,6 @@ const useStyles = makeStyles({
   },
   button: {
     justifyContent: 'flex-start',
-    // width: '100%',
-    // maxWidth: 400,
     minHeight: styles.spacing.xxl,
   },
 })

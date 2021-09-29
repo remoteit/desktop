@@ -18,7 +18,6 @@ type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => voi
 export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   const { showAccount, enabledIds, fetching, query, data } = useSelector((state: ApplicationState) => ({
     showAccount: !!state.accounts.member.length,
-    test: console.log('state.accounts.member.length', state.accounts.member.length),
     enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
     fetching: state.search.fetching,
     query: state.devices.query,
@@ -117,7 +116,14 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             </span>
           ))
           const enabled = enabledIds.includes(option.serviceId)
-          return <span className={classnames(enabled && css.enabled, option.offline && css.offline)}>{parts}</span>
+          return (
+            <span
+              className={classnames(enabled && css.enabled, option.offline && css.offline)}
+              data-email={option.accountEmail}
+            >
+              {parts}
+            </span>
+          )
         }}
         renderGroup={option => [
           <ListSubheader disableGutters className={css.group + ' MuiAutocomplete-groupLabel'} key={option.key}>
@@ -128,7 +134,11 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
                 </span>
               ))}
             </span>
-            {showAccount && <span className={css.email}>{data[option.key].accountEmail}</span>}
+            {showAccount && (
+              <span className={css.email}>
+                {option.children && option.children[0].props.children.props['data-email']}
+              </span>
+            )}
           </ListSubheader>,
           option.children,
         ]}
