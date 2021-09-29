@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { matchPath, useHistory, useLocation } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { makeStyles, Typography, Link } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
@@ -7,6 +7,7 @@ import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
 import { useSelector } from 'react-redux'
 import { selectById } from '../../models/devices'
+import { Body } from '../../components/Body'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 import styles from '../../styling'
@@ -57,7 +58,6 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     return { local, other, recent }
   })
 
-  const showNew = matchPath(location.pathname, { path: '/connections/new' })
   const noConnections = !local.length && !other.length && !recent.length
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
   }, [])
 
   return (
-    <>
+    <Body>
       {noConnections && (
         <>
           <Typography className={css.message} variant="h2" align="center">
@@ -87,7 +87,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
         action={!!recent.length ? <ClearButton all /> : undefined}
         recent
       />
-    </>
+    </Body>
   )
 }
 
