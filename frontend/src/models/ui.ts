@@ -69,7 +69,7 @@ const defaultState: UIState = {
   setupAddingService: false,
   setupServicesCount: 0,
   setupServicesNew: true,
-  setupServicesLimit: 10,
+  setupServicesLimit: 100,
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
