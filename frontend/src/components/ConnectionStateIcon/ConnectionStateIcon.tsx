@@ -17,6 +17,7 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
 export function ConnectionStateIcon({ connection, service, device, mini, ...props }: ConnectionStateIconProps) {
   const css = useStyles()
   const history = useHistory()
+  const instance = device || service
 
   let { name, type } = getTargetPlatformIcon(device?.targetPlatform)
 
@@ -39,17 +40,17 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
     title = 'Connecting'
     spin = true
   }
-  if (service?.state === 'inactive' || device?.state === 'inactive') {
+  if (instance?.state === 'inactive') {
     opacity = 0.3
     title = 'Offline'
     showQuality = false
   }
 
-  if (service?.license === 'EVALUATION') {
+  if (instance?.license === 'EVALUATION') {
     colorName = 'warning'
     title = 'Evaluation'
   }
-  if (service?.license === 'UNLICENSED') {
+  if (instance?.license === 'UNLICENSED') {
     colorName = 'warning'
     title = 'Unlicensed'
   }

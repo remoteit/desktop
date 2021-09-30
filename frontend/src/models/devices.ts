@@ -344,12 +344,12 @@ export default createModel<RootModel>()({
   },
 })
 
-const isIService = (instance: any): instance is IService => !!instance?.license
+// const isIService = (instance: any): instance is IService => !!instance?.license
 
 export function isOffline(instance?: IDevice | IService, connection?: IConnection) {
   const inactive = instance?.state !== 'active' && !connection?.connected
-  const unlicensed = isIService(instance) && instance.license === 'UNLICENSED'
-  return inactive || unlicensed
+  // const unlicensed = isIService(instance) && instance.license === 'UNLICENSED'
+  return inactive //|| unlicensed
 }
 
 export function selectDevice(state: ApplicationState, deviceId?: string) {
