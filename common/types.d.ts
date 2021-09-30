@@ -123,7 +123,7 @@ declare global {
     serviceName: string
     deviceId: string
     serviceId: string
-    accountEmail: string
+    ownerEmail: string
     offline: boolean
   }
   interface IConnection {

@@ -48,6 +48,9 @@ export default createModel<RootModel>()({
             items {
               id
               name
+              owner {
+                email
+              }
               services(state: $state) {
                 name
                 id
@@ -90,7 +93,7 @@ export default createModel<RootModel>()({
                 serviceName: removeDeviceName(device.name, service.name),
                 deviceId: device.id,
                 serviceId: service.id,
-                accountEmail: account.email,
+                ownerEmail: device.owner.email,
               }))
             )
             .flat()
@@ -109,7 +112,7 @@ export default createModel<RootModel>()({
               serviceName: service.name,
               deviceId: device.id,
               serviceId: service.id,
-              accountEmail: account.email,
+              ownerEmail: device.owner.email,
               offline: service.state === 'inactive',
             }))
             .flat()

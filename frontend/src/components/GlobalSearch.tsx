@@ -16,8 +16,8 @@ import { Icon } from './Icon'
 type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => void }
 
 export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
-  const { showAccount, enabledIds, fetching, query, data } = useSelector((state: ApplicationState) => ({
-    showAccount: !!state.accounts.member.length,
+  const { userEmail, enabledIds, fetching, query, data } = useSelector((state: ApplicationState) => ({
+    userEmail: state.auth.user?.email,
     enabledIds: state.connections.all.filter(c => c.enabled).map(c => c.id),
     fetching: state.search.fetching,
     query: state.devices.query,
@@ -119,7 +119,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           return (
             <span
               className={classnames(enabled && css.enabled, option.offline && css.offline)}
-              data-email={option.accountEmail}
+              data-email={option.ownerEmail}
             >
               {parts}
             </span>
@@ -134,10 +134,8 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
                 </span>
               ))}
             </span>
-            {showAccount && (
-              <span className={css.email}>
-                {option.children && option.children[0].props.children.props['data-email']}
-              </span>
+            {option.children && userEmail !== option.children[0].props.children.props['data-email'] && (
+              <span className={css.email}>{option.children[0].props.children.props['data-email']}</span>
             )}
           </ListSubheader>,
           option.children,
