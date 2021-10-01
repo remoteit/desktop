@@ -5,10 +5,11 @@ import classnames from 'classnames'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { TextField, ListSubheader } from '@material-ui/core'
+import { TextField, Typography, ListSubheader, ButtonBase } from '@material-ui/core'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
-import { colors, spacing } from '../styling'
+import { colors, spacing, fontSizes } from '../styling'
 import { connectionName } from '../helpers/connectionHelper'
+import { TargetPlatform } from './TargetPlatform'
 import { makeStyles } from '@material-ui/core/styles'
 import { useHistory } from 'react-router-dom'
 import { Icon } from './Icon'
@@ -64,7 +65,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   return (
     <div className={css.container}>
       <Autocomplete
-        // debug
         freeSolo
         fullWidth
         autoSelect
@@ -77,7 +77,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         inputValue={query || ''}
         options={data}
         loading={fetching}
-        classes={{ option: css.option }}
+        classes={{ option: css.option, listbox: css.listbox }}
         onChange={(event, newValue: any | ISearch | null, reason: string) => {
           if (reason === 'select-option') select(newValue)
           if (reason === 'create-option') submit()
@@ -118,28 +118,41 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           const enabled = enabledIds.includes(option.serviceId)
           return (
             <span
-              className={classnames(enabled && css.enabled, option.offline && css.offline)}
+              className={classnames(enabled && css.enabled, option.offline && css.offline, css.indent)}
               data-email={option.ownerEmail}
+              data-platform={option.targetPlatform}
+              data-offline={option.offline.toString()}
+              data-id={option.deviceId}
             >
               {parts}
             </span>
           )
         }}
-        renderGroup={option => [
-          <ListSubheader disableGutters className={css.group + ' MuiAutocomplete-groupLabel'} key={option.key}>
-            <span>
-              {reactStringReplace(option.group, new RegExp(`(${query})`, 'i'), (match, i) => (
-                <span key={i} className={css.highlight}>
-                  {match}
-                </span>
-              ))}
-            </span>
-            {option.children && userEmail !== option.children[0].props.children.props['data-email'] && (
-              <span className={css.email}>{option.children[0].props.children.props['data-email']}</span>
-            )}
-          </ListSubheader>,
-          option.children,
-        ]}
+        renderGroup={option => {
+          const props = option.children && option.children[0].props.children.props
+          return [
+            <ListSubheader disableGutters className="MuiAutocomplete-groupLabel" key={option.key}>
+              <ButtonBase
+                className={css.group}
+                onClick={() => {
+                  history.push(`/devices/${props['data-id']}`)
+                  inputRef?.current?.blur()
+                }}
+              >
+                <Typography variant="body2" className={props['data-offline'] === 'true' ? css.offline : undefined}>
+                  <TargetPlatform id={props['data-platform']} inlineLeft size="md" />
+                  {reactStringReplace(option.group, new RegExp(`(${query})`, 'i'), (match, i) => (
+                    <span key={i} className={css.highlight}>
+                      {match}
+                    </span>
+                  ))}
+                </Typography>
+                {userEmail !== props['data-email'] && <Typography variant="caption">{props['data-email']}</Typography>}
+              </ButtonBase>
+            </ListSubheader>,
+            option.children,
+          ]
+        }}
       />
     </div>
   )
@@ -151,24 +164,40 @@ const useStyles = makeStyles({
     width: '100%',
     zIndex: 1,
   },
-  email: {
-    color: colors.gray,
-    textTransform: 'none',
-    letterSpacing: 0,
-  },
   button: { marginBottom: -spacing.sm },
   enabled: { color: colors.primary },
   offline: { opacity: 0.3 },
   group: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: `0 ${spacing.md}px`,
-    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
+    padding: `${spacing.sm}px ${spacing.md}px`,
+    fontSize: fontSizes.base,
+    color: colors.grayDarker,
+    width: '100%',
+    borderRadius: 0,
+    '&:hover': { backgroundColor: colors.grayLightest },
+    '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
   },
-  option: { display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' },
+  option: {
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    padding: 0,
+    paddingLeft: spacing.xxs,
+    fontSize: fontSizes.base,
+    color: colors.grayDarker,
+    '&[data-focus="true"]': { backgroundColor: colors.grayLightest },
+  },
+  listbox: { maxHeight: '60vh' },
+  indent: {
+    display: 'inline-block',
+    marginLeft: spacing.lg,
+    padding: `${spacing.xs}px ${spacing.lg}px`,
+    borderLeft: `1px solid ${colors.grayLight}`,
+  },
   highlight: {
+    borderRadius: 4,
     backgroundColor: colors.primaryLighter,
     color: colors.black,
-    borderRadius: 4,
   },
 })

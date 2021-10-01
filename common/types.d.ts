@@ -119,11 +119,12 @@ declare global {
   }
 
   interface ISearch {
-    deviceName: string
-    serviceName: string
     deviceId: string
+    deviceName: string
     serviceId: string
+    serviceName: string
     ownerEmail: string
+    targetPlatform: number
     offline: boolean
   }
   interface IConnection {

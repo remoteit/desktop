@@ -137,11 +137,7 @@ const jssTheme: ThemeOptions = {
     },
     MuiListSubheader: {
       root: {
-        textTransform: 'uppercase',
         fontSize: fontSizes.xxs,
-        color: colors.grayDarker,
-        letterSpacing: 2,
-        fontWeight: 500,
         lineHeight: '40px',
       },
       sticky: { zIndex: 2 },
