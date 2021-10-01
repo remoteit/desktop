@@ -202,6 +202,7 @@ export default createModel<RootModel>()({
     async unsubscribe() {
       dispatch.licensing.set({ purchasing: 'true' })
       await graphQLUnsubscribe()
+      await dispatch.devices.fetch()
       console.log('UNSUBSCRIBE')
     },
 
