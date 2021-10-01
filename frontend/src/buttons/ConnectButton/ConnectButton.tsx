@@ -5,6 +5,7 @@ import { connectionState, sanitizeName } from '../../helpers/connectionHelper'
 import { licenseChipLookup } from '../../components/LicenseChip'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
+import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
 import { emit } from '../../services/Controller'
@@ -32,13 +33,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
   const { connections } = useDispatch<Dispatch>()
+  const history = useHistory()
   const chip = service && licenseChipLookup[service.license]
   const state = connectionState(service, connection)
   const visible = !connection?.enabled
   const connecting = state === 'connecting'
   const stopping = state === 'stopping'
 
-  const clickHandler = () => {
+  let clickHandler = () => {
     heartbeat.caffeinate()
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
@@ -67,7 +69,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (chip && chip.show) {
     color = chip.colorName
     title = chip.disabled ? chip.name : title
-    disabled = !!chip.disabled
+    if (chip.disabled) clickHandler = () => history.push('/settings/plans')
     variant = 'text'
   }
 
