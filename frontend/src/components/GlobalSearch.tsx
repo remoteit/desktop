@@ -175,7 +175,7 @@ const useStyles = makeStyles({
     color: colors.grayDarker,
     width: '100%',
     borderRadius: 0,
-    '&:hover': { backgroundColor: colors.grayLightest },
+    // '&:hover': { backgroundColor: colors.grayLightest },
     '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
   },
   option: {

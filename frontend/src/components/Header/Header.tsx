@@ -58,20 +58,20 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       />
       <Title className={css.search}>
         {!showSearch && !searched && (
-          <>
-            <IconButton
-              size="lg"
-              icon="search"
-              className={css.button}
-              onClick={() => {
-                setShowSearch(true)
-                setTimeout(() => inputRef.current?.focus(), 20)
-              }}
-            />
+          <IconButton
+            size="lg"
+            icon="search"
+            className={css.button}
+            inlineLeft
+            onClick={() => {
+              setShowSearch(true)
+              setTimeout(() => inputRef.current?.focus(), 20)
+            }}
+          >
             <Typography variant="caption" color="textSecondary">
-              &nbsp;{device ? attributeName(device) : 'remote.it'}
+              {device ? attributeName(device) : 'remote.it'}
             </Typography>
-          </>
+          </IconButton>
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
