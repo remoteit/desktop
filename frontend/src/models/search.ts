@@ -48,6 +48,7 @@ export default createModel<RootModel>()({
             items {
               id
               name
+              platform
               owner {
                 email
               }
@@ -94,6 +95,8 @@ export default createModel<RootModel>()({
                 deviceId: device.id,
                 serviceId: service.id,
                 ownerEmail: device.owner.email,
+                targetPlatform: device.platform,
+                offline: service.state === 'inactive',
               }))
             )
             .flat()
@@ -113,6 +116,7 @@ export default createModel<RootModel>()({
               deviceId: device.id,
               serviceId: service.id,
               ownerEmail: device.owner.email,
+              targetPlatform: device.targetPlatform,
               offline: service.state === 'inactive',
             }))
             .flat()
