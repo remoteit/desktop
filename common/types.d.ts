@@ -30,6 +30,7 @@ declare global {
     | 'service/clear'
     | 'service/clear-recent'
     | 'launch/app'
+    | 'check/app'
 
     // App/settings
     | 'maximize'
@@ -162,6 +163,7 @@ declare global {
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
     [index: string]: any // needed to be able to iterate the keys :(
+    launchType?: string
   }
 
   type IConnectionState =

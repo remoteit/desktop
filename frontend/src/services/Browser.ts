@@ -60,3 +60,30 @@ export function launchVNC(typeID?: number) {
 export function launchRemoteDesktop(typeID?: number) {
   return typeID === 5 && isWindows()
 }
+
+export function getApplicationObj(typeID?: number, username?: string) {
+  if (launchPutty(typeID)) {
+    return {
+      application: 'putty',
+    }
+  }
+
+  if (launchVNC(typeID)) {
+    return {
+      username,
+      application: 'vncviewer',
+    }
+  }
+
+  if (launchRemoteDesktop(typeID)) {
+    return {
+      username,
+      path: 'desktop',
+      application: 'remoteDesktop',
+    }
+  }
+
+
+  return { application: '' }
+
+}
