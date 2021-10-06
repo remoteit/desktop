@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dialog, DialogActions, Button, DialogTitle, DialogContent, DialogContentText } from '@material-ui/core'
+import { Dialog, DialogActions, Button, DialogTitle, DialogContent, DialogContentText, makeStyles } from '@material-ui/core'
 import { Application } from '../../shared/applications'
 import { emit } from '../../services/Controller'
 import { ApplicationState, Dispatch } from '../../store'
@@ -10,6 +10,7 @@ export const DialogApp: React.FC<{
   app?: Application
   launchApp: ILaunchApp | undefined
 }> = ({ type, app, launchApp }) => {
+  const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const { requireInstall, openApp } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
@@ -55,11 +56,16 @@ export const DialogApp: React.FC<{
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={getApp} style={{ borderRadius: 3, left: '-120px' }} variant="contained" color="primary"   >{buttonText}</Button>
-          <Button onClick={closeAll} style={{ borderRadius: 3 }} size="small" color="primary">Cancel</Button>
-          <Button onClick={launchBrowser} style={{ borderRadius: 3 }} variant="contained" color="primary"  >User browser launcher</Button>
+          <Button onClick={getApp} className={css.getApp} variant="contained" color="primary"   >{buttonText}</Button>
+          <Button onClick={closeAll} className={css.button} size="small" color="primary">Cancel</Button>
+          <Button onClick={launchBrowser} className={css.button} variant="contained" color="primary"  >User browser launcher</Button>
         </DialogActions>
       </Dialog>
     </>
   )
 }
+
+const useStyles = makeStyles({
+  getApp: { borderRadius: 3, left: '-120px' },
+  button: { borderRadius: 3 }
+})

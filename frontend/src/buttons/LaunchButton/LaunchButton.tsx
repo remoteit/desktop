@@ -52,7 +52,7 @@ export const LaunchButton: React.FC<Props> = ({
       launchApplication()
       setOpenLaunchApplication(false)
     }
-  }, [loading])
+  }, [loading, openLaunchApplication])
 
 
   if (!app || !connection?.enabled) return null
