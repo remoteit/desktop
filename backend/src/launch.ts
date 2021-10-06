@@ -1,70 +1,57 @@
 import Logger from './Logger'
 import EventBus from './EventBus'
-const child_process = require('child_process')
+import Command from './Command'
+import { Application } from './sharedCopy/applications'
 
 const EVENTS = {
   notInstalled: 'required/app',
   minimizeWindows: 'windows/minimize',
 }
 
-/* 
-  @FIXME - these commands should all use the Command.ts class
-*/
-
-export const openCMDforWindows = (launchApp: ILaunchApp) => {
-  if (launchApp.path) return launchApplication(launchApp.path, launchApp)
-
-  EventBus.emit(EVENTS.notInstalled, { install: 'none', loading: true })
-  Logger.info('LAUNCH APP', { launchApp })
-  const process = child_process.exec(`DIR /S ${launchApp.application}.exe /B`, { cwd: 'C:\\' })
-
-  process.stdout.on('data', (data: string) => {
-    Logger.info(`stdout: ${data}`)
-    Logger.info(`stdout: ${data.replace(`\\${launchApp.application}.exe`, ``).replace(/\\/g, '\\\\')}`)
-    const cwd = data.replace(`\\${launchApp.application}.exe`, ``).replace(/\\/g, '\\\\').trim()
-    EventBus.emit(EVENTS.notInstalled, { install: 'none', loading: false, path: cwd })
-    launchApplication(cwd, launchApp)
-  })
-
-  process.stderr.on('data', (data: string) => {
-    Logger.info(`stderr: ${data}`)
-  })
-
-  process.on('close', (code: any) => {
-    Logger.info(`child process exited with code ${code}`)
-  })
-
-  child_process.exec(
-    `where ${launchApp.application}`,
-    { cwd: 'C:\\' },
-    (error: any, stdout: any, stderr: any) => {
-      error && Logger.error(`error: ${error}`)
-      Logger.info(`RESULT ${launchApp.application}`, { stdout, stderr })
-      if (!stdout.trim()) {
-        EventBus.emit(EVENTS.notInstalled, { install: `${launchApp.application}`, loading: false })
+export const openCMDforWindows = async (params: { launchApp: ILaunchApp, app: Application }) => {
+  if (params.launchApp.path) return launchApplication(params)
+  Logger.info('LAUNCH APP', { launchApp: params.launchApp })
+  const commands = new Command({})
+  commands.push(`${params.app.defaultTemplateCmd}`)
+  const result = await commands.exec()
+  if (result) {
+    try {
+      if (result.includes('Command failed:')) {
+        EventBus.emit(EVENTS.notInstalled, { install: `${params.launchApp.application}`, loading: false })
+      } else {
+        launchApplication(params)
       }
+    } catch (error) {
+      Logger.warn('OPEN APP ON WINDOWS ERROR', { result, errorMessage: error.message.toString() })
     }
-  )
+  }
 }
 
-function launchApplication(cwd: string, launchApp: ILaunchApp) {
-  let command = ''
-  switch (launchApp.application) {
-    case 'putty':
-      command = `start ${launchApp.application}.exe -ssh ${launchApp.host} ${launchApp.port}`
-      break
-    case 'vncviewer':
-      command = `start ${launchApp.application}.exe -Username ${launchApp.username} ${launchApp.host}:${launchApp.port}`
-      break
-    case 'remoteDesktop':
-      command = `cmdkey /generic:${launchApp.host} /user:${launchApp.username} && 
-        mstsc /v: ${launchApp.host} &&
-        cmdkey /delete:TERMSRV/${launchApp.host}`
-      break
+export const checkAppForWindows = async (params: { application: string, cmd: string }) => {
+  const commands = new Command({})
+  commands.push(`${params.cmd}`)
+  const result = await commands.exec()
+  Logger.info('CHECK APP EXISTS: ', { result })
+  if (result.includes('Command failed:')) {
+    EventBus.emit(EVENTS.notInstalled, { install: `${params.application}`, loading: false })
+  } else {
+    EventBus.emit(EVENTS.notInstalled, { install: `none`, loading: false })
   }
-  child_process.exec(`${command}`, { cwd }, (error: any) => {
-    error && Logger.error(`error: ${error}`)
-  })
+}
+
+async function launchApplication(params: { launchApp: ILaunchApp, app: Application }) {
+  // use defaultTemplateCmd
+  const commands = new Command({})
+  commands.push(params.app.defaultTemplateCmd)
+  const result = await commands.exec()
+  if (result) {
+    try {
+      const parsed = JSON.parse(result)
+      return parsed.data
+    } catch (error) {
+      Logger.warn('LAUNCH APP PARSE ERROR', { result, errorMessage: error.message.toString() })
+    }
+  }
 }
 
 export default { EVENTS }

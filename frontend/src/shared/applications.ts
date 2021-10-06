@@ -15,6 +15,8 @@ export class Application {
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   publicTemplate: string = '[address]'
+  defaultTemplateCmd: string = ''
+  checkApplicationCmd: string = ''
   addressTemplate: string = '[host]:[port]'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
@@ -56,6 +58,10 @@ export class Application {
 
   get template() {
     return this.context === 'copy' ? this.commandTemplate : this.launchTemplate
+  }
+
+  get templateCmd() {
+    return this.launchTemplateCmd
   }
 
   get command() {
@@ -103,6 +109,10 @@ export class Application {
       : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
   }
 
+  private get resolvedDefaultLaunchTemplateCmd() {
+    return this.defaultTemplateCmd
+  }
+
   private get resolvedDefaultCommandTemplate() {
     return this.connection?.public
       ? this.publicTemplate
@@ -111,6 +121,10 @@ export class Application {
 
   private get launchTemplate() {
     return this.connection?.launchTemplate || this.resolvedDefaultLaunchTemplate
+  }
+
+  private get launchTemplateCmd() {
+    return this.resolvedDefaultLaunchTemplateCmd
   }
 
   private get commandTemplate() {
@@ -137,7 +151,12 @@ export class Application {
 }
 
 export function getApplication(context: Application['context'], service?: IService, connection?: IConnection) {
-  const app = getApplicationType(service?.typeID || connection?.typeID)
+  const app = getApplicationType({
+    typeId: service?.typeID || connection?.typeID,
+    host: connection?.host,
+    port: connection?.port,
+    username: connection?.username,
+  })
 
   app.context = context
   app.service = service
@@ -146,20 +165,38 @@ export function getApplication(context: Application['context'], service?: IServi
   return app
 }
 
-function getApplicationType(typeID?: number) {
-  switch (typeID) {
+function getApplicationType(connection: {
+  typeId: number | undefined
+  host: string | undefined
+  port: number | undefined
+  username: string | undefined
+}) {
+  switch (connection.typeId) {
     case 4:
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
+        defaultTemplateCmd: `start vncViewer.exe -Username ${connection.username} ${connection.host}:${connection.port}`,
+        checkApplicationCmd: 'cd c:\\ && where vncViewer.exe',
       })
     case 28:
+      const username = connection.username ? `${connection.username}@` : ''
       return new Application({
         title: 'SSH',
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
+        defaultTemplateCmd: `start putty.exe -ssh ${username}${connection.host} ${connection.port}`,
+        checkApplicationCmd: 'cd c:\\ && where putty.exe ',
         //'ssh -l [username] [host] -p [port] -o "NoHostAuthenticationForLocalhost=yes"',
+      })
+    case 5:
+      return new Application({
+        title: 'remoteDesktop',
+        defaultLaunchTemplate: 'http://[username]@[host]:[port]',
+        defaultCommandTemplate: '',
+        defaultTemplateCmd: `cmdkey /generic:${connection.host} /user:${connection.username} && mstsc /v: ${connection.host} && cmdkey /delete:TERMSRV/${connection.host}`,
+        checkApplicationCmd: 'cd c:\\ && where remoteDesktop.exe ',
       })
     case 8:
     case 10:

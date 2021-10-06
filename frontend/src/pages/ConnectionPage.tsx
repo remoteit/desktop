@@ -31,6 +31,7 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { LaunchSelect } from '../components/LaunchSelect'
 
 export const ConnectionPage: React.FC = () => {
   const css = useStyles()
@@ -105,7 +106,11 @@ export const ConnectionPage: React.FC = () => {
           <NameSetting connection={connection} service={service} device={device} />
           <PortSetting connection={connection} service={service} />
           <InlineTemplateSetting connection={connection} service={service} context="copy" />
-          <InlineTemplateSetting connection={connection} service={service} context="launch" />
+          {connection.typeID && [22, 28].includes(connection.typeID) ? (
+            <LaunchSelect connection={connection} service={service} launchType={connection.launchType || 'Use command'} />
+          ) : (
+            <InlineTemplateSetting connection={connection} service={service} context="launch" />
+          )}
           <CustomAttributeSettings connection={connection} service={service} />
         </List>
       </AccordionMenuItem>

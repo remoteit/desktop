@@ -17,7 +17,7 @@ import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import launch, { openCMDforWindows } from './launch'
+import launch, { checkAppForWindows, openCMDforWindows } from './launch'
 
 class Controller {
   private io: SocketIO.Server
@@ -66,6 +66,7 @@ class Controller {
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
     socket.on('launch/app', openCMDforWindows)
+    socket.on('check/app', checkAppForWindows)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)

@@ -1,17 +1,35 @@
-import React, { useRef, useState, useEffect } from 'react'
-import useResizeObserver from 'use-resize-observer'
-import { makeStyles, Typography, InputLabel, Collapse, Paper } from '@material-ui/core'
+import React from 'react'
+import { makeStyles, Typography, InputLabel, Collapse, Paper, IconButton, Menu, MenuItem, Grid, Popper, Grow, ClickAwayListener, MenuList, withStyles, MenuProps, ListItemText } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { getAttributes } from '../helpers/attributes'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { useApplication } from '../hooks/useApplication'
-import { CommandButton } from '../buttons/CommandButton'
-import { CopyButton } from '../buttons/CopyButton'
 import { DataDisplay } from './DataDisplay'
 import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import { colors, spacing } from '../styling'
+import { Icon } from './Icon'
+
+const StyledMenu = withStyles({
+  paper: {
+    border: '1px solid #d3d4d5',
+  },
+})((props: MenuProps) => (
+  <Menu
+    elevation={0}
+    getContentAnchorEl={null}
+    anchorOrigin={{
+      vertical: 'bottom',
+      horizontal: 'right',
+    }}
+    transformOrigin={{
+      vertical: 'top',
+      horizontal: 'right',
+    }}
+    {...props}
+  />
+))
 
 type Props = {
   connection?: IConnection
@@ -23,163 +41,107 @@ type Props = {
 
 export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, service, session }) => {
   const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
-  const basicRef = useRef<HTMLDivElement>(null)
-  const copyRef = useRef<HTMLDivElement>(null)
-  const launchRef = useRef<HTMLDivElement>(null)
-  const [hover, setHover] = useState<'name' | 'port' | 'copy' | 'launch' | undefined>()
-  const [displayHeight, setDisplayHeight] = useState<number>(0)
+  const [hover, setHover] = React.useState<'name' | 'port' | 'copy' | 'launch' | undefined>()
   const { ui } = useDispatch<Dispatch>()
   const app = useApplication('copy', service, connection)
   const css = useStyles()
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  const measure = () => {
-    const height = Math.max(
-      Number(basicRef.current?.offsetHeight),
-      Number(copyRef.current?.offsetHeight),
-      Number(launchRef.current?.offsetHeight)
-    )
-    if (height !== displayHeight) {
-      setDisplayHeight(height)
-    }
-  }
-
-  const { ref } = useResizeObserver<HTMLDivElement>({ onResize: measure })
-
-  useEffect(() => {
-    setTimeout(measure, 100)
-  }, [connection, service])
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   if (!connection) return null
 
   const address = app.address.split(':')
   const name = address[0]
   const port = address[1]
-
-  const basicDisplay = (
-    <div ref={basicRef} className={hover ? css.hide : css.show}>
-      <InputLabel shrink>Address</InputLabel>
-      <Typography variant="h2" className={css.h2}>
-        {name && <span className={hover === 'name' ? css.active : undefined}>{name}</span>}
-        {port && (
-          <>
-            :<span className={hover === 'port' ? css.active : undefined}>{port}</span>
-          </>
-        )}
-      </Typography>
-    </div>
+  let h2Css = css.h2
+  let label = 'Address'
+  let display: JSX.Element | string = (
+    <>
+      {name && <span className={hover === 'name' ? css.active : undefined}>{name}</span>}
+      {port && (
+        <>
+          :<span className={hover === 'port' ? css.active : undefined}>{port}</span>
+        </>
+      )}
+    </>
   )
 
-  const nameDisplay = (
-    <div className={hover === 'name' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Hostname</InputLabel>
-      <Typography variant="h2" className={css.h2}>
-        {name && <span className={css.active}>{name}</span>}
-        {port && <>:{port}</>}
-      </Typography>
-    </div>
-  )
+  if (hover === 'launch' || hover === 'copy') {
+    label = hover === 'copy' ? 'Command' : 'Launch'
+    app.context = hover
+    display = app.command
+    h2Css += ' ' + css.active
+  }
 
-  const portDisplay = (
-    <div className={hover === 'port' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Port</InputLabel>
-      <Typography variant="h2" className={css.h2}>
-        {name}:<span className={css.active}>{port}</span>
-      </Typography>
-    </div>
-  )
-
-  app.context = 'copy'
-  const copyDisplay = (
-    <div ref={copyRef} className={hover === 'copy' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Command</InputLabel>
-      <Typography variant="h2" className={css.h2}>
-        <span className={css.active}>{app.command}</span>
-      </Typography>
-    </div>
-  )
-
-  app.context = 'launch'
-  const launchDisplay = (
-    <div ref={launchRef} className={hover === 'launch' ? css.show : css.hide}>
-      <InputLabel shrink>{app.contextTitle}</InputLabel>
-      <Typography variant="h2" className={css.h2}>
-        <span className={css.active}>{app.command}</span>
-      </Typography>
-    </div>
-  )
+  const copy = (text: any) => {
+    navigator.clipboard.writeText(text)
+    handleClose()
+  }
 
   return (
     <Collapse in={show} timeout={800}>
       <Gutters bottom={null}>
         <Paper className={css.address} elevation={0}>
           <Gutters size="md" bottom={null}>
-            <div style={{ height: displayHeight, position: 'relative', transition: 'height 200ms' }} ref={ref}>
-              {basicDisplay}
-              {nameDisplay}
-              {portDisplay}
-              {copyDisplay}
-              {launchDisplay}
-            </div>
-          </Gutters>
-          <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
-            <span>
-              <InputLabel shrink>Copy</InputLabel>
-              <GuideStep
-                guide="guideAWS"
-                step={6}
-                instructions="Copy this address for use in your application. It will connect on demand even if you close remoteit."
-                placement="left"
-                component="span"
-              >
-                <CommandButton
-                  color="white"
-                  type="solid"
-                  connection={connection}
-                  service={service}
-                  onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
-                  onMouseEnter={() => setHover('copy')}
-                  onMouseLeave={() => setHover(undefined)}
-                />
-              </GuideStep>
-              <CopyButton
-                color="white"
-                icon="i-cursor"
-                type="solid"
-                size="md"
-                value={connection.host}
-                onMouseEnter={() => setHover('name')}
-                onMouseLeave={() => setHover(undefined)}
-              />
-              <CopyButton
-                color="white"
-                icon="port"
-                type="solid"
-                size="md"
-                value={connection.port}
-                onMouseEnter={() => setHover('port')}
-                onMouseLeave={() => setHover(undefined)}
-              />
-            </span>
-            <span>
-              <InputLabel shrink>Launch</InputLabel>
-              <GuideStep
-                guide="guideAWS"
-                step={7}
-                instructions="Or for web and some other services you can use the launch button."
-                placement="left"
-              >
-                <LaunchButton
-                  color="white"
-                  type="solid"
-                  size="md"
-                  connection={connection}
-                  service={service}
-                  onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
-                  onMouseEnter={() => setHover('launch')}
-                  onMouseLeave={() => setHover(undefined)}
-                />
-              </GuideStep>
-            </span>
+            <Grid container>
+              <Grid item xs={8} md={8}>
+                <InputLabel shrink>{label}</InputLabel>
+                <Typography variant="h2" className={h2Css}>
+                  {display}
+                </Typography>
+              </Grid>
+              <Grid item xs={4} md={4} style={{ textAlign: 'right' }}>
+                <GuideStep
+                  guide="guideAWS"
+                  step={7}
+                  instructions="Or for web and some other services you can use the launch button."
+                  placement="left"
+                  highlight
+                >
+                  <LaunchButton
+                    color="white"
+                    type="solid"
+                    size="md"
+                    connection={connection}
+                    service={service}
+                    onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+                    onMouseEnter={() => setHover('launch')}
+                    onMouseLeave={() => setHover(undefined)}
+                  />
+                </GuideStep>
+                <GuideStep
+                  guide="guideAWS"
+                  step={6}
+                  instructions="Copy this address for use in your application to have it connect on demand."
+                  placement="left"
+                  highlight
+                >
+                  <IconButton onClick={handleClick} style={{ color: 'white' }}>
+                    <Icon name="copy" size="md"></Icon>
+                  </IconButton>
+                  <StyledMenu
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                  >
+                    <MenuItem onMouseEnter={() => setHover('copy')} onMouseLeave={() => setHover(undefined)} onClick={() => copy(app.command)} >Copy launch address</MenuItem>
+                    <MenuItem value={connection.host} onMouseEnter={() => setHover('name')} onMouseLeave={() => setHover(undefined)} onClick={() => copy(connection.host)} >Copy Hostname </MenuItem>
+                    <MenuItem value={connection.port} onMouseEnter={() => setHover('port')} onMouseLeave={() => setHover(undefined)} onClick={() => copy(connection.port)} >Copy Port </MenuItem>
+
+                  </StyledMenu>
+                </GuideStep>
+              </Grid>
+            </Grid>
+
+
+
           </Gutters>
         </Paper>
         {details && (
@@ -193,25 +155,21 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
 }
 
 const useStyles = makeStyles({
-  show: {
-    opacity: 1,
-    position: 'absolute',
-    transition: 'opacity 200ms',
-  },
-  hide: {
-    opacity: 0,
-    position: 'absolute',
-    transitionProperty: 'opacity',
-    transitionDuration: '200ms',
-    transitionDelay: '50ms',
-  },
   active: {
     borderRadius: 4,
     backgroundColor: colors.darken,
   },
   h2: {
+    wordBreak: 'break-all',
+    overflow: 'hidden',
     fontWeight: 500,
     lineHeight: '1.33em',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
+    transition: 'height 200ms',
+    '-webkit-line-clamp': 2,
+    '-webkit-box-orient': 'vertical',
+    '& span': { wordBreak: 'break-word' },
   },
   address: {
     backgroundColor: colors.primary,
