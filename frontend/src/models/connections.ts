@@ -7,10 +7,11 @@ import { RootModel } from './rootModel'
 import { getRestApi } from '../helpers/apiHelper'
 import axios from 'axios'
 
-type IConnectionsState = { all: IConnection[] }
+type IConnectionsState = { all: IConnection[]; useCommand: boolean }
 
 const defaultState: IConnectionsState = {
   all: [],
+  useCommand: true,
 }
 
 export default createModel<RootModel>()({

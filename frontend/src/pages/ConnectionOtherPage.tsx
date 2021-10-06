@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { Typography, List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction } from '@material-ui/core'
+import { Typography, List } from '@material-ui/core'
 import { selectById } from '../models/devices'
 import { ConnectionDetails } from '../components/ConnectionDetails'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -40,7 +40,7 @@ export const ConnectionOtherPage: React.FC = () => {
             <InfoButton device={device} service={service} />
           </Typography>
           <Gutters>
-            <ConnectionDetails connection={connection} session={session} show />
+            <ConnectionDetails connection={connection} session={session} show service={service}/>
           </Gutters>
           {/* <Icon name="arrow-right" size="lg" /> */}
           {/* <Icon name="ellipsis-h" /> */}
