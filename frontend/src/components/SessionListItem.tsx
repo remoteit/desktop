@@ -32,7 +32,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
   let icon: React.ReactElement | null = null
   if (connected) {
     icon = <Icon color="primary" name="chevron-right" type="light" size="md" />
-    if (session.public) icon = <Icon color="primary" name="chevron-double-right" type="light" size="md" />
+    // if (session.public) icon = <Icon color="primary" name="chevron-double-right" type="light" size="md" />
   }
 
   return (
