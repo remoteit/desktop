@@ -6,27 +6,23 @@ import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
+import { DesktopUI } from '../../components/DesktopUI'
 import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
 
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const css = useStyles()
   const history = useHistory()
-  const { backendAuthenticated, thisDevice, targetDevice, os, canRestore, restoring } = useSelector(
-    (state: ApplicationState) => ({
-      backendAuthenticated: state.auth.backendAuthenticated,
-      thisDevice: getOwnDevices(state).find(d => d.thisDevice),
-      targetDevice: state.backend.device,
-      os: state.backend.environment.os,
-      restoring: state.ui.restoring,
-      canRestore:
-        !state.backend.device.uid &&
-        (state.devices.total > state.devices.size ||
-          !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
-    })
-  )
-
-  if (!backendAuthenticated) return null
+  const { thisDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
+    thisDevice: getOwnDevices(state).find(d => d.thisDevice),
+    targetDevice: state.backend.device,
+    os: state.backend.environment.os,
+    restoring: state.ui.restoring,
+    canRestore:
+      !state.backend.device.uid &&
+      (state.devices.total > state.devices.size ||
+        !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
+  }))
 
   if (restoring)
     return (
@@ -49,26 +45,28 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
   }
 
   return (
-    <ListItemLocation icon="hdd" pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
-      <ListItemText primary={title} secondary={subtitle} />
-      {canRestore && (
-        <ListItemSecondaryAction>
-          {restore ? (
-            <Typography variant="body2" color="textSecondary">
-              Select a device or
-              <Link onClick={() => history.push('/devices')}>cancel</Link>
-            </Typography>
-          ) : (
-            <Chip
-              label="Restore Device"
-              variant="default"
-              size="small"
-              onClick={() => history.push('/devices/restore')}
-            />
-          )}
-        </ListItemSecondaryAction>
-      )}
-    </ListItemLocation>
+    <DesktopUI>
+      <ListItemLocation icon="hdd" pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
+        <ListItemText primary={title} secondary={subtitle} />
+        {canRestore && (
+          <ListItemSecondaryAction>
+            {restore ? (
+              <Typography variant="body2" color="textSecondary">
+                Select a device or
+                <Link onClick={() => history.push('/devices')}>cancel</Link>
+              </Typography>
+            ) : (
+              <Chip
+                label="Restore Device"
+                variant="default"
+                size="small"
+                onClick={() => history.push('/devices/restore')}
+              />
+            )}
+          </ListItemSecondaryAction>
+        )}
+      </ListItemLocation>
+    </DesktopUI>
   )
 }
 
