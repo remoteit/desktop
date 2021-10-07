@@ -55,13 +55,6 @@ export const App: React.FC = () => {
       </Page>
     )
 
-  if (!backendAuthenticated)
-    return (
-      <Page>
-        <LoadingMessage message="Signing in..." logo />
-      </Page>
-    )
-
   if (!installed)
     return (
       <Page>

@@ -3,7 +3,6 @@ import { store } from '../store'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
-import cloudController from './cloudController'
 
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
@@ -11,6 +10,7 @@ class Controller extends EventEmitter {
   private userName?: string
   private userPassword?: string
   private url: string = '/'
+  handlers: ILookup<(result: any) => void> = {}
 
   init() {
     const { protocol, host } = window.location
@@ -26,26 +26,26 @@ class Controller extends EventEmitter {
     const { ui, auth } = store.dispatch
     const offline = !navigator.onLine
     ui.set({ offline })
-    if (!offline) {
-      if (state.auth.backendAuthenticated) {
-        ui.refreshAll()
-      } else {
-        ui.set({ errorMessage: '' })
-        auth.init()
-      }
+    if (offline) return
+
+    if (state.auth.backendAuthenticated) {
+      ui.refreshAll()
+    } else {
+      ui.set({ errorMessage: '' })
+      auth.init()
     }
   }
 
   setupConnection(username: string, password: string) {
     this.userName = username
     this.userPassword = password
-    this.socket = io(this.url, { transports: ['websocket'], forceNew: true })
-    const handlers = getEventHandlers()
+    this.socket = io(this.url, { transports: ['websocket'], forceNew: true, reconnectionDelay: 10000 })
+    this.handlers = getEventHandlers()
 
-    for (const eventName in handlers) {
-      if (handlers.hasOwnProperty(eventName)) {
+    for (const eventName in this.handlers) {
+      if (this.handlers.hasOwnProperty(eventName)) {
         const name = eventName as SocketEvent
-        const handler = handlers[name]
+        const handler = this.handlers[name]
         this.on(name, handler)
       }
     }
@@ -105,22 +105,13 @@ function getEventHandlers() {
 
     unauthorized: (error: Error) => auth.backendSignInError(error.message),
 
-    authenticated: () => auth.authenticated(),
+    authenticated: () => auth.backendAuthenticated(),
 
     disconnect: () => auth.disconnect(),
 
     dataReady: async (result: boolean) => {
       console.log('Data ready')
       backend.set({ dataReady: result })
-      store.dispatch.licensing.init()
-      await cloudController.init()
-      await store.dispatch.accounts.init()
-      await store.dispatch.devices.init()
-      await store.dispatch.ui.init()
-      await store.dispatch.devices.fetch()
-      store.dispatch.applicationTypes.fetch()
-      store.dispatch.announcements.fetch()
-      store.dispatch.sessions.fetch()
     },
 
     connect_error: () => {

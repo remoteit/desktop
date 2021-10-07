@@ -47,13 +47,12 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             {singlePanel && <AvatarMenu />}
             <OutOfBand inline />
           </Typography>
+          <List disablePadding>
+            <DeviceSetupItem />
+          </List>
         </>
       }
     >
-      <List>
-        <DeviceSetupItem />
-      </List>
-      <Divider variant="inset" />
       <List>
         <ListItemLocation
           title="Settings"

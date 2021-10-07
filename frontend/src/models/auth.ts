@@ -1,16 +1,15 @@
-import Controller from '../services/Controller'
 import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
+import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { getRedirectUrl, isElectron } from '../services/Browser'
 import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
+import { isElectron } from '../services/Browser'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
 import { store } from '../store'
-import { emit } from '../services/Controller'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
 
@@ -98,7 +97,12 @@ export default createModel<RootModel>()({
           yoicsId: data.yoicsId,
           created: data.created,
         })
-        auth.setNotificationSettings(data.notificationSettings)
+        analyticsHelper.identify(data.id)
+        if (data.authhash && data.yoicsId) {
+          Controller.setupConnection(data.yoicsId, data.authhash)
+          auth.setNotificationSettings(data.notificationSettings)
+          auth.signedIn()
+        } else console.warn('Login failed!', data)
       } catch (error) {
         await graphQLCatchError(error)
       }
@@ -148,7 +152,7 @@ export default createModel<RootModel>()({
       const localUsername = localStorage.getItem('username')
       dispatch.auth.setUsername(localUsername || undefined)
     },
-    async authenticated(_: void, rootState) {
+    async backendAuthenticated(_: void, rootState) {
       if (rootState.auth.authenticated) {
         dispatch.auth.setBackendAuthenticated(true)
       }
@@ -170,6 +174,18 @@ export default createModel<RootModel>()({
     async backendSignInError(error: string) {
       await dispatch.auth.signedOut()
       dispatch.auth.setError(error)
+    },
+    async signedIn() {
+      store.dispatch.licensing.init()
+      await cloudController.init()
+      await store.dispatch.accounts.init()
+      await store.dispatch.devices.init()
+      await store.dispatch.connections.init()
+      await store.dispatch.ui.init()
+      await store.dispatch.devices.fetch()
+      store.dispatch.applicationTypes.fetch()
+      store.dispatch.announcements.fetch()
+      store.dispatch.sessions.fetch()
     },
     /**
      * Gets called when the backend signs the user out
@@ -236,9 +252,6 @@ export default createModel<RootModel>()({
       state.user = user
       state.signInError = undefined
       window.localStorage.setItem(USER_KEY, JSON.stringify(user))
-      analyticsHelper.identify(user.id)
-      if (user.authHash && user.yoicsId) Controller.setupConnection(user.yoicsId, user.authHash)
-      else console.warn('Login failed!', user)
       return state
     },
     setAuthService(state: AuthState, authService: AuthService) {

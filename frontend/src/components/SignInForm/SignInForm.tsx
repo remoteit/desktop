@@ -34,9 +34,9 @@ export function SignInForm() {
   }
 
   const segmentSettings = {
-      segmentKey: 'DESKTOP',
-      segmentAppName: SEGMENT_PROJECT_KEY,
-      appVersion
+    segmentKey: 'DESKTOP',
+    segmentAppName: SEGMENT_PROJECT_KEY,
+    appVersion,
   }
 
   return (

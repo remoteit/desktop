@@ -15,7 +15,6 @@ import styles from '../../styling'
 export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
   const history = useHistory()
-  const location = useLocation()
   const { local, other, recent } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
 

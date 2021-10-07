@@ -28,7 +28,7 @@ export interface IconProps {
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef(
-  ({ color, fixedWidth, name, size, rotate, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps) => {
+  ({ color, fixedWidth, name, size, rotate, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps, ref) => {
     const styles: any = {}
 
     if (name === 'port') {
@@ -75,6 +75,7 @@ export const Icon = React.forwardRef(
 
     return (
       <FontAwesomeIcon
+        forwardedRef={ref}
         style={styles}
         icon={[fontType, name as IconName]}
         spin={spin}

@@ -6,6 +6,7 @@ import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import { ServiceAttributes } from '../../components/ServiceAttributes'
 import { ServiceHeaderMenu } from '../../components/ServiceHeaderMenu'
 import { ConnectionDetails } from '../../components/ConnectionDetails'
+import { newConnection } from '../../helpers/connectionHelper'
 import { ComboButton } from '../../buttons/ComboButton'
 import { isRemoteUI } from '../../helpers/uiHelper'
 import { GuideStep } from '../../components/GuideStep'
@@ -18,7 +19,7 @@ export const ServiceDetailPage: React.FC<{ device?: IDevice; targets: ITarget[] 
   const { serviceID } = useParams<{ serviceID: string }>()
   const service = device?.services.find(s => s.id === serviceID)
   const { connection, remoteUI } = useSelector((state: ApplicationState) => ({
-    connection: state.connections.all.find(c => c.id === serviceID),
+    connection: state.connections.all.find(c => c.id === serviceID) || newConnection(service),
     remoteUI: isRemoteUI(state),
   }))
   const target = targets.find(t => t.uid === serviceID)

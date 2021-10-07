@@ -1,5 +1,5 @@
 import { colors, spacing, radius, fontSizes } from './'
-import { createMuiTheme, ThemeOptions } from '@material-ui/core'
+import { createTheme, ThemeOptions } from '@material-ui/core'
 
 const gutters = 32
 const jssTheme: ThemeOptions = {
@@ -327,4 +327,4 @@ const jssTheme: ThemeOptions = {
   },
 }
 
-export default createMuiTheme(jssTheme)
+export default createTheme(jssTheme)

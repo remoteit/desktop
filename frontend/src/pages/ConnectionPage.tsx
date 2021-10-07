@@ -6,13 +6,13 @@ import { PortSetting } from '../components/PortSetting'
 import { NameSetting } from '../components/NameSetting'
 import { ProxySetting } from '../components/ProxySetting'
 import { PublicSetting } from '../components/PublicSetting'
+import { newConnection } from '../helpers/connectionHelper'
 import { TimeoutSetting } from '../components/TimeoutSetting'
 import { LicensingNotice } from '../components/LicensingNotice'
+import { makeStyles, List } from '@material-ui/core'
 import { ConnectionDetails } from '../components/ConnectionDetails'
-import { newConnection } from '../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../components/InlineTemplateSetting'
 import { ConnectionLogSetting } from '../components/ConnectionLogSetting'
@@ -40,17 +40,20 @@ export const ConnectionPage: React.FC = () => {
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { devices, ui } = useDispatch<Dispatch>()
-  const { service, device, connection, session, fetching, accordion } = useSelector((state: ApplicationState) => {
-    const [service, device] = selectById(state, serviceID)
-    return {
-      service,
-      device,
-      connection: state.connections.all.find(c => c.id === serviceID) || newConnection(service),
-      session: state.sessions.all.find(s => s.id === sessionID),
-      fetching: state.devices.fetching,
-      accordion: state.ui.accordion,
+  const { service, device, connection, session, fetching, accordion, backendAuthenticated } = useSelector(
+    (state: ApplicationState) => {
+      const [service, device] = selectById(state, serviceID)
+      return {
+        service,
+        device,
+        connection: state.connections.all.find(c => c.id === serviceID) || newConnection(service),
+        session: state.sessions.all.find(s => s.id === sessionID),
+        fetching: state.devices.fetching,
+        accordion: state.ui.accordion,
+        backendAuthenticated: state.auth.backendAuthenticated,
+      }
     }
-  })
+  )
   const accordionConfig = connection?.enabled ? 'configConnected' : 'config'
 
   useEffect(() => {
@@ -105,6 +108,7 @@ export const ConnectionPage: React.FC = () => {
         <List disablePadding>
           <NameSetting connection={connection} service={service} device={device} />
           <PortSetting connection={connection} service={service} />
+          {/* @TODO: add auto launch */}
           <InlineTemplateSetting connection={connection} service={service} context="copy" />
           {connection.typeID && [22, 28].includes(connection.typeID) ? (
             <LaunchSelect connection={connection} service={service} launchType={connection.launchType || 'Use command'} />
@@ -125,7 +129,7 @@ export const ConnectionPage: React.FC = () => {
           <ProxySetting connection={connection} service={service} />
           <LanShareSelect connection={connection} service={service} />
           <ConnectionLogSetting connection={connection} service={service} />
-          <PublicSetting connection={connection} service={service} />
+          <PublicSetting connection={connection} service={service} disabled={!backendAuthenticated} />
           <TargetHostSetting connection={connection} service={service} />
         </List>
       </AccordionMenuItem>

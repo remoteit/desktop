@@ -6,10 +6,14 @@ import { InlineSelectSetting } from './InlineSelectSetting'
 import { ListItemSetting } from './ListItemSetting'
 import { Gutters } from './Gutters'
 
-export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
+export const PublicSetting: React.FC<{ service: IService; connection?: IConnection; disabled?: boolean }> = ({
+  service,
+  connection,
+  disabled,
+}) => {
   if (!connection) return null
+  disabled = connection.enabled || service.attributes.route === 'p2p' || disabled
 
-  const disabled = connection.enabled || service.attributes.route === 'p2p'
   const subLabel =
     connection.publicRestriction === IP_LATCH
       ? 'The connection will latch onto the first device to connect with IP restriction.'
@@ -18,7 +22,7 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
   return (
     <>
       <ListItemSetting
-        label="Shareable Link"
+        label="Proxy connection"
         subLabel="Publicly sharable proxy connection"
         disabled={disabled}
         icon="share-alt"

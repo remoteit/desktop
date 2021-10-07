@@ -17,16 +17,29 @@ const defaultState: IConnectionsState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
+    async init() {
+      let item = window.localStorage.getItem('connections-all')
+      if (item) dispatch.connections.set({ all: JSON.parse(item) })
+    },
+
     async updateConnection(connection: IConnection, globalState) {
       const { all } = globalState.connections
+
+      let exists = false
       all.some((c, index) => {
         if (c.id === connection.id) {
           all[index] = connection
           dispatch.connections.set({ all })
-          if (connection) return true
+          exists = true
+          return true
         }
         return false
       })
+
+      if (!exists) {
+        all.push(connection)
+        dispatch.connections.set({ all })
+      }
     },
 
     async restoreConnections(connections: IConnection[], globalState) {
@@ -125,7 +138,10 @@ export default createModel<RootModel>()({
       return state
     },
     set(state: IConnectionsState, params: ILookup<any>) {
-      Object.keys(params).forEach(key => (state[key] = params[key]))
+      Object.keys(params).forEach(key => {
+        if (key === 'all') window.localStorage.setItem(`connections-${key}`, JSON.stringify(params[key]) || '')
+        state[key] = params[key]
+      })
       return state
     },
   },

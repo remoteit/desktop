@@ -8,21 +8,25 @@ import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
-import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const css = useStyles()
   const history = useHistory()
-  const { thisDevice, targetDevice, os, canRestore, restoring } = useSelector((state: ApplicationState) => ({
-    thisDevice: getOwnDevices(state).find(d => d.thisDevice),
-    targetDevice: state.backend.device,
-    os: state.backend.environment.os,
-    restoring: state.ui.restoring,
-    canRestore:
-      !state.backend.device.uid &&
-      (state.devices.total > state.devices.size ||
-        !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
-  }))
+  const { backendAuthenticated, thisDevice, targetDevice, os, canRestore, restoring } = useSelector(
+    (state: ApplicationState) => ({
+      backendAuthenticated: state.auth.backendAuthenticated,
+      thisDevice: getOwnDevices(state).find(d => d.thisDevice),
+      targetDevice: state.backend.device,
+      os: state.backend.environment.os,
+      restoring: state.ui.restoring,
+      canRestore:
+        !state.backend.device.uid &&
+        (state.devices.total > state.devices.size ||
+          !!getOwnDevices(state).find((d: IDevice) => d.state !== 'active' && !d.shared)),
+    })
+  )
+
+  if (!backendAuthenticated) return null
 
   if (restoring)
     return (

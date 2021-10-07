@@ -23,7 +23,12 @@ export function agent() {
 
 export function isRemote() {
   const { port, hostname } = window.location
-  return !(isElectron() || ((port === '29999' || port === '29998') && hostname === IP_PRIVATE))
+  return !(
+    isElectron() ||
+    ((port === '29999' || port === '29998') && hostname === IP_PRIVATE) ||
+    port === '3000' ||
+    hostname.includes('remote.it')
+  )
 }
 
 export function isElectron() {
