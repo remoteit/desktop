@@ -49,7 +49,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     setTimeout(measure, 100)
   }, [connection, service])
 
-
   if (!connection) return null
 
   const address = app.address.split(':')
@@ -70,7 +69,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     </div>
   )
 
-
   const nameDisplay = (
     <div className={hover === 'name' ? css.show : css.hide}>
       <InputLabel shrink>Copy Hostname</InputLabel>
@@ -80,7 +78,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
       </Typography>
     </div>
   )
-
 
   const portDisplay = (
     <div className={hover === 'port' ? css.show : css.hide}>
@@ -102,7 +99,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   )
 
   app.context = 'launch'
-
   const launchDisplay = (
     <div ref={launchRef} className={hover === 'launch' ? css.show : css.hide}>
       <InputLabel shrink>{app.contextTitle}</InputLabel>
@@ -111,7 +107,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
       </Typography>
     </div>
   )
-
 
   return (
     <Collapse in={show} timeout={800}>

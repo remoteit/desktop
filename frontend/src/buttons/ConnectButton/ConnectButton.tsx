@@ -89,6 +89,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     title = 'Offline'
     disabled = true
   }
+  if (service?.attributes.route === 'p2p' && connection?.public) {
+    disabled = true
+  }
 
   return (
     <Fade in={visible} timeout={600}>

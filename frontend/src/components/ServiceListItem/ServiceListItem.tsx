@@ -39,7 +39,7 @@ export function ServiceListItem({ connection, service, indent, dense, secondary 
       {otherUser && (
         <span>
           <Icon name="user" size="bug" type="solid" inlineLeft />
-          {connection?.owner.email}
+          {connection?.owner?.email}
         </span>
       )}
     </span>

@@ -95,6 +95,12 @@ export function selectConnections(state: ApplicationState) {
   )
 }
 
+export function selectConnection(state: ApplicationState, service?: IService) {
+  let connection = state.connections.all.find(c => c.id === service?.id) || newConnection(service)
+  if (!state.auth.backendAuthenticated) connection.public = true
+  return connection
+}
+
 export function getConnectionSessionIds() {
   const { all } = store.getState().connections
   return all.map(c => c.sessionId)

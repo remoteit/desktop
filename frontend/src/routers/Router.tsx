@@ -180,6 +180,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               <Route path="/settings/reports">
                 <ReportsPage />
               </Route>
+
               <Route path="/settings/notifications">
                 <NotificationsPage />
               </Route>

@@ -8,6 +8,7 @@ import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
+import { selectConnection } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, Typography, Menu, MenuItem, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
@@ -22,7 +23,7 @@ export const ServiceContextualMenu: React.FC = () => {
     return {
       el,
       remoteUI: isRemoteUI(state),
-      connection: state.connections.all.find(c => c.id === serviceID),
+      connection: selectConnection(state),
       service,
       device,
     }

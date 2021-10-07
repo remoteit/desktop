@@ -4,16 +4,13 @@ import { setConnection } from '../helpers/connectionHelper'
 import { IP_OPEN, IP_LATCH } from '../shared/constants'
 import { InlineSelectSetting } from './InlineSelectSetting'
 import { ListItemSetting } from './ListItemSetting'
+import { DesktopUI } from './DesktopUI'
 import { Gutters } from './Gutters'
 
-export const PublicSetting: React.FC<{ service: IService; connection?: IConnection; disabled?: boolean }> = ({
-  service,
-  connection,
-  disabled,
-}) => {
-  if (!connection) return null
-  disabled = connection.enabled || service.attributes.route === 'p2p' || disabled
+export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
+  if (!connection) return <>what?!</>
 
+  const disabled = connection.enabled || service.attributes.route === 'p2p'
   const subLabel =
     connection.publicRestriction === IP_LATCH
       ? 'The connection will latch onto the first device to connect with IP restriction.'
@@ -21,22 +18,25 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
 
   return (
     <>
-      <ListItemSetting
-        label="Proxy connection"
-        subLabel="Publicly sharable proxy connection"
-        disabled={disabled}
-        icon="share-alt"
-        toggle={!!connection.public}
-        onClick={() =>
-          connection &&
-          setConnection({
-            ...connection,
-            public: !connection.public,
-          })
-        }
-      />
+      <DesktopUI>
+        <ListItemSetting
+          label="Proxy connection"
+          subLabel="Publicly sharable proxy connection"
+          disabled={disabled}
+          icon="share-alt"
+          toggle={!!connection.public}
+          onClick={() =>
+            connection &&
+            setConnection({
+              ...connection,
+              public: !connection.public,
+            })
+          }
+        />
+      </DesktopUI>
       <Collapse in={connection.public} timeout={400}>
         <InlineSelectSetting
+          icon="lock"
           label="Security"
           disabled={disabled || !connection.public}
           value={connection.publicRestriction || IP_LATCH}

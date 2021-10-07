@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Button, List, Typography, TextField, MenuItem } from '@material-ui/core'
 import { IP_OPEN, IP_LATCH, IP_PRIVATE, REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../shared/constants'
 import { ListItemSetting } from '../../components/ListItemSetting'
-import { newConnection, setConnection } from '../../helpers/connectionHelper'
+import { selectConnection, setConnection } from '../../helpers/connectionHelper'
 import { findService } from '../../models/devices'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
@@ -20,12 +20,11 @@ type Selections = { value: string | Function; name: string; note: string; id: nu
 export const LanSharePage: React.FC = () => {
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const { service, lanIp, connection } = useSelector((state: ApplicationState) => {
-    let connection = state.connections.all.find(c => c.id === serviceID)
     const [service] = findService(getDevices(state), serviceID)
     return {
       service,
       lanIp: state.backend.environment.privateIP,
-      connection: connection || newConnection(service),
+      connection: selectConnection(state, service),
     }
   })
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { makeStyles, List, Typography, Tooltip, ButtonBase, Divider } from '@material-ui/core'
+import { makeStyles, List, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
@@ -18,12 +18,15 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
-  const { billing, preferences, remoteUI, licenseIndicator } = useSelector((state: ApplicationState) => ({
-    billing: !!getRemoteitLicense(state)?.plan?.billing,
-    licenseIndicator: selectLicenseIndicator(state),
-    preferences: state.backend.preferences,
-    remoteUI: isRemoteUI(state),
-  }))
+  const { backendAuthenticated, billing, preferences, remoteUI, licenseIndicator } = useSelector(
+    (state: ApplicationState) => ({
+      backendAuthenticated: state.auth.backendAuthenticated,
+      billing: !!getRemoteitLicense(state)?.plan?.billing,
+      licenseIndicator: selectLicenseIndicator(state),
+      preferences: state.backend.preferences,
+      remoteUI: isRemoteUI(state),
+    })
+  )
 
   useEffect(() => {
     analyticsHelper.page('SettingsPage')
