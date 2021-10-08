@@ -9,10 +9,8 @@ import { Icon } from '../Icon'
 
 type Props = {
   service: IService
-  connection?: IConnection
-  actionIcon?: React.ReactElement
+  connection: IConnection
   disabled?: boolean
-  launchType?: string
 }
 
 const ITEM = [
@@ -20,13 +18,14 @@ const ITEM = [
   { id: 1, label: 'Use URL' },
 ]
 
-export const LaunchSelect: React.FC<Props> = ({ service, connection, launchType }) => {
+export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   if (!connection) connection = newConnection(service)
 
   const appCommand = useApplication('copy', service, connection)
   const appUrl = useApplication('launch', service, connection)
   const css = useStyles()
-  const app = launchType === 'Use command' ? appCommand : appUrl
+
+  const app = connection.launchType === 'COMMAND' ? appCommand : appUrl
 
   const onSave = template => {
     connection &&
@@ -54,7 +53,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection, launchType 
           select
           className={css.field}
           label="Launch type"
-          value={launchType}
+          value={connection.launchType}
           variant="filled"
           onChange={e => onChange(e.target.value)}
         >
@@ -96,14 +95,4 @@ const useStyles = makeStyles({
   field: { width: 200, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
   divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
   action: { right: spacing.xs, marginLeft: spacing.sm },
-  verticalLine: {
-    borderColor: colors.grayLight,
-    borderWidth: '0 0 2px 2px',
-    borderBottomWidth: 0,
-    borderBottomColor: colors.grayLight,
-    borderBottomStyle: 'solid',
-    borderStyle: 'solid',
-    height: '3.6em',
-    marginRight: '-1.5em',
-  },
 })

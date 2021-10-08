@@ -162,8 +162,8 @@ declare global {
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
+    launchType?: 'COMMAND' | 'URL' // scheme to use for launching
     [index: string]: any // needed to be able to iterate the keys :(
-    launchType?: string
   }
 
   type IConnectionState =

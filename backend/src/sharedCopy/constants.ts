@@ -12,6 +12,7 @@ export const DEVELOPER_KEY =
   process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 export const PROTOCOL =
   process.env.PROTOCOL || process.env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
+export const PORTAL = (process.env.REACT_APP_PORTAL || process.env.PORTAL) === "true" ? true : false
 export const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const CALLBACK_URL =
   process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || process.env.NODE_ENV === 'development'

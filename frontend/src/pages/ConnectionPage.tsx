@@ -108,16 +108,7 @@ export const ConnectionPage: React.FC = () => {
             <PortSetting connection={connection} service={service} />
           </DesktopUI>
           {/* @TODO: add auto launch */}
-          <InlineTemplateSetting connection={connection} service={service} context="copy" />
-          {connection.typeID && [22, 28].includes(connection.typeID) ? (
-            <LaunchSelect
-              connection={connection}
-              service={service}
-              launchType={connection.launchType || 'Use command'}
-            />
-          ) : (
-            <InlineTemplateSetting connection={connection} service={service} context="launch" />
-          )}
+          <LaunchSelect connection={connection} service={service} />
           <CustomAttributeSettings connection={connection} service={service} />
         </List>
       </AccordionMenuItem>

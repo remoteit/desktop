@@ -1,11 +1,12 @@
 import React from 'react'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/core'
-import { ApplicationState } from '../store'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from './ListItemSetting'
 import { colors, spacing } from '../styling'
-import { useSelector } from 'react-redux'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 
@@ -15,10 +16,12 @@ export const AvatarMenu: React.FC<Props> = ({}) => {
   const [el, setEl] = React.useState<HTMLButtonElement | null>()
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
-  const { user, remoteUI, preferences } = useSelector((state: ApplicationState) => ({
+  const dispatch = useDispatch<Dispatch>()
+  const { user, remoteUI, preferences, backendAuthenticated } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     remoteUI: isRemoteUI(state),
     preferences: state.backend.preferences,
+    backendAuthenticated: state.auth.backendAuthenticated,
   }))
 
   const css = useStyles()
@@ -73,38 +76,42 @@ export const AvatarMenu: React.FC<Props> = ({}) => {
           />
         )}
         <Divider />
+        <DesktopUI>
+          <ListItemSetting
+            confirm
+            label="Lock application"
+            icon="lock"
+            confirmTitle="Are you sure?"
+            confirmMessage="Locking the app will leave all active connections and hosted services running and prevent others from signing in."
+            onClick={() => {
+              emit('user/lock')
+              analyticsHelper.track('signOutLock')
+            }}
+          />
+        </DesktopUI>
         <ListItemSetting
-          confirm
-          label="Lock application"
-          icon="lock"
-          confirmTitle="Are you sure?"
-          confirmMessage="Locking the app will leave all active connections and hosted services running and prevent others from signing in."
-          onClick={() => {
-            emit('user/lock')
-            analyticsHelper.track('signOutLock')
-          }}
-        />
-        <ListItemSetting
-          confirm
+          confirm={backendAuthenticated}
           label="Sign out"
           icon="sign-out"
           confirmMessage="Signing out will allow this device to be transferred or another user to sign in. It will stop all connections."
           onClick={() => {
-            emit('user/sign-out')
+            dispatch.auth.signOut()
             analyticsHelper.track('signOut')
           }}
         />
-        {remoteUI || <Divider />}
-        {remoteUI || (
-          <ListItemSetting
-            confirm
-            label="Quit"
-            icon="power-off"
-            confirmTitle="Are you sure?"
-            confirmMessage="Quitting will not close your connections."
-            onClick={() => emit('user/quit')}
-          />
-        )}
+        <DesktopUI>
+          {remoteUI || <Divider />}
+          {remoteUI || (
+            <ListItemSetting
+              confirm
+              label="Quit"
+              icon="power-off"
+              confirmTitle="Are you sure?"
+              confirmMessage="Quitting will not close your connections."
+              onClick={() => emit('user/quit')}
+            />
+          )}
+        </DesktopUI>
       </Menu>
     </>
   )
