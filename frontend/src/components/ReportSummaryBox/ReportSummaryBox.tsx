@@ -25,7 +25,7 @@ export const ReportSummaryBox: React.FC<ReportSummaryBoxProps> = ({ iconTitle, c
           </Typography>
         </div>
         <div className={css.iconContainer}>
-          <Icon title={iconTitle} name={icon} size="xxxl" />
+          <Icon name={icon} size="xxxl" />
         </div>
       </div>
     </Box>
