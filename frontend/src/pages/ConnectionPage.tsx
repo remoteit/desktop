@@ -88,7 +88,6 @@ export const ConnectionPage: React.FC = () => {
               fullWidth
             />
             <InfoButton device={device} service={service} />
-            <ClearButton connection={connection} />
             <ForgetButton connection={connection} />
           </Gutters>
           <List className={css.errorMessage}>

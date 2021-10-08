@@ -62,15 +62,16 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
             size="lg"
             icon="search"
             className={css.button}
-            inlineLeft
             onClick={() => {
               setShowSearch(true)
               setTimeout(() => inputRef.current?.focus(), 20)
             }}
           >
-            <Typography variant="caption" color="textSecondary">
-              {device ? attributeName(device) : 'remote.it'}
-            </Typography>
+            {device && (
+              <Typography variant="caption" color="textSecondary">
+                {attributeName(device)}
+              </Typography>
+            )}
           </IconButton>
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
@@ -107,7 +108,7 @@ const useStyles = makeStyles({
     width: '100%',
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
-    '& .MuiTypography-root': { marginLeft: styles.spacing.sm },
+    '& .MuiTypography-root': { marginLeft: styles.spacing.lg, letterSpacing: 0.5 },
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {

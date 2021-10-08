@@ -5,6 +5,7 @@ import { r3, getToken } from '../services/remote.it'
 import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
 import { getRestApi } from '../helpers/apiHelper'
+import { emit } from '../services/Controller'
 import axios from 'axios'
 
 type IConnectionsState = { all: IConnection[]; useCommand: boolean }
@@ -130,6 +131,20 @@ export default createModel<RootModel>()({
       } catch (error) {
         r3.processError(error)
       }
+    },
+
+    async clear(id: string, globalState) {
+      const { set } = dispatch.connections
+      const { all } = globalState.connections
+      if (globalState.auth.backendAuthenticated) emit('service/clear', { id })
+      else set({ all: all.filter(c => c.id !== id) })
+    },
+
+    async clearRecent(_, globalState) {
+      const { set } = dispatch.connections
+      const { all } = globalState.connections
+      if (globalState.auth.backendAuthenticated) emit('service/clear-recent')
+      else set({ all: all.filter(c => c.enabled && c.online) })
     },
   }),
   reducers: {

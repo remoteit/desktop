@@ -6,6 +6,7 @@ import { TargetPlatform } from './TargetPlatform'
 import { spacing, colors } from '../styling'
 import { ApplicationState } from '../store'
 import { attributeName } from '../shared/nameHelper'
+import { ClearButton } from '../buttons/ClearButton'
 import { useSelector } from 'react-redux'
 import { selectById } from '../models/devices'
 import { Title } from './Title'
@@ -16,9 +17,10 @@ export interface Props {
   merge?: boolean
   other?: boolean
   recent?: boolean
+  isNew?: boolean
 }
 
-export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent }) => {
+export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent, isNew }) => {
   const [service, device] = useSelector((state: ApplicationState) => selectById(state, session.target.id))
   const connected = session.state === 'connected'
   const css = useStyles({ state: session.state, recent })
@@ -45,7 +47,12 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
           <ListItemText primary={<Title enabled={!recent}>{other ? session.user?.email : 'This device'}</Title>} />
         </ListItem>
       )}
-      <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>
+      <ListItemLocation
+        className={css.item}
+        pathname={pathname}
+        match={isNew ? '/connections/new' : `/connections/${session.target.id}`}
+        dense
+      >
         <Tooltip title={recent ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="left" arrow>
           <ListItemIcon className={css.connectIcon}>
             <div className={css.connection} />
@@ -69,6 +76,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
             </Title>
           }
         />
+        {recent && <ClearButton id={session.target.id} />}
       </ListItemLocation>
     </>
   )
@@ -95,6 +103,10 @@ const useStyles = makeStyles({
     color: recent ? colors.grayDarker : colors.primary,
     fontWeight: 500,
   }),
+  item: {
+    '& .MuiIconButton-root': { display: 'none' },
+    '&:hover .MuiIconButton-root': { display: 'block' },
+  },
   connectIcon: {
     position: 'relative',
     '& > svg': { position: 'absolute', right: 6, bottom: -7 },
