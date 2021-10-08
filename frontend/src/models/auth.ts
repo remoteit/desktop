@@ -2,7 +2,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
+import { PORTAL, CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
@@ -56,9 +56,9 @@ export default createModel<RootModel>()({
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          redirectURL: isElectron() ? '' : window.origin + '/v1/callback/',
-          callbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
-          signoutCallbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          redirectURL:  PORTAL || isElectron()  ? '' : window.origin + '/v1/callback/',
+          callbackURL: PORTAL ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          signoutCallbackURL: PORTAL ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
         })
 
         await sleep(500)
