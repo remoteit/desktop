@@ -5,6 +5,7 @@ import { RootModel } from './rootModel'
 import { set as setDate, eachDayOfInterval, isEqual } from 'date-fns'
 import { getTimeZone } from '../helpers/dateHelper'
 import { startOfDay } from 'date-fns/esm'
+import { AxiosResponse } from 'axios'
 
 const MAX_DEVICE_LENGTH = 1000
 
@@ -124,12 +125,12 @@ export default createModel<RootModel>()({
           options
         )
         graphQLGetErrors(result)
-        parse(result)
+        await parse(result)
       } catch (error) {
         await graphQLCatchError(error)
       }
     },
-    async parse(gqlResponse: any, globalState) {
+    async parse(gqlResponse: undefined | AxiosResponse<any>, globalState) {
       const gqlData = gqlResponse?.data?.data?.login
       const {
         from,

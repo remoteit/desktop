@@ -6,7 +6,11 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -18,5 +22,8 @@
     "noFallthroughCasesInSwitch": false,
     "noEmit": true
   },
-  "include": ["src", "../common"]
+  "include": [
+    "src",
+    "../common"
+  ]
 }

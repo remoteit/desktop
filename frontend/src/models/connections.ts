@@ -17,7 +17,7 @@ const defaultState: IConnectionsState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init() {
+    async init(_, globalState) {
       let item = window.localStorage.getItem('connections-all')
       if (item) dispatch.connections.set({ all: JSON.parse(item) })
     },

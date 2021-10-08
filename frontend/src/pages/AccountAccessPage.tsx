@@ -50,7 +50,7 @@ export const AccountAccessPage: React.FC = () => {
           {access.map(user => (
             <ListItem key={user.email}>
               <ListItemIcon>
-                <InitiatorPlatform id={user.platform} user />
+                <InitiatorPlatform user />
               </ListItemIcon>
               <ListItemText
                 primary={user.email}

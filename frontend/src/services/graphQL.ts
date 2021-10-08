@@ -13,13 +13,12 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
   }
 }
 
-export async function graphQLRequest(query: String, variables: ILookup<any> = {}): Promise<AxiosResponse | void> {
-  if (store.getState().ui.offline) return Promise.resolve()
+export async function graphQLRequest(query: String, variables: ILookup<any> = {}): Promise<undefined | AxiosResponse> {
+  if (store.getState().ui.offline) return
   const token = await getToken()
-
   if (!token) {
     console.warn('Unable to get token for graphQL request.')
-    return Promise.resolve()
+    return
   }
 
   const request = {
