@@ -18,6 +18,7 @@ export function useNavigation(): INavigationHook {
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
   const {
+    backendAuthenticated,
     connections,
     devices,
     navigation,
@@ -27,6 +28,7 @@ export function useNavigation(): INavigationHook {
     navigationBack,
     navigationForward,
   } = useSelector((state: ApplicationState) => ({
+    backendAuthenticated: state.auth.backendAuthenticated,
     connections: state.connections.all.filter(connection => connection.enabled).length,
     devices: state.devices.total,
     navigation: state.ui.navigation,
@@ -86,10 +88,10 @@ export function useNavigation(): INavigationHook {
   const menuItems: INavigation[] = [
     { label: 'This Device', path: '/devices', match: '/devices/:any?/:any?/:any?', icon: 'hdd', show: remoteUI },
     {
-      label: 'Network',
+      label: backendAuthenticated ? 'Network' : 'Connections',
+      icon: backendAuthenticated ? 'network-wired' : 'chart-network',
       path: '/connections', // recallPath('/connections')
       match: '/connections/:any?/:any?/:any?',
-      icon: 'chart-network',
       show: !remoteUI,
       chip: connections.toLocaleString(),
       chipPrimary: true,

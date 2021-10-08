@@ -1,13 +1,11 @@
 import React from 'react'
 import { Box, ListItem, ListItemIcon, makeStyles, MenuItem, TextField, Tooltip } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { useApplication } from '../../hooks/useApplication'
-import { Icon } from '../Icon'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
-
+import { colors, spacing } from '../../styling'
+import { useApplication } from '../../hooks/useApplication'
+import { Quote } from '../Quote'
+import { Icon } from '../Icon'
 
 type Props = {
   service: IService
@@ -17,24 +15,20 @@ type Props = {
   launchType?: string
 }
 
-const ITEM = [{ id: 0, label: 'Use command' }, { id: 1, label: 'Use URL' }]
+const ITEM = [
+  { id: 0, label: 'Use command' },
+  { id: 1, label: 'Use URL' },
+]
 
-export const LaunchSelect: React.FC<Props> = ({
-  service,
-  connection,
-  launchType
-}) => {
+export const LaunchSelect: React.FC<Props> = ({ service, connection, launchType }) => {
   if (!connection) connection = newConnection(service)
-  const { devices } = useDispatch<Dispatch>()
-
 
   const appCommand = useApplication('copy', service, connection)
   const appUrl = useApplication('launch', service, connection)
-  const css = useStyles();
+  const css = useStyles()
   const app = launchType === 'Use command' ? appCommand : appUrl
 
-
-  const onSave = (template) => {
+  const onSave = template => {
     connection &&
       setConnection({
         ...connection,
@@ -50,11 +44,6 @@ export const LaunchSelect: React.FC<Props> = ({
       })
   }
 
-
-
-
-
-
   return (
     <Box marginBottom={2}>
       <ListItem dense>
@@ -64,17 +53,14 @@ export const LaunchSelect: React.FC<Props> = ({
         <TextField
           select
           className={css.field}
-          label="LAUNCH TYPE"
+          label="Launch type"
           value={launchType}
           variant="filled"
           onChange={e => onChange(e.target.value)}
         >
           {ITEM.map(item => {
             return (
-              <MenuItem
-                value={item.label}
-                key={item.id}
-              >
+              <MenuItem value={item.label} key={item.id}>
                 {item.label}
               </MenuItem>
             )
@@ -83,7 +69,7 @@ export const LaunchSelect: React.FC<Props> = ({
       </ListItem>
       <ListItem dense>
         <ListItemIcon></ListItemIcon>
-        <div className={css.verticalLine}>
+        <Quote margin={0}>
           <InlineTextFieldSetting
             hideIcon={true}
             label={
@@ -100,12 +86,10 @@ export const LaunchSelect: React.FC<Props> = ({
             resetValue={app.command}
             onSave={template => onSave(template)}
           />
-
-        </div>
+        </Quote>
       </ListItem>
     </Box>
   )
-
 }
 
 const useStyles = makeStyles({
@@ -121,5 +105,5 @@ const useStyles = makeStyles({
     borderStyle: 'solid',
     height: '3.6em',
     marginRight: '-1.5em',
-  }
+  },
 })

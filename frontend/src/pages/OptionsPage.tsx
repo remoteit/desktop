@@ -9,6 +9,7 @@ import { UpdateSetting } from '../components/UpdateSetting'
 import { getOwnDevices } from '../models/accounts'
 import { Collapsible } from '../components/Collapsible'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
 import { isRemote } from '../services/Browser'
 import { TestUI } from '../components/TestUI'
@@ -62,22 +63,24 @@ export const OptionsPage: React.FC = () => {
             }}
           />
         )}
-        <ListItemSetting
-          label="Open at login"
-          icon="door-open"
-          toggle={!!preferences.openAtLogin}
-          onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
-        />
-        <ListItemSetting
-          label="HTTPS Certificate"
-          subLabel="Use a remote.it certificate to handle and name local connections"
-          icon="file-certificate"
-          toggle={!!preferences.useCertificate}
-          onClick={() => emit('useCertificate', !preferences.useCertificate)}
-          confirmMessage="Changing the certificate handling will require we restart the system agent. You will see a system prompt."
-          confirmTitle="Continue?"
-          confirm
-        />
+        <DesktopUI>
+          <ListItemSetting
+            label="Open at login"
+            icon="door-open"
+            toggle={!!preferences.openAtLogin}
+            onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
+          />
+          <ListItemSetting
+            label="HTTPS Certificate"
+            subLabel="Use a remote.it certificate to handle and name local connections"
+            icon="file-certificate"
+            toggle={!!preferences.useCertificate}
+            onClick={() => emit('useCertificate', !preferences.useCertificate)}
+            confirmMessage="Changing the certificate handling will require we restart the system agent. You will see a system prompt."
+            confirmTitle="Continue?"
+            confirm
+          />
+        </DesktopUI>
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
@@ -98,44 +101,46 @@ export const OptionsPage: React.FC = () => {
         )}
         <UpdateSetting />
       </List>
-      {remoteUI || (
-        <Collapsible title="Advanced">
-          <List>
-            <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
-            <SettingsDisableNetworkItem />
-            <ListItemSetting
-              confirm
-              label={installing ? 'Installing...' : 'Re-install system agent'}
-              subLabel={`Version ${cliVersion}`}
-              disabled={installing}
-              icon="terminal"
-              confirmTitle="Are you sure?"
-              confirmMessage="This will stop and attempt to re-install the system agent."
-              onClick={() => binaries.install()}
-            />
-            {!notOwner && (
+      {!remoteUI && (
+        <DesktopUI>
+          <Collapsible title="Advanced">
+            <List>
+              <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
+              <SettingsDisableNetworkItem />
               <ListItemSetting
                 confirm
-                label="Uninstall"
-                subLabel={`De-register this device, completely remove all saved data, and uninstall the system agent and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
-                icon="trash"
+                label={installing ? 'Installing...' : 'Re-install system agent'}
+                subLabel={`Version ${cliVersion}`}
+                disabled={installing}
+                icon="terminal"
                 confirmTitle="Are you sure?"
-                confirmMessage="You will remove this system as a host, your connections and command line utilities."
-                onClick={() => {
-                  emit('uninstall')
-                  ui.set({ uninstalling: true })
-                  analyticsHelper.track('uninstall')
-                }}
+                confirmMessage="This will stop and attempt to re-install the system agent."
+                onClick={() => binaries.install()}
               />
-            )}
-            <ListItemSetting
-              label="Show support files"
-              subLabel="Will show the folders that contain the application logs and config file."
-              icon="folder"
-              onClick={() => emit('showFolder', 'logs')}
-            />
-          </List>
-        </Collapsible>
+              {!notOwner && (
+                <ListItemSetting
+                  confirm
+                  label="Uninstall"
+                  subLabel={`De-register this device, completely remove all saved data, and uninstall the system agent and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
+                  icon="trash"
+                  confirmTitle="Are you sure?"
+                  confirmMessage="You will remove this system as a host, your connections and command line utilities."
+                  onClick={() => {
+                    emit('uninstall')
+                    ui.set({ uninstalling: true })
+                    analyticsHelper.track('uninstall')
+                  }}
+                />
+              )}
+              <ListItemSetting
+                label="Show support files"
+                subLabel="Will show the folders that contain the application logs and config file."
+                icon="folder"
+                onClick={() => emit('showFolder', 'logs')}
+              />
+            </List>
+          </Collapsible>
+        </DesktopUI>
       )}
     </Container>
   )

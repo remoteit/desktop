@@ -62,7 +62,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   })
 
-  let title = 'Add to Network'
+  let title = connection?.public ? 'Create Connection' : 'Add to Network'
   let disabled = false
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
@@ -87,6 +87,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
   if (state === 'offline') {
     title = 'Offline'
+    disabled = true
+  }
+  if (service?.attributes.route === 'p2p' && connection?.public) {
     disabled = true
   }
 

@@ -8,11 +8,11 @@ import { ProxySetting } from '../components/ProxySetting'
 import { PublicSetting } from '../components/PublicSetting'
 import { TimeoutSetting } from '../components/TimeoutSetting'
 import { LicensingNotice } from '../components/LicensingNotice'
+import { selectConnection } from '../helpers/connectionHelper'
+import { makeStyles, List } from '@material-ui/core'
 import { ConnectionDetails } from '../components/ConnectionDetails'
-import { newConnection } from '../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../components/CustomAttributeSettings'
 import { ApplicationState, Dispatch } from '../store'
-import { makeStyles, List } from '@material-ui/core'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { InlineTemplateSetting } from '../components/InlineTemplateSetting'
 import { ConnectionLogSetting } from '../components/ConnectionLogSetting'
@@ -27,6 +27,7 @@ import { ComboButton } from '../buttons/ComboButton'
 import { ClearButton } from '../buttons/ClearButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { InfoButton } from '../buttons/InfoButton'
+import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { spacing } from '../styling'
@@ -45,7 +46,7 @@ export const ConnectionPage: React.FC = () => {
     return {
       service,
       device,
-      connection: state.connections.all.find(c => c.id === serviceID) || newConnection(service),
+      connection: selectConnection(state, service),
       session: state.sessions.all.find(s => s.id === sessionID),
       fetching: state.devices.fetching,
       accordion: state.ui.accordion,
@@ -103,11 +104,18 @@ export const ConnectionPage: React.FC = () => {
         gutterTop
       >
         <List disablePadding>
-          <NameSetting connection={connection} service={service} device={device} />
-          <PortSetting connection={connection} service={service} />
+          <DesktopUI>
+            <NameSetting connection={connection} service={service} device={device} />
+            <PortSetting connection={connection} service={service} />
+          </DesktopUI>
+          {/* @TODO: add auto launch */}
           <InlineTemplateSetting connection={connection} service={service} context="copy" />
           {connection.typeID && [22, 28].includes(connection.typeID) ? (
-            <LaunchSelect connection={connection} service={service} launchType={connection.launchType || 'Use command'} />
+            <LaunchSelect
+              connection={connection}
+              service={service}
+              launchType={connection.launchType || 'Use command'}
+            />
           ) : (
             <InlineTemplateSetting connection={connection} service={service} context="launch" />
           )}
@@ -121,12 +129,16 @@ export const ConnectionPage: React.FC = () => {
         gutterTop
       >
         <List disablePadding>
-          <TimeoutSetting connection={connection} service={service} />
-          <ProxySetting connection={connection} service={service} />
-          <LanShareSelect connection={connection} service={service} />
-          <ConnectionLogSetting connection={connection} service={service} />
+          <DesktopUI>
+            <TimeoutSetting connection={connection} service={service} />
+            <ProxySetting connection={connection} service={service} />
+            <LanShareSelect connection={connection} service={service} />
+          </DesktopUI>
           <PublicSetting connection={connection} service={service} />
-          <TargetHostSetting connection={connection} service={service} />
+          <DesktopUI>
+            <ConnectionLogSetting connection={connection} service={service} />
+            <TargetHostSetting connection={connection} service={service} />
+          </DesktopUI>
         </List>
       </AccordionMenuItem>
       <AccordionMenuItem

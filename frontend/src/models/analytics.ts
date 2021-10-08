@@ -80,6 +80,7 @@ export default createModel<RootModel>()({
     async fetchAnalytics(_, globalState) {
       if (!hasCredentials()) return
       const { from, size, startDate, endDate } = globalState.analytics
+      if (!endDate) return
       const { getAnalytics, set, primeGraphTimeseries } = dispatch.analytics
       const primedGraphTimeseries = primeGraphTimeseries({ startDate: startDate, endDate: endDate })
       set({

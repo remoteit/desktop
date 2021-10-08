@@ -290,6 +290,7 @@ declare global {
     created?: Date
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
+    platform?: number // @FIXME this shouldn't be on the user
   }
 
   type INotificationSetting = {

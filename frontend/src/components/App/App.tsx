@@ -13,15 +13,12 @@ import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
 
 export const App: React.FC = () => {
-  const { authInitialized, backendAuthenticated, installed, signedOut, uninstalling } = useSelector(
-    (state: ApplicationState) => ({
-      authInitialized: state.auth.initialized,
-      backendAuthenticated: state.auth.backendAuthenticated,
-      installed: state.binaries.installed,
-      signedOut: state.auth.initialized && !state.auth.authenticated,
-      uninstalling: state.ui.uninstalling,
-    })
-  )
+  const { authInitialized, installed, signedOut, uninstalling } = useSelector((state: ApplicationState) => ({
+    authInitialized: state.auth.initialized,
+    installed: state.binaries.installed,
+    signedOut: state.auth.initialized && !state.auth.authenticated,
+    uninstalling: state.ui.uninstalling,
+  }))
   const [pageWidth, setPageWidth] = useState<number>(window.innerWidth)
   const updateWidth = () => setPageWidth(window.innerWidth)
   const singlePanel = pageWidth < 1000
@@ -52,13 +49,6 @@ export const App: React.FC = () => {
     return (
       <Page>
         <SignInPage />
-      </Page>
-    )
-
-  if (!backendAuthenticated)
-    return (
-      <Page>
-        <LoadingMessage message="Signing in..." logo />
       </Page>
     )
 

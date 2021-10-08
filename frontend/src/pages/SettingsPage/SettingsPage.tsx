@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { makeStyles, List, Typography, Tooltip, ButtonBase, Divider } from '@material-ui/core'
+import { makeStyles, List, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
@@ -47,13 +47,12 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
             {singlePanel && <AvatarMenu />}
             <OutOfBand inline />
           </Typography>
+          <List disablePadding>
+            <DeviceSetupItem />
+          </List>
         </>
       }
     >
-      <List>
-        <DeviceSetupItem />
-      </List>
-      <Divider variant="inset" />
       <List>
         <ListItemLocation
           title="Settings"

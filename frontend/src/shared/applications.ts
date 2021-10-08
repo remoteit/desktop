@@ -20,7 +20,8 @@ export class Application {
   addressTemplate: string = '[host]:[port]'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
-  defaultTokens: string[] = ['host', 'port', 'id']
+  defaultAppTokens: string[] = ['host', 'port', 'id']
+  defaultPublicTokens: string[] = ['address', 'id']
   localhost?: boolean
 
   connection?: IConnection
@@ -78,6 +79,10 @@ export class Application {
 
   get tokens() {
     return this.extractTokens(this.launchTemplate + this.commandTemplate)
+  }
+
+  get defaultTokens() {
+    return this.connection?.public ? this.defaultPublicTokens : this.defaultAppTokens
   }
 
   get allTokens() {

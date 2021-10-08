@@ -1,8 +1,8 @@
-import { emit } from '../services/Controller'
+import Controller, { emit } from '../services/Controller'
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '../shared/constants'
-import { removeDeviceName } from '../shared/nameHelper'
 import { getAllDevices, getActiveAccountId } from '../models/accounts'
 import { ApplicationState, store } from '../store'
+import { removeDeviceName } from '../shared/nameHelper'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -47,6 +47,7 @@ export function newConnection(service?: IService | null) {
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
     failover: service?.attributes.route !== 'p2p',
     proxyOnly: service?.attributes.route === 'proxy',
+    public: state.auth.backendAuthenticated ? undefined : true,
   }
 
   if (service) {
@@ -65,13 +66,14 @@ export function newConnection(service?: IService | null) {
 }
 
 export function setConnection(connection: IConnection) {
+  const { auth } = store.getState()
+  const { connections } = store.dispatch
   if (!connection.id || !connection.name || !connection.deviceID) {
     var error = new Error()
     console.warn('Connection missing data. Set failed', connection, error.stack)
     return false
   }
-  console.log('SET CONNECTION', connection.name, connection.enabled)
-  emit('connection', connection)
+  auth.backendAuthenticated ? emit('connection', connection) : connections.updateConnection(connection)
 }
 
 export function clearConnectionError(connection: IConnection) {
@@ -88,7 +90,15 @@ export function getConnectionIds(state: ApplicationState) {
 }
 
 export function selectConnections(state: ApplicationState) {
-  return state.connections.all.filter(c => !!c.createdTime || c.enabled)
+  return state.connections.all.filter(
+    c => (!!c.createdTime || c.enabled) && (state.auth.backendAuthenticated || c.public)
+  )
+}
+
+export function selectConnection(state: ApplicationState, service?: IService) {
+  let connection = state.connections.all.find(c => c.id === service?.id) || newConnection(service)
+  if (!state.auth.backendAuthenticated) connection.public = true
+  return connection
 }
 
 export function getConnectionSessionIds() {

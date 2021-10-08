@@ -5,7 +5,7 @@ import classnames from 'classnames'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { TextField, Typography, ListSubheader, ButtonBase } from '@material-ui/core'
+import { TextField, Typography, ListSubheader, ButtonBase, Paper } from '@material-ui/core'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
 import { colors, spacing, fontSizes } from '../styling'
 import { connectionName } from '../helpers/connectionHelper'
@@ -69,7 +69,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         fullWidth
         autoSelect
         autoComplete
-        size="small"
         clearOnBlur={false}
         clearOnEscape={false}
         blurOnSelect={true}
@@ -110,7 +109,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           />
         )}
         renderOption={(option: ISearch) => {
-          const parts = reactStringReplace(option.serviceName, new RegExp(`(${query})`, 'i'), (match, i) => (
+          const parts = reactStringReplace(option.serviceName, new RegExp(`(${query.trim()})`, 'i'), (match, i) => (
             <span key={i} className={css.highlight}>
               {match}
             </span>
@@ -141,7 +140,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
               >
                 <Typography variant="body2" className={props['data-offline'] === 'true' ? css.offline : undefined}>
                   <TargetPlatform id={props['data-platform']} inlineLeft size="md" />
-                  {reactStringReplace(option.group, new RegExp(`(${query})`, 'i'), (match, i) => (
+                  {reactStringReplace(option.group, new RegExp(`(${query.trim()})`, 'i'), (match, i) => (
                     <span key={i} className={css.highlight}>
                       {match}
                     </span>

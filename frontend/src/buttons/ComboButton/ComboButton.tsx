@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
 import { spacing } from '../../styling'
+import { Notice } from '../../components/Notice'
 
 type Props = {
   className?: string
@@ -18,8 +19,18 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
   const css = useStyles(props.fullWidth)()
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
-      <DisconnectButton {...props} />
-      <ConnectButton {...props} />
+      {props.service?.attributes.route === 'p2p' && props.connection?.public ? (
+        <Notice fullWidth severity="warning">
+          {props.size === 'small'
+            ? 'Peer to peer only'
+            : 'You cannot make a proxy connection to this service, it is set to peer to peer only.'}
+        </Notice>
+      ) : (
+        <>
+          <DisconnectButton {...props} />
+          <ConnectButton {...props} />
+        </>
+      )}
     </div>
   )
 }

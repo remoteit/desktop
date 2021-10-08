@@ -4,10 +4,11 @@ import { setConnection } from '../helpers/connectionHelper'
 import { IP_OPEN, IP_LATCH } from '../shared/constants'
 import { InlineSelectSetting } from './InlineSelectSetting'
 import { ListItemSetting } from './ListItemSetting'
+import { DesktopUI } from './DesktopUI'
 import { Gutters } from './Gutters'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  if (!connection) return null
+  if (!connection) return <>what?!</>
 
   const disabled = connection.enabled || service.attributes.route === 'p2p'
   const subLabel =
@@ -17,22 +18,25 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
 
   return (
     <>
-      <ListItemSetting
-        label="Shareable Link"
-        subLabel="Publicly sharable proxy connection"
-        disabled={disabled}
-        icon="share-alt"
-        toggle={!!connection.public}
-        onClick={() =>
-          connection &&
-          setConnection({
-            ...connection,
-            public: !connection.public,
-          })
-        }
-      />
+      <DesktopUI>
+        <ListItemSetting
+          label="Proxy connection"
+          subLabel="Publicly sharable proxy connection"
+          disabled={disabled}
+          icon="share-alt"
+          toggle={!!connection.public}
+          onClick={() =>
+            connection &&
+            setConnection({
+              ...connection,
+              public: !connection.public,
+            })
+          }
+        />
+      </DesktopUI>
       <Collapse in={connection.public} timeout={400}>
         <InlineSelectSetting
+          icon="lock"
           label="Security"
           disabled={disabled || !connection.public}
           value={connection.publicRestriction || IP_LATCH}

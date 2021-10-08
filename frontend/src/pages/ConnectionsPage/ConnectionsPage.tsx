@@ -15,11 +15,11 @@ import styles from '../../styling'
 export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
   const history = useHistory()
-  const location = useLocation()
-  const { local, other, recent } = useSelector((state: ApplicationState) => {
+  const { local, proxy, other, recent } = useSelector((state: ApplicationState) => {
     const allConnections = selectConnections(state)
 
     let local: ISession[] = []
+    let proxy: ISession[] = []
     let other: ISession[] = []
     let recent: ISession[] = []
 
@@ -27,7 +27,8 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
       const index = allConnections.findIndex(c => c.sessionId === session.id)
       if (index > -1) {
         session.state = connectionState(undefined, allConnections[index])
-        local.push(session)
+        if (session.public) proxy.push(session)
+        else local.push(session)
         allConnections.splice(index, 1)
       } else {
         session.state = 'connected'
@@ -51,11 +52,13 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
           name: connection.name || service?.name || '',
         },
       }
-      if (connection.enabled) local.push(session)
-      else recent.push(session)
+      if (connection.enabled) {
+        if (session.public) proxy.push(session)
+        else local.push(session)
+      } else recent.push(session)
     }
 
-    return { local, other, recent }
+    return { local, proxy, other, recent }
   })
 
   const noConnections = !local.length && !other.length && !recent.length
@@ -79,7 +82,8 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
           </Typography>
         </>
       )}
-      <SessionsList title="Local Network" sessions={local} />
+      <SessionsList title="Proxy" sessions={proxy} />
+      <SessionsList title="Network" sessions={local} />
       <SessionsList title="Others" sessions={other} other />
       <SessionsList
         title="Recent"

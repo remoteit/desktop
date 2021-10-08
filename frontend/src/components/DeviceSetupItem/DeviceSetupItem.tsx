@@ -6,9 +6,9 @@ import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, Link, Chip
 import { ListItemLocation } from '../ListItemLocation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
+import { DesktopUI } from '../../components/DesktopUI'
 import { Notice } from '../../components/Notice'
 import { osName } from '../../shared/nameHelper'
-import { Icon } from '../Icon'
 
 export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) => {
   const css = useStyles()
@@ -45,26 +45,28 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
   }
 
   return (
-    <ListItemLocation icon="hdd" pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
-      <ListItemText primary={title} secondary={subtitle} />
-      {canRestore && (
-        <ListItemSecondaryAction>
-          {restore ? (
-            <Typography variant="body2" color="textSecondary">
-              Select a device or
-              <Link onClick={() => history.push('/devices')}>cancel</Link>
-            </Typography>
-          ) : (
-            <Chip
-              label="Restore Device"
-              variant="default"
-              size="small"
-              onClick={() => history.push('/devices/restore')}
-            />
-          )}
-        </ListItemSecondaryAction>
-      )}
-    </ListItemLocation>
+    <DesktopUI>
+      <ListItemLocation icon="hdd" pathname="/devices/setup" className={canRestore ? css.margin : undefined} dense>
+        <ListItemText primary={title} secondary={subtitle} />
+        {canRestore && (
+          <ListItemSecondaryAction>
+            {restore ? (
+              <Typography variant="body2" color="textSecondary">
+                Select a device or
+                <Link onClick={() => history.push('/devices')}>cancel</Link>
+              </Typography>
+            ) : (
+              <Chip
+                label="Restore Device"
+                variant="default"
+                size="small"
+                onClick={() => history.push('/devices/restore')}
+              />
+            )}
+          </ListItemSecondaryAction>
+        )}
+      </ListItemLocation>
+    </DesktopUI>
   )
 }
 

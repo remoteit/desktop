@@ -52,7 +52,7 @@ export const CreditCard: React.FC = () => {
             secondary={expired ? `Expired ${card.month}/${card.year}` : `Expiring ${card.month}/${card.year}`}
           />
           <ListItemSecondaryAction>
-            <Button variant="contained" color="primary" size="small" onClick={update} disabled={updating}>
+            <Button variant="contained" color="primary" size="small" onClick={update} disabled={!!updating}>
               {updating ? 'Processing...' : 'Update'}
             </Button>
           </ListItemSecondaryAction>
