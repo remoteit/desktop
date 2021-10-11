@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { List } from '@material-ui/core'
 import { ListItemCheckbox } from '../ListItemCheckbox'
-import { useMemo } from 'react-transition-group/node_modules/@types/react'
 
 interface CheckboxItem {
     label: string
@@ -49,26 +48,24 @@ export function ServiceCheckboxes({
     }
 
     return (
-        <>
-            <List className="collapseList">
+        <List className="collapseList">
+            <ListItemCheckbox
+                disabled={saving}
+                label={<i>Select all</i>}
+                onClick={checked => selectAll(checked, services)}
+                checked={selectAllChecked}
+                indeterminate={allIndeterminate}
+            />
+            {services.map((service, key) => (
                 <ListItemCheckbox
+                    key={key}
                     disabled={saving}
-                    label={<i>Select all</i>}
-                    onClick={checked => selectAll(checked, services)}
-                    checked={selectAllChecked}
-                    indeterminate={allIndeterminate}
+                    label={service.label}
+                    checked={selectedServices.includes(service.value)}
+                    onClick={checked => update(checked, service.value)}
+                    indeterminate={indeterminateServices.includes(service.value)}
                 />
-                {services.map((service, key) => (
-                    <ListItemCheckbox
-                        key={key}
-                        disabled={saving}
-                        label={service.label}
-                        checked={selectedServices.includes(service.value)}
-                        onClick={checked => update(checked, service.value)}
-                        indeterminate={indeterminateServices.includes(service.value)}
-                    />
-                ))}
-            </List>
-        </>
+            ))}
+        </List>
     )
 }
