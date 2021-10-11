@@ -257,7 +257,8 @@ export default createModel<RootModel>()({
           : service.access.filter(_ac => !newUsers.find(user => user.email === _ac.email))
         return service
       })
-      dispatch.devices.updateShareDevice(device)
+      await dispatch.devices.updateShareDevice(device)
+      await dispatch.devices.fetchSingle({id : device.id})
     },
   }),
   reducers: {
