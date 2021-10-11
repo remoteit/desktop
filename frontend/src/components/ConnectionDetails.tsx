@@ -32,6 +32,8 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const app = useApplication('copy', service, connection)
   const css = useStyles()
 
+  app.context = app.launchType === 'URL' ? 'launch' : 'copy' //@FIXME = this should be set in the app model automatically
+
   const measure = () => {
     const height = Math.max(
       Number(basicRef.current?.offsetHeight),
@@ -88,7 +90,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     </div>
   )
 
-  app.context = 'copy'
   const copyDisplay = (
     <div ref={copyRef} className={hover === 'copy' ? css.show : css.hide}>
       <InputLabel shrink>Copy Command</InputLabel>
@@ -98,7 +99,6 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     </div>
   )
 
-  app.context = 'launch'
   const launchDisplay = (
     <div ref={launchRef} className={hover === 'launch' ? css.show : css.hide}>
       <InputLabel shrink>{app.contextTitle}</InputLabel>
@@ -133,7 +133,8 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
               >
                 <CommandButton
                   color="white"
-                  type="solid"
+                  type="regular"
+                  size="lg"
                   connection={connection}
                   service={service}
                   onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}

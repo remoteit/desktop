@@ -262,6 +262,11 @@ const jssTheme: ThemeOptions = {
         '&:before, &:after': { display: 'none' },
       },
     },
+    MuiSelect: {
+      select: {
+        '&:focus': { backgroundColor: 'none' },
+      },
+    },
     MuiFormControl: {
       marginDense: {
         '& .MuiFilledInput-input': { paddingTop: spacing.sm, paddingBottom: spacing.sm },

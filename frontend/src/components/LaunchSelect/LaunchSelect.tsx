@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, ListItem, ListItemIcon, makeStyles, MenuItem, TextField, Tooltip } from '@material-ui/core'
+import { List, ListItem, ListItemIcon, makeStyles, MenuItem, TextField } from '@material-ui/core'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'
@@ -17,21 +17,14 @@ type Props = {
 export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   if (!connection) connection = newConnection(service)
 
-  const appCommand = useApplication('copy', service, connection)
-  const appUrl = useApplication('launch', service, connection)
+  const [open, setOpen] = React.useState<boolean>(false)
+  const app = useApplication('launch', service, connection)
   const css = useStyles()
 
-  const app = connection.launchType === 'COMMAND' ? appCommand : appUrl
+  connection.context = app.launchType === 'COMMAND' ? 'copy' : 'launch'
 
-  const onSave = template => {
-    connection &&
-      setConnection({
-        ...connection,
-        [app.templateKey]: template.toString(),
-      })
-  }
-
-  const onChange = (value: any) => {
+  const handleChange = (value: any) => {
+    handleClick()
     connection &&
       setConnection({
         ...connection,
@@ -39,19 +32,22 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       })
   }
 
+  const handleClick = () => setOpen(!open)
+
   return (
     <>
-      <ListItem dense className={css.field}>
+      <ListItem dense className={css.field} onClick={handleClick} button>
         <ListItemIcon>
           <Icon name={app.icon} size="md" />
         </ListItemIcon>
         <TextField
           select
           fullWidth
+          SelectProps={{ open }}
           size="small"
           label="Launch type"
           value={app.launchType}
-          onChange={e => onChange(e.target.value)}
+          onChange={e => handleChange(e.target.value)}
         >
           <MenuItem value="URL">URL</MenuItem>
           <MenuItem value="COMMAND">Command</MenuItem>
@@ -60,28 +56,14 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       <ListItem dense>
         <ListItemIcon></ListItemIcon>
         <Quote margin={0}>
-          <InlineTemplateSetting
-            connection={connection}
-            service={service}
-            context={connection.launchType === 'COMMAND' ? 'copy' : 'launch'}
-          />
-          {/* <InlineTextFieldSetting
-            hideIcon
-            label={
-              <>
-                {app.contextTitle}
-                <Tooltip title={`Replacement tokens: ${app.allTokens.join(', ')}`} placement="top" arrow>
-                  <span style={{ zIndex: 10 }}>
-                    <Icon name="question-circle" size="sm" type="regular" inline />
-                  </span>
-                </Tooltip>
-              </>
-            }
-            value={app.command}
-            resetValue={app.command}
-            onSave={template => onSave(template)}
-          />
-          <CustomAttributeSettings connection={connection} service={service} /> */}
+          <List disablePadding>
+            <InlineTemplateSetting
+              connection={connection}
+              service={service}
+              context={app.launchType === 'COMMAND' ? 'copy' : 'launch'}
+            />
+            <CustomAttributeSettings connection={connection} service={service} />
+          </List>
         </Quote>
       </ListItem>
     </>
