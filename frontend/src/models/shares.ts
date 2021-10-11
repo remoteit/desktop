@@ -167,7 +167,7 @@ export default createModel<RootModel>()({
       const contacts = globalState.devices.contacts
 
       let userSelectedServices: string[][] = emails.map(email => {
-        return device ? getPermissions(device, email).services.map(s => s.id) : []
+        return device ? getPermissions(device, email, true).services.map(s => s.id) : []
       })
 
       let userSelectedScript: boolean[] = emails.map(email => {
