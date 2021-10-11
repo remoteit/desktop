@@ -209,16 +209,7 @@ export default createModel<RootModel>()({
         }
       }
 
-      console.log({
-        ...currentDevice,
-        ...scriptsValue,
-        userSelected: contacts.find(c => emails.includes(c.email)),
-        users: emails,
-        indeterminate: indeterminateServices
-      })
-
       const selectedServices = [...matchServices ? [...matchServices, serviceID] : [serviceID]].filter(v => v)
-      console.log({ selectedServices, matchServices })
 
       set(
         {

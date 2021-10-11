@@ -43,6 +43,7 @@ export function SharingForm({
   const changed = !shareChanged || ((selected?.length > 0 || !!user) && selectedServices.length > 1)
   const [disabled, setDisabled] = useState<boolean>(!changed || saving)
   const { shares } = useDispatch<Dispatch>()
+  const [allowScript, setAllowScript] = useState<boolean>(script)
 
   const handleChangeServices = (services: string[]) => {
     shares.changeServices(services)
@@ -55,6 +56,7 @@ export function SharingForm({
   }, [])
 
   useEffect(() => {
+    setAllowScript(script)
     return () => setDisabled(false)
   }, [script])
 
@@ -127,7 +129,7 @@ export function SharingForm({
           label="Allow script execution"
           subLabel="Give the user the ability to run scripts on this device."
           disabled={saving}
-          checked={script}
+          checked={allowScript}
           indeterminate={scriptIndeterminate}
           onClick={handleChangeScripting}
         />
