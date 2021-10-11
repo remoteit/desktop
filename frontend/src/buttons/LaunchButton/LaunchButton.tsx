@@ -26,15 +26,7 @@ type Props = {
   onLaunch?: () => void
 }
 
-export const LaunchButton: React.FC<Props> = ({
-  connection,
-  service,
-  menuItem,
-  dataButton,
-  size = 'md',
-  onLaunch,
-  ...props
-}) => {
+export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, onLaunch, ...props }) => {
   const { ui } = useDispatch<Dispatch>()
 
   const { loading, path, launchState } = useSelector((state: ApplicationState) => ({
@@ -46,11 +38,7 @@ export const LaunchButton: React.FC<Props> = ({
   const [launchApp, setLaunchApp] = useState<ILaunchApp>()
   const disabled = !connection?.enabled
   const [openLaunchApplication, setOpenLaunchApplication] = useState<boolean>(false)
-  const app = useApplication(
-    connection && connection.launchType === 'Use command' ? 'copy' : 'launch',
-    service,
-    connection
-  )
+  const app = useApplication(connection && connection.launchType === 'COMMAND' ? 'copy' : 'launch', service, connection)
   useEffect(() => {
     if (openLaunchApplication && !loading) {
       launchApplication()
@@ -112,7 +100,7 @@ export const LaunchButton: React.FC<Props> = ({
     <Icon
       name={loading ? 'spinner-third' : app.icon}
       spin={loading}
-      size={size}
+      size={props.size}
       color={props.color}
       type={props.type}
       fixedWidth
