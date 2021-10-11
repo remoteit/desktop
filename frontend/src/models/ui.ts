@@ -116,6 +116,7 @@ export default createModel<RootModel>()({
     async refreshAll() {
       dispatch.devices.set({ from: 0 })
       await dispatch.devices.fetch()
+      dispatch.organization.fetch()
       dispatch.sessions.fetch()
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()

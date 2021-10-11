@@ -9,7 +9,6 @@ import { createModel } from '@rematch/core'
 import { isElectron } from '../services/Browser'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
-import { store } from '../store'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
 
@@ -118,7 +117,7 @@ export default createModel<RootModel>()({
       }
     },
     async checkSession(_: void, rootState) {
-      const { ui } = store.dispatch
+      const { ui } = dispatch
       if (!rootState.auth.authService) return
       try {
         const result = await rootState.auth.authService.checkSignIn()
@@ -177,16 +176,17 @@ export default createModel<RootModel>()({
       dispatch.auth.setError(error)
     },
     async signedIn() {
-      store.dispatch.licensing.init()
+      dispatch.licensing.init()
       await cloudController.init()
-      await store.dispatch.accounts.init()
-      await store.dispatch.devices.init()
-      await store.dispatch.connections.init()
-      await store.dispatch.ui.init()
-      await store.dispatch.devices.fetch()
-      store.dispatch.applicationTypes.fetch()
-      store.dispatch.announcements.fetch()
-      store.dispatch.sessions.fetch()
+      await dispatch.accounts.init()
+      await dispatch.organization.init()
+      await dispatch.devices.init()
+      await dispatch.connections.init()
+      await dispatch.ui.init()
+      await dispatch.devices.fetch()
+      dispatch.applicationTypes.fetch()
+      dispatch.announcements.fetch()
+      dispatch.sessions.fetch()
     },
     async signOut(_, rootState) {
       if (rootState.auth.backendAuthenticated) emit('user/sign-out')
@@ -200,6 +200,7 @@ export default createModel<RootModel>()({
       window.localStorage.removeItem('amplify-signin-with-hostedUI')
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
+      dispatch.organization.reset()
       dispatch.accounts.reset()
       dispatch.connections.reset()
       dispatch.devices.reset()
