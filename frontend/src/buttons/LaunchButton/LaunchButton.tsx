@@ -98,7 +98,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
 
   const LaunchIcon = (
     <Icon
-      name={loading ? 'spinner-third' : app.icon}
+      name={loading ? 'spinner-third' : 'launch'}
       spin={loading}
       size={props.size}
       color={props.color}
@@ -127,7 +127,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
           {...props}
           onClick={clickHandler}
           disabled={loading || disabled}
-          icon={loading ? 'spinner-third' : app.icon}
+          icon={loading ? 'spinner-third' : 'launch'}
         />
       )}
       <PromptModal app={app} open={launchState.open} onClose={closeAll} onSubmit={onSubmit} />
