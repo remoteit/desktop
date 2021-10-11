@@ -18,6 +18,7 @@ export class Application {
   defaultTemplateCmd: string = ''
   checkApplicationCmd: string = ''
   addressTemplate: string = '[host]:[port]'
+  defaultLaunchType: 'URL' | 'COMMAND' = 'URL'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
   defaultAppTokens: string[] = ['host', 'port', 'id']
@@ -79,6 +80,10 @@ export class Application {
 
   get tokens() {
     return this.extractTokens(this.launchTemplate + this.commandTemplate)
+  }
+
+  get launchType() {
+    return this.connection?.launchType || this.defaultLaunchType
   }
 
   get defaultTokens() {
@@ -182,16 +187,15 @@ function getApplicationType(connection: {
         title: 'VNC',
         launchIcon: 'desktop',
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultTemplateCmd: `start vncViewer.exe -Username ${connection.username} ${connection.host}:${connection.port}`,
+        defaultTemplateCmd: `start vncViewer.exe -Username [username] [host]:[port]`,
         checkApplicationCmd: 'cd c:\\ && where vncViewer.exe',
       })
     case 28:
-      const username = connection.username ? `${connection.username}@` : ''
       return new Application({
         title: 'SSH',
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
-        defaultTemplateCmd: `start putty.exe -ssh ${username}${connection.host} ${connection.port}`,
+        defaultTemplateCmd: `start putty.exe -ssh [username]@[host] [port]`,
         checkApplicationCmd: 'cd c:\\ && where putty.exe ',
         //'ssh -l [username] [host] -p [port] -o "NoHostAuthenticationForLocalhost=yes"',
       })
@@ -200,7 +204,8 @@ function getApplicationType(connection: {
         title: 'remoteDesktop',
         defaultLaunchTemplate: 'http://[username]@[host]:[port]',
         defaultCommandTemplate: '',
-        defaultTemplateCmd: `cmdkey /generic:${connection.host} /user:${connection.username} && mstsc /v: ${connection.host} && cmdkey /delete:TERMSRV/${connection.host}`,
+        // defaultLaunchType: isWin() ? 'COMMAND' : 'URL',
+        defaultTemplateCmd: `cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]`,
         checkApplicationCmd: 'cd c:\\ && where remoteDesktop.exe ',
       })
     case 8:

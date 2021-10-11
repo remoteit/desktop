@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { IconButton, Tooltip, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { isWindows, getApplicationObj } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
-import { useDispatch, useSelector } from 'react-redux'
 import { PromptModal } from '../../components/PromptModal'
+import { IconButton } from '../../buttons/IconButton'
 import { DataButton } from '../DataButton'
 import { DialogApp } from '../../components/DialogApp'
 import { Icon } from '../../components/Icon'
@@ -31,22 +32,25 @@ export const LaunchButton: React.FC<Props> = ({
   menuItem,
   dataButton,
   size = 'md',
-  color,
-  type,
-  onLaunch
+  onLaunch,
+  ...props
 }) => {
   const { ui } = useDispatch<Dispatch>()
 
   const { loading, path, launchState } = useSelector((state: ApplicationState) => ({
     path: state.ui.launchPath,
     loading: state.ui.launchLoading,
-    launchState: state.ui.launchState
+    launchState: state.ui.launchState,
   }))
 
   const [launchApp, setLaunchApp] = useState<ILaunchApp>()
   const disabled = !connection?.enabled
   const [openLaunchApplication, setOpenLaunchApplication] = useState<boolean>(false)
-  const app = useApplication(connection && connection.launchType === 'Use command' ? 'copy' : 'launch', service, connection)
+  const app = useApplication(
+    connection && connection.launchType === 'Use command' ? 'copy' : 'launch',
+    service,
+    connection
+  )
   useEffect(() => {
     if (openLaunchApplication && !loading) {
       launchApplication()
@@ -54,11 +58,9 @@ export const LaunchButton: React.FC<Props> = ({
     }
   }, [loading, openLaunchApplication])
 
-
   if (!app || !connection?.enabled) return null
 
   const launchApplication = () => {
-
     const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
     const hostProps = {
       port: app.connection?.port,
@@ -68,7 +70,7 @@ export const LaunchButton: React.FC<Props> = ({
     if (applicationObj?.application) {
       setLaunchApp({
         ...hostProps,
-        ...applicationObj
+        ...applicationObj,
       })
     }
     ui.updateLaunchState({ openApp: true })
@@ -78,7 +80,7 @@ export const LaunchButton: React.FC<Props> = ({
   const onSubmit = (tokens: ILookup<string>) => {
     connection && setConnection({ ...connection, ...tokens })
     ui.updateLaunchState({ open: false })
-    // here is using preview because we don't know when setConnection respond with the socket emit 
+    // here is using preview because we don't know when setConnection respond with the socket emit
     onOpenApp(app.preview(tokens))
   }
 
@@ -104,11 +106,17 @@ export const LaunchButton: React.FC<Props> = ({
     } else {
       window.open(command || app.command)
     }
-
   }
 
   const LaunchIcon = (
-    <Icon name={loading ? 'spinner-third' : 'launch'} spin={loading} size={size} color={color} type={type} fixedWidth />
+    <Icon
+      name={loading ? 'spinner-third' : app.icon}
+      spin={loading}
+      size={size}
+      color={props.color}
+      type={props.type}
+      fixedWidth
+    />
   )
 
   return (
@@ -127,11 +135,12 @@ export const LaunchButton: React.FC<Props> = ({
           onClick={clickHandler}
         />
       ) : (
-        <Tooltip title={app.contextTitle}>
-          <IconButton onClick={clickHandler} disabled={loading} >
-            {LaunchIcon}
-          </IconButton>
-        </Tooltip>
+        <IconButton
+          {...props}
+          onClick={clickHandler}
+          disabled={loading || disabled}
+          icon={loading ? 'spinner-third' : app.icon}
+        />
       )}
       <PromptModal app={app} open={launchState.open} onClose={closeAll} onSubmit={onSubmit} />
       <DialogApp launchApp={launchApp} app={app} type={service?.type} />

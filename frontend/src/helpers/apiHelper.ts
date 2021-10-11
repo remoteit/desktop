@@ -1,4 +1,5 @@
 import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL } from '../shared/constants'
+import { AxiosError } from 'axios'
 import { store } from '../store'
 import { version } from '../../package.json'
 
@@ -25,4 +26,18 @@ export function getWebSocketURL(): string {
   const { webSocketURL, switchApi } = store.getState().backend.preferences
   const defaultURL = version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
   return webSocketURL && switchApi ? webSocketURL : defaultURL
+}
+
+export async function apiError(error: Error) {
+  const { auth, ui } = store.dispatch
+  console.error('API ERROR:', error)
+
+  if (!error) return
+
+  // if (error?.respons?.status === 401 || error?.response?.status === 403) {
+  //   auth.checkSession()
+
+  if (error.message !== 'Network Error') {
+    ui.set({ errorMessage: error.message })
+  }
 }

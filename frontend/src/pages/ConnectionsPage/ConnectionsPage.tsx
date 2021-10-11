@@ -91,7 +91,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
         title="Recent"
         sessions={recent}
         action={!!recent.length ? <ClearButton all /> : undefined}
-        recent
+        offline
       />
     </Body>
   )

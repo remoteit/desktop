@@ -109,7 +109,6 @@ export const ConnectionPage: React.FC = () => {
           </DesktopUI>
           {/* @TODO: add auto launch */}
           <LaunchSelect connection={connection} service={service} />
-          <CustomAttributeSettings connection={connection} service={service} />
         </List>
       </AccordionMenuItem>
       <AccordionMenuItem

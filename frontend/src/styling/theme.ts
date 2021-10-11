@@ -240,6 +240,11 @@ const jssTheme: ThemeOptions = {
         textTransform: 'uppercase',
       },
     },
+    MuiTextField: {
+      root: {
+        '& label + .MuiInput-formControl': { marginTop: 9 },
+      },
+    },
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,

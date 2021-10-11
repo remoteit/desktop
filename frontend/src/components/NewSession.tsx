@@ -29,7 +29,7 @@ export const NewSession: React.FC<{ singlePanel?: boolean }> = ({ singlePanel })
 
   return (
     <Collapse in={!!showNew} timeout={400}>
-      <SessionsList title="New" sessions={[session]} isNew />
+      <SessionsList title="New" sessions={[session]} offline isNew />
     </Collapse>
   )
 }

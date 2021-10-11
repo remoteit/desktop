@@ -8,7 +8,7 @@ export interface Props {
   title: string
   action?: React.ReactElement
   other?: boolean
-  recent?: boolean
+  offline?: boolean
   isNew?: boolean
 }
 
@@ -19,7 +19,7 @@ export const SessionsList: React.FC<Props> = ({ sessions, title, action, ...prop
   return (
     <>
       <Typography variant="subtitle1">
-        <Title enabled={!props.recent}>{title}</Title>
+        <Title enabled={!props.offline}>{title}</Title>
         {action}
       </Typography>
       {sessions.map((s, i) => {

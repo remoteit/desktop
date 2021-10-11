@@ -1,10 +1,10 @@
 import { createModel } from '@rematch/core'
 import { DEVELOPER_KEY } from '../shared/constants'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
+import { getRestApi, apiError } from '../helpers/apiHelper'
 import { r3, getToken } from '../services/remote.it'
 import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
-import { getRestApi } from '../helpers/apiHelper'
 import { emit } from '../services/Controller'
 import axios from 'axios'
 
@@ -93,6 +93,7 @@ export default createModel<RootModel>()({
           data,
           await dispatch.connections.headerOptions()
         )
+        console.log('CONNECTION RESULT', result)
         const response = r3.processData(result)
         const proxyResult: ProxyConnectionResult = response.connection || {}
         console.log('PROXY CONNECTED', proxyResult)
@@ -112,7 +113,9 @@ export default createModel<RootModel>()({
           // host: proxyResult.proxyURL,
         })
       } catch (error) {
+        console.log('CONNECTION ERROR', error)
         r3.processError(error)
+        apiError(error)
       }
     },
 
@@ -130,6 +133,7 @@ export default createModel<RootModel>()({
         console.log('PROXY DISCONNECTED', proxyResult)
       } catch (error) {
         r3.processError(error)
+        apiError(error)
       }
     },
 

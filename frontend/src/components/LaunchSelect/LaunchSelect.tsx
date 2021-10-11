@@ -1,7 +1,8 @@
 import React from 'react'
 import { Box, ListItem, ListItemIcon, makeStyles, MenuItem, TextField, Tooltip } from '@material-ui/core'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
+import { CustomAttributeSettings } from '../CustomAttributeSettings'
+import { InlineTemplateSetting } from '../InlineTemplateSetting'
 import { colors, spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
@@ -12,11 +13,6 @@ type Props = {
   connection: IConnection
   disabled?: boolean
 }
-
-const ITEM = [
-  { id: 0, label: 'Use command' },
-  { id: 1, label: 'Use URL' },
-]
 
 export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   if (!connection) connection = newConnection(service)
@@ -44,33 +40,33 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   }
 
   return (
-    <Box marginBottom={2}>
-      <ListItem dense>
+    <>
+      <ListItem dense className={css.field}>
         <ListItemIcon>
           <Icon name={app.icon} size="md" />
         </ListItemIcon>
         <TextField
           select
-          className={css.field}
+          fullWidth
+          size="small"
           label="Launch type"
-          value={connection.launchType}
-          variant="filled"
+          value={app.launchType}
           onChange={e => onChange(e.target.value)}
         >
-          {ITEM.map(item => {
-            return (
-              <MenuItem value={item.label} key={item.id}>
-                {item.label}
-              </MenuItem>
-            )
-          })}
+          <MenuItem value="URL">URL</MenuItem>
+          <MenuItem value="COMMAND">Command</MenuItem>
         </TextField>
       </ListItem>
       <ListItem dense>
         <ListItemIcon></ListItemIcon>
         <Quote margin={0}>
-          <InlineTextFieldSetting
-            hideIcon={true}
+          <InlineTemplateSetting
+            connection={connection}
+            service={service}
+            context={connection.launchType === 'COMMAND' ? 'copy' : 'launch'}
+          />
+          {/* <InlineTextFieldSetting
+            hideIcon
             label={
               <>
                 {app.contextTitle}
@@ -85,14 +81,17 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
             resetValue={app.command}
             onSave={template => onSave(template)}
           />
+          <CustomAttributeSettings connection={connection} service={service} /> */}
         </Quote>
       </ListItem>
-    </Box>
+    </>
   )
 }
 
 const useStyles = makeStyles({
-  field: { width: 200, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
-  divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
-  action: { right: spacing.xs, marginLeft: spacing.sm },
+  menu: { textTransform: 'capitalize' },
+  field: {
+    '&:hover': { backgroundColor: colors.primaryHighlight },
+    /*  marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } */
+  },
 })
