@@ -39,20 +39,15 @@ export function useNavigation(): INavigationHook {
     remoteUI: isRemoteUI(state),
   }))
   const [shouldUpdate, setShouldUpdate] = useState<boolean>(true)
+  const [navigationPath, setNavigationPath] = useState({})
 
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
 
-  // Used for remembering the state of a tab - no longer used
-  const recallPath = (selected: string) => {
-    const stored = navigation[selected]
-    if (!stored || stored === location.pathname) return selected
-    else return stored
-  }
-
   useEffect(() => {
     if (navigation[menu] !== location.pathname) {
-      ui.set({ navigation: { ...navigation, [menu]: location.pathname } })
+      ui.set({ ...navigationPath, navigation: { ...navigation, [menu]: location.pathname } })
+      setNavigationPath({})
     }
   }, [navigation, location, menu])
 
@@ -63,7 +58,7 @@ export function useNavigation(): INavigationHook {
       shouldUpdate &&
       navigationBack.slice(-1)[0] !== location.pathname
     ) {
-      ui.set({ navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] })
+      setNavigationPath({ ...navigationPath, navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] })
     }
   }, [location?.pathname])
 
@@ -71,7 +66,8 @@ export function useNavigation(): INavigationHook {
     setShouldUpdate(false)
     const lengthBack = navigationBack?.length
     await history.push(navigationBack[lengthBack - 2])
-    ui.set({
+    setNavigationPath({
+      ...navigationPath,
       navigationBack: navigationBack.slice(0, lengthBack - 1),
       navigationForward: navigationBack.slice(-1).concat(navigationForward),
     })
