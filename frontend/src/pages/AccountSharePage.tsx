@@ -14,7 +14,11 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountSharePage = () => {
   const { accounts } = useDispatch<Dispatch>()
-  const { user, access, contacts = [] } = useSelector((state: ApplicationState) => ({
+  const {
+    user,
+    access,
+    contacts = [],
+  } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     access: state.accounts.access,
     contacts: state.devices.contacts,
@@ -34,12 +38,17 @@ export const AccountSharePage = () => {
     <Container
       bodyProps={{ inset: true }}
       header={
-        <Typography variant="h1">
-          <Title>Add Device List Users</Title>
-        </Typography>
+        <>
+          <Typography variant="h1">
+            <Title>Add Device List Users</Title>
+          </Typography>
+          <ContactSelector
+            contacts={contacts.filter(c => !access.find(s => s.email === c.email))}
+            onChange={setEmails}
+          />
+        </>
       }
     >
-      <ContactSelector contacts={contacts.filter(c => !access.find(s => s.email === c.email))} onChange={setEmails} />
       {!!emails.length && (
         <Notice gutterBottom>
           Granting access to all the devices and services you ({user?.email}) own. <br />

@@ -11,6 +11,7 @@ type Props = IconProps & {
   to?: string
   className?: string
   shiftDown?: boolean
+  loading?: boolean
   onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: (e: React.MouseEvent) => void
   onClick?: (e: React.MouseEvent) => void
@@ -21,11 +22,10 @@ export const IconButton: React.FC<Props> = ({
   icon,
   disabled,
   to,
-  color,
-  size = 'base',
-  type = 'regular',
   shiftDown,
+  size = 'base',
   className,
+  loading,
   onMouseEnter,
   onMouseLeave,
   onClick,
@@ -33,6 +33,10 @@ export const IconButton: React.FC<Props> = ({
   ...props
 }) => {
   const history = useHistory()
+  if (loading) {
+    icon = 'spinner-third'
+    props.spin = true
+  }
   const clickHandler = (e: React.MouseEvent) => {
     if (onClick) onClick(e)
     if (to) history.push(to)
@@ -46,8 +50,7 @@ export const IconButton: React.FC<Props> = ({
       className={className}
       style={{ opacity: disabled ? 0.5 : undefined, marginBottom: shiftDown ? -spacing.sm : undefined }}
     >
-      <Icon {...props} name={icon} color={color} type={type} size={size} />
-      {children}
+      <Icon {...props} name={icon} size={size} fixedWidth />
     </MuiIconButton>
   )
 

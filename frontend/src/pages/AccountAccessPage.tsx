@@ -1,25 +1,15 @@
 import React, { useEffect } from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Tooltip,
-  IconButton,
-} from '@material-ui/core'
+import { Typography, List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { InitiatorPlatform } from '../components/InitiatorPlatform'
-import { AddUserButton } from '../buttons/AddUserButton'
+import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
-import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountAccessPage: React.FC = () => {
@@ -35,7 +25,7 @@ export const AccountAccessPage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>Device List Sharing</Title>
-          <AddUserButton to={'/settings/access/share'} />
+          <IconButton title="Share" icon="user-plus" to={'/settings/access/share'} size="md" />
         </Typography>
       }
     >
@@ -61,11 +51,7 @@ export const AccountAccessPage: React.FC = () => {
                 }
               />
               <ListItemSecondaryAction>
-                <Tooltip title="Remove Account">
-                  <IconButton onClick={() => accounts.removeAccess(user.email)}>
-                    <Icon name="times" size="md" fixedWidth />
-                  </IconButton>
-                </Tooltip>
+                <IconButton title="Remove Account" icon="times" onClick={() => accounts.removeAccess(user.email)} />
               </ListItemSecondaryAction>
             </ListItem>
           ))}

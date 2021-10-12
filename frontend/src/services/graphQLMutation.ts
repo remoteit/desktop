@@ -54,9 +54,40 @@ export async function graphQLShareDevice(params: IShareProps) {
 export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMOVE' | 'LEAVE') {
   return await graphQLBasicRequest(
     ` mutation query($emails: [String!]!, $action: SharingAction) {
-        link(email: $emails, action: $action, scripting: true)
+        link(email: $emails, action: $action)
       }`,
     { emails, action }
+  )
+}
+
+// export async function graphQLAddOrganization(name: string) {
+//   return await graphQLBasicRequest(
+//     ` mutation query($name: String!) {
+//         createOrganization(name: $name) {
+//           id
+//           name
+//         }
+//       }`,
+//     { name }
+//   )
+// }
+
+export async function graphQLSetOrganization(name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($name: String!) {
+        setOrganization(name: $name)
+      }`,
+    { name }
+  )
+}
+
+// @TODO this is same as device list sharing mutation - refactor
+export async function graphQLSetMembers(members: IOrganizationMember[], role: IOrganizationRole) {
+  return await graphQLBasicRequest(
+    ` mutation query($email: [String!]!, $role: OrganizationRole) {
+        link(email: $email, role: $role)
+      }`,
+    { email: members.map(member => member.user.email), role }
   )
 }
 

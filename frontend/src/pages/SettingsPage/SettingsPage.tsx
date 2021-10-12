@@ -63,7 +63,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           dense
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
-        {remoteUI || <AccountLinkingSettings />}
+        {/* {remoteUI || <AccountLinkingSettings />} */}
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Licensing"
@@ -72,6 +72,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           badge={licenseIndicator}
           dense
         />
+        <ListItemLocation title="Organization" pathname="/settings/organization" icon="industry-alt" exactMatch dense />
         <ListItemLocation title="Subscriptions" pathname="/settings/plans" icon="shopping-cart" dense />
         {billing && <ListItemLocation title="Billing" pathname="/settings/billing" icon="credit-card-front" dense />}
         <TestUI>

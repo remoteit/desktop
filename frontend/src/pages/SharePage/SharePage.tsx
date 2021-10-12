@@ -77,12 +77,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
         </>
       }
     >
-      {device && (
-        <SharingForm
-          device={device}
-          user={email === '' ? userSelected : user}
-        />
-      )}
+      {device && <SharingForm device={device} user={email === '' ? userSelected : user} />}
     </Container>
   )
 }
