@@ -1,11 +1,10 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
 import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { getPermissions } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
-import { ApplicationState } from '../store'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
-import { getPermissions } from '../helpers/userHelper'
 
 type ShareParams = { [key: string]: any }
 
@@ -69,9 +68,8 @@ export default createModel<RootModel>()({
     },
 
     async share(data: IShareProps, globalState) {
-      const state = globalState as ApplicationState
       const { set } = dispatch.shares
-      const device = getDevices(state).find((d: IDevice) => d.id === data.deviceId)
+      const device = getDevices(globalState).find((d: IDevice) => d.id === data.deviceId)
       set({ sharing: true })
       try {
         const response = await graphQLShareDevice(data)
@@ -83,14 +81,14 @@ export default createModel<RootModel>()({
                 ? `${data.email.length} accounts successfully shared to ${attributeName(device)}.`
                 : `${attributeName(device)} successfully shared to ${data.email[0]}.`,
           })
-      } catch (error: any) {
+      } catch (error) {
         await graphQLCatchError(error)
       }
       set({ sharing: false })
     },
 
     async changeScript(script: boolean, globalState) {
-      const state = globalState as ApplicationState
+      const state = globalState
       const { set } = dispatch.shares
       set({
         currentDevice: {
@@ -101,7 +99,7 @@ export default createModel<RootModel>()({
     },
 
     async changeServices(selectedServices: string[], globalState) {
-      const state = globalState as ApplicationState
+      const state = globalState
       const { set } = dispatch.shares
       set({
         currentDevice: {
@@ -112,33 +110,30 @@ export default createModel<RootModel>()({
     },
 
     async changeIndeterminate(indeterminate: string[], globalState) {
-      const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
         currentDevice: {
-          ...state.shares.currentDevice,
+          ...globalState.shares.currentDevice,
           indeterminate,
         },
       })
     },
 
     async selectAllServices(_, globalState) {
-      const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
         currentDevice: {
-          ...state.shares.currentDevice,
+          ...globalState.shares.currentDevice,
           indeterminate: [],
         },
       })
     },
 
     async changeScriptIndeterminate(scriptIndeterminate: boolean, globalState) {
-      const state = globalState as ApplicationState
       const { set } = dispatch.shares
       set({
         currentDevice: {
-          ...state.shares.currentDevice,
+          ...globalState.shares.currentDevice,
           scriptIndeterminate,
         },
       })
