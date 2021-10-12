@@ -1,20 +1,26 @@
 import React from 'react'
-import { emit } from '../../services/Controller'
-import { Tooltip, IconButton, Button } from '@material-ui/core'
-import { Icon } from '../../components/Icon'
+import { makeStyles, Button } from '@material-ui/core'
+import { IconButton } from '../IconButton'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
+import { spacing } from '../../styling'
 
 type Props = {
-  connection?: IConnection
-  disabled?: boolean
+  id?: string
   all?: boolean
+  disabled?: boolean
 }
 
-export const ClearButton: React.FC<Props> = ({ disabled, connection, all }) => {
-  if (!all && (!connection || connection.enabled || !connection.createdTime)) return null
+export const ClearButton: React.FC<Props> = ({ disabled, id, all }) => {
+  const dispatch = useDispatch<Dispatch>()
+  const css = useStyles()
+
+  if (!all && !id) return null
 
   const forget = () => {
     // @TODO add confirm to clear all
-    emit(all ? 'service/clear-recent' : 'service/clear', connection)
+    if (id) dispatch.connections.clear(id)
+    else dispatch.connections.clearRecent()
   }
 
   return all ? (
@@ -22,10 +28,10 @@ export const ClearButton: React.FC<Props> = ({ disabled, connection, all }) => {
       Clear all
     </Button>
   ) : (
-    <Tooltip title="Remove from recent">
-      <IconButton disabled={disabled} onClick={forget}>
-        <Icon name="times" size="md" fixedWidth />
-      </IconButton>
-    </Tooltip>
+    <IconButton className={css.button} onClick={forget} disabled={disabled} size="sm" icon="times" />
   )
 }
+
+const useStyles = makeStyles({
+  button: { padding: spacing.xs, marginRight: spacing.xs },
+})

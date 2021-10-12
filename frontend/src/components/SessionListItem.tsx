@@ -6,6 +6,7 @@ import { TargetPlatform } from './TargetPlatform'
 import { spacing, colors } from '../styling'
 import { ApplicationState } from '../store'
 import { attributeName } from '../shared/nameHelper'
+import { ClearButton } from '../buttons/ClearButton'
 import { useSelector } from 'react-redux'
 import { selectById } from '../models/devices'
 import { Title } from './Title'
@@ -15,13 +16,14 @@ export interface Props {
   session: ISession
   merge?: boolean
   other?: boolean
-  recent?: boolean
+  offline?: boolean
+  isNew?: boolean
 }
 
-export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent }) => {
+export const SessionListItem: React.FC<Props> = ({ session, merge, other, offline, isNew }) => {
   const [service, device] = useSelector((state: ApplicationState) => selectById(state, session.target.id))
   const connected = session.state === 'connected'
-  const css = useStyles({ state: session.state, recent })
+  const css = useStyles({ state: session.state, offline })
 
   let pathname = `/connections/${session.target.id}`
   if (session.id) pathname += `/${session.id}`
@@ -40,20 +42,25 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
       {merge || (
         <ListItem dense>
           <ListItemIcon className={css.mergeIcon}>
-            <InitiatorPlatform id={session.platform} connected={!recent} />
+            <InitiatorPlatform id={session.platform} connected={!offline} />
           </ListItemIcon>
-          <ListItemText primary={<Title enabled={!recent}>{other ? session.user?.email : 'This device'}</Title>} />
+          <ListItemText primary={<Title enabled={!offline}>{other ? session.user?.email : 'This device'}</Title>} />
         </ListItem>
       )}
-      <ListItemLocation pathname={pathname} match={`/connections/${session.target.id}`} dense>
-        <Tooltip title={recent ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="left" arrow>
+      <ListItemLocation
+        className={css.item}
+        pathname={pathname}
+        match={isNew ? '/connections/new' : `/connections/${session.target.id}`}
+        dense
+      >
+        <Tooltip title={offline ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="left" arrow>
           <ListItemIcon className={css.connectIcon}>
             <div className={css.connection} />
             {icon}
           </ListItemIcon>
         </Tooltip>
         <ListItemIcon className={css.platform + ' ' + css.title}>
-          <TargetPlatform id={session.target.platform} size="md" color={recent ? 'gray' : 'primary'} tooltip />
+          <TargetPlatform id={session.target.platform} size="md" color={offline ? 'gray' : 'primary'} tooltip />
         </ListItemIcon>
         <ListItemText
           className={css.title}
@@ -69,21 +76,22 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, recent
             </Title>
           }
         />
+        {offline && <ClearButton id={session.target.id} />}
       </ListItemLocation>
     </>
   )
 }
 
 const useStyles = makeStyles({
-  title: ({ state, recent }: any) => ({
+  title: ({ state, offline }: any) => ({
     opacity: state === 'offline' ? 0.5 : 1,
-    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap', color: recent ? colors.grayDark : colors.primaryLight },
+    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap', color: offline ? colors.grayDark : colors.primaryLight },
   }),
-  connection: ({ recent, state }: any) => ({
-    borderColor: recent ? colors.grayLight : colors.primary,
+  connection: ({ offline, state }: any) => ({
+    borderColor: offline ? colors.grayLight : colors.primary,
     borderWidth: '0 0 1px 1px',
     borderBottomWidth: state === 'offline' ? 0 : 1,
-    borderBottomColor: state === 'connected' ? colors.primary : recent ? colors.grayLight : colors.primary,
+    borderBottomColor: state === 'connected' ? colors.primary : offline ? colors.grayLight : colors.primary,
     borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',
     borderStyle: 'solid',
     height: '2.6em',
@@ -91,10 +99,14 @@ const useStyles = makeStyles({
     width: '1.5em',
     marginRight: '-1.5em',
   }),
-  service: ({ recent }: any) => ({
-    color: recent ? colors.grayDarker : colors.primary,
+  service: ({ offline }: any) => ({
+    color: offline ? colors.grayDarker : colors.primary,
     fontWeight: 500,
   }),
+  item: {
+    '& .MuiIconButton-root': { display: 'none' },
+    '&:hover .MuiIconButton-root': { display: 'block' },
+  },
   connectIcon: {
     position: 'relative',
     '& > svg': { position: 'absolute', right: 6, bottom: -7 },

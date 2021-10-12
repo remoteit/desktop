@@ -20,7 +20,7 @@ export const InlineTemplateSetting: React.FC<Props> = ({ service, connection, co
 
   return (
     <InlineTextFieldSetting
-      icon={app.icon}
+      hideIcon
       disabled={disabled}
       value={app.template}
       displayValue={app.command}

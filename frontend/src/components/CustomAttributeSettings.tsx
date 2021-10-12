@@ -16,6 +16,7 @@ export const CustomAttributeSettings: React.FC<Props> = ({ service, connection }
     <>
       {app.customTokens.map(token => (
         <InlineTextFieldSetting
+          hideIcon
           key={token}
           label={token}
           value={app.value(token)}

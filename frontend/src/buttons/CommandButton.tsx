@@ -60,7 +60,7 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
 
   const CopyIcon = (
     <Icon
-      name={clipboard.copied ? 'check' : app.icon}
+      name={clipboard.copied ? 'check' : 'copy'}
       color={clipboard.copied ? props.color || 'success' : props.color}
       size={size}
       type={props.type}
@@ -80,7 +80,7 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
       ) : dataButton ? (
         <DataButton label="Command" value={app.command} title={title || 'Command'} icon={CopyIcon} onClick={check} />
       ) : (
-        <IconButton {...props} onClick={check} icon={clipboard.copied ? 'check' : app.icon} />
+        <IconButton {...props} onClick={check} size={size} icon={clipboard.copied ? 'check' : 'copy'} />
       )}
       <input type="hidden" ref={clipboard.target} value={app.command} />
       <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />

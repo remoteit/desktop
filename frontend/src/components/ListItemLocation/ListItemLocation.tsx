@@ -46,10 +46,10 @@ export const ListItemLocation: React.FC<Props> = ({
   return (
     <ListItem
       {...props}
-      button
+      button={!matches as any}
       selected={!!matches}
       onClick={onClick}
-      disabled={disabled || !!matches}
+      disabled={disabled}
       style={showDisabled ? undefined : { opacity: 1 }}
     >
       {icon && (

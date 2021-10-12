@@ -2,7 +2,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
+import { PORTAL, CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
@@ -50,15 +50,15 @@ const state: AuthState = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async init(_: void, rootState: any) {
+    async init(_: void, rootState) {
       let { user } = rootState.auth
       console.log('AUTH INIT', { user })
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          redirectURL: isElectron() ? '' : window.origin + '/v1/callback/',
-          callbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
-          signoutCallbackURL: isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          redirectURL: PORTAL || isElectron() ? '' : window.origin + '/v1/callback/',
+          callbackURL: PORTAL ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          signoutCallbackURL: PORTAL ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
         })
 
         await sleep(500)
@@ -107,7 +107,7 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async updateUserMetadata(metadata: INotificationSetting, rootState: any) {
+    async updateUserMetadata(metadata: INotificationSetting) {
       const { auth } = dispatch as Dispatch
       try {
         const response = await graphQLUpdateNotification(metadata)
@@ -117,11 +117,12 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async checkSession(_: void, rootState: any) {
+    async checkSession(_: void, rootState) {
       const { ui } = store.dispatch
+      if (!rootState.auth.authService) return
       try {
         const result = await rootState.auth.authService.checkSignIn()
-        if (result.authUser) {
+        if (result.cognitoUser) {
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
           console.error('SESSION ERROR', result.error, result)
@@ -157,7 +158,7 @@ export default createModel<RootModel>()({
         dispatch.auth.setBackendAuthenticated(true)
       }
     },
-    async disconnect(_: void, rootState: any) {
+    async disconnect(_: void, rootState) {
       console.log('DISCONNECT')
       if (!rootState.auth.backendAuthenticated) {
         await dispatch.auth.signedOut()
@@ -187,11 +188,15 @@ export default createModel<RootModel>()({
       store.dispatch.announcements.fetch()
       store.dispatch.sessions.fetch()
     },
+    async signOut(_, rootState) {
+      if (rootState.auth.backendAuthenticated) emit('user/sign-out')
+      else dispatch.auth.signedOut()
+    },
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut(_: void, rootState: any) {
-      await rootState.auth.authService.signOut()
+    async signedOut(_: void, rootState) {
+      await rootState.auth.authService?.signOut()
       window.localStorage.removeItem('amplify-signin-with-hostedUI')
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()

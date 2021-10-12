@@ -1,7 +1,8 @@
 import React from 'react'
-import { Box, ListItem, ListItemIcon, makeStyles, MenuItem, TextField, Tooltip } from '@material-ui/core'
+import { List, ListItem, ListItemIcon, makeStyles, MenuItem, TextField } from '@material-ui/core'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
-import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
+import { CustomAttributeSettings } from '../CustomAttributeSettings'
+import { InlineTemplateSetting } from '../InlineTemplateSetting'
 import { colors, spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
@@ -9,34 +10,21 @@ import { Icon } from '../Icon'
 
 type Props = {
   service: IService
-  connection?: IConnection
-  actionIcon?: React.ReactElement
+  connection: IConnection
   disabled?: boolean
-  launchType?: string
 }
 
-const ITEM = [
-  { id: 0, label: 'Use command' },
-  { id: 1, label: 'Use URL' },
-]
-
-export const LaunchSelect: React.FC<Props> = ({ service, connection, launchType }) => {
+export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   if (!connection) connection = newConnection(service)
 
-  const appCommand = useApplication('copy', service, connection)
-  const appUrl = useApplication('launch', service, connection)
+  const [open, setOpen] = React.useState<boolean>(false)
+  const app = useApplication('launch', service, connection)
   const css = useStyles()
-  const app = launchType === 'Use command' ? appCommand : appUrl
 
-  const onSave = template => {
-    connection &&
-      setConnection({
-        ...connection,
-        [app.templateKey]: template.toString(),
-      })
-  }
+  connection.context = app.launchType === 'COMMAND' ? 'copy' : 'launch'
 
-  const onChange = (value: any) => {
+  const handleChange = (value: any) => {
+    handleClick()
     connection &&
       setConnection({
         ...connection,
@@ -44,66 +32,48 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection, launchType 
       })
   }
 
+  const handleClick = () => setOpen(!open)
+
   return (
-    <Box marginBottom={2}>
-      <ListItem dense>
+    <>
+      <ListItem dense className={css.field} onClick={handleClick} button>
         <ListItemIcon>
           <Icon name={app.icon} size="md" />
         </ListItemIcon>
         <TextField
           select
-          className={css.field}
+          fullWidth
+          SelectProps={{ open }}
+          size="small"
           label="Launch type"
-          value={launchType}
-          variant="filled"
-          onChange={e => onChange(e.target.value)}
+          value={app.launchType}
+          onChange={e => handleChange(e.target.value)}
         >
-          {ITEM.map(item => {
-            return (
-              <MenuItem value={item.label} key={item.id}>
-                {item.label}
-              </MenuItem>
-            )
-          })}
+          <MenuItem value="URL">URL</MenuItem>
+          <MenuItem value="COMMAND">Command</MenuItem>
         </TextField>
       </ListItem>
       <ListItem dense>
         <ListItemIcon></ListItemIcon>
         <Quote margin={0}>
-          <InlineTextFieldSetting
-            hideIcon={true}
-            label={
-              <>
-                {app.contextTitle}
-                <Tooltip title={`Replacement tokens: ${app.allTokens.join(', ')}`} placement="top" arrow>
-                  <span style={{ zIndex: 10 }}>
-                    <Icon name="question-circle" size="sm" type="regular" inline />
-                  </span>
-                </Tooltip>
-              </>
-            }
-            value={app.command}
-            resetValue={app.command}
-            onSave={template => onSave(template)}
-          />
+          <List disablePadding>
+            <InlineTemplateSetting
+              connection={connection}
+              service={service}
+              context={app.launchType === 'COMMAND' ? 'copy' : 'launch'}
+            />
+            <CustomAttributeSettings connection={connection} service={service} />
+          </List>
         </Quote>
       </ListItem>
-    </Box>
+    </>
   )
 }
 
 const useStyles = makeStyles({
-  field: { width: 200, marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } },
-  divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
-  action: { right: spacing.xs, marginLeft: spacing.sm },
-  verticalLine: {
-    borderColor: colors.grayLight,
-    borderWidth: '0 0 2px 2px',
-    borderBottomWidth: 0,
-    borderBottomColor: colors.grayLight,
-    borderBottomStyle: 'solid',
-    borderStyle: 'solid',
-    height: '3.6em',
-    marginRight: '-1.5em',
+  menu: { textTransform: 'capitalize' },
+  field: {
+    '&:hover': { backgroundColor: colors.primaryHighlight },
+    /*  marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } */
   },
 })

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { makeStyles, Typography, Link } from '@material-ui/core'
 import { selectConnections, connectionState } from '../../helpers/connectionHelper'
 import { ApplicationState } from '../../store'
@@ -7,6 +7,7 @@ import { SessionsList } from '../../components/SessionsList'
 import { ClearButton } from '../../buttons/ClearButton'
 import { useSelector } from 'react-redux'
 import { selectById } from '../../models/devices'
+import { NewSession } from '../../components/NewSession'
 import { Body } from '../../components/Body'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
@@ -61,7 +62,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     return { local, proxy, other, recent }
   })
 
-  const noConnections = !local.length && !other.length && !recent.length
+  const noConnections = !local.length && !other.length && !recent.length && !proxy.length
 
   useEffect(() => {
     heartbeat.beat()
@@ -70,6 +71,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
 
   return (
     <Body>
+      <NewSession />
       {noConnections && (
         <>
           <Typography className={css.message} variant="h2" align="center">
@@ -89,7 +91,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
         title="Recent"
         sessions={recent}
         action={!!recent.length ? <ClearButton all /> : undefined}
-        recent
+        offline
       />
     </Body>
   )

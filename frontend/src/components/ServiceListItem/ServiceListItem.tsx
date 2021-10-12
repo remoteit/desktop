@@ -8,7 +8,6 @@ import { ConnectionErrorMessage } from '../ConnectionErrorMessage'
 import { ListItemLocation } from '../ListItemLocation'
 import { SessionsButton } from '../../buttons/SessionsButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
-import { ClearButton } from '../../buttons/ClearButton'
 import { ComboButton } from '../../buttons/ComboButton'
 import { ErrorButton } from '../../buttons/ErrorButton'
 import { ServiceName } from '../ServiceName'
@@ -56,7 +55,6 @@ export function ServiceListItem({ connection, service, indent, dense, secondary 
           <LaunchButton connection={connection} service={service} />
           <CommandButton connection={connection} service={service} title="Copy Command" />
           <SessionsButton service={service} />
-          <ClearButton connection={connection} />
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
         </ListItemSecondaryAction>
       </ListItemLocation>

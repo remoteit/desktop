@@ -1,10 +1,11 @@
 import { createModel } from '@rematch/core'
 import { DEVELOPER_KEY } from '../shared/constants'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
+import { getRestApi, apiError } from '../helpers/apiHelper'
 import { r3, getToken } from '../services/remote.it'
 import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
-import { getRestApi } from '../helpers/apiHelper'
+import { emit } from '../services/Controller'
 import axios from 'axios'
 
 type IConnectionsState = { all: IConnection[]; useCommand: boolean }
@@ -17,7 +18,7 @@ const defaultState: IConnectionsState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init() {
+    async init(_, globalState) {
       let item = window.localStorage.getItem('connections-all')
       if (item) dispatch.connections.set({ all: JSON.parse(item) })
     },
@@ -92,6 +93,7 @@ export default createModel<RootModel>()({
           data,
           await dispatch.connections.headerOptions()
         )
+        console.log('CONNECTION RESULT', result)
         const response = r3.processData(result)
         const proxyResult: ProxyConnectionResult = response.connection || {}
         console.log('PROXY CONNECTED', proxyResult)
@@ -111,7 +113,9 @@ export default createModel<RootModel>()({
           // host: proxyResult.proxyURL,
         })
       } catch (error) {
+        console.log('CONNECTION ERROR', error)
         r3.processError(error)
+        apiError(error)
       }
     },
 
@@ -129,7 +133,22 @@ export default createModel<RootModel>()({
         console.log('PROXY DISCONNECTED', proxyResult)
       } catch (error) {
         r3.processError(error)
+        apiError(error)
       }
+    },
+
+    async clear(id: string, globalState) {
+      const { set } = dispatch.connections
+      const { all } = globalState.connections
+      if (globalState.auth.backendAuthenticated) emit('service/clear', { id })
+      else set({ all: all.filter(c => c.id !== id) })
+    },
+
+    async clearRecent(_, globalState) {
+      const { set } = dispatch.connections
+      const { all } = globalState.connections
+      if (globalState.auth.backendAuthenticated) emit('service/clear-recent')
+      else set({ all: all.filter(c => c.enabled && c.online) })
     },
   }),
   reducers: {

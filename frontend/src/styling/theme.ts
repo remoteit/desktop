@@ -240,6 +240,11 @@ const jssTheme: ThemeOptions = {
         textTransform: 'uppercase',
       },
     },
+    MuiTextField: {
+      root: {
+        '& label + .MuiInput-formControl': { marginTop: 9 },
+      },
+    },
     MuiFilledInput: {
       root: {
         backgroundColor: colors.grayLightest,
@@ -255,6 +260,11 @@ const jssTheme: ThemeOptions = {
       input: { padding: '22px 12px 10px' },
       underline: {
         '&:before, &:after': { display: 'none' },
+      },
+    },
+    MuiSelect: {
+      select: {
+        '&:focus': { backgroundColor: 'none' },
       },
     },
     MuiFormControl: {
@@ -296,11 +306,12 @@ const jssTheme: ThemeOptions = {
         fontSize: fontSizes.xxs,
         color: colors.grayDarker,
         display: 'flex',
-        alignItems: 'flex-end',
-        minHeight: 50,
+        alignItems: 'center',
+        minHeight: spacing.xl,
         padding: `${spacing.xxs}px ${gutters - 8}px ${spacing.xxs}px ${gutters}px`,
         textTransform: 'uppercase',
         letterSpacing: 2,
+        marginTop: spacing.lg,
         fontWeight: 500,
       },
       body2: {

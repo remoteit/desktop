@@ -60,8 +60,7 @@ export default createModel<RootModel>()({
         await graphQLCatchError(error)
       }
     },
-    async parse(gqlResponse: AxiosResponse<any> | void, state) {
-      if (!gqlResponse) return
+    async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
       const gqlData = gqlResponse?.data?.data?.login
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts

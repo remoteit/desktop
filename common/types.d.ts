@@ -162,8 +162,8 @@ declare global {
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
+    launchType?: 'COMMAND' | 'URL' // scheme to use for launching
     [index: string]: any // needed to be able to iterate the keys :(
-    launchType?: string
   }
 
   type IConnectionState =
@@ -290,7 +290,6 @@ declare global {
     created?: Date
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
-    platform?: number // @FIXME this shouldn't be on the user
   }
 
   type INotificationSetting = {
@@ -346,7 +345,7 @@ declare global {
     isP2P: boolean
     actor: IUserRef
     users: IUserRef[]
-    platform: IUser['platform']
+    platform: number
     authUserId: string
     geo?: IGeo
     metadata?: INotificationSetting
