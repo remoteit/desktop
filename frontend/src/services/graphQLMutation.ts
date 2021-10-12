@@ -75,19 +75,17 @@ export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMO
 export async function graphQLSetOrganization(name: string) {
   return await graphQLBasicRequest(
     ` mutation query($name: String!) {
-        updateOrganization(name: $name) {
-          id
-          name
-        }
+        setOrganization(name: $name)
       }`,
     { name }
   )
 }
 
+// @TODO this is same as device list sharing mutation - refactor
 export async function graphQLSetMembers(members: IOrganizationMember[], role: IOrganizationRole) {
   return await graphQLBasicRequest(
     ` mutation query($email: [String!]!, $role: OrganizationRole) {
-        setMember(email: $email, role: $role)
+        link(email: $email, role: $role)
       }`,
     { email: members.map(member => member.user.email), role }
   )

@@ -319,7 +319,7 @@ declare global {
     created: Date
   }
 
-  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'LIMITED' | 'MEMBER' | 'REMOVE'
+  type IOrganizationRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'REMOVE'
 
   type IGeo = {
     countryName: string

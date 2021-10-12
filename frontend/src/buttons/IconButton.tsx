@@ -11,6 +11,7 @@ type Props = IconProps & {
   to?: string
   className?: string
   shiftDown?: boolean
+  loading?: boolean
   onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: (e: React.MouseEvent) => void
   onClick?: (e: React.MouseEvent) => void
@@ -24,6 +25,7 @@ export const IconButton: React.FC<Props> = ({
   shiftDown,
   size = 'base',
   className,
+  loading,
   onMouseEnter,
   onMouseLeave,
   onClick,
@@ -31,6 +33,10 @@ export const IconButton: React.FC<Props> = ({
   ...props
 }) => {
   const history = useHistory()
+  if (loading) {
+    icon = 'spinner-third'
+    props.spin = true
+  }
   const clickHandler = (e: React.MouseEvent) => {
     if (onClick) onClick(e)
     if (to) history.push(to)
