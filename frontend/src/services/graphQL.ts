@@ -32,8 +32,8 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   return await axios.request(request)
 }
 
-export function graphQLGetErrors(response: AxiosResponse | void, silent?: boolean) {
-  if (!response) return
+export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silent?: boolean) {
+  if (!response || response === 'ERROR') return
   const errors: undefined | { message: string }[] = response?.data?.errors
 
   if (errors) {

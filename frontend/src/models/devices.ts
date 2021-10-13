@@ -249,10 +249,12 @@ export default createModel<RootModel>()({
         enabled: !form.disabled,
       })
       console.log('CLOUD RESULT', result)
-      const id = result?.data?.data?.addService?.id
-      if (id) {
-        await graphQLSetAttributes(form.attributes, id)
-        await dispatch.devices.fetchSingle({ id: deviceId })
+      if (result !== 'ERROR') {
+        const id = result?.data?.data?.addService?.id
+        if (id) {
+          await graphQLSetAttributes(form.attributes, id)
+          await dispatch.devices.fetchSingle({ id: deviceId })
+        }
       }
       dispatch.ui.set({ setupServiceBusy: undefined, setupAddingService: false })
     },
@@ -286,7 +288,8 @@ export default createModel<RootModel>()({
       dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
 
       const result = await graphQLClaimDevice(code)
-      try {
+
+      if (result !== 'ERROR') {
         const device = result?.data?.data?.claimDevice
         if (device?.id) {
           await dispatch.devices.fetch() // fetch all so that the sorting is correct
@@ -295,9 +298,6 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ noticeMessage: `Your device (${code}) could not be found.` })
         }
         dispatch.ui.set({ claiming: false })
-      } catch (error) {
-        dispatch.ui.set({ errorMessage: `An error occurred registering your device. (${error.message})` })
-        console.error(error)
       }
 
       dispatch.ui.guide({ guide: 'guideAWS', step: 3 })

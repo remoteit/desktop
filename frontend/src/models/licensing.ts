@@ -186,10 +186,12 @@ export default createModel<RootModel>()({
     async subscribe(form: IPurchase) {
       dispatch.licensing.set({ purchasing: form.planId })
       localStorage.setItem('licencing.purchasing', form.planId || '')
-      const response = await graphQLSubscribe(form)
-      const checkout = response?.data?.data?.createSubscription
-      console.log('PURCHASE', checkout)
-      if (checkout?.url) window.location.href = checkout.url
+      const result = await graphQLSubscribe(form)
+      if (result !== 'ERROR') {
+        const checkout = result?.data?.data?.createSubscription
+        console.log('PURCHASE', checkout)
+        if (checkout?.url) window.location.href = checkout.url
+      }
     },
 
     async updateSubscription({ priceId, quantity }: IPurchase) {
@@ -209,10 +211,12 @@ export default createModel<RootModel>()({
     async updateCreditCard(last: string | undefined, globalState) {
       dispatch.licensing.set({ updating: last || true })
       localStorage.setItem('licensing.updating', last || '')
-      const response = await graphQLCreditCard()
-      const result = response?.data?.data?.updateCreditCard
-      console.log('UPDATE CREDIT CARD', result)
-      if (result?.url) window.location.href = result.url
+      const result = await graphQLCreditCard()
+      if (result !== 'ERROR') {
+        const card = result?.data?.data?.updateCreditCard
+        console.log('UPDATE CREDIT CARD', card)
+        if (card?.url) window.location.href = card.url
+      }
     },
 
     async updated() {
