@@ -45,7 +45,7 @@ function stateNotification(event: ICloudEvent) {
     // notify if device changes state only
     if (target.typeID === DEVICE_TYPE) {
       createNotification({
-        title: `${target.name} ${actions[event.state]}`,
+        title: `${target.device?.name} ${actions[event.state]}`,
         body:
           getTargetPlatform(target.platform) + (event.authUserId === target.owner.id ? '' : ' - ' + target.owner.email),
         id: target.deviceId,
