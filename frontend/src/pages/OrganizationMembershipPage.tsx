@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import {
   Typography,
+  Chip,
   List,
   ListItem,
   ListItemText,
@@ -11,17 +12,16 @@ import {
   IconButton,
 } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
-import { InitiatorPlatform } from '../components/InitiatorPlatform'
+import { ROLE } from '../models/organization'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
-import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationMembershipPage: React.FC = () => {
-  const { member } = useSelector((state: ApplicationState) => state.accounts)
+  const { membership } = useSelector((state: ApplicationState) => state.accounts)
   const { accounts } = useDispatch<Dispatch>()
 
   useEffect(() => {
@@ -36,27 +36,26 @@ export const OrganizationMembershipPage: React.FC = () => {
         </Typography>
       }
     >
-      {member.length ? (
+      {membership.length ? (
         <List>
-          <ListItem>
-            <Notice>You have access to these device lists.</Notice>
-          </ListItem>
-          {member.map(user => (
-            <ListItem key={user.email}>
+          {membership.map(m => (
+            <ListItem key={m.organization.id}>
               <ListItemIcon>
-                <InitiatorPlatform user />
+                <Icon name="industry-alt" size="md" />
               </ListItemIcon>
               <ListItemText
-                primary={user.email}
+                primary={m.organization.name}
                 secondary={
                   <>
-                    Joined <Duration startTime={user.created?.getTime()} ago />
+                    Owner <b>{m.organization.account?.email}</b>
+                    &nbsp; - Joined <Duration startTime={m.created?.getTime()} ago />
                   </>
                 }
               />
               <ListItemSecondaryAction>
+                <Chip label={ROLE[m.role]} size="small" />
                 <Tooltip title="Leave Account">
-                  <IconButton onClick={() => accounts.leaveMembership(user.email)}>
+                  <IconButton onClick={() => accounts.leaveMembership(m.organization.id)}>
                     <Icon name="sign-out" size="md" fixedWidth />
                   </IconButton>
                 </Tooltip>
@@ -67,10 +66,10 @@ export const OrganizationMembershipPage: React.FC = () => {
       ) : (
         <Body center>
           <Typography variant="h2" gutterBottom>
-            No Account Memberships
+            No Organization Memberships
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Others users can link you to their account to provide access to the devices they own.
+            Organizations can add you to their account to provide access to the devices they own.
           </Typography>
         </Body>
       )}

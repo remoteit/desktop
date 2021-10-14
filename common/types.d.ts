@@ -310,12 +310,19 @@ declare global {
     name: string
     created: Date
     samlName: string
-    members: IOrganizationMember[]
+    members?: IOrganizationMember[]
+    account?: IUserRef
   }
 
   type IOrganizationMember = {
     user: IUserRef
     organizationId: string
+    role: IOrganizationRole
+    created: Date
+  }
+
+  type IOrganizationMembership = {
+    organization: IOrganization
     role: IOrganizationRole
     created: Date
   }

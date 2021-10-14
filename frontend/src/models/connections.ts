@@ -19,8 +19,8 @@ export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
     async init(_, globalState) {
-      let item = window.localStorage.getItem('connections-all')
-      if (item) dispatch.connections.set({ all: JSON.parse(item) })
+      let item = window.localStorage.getItem(`connections-${globalState.auth.user?.id}`)
+      if (item) dispatch.connections.setAll(JSON.parse(item))
     },
 
     async updateConnection(connection: IConnection, globalState) {
@@ -30,7 +30,7 @@ export default createModel<RootModel>()({
       all.some((c, index) => {
         if (c.id === connection.id) {
           all[index] = connection
-          dispatch.connections.set({ all })
+          dispatch.connections.setAll(all)
           exists = true
           return true
         }
@@ -39,7 +39,7 @@ export default createModel<RootModel>()({
 
       if (!exists) {
         all.push(connection)
-        dispatch.connections.set({ all })
+        dispatch.connections.setAll(all)
       }
     },
 
@@ -59,7 +59,7 @@ export default createModel<RootModel>()({
           }
         }
       })
-      dispatch.connections.set({ all: connections })
+      dispatch.connections.setAll(connections)
     },
 
     async headerOptions() {
@@ -150,6 +150,11 @@ export default createModel<RootModel>()({
       if (globalState.auth.backendAuthenticated) emit('service/clear-recent')
       else set({ all: all.filter(c => c.enabled && c.online) })
     },
+
+    async setAll(all: IConnection[], globalState) {
+      window.localStorage.setItem(`connections-${globalState.auth.user?.id}`, JSON.stringify(all) || '')
+      dispatch.connections.set({ all })
+    },
   }),
   reducers: {
     reset(state: IConnectionsState) {
@@ -158,7 +163,6 @@ export default createModel<RootModel>()({
     },
     set(state: IConnectionsState, params: ILookup<any>) {
       Object.keys(params).forEach(key => {
-        if (key === 'all') window.localStorage.setItem(`connections-${key}`, JSON.stringify(params[key]) || '')
         state[key] = params[key]
       })
       return state

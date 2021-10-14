@@ -51,18 +51,6 @@ export async function graphQLShareDevice(params: IShareProps) {
   )
 }
 
-// export async function graphQLAddOrganization(name: string) {
-//   return await graphQLBasicRequest(
-//     ` mutation query($name: String!) {
-//         createOrganization(name: $name) {
-//           id
-//           name
-//         }
-//       }`,
-//     { name }
-//   )
-// }
-
 export async function graphQLSetOrganization(name: string) {
   return await graphQLBasicRequest(
     ` mutation query($name: String!) {
@@ -72,13 +60,21 @@ export async function graphQLSetOrganization(name: string) {
   )
 }
 
-// @TODO this is same as device list sharing mutation - refactor
-export async function graphQLSetMembers(members: IOrganizationMember[], role: IOrganizationRole) {
+export async function graphQLSetMembers(email: string[], role: IOrganizationRole) {
   return await graphQLBasicRequest(
     ` mutation query($email: [String!]!, $role: OrganizationRole) {
         setMember(email: $email, role: $role)
       }`,
-    { email: members.map(member => member.user.email), role }
+    { email, role }
+  )
+}
+
+export async function graphQLLeaveMembership(id: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($id: String!) {
+        leaveOrganization(id: $id)
+      }`,
+    { id }
   )
 }
 

@@ -165,13 +165,11 @@ export default createModel<RootModel>()({
 
     async graphQLFetchProcessor(options: gqlOptions) {
       const { graphQLMetadata } = dispatch.devices as any
-      const parseAccounts = dispatch.accounts.parse
       try {
         const gqlResponse = await graphQLFetchDevices(options)
         const [deviceData, connectionData, total, loginId, contacts, error] = await graphQLMetadata(gqlResponse)
         const connections = graphQLAdaptor(connectionData, loginId, options.account, true)
         const devices = graphQLAdaptor(deviceData, loginId, options.account)
-        await parseAccounts(gqlResponse)
         return { devices, connections, total, contacts, error }
       } catch (error) {
         await apiError(error)

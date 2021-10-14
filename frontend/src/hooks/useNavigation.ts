@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
+import { selectConnections } from '../helpers/connectionHelper'
 import { selectAnnouncements } from '../models/announcements'
 import { selectLicenseIndicator } from '../models/licensing'
 import { isRemoteUI } from '../helpers/uiHelper'
@@ -29,7 +30,7 @@ export function useNavigation(): INavigationHook {
     navigationForward,
   } = useSelector((state: ApplicationState) => ({
     backendAuthenticated: state.auth.backendAuthenticated,
-    connections: state.connections.all.filter(connection => connection.enabled).length,
+    connections: selectConnections(state).filter(connection => connection.enabled).length,
     devices: state.devices.total,
     navigation: state.ui.navigation,
     navigationBack: state.ui.navigationBack,
@@ -58,7 +59,11 @@ export function useNavigation(): INavigationHook {
       shouldUpdate &&
       navigationBack.slice(-1)[0] !== location.pathname
     ) {
-      setNavigationPath({ ...navigationPath, navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] })
+      setNavigationPath({
+        ...navigationPath,
+        navigationBack: navigationBack.concat([location?.pathname]),
+        navigationForward: [],
+      })
     }
   }, [location?.pathname])
 

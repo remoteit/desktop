@@ -45,7 +45,7 @@ export const RemoteManagement: React.FC = () => {
   return (
     <Box className={css.container}>
       <section>
-        <Typography variant="h2" gutterBottom>
+        <Typography variant="h3" gutterBottom>
           You are managing <br />a remote device
         </Typography>
         {!remoteUI && name && (

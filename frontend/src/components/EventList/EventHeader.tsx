@@ -3,7 +3,7 @@ import { DateTime } from 'luxon'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { makeStyles, List, ListItem, ListItemSecondaryAction } from '@material-ui/core'
-import { getLogLimit, limitDays } from '../../models/licensing'
+import { getLimit, limitDays } from '../../models/licensing'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../DatePicker'
 
@@ -15,7 +15,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { fetch, set } = dispatch.logs
 
   const { events, deviceId, logLimit, minDate, selectedDate } = useSelector((state: ApplicationState) => ({
-    logLimit: getLogLimit(state),
+    logLimit: getLimit('log-limit', state) || 'P1W',
     ...state.logs,
   }))
 

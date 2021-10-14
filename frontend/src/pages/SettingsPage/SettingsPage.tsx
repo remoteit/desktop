@@ -3,10 +3,8 @@ import { makeStyles, List, Typography, Tooltip, ButtonBase } from '@material-ui/
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
-import { AccountLinkingSettings } from '../../components/AccountLinkingSettings'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
-import { isRemoteUI } from '../../helpers/uiHelper'
 import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
@@ -18,11 +16,10 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
-  const { billing, preferences, remoteUI, licenseIndicator } = useSelector((state: ApplicationState) => ({
+  const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
     billing: !!getRemoteitLicense(state)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
-    remoteUI: isRemoteUI(state),
   }))
 
   useEffect(() => {

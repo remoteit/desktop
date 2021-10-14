@@ -110,10 +110,7 @@ const useStyles = makeStyles({
     padding: spacing.md,
     paddingTop: spacing.xxl,
     textAlign: 'center',
-    '& h2': {
-      textTransform: 'capitalize',
-      fontSize: fontSizes.lg,
-    },
+    '& h2': { textTransform: 'capitalize' },
   },
   price: {
     padding: spacing.md,

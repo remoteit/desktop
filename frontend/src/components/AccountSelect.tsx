@@ -11,13 +11,15 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
   const css = useStyles()
   const history = useHistory()
   const { accounts, devices } = useDispatch<Dispatch>()
-  const { signedInUser, fetching, options, activeId } = useSelector((state: ApplicationState) => ({
-    signedInUser: state.auth.user,
+  const { user, fetching, options, activeId } = useSelector((state: ApplicationState) => ({
+    user: state.auth.user || { id: '', email: '' },
     fetching: state.devices.fetching,
     activeId: getActiveAccountId(state),
-    options: [state.auth.user, ...state.accounts.member].sort(),
+    options: state.accounts.membership.map(m => ({ id: m.organization.id, name: m.organization.name })),
   }))
 
+  options.sort((a, b) => (a.name > b.name ? 1 : -1))
+  options.unshift({ id: user.id, name: user.email })
   if (options.length < 2) return null
 
   return (
@@ -38,16 +40,13 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
         }
       }}
     >
-      {options.map(
-        user =>
-          !!user && (
-            <MenuItem className={classnames(user.id === signedInUser?.id && css.primary)} value={user.id} key={user.id}>
-              {user.email}
-            </MenuItem>
-          )
-      )}
+      {options.map(option => (
+        <MenuItem className={classnames(option.id === user?.id && css.primary)} value={option.id} key={option.id}>
+          {option.name}
+        </MenuItem>
+      ))}
       <Divider className={css.divider} />
-      <MenuItem onClick={() => history.push('/devices/membership')}>Manage Lists...</MenuItem>
+      <MenuItem onClick={() => history.push('/devices/membership')}>Manage memberships...</MenuItem>
     </TextField>
   )
 }

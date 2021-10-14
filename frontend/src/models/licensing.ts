@@ -290,6 +290,10 @@ export function getLimits(state: ApplicationState) {
   else return state.licensing.limits
 }
 
+export function getLimit(name: string, state: ApplicationState) {
+  return getLimits(state).find(limit => limit.name === name)?.value
+}
+
 export function lookupLicensemanagePath(productId?: string) {
   let lookup = LicenseLookup.find(l => l.productId === productId)
   if (!lookup) lookup = defaultLicense
@@ -366,8 +370,4 @@ export function limitDays(value?: string) {
 export function humanizeDays(value?: string) {
   const milliseconds = limitDays(value) * 8.64e7
   return humanize(milliseconds, { round: true, largest: 1 })
-}
-
-export function getLogLimit(state: ApplicationState) {
-  return getLimits(state).find(limit => limit.name === 'log-limit')?.value || 'P1W'
 }

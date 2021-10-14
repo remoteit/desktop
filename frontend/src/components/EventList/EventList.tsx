@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { List, Box, Button, makeStyles, Typography } from '@material-ui/core'
 import { colors, fontSizes, spacing } from '../../styling'
-import { getLogLimit, humanizeDays } from '../../models/licensing'
+import { getLimit, humanizeDays } from '../../models/licensing'
 import { EventItem } from './EventItem'
 import { Notice } from '../Notice'
 
@@ -14,22 +14,12 @@ export interface LogListProps {
 export const EventList: React.FC<LogListProps> = ({ device }) => {
   const css = useStyles()
   const { logs } = useDispatch<Dispatch>()
-  const {
-    events,
-    from,
-    size,
-    minDate,
-    selectedDate,
-    planUpgrade,
-    fetching,
-    fetchingMore,
-    user,
-    logLimit,
-  } = useSelector((state: ApplicationState) => ({
-    ...state.logs,
-    user: state.auth.user,
-    logLimit: getLogLimit(state),
-  }))
+  const { events, from, size, minDate, selectedDate, planUpgrade, fetching, fetchingMore, user, logLimit } =
+    useSelector((state: ApplicationState) => ({
+      ...state.logs,
+      user: state.auth.user,
+      logLimit: getLimit('log-limit', state) || 'P1W',
+    }))
 
   const fetchMore = () => {
     logs.set({ deviceId: device?.id, from: from + size, minDate, maxDate: selectedDate })

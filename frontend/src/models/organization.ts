@@ -36,6 +36,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init() {
       await dispatch.organization.fetch()
+      dispatch.organization.set({ initialized: true })
     },
 
     async fetch() {
@@ -96,25 +97,8 @@ export default createModel<RootModel>()({
           })),
         ],
         access: [],
-        activeId: undefined,
-        initialized: true,
       })
     },
-
-    // async addOrganization(name: string, state) {
-    //   try {
-    //     const gqlResponse = await graphQLAddOrganization(name)
-    //     const result = gqlResponse?.data?.data?.login
-    //     const errors = graphQLGetErrors(result)
-    //     if (result && !errors?.length) {
-    //       analyticsHelper.track('addAccess')
-    //       dispatch.organization.set({ name: result.name, id: result.id })
-    //       dispatch.ui.set({ successMessage: `Your organization '${name}' has been created.` })
-    //     }
-    //   } catch (error) {
-    //     await apiError(error)
-    //   }
-    // },
 
     async setOrganization(name: string, state) {
       dispatch.organization.set({ name })
@@ -135,7 +119,10 @@ export default createModel<RootModel>()({
       })
 
       const action = updated.length > state.organization.members.length ? 'added' : 'updated'
-      const result = await graphQLSetMembers(members, members[0].role)
+      const result = await graphQLSetMembers(
+        members.map(member => member.user.email),
+        members[0].role
+      )
       if (result !== 'ERROR') {
         dispatch.organization.set({ member: updated })
         dispatch.ui.set({
@@ -148,7 +135,7 @@ export default createModel<RootModel>()({
     },
 
     async removeMember(member: IOrganizationMember, state) {
-      const result = await graphQLSetMembers([member], 'REMOVE')
+      const result = await graphQLSetMembers([member.user.email], 'REMOVE')
       if (result !== 'ERROR') {
         dispatch.organization.set({
           member: state.organization.members.filter(m => m.user.email !== member.user.email),

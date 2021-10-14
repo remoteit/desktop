@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
-import { getAllDevices, getActiveAccount } from './accounts'
+import { getAllDevices, getActiveAccountId, getAccountIds } from './accounts'
 import { RootModel } from './rootModel'
 import { apiError } from '../helpers/apiHelper'
 
@@ -25,7 +25,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async updateSearch(_, rootState) {
       const { total, size } = rootState.devices
-      const { member } = rootState.accounts
+      const { membership: member } = rootState.accounts
 
       dispatch.search.set({ cloudSearch: total > size || member.length })
 
@@ -38,12 +38,12 @@ export default createModel<RootModel>()({
 
       dispatch.search.set({ fetching: true })
 
-      const accounts: IUser[] = [rootState.auth.user, ...rootState.accounts.member]
+      const ids: string[] = getAccountIds(rootState)
       const state = 'active'
-      const size = Math.max(4 - accounts.length, 0) + 3
-      const accountQueries = accounts.map(
-        (account, index) => `
-        _${index}: account(id: "${account.id}") {
+      const size = Math.max(4 - ids.length, 0) + 3
+      const accountQueries = ids.map(
+        (id, index) => `
+        _${index}: account(id: "${id}") {
           devices(size: $size, state: $state, name: $name) {
             total
             items {
@@ -75,7 +75,7 @@ export default createModel<RootModel>()({
           }
         )
         graphQLGetErrors(response)
-        const search = await dispatch.search.parse({ response, accounts })
+        const search = await dispatch.search.parse({ response, ids })
         await dispatch.search.set({ search })
       } catch (error) {
         await apiError(error)
@@ -83,10 +83,10 @@ export default createModel<RootModel>()({
 
       dispatch.search.set({ fetching: false })
     },
-    async parse({ response, accounts }: { response: any; accounts: IUser[] }): Promise<ISearch[]> {
+    async parse({ response, ids }: { response: any; ids: string[] }): Promise<ISearch[]> {
       const data = response?.data?.data?.login
-      return accounts
-        .map((account, index) => {
+      return ids
+        .map((id, index) => {
           const devices = data[`_${index}`].devices.items
           return devices
             .map(device =>
@@ -105,8 +105,8 @@ export default createModel<RootModel>()({
         .flat()
     },
     async parseDevices(_, rootState): Promise<ISearch[]> {
-      const account = getActiveAccount(rootState)
-      if (!account) return []
+      const id = getActiveAccountId(rootState)
+      if (!id) return []
       return getAllDevices(rootState)
         .filter(d => !d.hidden)
         .map(device =>

@@ -55,7 +55,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       </ListItem>
       <ListItem dense>
         <ListItemIcon></ListItemIcon>
-        <Quote margin={0}>
+        <Quote margin={0} noInset>
           <List disablePadding>
             <InlineTemplateSetting
               connection={connection}

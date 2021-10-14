@@ -15,7 +15,7 @@ import { Container } from './Container'
 import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({ device, header, children }) => {
-  const { access } = useSelector((state: ApplicationState) => ({ access: state.accounts.access }))
+  const access = useSelector((state: ApplicationState) => state.organization.members.map(m => m.user))
 
   if (!device) return <UnauthorizedPage />
 
