@@ -1,7 +1,7 @@
 import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { PORTAL, CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
@@ -9,6 +9,7 @@ import { createModel } from '@rematch/core'
 import { isElectron } from '../services/Browser'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
+import { apiError } from '../helpers/apiHelper'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
 
@@ -103,7 +104,7 @@ export default createModel<RootModel>()({
           auth.signedIn()
         } else console.warn('Login failed!', data)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async updateUserMetadata(metadata: INotificationSetting) {
@@ -113,7 +114,7 @@ export default createModel<RootModel>()({
         auth.setNotificationSettings(metadata)
         graphQLGetErrors(response)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async checkSession(_: void, rootState) {

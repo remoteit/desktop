@@ -1,11 +1,12 @@
 import { createModel } from '@rematch/core'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { hasCredentials } from '../services/remote.it'
 import { RootModel } from './rootModel'
 import { set as setDate, eachDayOfInterval, isEqual } from 'date-fns'
 import { getTimeZone } from '../helpers/dateHelper'
 import { startOfDay } from 'date-fns/esm'
 import { AxiosResponse } from 'axios'
+import { apiError } from '../helpers/apiHelper'
 
 const MAX_DEVICE_LENGTH = 1000
 
@@ -127,7 +128,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         await parse(result)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async parse(gqlResponse: undefined | AxiosResponse<any>, globalState) {

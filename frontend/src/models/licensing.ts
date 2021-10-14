@@ -8,9 +8,10 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; managePath: string }
@@ -167,7 +168,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         dispatch.licensing.parse(result?.data?.data)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
 

@@ -1,9 +1,10 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { graphQLReadNotice } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type IAnnouncementsState = ILookup<IAnnouncement[]> & {
   all: IAnnouncement[]
@@ -36,7 +37,7 @@ export default createModel<RootModel>()({
         const all = await dispatch.announcements.parse(response)
         dispatch.announcements.set({ all })
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async parse(response: AxiosResponse<any> | void, globalState): Promise<IAnnouncement[]> {
@@ -101,8 +102,7 @@ const TEST_DATA: any = [
     type: 'RELEASE',
   },
   {
-    body:
-      'You can now connect on-demand to keep your connections idle, but always ready to use. Just save the connection settings in your client applications and remote.it will only connect when needed.',
+    body: 'You can now connect on-demand to keep your connections idle, but always ready to use. Just save the connection settings in your client applications and remote.it will only connect when needed.',
     id: 'ac6dabe0-64e2-11eb-8cce-02fe4f7c5xxx',
     image: null,
     link: '',
@@ -112,8 +112,7 @@ const TEST_DATA: any = [
     type: 'RELEASE',
   },
   {
-    body:
-      '<div>You can now use remote.it to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div><ul>  <li>Eliminate cumbersome IP Whitelists</li>  <li>Close vulnerable open ports</li>  <li>No more full VPC access: isolate resource access</li>  <li>Harden existing security measures or use as a standalone solution</li>                                                </ul>',
+    body: '<div>You can now use remote.it to easily connect to your AWS resources. Securely access your AWS VPCs without IP whitelists or open ports.</div><ul>  <li>Eliminate cumbersome IP Whitelists</li>  <li>Close vulnerable open ports</li>  <li>No more full VPC access: isolate resource access</li>  <li>Harden existing security measures or use as a standalone solution</li>                                                </ul>',
     id: 'ac6da898-64e2-11eb-8cce-02fe4f7c5a93',
     image: 'https://downloads.remote.it/images/aws-marketplace-photo.png',
     link: 'https://remote.it/aws/',

@@ -1,9 +1,9 @@
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
 import { graphQLSetOrganization, graphQLSetMembers } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 export const ROLE = {
   OWNER: 'Admin / Owner',
@@ -17,8 +17,7 @@ export type IOrganizationState = {
   name?: string
   created?: Date
   account?: IUserRef
-  member: IOrganizationMember[] // members of this org
-  access: IOrganizationMember[] // orgs you belong too
+  members: IOrganizationMember[]
   activeId?: string
   initialized: boolean
 }
@@ -27,9 +26,7 @@ const organizationState: IOrganizationState = {
   id: undefined,
   name: undefined,
   created: undefined,
-  account: undefined,
-  member: [],
-  access: [],
+  members: [],
   activeId: undefined,
   initialized: false,
 }
@@ -52,10 +49,6 @@ export default createModel<RootModel>()({
                   created
                   members {
                     created
-                    organization {
-                      id
-                      name
-                    }
                     role
                     user {
                       id
@@ -69,7 +62,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         await dispatch.organization.parse(result)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
 
@@ -95,7 +88,7 @@ export default createModel<RootModel>()({
         id: org.id,
         name: org.name,
         created: new Date(org.created),
-        member: [
+        members: [
           owner,
           ...org.members.map(m => ({
             ...m,
@@ -119,7 +112,7 @@ export default createModel<RootModel>()({
     //       dispatch.ui.set({ successMessage: `Your organization '${name}' has been created.` })
     //     }
     //   } catch (error) {
-    //     await graphQLCatchError(error)
+    //     await apiError(error)
     //   }
     // },
 
@@ -133,7 +126,7 @@ export default createModel<RootModel>()({
     },
 
     async setMembers(members: IOrganizationMember[] = [], state) {
-      let updated = [...state.organization.member]
+      let updated = [...state.organization?.members]
 
       members.forEach(m => {
         const index = updated.findIndex(u => u.user.email === m.user.email)
@@ -141,7 +134,7 @@ export default createModel<RootModel>()({
         else updated.push(m)
       })
 
-      const action = updated.length > state.organization.member.length ? 'added' : 'updated'
+      const action = updated.length > state.organization.members.length ? 'added' : 'updated'
       const result = await graphQLSetMembers(members, members[0].role)
       if (result !== 'ERROR') {
         dispatch.organization.set({ member: updated })
@@ -157,24 +150,11 @@ export default createModel<RootModel>()({
     async removeMember(member: IOrganizationMember, state) {
       const result = await graphQLSetMembers([member], 'REMOVE')
       if (result !== 'ERROR') {
-        dispatch.organization.set({ member: state.organization.member.filter(m => m.user.email !== member.user.email) })
+        dispatch.organization.set({
+          member: state.organization.members.filter(m => m.user.email !== member.user.email),
+        })
         dispatch.ui.set({ successMessage: `Successfully removed ${member?.user?.email}.` })
       }
-    },
-
-    async leaveMembership(email: string, state) {
-      // const { member } = state.accounts as ApplicationState['accounts']
-      // try {
-      //   const result = await graphQLLinkAccount([email], 'LEAVE')
-      //   const errors = graphQLGetErrors(result)
-      //   if (!errors?.length) {
-      //     analyticsHelper.track('leaveMembership')
-      //     dispatch.organization.set({ member: member.filter(user => user.email !== email) })
-      //     dispatch.ui.set({ successMessage: `You have successfully left ${email}'s device list.` })
-      //   }
-      // } catch (error) {
-      //   await graphQLCatchError(error)
-      // }
     },
   }),
   reducers: {
@@ -188,12 +168,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function getAllDevices(state: ApplicationState): IDevice[] {
-  return (
-    Object.keys(state.devices.all).reduce(
-      (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
-      []
-    ) || []
-  )
-}

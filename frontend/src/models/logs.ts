@@ -1,7 +1,8 @@
 import { createModel } from '@rematch/core'
-import { graphQLCatchError, graphQLGetErrors } from '../services/graphQL'
+import { graphQLGetErrors } from '../services/graphQL'
 import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUrl } from '../services/graphQLLogs'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type ILogState = {
   from: number
@@ -69,7 +70,7 @@ export default createModel<RootModel>()({
           },
         })
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
 
       from === 0 ? set({ fetching: false }) : set({ fetchingMore: false })
@@ -92,7 +93,7 @@ export default createModel<RootModel>()({
         console.log('LOG URL', result?.eventsUrl)
         return result?.eventsUrl
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
   }),

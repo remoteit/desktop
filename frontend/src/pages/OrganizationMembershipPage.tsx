@@ -20,7 +20,7 @@ import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 import analyticsHelper from '../helpers/analyticsHelper'
 
-export const AccountMembershipPage: React.FC = () => {
+export const OrganizationMembershipPage: React.FC = () => {
   const { member } = useSelector((state: ApplicationState) => state.accounts)
   const { accounts } = useDispatch<Dispatch>()
 
@@ -32,7 +32,7 @@ export const AccountMembershipPage: React.FC = () => {
     <Container
       header={
         <Typography variant="h1">
-          <Title>Manage Device Lists</Title>
+          <Title>Organization Memberships</Title>
         </Typography>
       }
     >

@@ -8,13 +8,14 @@ import {
 } from '../services/graphQLMutation'
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
-import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLGetErrors } from '../services/graphQL'
 import { getActiveAccountId, getAllDevices } from './accounts'
 import { platformConfiguration } from '../services/platformConfiguration'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
 
@@ -151,7 +152,7 @@ export default createModel<RootModel>()({
         const loginId = gqlResponse?.data?.data?.login?.id
         result = gqlDevice ? graphQLAdaptor(gqlDevice, loginId, accountId, hidden)[0] : undefined
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
 
       if (result) result.thisDevice = result.thisDevice || thisDevice
@@ -173,7 +174,7 @@ export default createModel<RootModel>()({
         await parseAccounts(gqlResponse)
         return { devices, connections, total, contacts, error }
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
         return { devices: [], total: 0, error }
       }
     },
@@ -209,7 +210,7 @@ export default createModel<RootModel>()({
         await r3.post(`/device/name/`, { deviceaddress: id, devicealias: name })
         await dispatch.devices.fetch()
       } catch (error) {
-        dispatch.ui.set({ errorMessage: error.message })
+        if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
         console.warn(error)
       }
     },
@@ -317,7 +318,7 @@ export default createModel<RootModel>()({
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
         await dispatch.devices.fetch()
       } catch (error) {
-        dispatch.ui.set({ errorMessage: error.message })
+        if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
         console.warn(error)
       }
       dispatch.devices.set({ destroying: false })

@@ -1,16 +1,16 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLLinkAccount } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+// import { graphQLLinkAccount } from '../services/graphQLMutation'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 const ACCOUNT_KEY = 'account'
 
 export type IAccountsState = {
   member: IUser[]
-  access: IUser[]
   activeId?: string // user.id
 }
 
@@ -25,7 +25,6 @@ type IGraphQLAccount = {
 
 const accountsState: IAccountsState = {
   member: [],
-  access: [],
   activeId: undefined,
 }
 
@@ -36,16 +35,21 @@ export default createModel<RootModel>()({
       let activeId = window.localStorage.getItem(ACCOUNT_KEY)
       activeId = activeId && JSON.parse(activeId)
       if (activeId) dispatch.accounts.setActive(activeId)
-      await dispatch.accounts.fetchMembers()
+      await dispatch.accounts.fetch()
     },
-    async fetchMembers() {
+    async fetch() {
       try {
         const result = await graphQLRequest(
           ` query {
               login {
-                member {
+                membership {
                   created
-                  scripting
+                  role
+                  organization {
+                    id
+                    name
+                    samlName
+                  }
                   user {
                     id
                     email
@@ -57,7 +61,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         await dispatch.accounts.parse(result)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
@@ -65,8 +69,7 @@ export default createModel<RootModel>()({
       if (!gqlData) return
       const { parseAccounts } = dispatch.accounts
       const member: IUser[] = await parseAccounts(gqlData.member)
-      const access: IUser[] = await parseAccounts(gqlData.access)
-      dispatch.accounts.set({ member, access })
+      dispatch.accounts.set({ member })
       if (!member.find(m => m.id === state.accounts.activeId)) {
         dispatch.accounts.setActive('')
       }
@@ -96,20 +99,7 @@ export default createModel<RootModel>()({
           })
         }
       } catch (error) {
-        await graphQLCatchError(error)
-      }
-    },
-    async removeAccess(email: string, state) {
-      const { access } = state.accounts as ApplicationState['accounts']
-      try {
-        const result = await graphQLLinkAccount([email], 'REMOVE')
-        if (result === 'ERROR') {
-          analyticsHelper.track('removedAccess')
-          dispatch.accounts.set({ access: access.filter(user => user.email !== email) })
-          dispatch.ui.set({ successMessage: `${email} successfully removed.` })
-        }
-      } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async leaveMembership(email: string, state) {
@@ -122,7 +112,7 @@ export default createModel<RootModel>()({
           dispatch.ui.set({ successMessage: `You have successfully left ${email}'s device list.` })
         }
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, state) {

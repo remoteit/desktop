@@ -1,9 +1,10 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { getAllDevices, getActiveAccount } from './accounts'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type ISearchState = ILookup<any> & {
   search: ISearch[]
@@ -77,7 +78,7 @@ export default createModel<RootModel>()({
         const search = await dispatch.search.parse({ response, accounts })
         await dispatch.search.set({ search })
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
 
       dispatch.search.set({ fetching: false })

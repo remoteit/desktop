@@ -309,6 +309,7 @@ declare global {
     id: string
     name: string
     created: Date
+    samlName: string
     members: IOrganizationMember[]
   }
 

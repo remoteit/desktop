@@ -114,7 +114,7 @@ export default createModel<RootModel>()({
         })
       } catch (error) {
         console.log('CONNECTION ERROR', error)
-        r3.processError(error)
+        if (axios.isAxiosError(error)) r3.processError(error)
         apiError(error)
       }
     },
@@ -132,7 +132,7 @@ export default createModel<RootModel>()({
         const proxyResult = r3.processData(result)
         console.log('PROXY DISCONNECTED', proxyResult)
       } catch (error) {
-        r3.processError(error)
+        if (axios.isAxiosError(error)) r3.processError(error)
         apiError(error)
       }
     },

@@ -1,7 +1,7 @@
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import axios, { AxiosResponse } from 'axios'
+import { getGraphQLApi, apiError } from '../helpers/apiHelper'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
-import { getGraphQLApi } from '../helpers/apiHelper'
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   try {
@@ -10,7 +10,7 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
     console.log('BASIC REQUEST GRAPHQL', response, errors)
     return errors ? 'ERROR' : response
   } catch (error) {
-    await graphQLCatchError(error)
+    await apiError(error)
   }
 }
 
@@ -42,14 +42,4 @@ export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silen
   }
 
   return errors
-}
-
-export async function graphQLCatchError(error: AxiosError) {
-  const { auth, ui } = store.dispatch
-  console.error('GRAPHQL FETCH ERROR:', error, error?.response?.status)
-  if (error?.response?.status === 401 || error?.response?.status === 403) {
-    auth.checkSession()
-  } else if (error.message !== 'Network Error') {
-    ui.set({ errorMessage: error.message })
-  }
 }
