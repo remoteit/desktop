@@ -168,6 +168,15 @@ export function getActiveAccountId(state: ApplicationState) {
   return state.accounts.activeId || state.auth.user?.id || ''
 }
 
+export function getActiveUser(state: ApplicationState): IUserRef | undefined {
+  const id = getActiveAccountId(state)
+  const membershipOrganizations = state.accounts.membership.map(m => ({
+    id: m.organization.id,
+    email: m.organization.name,
+  }))
+  return membershipOrganizations.find(m => m.id === id) || state.auth.user
+}
+
 export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
   return state.devices.all[accountId || getActiveAccountId(state)] || []
 }

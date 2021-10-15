@@ -8,7 +8,7 @@ import { FilterDrawer } from './FilterDrawer'
 import { Container } from './Container'
 import { Notice } from './Notice'
 import styles from '../styling'
-import { getActiveAccountId } from '../models/accounts'
+import { isUserAccount } from '../models/accounts'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -21,7 +21,7 @@ export const DevicesHeader: React.FC<Props> = ({ fetching, restore, myDevice, ch
   const { initialized, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
     initialized: state.devices.initialized,
     registeredId: state.backend.device.uid,
-    loggedInUser: getActiveAccountId(state) === state.auth.user?.id,
+    loggedInUser: isUserAccount(state),
   }))
   const css = useStyles()
 
