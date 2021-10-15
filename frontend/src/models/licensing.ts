@@ -294,7 +294,7 @@ export function getLimit(name: string, state: ApplicationState) {
   return getLimits(state).find(limit => limit.name === name)?.value
 }
 
-export function lookupLicensemanagePath(productId?: string) {
+export function lookupLicenseManagePath(productId?: string) {
   let lookup = LicenseLookup.find(l => l.productId === productId)
   if (!lookup) lookup = defaultLicense
   return lookup.managePath
@@ -313,7 +313,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
-  const managePath = lookupLicensemanagePath(productId)
+  const managePath = lookupLicenseManagePath(productId)
 
   if (!license) return {}
 
@@ -341,7 +341,7 @@ export function selectLicenses(state: ApplicationState) {
   return {
     licenses: getLicenses(state).map(license => ({
       ...license,
-      managePath: lookupLicensemanagePath(license.plan.product.id),
+      managePath: lookupLicenseManagePath(license.plan.product.id),
       limits: getLimits(state).filter(limit => limit.license?.id === license.id),
     })),
     limits: getLimits(state).filter(limit => !limit.license),

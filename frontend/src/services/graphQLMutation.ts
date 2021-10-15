@@ -60,6 +60,14 @@ export async function graphQLSetOrganization(name: string) {
   )
 }
 
+export async function graphQLRemoveOrganization() {
+  return await graphQLBasicRequest(
+    ` mutation {
+        deleteOrganization
+      }`
+  )
+}
+
 export async function graphQLSetMembers(email: string[], role: IOrganizationRole) {
   return await graphQLBasicRequest(
     ` mutation query($email: [String!]!, $role: OrganizationRole) {
@@ -71,7 +79,7 @@ export async function graphQLSetMembers(email: string[], role: IOrganizationRole
 
 export async function graphQLLeaveMembership(id: string) {
   return await graphQLBasicRequest(
-    ` mutation query($id: String!) {
+    ` mutation query($id: ID!) {
         leaveOrganization(id: $id)
       }`,
     { id }

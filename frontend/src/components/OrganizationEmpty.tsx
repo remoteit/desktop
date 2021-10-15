@@ -2,7 +2,7 @@ import React from 'react'
 import { Dispatch, ApplicationState } from '../store'
 import { makeStyles, TextField, Typography, Button } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
-import { getLimit } from '../models/licensing'
+import { selectLicense, REMOTEIT_PRODUCT_ID } from '../models/licensing'
 import { spacing } from '../styling'
 import { Gutters } from './Gutters'
 import { Link } from 'react-router-dom'
@@ -11,7 +11,8 @@ import { Body } from './Body'
 export const OrganizationEmpty: React.FC = () => {
   const { name, licensed } = useSelector((state: ApplicationState) => ({
     name: (state.auth.user?.email || '').split('@')[0],
-    licensed: true || !!getLimit('org-users', state), // TEMP true for TESTING
+    licensed: !!selectLicense(state, REMOTEIT_PRODUCT_ID).license?.plan.commercial,
+    // licensed: !!getLimit('org-users', state), // Would be better
   }))
   const [create, setCreate] = React.useState<string>(`${name}'s org`)
   const dispatch = useDispatch<Dispatch>()

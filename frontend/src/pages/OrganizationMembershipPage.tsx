@@ -41,7 +41,7 @@ export const OrganizationMembershipPage: React.FC = () => {
           {membership.map(m => (
             <ListItem key={m.organization.id}>
               <ListItemIcon>
-                <Icon name="industry-alt" size="md" />
+                <Icon name="industry-alt" />
               </ListItemIcon>
               <ListItemText
                 primary={m.organization.name}

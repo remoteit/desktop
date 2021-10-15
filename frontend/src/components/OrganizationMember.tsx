@@ -29,6 +29,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick 
         <IconButton
           title="Remove Account"
           icon="times"
+          color={removing ? 'danger' : undefined}
           loading={removing}
           disabled={member.role === 'OWNER' || removing}
           onClick={() => {

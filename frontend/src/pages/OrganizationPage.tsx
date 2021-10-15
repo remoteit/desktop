@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, Divider, List } from '@material-ui/core'
+import { Typography, List } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { OrganizationMember } from '../components/OrganizationMember'
 import { OrganizationEmpty } from '../components/OrganizationEmpty'
 import { LoadingMessage } from '../components/LoadingMessage'
+import { DeleteButton } from '../buttons/DeleteButton'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
@@ -31,13 +32,25 @@ export const OrganizationPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Organization</Title>
-            <IconButton
-              title="Add member"
-              icon="user-plus"
-              to={'/settings/organization/share'}
-              size="md"
-              disabled={!organization.id}
-            />
+            {organization.id && (
+              <>
+                <DeleteButton
+                  tooltip="Delete organization"
+                  destroying={removing === 'ORG'}
+                  warning={
+                    <>
+                      You will be permanently deleting <i>{organization.name}. </i>
+                      This will remove all your members access to your devices.
+                    </>
+                  }
+                  onDelete={() => {
+                    setRemoving('ORG')
+                    dispatch.organization.removeOrganization()
+                  }}
+                />
+                <IconButton title="Add member" icon="user-plus" to="/settings/organization/share" size="md" />
+              </>
+            )}
           </Typography>
           {organization.id && (
             <List>
@@ -74,7 +87,6 @@ export const OrganizationPage: React.FC = () => {
       ) : (
         <OrganizationEmpty />
       )}
-      <Divider variant="inset" />
     </Container>
   )
 }

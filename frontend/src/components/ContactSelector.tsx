@@ -17,7 +17,7 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
   const options = contactOptions(contacts, selected)
   const css = useStyles()
 
-  const mailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+  const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
 
   const handleChange = (opts?: any) => {
     opts = opts?.length ? opts : []
@@ -28,7 +28,7 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
     return (
       mailFormat.test(inputValue) && (
         <Typography variant="body2" color="textSecondary">
-          Share to <Link>{inputValue}</Link>
+          Add <Link>{inputValue}</Link>
         </Typography>
       )
     )
@@ -38,6 +38,7 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
     <Gutters top={null}>
       <CreatableSelect
         isMulti
+        autoFocus
         isClearable
         options={options}
         theme={selectTheme}

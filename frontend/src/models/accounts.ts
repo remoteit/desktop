@@ -74,7 +74,7 @@ export default createModel<RootModel>()({
       const result = await graphQLLeaveMembership(id)
       if (result !== 'ERROR') {
         dispatch.accounts.set({ membership: membership.filter(m => m.organization.id !== id) })
-        dispatch.ui.set({ successMessage: `You have successfully left ${id}'s device list.` })
+        dispatch.ui.set({ successMessage: 'You have successfully left the organization.' })
       }
     },
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, state) {
