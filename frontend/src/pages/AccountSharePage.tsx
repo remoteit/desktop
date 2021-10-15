@@ -56,7 +56,9 @@ export const AccountSharePage = () => {
         </Notice>
       )}
       <Button
-        onClick={() => accounts.addAccess(emails) && exit()}
+        onClick={() => {
+          /* accounts.addAccess(emails) && exit() */
+        }}
         variant="contained"
         color="primary"
         disabled={!emails.length}
