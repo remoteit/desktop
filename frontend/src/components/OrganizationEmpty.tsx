@@ -11,7 +11,7 @@ import { Body } from './Body'
 export const OrganizationEmpty: React.FC = () => {
   const { name, licensed } = useSelector((state: ApplicationState) => ({
     name: (state.auth.user?.email || '').split('@')[0],
-    licensed: false || !!getLimit('org-users', state), // TEMP true for TESTING
+    licensed: true || !!getLimit('org-users', state), // TEMP true for TESTING
   }))
   const [create, setCreate] = React.useState<string>(`${name}'s org`)
   const dispatch = useDispatch<Dispatch>()
