@@ -32,7 +32,7 @@ export const ServiceHeaderMenu: React.FC<{
   const [showError, setShowError] = useState<boolean>(true)
   const { connection, access } = useSelector((state: ApplicationState) => ({
     connection: state.connections.all.find(c => c.id === serviceID),
-    access: state.accounts.access,
+    access: state.organization.members.map(m => m.user),
   }))
 
   if (!service || !device) return <UnauthorizedPage />

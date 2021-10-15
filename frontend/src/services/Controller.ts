@@ -1,5 +1,6 @@
 import io from 'socket.io-client'
 import { store } from '../store'
+import { isPortal } from '../services/Browser'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -7,8 +8,8 @@ import analyticsHelper from '../helpers/analyticsHelper'
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
   private retrying?: NodeJS.Timeout
-  private userName?: string
-  private userPassword?: string
+  private username?: string
+  private authHash?: string
   private url: string = '/'
   handlers: ILookup<(result: any) => void> = {}
 
@@ -36,10 +37,15 @@ class Controller extends EventEmitter {
     }
   }
 
-  setupConnection(username: string, password: string) {
-    this.userName = username
-    this.userPassword = password
-    this.socket = io(this.url, { transports: ['websocket'], forceNew: true, reconnectionDelay: 10000 })
+  setupConnection(username: string, authHash: string) {
+    this.username = username
+    this.authHash = authHash
+    this.socket = io(this.url, {
+      transports: ['websocket'],
+      forceNew: true,
+      reconnection: !isPortal(),
+      reconnectionDelay: FRONTEND_RETRY_DELAY,
+    })
     this.handlers = getEventHandlers()
 
     for (const eventName in this.handlers) {
@@ -52,7 +58,7 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    emit('authentication', { username: this.userName, authHash: this.userPassword })
+    emit('authentication', { username: this.username, authHash: this.authHash })
   }
 
   // Retry open with delay, force skips delay
@@ -60,18 +66,17 @@ class Controller extends EventEmitter {
     if (force || (!this.socket?.connected && !this.retrying)) {
       this.retrying = setTimeout(
         () => {
+          console.log('Retrying socket.io connection')
           this.retrying = undefined
           this.socket?.open()
         },
-        retry ? FRONTEND_RETRY_DELAY : 0
+        retry && !isPortal() ? FRONTEND_RETRY_DELAY : 0
       )
     }
   }
 
   close() {
-    if (this.socket?.connected) {
-      this.socket?.close()
-    }
+    this.socket?.close()
   }
 
   on(eventName: SocketEvent, handler: (...args: any[]) => void) {

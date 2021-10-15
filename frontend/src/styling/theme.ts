@@ -292,6 +292,10 @@ const jssTheme: ThemeOptions = {
         letterSpacing: -0.2,
       },
       h2: {
+        fontSize: fontSizes.lg,
+        fontWeight: 400,
+      },
+      h3: {
         fontSize: fontSizes.md,
         fontWeight: 400,
       },

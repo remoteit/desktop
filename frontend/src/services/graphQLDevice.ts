@@ -94,22 +94,6 @@ export async function graphQLFetchDevices({
           connections: device(id: $ids)  {
             ${DEVICE_SELECT}
           }
-          member {
-            created
-            scripting
-            user {
-              id
-              email
-            }
-          }
-          access {
-            created
-            scripting
-            user {
-              id
-              email
-            }
-          }
           contacts {
             id
             email

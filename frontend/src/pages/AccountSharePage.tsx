@@ -20,7 +20,7 @@ export const AccountSharePage = () => {
     contacts = [],
   } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
-    access: state.accounts.access,
+    access: state.organization.members.map(m => m.user),
     contacts: state.devices.contacts,
   }))
 

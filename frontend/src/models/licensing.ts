@@ -8,9 +8,10 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; managePath: string }
@@ -167,7 +168,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         dispatch.licensing.parse(result?.data?.data)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
 
@@ -289,7 +290,11 @@ export function getLimits(state: ApplicationState) {
   else return state.licensing.limits
 }
 
-export function lookupLicensemanagePath(productId?: string) {
+export function getLimit(name: string, state: ApplicationState) {
+  return getLimits(state).find(limit => limit.name === name)?.value
+}
+
+export function lookupLicenseManagePath(productId?: string) {
   let lookup = LicenseLookup.find(l => l.productId === productId)
   if (!lookup) lookup = defaultLicense
   return lookup.managePath
@@ -308,7 +313,7 @@ export function selectLicense(state: ApplicationState, productId?: string) {
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
-  const managePath = lookupLicensemanagePath(productId)
+  const managePath = lookupLicenseManagePath(productId)
 
   if (!license) return {}
 
@@ -336,7 +341,7 @@ export function selectLicenses(state: ApplicationState) {
   return {
     licenses: getLicenses(state).map(license => ({
       ...license,
-      managePath: lookupLicensemanagePath(license.plan.product.id),
+      managePath: lookupLicenseManagePath(license.plan.product.id),
       limits: getLimits(state).filter(limit => limit.license?.id === license.id),
     })),
     limits: getLimits(state).filter(limit => !limit.license),
@@ -365,8 +370,4 @@ export function limitDays(value?: string) {
 export function humanizeDays(value?: string) {
   const milliseconds = limitDays(value) * 8.64e7
   return humanize(milliseconds, { round: true, largest: 1 })
-}
-
-export function getLogLimit(state: ApplicationState) {
-  return getLimits(state).find(limit => limit.name === 'log-limit')?.value || 'P1W'
 }

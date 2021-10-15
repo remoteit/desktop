@@ -12,7 +12,7 @@ type Props = { member: IOrganizationMember; removing?: boolean; onClick: () => v
 export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
   return (
-    <ListItem key={member.user.email}>
+    <ListItem key={member.user.email} dense>
       <ListItemIcon>
         <Icon name="user" />
       </ListItemIcon>
@@ -29,6 +29,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick 
         <IconButton
           title="Remove Account"
           icon="times"
+          color={removing ? 'danger' : undefined}
           loading={removing}
           disabled={member.role === 'OWNER' || removing}
           onClick={() => {

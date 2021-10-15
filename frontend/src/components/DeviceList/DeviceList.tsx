@@ -37,7 +37,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
         >
           {devices?.map(device => {
             const canRestore = isOffline(device) && !device.shared
-            if (restore && !canRestore) return
+            if (restore && !canRestore) return null
             return (
               <DeviceListItem
                 key={device.id}

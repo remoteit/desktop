@@ -1,6 +1,6 @@
 import React from 'react'
 import { SIDEBAR_WIDTH } from '../../shared/constants'
-import { makeStyles, Box, List, ListItem } from '@material-ui/core'
+import { makeStyles, Box, ListItem } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { RemoteManagement } from '../RemoteManagement'
 import { RegisterButton } from '../../buttons/RegisterButton'

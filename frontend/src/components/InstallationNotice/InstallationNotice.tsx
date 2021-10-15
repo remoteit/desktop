@@ -46,7 +46,7 @@ export const InstallationNotice = connect(
             : JSON.stringify(error)}
         </Alert>
       )}
-      <Typography className={css.space} variant="h2" align="center">
+      <Typography className={css.space} variant="h3" align="center">
         We need to install or update our system
         <br />
         agent in order to maintain background connections.

@@ -85,12 +85,12 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
     <>
       <List className={css.list}>
         <ListItem>
-          <Typography variant="h1">{selectedPlan?.description} plan</Typography>
+          <Typography variant="h2">{selectedPlan?.description} plan</Typography>
         </ListItem>
       </List>
       <List className={css.list}>
         <ListItem button onClick={() => setNextInterval()}>
-          <Typography variant="h2">Interval</Typography>
+          <Typography variant="h3">Interval</Typography>
           <ListItemSecondaryAction>
             <div className={css.group}>
               {selectedPlan?.prices?.map(price => (
@@ -108,7 +108,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem button onClick={() => setQuantity(form.quantity + 1)}>
-          <Typography variant="h2">Seats</Typography>
+          <Typography variant="h3">Seats</Typography>
           <ListItemSecondaryAction>
             <div className={css.group}>
               <Button
@@ -144,9 +144,9 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
       <List className={css.list}>
         <Divider />
         <ListItem>
-          <Typography variant="h2">Total</Typography>
+          <Typography variant="h3">Total</Typography>
           <ListItemSecondaryAction>
-            <Typography variant="h2">
+            <Typography variant="h3">
               {selectedPrice?.amount ? (
                 <>
                   {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
@@ -184,7 +184,7 @@ const useStyles = makeStyles({
     width: '50%',
     minWidth: 400,
     '& .MuiListItem-root': { padding: spacing.sm },
-    '& h1': { textTransform: 'capitalize' },
+    '& h2': { textTransform: 'capitalize' },
   },
   group: {
     border: `1px solid ${colors.grayLighter}`,

@@ -77,7 +77,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             </ListItemIcon>
             <ListItemText
               primary={
-                <Typography variant="h2">
+                <Typography variant="h3">
                   <ServiceName device={device} connection={connection} />
                 </Typography>
               }

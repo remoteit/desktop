@@ -1,14 +1,15 @@
 import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
-import { PORTAL, CLIENT_ID, CALLBACK_URL } from '../shared/constants'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
+import { isElectron, isPortal } from '../services/Browser'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
-import { isElectron } from '../services/Browser'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
+import { apiError } from '../helpers/apiHelper'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
 
@@ -55,9 +56,9 @@ export default createModel<RootModel>()({
       if (!user) {
         const authService = new AuthService({
           cognitoClientID: CLIENT_ID,
-          redirectURL: PORTAL || isElectron() ? '' : window.origin + '/v1/callback/',
-          callbackURL: PORTAL ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
-          signoutCallbackURL: PORTAL ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          redirectURL: isPortal() || isElectron() ? '' : window.origin + '/v1/callback/',
+          callbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
+          signoutCallbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
         })
 
         await sleep(500)
@@ -103,7 +104,7 @@ export default createModel<RootModel>()({
           auth.signedIn()
         } else console.warn('Login failed!', data)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async updateUserMetadata(metadata: INotificationSetting) {
@@ -113,7 +114,7 @@ export default createModel<RootModel>()({
         auth.setNotificationSettings(metadata)
         graphQLGetErrors(response)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async checkSession(_: void, rootState) {
@@ -190,7 +191,7 @@ export default createModel<RootModel>()({
     },
     async signOut(_, rootState) {
       if (rootState.auth.backendAuthenticated) emit('user/sign-out')
-      else dispatch.auth.signedOut()
+      else await dispatch.auth.signedOut()
     },
     /**
      * Gets called when the backend signs the user out

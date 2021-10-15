@@ -1,31 +1,20 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
-import { graphQLLinkAccount } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import analyticsHelper from '../helpers/analyticsHelper'
+import { apiError } from '../helpers/apiHelper'
 
 const ACCOUNT_KEY = 'account'
 
 export type IAccountsState = {
-  member: IUser[]
-  access: IUser[]
+  membership: IOrganizationMembership[]
   activeId?: string // user.id
 }
 
-type IGraphQLAccount = {
-  scripting: boolean
-  created: Date
-  user: {
-    id: string
-    email: string
-  }
-}
-
 const accountsState: IAccountsState = {
-  member: [],
-  access: [],
+  membership: [],
   activeId: undefined,
 }
 
@@ -36,19 +25,24 @@ export default createModel<RootModel>()({
       let activeId = window.localStorage.getItem(ACCOUNT_KEY)
       activeId = activeId && JSON.parse(activeId)
       if (activeId) dispatch.accounts.setActive(activeId)
-      await dispatch.accounts.fetchMembers()
+      await dispatch.accounts.fetch()
     },
-    async fetchMembers() {
+    async fetch() {
       try {
         const result = await graphQLRequest(
           ` query {
               login {
-                member {
+                membership {
                   created
-                  scripting
-                  user {
+                  role
+                  organization {
                     id
-                    email
+                    name
+                    samlName
+                    account {
+                      id
+                      email
+                    }
                   }
                 }
               }
@@ -57,72 +51,30 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         await dispatch.accounts.parse(result)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
     async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
       const gqlData = gqlResponse?.data?.data?.login
+      console.log('MEMBERSHIPS', gqlData)
       if (!gqlData) return
-      const { parseAccounts } = dispatch.accounts
-      const member: IUser[] = await parseAccounts(gqlData.member)
-      const access: IUser[] = await parseAccounts(gqlData.access)
-      dispatch.accounts.set({ member, access })
-      if (!member.find(m => m.id === state.accounts.activeId)) {
+      const membership: IOrganizationMembership[] = gqlData.membership || []
+      dispatch.accounts.set({
+        membership: membership.map(m => ({
+          ...m,
+          created: new Date(m.created),
+        })),
+      })
+      if (!membership.find(m => m.organization.id === state.accounts.activeId)) {
         dispatch.accounts.setActive('')
       }
     },
-    async parseAccounts(accounts: IGraphQLAccount[]): Promise<IUser[]> {
-      if (!accounts) return []
-      return accounts.map(a => ({
-        id: a.user.id,
-        scripting: a.scripting,
-        created: new Date(a.created),
-        email: a.user.email,
-      }))
-    },
-    //@TODO - switch to using account ID instead of emails
-    async addAccess(emails: string[], state) {
-      const { access } = state.accounts as ApplicationState['accounts']
-      try {
-        const result = await graphQLLinkAccount(emails, 'ADD')
-        if (result === 'ERROR') {
-          analyticsHelper.track('addAccess')
-          dispatch.accounts.set({ access: [...access, ...emails.map(email => ({ email, created: new Date() }))] })
-          dispatch.ui.set({
-            successMessage:
-              emails.length > 1
-                ? `Your device list has been shared to ${emails.length} users.`
-                : `Your device list has been shared to ${emails[0]}.`,
-          })
-        }
-      } catch (error) {
-        await graphQLCatchError(error)
-      }
-    },
-    async removeAccess(email: string, state) {
-      const { access } = state.accounts as ApplicationState['accounts']
-      try {
-        const result = await graphQLLinkAccount([email], 'REMOVE')
-        if (result === 'ERROR') {
-          analyticsHelper.track('removedAccess')
-          dispatch.accounts.set({ access: access.filter(user => user.email !== email) })
-          dispatch.ui.set({ successMessage: `${email} successfully removed.` })
-        }
-      } catch (error) {
-        await graphQLCatchError(error)
-      }
-    },
-    async leaveMembership(email: string, state) {
-      const { member } = state.accounts as ApplicationState['accounts']
-      try {
-        const result = await graphQLLinkAccount([email], 'LEAVE')
-        if (result === 'ERROR') {
-          analyticsHelper.track('leaveMembership')
-          dispatch.accounts.set({ member: member.filter(user => user.email !== email) })
-          dispatch.ui.set({ successMessage: `You have successfully left ${email}'s device list.` })
-        }
-      } catch (error) {
-        await graphQLCatchError(error)
+    async leaveMembership(id: string, state) {
+      const { membership } = state.accounts
+      const result = await graphQLLeaveMembership(id)
+      if (result !== 'ERROR') {
+        dispatch.accounts.set({ membership: membership.filter(m => m.organization.id !== id) })
+        dispatch.ui.set({ successMessage: 'You have successfully left the organization.' })
       }
     },
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }, state) {
@@ -206,9 +158,10 @@ export function isUserAccount(state: ApplicationState) {
   return getActiveAccountId(state) === state.auth.user?.id
 }
 
-export function getActiveAccount(state: ApplicationState) {
-  const id = getActiveAccountId(state)
-  return [state.auth.user, ...state.accounts.member].find(a => a?.id === id)
+export function getAccountIds(state: ApplicationState) {
+  let ids = state.accounts.membership.map(m => m.organization.id)
+  state.auth.user && ids.unshift(state.auth.user.id)
+  return ids
 }
 
 export function getActiveAccountId(state: ApplicationState) {

@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type IBilling = {
   invoices: IInvoice[]
@@ -43,7 +44,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         dispatch.billing.parse(result?.data?.data)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
       dispatch.billing.set({ loading: false })
     },

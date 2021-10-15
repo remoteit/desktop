@@ -1,7 +1,8 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../shared/constants'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type IApplicationTypeState = ILookup<IApplicationType[]> & {
   all: IApplicationType[]
@@ -32,7 +33,7 @@ export default createModel<RootModel>()({
         const all = result?.data?.data?.applicationTypes
         dispatch.applicationTypes.set({ all })
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
   }),

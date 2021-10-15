@@ -62,7 +62,7 @@ export const LicensingSetting: React.FC = () => {
               <ListItem>
                 <ListItemIcon></ListItemIcon>
                 <Quote margin={0}>
-                  <Box width={400} marginBottom={2} marginLeft={3} marginTop={1}>
+                  <Box width={400} marginBottom={2} marginTop={1}>
                     {license.limits.map(limit => (
                       <LimitSetting key={limit.name} limit={limit} />
                     ))}

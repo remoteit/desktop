@@ -51,27 +51,6 @@ export async function graphQLShareDevice(params: IShareProps) {
   )
 }
 
-export async function graphQLLinkAccount(emails: string[], action: 'ADD' | 'REMOVE' | 'LEAVE') {
-  return await graphQLBasicRequest(
-    ` mutation query($emails: [String!]!, $action: SharingAction) {
-        link(email: $emails, action: $action)
-      }`,
-    { emails, action }
-  )
-}
-
-// export async function graphQLAddOrganization(name: string) {
-//   return await graphQLBasicRequest(
-//     ` mutation query($name: String!) {
-//         createOrganization(name: $name) {
-//           id
-//           name
-//         }
-//       }`,
-//     { name }
-//   )
-// }
-
 export async function graphQLSetOrganization(name: string) {
   return await graphQLBasicRequest(
     ` mutation query($name: String!) {
@@ -81,13 +60,29 @@ export async function graphQLSetOrganization(name: string) {
   )
 }
 
-// @TODO this is same as device list sharing mutation - refactor
-export async function graphQLSetMembers(members: IOrganizationMember[], role: IOrganizationRole) {
+export async function graphQLRemoveOrganization() {
+  return await graphQLBasicRequest(
+    ` mutation {
+        deleteOrganization
+      }`
+  )
+}
+
+export async function graphQLSetMembers(email: string[], role: IOrganizationRole) {
   return await graphQLBasicRequest(
     ` mutation query($email: [String!]!, $role: OrganizationRole) {
-        link(email: $email, role: $role)
+        setMember(email: $email, role: $role)
       }`,
-    { email: members.map(member => member.user.email), role }
+    { email, role }
+  )
+}
+
+export async function graphQLLeaveMembership(id: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($id: ID!) {
+        leaveOrganization(id: $id)
+      }`,
+    { id }
   )
 }
 
@@ -200,32 +195,6 @@ export async function graphQLReadNotice(id: string) {
         readNotice(id: $id)
       }`,
     { id }
-  )
-}
-
-export async function graphQLUpdateMetadata(params: INotificationSetting) {
-  //@TODO: to add $notificationSystem: Boolean waiting API support
-  return await graphQLBasicRequest(
-    `
-        mutation UpdateUserMetadata(
-          $onlineDeviceNotification: Boolean
-          $onlineSharedDeviceNotification: Boolean
-          $portalUrl: String
-          $notificationEmail: Boolean
-          $notificationSystem: Boolean
-        ) {
-          setAttributes(
-            attributes: {
-              onlineDeviceNotification: $onlineDeviceNotification
-              onlineSharedDeviceNotification: $onlineSharedDeviceNotification
-              portalUrl: $portalUrl
-              notificationEmail: $notificationEmail
-              notificationSystem: $notificationSystem
-            }
-          )
-        }
-      `,
-    params
   )
 }
 

@@ -75,7 +75,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
       {noConnections && (
         <>
           <Typography className={css.message} variant="h2" align="center">
-            Connections added to your local network appear here.
+            Connections will appear here
           </Typography>
           <Typography variant="body2" align="center" color="textSecondary">
             Once you've added connections from the<Link onClick={() => history.push('/devices')}>Devices</Link>tab,{' '}

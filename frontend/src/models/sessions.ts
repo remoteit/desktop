@@ -1,9 +1,10 @@
 import { createModel } from '@rematch/core'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { connectionName, findLocalConnection, setConnection } from '../helpers/connectionHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type ISessionsState = ILookup<ISession[]> & {
   all: ISession[]
@@ -56,7 +57,7 @@ export default createModel<RootModel>()({
         dispatch.sessions.updatePublicConnections(all)
         dispatch.sessions.set({ all })
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
 

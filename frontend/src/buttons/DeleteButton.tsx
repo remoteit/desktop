@@ -7,7 +7,7 @@ import styles from '../styling'
 
 type Props = {
   tooltip?: string
-  warning?: string
+  warning?: string | React.ReactElement
   icon?: string
   disabled?: boolean
   destroying?: boolean

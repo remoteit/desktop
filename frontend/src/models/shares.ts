@@ -1,10 +1,11 @@
 import { createModel } from '@rematch/core'
 import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
-import { graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLGetErrors } from '../services/graphQL'
 import { getPermissions } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type ShareParams = { [key: string]: any }
 
@@ -82,7 +83,7 @@ export default createModel<RootModel>()({
                 : `${attributeName(device)} successfully shared to ${data.email[0]}.`,
           })
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
       set({ sharing: false })
     },

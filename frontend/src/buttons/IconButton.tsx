@@ -2,9 +2,9 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { Tooltip, IconButton as MuiIconButton } from '@material-ui/core'
 import { Icon, IconProps } from '../components/Icon/Icon'
-import { Color, FontSize, spacing } from '../styling'
+import { spacing } from '../styling'
 
-type Props = IconProps & {
+export type ButtonProps = IconProps & {
   title?: string
   icon: string
   disabled?: boolean
@@ -17,7 +17,7 @@ type Props = IconProps & {
   onClick?: (e: React.MouseEvent) => void
 }
 
-export const IconButton: React.FC<Props> = ({
+export const IconButton: React.FC<ButtonProps> = ({
   title,
   icon,
   disabled,

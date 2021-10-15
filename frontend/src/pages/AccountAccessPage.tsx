@@ -13,7 +13,7 @@ import { Body } from '../components/Body'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountAccessPage: React.FC = () => {
-  const { access } = useSelector((state: ApplicationState) => state.accounts)
+  const access = useSelector((state: ApplicationState) => state.organization.members.map(m => m.user))
   const { accounts } = useDispatch<Dispatch>()
 
   useEffect(() => {

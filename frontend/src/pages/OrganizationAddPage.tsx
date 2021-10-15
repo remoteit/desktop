@@ -7,7 +7,6 @@ import { ContactSelector } from '../components/ContactSelector'
 import { ListItemRadio } from '../components/ListItemRadio'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
-import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { useHistory } from 'react-router-dom'
@@ -15,11 +14,11 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationAddPage = () => {
   const {
-    member,
+    members,
     contacts = [],
     organization,
   } = useSelector((state: ApplicationState) => ({
-    member: state.organization.member,
+    members: state.organization.members,
     contacts: state.devices.contacts,
     organization: state.organization,
   }))
@@ -56,7 +55,7 @@ export const OrganizationAddPage = () => {
             <Title>Add Organization Members</Title>
           </Typography>
           <ContactSelector
-            contacts={contacts.filter(c => !member.find(s => s.user.id === c.id))}
+            contacts={contacts.filter(c => !members.find(s => s.user.id === c.id))}
             onChange={setEmails}
           />
         </>
@@ -68,11 +67,20 @@ export const OrganizationAddPage = () => {
           <em>Scripting will also be allowed when available in desktop.</em>
         </Notice>
       )} */}
-      <Typography variant="subtitle1">Role ({role})</Typography>
+      <Typography variant="subtitle1">Role</Typography>
       <List>
-        <ListItemRadio label="Admin" checked={role === 'ADMIN'} onClick={() => setRole('ADMIN')} />
-        <ListItemRadio label="Member" checked={role === 'MEMBER'} onClick={() => setRole('MEMBER')} />
-        {/* <ListItemRadio label="Guest" checked={role === 'LIMITED'} onClick={() => setRole('LIMITED')} /> */}
+        <ListItemRadio
+          label="Admin"
+          subLabel="Can connect and manage all devices."
+          checked={role === 'ADMIN'}
+          onClick={() => setRole('ADMIN')}
+        />
+        <ListItemRadio
+          label="Member"
+          subLabel="Can connect to all devices."
+          checked={role === 'MEMBER'}
+          onClick={() => setRole('MEMBER')}
+        />
       </List>
       <Gutters>
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length}>

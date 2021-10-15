@@ -18,7 +18,7 @@ import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
 import { OrganizationAddPage } from '../pages/OrganizationAddPage'
-import { AccountMembershipPage } from '../pages/AccountMembershipPage'
+import { OrganizationMembershipPage } from '../pages/OrganizationMembershipPage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { OptionsPage } from '../pages/OptionsPage'
 import { ReportsPage } from '../pages/ReportsPage'
@@ -48,7 +48,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       history.push(redirect)
       ui.set({ redirect: undefined })
     }
-  }, [redirect])
+  }, [history, ui, redirect])
 
   return (
     <Switch>
@@ -100,7 +100,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
       <Route path="/devices/membership">
         <Panel>
-          <AccountMembershipPage />
+          <OrganizationMembershipPage />
         </Panel>
       </Route>
 

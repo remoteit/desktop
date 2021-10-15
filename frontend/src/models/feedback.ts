@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { createTicketZendesk } from '../services/Feedback'
-import { graphQLCatchError } from '../services/graphQL'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 type FeedbackParams = { [key: string]: any }
 
@@ -35,7 +35,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ successMessage: 'Thank you. Your feedback was sent!' })
       } catch (error) {
         dispatch.ui.set({ warningMessage: 'Sending feedback encountered an error. Please try again.' })
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
   }),

@@ -1,9 +1,9 @@
 import { createModel } from '@rematch/core'
-import { ApplicationState } from '../store'
-import { graphQLSetOrganization, graphQLSetMembers } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors, graphQLCatchError } from '../services/graphQL'
+import { graphQLSetOrganization, graphQLRemoveOrganization, graphQLSetMembers } from '../services/graphQLMutation'
+import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
+import { apiError } from '../helpers/apiHelper'
 
 export const ROLE = {
   OWNER: 'Admin / Owner',
@@ -17,8 +17,7 @@ export type IOrganizationState = {
   name?: string
   created?: Date
   account?: IUserRef
-  member: IOrganizationMember[] // members of this org
-  access: IOrganizationMember[] // orgs you belong too
+  members: IOrganizationMember[]
   activeId?: string
   initialized: boolean
 }
@@ -27,9 +26,7 @@ const organizationState: IOrganizationState = {
   id: undefined,
   name: undefined,
   created: undefined,
-  account: undefined,
-  member: [],
-  access: [],
+  members: [],
   activeId: undefined,
   initialized: false,
 }
@@ -39,6 +36,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init() {
       await dispatch.organization.fetch()
+      dispatch.organization.set({ initialized: true })
     },
 
     async fetch() {
@@ -52,10 +50,6 @@ export default createModel<RootModel>()({
                   created
                   members {
                     created
-                    organization {
-                      id
-                      name
-                    }
                     role
                     user {
                       id
@@ -69,7 +63,7 @@ export default createModel<RootModel>()({
         graphQLGetErrors(result)
         await dispatch.organization.parse(result)
       } catch (error) {
-        await graphQLCatchError(error)
+        await apiError(error)
       }
     },
 
@@ -79,72 +73,57 @@ export default createModel<RootModel>()({
       const org = gqlResponse?.data?.data?.login?.organization
       console.log('ORGANIZATION DATA', org)
 
-      if (!org || !user) return
-
-      const owner = {
-        created: new Date(user.created || ''),
-        role: 'OWNER',
-        organizationId: org.id,
-        user: {
-          id: user.id,
-          email: user.email,
-        },
+      if (!org || !user) {
+        dispatch.organization.clear()
+        return
       }
 
       dispatch.organization.set({
         id: org.id,
         name: org.name,
         created: new Date(org.created),
-        member: [
-          owner,
+        members: [
+          createOwner(user),
           ...org.members.map(m => ({
             ...m,
             created: new Date(m.created),
           })),
         ],
         access: [],
-        activeId: undefined,
-        initialized: true,
       })
     },
 
-    // async addOrganization(name: string, state) {
-    //   try {
-    //     const gqlResponse = await graphQLAddOrganization(name)
-    //     const result = gqlResponse?.data?.data?.login
-    //     const errors = graphQLGetErrors(result)
-    //     if (result && !errors?.length) {
-    //       analyticsHelper.track('addAccess')
-    //       dispatch.organization.set({ name: result.name, id: result.id })
-    //       dispatch.ui.set({ successMessage: `Your organization '${name}' has been created.` })
-    //     }
-    //   } catch (error) {
-    //     await graphQLCatchError(error)
-    //   }
-    // },
-
     async setOrganization(name: string, state) {
-      dispatch.organization.set({ name })
+      const user = state.auth.user
+      let members = state.organization.members
+      if (!members.length && user) members.push(createOwner(user))
+      dispatch.organization.set({ name: name, id: state.auth.user?.id, members })
       const result = await graphQLSetOrganization(name)
-      if (result !== 'ERROR') {
-        dispatch.organization.set({ name: name, id: state.auth.user?.id })
+      if (result === 'ERROR') {
+        dispatch.organization.fetch()
+      } else {
         dispatch.ui.set({ successMessage: `Your organization '${name}' has been set.` })
       }
     },
 
     async setMembers(members: IOrganizationMember[] = [], state) {
-      let updated = [...state.organization.member]
+      let updated = [...state.organization?.members]
 
       members.forEach(m => {
         const index = updated.findIndex(u => u.user.email === m.user.email)
         if (index > -1) updated[index] = m
         else updated.push(m)
       })
+      dispatch.organization.set({ members: updated })
 
-      const action = updated.length > state.organization.member.length ? 'added' : 'updated'
-      const result = await graphQLSetMembers(members, members[0].role)
-      if (result !== 'ERROR') {
-        dispatch.organization.set({ member: updated })
+      const action = updated.length > state.organization.members.length ? 'added' : 'updated'
+      const result = await graphQLSetMembers(
+        members.map(member => member.user.email),
+        members[0].role
+      )
+      if (result === 'ERROR') {
+        dispatch.organization.fetch()
+      } else {
         dispatch.ui.set({
           successMessage:
             members.length > 1
@@ -155,31 +134,30 @@ export default createModel<RootModel>()({
     },
 
     async removeMember(member: IOrganizationMember, state) {
-      const result = await graphQLSetMembers([member], 'REMOVE')
+      const result = await graphQLSetMembers([member.user.email], 'REMOVE')
       if (result !== 'ERROR') {
-        dispatch.organization.set({ member: state.organization.member.filter(m => m.user.email !== member.user.email) })
+        dispatch.organization.set({
+          members: state.organization.members.filter(m => m.user.email !== member.user.email),
+        })
         dispatch.ui.set({ successMessage: `Successfully removed ${member?.user?.email}.` })
       }
     },
 
-    async leaveMembership(email: string, state) {
-      // const { member } = state.accounts as ApplicationState['accounts']
-      // try {
-      //   const result = await graphQLLinkAccount([email], 'LEAVE')
-      //   const errors = graphQLGetErrors(result)
-      //   if (!errors?.length) {
-      //     analyticsHelper.track('leaveMembership')
-      //     dispatch.organization.set({ member: member.filter(user => user.email !== email) })
-      //     dispatch.ui.set({ successMessage: `You have successfully left ${email}'s device list.` })
-      //   }
-      // } catch (error) {
-      //   await graphQLCatchError(error)
-      // }
+    async removeOrganization(_, state) {
+      const result = await graphQLRemoveOrganization()
+      if (result !== 'ERROR') {
+        dispatch.organization.clear()
+        dispatch.ui.set({ successMessage: `Your organization has been removed.` })
+      }
     },
   }),
   reducers: {
     set(state: IOrganizationState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
+    },
+    clear(state: IOrganizationState) {
+      state = { ...organizationState, initialized: true }
       return state
     },
     reset(state: IOrganizationState) {
@@ -189,11 +167,14 @@ export default createModel<RootModel>()({
   },
 })
 
-export function getAllDevices(state: ApplicationState): IDevice[] {
-  return (
-    Object.keys(state.devices.all).reduce(
-      (all: IDevice[], accountId) => all.concat(state.devices.all[accountId]),
-      []
-    ) || []
-  )
+function createOwner(user: IUser): IOrganizationMember {
+  return {
+    created: new Date(user?.created || ''),
+    role: 'OWNER',
+    organizationId: user?.id,
+    user: {
+      id: user?.id,
+      email: user?.email,
+    },
+  }
 }

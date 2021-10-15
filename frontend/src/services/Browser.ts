@@ -1,4 +1,4 @@
-import { REDIRECT_URL, IP_PRIVATE } from '../shared/constants'
+import { IP_PRIVATE, PORTAL } from '../shared/constants'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -21,14 +21,15 @@ export function agent() {
   return result?.length ? result[0] : ''
 }
 
+export function isPortal() {
+  const { port } = window.location
+  return PORTAL || port === '3000'
+}
+
+// limited remote management interface
 export function isRemote() {
   const { port, hostname } = window.location
-  return !(
-    isElectron() ||
-    ((port === '29999' || port === '29998') && hostname === IP_PRIVATE) ||
-    port === '3000' ||
-    hostname.includes('remote.it')
-  )
+  return !(isElectron() || ((port === '29999' || port === '29998') && hostname === IP_PRIVATE) || isPortal())
 }
 
 export function isElectron() {
@@ -88,7 +89,5 @@ export function getApplicationObj(typeID?: number, username?: string) {
     }
   }
 
-
   return { application: '' }
-
 }
