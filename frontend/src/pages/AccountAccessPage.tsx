@@ -13,7 +13,7 @@ import { Body } from '../components/Body'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountAccessPage: React.FC = () => {
-  const access = useSelector((state: ApplicationState) => state.organization.members.map(m => m.user))
+  const members = useSelector((state: ApplicationState) => state.organization.members)
   const { accounts } = useDispatch<Dispatch>()
 
   useEffect(() => {
@@ -32,26 +32,32 @@ export const AccountAccessPage: React.FC = () => {
       <Gutters bottom={null}>
         <Typography variant="body2">Share all the devices you own to another user</Typography>
       </Gutters>
-      {access.length ? (
+      {members.length ? (
         <List>
           <ListItem>
             <Notice>These users have access to all the devices you own.</Notice>
           </ListItem>
-          {access.map(user => (
-            <ListItem key={user.email}>
+          {members.map(member => (
+            <ListItem key={member.organizationId}>
               <ListItemIcon>
                 <InitiatorPlatform user />
               </ListItemIcon>
               <ListItemText
-                primary={user.email}
+                primary={member.user.email}
                 secondary={
                   <>
-                    Linked <Duration startTime={user.created?.getTime()} ago />
+                    Linked <Duration startTime={member.created?.getTime()} ago />
                   </>
                 }
               />
               <ListItemSecondaryAction>
-                <IconButton title="Remove Account" icon="times" onClick={() => accounts.removeAccess(user.email)} />
+                <IconButton
+                  title="Remove Account"
+                  icon="times"
+                  onClick={() => {
+                    /* accounts.removeAccess(member.email) */
+                  }}
+                />
               </ListItemSecondaryAction>
             </ListItem>
           ))}
