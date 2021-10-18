@@ -50,11 +50,12 @@ export const OrganizationEmpty: React.FC = () => {
         </>
       ) : (
         <>
-          <Typography variant="h2" align="center" gutterBottom>
+          <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
             Professional license required.
           </Typography>
-          <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
-            Create an organization to pay for accounts and share your device list.
+          <Typography variant="h2" align="center" gutterBottom>
+            Add an organization to automatically <br />
+            share all your devices and manage access.
           </Typography>
           <Gutters bottom="xxl">
             <Button variant="contained" color="primary" component={Link} to="/settings/plans" size="large">

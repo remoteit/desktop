@@ -2,7 +2,7 @@ import React from 'react'
 import { Chip, makeStyles, lighten } from '@material-ui/core'
 import { colors } from '../styling'
 
-export const licenseChipLookup: ILookup<ILicenseChip> = {
+const licenseChipLookup: ILookup<ILicenseChip> = {
   UNKNOWN: { name: 'Unknown', color: colors.grayDarker, colorName: 'grayDarker' },
   EVALUATION: {
     name: 'Evaluation',
@@ -22,6 +22,11 @@ export const licenseChipLookup: ILookup<ILicenseChip> = {
   },
   NON_COMMERCIAL: { name: 'Non-commercial', color: colors.grayDarker, colorName: 'grayDarker' },
   LEGACY: { name: 'Legacy', color: colors.grayDarker, colorName: 'grayDarker' },
+  EXEMPT: { name: 'Exempt', color: colors.grayDarker, colorName: 'grayDarker' },
+}
+
+export function getLicenseChip(license?: ILicenseTypes): ILicenseChip {
+  return licenseChipLookup[license || ''] || licenseChipLookup.UNKNOWN
 }
 
 export const LicenseChip: React.FC<{ chip: ILicenseChip }> = ({ chip }) => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { connectionState, sanitizeName } from '../../helpers/connectionHelper'
-import { licenseChipLookup } from '../../components/LicenseChip'
+import { getLicenseChip } from '../../components/LicenseChip'
 import { newConnection } from '../../helpers/connectionHelper'
 import { DynamicButton } from '../DynamicButton'
 import { useHistory } from 'react-router-dom'
@@ -34,7 +34,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
   const { connections } = useDispatch<Dispatch>()
   const history = useHistory()
-  const chip = service && licenseChipLookup[service.license]
+  const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
   const visible = !connection?.enabled
   const connecting = state === 'connecting'

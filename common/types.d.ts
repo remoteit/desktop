@@ -282,6 +282,8 @@ declare global {
     }
   }
 
+  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT'
+
   type IUser = {
     id: string
     email: string

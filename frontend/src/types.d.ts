@@ -86,8 +86,6 @@ declare global {
     prices?: IPrice[]
   }
 
-  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'LEGACY'
-
   type IPrice = {
     id: string
     amount: number

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
-import { Dispatch, ApplicationState } from '../store'
+import { ApplicationState } from '../store'
 import { Typography, List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -14,7 +14,6 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountAccessPage: React.FC = () => {
   const members = useSelector((state: ApplicationState) => state.organization.members)
-  const { accounts } = useDispatch<Dispatch>()
 
   useEffect(() => {
     analyticsHelper.page('AccountAccessPage')

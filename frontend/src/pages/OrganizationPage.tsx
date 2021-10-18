@@ -40,7 +40,7 @@ export const OrganizationPage: React.FC = () => {
                   warning={
                     <>
                       You will be permanently deleting <i>{organization.name}. </i>
-                      This will remove all your members access to your devices.
+                      This will remove all your members and their access to your devices.
                     </>
                   }
                   onDelete={() => {
@@ -63,7 +63,7 @@ export const OrganizationPage: React.FC = () => {
               />
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
-                  Add members to your organization to pay for accounts and share your device list.
+                  Add members to your organization to automatically share all your devices and manage their access.
                 </Typography>
               </Gutters>
             </List>

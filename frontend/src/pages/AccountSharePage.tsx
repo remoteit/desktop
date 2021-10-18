@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, ApplicationState } from '../store'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../store'
 import { Typography, Button } from '@material-ui/core'
 import { ContactSelector } from '../components/ContactSelector'
-import { Breadcrumbs } from '../components/Breadcrumbs'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -13,7 +12,6 @@ import { useHistory } from 'react-router-dom'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountSharePage = () => {
-  const { accounts } = useDispatch<Dispatch>()
   const {
     user,
     access,

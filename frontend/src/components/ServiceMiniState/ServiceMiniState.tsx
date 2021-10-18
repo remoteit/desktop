@@ -3,10 +3,10 @@ import { useSelector } from 'react-redux'
 import { makeStyles, Box, lighten } from '@material-ui/core'
 import { spacing, colors, fontSizes, Color, radius } from '../../styling'
 import { selectSessionsByService } from '../../models/sessions'
-import { licenseChipLookup } from '../LicenseChip'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
 import { SessionsTooltip } from '../SessionsTooltip'
+import { getLicenseChip } from '../LicenseChip'
 import { Icon } from '../Icon'
 import classnames from 'classnames'
 
@@ -64,7 +64,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
       colorName = 'grayLight'
   }
 
-  const chip = licenseChipLookup[service.license]
+  const chip = getLicenseChip(service.license)
 
   if (chip.show) {
     colorName = chip.colorName
