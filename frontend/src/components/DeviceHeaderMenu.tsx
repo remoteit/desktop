@@ -44,7 +44,6 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               title="Edit"
               icon="pen"
               iconColor="grayDarker"
-              disabled={device.state === 'inactive'}
               pathname={`/devices/${device.id}/edit`}
               dense
             />

@@ -7,6 +7,7 @@ import { OrganizationMember } from '../components/OrganizationMember'
 import { OrganizationEmpty } from '../components/OrganizationEmpty'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeleteButton } from '../buttons/DeleteButton'
+import { SeatsSetting } from '../components/SeatsSetting'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
@@ -61,6 +62,7 @@ export const OrganizationPage: React.FC = () => {
                 resetValue={organization.name}
                 onSave={name => dispatch.organization.setOrganization(name.toString())}
               />
+              <SeatsSetting />
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
                   Add members to your organization to automatically share all your devices and manage their access.
