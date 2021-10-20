@@ -12,8 +12,10 @@ export type ButtonProps = IconProps & {
   className?: string
   shiftDown?: boolean
   loading?: boolean
+  submit?: boolean
   onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: (e: React.MouseEvent) => void
+  onMouseDown?: (e: React.MouseEvent) => void
   onClick?: (e: React.MouseEvent) => void
 }
 
@@ -26,8 +28,10 @@ export const IconButton: React.FC<ButtonProps> = ({
   size = 'base',
   className,
   loading,
+  submit,
   onMouseEnter,
   onMouseLeave,
+  onMouseDown,
   onClick,
   children,
   ...props
@@ -44,10 +48,12 @@ export const IconButton: React.FC<ButtonProps> = ({
   const button = (
     <MuiIconButton
       onClick={clickHandler}
+      onMouseDown={onMouseDown}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       disabled={disabled}
       className={className}
+      type={submit ? 'submit' : undefined}
       style={{ opacity: disabled ? 0.5 : undefined, marginBottom: shiftDown ? -spacing.sm : undefined }}
     >
       <Icon {...props} name={icon} size={size} fixedWidth />

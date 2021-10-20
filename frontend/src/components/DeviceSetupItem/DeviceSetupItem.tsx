@@ -56,12 +56,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
                 <Link onClick={() => history.push('/devices')}>cancel</Link>
               </Typography>
             ) : (
-              <Chip
-                label="Restore Device"
-                variant="default"
-                size="small"
-                onClick={() => history.push('/devices/restore')}
-              />
+              <Chip label="Restore" variant="default" size="small" onClick={() => history.push('/devices/restore')} />
             )}
           </ListItemSecondaryAction>
         )}
@@ -71,5 +66,5 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
 }
 
 const useStyles = makeStyles({
-  margin: { paddingRight: 125 },
+  margin: { paddingRight: 80 },
 })

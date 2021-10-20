@@ -83,7 +83,7 @@ export const Plans: React.FC = () => {
               price =
                 currencyFormatter(license?.subscription?.price.currency, license?.subscription?.total, 0) +
                 ` / ${license?.subscription?.price.interval.toLowerCase()}`
-              caption = `${license.quantity} user${(license.quantity || 0) > 1 ? 's' : ''}`
+              caption = `${license.quantity} seat${(license.quantity || 0) > 1 ? 's' : ''}`
               note = undefined
             }
             return (
