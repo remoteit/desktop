@@ -1,20 +1,10 @@
 import React from 'react'
 import { PERSONAL_PLAN_ID } from '../models/licensing'
-import {
-  makeStyles,
-  Divider,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  Typography,
-  TextField,
-  Button,
-} from '@material-ui/core'
+import { makeStyles, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes, colors } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { Icon } from './Icon'
 
 type Props = {
   plans: IPlan[]
@@ -31,12 +21,6 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   const selectedPlan = plans.find(plan => plan.id === form.planId)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
 
-  const setQuantity = (value: string | number) => {
-    let quantity = Math.max(Math.min(+value, 9999), 0)
-    if (isNaN(quantity)) quantity = 1
-    onChange({ ...form, quantity })
-  }
-
   const setNextInterval = () => {
     const priceArray = selectedPlan?.prices || []
     const next = priceArray.findIndex(p => form.priceId === p.id) + 1
@@ -50,10 +34,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
     else dispatch.licensing.subscribe(form)
   }
 
-  const unchanged = () =>
-    form.planId === license?.plan?.id &&
-    form.priceId === license?.subscription?.price?.id &&
-    form.quantity === (license?.quantity || 1)
+  const unchanged = () => form.planId === license?.plan?.id && form.priceId === license?.subscription?.price?.id
 
   if (form.planId === PERSONAL_PLAN_ID)
     return (
@@ -107,42 +88,6 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             </div>
           </ListItemSecondaryAction>
         </ListItem>
-        <ListItem button onClick={() => setQuantity(form.quantity + 1)}>
-          <Typography variant="h3">Seats</Typography>
-          <ListItemSecondaryAction>
-            <div className={css.group}>
-              <Button
-                className={css.icon}
-                size="small"
-                variant="contained"
-                color="primary"
-                onClick={() => setQuantity(form.quantity - 1)}
-              >
-                <Icon name="minus" size="sm" />
-              </Button>
-              <TextField
-                size="small"
-                value={form.quantity}
-                hiddenLabel
-                color="primary"
-                onChange={e => setQuantity(e.target.value)}
-                className={css.quantity}
-              />
-              <Button
-                className={css.icon}
-                size="small"
-                variant="contained"
-                color="primary"
-                onClick={() => setQuantity(form.quantity + 1)}
-              >
-                <Icon name="plus" size="sm" />
-              </Button>
-            </div>
-          </ListItemSecondaryAction>
-        </ListItem>
-      </List>
-      <List className={css.list}>
-        <Divider />
         <ListItem>
           <Typography variant="h3">Total</Typography>
           <ListItemSecondaryAction>
@@ -162,12 +107,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
       </List>
       <List className={css.list}>
         <ListItem>
-          <Button
-            onClick={onSubmit}
-            color="primary"
-            variant="contained"
-            disabled={purchasing || unchanged() || !form.quantity}
-          >
+          <Button onClick={onSubmit} color="primary" variant="contained" disabled={purchasing || unchanged()}>
             {purchasing ? 'Processing...' : 'Checkout'}
           </Button>
           <Button onClick={onCancel} disabled={purchasing}>

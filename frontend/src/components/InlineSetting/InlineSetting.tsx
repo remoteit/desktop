@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  InputLabel,
-  Tooltip,
-  IconButton,
-} from '@material-ui/core'
+import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
-import { ResetButton } from '../../buttons/ResetButton'
+import { IconButton } from '../../buttons/IconButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { Title } from '../Title'
@@ -95,7 +87,10 @@ export const InlineSetting: React.FC<Props> = ({
         {children}
         <ListItemSecondaryAction>
           {resetValue != null && (
-            <ResetButton
+            <IconButton
+              title="Reset"
+              icon="undo"
+              type="solid"
               onMouseDown={cancelBlur}
               onClick={() => {
                 onResetClick()
@@ -103,16 +98,8 @@ export const InlineSetting: React.FC<Props> = ({
               }}
             />
           )}
-          <Tooltip title="Cancel">
-            <IconButton onClick={onCancel}>
-              <Icon name="times" size="md" fixedWidth />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Save">
-            <IconButton color="primary" type="submit" onMouseDown={cancelBlur}>
-              <Icon name="check" size="md" fixedWidth />
-            </IconButton>
-          </Tooltip>
+          <IconButton title="Cancel" icon="times" size="md" onClick={onCancel} />
+          <IconButton title="Purchase" icon="check" color="primary" size="md" onMouseDown={cancelBlur} submit />
         </ListItemSecondaryAction>
       </form>
     </ListItem>

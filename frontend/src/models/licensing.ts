@@ -223,6 +223,7 @@ export default createModel<RootModel>()({
     async updated() {
       await dispatch.licensing.fetch()
       dispatch.licensing.set({ purchasing: undefined, updating: undefined })
+      dispatch.ui.set({ successMessage: 'Subscription updated!' })
     },
 
     async testServiceLicensing(_, globalState) {
