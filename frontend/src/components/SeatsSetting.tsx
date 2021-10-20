@@ -16,6 +16,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { getRemoteitLicense } from '../models/licensing'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { REMOTEIT_PRODUCT_ID } from '../models/licensing'
+import { ConfirmButton } from '../buttons/ConfirmButton'
 import { IconButton } from '../buttons/IconButton'
 import { Icon } from './Icon'
 
@@ -51,7 +52,7 @@ export const SeatsSetting: React.FC = () => {
   return (
     <>
       <List className={css.seats}>
-        <ListItem button onClick={() => setQuantity(form.quantity + 1)}>
+        <ListItem>
           <ListItemText>
             <InputLabel shrink>Seats</InputLabel>
             {selectedPrice?.amount ? (
@@ -68,15 +69,35 @@ export const SeatsSetting: React.FC = () => {
             {!unchanged() && !!form.quantity && (
               <>
                 {/* <IconButton title="Reset" icon="undo" type="solid" onClick={() => setForm(getDefaults())} /> */}
-                <IconButton title="Cancel" icon="times" size="md" onClick={() => setForm(getDefaults())} />
                 <IconButton
+                  title="Cancel"
+                  icon="times"
+                  size="md"
+                  disabled={purchasing}
+                  onClick={() => setForm(getDefaults())}
+                />
+                <ConfirmButton
                   title="Purchase"
                   icon="check"
                   color="primary"
                   size="md"
                   loading={purchasing}
-                  disabled={purchasing || unchanged() || !form.quantity}
+                  disabled={purchasing}
                   onClick={() => dispatch.licensing.updateSubscription(form)}
+                  confirm
+                  confirmTitle="Confirm Billing Change"
+                  confirmMessage={
+                    <>
+                      Please confirm that you want to change your billing to
+                      <b>
+                        {' '}
+                        {currencyFormatter(selectedPrice?.currency, (selectedPrice?.amount || 0) * form.quantity)}
+                        &nbsp;/&nbsp;
+                        {selectedPrice?.interval.toLowerCase()}
+                      </b>{' '}
+                      for {form.quantity} seat{form.quantity > 1 ? 's' : ''}.
+                    </>
+                  }
                 />
               </>
             )}
