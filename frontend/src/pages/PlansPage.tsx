@@ -2,16 +2,14 @@ import React from 'react'
 import { Container } from '../components/Container'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { ApplicationState } from '../store'
-import { getRemoteitLicense } from '../models/licensing'
 import { useSelector } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { Gutters } from '../components/Gutters'
 import { Plans } from '../components/Plans'
 
 export const PlansPage: React.FC = () => {
-  const { initialized, billing } = useSelector((state: ApplicationState) => ({
+  const { initialized } = useSelector((state: ApplicationState) => ({
     initialized: state.licensing.initialized,
-    billing: !!getRemoteitLicense(state)?.plan.billing,
   }))
 
   if (!initialized) return <LoadingMessage message="Loading plans..." />

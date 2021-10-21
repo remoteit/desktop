@@ -8,7 +8,7 @@ const EVENTS = {
   minimizeWindows: 'windows/minimize',
 }
 
-export const openCMDforWindows = async (params: { launchApp: ILaunchApp, app: Application }) => {
+export const openCMDforWindows = async (params: { launchApp: ILaunchApp; app: Application }) => {
   if (params.launchApp.path) return launchApplication(params)
   Logger.info('LAUNCH APP', { launchApp: params.launchApp })
   const commands = new Command({})
@@ -27,7 +27,7 @@ export const openCMDforWindows = async (params: { launchApp: ILaunchApp, app: Ap
   }
 }
 
-export const checkAppForWindows = async (params: { application: string, cmd: string }) => {
+export const checkAppForWindows = async (params: { application: string; cmd: string }) => {
   const commands = new Command({})
   commands.push(`${params.cmd}`)
   const result = await commands.exec()
@@ -39,7 +39,7 @@ export const checkAppForWindows = async (params: { application: string, cmd: str
   }
 }
 
-async function launchApplication(params: { launchApp: ILaunchApp, app: Application }) {
+async function launchApplication(params: { launchApp: ILaunchApp; app: Application }) {
   // use defaultTemplateCmd
   const commands = new Command({})
   commands.push(params.app.defaultTemplateCmd)

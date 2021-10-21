@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { TextField, Input } from '@material-ui/core'
+import { makeStyles, TextField, Input } from '@material-ui/core'
 import { InlineSetting } from '../InlineSetting'
+import { spacing } from '../../styling'
 
 type Props = {
   value?: string | number
@@ -32,6 +33,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
   const fieldRef = useRef<HTMLInputElement>(null)
   const [editValue, setEditValue] = useState<string | number>('')
   const [error, setError] = useState<string>()
+  const css = useStyles()
 
   useEffect(() => {
     onError && onError(error)
@@ -59,6 +61,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         error={!!error}
         value={editValue}
         variant="filled"
+        className={css.field}
         helperText={error}
         onChange={event => {
           let { value } = event.target
@@ -75,3 +78,12 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
     </InlineSetting>
   )
 }
+
+const useStyles = makeStyles({
+  field: {
+    flexGrow: 1,
+    margin: `0 ${spacing.md}px -1px -${spacing.sm}px`,
+    '& .MuiInput-root': { marginRight: spacing.sm, padding: '3px 0 2px', fontSize: 14 },
+    '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
+  },
+})
