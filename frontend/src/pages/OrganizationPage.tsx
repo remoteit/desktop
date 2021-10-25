@@ -3,8 +3,7 @@ import { Dispatch, ApplicationState } from '../store'
 import { Typography, List } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { OrganizationMember } from '../components/OrganizationMember'
-import { OrganizationEmpty } from '../components/OrganizationEmpty'
+import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { SeatsSetting } from '../components/SeatsSetting'
@@ -16,12 +15,8 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationPage: React.FC = () => {
   const organization = useSelector((state: ApplicationState) => state.organization)
-  const [removing, setRemoving] = React.useState<string>()
+  const [removing, setRemoving] = React.useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
-
-  useEffect(() => {
-    setRemoving(undefined)
-  }, [organization])
 
   useEffect(() => {
     analyticsHelper.page('OrganizationPage')
@@ -37,7 +32,7 @@ export const OrganizationPage: React.FC = () => {
               <>
                 <DeleteButton
                   tooltip="Delete organization"
-                  destroying={removing === 'ORG'}
+                  destroying={removing}
                   warning={
                     <>
                       You will be permanently deleting <i>{organization.name}. </i>
@@ -45,7 +40,7 @@ export const OrganizationPage: React.FC = () => {
                     </>
                   }
                   onDelete={() => {
-                    setRemoving('ORG')
+                    setRemoving(true)
                     dispatch.organization.removeOrganization()
                   }}
                 />
@@ -73,22 +68,7 @@ export const OrganizationPage: React.FC = () => {
         </>
       }
     >
-      {!organization.initialized ? (
-        <LoadingMessage />
-      ) : organization.id ? (
-        <List>
-          {organization.members.map(member => (
-            <OrganizationMember
-              key={member.user.id}
-              member={member}
-              removing={removing === member.user.id}
-              onClick={() => setRemoving(member.user.id)}
-            />
-          ))}
-        </List>
-      ) : (
-        <OrganizationEmpty />
-      )}
+      {!organization.initialized ? <LoadingMessage /> : <OrganizationMemberList organization={organization} />}
     </Container>
   )
 }

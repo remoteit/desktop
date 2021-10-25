@@ -171,7 +171,9 @@ class CloudController {
               if (service.id === target.service?.id) {
                 service.state = state
                 console.log('SERVICE STATE', service.name, service.state)
+                return true
               }
+              return false
             })
           }
           if (target.device?.id) {

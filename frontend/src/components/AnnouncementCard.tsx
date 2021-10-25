@@ -86,7 +86,6 @@ const useStyles = ({ unread }) =>
       marginRight: spacing.md,
       backgroundColor: colors.grayLightest,
       '& .MuiButtonBase-root': { float: 'right' },
-      '& a': { color: colors.primary },
     },
     header: {
       transition: 'background-color 1s',
