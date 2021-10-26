@@ -8,7 +8,7 @@ const EVENTS = {
   minimizeWindows: 'windows/minimize',
 }
 
-export const openCMDforWindows = async (params: { launchApp: ILaunchApp, app: Application }) => {
+export const openCMD = async (params: { launchApp: ILaunchApp, app: Application }) => {
   if (params.launchApp.path) return launchApplication(params)
   Logger.info('LAUNCH APP', { launchApp: params.launchApp })
   const commands = new Command({})
