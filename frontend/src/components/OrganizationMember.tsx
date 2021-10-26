@@ -4,7 +4,8 @@ import { Chip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } f
 import { useDispatch } from 'react-redux'
 import { IconButton } from '../buttons/IconButton'
 import { Duration } from './Duration'
-import { Icon } from './Icon'
+import { Avatar } from './Avatar'
+import { spacing } from '../styling'
 import { ROLE } from '../models/organization'
 
 type Props = { member: IOrganizationMember; removing?: boolean; onClick: () => void }
@@ -14,7 +15,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick 
   return (
     <ListItem key={member.user.email} dense>
       <ListItemIcon>
-        <Icon name="user" />
+        <Avatar email={member.user.email} size={spacing.lg} />
       </ListItemIcon>
       <ListItemText
         primary={member.user.email}

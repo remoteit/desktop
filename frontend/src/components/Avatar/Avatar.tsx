@@ -1,14 +1,14 @@
 import md5 from 'md5'
 import React from 'react'
 import fallbackImage from './user.png'
-import { makeStyles, ButtonBase, Tooltip, Avatar as MuiAvatar } from '@material-ui/core'
+import { makeStyles, Avatar as MuiAvatar } from '@material-ui/core'
 import { colors } from '../../styling'
 
 export interface Props {
   email?: string
   size?: number
   button?: boolean
-  label?: true
+  label?: boolean
 }
 
 export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => {
@@ -17,7 +17,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => 
   const style = { height: size, width: size, backgroundColor: colors.primary }
 
   return (
-    <span className={label && css.label}>
+    <span className={label ? css.label : ''}>
       <MuiAvatar component="span" className={button ? css.avatar : ''} alt={email} style={style} src={url}>
         <img src={fallbackImage} alt={email} style={style} />
       </MuiAvatar>
