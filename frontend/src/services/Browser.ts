@@ -23,7 +23,7 @@ export function agent() {
 
 export function isPortal() {
   const { port } = window.location
-  return PORTAL || port === '3000'
+  return PORTAL || (!isElectron() && port === '3000')
 }
 
 // limited remote management interface

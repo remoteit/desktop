@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { List, ListItem, ListItemIcon, makeStyles, MenuItem, TextField } from '@material-ui/core'
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
@@ -7,7 +7,7 @@ import { colors } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
-import { isElectron } from '../../services/Browser'
+import { isPortal } from '../../services/Browser'
 
 type Props = {
   service: IService
@@ -25,15 +25,6 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   connection.context = app.launchType === LAUNCH_TYPE.command ? 'copy' : 'launch'
 
-  useEffect(() => {
-    if (isElectron() && app.launchType !== LAUNCH_TYPE.url) {
-      connection &&
-        setConnection({
-          ...connection,
-          launchType: LAUNCH_TYPE.url,
-        })
-    }
-  }, [])
 
   const handleChange = (value: any) => {
     handleClick()
@@ -51,7 +42,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
     disabled: false
   };
 
-  if (!isElectron()) {
+  if (isPortal()) {
     inputProps.select = false
     inputProps.disabled = true
   }
@@ -68,7 +59,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           SelectProps={{ open }}
           size="small"
           label="Launch type"
-          value={app.launchType}
+          value={isPortal() ? 'URL' : app.launchType}
           onChange={e => handleChange(e.target.value)}
         >
           <MenuItem value={LAUNCH_TYPE.url}>URL</MenuItem>
