@@ -1,7 +1,7 @@
 import React from 'react'
 import { Tooltip } from '@material-ui/core'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { DEFAULT_CONNECTION, PUBLIC_CONNECTION } from '../shared/constants'
+import { DEFAULT_CONNECTION, PUBLIC_CONNECTION, REGEX_CHARACTERS } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Icon } from './Icon'
 
@@ -24,6 +24,7 @@ export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnect
   return (
     <InlineTextFieldSetting
       value={timeout}
+      filter={REGEX_CHARACTERS}
       displayValue={display}
       icon="hourglass"
       label={
