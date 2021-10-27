@@ -9,16 +9,23 @@ import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
 
+export enum LAUNCH_TYPE {
+  URL = 'URL',
+  COMMAND = 'COMMAND'
+}
+
 export class Application {
   context?: 'copy' | 'launch'
   title: string = 'URL'
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   publicTemplate: string = '[address]'
+  launchDarwin: string = ` osascript  -e 'tell application "Terminal" to do script " [commandTemplate] " ' `
+  launchUnix: string = `gnome-terminal -- /bin/bash -c '[commandTemplate]; read' `
   defaultTemplateCmd: string = ''
   checkApplicationCmd: string = ''
   addressTemplate: string = '[host]:[port]'
-  defaultLaunchType: 'URL' | 'COMMAND' = 'URL'
+  defaultLaunchType: LAUNCH_TYPE = LAUNCH_TYPE.URL
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
   defaultAppTokens: string[] = ['host', 'port', 'id']

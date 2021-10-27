@@ -3,10 +3,12 @@ import { List, ListItem, ListItemIcon, makeStyles, MenuItem, TextField } from '@
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'
-import { colors, spacing } from '../../styling'
+import { colors } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
+import { isPortal } from '../../services/Browser'
+import { LAUNCH_TYPE } from '../../shared/applications'
 
 type Props = {
   service: IService
@@ -21,7 +23,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   const app = useApplication('launch', service, connection)
   const css = useStyles()
 
-  connection.context = app.launchType === 'COMMAND' ? 'copy' : 'launch'
+  connection.context = app.launchType === LAUNCH_TYPE.COMMAND ? 'copy' : 'launch'
+
 
   const handleChange = (value: any) => {
     handleClick()
@@ -34,6 +37,16 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   const handleClick = () => setOpen(!open)
 
+  let inputProps = {
+    select: true,
+    disabled: false
+  };
+
+  if (isPortal()) {
+    inputProps.select = false
+    inputProps.disabled = true
+  }
+
   return (
     <>
       <ListItem dense className={css.field} onClick={handleClick} button>
@@ -41,16 +54,16 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           <Icon name={app.icon} size="md" />
         </ListItemIcon>
         <TextField
-          select
+          {...inputProps}
           fullWidth
           SelectProps={{ open }}
           size="small"
           label="Launch type"
-          value={app.launchType}
+          value={isPortal() ? 'URL' : app.launchType}
           onChange={e => handleChange(e.target.value)}
         >
-          <MenuItem value="URL">URL</MenuItem>
-          <MenuItem value="COMMAND">Command</MenuItem>
+          <MenuItem value={LAUNCH_TYPE.URL}>URL</MenuItem>
+          <MenuItem value={LAUNCH_TYPE.COMMAND}>Command</MenuItem>
         </TextField>
       </ListItem>
       <ListItem dense>

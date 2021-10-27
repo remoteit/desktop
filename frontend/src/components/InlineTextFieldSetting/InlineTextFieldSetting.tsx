@@ -62,7 +62,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         helperText={error}
         onChange={event => {
           let { value } = event.target
-          value = filter ? value.replace(filter, '') : value
+          value = filter && value.length > 1  ? value.replace(filter, '') : value
           if (maxLength && value.length > maxLength) {
             setError(`Cannot exceed ${maxLength} characters.`)
             value = value.substring(0, maxLength)

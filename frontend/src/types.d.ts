@@ -219,6 +219,6 @@ declare global {
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 
-declare module 'remote.it' {}
+declare module 'remote.it' { }
 
-export {}
+export { }
