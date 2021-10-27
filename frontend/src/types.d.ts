@@ -134,11 +134,6 @@ declare global {
 
   type LogType = 'general' | 'connectd' | 'alert'
 
-  type ILaunchType = {
-    url: 'URL'
-    command: 'COMMAND'
-  }
-
   interface Log {
     type: LogType
     message: string

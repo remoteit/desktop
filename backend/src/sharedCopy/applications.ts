@@ -9,6 +9,11 @@ import { replaceHost } from './nameHelper'
 
 export const DEVICE_TYPE = 35
 
+export enum LAUNCH_TYPE {
+  URL = 'URL',
+  COMMAND = 'COMMAND'
+}
+
 export class Application {
   context?: 'copy' | 'launch'
   title: string = 'URL'

@@ -8,6 +8,7 @@ import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
 import { isPortal } from '../../services/Browser'
+import { LAUNCH_TYPE } from '../../shared/applications'
 
 type Props = {
   service: IService
@@ -21,9 +22,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   const [open, setOpen] = React.useState<boolean>(false)
   const app = useApplication('launch', service, connection)
   const css = useStyles()
-  const LAUNCH_TYPE: ILaunchType = { url: 'URL', command: 'COMMAND' }
 
-  connection.context = app.launchType === LAUNCH_TYPE.command ? 'copy' : 'launch'
+  connection.context = app.launchType === LAUNCH_TYPE.COMMAND ? 'copy' : 'launch'
 
 
   const handleChange = (value: any) => {
@@ -62,8 +62,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           value={isPortal() ? 'URL' : app.launchType}
           onChange={e => handleChange(e.target.value)}
         >
-          <MenuItem value={LAUNCH_TYPE.url}>URL</MenuItem>
-          <MenuItem value={LAUNCH_TYPE.command}>Command</MenuItem>
+          <MenuItem value={LAUNCH_TYPE.URL}>URL</MenuItem>
+          <MenuItem value={LAUNCH_TYPE.COMMAND}>Command</MenuItem>
         </TextField>
       </ListItem>
       <ListItem dense>
