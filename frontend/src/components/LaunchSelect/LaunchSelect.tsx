@@ -15,26 +15,22 @@ type Props = {
   disabled?: boolean
 }
 
-export enum LAUNCH_TYPE {
-  URL = 'URL',
-  COMMAND = 'COMMAND'
-}
-
 export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   if (!connection) connection = newConnection(service)
 
   const [open, setOpen] = React.useState<boolean>(false)
   const app = useApplication('launch', service, connection)
   const css = useStyles()
+  const LAUNCH_TYPE: ILaunchType = { url: 'URL', command: 'COMMAND' }
 
-  connection.context = app.launchType === LAUNCH_TYPE.COMMAND ? 'copy' : 'launch'
+  connection.context = app.launchType === LAUNCH_TYPE.command ? 'copy' : 'launch'
 
   useEffect(() => {
-    if (isElectron() && app.launchType !== LAUNCH_TYPE.URL) {
+    if (isElectron() && app.launchType !== LAUNCH_TYPE.url) {
       connection &&
         setConnection({
           ...connection,
-          launchType: LAUNCH_TYPE.URL,
+          launchType: LAUNCH_TYPE.url,
         })
     }
   }, [])
@@ -75,8 +71,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           value={app.launchType}
           onChange={e => handleChange(e.target.value)}
         >
-          <MenuItem value={LAUNCH_TYPE.URL}>URL</MenuItem>
-          <MenuItem value={LAUNCH_TYPE.COMMAND}>Command</MenuItem>
+          <MenuItem value={LAUNCH_TYPE.url}>URL</MenuItem>
+          <MenuItem value={LAUNCH_TYPE.command}>Command</MenuItem>
         </TextField>
       </ListItem>
       <ListItem dense>

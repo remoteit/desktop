@@ -134,6 +134,11 @@ declare global {
 
   type LogType = 'general' | 'connectd' | 'alert'
 
+  type ILaunchType = {
+    url: 'URL'
+    command: 'COMMAND'
+  }
+
   interface Log {
     type: LogType
     message: string
@@ -219,6 +224,6 @@ declare global {
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 
-declare module 'remote.it' {}
+declare module 'remote.it' { }
 
-export {}
+export { }

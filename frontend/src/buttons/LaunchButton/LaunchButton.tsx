@@ -12,7 +12,6 @@ import { DialogApp } from '../../components/DialogApp'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import { Color, FontSize } from '../../styling'
-import { LAUNCH_TYPE } from '../../components/LaunchSelect/LaunchSelect'
 
 type Props = {
   connection?: IConnection
@@ -97,7 +96,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
       if (!isWindows()) {
         app.defaultTemplateCmd = isMac() ? app.launchDarwin.replace('[commandTemplate]', currentCommand) : app.launchUnix.replace('[commandTemplate]', currentCommand)
       }
-      app.launchType === LAUNCH_TYPE.URL ? window.open(currentCommand) : emit('launch/app',
+      app.launchType === 'URL' ? window.open(currentCommand) : emit('launch/app',
         { launchApp: { path }, app })
 
     }

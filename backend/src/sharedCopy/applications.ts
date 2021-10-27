@@ -15,8 +15,8 @@ export class Application {
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   publicTemplate: string = '[address]'
-  launchDarwin: string = `osascript -e 'tell application "Terminal" to activate' -e 'tell application "Terminal" to do script "[commandTemplate]" in window 1' `
-  launchUnix: string = 'gnome-terminal -- " [commandTemplate]; read line" '
+  launchDarwin: string = ` osascript  -e 'tell application "Terminal" to do script " [commandTemplate] " ' `
+  launchUnix: string = `gnome-terminal -- /bin/bash -c '[commandTemplate]; read' `
   defaultTemplateCmd: string = ''
   checkApplicationCmd: string = ''
   addressTemplate: string = '[host]:[port]'
