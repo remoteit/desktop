@@ -319,6 +319,8 @@ declare global {
   type IOrganizationMember = {
     user: IUserRef
     organizationId: string
+    license: ILicenseTypes
+    licensed: boolean // if the license is enabled
     role: IOrganizationRole
     created: Date
   }

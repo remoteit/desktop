@@ -12,7 +12,7 @@ export const LicensingNotice: React.FC<Props> = ({ device, fullWidth, ...props }
     if (device && state.auth.user?.id === device.owner.id) productId = lookupLicenseProductId(device)
     return selectLicense(state, { productId, license: props.license })
   })
-  console.log(!noticeType, '||', !license, '||', informed)
+
   if (!noticeType || !license || informed) return null
 
   return (

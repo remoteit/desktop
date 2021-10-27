@@ -355,7 +355,7 @@ export function selectLicenseIndicator(state: ApplicationState) {
   const { licenses } = selectLicenses(state)
   for (var license of licenses) {
     const { noticeType } = selectLicense(state, { license })
-    if (noticeType !== 'ACTIVE') indicators++
+    if (noticeType && noticeType !== 'ACTIVE') indicators++
   }
   return indicators
 }

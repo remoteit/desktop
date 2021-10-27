@@ -1,5 +1,4 @@
 import React from 'react'
-
 import { ListItem, Button, Tooltip, IconButton } from '@material-ui/core'
 import { Dispatch } from '../store'
 import { LicensingTitle } from './LicensingTitle'

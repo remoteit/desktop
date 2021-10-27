@@ -15,8 +15,7 @@ export function notify(event: ICloudEvent) {
   let onlineDeviceNotification
   if (typeof target?.device?.notificationSettings.desktopNotifications === 'boolean') {
     onlineDeviceNotification = !!target?.device?.notificationSettings.desktopNotifications
-  }
-  else {
+  } else {
     onlineDeviceNotification = !!event?.metadata?.desktopNotifications
   }
 
@@ -62,7 +61,7 @@ function connectNotification(event: ICloudEvent) {
   event.target.forEach(target => {
     createNotification({
       title: (event.authUserId === event.actor.id ? 'You ' : event.actor.email + ' ') + actions[event.state],
-      body: `To ${target.name}` + (event.isP2P ? '' : ' by proxy'),
+      body: event.state === 'disconnected' ? 'From ' : 'To ' + target.name + (event.isP2P ? '' : ' by proxy'),
       id: target.deviceId,
     })
   })

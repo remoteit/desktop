@@ -44,13 +44,16 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           select
           fullWidth
           SelectProps={{ open }}
-          size="small"
           label="Launch type"
           value={app.launchType}
           onChange={e => handleChange(e.target.value)}
         >
-          <MenuItem value="URL">URL</MenuItem>
-          <MenuItem value="COMMAND">Command</MenuItem>
+          <MenuItem dense value="URL">
+            URL
+          </MenuItem>
+          <MenuItem dense value="COMMAND">
+            Command
+          </MenuItem>
         </TextField>
       </ListItem>
       <ListItem dense>

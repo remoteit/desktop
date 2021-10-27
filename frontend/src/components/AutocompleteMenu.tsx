@@ -100,7 +100,6 @@ export const AutocompleteMenu: React.FC<Props> = ({
               inputProps={params.inputProps}
               className={css.textField}
               autoFocus
-              size="small"
               variant="filled"
               placeholder={placeholder}
             />

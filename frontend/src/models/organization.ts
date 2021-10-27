@@ -1,6 +1,8 @@
 import { createModel } from '@rematch/core'
 import { graphQLSetOrganization, graphQLRemoveOrganization, graphQLSetMembers } from '../services/graphQLMutation'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { getRemoteitLicense } from './licensing'
+import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 import { apiError } from '../helpers/apiHelper'
@@ -51,6 +53,8 @@ export default createModel<RootModel>()({
                   members {
                     created
                     role
+                    license
+                    licensed
                     user {
                       id
                       email
@@ -83,7 +87,6 @@ export default createModel<RootModel>()({
         name: org.name,
         created: new Date(org.created),
         members: [
-          createOwner(user),
           ...org.members.map(m => ({
             ...m,
             created: new Date(m.created),
@@ -94,9 +97,7 @@ export default createModel<RootModel>()({
     },
 
     async setOrganization(name: string, state) {
-      const user = state.auth.user
       let members = state.organization.members
-      if (!members.length && user) members.push(createOwner(user))
       dispatch.organization.set({ name: name, id: state.auth.user?.id, members })
       const result = await graphQLSetOrganization(name)
       if (result === 'ERROR') {
@@ -167,14 +168,20 @@ export default createModel<RootModel>()({
   },
 })
 
-function createOwner(user: IUser): IOrganizationMember {
-  return {
-    created: new Date(user?.created || ''),
-    role: 'OWNER',
-    organizationId: user?.id,
-    user: {
-      id: user?.id,
-      email: user?.email,
-    },
-  }
+export function selectOwner(state: ApplicationState): IOrganizationMember | undefined {
+  const user = state.auth.user
+  const license = getRemoteitLicense(state)
+  return (
+    user && {
+      created: new Date(user.created || ''),
+      role: 'OWNER',
+      license: license?.plan.commercial ? 'LICENSED' : 'UNLICENSED',
+      licensed: !!license?.valid,
+      organizationId: user.id,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    }
+  )
 }

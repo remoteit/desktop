@@ -6,9 +6,9 @@ import { IOrganizationState } from '../models/organization'
 import { OrganizationMember } from '../components/OrganizationMember'
 import { OrganizationEmpty } from '../components/OrganizationEmpty'
 
-type Props = { organization: IOrganizationState }
+type Props = { organization: IOrganizationState; owner: IOrganizationMember }
 
-export const OrganizationMemberList: React.FC<Props> = ({ organization }) => {
+export const OrganizationMemberList: React.FC<Props> = ({ organization, owner }) => {
   const [removing, setRemoving] = useState<string>()
 
   useEffect(() => {
@@ -17,6 +17,7 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization }) => {
 
   return organization.id ? (
     <List>
+      <OrganizationMember key={owner.user.id} member={owner} />
       {organization.members.map(member => (
         <OrganizationMember
           key={member.user.id}

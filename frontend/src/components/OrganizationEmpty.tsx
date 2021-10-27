@@ -33,7 +33,6 @@ export const OrganizationEmpty: React.FC = () => {
           <TextField
             autoFocus
             label="Name"
-            size="small"
             variant="filled"
             value={create}
             placeholder={create}

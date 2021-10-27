@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
+import { selectOwner } from '../models/organization'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -14,7 +15,10 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationPage: React.FC = () => {
-  const organization = useSelector((state: ApplicationState) => state.organization)
+  const { organization, owner } = useSelector((state: ApplicationState) => ({
+    organization: state.organization,
+    owner: selectOwner(state),
+  }))
   const [removing, setRemoving] = React.useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
 
@@ -68,7 +72,11 @@ export const OrganizationPage: React.FC = () => {
         </>
       }
     >
-      {!organization.initialized ? <LoadingMessage /> : <OrganizationMemberList organization={organization} />}
+      {!organization.initialized ? (
+        <LoadingMessage />
+      ) : (
+        <OrganizationMemberList organization={organization} owner={owner} />
+      )}
     </Container>
   )
 }

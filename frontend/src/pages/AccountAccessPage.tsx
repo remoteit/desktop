@@ -2,14 +2,15 @@ import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
 import { Typography, List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { useSelector } from 'react-redux'
-import { InitiatorPlatform } from '../components/InitiatorPlatform'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
+import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
+import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountAccessPage: React.FC = () => {
@@ -39,7 +40,7 @@ export const AccountAccessPage: React.FC = () => {
           {members.map(member => (
             <ListItem key={member.organizationId}>
               <ListItemIcon>
-                <InitiatorPlatform user />
+                <Avatar email={member.user.email} size={spacing.lg} />
               </ListItemIcon>
               <ListItemText
                 primary={member.user.email}

@@ -173,7 +173,10 @@ const jssTheme: ThemeOptions = {
         // '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
         '&:hover': { backgroundColor: colors.primaryHighlight },
       },
-      secondaryAction: { paddingRight: 60 },
+      secondaryAction: {
+        paddingRight: 60,
+        '& .MuiFormControl-root': { verticalAlign: 'middle' },
+      },
       container: {
         '& .MuiListItemSecondaryAction-root': {},
         '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
@@ -184,6 +187,7 @@ const jssTheme: ThemeOptions = {
         },
       },
       dense: {
+        '& .MuiInputBase-root': { fontSize: fontSizes.base },
         // paddingTop: '2px !important',
         // paddingBottom: '2px !important',
       },
@@ -231,6 +235,9 @@ const jssTheme: ThemeOptions = {
         '&:before, &:after': { display: 'none' },
       },
     },
+    MuiInputBase: {
+      input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
+    },
     MuiInputLabel: {
       shrink: {
         fontSize: fontSizes.sm,
@@ -242,7 +249,19 @@ const jssTheme: ThemeOptions = {
     },
     MuiTextField: {
       root: {
+        marginTop: spacing.xxs,
+        marginBottom: spacing.xxs,
         '& label + .MuiInput-formControl': { marginTop: 9 },
+        '& .MuiInput-marginDense': {
+          height: 20,
+          borderRadius: 10,
+          fontSize: fontSizes.xxs,
+          paddingLeft: spacing.xs,
+          paddingRight: spacing.xs,
+          backgroundColor: colors.grayLightest,
+          '&:hover': { backgroundColor: colors.primaryHighlight },
+          '& .MuiSelect-icon': { fontSize: '1.2rem' },
+        },
       },
     },
     MuiFilledInput: {

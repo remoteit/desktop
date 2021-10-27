@@ -37,7 +37,6 @@ export const ShareFeedback: React.FC<{}> = () => {
           multiline
           fullWidth
           label="Message"
-          size="small"
           variant="filled"
           className={css.input}
           onChange={e => setText(e.target.value)}

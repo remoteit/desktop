@@ -80,7 +80,6 @@ export const NotificationMode: React.FC = () => {
             placeholder="Webhook Endpoint"
             required
             variant="filled"
-            size="small"
             error={error}
             fullWidth
             helperText={error ? 'Please provide a valid URL' : undefined}
