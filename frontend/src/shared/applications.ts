@@ -25,7 +25,7 @@ export class Application {
   defaultTemplateCmd: string = ''
   checkApplicationCmd: string = ''
   addressTemplate: string = '[host]:[port]'
-  defaultLaunchType: 'URL' | 'COMMAND' = 'URL'
+  defaultLaunchType: LAUNCH_TYPE = LAUNCH_TYPE.URL
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
   defaultAppTokens: string[] = ['host', 'port', 'id']

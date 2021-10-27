@@ -12,6 +12,7 @@ import { Gutters } from './Gutters'
 import { colors, spacing } from '../styling'
 import { CommandButton } from '../buttons/CommandButton'
 import { CopyButton } from '../buttons/CopyButton'
+import { LAUNCH_TYPE } from '../shared/applications'
 
 type Props = {
   connection?: IConnection
@@ -32,7 +33,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const app = useApplication('copy', service, connection)
   const css = useStyles()
 
-  app.context = app.launchType === 'URL' ? 'launch' : 'copy' //@FIXME = this should be set in the app model automatically
+  app.context = app.launchType === LAUNCH_TYPE.URL ? 'launch' : 'copy' //@FIXME = this should be set in the app model automatically
 
   const measure = () => {
     const height = Math.max(
