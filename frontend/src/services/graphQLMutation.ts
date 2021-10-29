@@ -70,10 +70,10 @@ export async function graphQLRemoveOrganization() {
 
 export async function graphQLSetMembers(email: string[], role: IOrganizationRole, license?: ILicenseTypes) {
   return await graphQLBasicRequest(
-    ` mutation query($email: [String!]!, $role: OrganizationRole, $licensed: Boolean) {
-        setMember(email: $email, role: $role, licensed: $licensed)
+    ` mutation query($email: [String!]!, $role: OrganizationRole, $license: LicenseOption) {
+        setMember(email: $email, role: $role, license: $license)
       }`,
-    { email, role, licensed: license === 'LICENSED' }
+    { email, role, license }
   )
 }
 

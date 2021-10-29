@@ -2,7 +2,7 @@ import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { makeStyles, TextField, MenuItem } from '@material-ui/core'
-import { spacing, colors } from '../styling'
+import { colors } from '../styling'
 
 type Props = { member: IOrganizationMember; disabled?: boolean; removing?: boolean; onClick?: () => void }
 
@@ -12,7 +12,6 @@ export const LicenseSelect: React.FC<Props> = ({ member, disabled, removing, onC
 
   const handleSelect = (license: ILicenseTypes) => {
     dispatch.organization.setMembers([{ ...member, license }])
-    alert(license)
   }
 
   return (
@@ -24,7 +23,7 @@ export const LicenseSelect: React.FC<Props> = ({ member, disabled, removing, onC
       value={member.license}
       variant="filled"
       className={member.license === 'LICENSED' ? css.licensed : undefined}
-      onChange={e => handleSelect(e.target.value)}
+      onChange={e => handleSelect(e.target.value as ILicenseTypes)}
     >
       <MenuItem dense value="LICENSED">
         Licensed
