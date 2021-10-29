@@ -38,15 +38,13 @@ export function useNavigation(): INavigationHook {
     remoteUI: isRemoteUI(state),
   }))
   const [shouldUpdate, setShouldUpdate] = useState<boolean>(true)
-  const [navigationPath, setNavigationPath] = useState({})
 
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
 
   useEffect(() => {
     if (navigation[menu] !== location.pathname) {
-      ui.set({ ...navigationPath, navigation: { ...navigation, [menu]: location.pathname } })
-      setNavigationPath({})
+      ui.set({ navigation: { ...navigation, [menu]: location.pathname } })
     }
   }, [navigation, location, menu])
 
@@ -57,11 +55,7 @@ export function useNavigation(): INavigationHook {
       shouldUpdate &&
       navigationBack.slice(-1)[0] !== location.pathname
     ) {
-      setNavigationPath({
-        ...navigationPath,
-        navigationBack: navigationBack.concat([location?.pathname]),
-        navigationForward: [],
-      })
+      ui.set({ navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] })
     }
   }, [location?.pathname])
 
@@ -69,8 +63,7 @@ export function useNavigation(): INavigationHook {
     setShouldUpdate(false)
     const lengthBack = navigationBack?.length
     await history.push(navigationBack[lengthBack - 2])
-    setNavigationPath({
-      ...navigationPath,
+    ui.set({
       navigationBack: navigationBack.slice(0, lengthBack - 1),
       navigationForward: navigationBack.slice(-1).concat(navigationForward),
     })
