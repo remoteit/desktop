@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { getFreeLicenses } from '../models/licensing'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, Button, List } from '@material-ui/core'
@@ -17,10 +18,12 @@ export const OrganizationAddPage = () => {
     members,
     contacts = [],
     organization,
+    freeLicenses,
   } = useSelector((state: ApplicationState) => ({
     members: state.organization.members,
     contacts: state.devices.contacts,
     organization: state.organization,
+    freeLicenses: getFreeLicenses(state),
   }))
 
   const [emails, setEmails] = React.useState<string[]>([])
@@ -39,6 +42,7 @@ export const OrganizationAddPage = () => {
       emails.map(email => ({
         role,
         created: new Date(),
+        license: freeLicenses ? 'LICENSED' : 'UNLICENSED',
         organizationId: organization.id || '',
         user: { email, id: '' },
       }))

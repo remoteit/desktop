@@ -279,6 +279,12 @@ export function getLicenses(state: ApplicationState) {
   return licenses
 }
 
+export function getFreeLicenses(state: ApplicationState) {
+  const purchased = getRemoteitLicense(state)?.quantity || 0
+  const used = 1 + state.organization.members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
+  return Math.max(purchased - used, 0)
+}
+
 export function getLimits(state: ApplicationState) {
   if (state.licensing.tests.limit) return state.licensing.tests.limits
   else return state.licensing.limits

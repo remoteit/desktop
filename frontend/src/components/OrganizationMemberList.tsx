@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
-import { getRemoteitLicense } from '../models/licensing'
+import { getFreeLicenses } from '../models/licensing'
 import { IOrganizationState } from '../models/organization'
 import { OrganizationMember } from '../components/OrganizationMember'
 import { OrganizationEmpty } from '../components/OrganizationEmpty'
@@ -12,10 +12,7 @@ type Props = { organization: IOrganizationState; owner?: IOrganizationMember }
 export const OrganizationMemberList: React.FC<Props> = ({ organization, owner }) => {
   const [removing, setRemoving] = useState<string>()
 
-  const licensesPurchased = useSelector((state: ApplicationState) => getRemoteitLicense(state)?.quantity) || 0
-  const licensesUsed =
-    1 + organization.members.reduce((sum, member) => sum + (member.license === 'LICENSED' ? 1 : 0), 0)
-  const licenses = Math.max(licensesPurchased - licensesUsed, 0)
+  const licenses = useSelector((state: ApplicationState) => getFreeLicenses(state))
 
   useEffect(() => {
     setRemoving(undefined)
@@ -23,19 +20,24 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization, owner })
 
   return organization.id ? (
     <List>
-      {licensesPurchased}-{licensesUsed} = {licenses}
-      {owner && <OrganizationMember key={owner.user.id} member={owner} disabled />}
-      {organization.members.map(member => (
+      {owner && <OrganizationMember key={owner.user.id} member={owner} freeLicenses={false} />}
+      {organization.members.sort(alphaEmailSort).map(member => (
         <OrganizationMember
           key={member.user.id}
           member={member}
           removing={removing === member.user.id}
           onClick={() => setRemoving(member.user.id)}
-          disabled={!licenses && member.license !== 'LICENSED'}
+          freeLicenses={!!licenses || member.license === 'LICENSED'}
         />
       ))}
     </List>
   ) : (
     <OrganizationEmpty />
   )
+}
+
+function alphaEmailSort(a, b) {
+  const aa = a.user.email.toLowerCase()
+  const bb = b.user.email.toLowerCase()
+  return aa > bb ? 1 : aa < bb ? -1 : 0
 }

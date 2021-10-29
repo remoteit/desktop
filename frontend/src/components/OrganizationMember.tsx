@@ -1,17 +1,17 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { makeStyles, Chip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
+import { makeStyles, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from './LicenseSelect'
+import { RoleSelect } from './RoleSelect'
 import { Duration } from './Duration'
 import { Avatar } from './Avatar'
 import { spacing } from '../styling'
-import { ROLE } from '../models/organization'
 
-type Props = { member: IOrganizationMember; disabled?: boolean; removing?: boolean; onClick?: () => void }
+type Props = { member: IOrganizationMember; freeLicenses?: boolean; removing?: boolean; onClick?: () => void }
 
-export const OrganizationMember: React.FC<Props> = ({ member, disabled, removing, onClick }) => {
+export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, removing, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
   return (
@@ -28,9 +28,9 @@ export const OrganizationMember: React.FC<Props> = ({ member, disabled, removing
         }
       />
       <ListItemSecondaryAction>
-        <LicenseSelect member={member} disabled={disabled} />
+        <LicenseSelect member={member} disabled={!freeLicenses} />
         <span className={css.fixedWidth}>
-          <Chip label={ROLE[member.role]} size="small" />
+          <RoleSelect member={member} />
         </span>
         <ConfirmButton
           confirm
@@ -54,8 +54,9 @@ export const OrganizationMember: React.FC<Props> = ({ member, disabled, removing
 
 const useStyles = makeStyles({
   fixedWidth: {
-    width: '100px',
-    marginLeft: spacing.lg,
+    width: '120px',
+    marginRight: spacing.md,
     display: 'inline-block',
+    textAlign: 'right',
   },
 })

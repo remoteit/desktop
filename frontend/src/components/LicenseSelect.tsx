@@ -4,9 +4,9 @@ import { useDispatch } from 'react-redux'
 import { makeStyles, TextField, MenuItem } from '@material-ui/core'
 import { colors } from '../styling'
 
-type Props = { member: IOrganizationMember; disabled?: boolean; removing?: boolean; onClick?: () => void }
+type Props = { member: IOrganizationMember; disabled?: boolean }
 
-export const LicenseSelect: React.FC<Props> = ({ member, disabled, removing, onClick }) => {
+export const LicenseSelect: React.FC<Props> = ({ member, disabled }) => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 

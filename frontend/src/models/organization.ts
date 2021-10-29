@@ -175,7 +175,6 @@ export function selectOwner(state: ApplicationState): IOrganizationMember | unde
       created: new Date(user.created || ''),
       role: 'OWNER',
       license: license?.plan.commercial ? 'LICENSED' : 'UNLICENSED',
-      licensed: !!license?.valid,
       organizationId: user.id,
       user: {
         id: user.id,
