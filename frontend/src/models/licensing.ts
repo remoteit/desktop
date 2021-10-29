@@ -1,6 +1,7 @@
 import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
+import { AxiosResponse } from 'axios'
 import { ApplicationState } from '../store'
 import {
   graphQLSubscribe,
@@ -65,7 +66,7 @@ const defaultState: ILicensing = {
 
 export default createModel<RootModel>()({
   state: defaultState,
-  effects: (dispatch: any) => ({
+  effects: dispatch => ({
     async init() {
       await dispatch.licensing.fetch()
       dispatch.licensing.set({ initialized: true })
@@ -159,14 +160,15 @@ export default createModel<RootModel>()({
             }`
         )
         graphQLGetErrors(result)
-        dispatch.licensing.parse(result?.data?.data)
+        dispatch.licensing.parse(result)
       } catch (error) {
         await apiError(error)
       }
     },
 
-    async parse(data: any) {
-      if (!data) return
+    async parse(gqlResponse: AxiosResponse<any> | void, state) {
+      if (!gqlResponse) return
+      const data = gqlResponse?.data?.data
       console.log('LICENSING', data)
       dispatch.licensing.set({
         plans: data.plans,
@@ -192,6 +194,7 @@ export default createModel<RootModel>()({
       if (!priceId) return dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
       dispatch.licensing.set({ purchasing: 'true' })
       await graphQLUpdateSubscription({ priceId, quantity })
+      await dispatch.organization.fetch()
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity })
     },
 
@@ -220,7 +223,15 @@ export default createModel<RootModel>()({
     },
 
     async testServiceLicensing(_, globalState) {
-      const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']
+      const states: ILicenseTypes[] = [
+        'UNKNOWN',
+        'EVALUATION',
+        'LICENSED',
+        'UNLICENSED',
+        'NON_COMMERCIAL',
+        'EXEMPT',
+        'LEGACY',
+      ]
       const devices = getDevices(globalState)
       const updated = devices.map((device, index) => ({
         ...device,

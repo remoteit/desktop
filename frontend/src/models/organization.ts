@@ -119,11 +119,12 @@ export default createModel<RootModel>()({
       const action = updated.length > state.organization.members.length ? 'added' : 'updated'
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
-        members[0].role
+        members[0].role,
+        members[0].license
       )
       if (result === 'ERROR') {
         dispatch.organization.fetch()
-      } else {
+      } else if (action === 'added') {
         dispatch.ui.set({
           successMessage:
             members.length > 1
