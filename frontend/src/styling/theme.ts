@@ -192,7 +192,13 @@ const jssTheme: ThemeOptions = {
         // paddingBottom: '2px !important',
       },
     },
-    MuiListItemSecondaryAction: { root: { right: gutters, zIndex: 2 } },
+    MuiListItemSecondaryAction: {
+      root: {
+        right: gutters,
+        zIndex: 2,
+        '& .MuiTextField-root': { verticalAlign: 'middle' },
+      },
+    },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 60, color: colors.grayDark } },
     MuiListItemText: {
       root: { zIndex: 1 },
@@ -252,15 +258,13 @@ const jssTheme: ThemeOptions = {
         marginTop: spacing.xxs,
         marginBottom: spacing.xxs,
         '& label + .MuiInput-formControl': { marginTop: 9 },
-        '& .MuiInput-marginDense': {
+        '& .MuiInputBase-marginDense': {
           height: 20,
           borderRadius: 10,
           fontSize: fontSizes.xxs,
-          paddingLeft: spacing.xs,
-          paddingRight: spacing.xs,
-          backgroundColor: colors.grayLightest,
-          '&:hover': { backgroundColor: colors.primaryHighlight },
-          '& .MuiSelect-icon': { fontSize: '1.2rem' },
+          '&:hover:not(.Mui-disabled)': { backgroundColor: colors.primaryHighlight },
+          '& .Mui-disabled': { paddingRight: spacing.sm },
+          '& .MuiSelect-icon': { fontSize: '1.2rem', marginTop: spacing.xxs },
         },
       },
     },

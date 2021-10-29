@@ -1,18 +1,19 @@
 import React from 'react'
 import { Dispatch } from '../store'
-import { Chip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import { TextField, MenuItem } from '@material-ui/core'
+import { makeStyles, Chip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { ConfirmButton } from '../buttons/ConfirmButton'
+import { LicenseSelect } from './LicenseSelect'
 import { Duration } from './Duration'
 import { Avatar } from './Avatar'
 import { spacing } from '../styling'
 import { ROLE } from '../models/organization'
 
-type Props = { member: IOrganizationMember; removing?: boolean; onClick?: () => void }
+type Props = { member: IOrganizationMember; disabled?: boolean; removing?: boolean; onClick?: () => void }
 
-export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick }) => {
+export const OrganizationMember: React.FC<Props> = ({ member, disabled, removing, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
+  const css = useStyles()
   return (
     <ListItem key={member.user.email} dense>
       <ListItemIcon>
@@ -27,16 +28,10 @@ export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick 
         }
       />
       <ListItemSecondaryAction>
-        <TextField select size="small" value={member.license} onChange={e => console.log(e.target.value)}>
-          <MenuItem dense value="LICENSED">
-            Licensed
-          </MenuItem>
-          <MenuItem dense value="UNLICENSED">
-            Unlicensed
-          </MenuItem>
-        </TextField>
-        {/* <Chip label={member.license} size="small" /> */}
-        <Chip label={ROLE[member.role]} size="small" />
+        <LicenseSelect member={member} disabled={disabled} />
+        <span className={css.fixedWidth}>
+          <Chip label={ROLE[member.role]} size="small" />
+        </span>
         <ConfirmButton
           confirm
           confirmMessage="This will remove all access to this organization’s devices."
@@ -57,5 +52,10 @@ export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick 
   )
 }
 
-// class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
-// class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+const useStyles = makeStyles({
+  fixedWidth: {
+    width: '100px',
+    marginLeft: spacing.lg,
+    display: 'inline-block',
+  },
+})

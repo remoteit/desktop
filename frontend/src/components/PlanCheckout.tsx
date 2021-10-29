@@ -121,9 +121,8 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
                 <Icon name="minus" size="sm" />
               </Button>
               <TextField
-                size="small"
-                value={form.quantity}
                 hiddenLabel
+                value={form.quantity}
                 color="primary"
                 onChange={e => setQuantity(e.target.value)}
                 className={css.quantity}
@@ -202,7 +201,7 @@ const useStyles = makeStyles({
   quantity: {
     maxWidth: 60,
     '& .MuiInputBase-input': {
-      height: spacing.md,
+      height: spacing.sm,
       fontSize: fontSizes.base,
       fontWeight: 500,
       padding: spacing.xs,

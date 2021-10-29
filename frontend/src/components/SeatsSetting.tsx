@@ -1,12 +1,10 @@
 import React from 'react'
-import { PERSONAL_PLAN_ID } from '../models/licensing'
+import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID, getRemoteitLicense } from '../models/licensing'
 import { makeStyles, List, TextField, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes, colors } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
-import { getRemoteitLicense } from '../models/licensing'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { REMOTEIT_PRODUCT_ID } from '../models/licensing'
 import { InlineSetting } from './InlineSetting'
 import { Confirm } from './Confirm'
 import { Icon } from './Icon'
@@ -62,7 +60,6 @@ export const SeatsSetting: React.FC = () => {
               <Icon name="minus" size="sm" />
             </Button>
             <TextField
-              size="small"
               value={form.quantity}
               inputRef={fieldRef}
               hiddenLabel
@@ -133,7 +130,7 @@ const useStyles = makeStyles({
       fontSize: fontSizes.base,
       fontWeight: 500,
       textAlign: 'center',
-      marginTop: spacing.xxs,
+      marginTop: 0,
     },
   },
 })

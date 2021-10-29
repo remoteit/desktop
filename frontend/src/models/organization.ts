@@ -54,7 +54,6 @@ export default createModel<RootModel>()({
                     created
                     role
                     license
-                    licensed
                     user {
                       id
                       email
