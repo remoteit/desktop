@@ -19,7 +19,7 @@ export const LicensingServiceNotice: React.FC<Props> = props => {
   } = useSelector((state: ApplicationState) => {
     let productId = props.license?.plan.product.id
     if (props.device && state.auth.user?.id === props.device.owner.id) productId = lookupLicenseProductId(props.device)
-    return selectLicense(state, productId)
+    return selectLicense(state, { productId })
   })
 
   if (!license) return null

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
 import { colors, spacing, fontSizes } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
@@ -17,7 +17,7 @@ type Props = {
   disabled?: boolean
   resetValue?: string | number
   hideIcon?: boolean
-  fieldRef: React.RefObject<HTMLInputElement>
+  fieldRef?: React.RefObject<HTMLInputElement>
   debug?: boolean
   warning?: string
   onSubmit: () => void
@@ -26,8 +26,6 @@ type Props = {
   onShowEdit: () => void
   onDelete?: () => void
 }
-
-let canceled = false
 
 export const InlineSetting: React.FC<Props> = ({
   label,
@@ -50,6 +48,7 @@ export const InlineSetting: React.FC<Props> = ({
 }) => {
   const css = useStyles()
   const [edit, setEdit] = useState<boolean>(false)
+  const canceled = useRef<boolean>(false)
 
   function triggerEdit() {
     setEdit(true)
@@ -57,7 +56,7 @@ export const InlineSetting: React.FC<Props> = ({
   }
 
   function cancelBlur() {
-    canceled = true
+    canceled.current = true
   }
 
   useEffect(() => {
@@ -65,8 +64,8 @@ export const InlineSetting: React.FC<Props> = ({
     if (edit) {
       fieldRef.current.focus()
       fieldRef.current.onblur = () => {
-        if (!canceled && !debug) setTimeout(() => setEdit(false), 200)
-        canceled = false
+        if (!canceled.current && !debug) setTimeout(() => setEdit(false), 200)
+        canceled.current = false
       }
     }
   }, [edit])
@@ -94,12 +93,20 @@ export const InlineSetting: React.FC<Props> = ({
               onMouseDown={cancelBlur}
               onClick={() => {
                 onResetClick()
-                fieldRef.current?.focus()
+                fieldRef?.current?.focus()
               }}
             />
           )}
-          <IconButton title="Cancel" icon="times" size="md" onClick={onCancel} />
-          <IconButton title="Purchase" icon="check" color="primary" size="md" onMouseDown={cancelBlur} submit />
+          <IconButton
+            title="Cancel"
+            icon="times"
+            size="md"
+            onClick={() => {
+              !fieldRef && setEdit(false)
+              onCancel()
+            }}
+          />
+          <IconButton title="Save" icon="check" color="primary" size="md" onMouseDown={cancelBlur} submit />
         </ListItemSecondaryAction>
       </form>
     </ListItem>
@@ -135,11 +142,8 @@ const useStyles = makeStyles({
     width: '100%',
     marginRight: 120,
     alignItems: 'center',
-    '& .MuiFormControl-root': { flexGrow: 1, margin: `0 ${spacing.md}px -1px ${spacing.sm}px` },
-    '& .MuiFilledInput-input': { paddingTop: 22, paddingBottom: 10, fontSize: 14 },
+    '& .MuiFilledInput-input': { paddingTop: 21, paddingBottom: 10, fontSize: 14 },
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
-    '& .MuiTextField-root': { marginLeft: -12 },
-    '& .MuiInput-root': { marginRight: spacing.sm, padding: '3px 0 2px', fontSize: 14 },
     '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },
     '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
     '& .MuiListItemSecondaryAction-root': { right: spacing.sm },

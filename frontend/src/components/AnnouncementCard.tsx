@@ -68,7 +68,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
       </CardContent>
       {data.link && (
         <CardActions>
-          <Button color={unread ? 'primary' : undefined} href={data.link} size="small" target="_blank">
+          <Button color="primary" href={data.link} size="small" target="_blank">
             Learn more
           </Button>
         </CardActions>

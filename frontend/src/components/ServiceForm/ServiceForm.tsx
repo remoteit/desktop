@@ -107,7 +107,6 @@ export const ServiceForm: React.FC<Props> = ({
           <ListItem className={css.field}>
             <TextField
               select
-              size="small"
               label="Service Type"
               value={form.type}
               disabled={disabled}
@@ -145,7 +144,6 @@ export const ServiceForm: React.FC<Props> = ({
         )}
         <ListItem className={css.field}>
           <TextField
-            size="small"
             label="Service Name"
             value={form.name}
             disabled={disabled}
@@ -164,7 +162,6 @@ export const ServiceForm: React.FC<Props> = ({
           <>
             <ListItem className={css.field}>
               <TextField
-                size="small"
                 label="Service Port"
                 value={form.port || ''}
                 disabled={disabled}
@@ -177,7 +174,6 @@ export const ServiceForm: React.FC<Props> = ({
             </ListItem>
             <ListItem className={css.field}>
               <TextField
-                size="small"
                 label="Service Host Address"
                 value={form.hostname}
                 disabled={disabled}
@@ -246,7 +242,6 @@ export const ServiceForm: React.FC<Props> = ({
           <List>
             <ListItem className={css.field}>
               <TextField
-                size="small"
                 label="Default Connection Port"
                 value={form.attributes.defaultPort || ''}
                 disabled={disabled}

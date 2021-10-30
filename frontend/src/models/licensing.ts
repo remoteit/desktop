@@ -1,6 +1,7 @@
 import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
+import { AxiosResponse } from 'axios'
 import { ApplicationState } from '../store'
 import {
   graphQLSubscribe,
@@ -65,7 +66,7 @@ const defaultState: ILicensing = {
 
 export default createModel<RootModel>()({
   state: defaultState,
-  effects: (dispatch: any) => ({
+  effects: dispatch => ({
     async init() {
       await dispatch.licensing.fetch()
       dispatch.licensing.set({ initialized: true })
@@ -75,13 +76,6 @@ export default createModel<RootModel>()({
       const license = getRemoteitLicense(globalState)
       const last = license?.subscription?.card?.last
       const planId = license?.plan.id
-
-      console.log('INIT LICENSING', {
-        last,
-        lastStored: localStorage.getItem('licencing.updating'),
-        planId,
-        planIdStored: localStorage.getItem('licencing.purchasing'),
-      })
 
       dispatch.licensing.set({
         purchasing: localStorage.getItem('licencing.purchasing') !== planId ? planId : undefined,
@@ -166,14 +160,15 @@ export default createModel<RootModel>()({
             }`
         )
         graphQLGetErrors(result)
-        dispatch.licensing.parse(result?.data?.data)
+        dispatch.licensing.parse(result)
       } catch (error) {
         await apiError(error)
       }
     },
 
-    async parse(data: any) {
-      if (!data) return
+    async parse(gqlResponse: AxiosResponse<any> | void, state) {
+      if (!gqlResponse) return
+      const data = gqlResponse?.data?.data
       console.log('LICENSING', data)
       dispatch.licensing.set({
         plans: data.plans,
@@ -199,6 +194,7 @@ export default createModel<RootModel>()({
       if (!priceId) return dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
       dispatch.licensing.set({ purchasing: 'true' })
       await graphQLUpdateSubscription({ priceId, quantity })
+      await dispatch.organization.fetch()
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity })
     },
 
@@ -227,7 +223,15 @@ export default createModel<RootModel>()({
     },
 
     async testServiceLicensing(_, globalState) {
-      const states = ['UNKNOWN', 'EVALUATION', 'LICENSED', 'UNLICENSED', 'NON_COMMERCIAL', 'LEGACY']
+      const states: ILicenseTypes[] = [
+        'UNKNOWN',
+        'EVALUATION',
+        'LICENSED',
+        'UNLICENSED',
+        'NON_COMMERCIAL',
+        'EXEMPT',
+        'LEGACY',
+      ]
       const devices = getDevices(globalState)
       const updated = devices.map((device, index) => ({
         ...device,
@@ -286,6 +290,12 @@ export function getLicenses(state: ApplicationState) {
   return licenses
 }
 
+export function getFreeLicenses(state: ApplicationState) {
+  const purchased = getRemoteitLicense(state)?.quantity || 0
+  const used = 1 + state.organization.members.reduce((sum, m) => sum + (m.license === 'LICENSED' ? 1 : 0), 0)
+  return Math.max(purchased - used, 0)
+}
+
 export function getLimits(state: ApplicationState) {
   if (state.licensing.tests.limit) return state.licensing.tests.limits
   else return state.licensing.limits
@@ -293,6 +303,10 @@ export function getLimits(state: ApplicationState) {
 
 export function getLimit(name: string, state: ApplicationState) {
   return getLimits(state).find(limit => limit.name === name)?.value
+}
+
+export function getInformed(state: ApplicationState) {
+  return state.licensing.tests.limit ? false : state.licensing.informed
 }
 
 export function lookupLicenseManagePath(productId?: string) {
@@ -307,18 +321,20 @@ export function lookupLicenseProductId(device?: IDevice) {
   return lookup.productId
 }
 
-export function selectLicense(state: ApplicationState, productId?: string) {
-  const license = getLicenses(state).find(l => l.plan.product.id === productId)
+export function selectLicense(
+  state: ApplicationState,
+  { productId, license }: { productId?: string; license?: ILicense }
+) {
+  license = license || getLicenses(state).find(l => l.plan.product.id === productId)
   const limits = getLimits(state)
-  const informed = state.licensing.informed
+  const informed = getInformed(state)
 
   const serviceLimit = limits.find(l => l.name === 'aws-services')
   const evaluationLimit = limits.find(l => l.name === 'aws-evaluation')
   const managePath = lookupLicenseManagePath(productId)
 
   if (!license) return {}
-
-  let noticeType
+  let noticeType: string = license.subscription?.status || ''
   let warnDate = new Date()
   warnDate.setDate(warnDate.getDate() + 3) // warn 3 days in advance
 
@@ -350,13 +366,13 @@ export function selectLicenses(state: ApplicationState) {
 }
 
 export function selectLicenseIndicator(state: ApplicationState) {
-  const { informed } = state.licensing
+  const informed = getInformed(state)
   if (informed) return 0
   let indicators = 0
   const { licenses } = selectLicenses(state)
   for (var license of licenses) {
-    const { noticeType } = selectLicense(state, license?.plan.product.id)
-    if (noticeType) indicators++
+    const { noticeType } = selectLicense(state, { license })
+    if (noticeType && noticeType !== 'ACTIVE') indicators++
   }
   return indicators
 }

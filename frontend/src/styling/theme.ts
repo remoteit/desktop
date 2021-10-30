@@ -173,7 +173,10 @@ const jssTheme: ThemeOptions = {
         // '&:hover, &:focus': { backgroundColor: colors.primaryHighlight },
         '&:hover': { backgroundColor: colors.primaryHighlight },
       },
-      secondaryAction: { paddingRight: 60 },
+      secondaryAction: {
+        paddingRight: 60,
+        '& .MuiFormControl-root': { verticalAlign: 'middle' },
+      },
       container: {
         '& .MuiListItemSecondaryAction-root': {},
         '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
@@ -184,11 +187,18 @@ const jssTheme: ThemeOptions = {
         },
       },
       dense: {
+        '& .MuiInputBase-root': { fontSize: fontSizes.base },
         // paddingTop: '2px !important',
         // paddingBottom: '2px !important',
       },
     },
-    MuiListItemSecondaryAction: { root: { right: gutters, zIndex: 2 } },
+    MuiListItemSecondaryAction: {
+      root: {
+        right: gutters,
+        zIndex: 2,
+        '& .MuiTextField-root': { verticalAlign: 'middle' },
+      },
+    },
     MuiListItemIcon: { root: { justifyContent: 'center', minWidth: 60, color: colors.grayDark } },
     MuiListItemText: {
       root: { zIndex: 1 },
@@ -231,6 +241,9 @@ const jssTheme: ThemeOptions = {
         '&:before, &:after': { display: 'none' },
       },
     },
+    MuiInputBase: {
+      input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
+    },
     MuiInputLabel: {
       shrink: {
         fontSize: fontSizes.sm,
@@ -242,7 +255,17 @@ const jssTheme: ThemeOptions = {
     },
     MuiTextField: {
       root: {
+        marginTop: spacing.xxs,
+        marginBottom: spacing.xxs,
         '& label + .MuiInput-formControl': { marginTop: 9 },
+        '& .MuiInputBase-marginDense': {
+          height: 20,
+          borderRadius: 10,
+          fontSize: fontSizes.xxs,
+          '&:hover:not(.Mui-disabled)': { backgroundColor: colors.primaryHighlight },
+          '& .Mui-disabled': { paddingRight: spacing.sm },
+          '& .MuiSelect-icon': { fontSize: '1.2rem', marginTop: spacing.xxs },
+        },
       },
     },
     MuiFilledInput: {

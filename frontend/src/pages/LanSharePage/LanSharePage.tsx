@@ -146,7 +146,6 @@ export const LanSharePage: React.FC = () => {
             <br />
             <TextField
               select
-              size="small"
               className={css.textField}
               variant="filled"
               label="Local Network Security"

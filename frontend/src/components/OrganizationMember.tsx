@@ -1,20 +1,23 @@
 import React from 'react'
 import { Dispatch } from '../store'
-import { Chip, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import { IconButton } from '../buttons/IconButton'
+import { makeStyles, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
+import { ConfirmButton } from '../buttons/ConfirmButton'
+import { LicenseSelect } from './LicenseSelect'
+import { RoleSelect } from './RoleSelect'
 import { Duration } from './Duration'
-import { Icon } from './Icon'
-import { ROLE } from '../models/organization'
+import { Avatar } from './Avatar'
+import { spacing } from '../styling'
 
-type Props = { member: IOrganizationMember; removing?: boolean; onClick: () => void }
+type Props = { member: IOrganizationMember; freeLicenses?: boolean; removing?: boolean; onClick?: () => void }
 
-export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick }) => {
+export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, removing, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
+  const css = useStyles()
   return (
     <ListItem key={member.user.email} dense>
       <ListItemIcon>
-        <Icon name="user" />
+        <Avatar email={member.user.email} size={spacing.lg} />
       </ListItemIcon>
       <ListItemText
         primary={member.user.email}
@@ -25,15 +28,22 @@ export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick 
         }
       />
       <ListItemSecondaryAction>
-        <Chip label={ROLE[member.role]} size="small" />
-        <IconButton
+        <LicenseSelect member={member} disabled={!freeLicenses} />
+        <span className={css.fixedWidth}>
+          <RoleSelect member={member} />
+        </span>
+        <ConfirmButton
+          confirm
+          confirmMessage="This will remove all access to this organization’s devices."
+          confirmTitle="Are you sure?"
           title="Remove Account"
           icon="times"
+          size="sm"
           color={removing ? 'danger' : undefined}
           loading={removing}
-          disabled={member.role === 'OWNER' || removing}
+          disabled={!onClick || removing}
           onClick={() => {
-            onClick()
+            onClick && onClick()
             dispatch.organization.removeMember(member)
           }}
         />
@@ -41,3 +51,12 @@ export const OrganizationMember: React.FC<Props> = ({ member, removing, onClick 
     </ListItem>
   )
 }
+
+const useStyles = makeStyles({
+  fixedWidth: {
+    width: '120px',
+    marginRight: spacing.md,
+    display: 'inline-block',
+    textAlign: 'right',
+  },
+})

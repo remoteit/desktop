@@ -282,7 +282,7 @@ declare global {
     }
   }
 
-  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT'
+  type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT' | string
 
   type IUser = {
     id: string
@@ -319,6 +319,7 @@ declare global {
   type IOrganizationMember = {
     user: IUserRef
     organizationId: string
+    license: ILicenseTypes
     role: IOrganizationRole
     created: Date
   }

@@ -1,9 +1,10 @@
 import React from 'react'
 import { ListItemText, ListItemIcon } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
-import { InitiatorPlatform } from '../InitiatorPlatform'
+import { Avatar } from '../Avatar'
 import { Duration } from '../Duration'
 import { useLocation } from 'react-router-dom'
+import { spacing } from '../../styling'
 
 interface Props {
   user: IUser
@@ -17,7 +18,7 @@ export const UserListItem: React.FC<Props> = ({ user, isConnected, isUserLinked 
   return (
     <ListItemLocation pathname={redirectTo} dense>
       <ListItemIcon>
-        <InitiatorPlatform connected={isConnected} user />
+        <Avatar email={user.email} size={spacing.lg} />
       </ListItemIcon>
       {isConnected ? (
         <ListItemText

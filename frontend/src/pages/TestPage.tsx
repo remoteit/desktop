@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dispatch, ApplicationState, store } from '../store'
+import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -10,7 +10,6 @@ import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { API_URL } from '../shared/constants'
 
 export const TestPage: React.FC = () => {
   const { tests, informed, preferences } = useSelector((state: ApplicationState) => ({

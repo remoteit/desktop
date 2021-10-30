@@ -1,4 +1,10 @@
-export const testData = {
+export const testData: {
+  license: boolean
+  limit: boolean
+  unlicensed: boolean
+  licenses: ILicense[]
+  limits: ILimit[]
+} = {
   license: false,
   limit: false,
   unlicensed: false,
@@ -10,7 +16,12 @@ export const testData = {
       expiration: new Date('2020-11-05T01:03:48.000Z'),
       valid: true,
       quantity: null,
-      status: 'ACTIVE',
+      subscription: {
+        total: 1,
+        status: 'ACTIVE',
+        price: null,
+        card: null,
+      },
       plan: {
         id: '649b2e68-05fd-11eb-bda8-021f403e8c27',
         name: 'TRIAL',
@@ -30,7 +41,12 @@ export const testData = {
       expiration: new Date('2021-02-12T05:44:32.421Z'),
       valid: false,
       quantity: null,
-      status: 'CANCELED',
+      subscription: {
+        total: 1,
+        status: 'CANCELED',
+        price: null,
+        card: null,
+      },
       plan: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'PERSONAL',
@@ -50,7 +66,12 @@ export const testData = {
       expiration: new Date('2021-02-12T05:44:32.421Z'),
       valid: false,
       quantity: null,
-      status: 'INCOMPLETE',
+      subscription: {
+        total: 1,
+        status: 'INCOMPLETE',
+        price: null,
+        card: null,
+      },
       plan: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'PROFESSIONAL',
@@ -70,7 +91,37 @@ export const testData = {
       expiration: null,
       valid: true,
       quantity: null,
-      status: 'INCOMPLETE_EXPIRED',
+      subscription: {
+        total: 1,
+        status: 'INCOMPLETE_EXPIRED',
+        price: null,
+        card: null,
+      },
+      plan: {
+        id: 'e147a026-81d7-11eb-afc8-02f048730623',
+        name: 'BUSINESS',
+        description: 'business',
+        duration: null,
+        product: {
+          id: 'b999e047-5532-11eb-8872-063ce187bcd7',
+          name: 'remote.it',
+          description: 'remote.it',
+        },
+      },
+    },
+    {
+      id: '4a5ed500-ef07-4a98-be11-BUSINESS',
+      created: new Date('2021-03-12T05:44:32.421Z'),
+      updated: new Date('2021-03-12T05:44:32.421Z'),
+      expiration: null,
+      valid: true,
+      quantity: null,
+      subscription: {
+        total: 1,
+        status: 'PAST_DUE',
+        price: null,
+        card: null,
+      },
       plan: {
         id: 'e147a026-81d7-11eb-afc8-02f048730623',
         name: 'BUSINESS',
@@ -90,7 +141,12 @@ export const testData = {
       expiration: null,
       valid: true,
       quantity: null,
-      status: 'PAST_DUE',
+      subscription: {
+        total: 1,
+        status: 'PAST_DUE',
+        price: null,
+        card: null,
+      },
       plan: {
         id: 'b44f92a6-a7b9-11eb-b094-02a962787033',
         name: 'ENTERPRISE',

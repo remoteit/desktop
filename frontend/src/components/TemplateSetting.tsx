@@ -11,9 +11,8 @@ type Props = {
 
 export const TemplateSetting: React.FC<Props> = ({ label, value, disabled, onChange, className, children }) => {
   return (
-    <ListItem className={className}>
+    <ListItem dense className={className}>
       <TextField
-        size="small"
         label={label}
         value={value}
         disabled={disabled}

@@ -25,7 +25,6 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   connection.context = app.launchType === LAUNCH_TYPE.COMMAND ? 'copy' : 'launch'
 
-
   const handleChange = (value: any) => {
     handleClick()
     connection &&
@@ -39,8 +38,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   let inputProps = {
     select: true,
-    disabled: false
-  };
+    disabled: false,
+  }
 
   if (isPortal()) {
     inputProps.select = false
@@ -57,7 +56,6 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           {...inputProps}
           fullWidth
           SelectProps={{ open }}
-          size="small"
           label="Launch type"
           value={isPortal() ? 'URL' : app.launchType}
           onChange={e => handleChange(e.target.value)}
