@@ -39,15 +39,15 @@ export const ConnectionOtherPage: React.FC = () => {
             <Title>{session?.user?.email}</Title>
             <InfoButton device={device} service={service} />
           </Typography>
-          <Gutters>
-            <ConnectionDetails connection={connection} session={session} show service={service}/>
-          </Gutters>
           {/* <Icon name="arrow-right" size="lg" /> */}
           {/* <Icon name="ellipsis-h" /> */}
           {/* <Title inline>{session?.target.name}</Title> */}
         </>
       }
     >
+      <Gutters>
+        <ConnectionDetails connection={connection} session={session} show service={service} />
+      </Gutters>
       <List>
         <InlineTextFieldSetting disabled label="Connection Name" value={session.target.name} />
       </List>

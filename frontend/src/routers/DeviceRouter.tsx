@@ -8,6 +8,7 @@ import { ServiceAddPage } from '../pages/ServiceAddPage'
 import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
 import { ServiceDetailPage } from '../pages/ServiceDetailPage'
+import { ServiceConnectPage } from '../pages/ServiceConnectPage'
 import { UsersPageService } from '../pages/UsersPageService'
 import { UsersPageDevice } from '../pages/UsersPageDevice'
 import { ServiceEditPage } from '../pages/ServiceEditPage'
@@ -89,8 +90,11 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Route path="/devices/:deviceID/:serviceID/edit">
             <ServiceEditPage targetDevice={targetDevice} targets={targets} device={device} />
           </Route>
-          <Route path="/devices/:deviceID/:serviceID">
+          <Route path="/devices/:deviceID/:serviceID/details">
             <ServiceDetailPage targets={targets} device={device} />
+          </Route>
+          <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
+            <ServiceConnectPage targets={targets} device={device} />
           </Route>
         </Switch>
       }

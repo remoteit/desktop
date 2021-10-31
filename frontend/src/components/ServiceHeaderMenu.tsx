@@ -39,6 +39,7 @@ export const ServiceHeaderMenu: React.FC<{
 
   return (
     <Container
+      gutterBottom
       header={
         <>
           <OutOfBand />
@@ -58,6 +59,15 @@ export const ServiceHeaderMenu: React.FC<{
           </Typography>
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
+            <ListItemLocation
+              title="Connect"
+              icon="arrow-right"
+              iconColor="grayDarker"
+              pathname={`/devices/${device.id}/${serviceID}/connect`}
+              match={[`/devices/${device.id}/${serviceID}/connect`, `/devices/${device.id}/${serviceID}`]}
+              exactMatch
+              dense
+            />
             <ListItemLocation
               title="Details"
               icon="info-circle"

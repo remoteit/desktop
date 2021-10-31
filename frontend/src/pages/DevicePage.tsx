@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
+import { useLocation, useParams } from 'react-router-dom'
+import { REGEX_LAST_PATH } from '../shared/constants'
 import {
   Typography,
   List,
@@ -33,6 +35,8 @@ type Props = {
 
 export const DevicePage: React.FC<Props> = ({ device }) => {
   const css = useStyles()
+  const location = useLocation()
+  const { serviceID } = useParams<{ serviceID?: string }>()
   const { connections, setupAddingService, sortService } = useSelector((state: ApplicationState) => ({
     connections: state.connections.all.filter(c => c.deviceID === device?.id),
     setupAddingService: state.ui.setupAddingService,
@@ -55,6 +59,10 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
 
   // reverse sort services by creation date
   device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
+  const index = location.pathname.search(REGEX_LAST_PATH)
+  let servicePage = location.pathname.slice(index)
+  if (servicePage === '/' + serviceID) servicePage = '/connect'
 
   return (
     <Container
@@ -118,7 +126,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             autoNext
           >
             <ListItemLocation
-              pathname={`/devices/${device.id}/${s.id}/details`}
+              pathname={`/devices/${device.id}/${s.id}${servicePage}`}
               match={`/devices/${device.id}/${s.id}`}
               dense
             >

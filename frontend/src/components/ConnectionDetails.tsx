@@ -111,7 +111,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
 
   return (
     <Collapse in={show} timeout={800}>
-      <Gutters bottom={null}>
+      <Gutters top="lg" bottom={null}>
         <Paper className={css.address} elevation={0}>
           <Gutters size="md" bottom={null}>
             <div style={{ height: displayHeight, position: 'relative', transition: 'height 200ms' }} ref={ref}>
