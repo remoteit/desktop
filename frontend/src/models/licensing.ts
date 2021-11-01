@@ -1,7 +1,6 @@
 import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
-import { Dispatch } from '../store'
 import { AxiosResponse } from 'axios'
 import { ApplicationState } from '../store'
 import {
@@ -181,7 +180,7 @@ export default createModel<RootModel>()({
 
     async subscribe(form: IPurchase) {
       dispatch.licensing.set({ purchasing: form.planId })
-      localStorage.setItem('licencing.purchasing', form.planId || '')
+      localStorage.setItem('licensing.purchasing', form.planId || '')
       const result = await graphQLSubscribe(form)
       if (result !== 'ERROR') {
         const checkout = result?.data?.data?.createSubscription
@@ -191,7 +190,10 @@ export default createModel<RootModel>()({
     },
 
     async updateSubscription({ priceId, quantity }: IPurchase) {
-      if (!priceId) return dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
+      if (!priceId) {
+        dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
+        return
+      }
       dispatch.licensing.set({ purchasing: 'true' })
       await graphQLUpdateSubscription({ priceId, quantity })
       await dispatch.organization.fetch()
