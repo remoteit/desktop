@@ -66,7 +66,7 @@ const defaultState: ILicensing = {
 
 export default createModel<RootModel>()({
   state: defaultState,
-  effects: dispatch => ({
+  effects: (dispatch: any) => ({
     async init() {
       await dispatch.licensing.fetch()
       dispatch.licensing.set({ initialized: true })
