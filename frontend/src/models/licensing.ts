@@ -1,6 +1,7 @@
 import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
 import { createModel } from '@rematch/core'
+import { Dispatch } from '../store'
 import { AxiosResponse } from 'axios'
 import { ApplicationState } from '../store'
 import {
@@ -78,7 +79,7 @@ export default createModel<RootModel>()({
       const planId = license?.plan.id
 
       dispatch.licensing.set({
-        purchasing: localStorage.getItem('licencing.purchasing') !== planId ? planId : undefined,
+        purchasing: localStorage.getItem('licensing.purchasing') !== planId ? planId : undefined,
         updating: localStorage.getItem('licensing.updating') === last ? last : undefined,
       })
     },
@@ -124,8 +125,7 @@ export default createModel<RootModel>()({
             country
             expiration
           }
-        }
-  `
+        }`
 
       try {
         const result: any = await graphQLRequest(

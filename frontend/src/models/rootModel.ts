@@ -19,6 +19,7 @@ import sessions from './sessions'
 import shares from './shares'
 import tags from './tags'
 import ui from './ui'
+
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts
   analytics: typeof analytics
