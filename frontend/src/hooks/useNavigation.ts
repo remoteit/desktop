@@ -7,6 +7,7 @@ import { selectConnections } from '../helpers/connectionHelper'
 import { selectAnnouncements } from '../models/announcements'
 import { selectLicenseIndicator } from '../models/licensing'
 import { isRemoteUI } from '../helpers/uiHelper'
+import debounce from 'lodash.debounce'
 
 interface INavigationHook {
   menu: string
@@ -38,30 +39,29 @@ export function useNavigation(): INavigationHook {
     remoteUI: isRemoteUI(state),
   }))
   const [shouldUpdate, setShouldUpdate] = useState<boolean>(true)
-  const [navigationPath, setNavigationPath] = useState({})
+  const [currentUIPayload, setCurrentUIPayload] = useState({})
 
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
 
-  useEffect(() => {
-    if (navigation[menu] !== location.pathname) {
-      ui.set({ ...navigationPath, navigation: { ...navigation, [menu]: location.pathname } })
-      setNavigationPath({})
-    }
-  }, [navigation, location, menu])
 
   useEffect(() => {
+    let newValues: any = {}
     if (
       location?.pathname &&
       location?.pathname !== '/' &&
       shouldUpdate &&
       navigationBack.slice(-1)[0] !== location.pathname
     ) {
-      setNavigationPath({
-        ...navigationPath,
-        navigationBack: navigationBack.concat([location?.pathname]),
-        navigationForward: [],
-      })
+      newValues = { navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] }
+    }
+    if (navigation[menu] !== location.pathname) {
+      newValues = { ...newValues, navigation: { ...navigation, [menu]: location.pathname } }
+    }
+
+    if (JSON.stringify(newValues) != JSON.stringify(currentUIPayload) && (newValues.navigationBack || newValues.navigation)) {
+      setCurrentUIPayload(newValues)
+      ui.set(newValues)
     }
   }, [location?.pathname])
 
@@ -69,8 +69,7 @@ export function useNavigation(): INavigationHook {
     setShouldUpdate(false)
     const lengthBack = navigationBack?.length
     await history.push(navigationBack[lengthBack - 2])
-    setNavigationPath({
-      ...navigationPath,
+    ui.set({
       navigationBack: navigationBack.slice(0, lengthBack - 1),
       navigationForward: navigationBack.slice(-1).concat(navigationForward),
     })

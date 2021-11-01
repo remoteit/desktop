@@ -19,10 +19,11 @@ import { Route } from 'react-router-dom'
 import styles from '../../styling'
 
 export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
-  const { searched, navigationBack, navigationForward } = useSelector((state: ApplicationState) => ({
+  const { searched, navigationBack, navigationForward, device } = useSelector((state: ApplicationState) => ({
     searched: state.devices.searched,
     navigationBack: state.ui.navigationBack,
     navigationForward: state.ui.navigationForward,
+    device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
   }))
   const { handleBack, handleForward } = useNavigation()
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
@@ -30,10 +31,6 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const css = useStyles()
-
-  const { device } = useSelector((state: ApplicationState) => ({
-    device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
-  }))
 
   useEffect(() => {
     setDisabledBack(!(navigationBack?.length > 1))
