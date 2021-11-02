@@ -24,6 +24,7 @@ import { LaunchSelect } from './LaunchSelect'
 import { ComboButton } from '../buttons/ComboButton'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from './DesktopUI'
+import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -67,55 +68,58 @@ export const Connect: React.FC = () => {
         show={connection?.enabled}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      <Gutters className={css.gutters} top="lg">
-        <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-        <ComboButton
-          connection={connection}
-          service={service}
-          autoConnect={location.state?.autoConnect}
-          // onClick={() => history.push(`/connections/${service?.id}`)}
-          size="large"
-          fullWidth
-        />
-        <ForgetButton connection={connection} />
-      </Gutters>
+      <GuideStep guide="guideAWS" step={5} instructions="Now enable the connect on demand listener.">
+        <Gutters className={css.gutters} top="lg">
+          <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
+          <ComboButton
+            connection={connection}
+            service={service}
+            autoConnect={location.state?.autoConnect}
+            size="large"
+            fullWidth
+          />
+          <ForgetButton connection={connection} inline />
+        </Gutters>
+      </GuideStep>
       <List className={css.errorMessage}>
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
-      <AccordionMenuItem
-        subtitle="Configuration"
-        expanded={accordion[accordionConfig]}
-        onClick={() => ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
-        gutterTop
-      >
-        <List disablePadding>
-          <DesktopUI>
-            <NameSetting connection={connection} service={service} device={device} />
-            <PortSetting connection={connection} service={service} />
-          </DesktopUI>
-          {/* @TODO: add auto launch */}
-          <LaunchSelect connection={connection} service={service} />
-        </List>
-      </AccordionMenuItem>
-      <AccordionMenuItem
-        subtitle="Options"
-        expanded={accordion.options}
-        onClick={() => ui.accordion({ options: !accordion.options })}
-        gutterTop
-      >
-        <List disablePadding>
-          <DesktopUI>
-            <TimeoutSetting connection={connection} service={service} />
-            <ProxySetting connection={connection} service={service} />
-            <LanShareSelect connection={connection} service={service} />
-          </DesktopUI>
-          <PublicSetting connection={connection} service={service} />
-          <DesktopUI>
-            <ConnectionLogSetting connection={connection} service={service} />
-            <TargetHostSetting connection={connection} service={service} />
-          </DesktopUI>
-        </List>
-      </AccordionMenuItem>
+      <Gutters>
+        <AccordionMenuItem
+          subtitle="Configuration"
+          expanded={accordion[accordionConfig]}
+          onClick={() => ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
+          elevation={0}
+        >
+          <List disablePadding>
+            <DesktopUI>
+              <NameSetting connection={connection} service={service} device={device} />
+              <PortSetting connection={connection} service={service} />
+            </DesktopUI>
+            {/* @TODO: add auto launch */}
+            <LaunchSelect connection={connection} service={service} />
+          </List>
+        </AccordionMenuItem>
+        <AccordionMenuItem
+          subtitle="Options"
+          expanded={accordion.options}
+          onClick={() => ui.accordion({ options: !accordion.options })}
+          elevation={0}
+        >
+          <List disablePadding>
+            <DesktopUI>
+              <TimeoutSetting connection={connection} service={service} />
+              <ProxySetting connection={connection} service={service} />
+              <LanShareSelect connection={connection} service={service} />
+            </DesktopUI>
+            <PublicSetting connection={connection} service={service} />
+            <DesktopUI>
+              <ConnectionLogSetting connection={connection} service={service} />
+              <TargetHostSetting connection={connection} service={service} />
+            </DesktopUI>
+          </List>
+        </AccordionMenuItem>
+      </Gutters>
     </>
   )
 }

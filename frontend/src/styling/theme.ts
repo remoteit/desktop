@@ -21,6 +21,13 @@ const jssTheme: ThemeOptions = {
         '&.Mui-expanded': { margin: 0 },
         '&:before': { display: 'none' },
       },
+      rounded: {
+        borderRadius: `${radius}px !important`,
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.sm,
+        marginTop: spacing.md,
+        '&.Mui-expanded': { marginTop: spacing.md },
+      },
     },
     MuiAccordionDetails: {
       root: { display: 'block', padding: 0 },

@@ -83,7 +83,7 @@ const useStyles = (props: Props) => {
   if (props.variant === 'text' && background) {
     foreground = background //  darken(background, 0.2)
     hover = lighten(background, 0.8)
-    background = lighten(background, 0.9)
+    background = colors.white
   }
 
   return makeStyles({

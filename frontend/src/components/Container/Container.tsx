@@ -11,6 +11,8 @@ type Props = {
   bodyProps?: any
   bodyRef?: React.RefObject<HTMLDivElement>
   gutterBottom?: boolean
+  divider?: boolean
+  backgroundColor?: string
 }
 
 export const Container: React.FC<Props> = ({
@@ -21,15 +23,17 @@ export const Container: React.FC<Props> = ({
   bodyProps,
   bodyRef,
   gutterBottom,
+  divider = true,
+  backgroundColor,
   children,
 }) => {
-  const css = useStyles()
+  const css = useStyles({ backgroundColor })
 
   return (
     <div className={css.container}>
       <div className={integrated ? undefined : css.header}>
         {header}
-        {integrated || <Divider variant="inset" />}
+        {integrated || !!backgroundColor || <Divider variant="inset" />}
       </div>
       {sidebar ? (
         <div className={css.sidebar}>
@@ -54,24 +58,27 @@ export const Container: React.FC<Props> = ({
 }
 
 const useStyles = makeStyles({
-  container: {
+  container: ({ backgroundColor }: any) => ({
+    backgroundColor,
     display: 'flex',
     alignItems: 'stretch',
     flexFlow: 'column',
     height: '100%',
     position: 'relative',
     overflow: 'hidden',
-  },
-  header: {
+  }),
+  header: ({ backgroundColor }: any) => ({
     position: 'relative',
     zIndex: 3,
+    backgroundColor: colors.white,
+    borderBottom: backgroundColor && `1px solid ${colors.grayLighter}`,
     '& .MuiTypography-h1': {
       display: 'flex',
       alignItems: 'center',
       padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
       minHeight: 50,
     },
-  },
+  }),
   sidebar: {
     display: 'flex',
     flexFlow: 'row',

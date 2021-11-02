@@ -75,8 +75,10 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary }) => {
         <Header />
         {primary}
       </div>
-      <div className={css.handle} onMouseDown={onDown}>
-        <div className={grab ? 'active' : undefined} />
+      <div className={css.anchor}>
+        <div className={css.handle} onMouseDown={onDown}>
+          <div className={grab ? 'active' : undefined} />
+        </div>
       </div>
       <div
         className={classnames(css.panel, css.secondary)}
@@ -102,9 +104,16 @@ const useStyles = makeStyles({
   header: {
     height: spacing.lg,
   },
-  handle: {
+  anchor: {
+    position: 'relative',
     height: '100%',
-    padding: `${0} ${spacing.xxs}px`,
+  },
+  handle: {
+    zIndex: 5,
+    position: 'absolute',
+    height: '100%',
+    marginLeft: -spacing.xxs,
+    padding: `0 ${spacing.xxs}px`,
     '-webkit-app-region': 'no-drag',
     '&:hover': {
       cursor: 'col-resize',

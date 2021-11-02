@@ -26,7 +26,8 @@ export const ServiceHeaderMenu: React.FC<{
   service?: IService
   target?: ITarget
   footer?: React.ReactNode
-}> = ({ device, service, target, footer, children }) => {
+  backgroundColor?: string
+}> = ({ device, service, target, footer, backgroundColor, children }) => {
   const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
@@ -40,6 +41,7 @@ export const ServiceHeaderMenu: React.FC<{
   return (
     <Container
       gutterBottom
+      backgroundColor={backgroundColor}
       header={
         <>
           <OutOfBand />

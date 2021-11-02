@@ -23,6 +23,7 @@ export const AccordionMenu: React.FC<{ menus: IAccordionMenu[]; defaultExpanded?
             expanded={expanded === menu.key}
             onClick={expanded => setExpanded(expanded ? menu.key : undefined)}
             subtitle={menu.subtitle}
+            square
           >
             {menu.children}
           </AccordionMenuItem>

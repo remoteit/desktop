@@ -62,7 +62,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
 
   const index = location.pathname.search(REGEX_LAST_PATH)
   let servicePage = location.pathname.slice(index)
-  if (servicePage === '/' + serviceID) servicePage = '/connect'
+  if (servicePage === '/' + serviceID || servicePage === '/' + device.id) servicePage = '/connect'
 
   return (
     <Container
