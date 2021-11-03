@@ -11,19 +11,16 @@ import { GuideStep } from '../components/GuideStep'
 import { Connect } from '../components/Connect'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { Icon } from '../components/Icon'
+import { colors } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
   const { serviceID } = useParams<{ serviceID: string }>()
   const service = device?.services.find(s => s.id === serviceID)
-  const { connection, remoteUI } = useSelector((state: ApplicationState) => ({
+  const { connection } = useSelector((state: ApplicationState) => ({
     connection: selectConnection(state, service),
-    remoteUI: isRemoteUI(state),
   }))
   const target = targets.find(t => t.uid === serviceID)
-  const { ui } = useDispatch<Dispatch>()
-  const css = useStyles()
 
   useEffect(() => {
     analyticsHelper.page('ServiceDetailPage')
@@ -36,6 +33,7 @@ export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[]
       device={device}
       service={service}
       target={target}
+      backgroundColor={connection.enabled ? colors.primaryHighlight : colors.grayLighter}
       // footer={
       //   !remoteUI && (
       //     <>
@@ -77,9 +75,3 @@ export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[]
     </ServiceHeaderMenu>
   )
 }
-
-const useStyles = makeStyles({
-  gutters: {
-    display: 'flex',
-  },
-})

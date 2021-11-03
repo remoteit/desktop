@@ -4,10 +4,10 @@ import { List, Typography } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { SettingsDisableNetworkItem } from '../components/SettingsDisableNetworkItem'
+import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { UpdateSetting } from '../components/UpdateSetting'
 import { getOwnDevices } from '../models/accounts'
-import { Collapsible } from '../components/Collapsible'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from '../components/DesktopUI'
 import { Container } from '../components/Container'
@@ -103,7 +103,7 @@ export const OptionsPage: React.FC = () => {
       </List>
       {!remoteUI && (
         <DesktopUI>
-          <Collapsible title="Advanced">
+          <AccordionMenuItem subtitle="Advanced">
             <List>
               <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
               <SettingsDisableNetworkItem />
@@ -139,7 +139,7 @@ export const OptionsPage: React.FC = () => {
                 onClick={() => emit('showFolder', 'logs')}
               />
             </List>
-          </Collapsible>
+          </AccordionMenuItem>
         </DesktopUI>
       )}
     </Container>

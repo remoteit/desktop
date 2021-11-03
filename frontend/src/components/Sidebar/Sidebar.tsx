@@ -51,8 +51,5 @@ const useStyles = addSpace =>
     },
     select: {
       marginTop: spacing.md,
-      '& .MuiInputBase-root': {
-        fontSize: fontSizes.base,
-      },
     },
   })

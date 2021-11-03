@@ -2,7 +2,6 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
-import { spacing } from '../../styling'
 import { Notice } from '../../components/Notice'
 
 type Props = {
@@ -39,7 +38,6 @@ const useStyles = fullWidth =>
   makeStyles({
     buttons: {
       width: fullWidth ? 'inherit' : 121,
-      marginRight: spacing.sm,
       position: 'relative',
       flexGrow: 1,
       '& > div': { position: 'absolute', width: '100%' },

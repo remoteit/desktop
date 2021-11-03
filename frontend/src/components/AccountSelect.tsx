@@ -2,9 +2,9 @@ import React from 'react'
 import { makeStyles, TextField, MenuItem, Divider, TextFieldProps } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { useHistory } from 'react-router-dom'
+import { spacing, colors, fontSizes } from '../styling'
 import { getActiveAccountId } from '../models/accounts'
-import { spacing, colors } from '../styling'
+import { useHistory } from 'react-router-dom'
 import classnames from 'classnames'
 
 export const AccountSelect: React.FC<TextFieldProps> = props => {
@@ -52,7 +52,14 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
 }
 
 const useStyles = makeStyles({
-  field: { '& .MuiListItemSecondaryAction-root': { display: 'none' } },
+  field: {
+    '& .MuiListItemSecondaryAction-root': { display: 'none' },
+    '& .MuiInputBase-root': {
+      paddingTop: spacing.md,
+      paddingBottom: spacing.md,
+      fontSize: fontSizes.base,
+    },
+  },
   primary: { color: colors.primary },
   divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
   action: { right: spacing.xs, marginLeft: spacing.sm },

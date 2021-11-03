@@ -21,6 +21,13 @@ const jssTheme: ThemeOptions = {
         '&.Mui-expanded': { margin: 0 },
         '&:before': { display: 'none' },
       },
+      rounded: {
+        borderRadius: `${radius}px !important`,
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.sm,
+        marginTop: spacing.md,
+        '&.Mui-expanded': { marginTop: spacing.md },
+      },
     },
     MuiAccordionDetails: {
       root: { display: 'block', padding: 0 },
@@ -137,6 +144,7 @@ const jssTheme: ThemeOptions = {
     },
     MuiListSubheader: {
       root: {
+        color: colors.grayDarkest,
         fontSize: fontSizes.xxs,
         lineHeight: '40px',
       },
@@ -188,8 +196,7 @@ const jssTheme: ThemeOptions = {
       },
       dense: {
         '& .MuiInputBase-root': { fontSize: fontSizes.base },
-        // paddingTop: '2px !important',
-        // paddingBottom: '2px !important',
+        '& .MuiFormHelperText-contained': { marginTop: 0, marginBottom: spacing.xs },
       },
     },
     MuiListItemSecondaryAction: {
@@ -331,7 +338,7 @@ const jssTheme: ThemeOptions = {
       },
       subtitle1: {
         fontSize: fontSizes.xxs,
-        color: colors.grayDarker,
+        color: colors.grayDarkest,
         display: 'flex',
         alignItems: 'center',
         minHeight: spacing.xl,

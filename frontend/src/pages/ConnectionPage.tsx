@@ -12,7 +12,9 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
 import { Connect } from '../components/Connect'
+import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
+import { colors } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionPage: React.FC = () => {
@@ -42,6 +44,8 @@ export const ConnectionPage: React.FC = () => {
   return (
     <Container
       gutterBottom
+      divider={false}
+      backgroundColor={connection.enabled ? colors.primaryHighlight : colors.grayLighter}
       header={
         <Typography variant="h1" gutterBottom>
           <Title>{connection.name}</Title>
@@ -50,14 +54,16 @@ export const ConnectionPage: React.FC = () => {
       }
     >
       <Connect />
-      <AccordionMenuItem
-        subtitle="Service Details"
-        expanded={accordion.service}
-        onClick={() => ui.accordion({ service: !accordion.service })}
-        gutterTop
-      >
-        <ServiceAttributes service={service} disablePadding />
-      </AccordionMenuItem>
+      <Gutters>
+        <AccordionMenuItem
+          subtitle="Service Details"
+          expanded={accordion.service}
+          onClick={() => ui.accordion({ service: !accordion.service })}
+          gutterTop
+        >
+          <ServiceAttributes service={service} disablePadding />
+        </AccordionMenuItem>
+      </Gutters>
     </Container>
   )
 }

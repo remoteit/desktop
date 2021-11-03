@@ -28,10 +28,10 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
   const [hover, setHover] = useState<'name' | 'port' | 'copy' | 'launch' | undefined>()
-  const [displayHeight, setDisplayHeight] = useState<number>(0)
+  const [displayHeight, setDisplayHeight] = useState<number>(33)
   const { ui } = useDispatch<Dispatch>()
   const app = useApplication('copy', service, connection)
-  const css = useStyles()
+  const css = useStyles({ details })
 
   app.context = app.launchType === LAUNCH_TYPE.URL ? 'launch' : 'copy' //@FIXME = this should be set in the app model automatically
 
@@ -185,9 +185,17 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
           </Gutters>
         </Paper>
         {details && (
-          <Gutters size={null} bottom="xs">
-            <DataDisplay attributes={attributes} connection={connection} session={session} width={100} disablePadding />
-          </Gutters>
+          <Paper className={css.details} elevation={0}>
+            <Gutters bottom="xs">
+              <DataDisplay
+                attributes={attributes}
+                connection={connection}
+                session={session}
+                width={100}
+                disablePadding
+              />
+            </Gutters>
+          </Paper>
         )}
       </Gutters>
     </Collapse>
@@ -223,12 +231,21 @@ const useStyles = makeStyles({
     '-webkit-box-orient': 'vertical',
     '& span': { wordBreak: 'break-word' },
   },
-  address: {
+  address: ({ details }: Props) => ({
     backgroundColor: colors.primary,
     color: colors.white,
     padding: spacing.xs,
+    borderBottomRightRadius: details ? 0 : undefined,
+    borderBottomLeftRadius: details ? 0 : undefined,
     '& label': { color: colors.white },
-  },
+  }),
+  details: ({ details }: Props) => ({
+    paddingTop: 1,
+    paddingBottom: spacing.md,
+    borderTopRightRadius: details ? 0 : undefined,
+    borderTopLeftRadius: details ? 0 : undefined,
+  }),
+
   buttons: {
     display: 'flex',
     justifyContent: 'space-between',

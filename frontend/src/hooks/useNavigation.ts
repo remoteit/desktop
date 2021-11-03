@@ -7,7 +7,6 @@ import { selectConnections } from '../helpers/connectionHelper'
 import { selectAnnouncements } from '../models/announcements'
 import { selectLicenseIndicator } from '../models/licensing'
 import { isRemoteUI } from '../helpers/uiHelper'
-import debounce from 'lodash.debounce'
 
 interface INavigationHook {
   menu: string
@@ -44,7 +43,6 @@ export function useNavigation(): INavigationHook {
   const match = location.pathname.match(REGEX_FIRST_PATH)
   const menu = match ? match[0] : '/devices'
 
-
   useEffect(() => {
     let newValues: any = {}
     if (
@@ -59,7 +57,10 @@ export function useNavigation(): INavigationHook {
       newValues = { ...newValues, navigation: { ...navigation, [menu]: location.pathname } }
     }
 
-    if (JSON.stringify(newValues) != JSON.stringify(currentUIPayload) && (newValues.navigationBack || newValues.navigation)) {
+    if (
+      JSON.stringify(newValues) != JSON.stringify(currentUIPayload) &&
+      (newValues.navigationBack || newValues.navigation)
+    ) {
       setCurrentUIPayload(newValues)
       ui.set(newValues)
     }
