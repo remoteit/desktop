@@ -38,13 +38,13 @@
     "semver": "^7.3.5"
   },
   "devDependencies": {
-    "@types/electron": "1.6.10",
+    "@types/electron": "^1.6.10",
     "cross-env": "^7.0.3",
     "dotenv": "^8.2.0",
-    "electron": "^12.1.0",
-    "electron-builder": "^22.10.5",
-    "electron-notarize": "^1.0.0",
-    "electron-osx-sign": "^0.5.0",
+    "electron": "^15.3.0",
+    "electron-builder": "^22.13.1",
+    "electron-notarize": "^1.1.1",
+    "electron-osx-sign": "^0.6.0",
     "npm-run-all": "4.1.5",
     "onchange": "^7.1.0",
     "rimraf": "^3.0.2",
