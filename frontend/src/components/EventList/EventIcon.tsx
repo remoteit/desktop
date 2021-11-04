@@ -9,6 +9,17 @@ export function EventIcon(item: IEvent): JSX.Element {
   let icon = ''
   let title = ''
   switch (item.type) {
+    case EventType.login_state:
+    case EventType.login_attempt_state:
+    case EventType.login_password_change:
+    case EventType.login_password_reset:
+    case EventType.login_phone_change:
+    case EventType.login_mfa_enabled:
+    case EventType.login_mfa_disabled:
+      icon = 'sign-in'
+      color = 'success'
+      title = 'Activity list:' + item.type
+      break
     case EventType.device_state:
       if (item.state === EventState.active) {
         icon = 'check-circle'
