@@ -6,8 +6,8 @@ import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from './LicenseSelect'
 import { RoleSelect } from './RoleSelect'
 import { Duration } from './Duration'
-import { Avatar } from './Avatar'
 import { spacing } from '../styling'
+import { Avatar } from './Avatar'
 
 type Props = { member: IOrganizationMember; freeLicenses?: boolean; removing?: boolean; onClick?: () => void }
 
@@ -28,9 +28,9 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
         }
       />
       <ListItemSecondaryAction>
-        <LicenseSelect member={member} disabled={!freeLicenses} />
+        <RoleSelect member={member} />
         <span className={css.fixedWidth}>
-          <RoleSelect member={member} />
+          <LicenseSelect member={member} disabled={!freeLicenses} />
         </span>
         <ConfirmButton
           confirm

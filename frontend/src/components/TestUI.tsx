@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { colors } from '../styling'
 
-export const TestUI: React.FC = ({ children, ...props }) => {
+export const TestUI: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
   const { testUI } = useSelector((state: ApplicationState) => state.backend.preferences)
   const css = useStyles()
 

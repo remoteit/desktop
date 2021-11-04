@@ -64,7 +64,7 @@ export const OrganizationPage: React.FC = () => {
               <SeatsSetting />
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
-                  Add members to your organization to automatically share all your devices and manage their access.
+                  Add members to your organization to automatically share all of your devices.
                 </Typography>
               </Gutters>
             </List>
