@@ -60,10 +60,12 @@ export const OrganizationAddPage = () => {
           <Typography variant="h1">
             <Title>Add Organization Members</Title>
           </Typography>
-          <ContactSelector
-            contacts={contacts.filter(c => !members.find(s => s.user.id === c.id))}
-            onChange={setEmails}
-          />
+          <Gutters top={null}>
+            <ContactSelector
+              contacts={contacts.filter(c => !members.find(s => s.user.id === c.id))}
+              onChange={setEmails}
+            />
+          </Gutters>
         </>
       }
     >
