@@ -75,11 +75,13 @@ export const DEFAULT_CONNECTION = {
   online: false,
   timeout: 15,
   ip: IP_PRIVATE,
+  autoLaunch: false,
   restriction: IP_OPEN,
   publicRestriction: IP_LATCH,
 }
 
 export const PUBLIC_CONNECTION = {
+  autoLaunch: true,
   port: undefined,
   public: true,
   timeout: 15,

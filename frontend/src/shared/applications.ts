@@ -6,12 +6,13 @@
 */
 
 import { replaceHost } from './nameHelper'
+import { isWindows } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 
 export enum LAUNCH_TYPE {
   URL = 'URL',
-  COMMAND = 'COMMAND'
+  COMMAND = 'COMMAND',
 }
 
 export class Application {
@@ -20,8 +21,8 @@ export class Application {
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   publicTemplate: string = '[address]'
-  launchDarwin: string = ` osascript  -e 'tell application "Terminal" to do script " [commandTemplate] " ' `
-  launchUnix: string = `gnome-terminal -- /bin/bash -c '[commandTemplate]; read' `
+  launchDarwin: string = `osascript -e 'tell application "Terminal" to do script "[commandTemplate]" activate'`
+  launchUnix: string = `gnome-terminal -- /bin/bash -c '[commandTemplate]; read'`
   defaultTemplateCmd: string = ''
   checkApplicationCmd: string = ''
   addressTemplate: string = '[host]:[port]'
@@ -193,6 +194,7 @@ function getApplicationType(connection: {
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
+        defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
         defaultTemplateCmd: `start vncViewer.exe -Username [username] [host]:[port]`,
         checkApplicationCmd: 'cd c:\\ && WHERE /R "c:\\Program Files" vncviewer.exe',
@@ -200,6 +202,7 @@ function getApplicationType(connection: {
     case 28:
       return new Application({
         title: 'SSH',
+        defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
         defaultTemplateCmd: `start putty.exe -ssh [username]@[host] [port]`,
@@ -209,9 +212,9 @@ function getApplicationType(connection: {
     case 5:
       return new Application({
         title: 'remoteDesktop',
+        defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'http://[username]@[host]:[port]',
         defaultCommandTemplate: '',
-        // defaultLaunchType: isWin() ? 'COMMAND' : 'URL',
         defaultTemplateCmd: `cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]`,
         checkApplicationCmd: 'cd c:\\ && where remoteDesktop.exe ',
       })

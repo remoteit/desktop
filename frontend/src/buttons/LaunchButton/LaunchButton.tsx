@@ -37,15 +37,16 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   }))
 
   const [launchApp, setLaunchApp] = useState<ILaunchApp>()
-  const disabled = !connection?.enabled
-  const [openLaunchApplication, setOpenLaunchApplication] = useState<boolean>(false)
+  const [launchIntent, setLaunchIntent] = useState<boolean>(false)
   const app = useApplication(connection && connection.launchType === 'COMMAND' ? 'copy' : 'launch', service, connection)
+  const disabled = !connection?.enabled
+
   useEffect(() => {
-    if (openLaunchApplication && !loading) {
+    if (launchIntent && !loading) {
       launchApplication()
-      setOpenLaunchApplication(false)
+      setLaunchIntent(false)
     }
-  }, [loading, openLaunchApplication])
+  }, [loading, launchIntent])
 
   if (!app || !connection?.enabled) return null
 
@@ -57,32 +58,26 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
       path,
     }
     if (applicationObj?.application) {
-      setLaunchApp({
-        ...hostProps,
-        ...applicationObj,
-      })
+      setLaunchApp({ ...hostProps, ...applicationObj })
     }
-    ui.updateLaunchState({ openApp: true })
+    ui.launchState({ openApp: true })
     onLaunch && onLaunch()
   }
 
   const onSubmit = (tokens: ILookup<string>) => {
     connection && setConnection({ ...connection, ...tokens })
-    ui.updateLaunchState({ open: false })
+    ui.launchState({ prompt: false })
     // here is using preview because we don't know when setConnection respond with the socket emit
     onOpenApp(app.preview(tokens))
   }
 
   const clickHandler = () => {
-    if (app.prompt > 0) {
-      ui.updateLaunchState({ open: true })
-      return
-    }
-    onOpenApp()
+    if (app.prompt) ui.launchState({ prompt: true })
+    else onOpenApp()
   }
 
   const closeAll = () => {
-    ui.updateLaunchState({ openApp: false, open: false, launch: false })
+    ui.launchState({ openApp: false, prompt: false, launch: false })
   }
 
   const onOpenApp = (command?: string) => {
@@ -92,14 +87,16 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
       const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
       ui.set({ launchLoading: true, requireInstall: 'none' })
       emit('check/app', { application: applicationObj.application, cmd: app.checkApplicationCmd })
-      setOpenLaunchApplication(true)
+      setLaunchIntent(true)
     } else {
       if (!isWindows()) {
-        app.defaultTemplateCmd = isMac() ? app.launchDarwin.replace('[commandTemplate]', currentCommand) : app.launchUnix.replace('[commandTemplate]', currentCommand)
+        app.defaultTemplateCmd = isMac()
+          ? app.launchDarwin.replace('[commandTemplate]', currentCommand)
+          : app.launchUnix.replace('[commandTemplate]', currentCommand)
       }
-      app.launchType === LAUNCH_TYPE.URL ? window.open(currentCommand) : emit('launch/app',
-        { launchApp: { path }, app })
-
+      app.launchType === LAUNCH_TYPE.URL
+        ? window.open(currentCommand)
+        : emit('launch/app', { launchApp: { path }, app })
     }
   }
 
@@ -137,7 +134,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
           icon={loading ? 'spinner-third' : 'launch'}
         />
       )}
-      <PromptModal app={app} open={launchState.open} onClose={closeAll} onSubmit={onSubmit} />
+      <PromptModal app={app} open={launchState.prompt} onClose={closeAll} onSubmit={onSubmit} />
       <DialogApp launchApp={launchApp} app={app} type={service?.type} />
     </>
   )

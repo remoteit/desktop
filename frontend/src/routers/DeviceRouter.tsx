@@ -14,6 +14,7 @@ import { UsersPageDevice } from '../pages/UsersPageDevice'
 import { ServiceEditPage } from '../pages/ServiceEditPage'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
+import { LanSharePage } from '../pages/LanSharePage'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
@@ -92,6 +93,9 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </Route>
           <Route path="/devices/:deviceID/:serviceID/details">
             <ServiceDetailPage targets={targets} device={device} />
+          </Route>
+          <Route path={['/devices/:deviceID/:serviceID/lan', '/devices/:deviceID/new/:deviceID/:serviceID/lan']}>
+            <LanSharePage />
           </Route>
           <Route path={['/devices/:deviceID/:serviceID/connect', '/devices/:deviceID/:serviceID']}>
             <ServiceConnectPage targets={targets} device={device} />

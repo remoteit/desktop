@@ -41,11 +41,7 @@ type UIState = {
   navigationForward: string[]
   guideAWS: IGuide
   accordion: ILookup<boolean>
-  launchState: {
-    launch: boolean
-    open: boolean
-    openApp: boolean
-  }
+  launchState: ILaunchState
 }
 
 const defaultState: UIState = {
@@ -86,11 +82,7 @@ const defaultState: UIState = {
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 0, total: 7 },
   accordion: { config: true, configConnected: false },
-  launchState: {
-    launch: false,
-    open: false,
-    openApp: false,
-  },
+  launchState: { launch: false, prompt: false, openApp: false },
 }
 
 export default createModel<RootModel>()({
@@ -158,7 +150,7 @@ export default createModel<RootModel>()({
       state.accordion = { ...state.accordion, ...params }
       return state
     },
-    updateLaunchState(state: UIState, params: ILookup<boolean>) {
+    launchState(state: UIState, params: ILookup<boolean>) {
       state.launchState = { ...state.launchState, ...params }
       return state
     },

@@ -3,8 +3,10 @@ import { List, ListItem, ListItemIcon, makeStyles, MenuItem, TextField } from '@
 import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'
-import { colors } from '../../styling'
+import { AutoLaunchToggle } from '../AutoLaunchToggle'
+import { colors, spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
+import { TestUI } from '../TestUI'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
 import { isPortal } from '../../services/Browser'
@@ -67,13 +69,17 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       <ListItem dense>
         <ListItemIcon></ListItemIcon>
         <Quote margin={0} noInset>
-          <List disablePadding>
+          <List disablePadding className={css.indent}>
             <InlineTemplateSetting
               connection={connection}
               service={service}
               context={app.launchType === 'COMMAND' ? 'copy' : 'launch'}
             />
             <CustomAttributeSettings connection={connection} service={service} />
+            <TestUI>
+              {' '}
+              <AutoLaunchToggle connection={connection} service={service} />
+            </TestUI>
           </List>
         </Quote>
       </ListItem>
@@ -83,6 +89,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
 const useStyles = makeStyles({
   menu: { textTransform: 'capitalize' },
+  indent: { marginRight: -spacing.lg },
   field: {
     '&:hover': { backgroundColor: colors.primaryHighlight },
     /*  marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } */
