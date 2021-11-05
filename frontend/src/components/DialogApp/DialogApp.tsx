@@ -52,7 +52,7 @@ export const DialogApp: React.FC<{
         <DialogContent>
           <DialogContentText>
             You can use a browser-based {type} launcher to access this connection.
-            Alternatively, you can download and install PuTTy
+            Alternatively, you can download and install {type}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -66,6 +66,6 @@ export const DialogApp: React.FC<{
 }
 
 const useStyles = makeStyles({
-  getApp: { borderRadius: 3, left: '-120px' },
+  getApp: { borderRadius: 3, left: '-90px' },
   button: { borderRadius: 3 }
 })
