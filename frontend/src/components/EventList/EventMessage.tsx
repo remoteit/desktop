@@ -1,5 +1,6 @@
 import React from 'react'
 import { ADD_EVENTS_ACTIONS } from '../../shared/constants'
+import { addDeviceName } from '../../shared/nameHelper'
 
 export const EventType = {
   login_state: 'AUTH_LOGIN',
@@ -41,9 +42,11 @@ export function EventMessage({
       message = <>{'Activity list: ' + item.type}</>
       break
     case EventType.device_state:
+      let name = device?.id
+      if (device?.name || serviceName) name = serviceName ? addDeviceName(device?.name || '', serviceName) : device?.name
       message = (
         <>
-          <b> {item.target && serviceName !== device?.name ? serviceName : device?.name + ' [ ' + device?.id + ' ] ' }  </b>
+          <b> {item.target && name}  </b>
           {item.state === EventState.active ? 'went online' : 'went offline'}
         </>
       )
