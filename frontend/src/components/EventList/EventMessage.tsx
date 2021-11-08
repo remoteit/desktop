@@ -43,7 +43,7 @@ export function EventMessage({
     case EventType.device_state:
       message = (
         <>
-          <b> {item.target && serviceName !== device?.name ? serviceName : device?.name} </b>
+          <b> {item.target && serviceName !== device?.name ? serviceName : device?.name + ' [ ' + device?.id + ' ] ' }  </b>
           {item.state === EventState.active ? 'went online' : 'went offline'}
         </>
       )
