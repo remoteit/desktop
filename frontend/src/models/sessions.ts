@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
-import { connectionName, findLocalConnection, setConnection } from '../helpers/connectionHelper'
+import { findLocalConnection, setConnection } from '../helpers/connectionHelper'
+import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -89,7 +90,7 @@ export default createModel<RootModel>()({
             id: e.target.id,
             deviceId: e.target.device.id,
             platform: e.target.platform,
-            name: connectionName(e.target, e.target.device),
+            name: combinedName(e.target, e.target.device),
           },
         })
         return sessions

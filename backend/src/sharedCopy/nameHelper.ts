@@ -50,6 +50,17 @@ export function addDeviceName(deviceName: string, name: string) {
   return deviceName + separator + ext
 }
 
+type nameObj = { name: string }
+
+export function combinedName(service?: nameObj, device?: nameObj): string {
+  let name: string[] = []
+  if (device) {
+    name.push(device.name)
+    if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
+  } else if (service) name.push(service.name)
+  return name.join(' ')
+}
+
 export function safeHostname(name: string, blacklist: string[]) {
   let index = 1
   name = name.replace('.local', '')

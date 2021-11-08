@@ -23,7 +23,7 @@ export const ServiceContextualMenu: React.FC = () => {
     return {
       el,
       remoteUI: isRemoteUI(state),
-      connection: selectConnection(state),
+      connection: selectConnection(state, service),
       service,
       device,
     }

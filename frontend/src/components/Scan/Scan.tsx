@@ -64,7 +64,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
         <div>
           <TextField
             select
-            margin="dense"
+            hiddenLabel
             value={scanInterface}
             variant="filled"
             onChange={event => ui.set({ scanInterface: event.target.value as string })}
