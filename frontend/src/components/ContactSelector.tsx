@@ -1,7 +1,6 @@
 import React from 'react'
 import CreatableSelect from 'react-select/creatable'
 import { Theme } from 'react-select'
-import { Gutters } from './Gutters'
 import { makeStyles } from '@material-ui/core'
 import { contactOptions } from '../helpers/contacts'
 import { colors, spacing, fontSizes } from '../styling'
@@ -35,22 +34,20 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
   }
 
   return (
-    <Gutters top={null}>
-      <CreatableSelect
-        isMulti
-        autoFocus
-        isClearable
-        options={options}
-        theme={selectTheme}
-        className={css.select}
-        classNamePrefix="select"
-        placeholder="Enter an email..."
-        onChange={handleChange}
-        isValidNewOption={v => mailFormat.test(v)}
-        formatCreateLabel={validateEmail}
-        styles={customStyles}
-      />
-    </Gutters>
+    <CreatableSelect
+      isMulti
+      autoFocus
+      isClearable
+      options={options}
+      theme={selectTheme}
+      className={css.select}
+      classNamePrefix="select"
+      placeholder="Enter an email..."
+      onChange={handleChange}
+      isValidNewOption={v => mailFormat.test(v)}
+      formatCreateLabel={validateEmail}
+      styles={customStyles}
+    />
   )
 }
 
@@ -59,6 +56,7 @@ const useStyles = makeStyles({
     flexGrow: 1,
     margin: `${spacing.md}px 0`,
     fontSize: fontSizes.base,
+    width: '100%',
     fontWeight: 400,
     '& .select__placeholder': { color: colors.primary },
     '& .select__multi-value': { backgroundColor: colors.primary, padding: `${spacing.xxs}px ${spacing.xs}px` },
