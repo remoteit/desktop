@@ -279,7 +279,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined, setupDeletingService: false })
     },
 
-    async claimDevice(code: string) {
+    async claimDevice(code: string, globalState) {
       dispatch.ui.set({ claiming: true })
       dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
 
@@ -296,6 +296,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ claiming: false })
       }
 
+      if (globalState.auth.user) await dispatch.accounts.setActive(globalState.auth.user.id.toString())
       dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
     },
 
