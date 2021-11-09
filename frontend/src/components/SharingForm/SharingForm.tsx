@@ -31,23 +31,20 @@ export function SharingForm({
   const {
     script,
     scriptIndeterminate,
-    shareChanged,
     users,
-    selected,
     selectedServices,
   } = useSelector((state: ApplicationState) => state.shares.currentDevice || {})
 
   const location = useLocation()
   const { email = '' } = useParams<{ email: string }>()
   const saving = useSelector((state: ApplicationState) => state.shares.sharing)
-  const changed = !shareChanged || ((selected?.length > 0 || !!user) && selectedServices.length > 1)
-  const [disabled, setDisabled] = useState<boolean>(!changed || saving)
   const { shares } = useDispatch<Dispatch>()
   const [allowScript, setAllowScript] = useState<boolean>(script)
 
+  const disabled = !users?.length
+
   const handleChangeServices = (services: string[]) => {
     shares.changeServices(services)
-    setDisabled(false)
   }
 
   useEffect(() => {
@@ -57,8 +54,8 @@ export function SharingForm({
 
   useEffect(() => {
     setAllowScript(script)
-    return () => setDisabled(false)
   }, [script])
+
 
   const handleChangeScripting = () => shares.changeScript(!script)
 
