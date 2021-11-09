@@ -1,7 +1,6 @@
 import { createModel } from '@rematch/core'
 import { selectById } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
-import { platformConfiguration } from '../services/platformConfiguration'
 import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
@@ -107,7 +106,6 @@ export default createModel<RootModel>()({
       }
 
       backend.set({ device: targetDevice })
-      platformConfiguration()
     },
     async targetUpdated(_: ITarget[], globalState) {
       const { user } = globalState.auth

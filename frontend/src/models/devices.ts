@@ -10,7 +10,6 @@ import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../serv
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from '../services/graphQL'
 import { getActiveAccountId, getAllDevices } from './accounts'
-import { platformConfiguration } from '../services/platformConfiguration'
 import { r3, hasCredentials } from '../services/remote.it'
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
@@ -126,7 +125,6 @@ export default createModel<RootModel>()({
 
       updateSearch()
       if (!error) cleanOrphanConnections()
-      platformConfiguration()
 
       // @TODO pull contacts out into its own model / request on page load
       set({ fetching: false, append: false, initialized: true, contacts })
@@ -159,7 +157,6 @@ export default createModel<RootModel>()({
       await dispatch.accounts.setDevice({ id: id, accountId, device: result })
       set({ fetching: false })
 
-      platformConfiguration()
       return result
     },
 
