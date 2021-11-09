@@ -20,12 +20,16 @@ export const Plans: React.FC = () => {
     purchasing: !!state.licensing.purchasing,
     license: getRemoteitLicense(state),
   }))
-  const getDefaults = () => ({
-    checkout: false,
-    planId: license?.plan?.id,
-    priceId: license?.subscription?.price?.id,
-    quantity: license?.quantity || 1,
-  })
+  const getDefaults = () => {
+    const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
+    const price = plan.prices?.find(p => p.id === license?.subscription?.price?.id) || plan.prices?.[0]
+    return {
+      checkout: false,
+      planId: plan.id,
+      priceId: price?.id,
+      quantity: license?.quantity || 1,
+    }
+  }
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
   const enterprise = !license?.plan?.billing
   const personal = license?.plan?.id === PERSONAL_PLAN_ID

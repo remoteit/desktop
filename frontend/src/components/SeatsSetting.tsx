@@ -19,10 +19,14 @@ export const SeatsSetting: React.FC = () => {
     license: getRemoteitLicense(state),
   }))
 
-  const getDefaults = () => ({
-    priceId: license?.subscription?.price?.id,
-    quantity: license?.quantity || 1,
-  })
+  const getDefaults = () => {
+    const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
+    const price = plan.prices?.find(p => p.id === license?.subscription?.price?.id) || plan.prices?.[0]
+    return {
+      priceId: price?.id,
+      quantity: license?.quantity || 1,
+    }
+  }
 
   const [form, setForm] = React.useState<IPurchase>(getDefaults())
   const [confirm, setConfirm] = React.useState<boolean>(false)
