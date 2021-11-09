@@ -60,7 +60,7 @@ export const DialogApp: React.FC<{
         <DialogContent>
           <DialogContentText>
             You can use a browser-based {type} launcher to access this connection. Alternatively, you can download and
-            install PuTTy
+            install {type}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -77,7 +77,6 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
             />
             <CustomAttributeSettings connection={connection} service={service} />
             <TestUI>
-              {' '}
               <AutoLaunchToggle connection={connection} service={service} />
             </TestUI>
           </List>
