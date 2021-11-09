@@ -195,9 +195,16 @@ export default createModel<RootModel>()({
         return
       }
       dispatch.licensing.set({ purchasing: 'true' })
-      await graphQLUpdateSubscription({ priceId, quantity })
+      const result = await graphQLUpdateSubscription({ priceId, quantity })
+      if (result !== 'ERROR') {
+        const success = result?.data?.data?.updateSubscription
+        if (!success) {
+          dispatch.ui.set({ errorMessage: 'Subscription update failed, please contact support.' })
+          dispatch.licensing.set({ purchasing: undefined })
+        }
+      }
       await dispatch.organization.fetch()
-      console.log('UPDATE SUBSCRIPTION', { priceId, quantity })
+      console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
 
     async unsubscribe() {

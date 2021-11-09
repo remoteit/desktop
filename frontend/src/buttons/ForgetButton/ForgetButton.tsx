@@ -1,6 +1,5 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
-import { useHistory } from 'react-router-dom'
 import { IconButton } from '../IconButton'
 
 type Props = {
@@ -10,13 +9,11 @@ type Props = {
 }
 
 export const ForgetButton: React.FC<Props> = ({ disabled = false, connection, inline }) => {
-  const history = useHistory()
-
   if (connection?.createdTime || connection?.enabled) return null
 
   const forget = () => {
+    // @TODO fixme this needs to be a local clear unless in desktop ui
     emit('service/forget', connection)
-    history.push('/connections')
   }
 
   return (

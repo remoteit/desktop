@@ -130,12 +130,13 @@ declare global {
   }
   interface IConnection {
     address?: string // the connection url returned from cli
+    autoLaunch?: boolean
     commandTemplate?: string // command line launch template
     connected?: boolean
     connecting?: boolean
-    disconnecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
     deviceID?: string
+    disconnecting?: boolean
     enabled?: boolean // if the connection is active
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
@@ -145,6 +146,7 @@ declare global {
     ip?: ipAddress // bind address
     isP2P?: boolean // if the connection was made with peer to peer vs failover
     launchTemplate?: string // deep link launch url template
+    launchType?: 'COMMAND' | 'URL' // scheme to use for launching
     log?: boolean // if cli should log the connectd stdout to file
     name?: string
     online?: boolean // online if service is online
@@ -162,7 +164,6 @@ declare global {
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
-    launchType?: 'COMMAND' | 'URL' // scheme to use for launching
     [index: string]: any // needed to be able to iterate the keys :(
   }
 
@@ -518,6 +519,12 @@ declare global {
   type IEvents = { [event: string]: string }
 
   type ILookup<T> = { [key: string]: T }
+
+  type ILaunchState = {
+    launch: boolean
+    prompt: boolean
+    openApp: boolean
+  }
 
   type ISelect = { [key: string]: string | number }
 

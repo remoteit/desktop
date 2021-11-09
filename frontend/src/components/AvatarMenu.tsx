@@ -57,11 +57,15 @@ export const AvatarMenu: React.FC<Props> = ({}) => {
           onClick={() => window.open('https://link.remote.it/portal/account')}
         />
         <ListItemSetting
-          label="Documentation"
-          icon="books"
+          label="Support"
+          icon="life-ring"
           onClick={() => window.open('https://link.remote.it/documentation-desktop/overview')}
         />
-        <ListItemSetting label="API" icon="cube" onClick={() => window.open('https://link.remote.it/docs/api')} />
+        <ListItemSetting
+          label="Documentation"
+          icon="books"
+          onClick={() => window.open('https://link.remote.it/docs/api')}
+        />
         {altMenu && (
           <ListItemSetting
             confirm

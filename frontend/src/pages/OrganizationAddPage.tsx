@@ -16,14 +16,8 @@ import { useHistory } from 'react-router-dom'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationAddPage = () => {
-  const {
-    members,
-    contacts = [],
-    organization,
-    freeLicenses,
-  } = useSelector((state: ApplicationState) => ({
-    members: state.organization.members,
-    contacts: state.devices.contacts,
+  const { contacts, organization, freeLicenses } = useSelector((state: ApplicationState) => ({
+    contacts: state.devices.contacts.filter(c => !state.organization.members.find(s => s.user.id === c.id)) || [],
     organization: state.organization,
     freeLicenses: getFreeLicenses(state),
   }))
@@ -60,10 +54,9 @@ export const OrganizationAddPage = () => {
           <Typography variant="h1">
             <Title>Add Organization Members</Title>
           </Typography>
-          <ContactSelector
-            contacts={contacts.filter(c => !members.find(s => s.user.id === c.id))}
-            onChange={setEmails}
-          />
+          <Gutters top={null}>
+            <ContactSelector contacts={contacts} onChange={setEmails} />
+          </Gutters>
         </>
       }
     >

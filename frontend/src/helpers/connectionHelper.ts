@@ -1,8 +1,8 @@
 import { emit } from '../services/Controller'
-import { DEFAULT_CONNECTION, IP_PRIVATE } from '../shared/constants'
+import { DEFAULT_CONNECTION, MAX_CONNECTION_NAME_LENGTH, IP_PRIVATE } from '../shared/constants'
 import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
-import { removeDeviceName } from '../shared/nameHelper'
+import { combinedName } from '../shared/nameHelper'
 
 export function connectionState(instance?: IService | IDevice, connection?: IConnection): IConnectionState {
   if (instance?.state === 'inactive') return 'offline'
@@ -27,12 +27,9 @@ export function sanitizeName(name: string) {
 }
 
 export function connectionName(service?: nameObj, device?: nameObj): string {
-  let name: string[] = []
-  if (device) {
-    name.push(device.name)
-    if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
-  } else if (service) name.push(service.name)
-  return sanitizeName(name.join(' '))
+  let name = sanitizeName(combinedName(service, device))
+  if (name.length > MAX_CONNECTION_NAME_LENGTH) name = name.substr(0, MAX_CONNECTION_NAME_LENGTH)
+  return name
 }
 
 export function newConnection(service?: IService | null) {

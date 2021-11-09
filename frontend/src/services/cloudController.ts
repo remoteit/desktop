@@ -6,7 +6,8 @@ import { version } from '../../package.json'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { selectById } from '../models/devices'
-import { connectionName, setConnection, findLocalConnection } from '../helpers/connectionHelper'
+import { combinedName } from '../shared/nameHelper'
+import { setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
 import { emit } from './Controller'
 import { agent } from '../services/Browser'
@@ -139,7 +140,7 @@ class CloudController {
           const connection = findLocalConnection(state, t.id, event.session)
           return {
             id: t.id,
-            name: connectionName(t, t.device),
+            name: combinedName(t, t.device),
             owner: t.owner,
             typeID: t.application,
             platform: t.platform,

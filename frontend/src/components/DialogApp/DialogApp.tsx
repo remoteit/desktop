@@ -1,5 +1,13 @@
 import React from 'react'
-import { Dialog, DialogActions, Button, DialogTitle, DialogContent, DialogContentText, makeStyles } from '@material-ui/core'
+import {
+  Dialog,
+  DialogActions,
+  Button,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  makeStyles,
+} from '@material-ui/core'
 import { Application } from '../../shared/applications'
 import { emit } from '../../services/Controller'
 import { ApplicationState, Dispatch } from '../../store'
@@ -14,18 +22,18 @@ export const DialogApp: React.FC<{
   const { ui } = useDispatch<Dispatch>()
   const { requireInstall, openApp } = useSelector((state: ApplicationState) => ({
     requireInstall: state.ui.requireInstall,
-    openApp: state.ui.launchState.openApp
+    openApp: state.ui.launchState.openApp,
   }))
 
   const closeAll = () => {
-    ui.updateLaunchState({ openApp: false, open: false, launch: false })
+    ui.launchState({ openApp: false, open: false, launch: false })
   }
 
   const getLinkDownload = () => {
     ui.set({ requireInstall: 'none' })
     switch (requireInstall) {
       case 'putty':
-        return ('https://link.remote.it/download/putty')
+        return 'https://link.remote.it/download/putty'
       case 'vncviewer':
         return 'https://www.realvnc.com/en/connect/download/viewer/windows/'
     }
@@ -48,17 +56,23 @@ export const DialogApp: React.FC<{
   return (
     <>
       <Dialog open={openApp} onClose={closeAll} maxWidth="sm" fullWidth>
-        <DialogTitle >{title}</DialogTitle>
+        <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            You can use a browser-based {type} launcher to access this connection.
-            Alternatively, you can download and install {type}
+            You can use a browser-based {type} launcher to access this connection. Alternatively, you can download and
+            install {type}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={getApp} className={css.getApp} variant="contained" color="primary"   >{buttonText}</Button>
-          <Button onClick={closeAll} className={css.button} size="small" color="primary">Cancel</Button>
-          <Button onClick={launchBrowser} className={css.button} variant="contained" color="primary"  >User browser launcher</Button>
+          <Button onClick={getApp} className={css.getApp} variant="contained" color="primary">
+            {buttonText}
+          </Button>
+          <Button onClick={closeAll} className={css.button} size="small" color="primary">
+            Cancel
+          </Button>
+          <Button onClick={launchBrowser} className={css.button} variant="contained" color="primary">
+            User browser launcher
+          </Button>
         </DialogActions>
       </Dialog>
     </>
@@ -66,6 +80,6 @@ export const DialogApp: React.FC<{
 }
 
 const useStyles = makeStyles({
-  getApp: { borderRadius: 3, left: '-90px' },
-  button: { borderRadius: 3 }
+  getApp: { borderRadius: 3, left: '-120px' },
+  button: { borderRadius: 3 },
 })

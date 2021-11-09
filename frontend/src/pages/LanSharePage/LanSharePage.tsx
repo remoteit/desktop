@@ -85,7 +85,7 @@ export const LanSharePage: React.FC = () => {
       ip: enabledLocalSharing ? currentIp : IP_PRIVATE,
       restriction: getSelectionValue(),
     })
-    history.push(`/connections/${serviceID}`)
+    history.goBack()
   }
 
   const handleLocalNetworkSecurity = event => {
@@ -183,7 +183,7 @@ export const LanSharePage: React.FC = () => {
         <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
           Save
         </Button>
-        <Button onClick={() => history.push(`/connections/${serviceID}`)}>Cancel</Button>
+        <Button onClick={() => history.goBack()}>Cancel</Button>
       </div>
     </Container>
   )

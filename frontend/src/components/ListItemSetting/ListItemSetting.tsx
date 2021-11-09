@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import {
+  makeStyles,
   Tooltip,
   ListItem,
   ListItemText,
@@ -11,12 +12,13 @@ import {
 import { Confirm } from '../Confirm'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
-import { Color } from '../../styling'
+import { Color, spacing } from '../../styling'
 
 // React.ComponentProps<typeof ListItem> &
 type Props = {
   icon?: string
   iconColor?: Color
+  hideIcon?: boolean
   label: string | React.ReactElement
   subLabel?: string | React.ReactElement
   button?: string
@@ -34,6 +36,7 @@ type Props = {
 export const ListItemSetting = ({
   icon,
   iconColor,
+  hideIcon,
   label,
   subLabel,
   button,
@@ -52,6 +55,7 @@ export const ListItemSetting = ({
   const iconRef = useRef<HTMLDivElement>(null)
   const showToggle = toggle !== undefined
   const showButton = button !== undefined
+  const css = useStyles()
 
   if (!onClick) confirm = false
 
@@ -86,7 +90,7 @@ export const ListItemSetting = ({
         dense
       >
         <TooltipWrapper>
-          <ListItemIcon>
+          <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
             <Icon ref={iconRef} name={icon} color={iconColor} size="md" />
           </ListItemIcon>
         </TooltipWrapper>
@@ -108,3 +112,7 @@ export const ListItemSetting = ({
     </>
   )
 }
+
+const useStyles = makeStyles({
+  hideIcon: { minWidth: spacing.sm },
+})

@@ -83,7 +83,6 @@ export const RegisterButton: React.FC = () => {
               <ListItem>
                 <TextField
                   autoFocus
-                  size="small"
                   label="Registration Code"
                   value={code}
                   variant="filled"
