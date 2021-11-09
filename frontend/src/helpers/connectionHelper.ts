@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { DEFAULT_CONNECTION, IP_PRIVATE } from '../shared/constants'
+import { DEFAULT_CONNECTION, MAX_CONNECTION_NAME_LENGTH, IP_PRIVATE } from '../shared/constants'
 import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
@@ -27,7 +27,9 @@ export function sanitizeName(name: string) {
 }
 
 export function connectionName(service?: nameObj, device?: nameObj): string {
-  return sanitizeName(combinedName(service, device))
+  let name = sanitizeName(combinedName(service, device))
+  if (name.length > MAX_CONNECTION_NAME_LENGTH) name = name.substr(0, MAX_CONNECTION_NAME_LENGTH)
+  return name
 }
 
 export function newConnection(service?: IService | null) {

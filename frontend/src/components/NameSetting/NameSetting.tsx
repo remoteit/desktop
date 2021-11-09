@@ -1,7 +1,7 @@
 import React from 'react'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { setConnection, connectionName } from '../../helpers/connectionHelper'
-import { REGEX_CONNECTION_NAME } from '../../shared/constants'
+import { REGEX_CONNECTION_NAME, MAX_CONNECTION_NAME_LENGTH } from '../../shared/constants'
 
 export const NameSetting: React.FC<{ service: IService; device?: IDevice; connection: IConnection }> = ({
   service,
@@ -20,7 +20,7 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
         connection &&
         setConnection({
           ...connection,
-          name: name.toString() || connection.name,
+          name: name.toString().substr(0, MAX_CONNECTION_NAME_LENGTH) || connection.name,
         })
       }
     />
