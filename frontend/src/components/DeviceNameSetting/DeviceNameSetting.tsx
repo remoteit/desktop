@@ -33,6 +33,7 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
         <LabelButton device={device} />
       </div>
       <InlineTextFieldSetting
+        required
         value={name}
         label="Device Name"
         disabled={device.shared}
