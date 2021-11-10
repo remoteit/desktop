@@ -89,14 +89,20 @@ export function serviceNameValidation(name: string) {
   const value = name.replace(REGEX_NAME_SAFE, '')
   if (value !== name) {
     return {
-      error: 'Can only contain alpha numeric characters.',
+      error: 'Can only contain alpha numeric characters',
       value,
     }
   }
   if (value.length > MAX_NAME_LENGTH) {
     return {
-      error: `Cannot exceed ${MAX_NAME_LENGTH} characters.`,
+      error: `Cannot exceed ${MAX_NAME_LENGTH} characters`,
       value: value.substring(0, MAX_NAME_LENGTH),
+    }
+  }
+  if (!value.length) {
+    return {
+      error: `Cannot be empty`,
+      value,
     }
   }
   return { value }

@@ -143,24 +143,28 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
                   onMouseLeave={() => setHover(undefined)}
                 />
               </GuideStep>
-              <CopyButton
-                color="white"
-                icon="i-cursor"
-                type="solid"
-                size="md"
-                value={connection.host}
-                onMouseEnter={() => setHover('name')}
-                onMouseLeave={() => setHover(undefined)}
-              />
-              <CopyButton
-                color="white"
-                icon="port"
-                type="solid"
-                size="md"
-                value={connection.port}
-                onMouseEnter={() => setHover('port')}
-                onMouseLeave={() => setHover(undefined)}
-              />
+              {connection.host && (
+                <>
+                  <CopyButton
+                    color="white"
+                    icon="i-cursor"
+                    type="solid"
+                    size="md"
+                    value={connection.host}
+                    onMouseEnter={() => setHover('name')}
+                    onMouseLeave={() => setHover(undefined)}
+                  />
+                  <CopyButton
+                    color="white"
+                    icon="port"
+                    type="solid"
+                    size="md"
+                    value={connection.port}
+                    onMouseEnter={() => setHover('port')}
+                    onMouseLeave={() => setHover(undefined)}
+                  />
+                </>
+              )}
             </span>
             <span>
               <InputLabel shrink>Launch</InputLabel>

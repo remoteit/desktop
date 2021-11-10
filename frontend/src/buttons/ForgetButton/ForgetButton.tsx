@@ -9,7 +9,7 @@ type Props = {
 }
 
 export const ForgetButton: React.FC<Props> = ({ disabled = false, connection, inline }) => {
-  if (connection?.createdTime || connection?.enabled) return null
+  if (connection?.enabled) return null
 
   const forget = () => {
     // @TODO fixme this needs to be a local clear unless in desktop ui
