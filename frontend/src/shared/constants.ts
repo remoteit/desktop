@@ -22,6 +22,7 @@ export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://ws.re
 export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL || 'wss://ws.remote.it/beta'
 export const PORT = process.env.REACT_APP_PORT || 29999
 export const HEARTBEAT_INTERVAL = 1000 * 15 // 15 SEC
+export const FROM_PORTAL = '?from=portal'
 
 //API Zendesk
 export const ZENDESK_URL = process.env.ZENDESK_URL || 'https://remot3it.zendesk.com/api/v2/'
