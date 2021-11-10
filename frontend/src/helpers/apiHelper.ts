@@ -15,9 +15,14 @@ export function getGraphQLApi(): string {
 }
 
 export function getRestApi(): string {
-  if (!store) return API_URL
-  const { apiURL, switchApi } = store.getState().backend.preferences
-  return apiURL && switchApi ? apiURL : API_URL
+  try {
+    if (!store) return API_URL
+    const { apiURL, switchApi } = store.getState().backend.preferences
+    return apiURL && switchApi ? apiURL : API_URL
+  } catch {
+    return API_URL
+  }
+
 }
 
 export function getWebSocketURL(): string {
