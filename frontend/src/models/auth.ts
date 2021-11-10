@@ -160,7 +160,7 @@ export default createModel<RootModel>()({
     },
     async disconnect(_: void, rootState) {
       console.log('DISCONNECT')
-      if (!rootState.auth.authenticated) {
+      if (!rootState.auth.authenticated && !rootState.auth.backendAuthenticated) {
         await dispatch.auth.signedOut()
         dispatch.auth.setDefaultError('Sign in failed, please try again.')
       }

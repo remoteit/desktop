@@ -65,7 +65,7 @@ export const OrganizationPage: React.FC = () => {
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
                   Add members to your organization to automatically share all of your devices. &nbsp;
-                  <i>Unlicensed members will only be able to connect to your first five devices.</i>
+                  <b>Unlicensed members will only be able to connect to the first five.</b>
                 </Typography>
               </Gutters>
             </List>
