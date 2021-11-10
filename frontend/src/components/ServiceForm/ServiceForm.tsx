@@ -144,6 +144,7 @@ export const ServiceForm: React.FC<Props> = ({
         )}
         <ListItem className={css.field}>
           <TextField
+            required
             label="Service Name"
             value={form.name}
             disabled={disabled}
@@ -162,6 +163,7 @@ export const ServiceForm: React.FC<Props> = ({
           <>
             <ListItem className={css.field}>
               <TextField
+                required
                 label="Service Port"
                 value={form.port || ''}
                 disabled={disabled}
@@ -174,6 +176,7 @@ export const ServiceForm: React.FC<Props> = ({
             </ListItem>
             <ListItem className={css.field}>
               <TextField
+                required
                 label="Service Host Address"
                 value={form.hostname}
                 disabled={disabled}

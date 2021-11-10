@@ -10,6 +10,7 @@ type Props = {
   actionIcon?: JSX.Element
   displayValue?: string | number
   filter?: RegExp
+  required?: boolean
   disabled?: boolean
   resetValue?: string | number
   maxLength?: number
@@ -23,6 +24,7 @@ type Props = {
 export const InlineTextFieldSetting: React.FC<Props> = ({
   label,
   filter,
+  required,
   value = '',
   resetValue = '',
   maxLength,
@@ -65,7 +67,12 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         helperText={error}
         onChange={event => {
           let { value } = event.target
-          if (filter && value.length > 1) {
+          if (required && !value.length) {
+            setError(`Required field`)
+          } else if (maxLength && value.length > maxLength) {
+            setError(`Cannot exceed ${maxLength} characters`)
+            value = value.substring(0, maxLength)
+          } else if (filter && value.length > 1) {
             const original = value
             value = value.replace(filter, '')
             if (original !== value) {
@@ -73,9 +80,6 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
             } else {
               setError(undefined)
             }
-          } else if (maxLength && value.length > maxLength) {
-            setError(`Cannot exceed ${maxLength} characters.`)
-            value = value.substring(0, maxLength)
           } else {
             setError(undefined)
           }
