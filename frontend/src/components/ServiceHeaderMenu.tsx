@@ -77,7 +77,7 @@ export const ServiceHeaderMenu: React.FC<{
               pathname={`/devices/${device.id}/${serviceID}/details`}
               dense
             />
-            {!device.shared && device.state !== 'inactive' && (
+            {!device.shared && (
               <ListItemLocation
                 title="Edit"
                 icon="pen"
