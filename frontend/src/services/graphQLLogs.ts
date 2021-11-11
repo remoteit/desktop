@@ -16,6 +16,10 @@ const EVENTS = `
         target {
           id
           name
+          device {
+            id
+            name
+          }
         }
         users {
           email

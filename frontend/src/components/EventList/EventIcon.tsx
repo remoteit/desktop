@@ -56,9 +56,12 @@ export function EventIcon(item: IEvent): JSX.Element {
       }
       break
 
-    default:
+    case EventType.license_updated:
+      icon = 'info-circle'
+      color = 'grayDarker'
+      title = 'License changed'
       break
   }
 
-  return <Icon name={icon} size="md" color={color} />
+  return <Icon name={icon} size="md" color={color} title={title} />
 }
