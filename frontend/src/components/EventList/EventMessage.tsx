@@ -31,7 +31,7 @@ export function EventMessage({
 }): JSX.Element {
   const target = item.target?.[0] //(item.target?.map(service => service.name) || []).join(' + ')
   let name = combinedName(target, target?.device, ' - ')
-  if (!name) name = target?.id || 'Unknown'
+  if (!name) name = target?.id ? `${target.id} (deleted)` : 'Unknown'
 
   let message: JSX.Element | string = ''
   switch (item.type) {
