@@ -196,7 +196,7 @@ function getApplicationType(connection: {
         launchIcon: 'desktop',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultTemplateCmd: `start vncViewer.exe -Username [username] [host]:[port]`,
+        defaultTemplateCmd: `start vncviewer.exe -Username [username] [host]:[port]`,
         checkApplicationCmd: 'cd c:\\ && WHERE /R "c:\\Program Files" vncviewer.exe',
       })
     case 28:
