@@ -208,13 +208,6 @@ function getEventHandlers() {
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: BinaryName) => binaries.notInstalled(binary),
-    'required/app': (result: IAppValidation) => {
-      ui.set({
-        requireInstall: result.install,
-        launchLoading: result.loading,
-        launchPath: result.path,
-      })
-    },
   } as EventHandlers
 }
 

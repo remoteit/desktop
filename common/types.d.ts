@@ -30,7 +30,6 @@ declare global {
     | 'service/clear'
     | 'service/clear-recent'
     | 'launch/app'
-    | 'check/app'
 
     // App/settings
     | 'maximize'

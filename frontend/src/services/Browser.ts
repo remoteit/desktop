@@ -1,5 +1,5 @@
 import { IP_PRIVATE, PORTAL } from '../shared/constants'
-import { ApplicationState } from '../store'
+import { ApplicationState, store } from '../store'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -107,4 +107,13 @@ export async function setLocalStorageByUser(state: ApplicationState, key: string
 export async function removeLocalStorageByUser(state: ApplicationState, key: string) {
   const currentSession = await state.auth.user?.id
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
+}
+
+export function safeWindowOpen(url?: string, target?: string) {
+  const { ui } = store.dispatch
+  try {
+    window.open(url, target)
+  } catch {
+    ui.set({ errorMessage: `Windows Open URL not valid: ${url}` })
+  }
 }

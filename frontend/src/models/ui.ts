@@ -36,7 +36,6 @@ type UIState = {
   errorMessage: string
   launchLoading: boolean
   launchPath: string
-  requireInstall: string
   panelWidth: ILookup<number>
   navigationBack: string[]
   navigationForward: string[]
@@ -77,7 +76,6 @@ const defaultState: UIState = {
   errorMessage: '',
   launchLoading: false,
   launchPath: '',
-  requireInstall: '',
   panelWidth: { devices: 400, connections: 550, settings: 350 },
   navigationBack: [],
   navigationForward: [],

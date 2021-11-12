@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { isWindows, getApplicationObj, isMac } from '../../services/Browser'
+import { isWindows, getApplicationObj, isMac, safeWindowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { useApplication } from '../../hooks/useApplication'
@@ -8,7 +8,6 @@ import { setConnection } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
 import { IconButton } from '../../buttons/IconButton'
 import { DataButton } from '../DataButton'
-import { DialogApp } from '../../components/DialogApp'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import { Color, FontSize } from '../../styling'
@@ -36,37 +35,16 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
     launchState: state.ui.launchState,
   }))
 
-  const [launchApp, setLaunchApp] = useState<ILaunchApp>()
-  const [launchIntent, setLaunchIntent] = useState<boolean>(false)
   const app = useApplication(connection && connection.launchType === 'COMMAND' ? 'copy' : 'launch', service, connection)
   const disabled = !connection?.enabled
 
-  useEffect(() => {
-    if (launchIntent && !loading) {
-      launchApplication()
-      setLaunchIntent(false)
-    }
-  }, [loading, launchIntent])
 
   if (!app || !connection?.enabled) return null
 
-  const launchApplication = () => {
-    const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
-    const hostProps = {
-      port: app.connection?.port,
-      host: app.connection?.host,
-      path,
-    }
-    if (applicationObj?.application) {
-      setLaunchApp({ ...hostProps, ...applicationObj })
-    }
-    ui.launchState({ openApp: true })
-  }
 
   const onSubmit = (tokens: ILookup<string>) => {
     connection && setConnection({ ...connection, ...tokens })
     ui.launchState({ prompt: false })
-    // here is using preview because we don't know when setConnection respond with the socket emit
     onOpenApp(app.preview(tokens))
   }
 
@@ -81,22 +59,19 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   }
 
   const onOpenApp = (command?: string) => {
-    const currentCommand = command || app.command
+    let currentCommand = command || app.command
     const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
     if (isWindows() && applicationObj.application !== '') {
-      const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
-      ui.set({ launchLoading: true, requireInstall: 'none' })
-      emit('check/app', { application: applicationObj.application, cmd: app.checkApplicationCmd })
-      setLaunchIntent(true)
+      if (app.launchType === LAUNCH_TYPE.URL) return safeWindowOpen(currentCommand)
+      emit('launch/app', { launchApp: { path }, command: currentCommand })
     } else {
-      if (!isWindows()) {
-        app.defaultTemplateCmd = isMac()
-          ? app.launchDarwin.replace('[commandTemplate]', currentCommand)
-          : app.launchUnix.replace('[commandTemplate]', currentCommand)
-      }
+      currentCommand = isMac()
+        ? app.launchDarwin.replace('[commandTemplate]', currentCommand)
+        : app.launchUnix.replace('[commandTemplate]', currentCommand)
+
       app.launchType === LAUNCH_TYPE.URL
-        ? window.open(currentCommand)
-        : emit('launch/app', { launchApp: { path }, app })
+        ? safeWindowOpen(currentCommand)
+        : emit('launch/app', { launchApp: { path }, command: currentCommand })
     }
   }
 
@@ -135,7 +110,6 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
         />
       )}
       <PromptModal app={app} open={launchState.prompt} onClose={closeAll} onSubmit={onSubmit} />
-      <DialogApp launchApp={launchApp} app={app} type={service?.type} />
     </>
   )
 }

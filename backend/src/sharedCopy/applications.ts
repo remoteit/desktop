@@ -23,8 +23,6 @@ export class Application {
   publicTemplate: string = '[address]'
   launchDarwin: string = `osascript -e 'tell application "Terminal" to do script "[commandTemplate]" activate'`
   launchUnix: string = `gnome-terminal -- /bin/bash -c '[commandTemplate]; read'`
-  defaultTemplateCmd: string = ''
-  checkApplicationCmd: string = ''
   addressTemplate: string = '[host]:[port]'
   defaultLaunchType: LAUNCH_TYPE = LAUNCH_TYPE.URL
   defaultLaunchTemplate: string = 'http://[host]:[port]'
@@ -68,10 +66,6 @@ export class Application {
 
   get template() {
     return this.context === 'copy' ? this.commandTemplate : this.launchTemplate
-  }
-
-  get templateCmd() {
-    return this.launchTemplateCmd
   }
 
   get command() {
@@ -127,10 +121,6 @@ export class Application {
       : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
   }
 
-  private get resolvedDefaultLaunchTemplateCmd() {
-    return this.defaultTemplateCmd
-  }
-
   private get resolvedDefaultCommandTemplate() {
     return this.connection?.public
       ? this.publicTemplate
@@ -141,9 +131,6 @@ export class Application {
     return this.connection?.launchTemplate || this.resolvedDefaultLaunchTemplate
   }
 
-  private get launchTemplateCmd() {
-    return this.resolvedDefaultLaunchTemplateCmd
-  }
 
   private get commandTemplate() {
     return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
@@ -196,27 +183,21 @@ function getApplicationType(connection: {
         launchIcon: 'desktop',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultTemplateCmd: `start vncviewer.exe -Username [username] [host]:[port]`,
-        checkApplicationCmd: 'cd c:\\ && WHERE /R "c:\\Program Files" vncviewer.exe',
+        defaultCommandTemplate: isWindows() ? ` "c:\\Program Files\\RealVNC\\VNC Viewer\\vncViewer.exe" -Username [username] [host]:[port]`  : ''
       })
     case 28:
       return new Application({
         title: 'SSH',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        defaultCommandTemplate: 'ssh -l [username] [host] -p [port]',
-        defaultTemplateCmd: `start putty.exe -ssh [username]@[host] [port]`,
-        checkApplicationCmd: 'cd c:\\ && where putty.exe ',
-        //'ssh -l [username] [host] -p [port] -o "NoHostAuthenticationForLocalhost=yes"',
+        defaultCommandTemplate: isWindows() ? `start putty.exe -ssh [username]@[host] [port]` : 'ssh -l [username] [host] -p [port]',
       })
     case 5:
       return new Application({
         title: 'remoteDesktop',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'http://[username]@[host]:[port]',
-        defaultCommandTemplate: '',
-        defaultTemplateCmd: `cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]`,
-        checkApplicationCmd: 'cd c:\\ && where remoteDesktop.exe ',
+        defaultCommandTemplate: `cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]`,
       })
     case 8:
     case 10:

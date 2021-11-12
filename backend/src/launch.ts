@@ -2,18 +2,17 @@ import Logger from './Logger'
 import EventBus from './EventBus'
 import Command from './Command'
 import environment from './environment'
-import { Application } from './sharedCopy/applications'
 
 const EVENTS = {
   notInstalled: 'required/app',
   minimizeWindows: 'windows/minimize',
 }
 
-export const openCMD = async (params: { launchApp: ILaunchApp; app: Application }) => {
+export const openCMD = async (params: { launchApp: ILaunchApp; command: string }) => {
   if (params.launchApp.path) return launchApplication(params)
   Logger.info('LAUNCH APP', { launchApp: params.launchApp })
   const commands = new Command({})
-  commands.push(`${params.app.defaultTemplateCmd}`)
+  commands.push(`${params.command}`)
   const result = await commands.exec()
   if (result) {
     try {
@@ -22,34 +21,22 @@ export const openCMD = async (params: { launchApp: ILaunchApp; app: Application 
       } else if (environment.isWindows) {
         launchApplication(params)
       }
-    } catch (error) {
+    } catch (error: any) {
       Logger.warn('OPEN APP ON WINDOWS ERROR', { result, errorMessage: error.message.toString() })
     }
   }
 }
 
-export const checkAppForWindows = async (params: { application: string; cmd: string }) => {
-  const commands = new Command({})
-  commands.push(`${params.cmd}`)
-  const result = await commands.exec()
-  Logger.info('CHECK APP EXISTS: ', { result })
-  if (result.includes('Command failed:')) {
-    EventBus.emit(EVENTS.notInstalled, { install: `${params.application}`, loading: false })
-  } else {
-    EventBus.emit(EVENTS.notInstalled, { install: `none`, loading: false })
-  }
-}
-
-async function launchApplication(params: { launchApp: ILaunchApp; app: Application }) {
+async function launchApplication(params: { launchApp: ILaunchApp; command: string }) {
   // use defaultTemplateCmd
   const commands = new Command({})
-  commands.push(params.app.defaultTemplateCmd)
+  commands.push(`${params.command}`)
   const result = await commands.exec()
   if (result) {
     try {
       const parsed = JSON.parse(result)
       return parsed.data
-    } catch (error) {
+    } catch (error: any) {
       Logger.warn('LAUNCH APP PARSE ERROR', { result, errorMessage: error.message.toString() })
     }
   }
