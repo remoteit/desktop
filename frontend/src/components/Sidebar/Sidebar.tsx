@@ -23,8 +23,8 @@ export const Sidebar: React.FC = () => {
           <RefreshButton />
         </span>
       </section>
-      <ListItem className={css.select}>
-        <AccountSelect fullWidth hiddenLabel size="small" />
+      <ListItem className={css.select} dense>
+        <AccountSelect fullWidth hiddenLabel />
       </ListItem>
       <SidebarNav />
       <RemoteManagement />

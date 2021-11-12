@@ -624,6 +624,7 @@ declare global {
     chip?: string
     footer?: boolean
     chipPrimary?: boolean
+    Menu?: React.FC
   }
 }
 

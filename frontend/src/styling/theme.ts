@@ -291,6 +291,10 @@ const jssTheme: ThemeOptions = {
       underline: {
         '&:before, &:after': { display: 'none' },
       },
+      inputHiddenLabel: {
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.sm,
+      },
     },
     MuiSelect: {
       select: {
