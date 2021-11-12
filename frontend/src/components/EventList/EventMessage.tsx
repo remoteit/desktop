@@ -36,13 +36,25 @@ export function EventMessage({
   let message: JSX.Element | string = ''
   switch (item.type) {
     case EventType.login_state:
+      message = 'Logged in'
+      break
     case EventType.login_attempt_state:
+      message = 'Login attempt'
+      break
     case EventType.login_password_change:
+      message = 'Password changed'
+      break
     case EventType.login_password_reset:
+      message = 'Password reset'
+      break
     case EventType.login_phone_change:
+      message = 'Phone number changed'
+      break
     case EventType.login_mfa_enabled:
+      message = 'Multi-factor authentication (MFA) enabled'
+      break
     case EventType.login_mfa_disabled:
-      message = <>{'Activity list: ' + item.type}</>
+      message = 'Multi-factor authentication (MFA) disabled'
       break
     case EventType.device_state:
       message = (
@@ -102,6 +114,8 @@ export function EventMessage({
     case EventType.license_updated:
       message = <b>Your license was updated</b>
       break
+    default:
+      message = <>Unknown event type {item.type} occurred</>
   }
 
   return <div>{message}</div>
