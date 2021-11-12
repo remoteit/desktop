@@ -24,6 +24,7 @@ export const OrganizationPage: React.FC = () => {
   }))
   const [removing, setRemoving] = React.useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
+  const enterprise = !license?.plan?.billing
 
   useEffect(() => {
     analyticsHelper.page('OrganizationPage')
@@ -68,7 +69,7 @@ export const OrganizationPage: React.FC = () => {
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
                   Add members to your organization to automatically share all of your devices. &nbsp;
-                  <b>Unlicensed members will only be able to connect to the first five.</b>
+                  {!enterprise && <b>Unlicensed members will only be able to connect to the first five.</b>}
                 </Typography>
               </Gutters>
               <LicensingNoticeDisplay noticeType="PERSONAL_ORGANIZATION" license={license} />
@@ -80,7 +81,7 @@ export const OrganizationPage: React.FC = () => {
       {!organization.initialized ? (
         <LoadingMessage />
       ) : (
-        <OrganizationMemberList organization={organization} owner={owner} />
+        <OrganizationMemberList organization={organization} owner={owner} enterprise={enterprise} />
       )}
     </Container>
   )
