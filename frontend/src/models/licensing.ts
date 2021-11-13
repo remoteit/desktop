@@ -36,6 +36,51 @@ export const LicenseLookup: ILicenseLookup[] = [
 
 const defaultLicense = LicenseLookup[0]
 
+export const graphQLLicenses = `
+  licenses {
+    id
+    updated
+    created
+    expiration
+    valid
+    quantity
+    plan {
+      id
+      name
+      description
+      duration
+      commercial
+      billing
+      product {
+        id
+        name
+        description
+      }
+    }
+    subscription {
+      total
+      status
+      price {
+        id
+        amount
+        currency
+        interval
+      }
+      card {
+        brand
+        month
+        year
+        last
+        name
+        email
+        phone
+        postal
+        country
+        expiration
+      }
+    }
+  }`
+
 type ILicensing = {
   initialized: boolean
   plans: IPlan[]
@@ -83,49 +128,6 @@ export default createModel<RootModel>()({
       })
     },
     async fetch() {
-      const graphQLLicense = `
-        id
-        updated
-        created
-        expiration
-        valid
-        quantity
-        plan {
-          id
-          name
-          description
-          duration
-          commercial
-          billing
-          product {
-            id
-            name
-            description
-          }
-        }
-        subscription {
-          total
-          status
-          price {
-            id
-            amount
-            currency
-            interval
-          }
-          card {
-            brand
-            month
-            year
-            last
-            name
-            email
-            phone
-            postal
-            country
-            expiration
-          }
-        }`
-
       try {
         const result: any = await graphQLRequest(
           ` {
@@ -144,9 +146,7 @@ export default createModel<RootModel>()({
                 }
               }          
               login {
-                licenses {
-                  ${graphQLLicense}
-                }
+                ${graphQLLicenses}
                 limits {
                   name
                   value
@@ -271,7 +271,7 @@ export default createModel<RootModel>()({
   },
 })
 
-function parseLicense(data) {
+export function parseLicense(data) {
   if (!data) return null
   return {
     ...data,
@@ -363,7 +363,7 @@ export function selectLicense(
   }
 }
 
-export function selectLicenses(state: ApplicationState) {
+export function selectLicenses(state: ApplicationState): { licenses: ILicense[]; limits: ILimit[] } {
   return {
     licenses: getLicenses(state).map(license => ({
       ...license,

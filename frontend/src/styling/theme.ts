@@ -150,8 +150,10 @@ const jssTheme: ThemeOptions = {
       },
       sticky: { zIndex: 2 },
       gutters: {
-        paddingRight: gutters - 8,
-        paddingLeft: gutters,
+        marginLeft: spacing.md,
+        marginRight: spacing.md,
+        paddingLeft: spacing.xxs,
+        paddingRight: spacing.xxs,
       },
     },
     MuiPaper: {

@@ -315,6 +315,7 @@ declare global {
     samlName: string
     members?: IOrganizationMember[]
     account?: IUserRef
+    licenses: ILicense[]
   }
 
   type IOrganizationMember = {

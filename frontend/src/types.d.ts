@@ -49,6 +49,8 @@ declare global {
     quantity: number | null
     plan: IPlan
     subscription?: ISubscription
+    managePath?: string
+    limits?: ILimit[]
   }
 
   type ISubscription = {
@@ -219,6 +221,6 @@ declare global {
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 
-declare module 'remote.it' { }
+declare module 'remote.it' {}
 
-export { }
+export {}

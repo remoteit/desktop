@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLLicenses, parseLicense } from './licensing'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
@@ -43,6 +44,7 @@ export default createModel<RootModel>()({
                       id
                       email
                     }
+                    ${graphQLLicenses}
                   }
                 }
               }
@@ -61,8 +63,12 @@ export default createModel<RootModel>()({
       const membership: IOrganizationMembership[] = gqlData.membership || []
       dispatch.accounts.set({
         membership: membership.map(m => ({
-          ...m,
           created: new Date(m.created),
+          role: m.role,
+          organization: {
+            ...m.organization,
+            licenses: m.organization?.licenses?.map(l => parseLicense(l)),
+          },
         })),
       })
       if (!membership.find(m => m.organization.id === state.accounts.activeId)) {
