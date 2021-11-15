@@ -11,9 +11,7 @@ import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 import { isPortal } from '../services/Browser'
 
-export interface Props { }
-
-export const AvatarMenu: React.FC<Props> = ({ }) => {
+export const AvatarMenu: React.FC = () => {
   const [el, setEl] = React.useState<HTMLButtonElement | null>()
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
@@ -81,6 +79,16 @@ export const AvatarMenu: React.FC<Props> = ({ }) => {
           />
         )}
         <Divider />
+        {isPortal() && (
+          <>
+            <ListItemSetting
+              label="Switch to Legacy View"
+              icon="history"
+              onClick={() => (window.location.href = 'https://app.remote.it/#devices')}
+            />
+            <Divider />
+          </>
+        )}
         <DesktopUI>
           <ListItemSetting
             confirm
@@ -94,14 +102,6 @@ export const AvatarMenu: React.FC<Props> = ({ }) => {
             }}
           />
         </DesktopUI>
-        {isPortal() && (
-          <ListItemSetting
-            confirm={backendAuthenticated}
-            label="Switch to Legacy View"
-            icon="history"
-            onClick={() => (window.location.href = 'https://app.remote.it/#devices')}
-          />
-        )}
 
         <ListItemSetting
           confirm={backendAuthenticated}

@@ -7,10 +7,8 @@ import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
 import { getDevices, getOwnDevices } from '../../models/accounts'
 import { masterAttributes, deviceAttributes } from '../../helpers/attributes'
-
-import analyticsHelper from '../../helpers/analyticsHelper'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
-import { isPortal } from '../../services/Browser'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { restore?: boolean; select?: boolean }
 

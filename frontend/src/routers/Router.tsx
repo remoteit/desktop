@@ -30,7 +30,6 @@ import { UserLogPage } from '../pages/UserLogPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
-import { DialogNewFeatures } from '../components/DialogNewFeatures'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
@@ -123,17 +122,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         </Panel>
       </Route>
 
-      <Route path="/devices/welcome">
-        <Panel singlePanel={singlePanel}>
-          <DialogNewFeatures />
-        </Panel>
-      </Route>
-
-      <Route path="/devices/:deviceID/:serviceID?">
-        <DeviceRouter singlePanel={singlePanel} />
-      </Route>
-
-      <Route path="/devices">
+      <Route path={['/devices', '/devices/welcome']} exact>
         {remoteUI ? (
           registered ? (
             <Redirect to={`/devices/${targetDevice.uid}`} />
@@ -147,6 +136,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
             <DevicesPage />
           </Panel>
         )}
+      </Route>
+
+      <Route path="/devices/:deviceID/:serviceID?">
+        <DeviceRouter singlePanel={singlePanel} />
       </Route>
 
       <Route path="/announcements">
