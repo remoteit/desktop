@@ -122,11 +122,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         </Panel>
       </Route>
 
-      <Route path="/devices/:deviceID/:serviceID?">
-        <DeviceRouter singlePanel={singlePanel} />
-      </Route>
-
-      <Route path="/devices">
+      <Route path={['/devices', '/devices/welcome']} exact>
         {remoteUI ? (
           registered ? (
             <Redirect to={`/devices/${targetDevice.uid}`} />
@@ -140,6 +136,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
             <DevicesPage />
           </Panel>
         )}
+      </Route>
+
+      <Route path="/devices/:deviceID/:serviceID?">
+        <DeviceRouter singlePanel={singlePanel} />
       </Route>
 
       <Route path="/announcements">

@@ -7,7 +7,7 @@ import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
 import { getDevices, getOwnDevices } from '../../models/accounts'
 import { masterAttributes, deviceAttributes } from '../../helpers/attributes'
-
+import { DialogNewFeatures } from '../../components/DialogNewFeatures'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { restore?: boolean; select?: boolean }
@@ -47,6 +47,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
           select={select}
         />
       )}
+      <DialogNewFeatures />
     </DevicesHeader>
   )
 }
