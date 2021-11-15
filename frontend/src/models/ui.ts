@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { getLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
 import { RootModel } from './rootModel'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -92,7 +93,7 @@ export default createModel<RootModel>()({
       // restore guides
       const guides = Object.keys(globalState.ui).filter(key => key.startsWith('guide'))
       guides.forEach(guide => {
-        let item = window.localStorage.getItem(`ui-${guide}`)
+        let item = getLocalStorageByUser(`ui-${guide}`)
         if (item) {
           item = JSON.parse(item)
           dispatch.ui.set({ [guide]: item })
@@ -144,7 +145,7 @@ export default createModel<RootModel>()({
       }
 
       state[guide] = { ...state[guide], ...props }
-      window.localStorage.setItem(`ui-${guide}`, JSON.stringify(state[guide]))
+      setLocalStorageByUser(`ui-${guide}`, JSON.stringify(state[guide]))
       return state
     },
     accordion(state: UIState, params: ILookup<boolean>) {

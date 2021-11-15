@@ -3,7 +3,7 @@ import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
-import { isElectron, isPortal } from '../services/Browser'
+import { getLocalStorageByUser, isElectron, isPortal, removeLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
@@ -135,14 +135,14 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
       if (cognitoUser?.username) {
-        if (cognitoUser?.attributes?.email && window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
-          window.localStorage.setItem('username', cognitoUser?.attributes?.email)
-        } else if (!window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)) {
+        if (cognitoUser?.attributes?.email && getLocalStorageByUser(CHECKBOX_REMEMBER_KEY)) {
+          setLocalStorageByUser('username', cognitoUser?.attributes?.email)
+        } else if (!getLocalStorageByUser(CHECKBOX_REMEMBER_KEY)) {
           window.localStorage.removeItem('username')
         }
 
         if (cognitoUser?.authProvider === 'Google') {
-          window.localStorage.setItem('amplify-signin-with-hostedUI', 'true')
+          setLocalStorageByUser('amplify-signin-with-hostedUI', 'true')
         }
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.setInitialized()
@@ -198,7 +198,7 @@ export default createModel<RootModel>()({
      */
     async signedOut(_: void, rootState) {
       await rootState.auth.authService?.signOut()
-      window.localStorage.removeItem('amplify-signin-with-hostedUI')
+      removeLocalStorageByUser('amplify-signin-with-hostedUI')
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.organization.reset()
@@ -236,7 +236,7 @@ export default createModel<RootModel>()({
     },
     signOutFinished(state: AuthState) {
       state.user = undefined
-      window.localStorage.removeItem(USER_KEY)
+      removeLocalStorageByUser(USER_KEY)
       return state
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {
@@ -258,7 +258,7 @@ export default createModel<RootModel>()({
     setUser(state: AuthState, user: IUser) {
       state.user = user
       state.signInError = undefined
-      window.localStorage.setItem(USER_KEY, JSON.stringify(user))
+      setLocalStorageByUser(USER_KEY, JSON.stringify(user))
       return state
     },
     setAuthService(state: AuthState, authService: AuthService) {
