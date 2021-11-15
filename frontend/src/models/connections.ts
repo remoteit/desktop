@@ -7,6 +7,7 @@ import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
 import axios from 'axios'
+import { getLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
 
 type IConnectionsState = { all: IConnection[]; useCommand: boolean }
 
@@ -19,7 +20,7 @@ export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
     async init(_, globalState) {
-      let item = window.localStorage.getItem(`connections-${globalState.auth.user?.id}`)
+      let item = getLocalStorageByUser(`connections-${globalState.auth.user?.id}`)
       if (item) dispatch.connections.setAll(JSON.parse(item))
     },
 
@@ -152,7 +153,7 @@ export default createModel<RootModel>()({
     },
 
     async setAll(all: IConnection[], globalState) {
-      window.localStorage.setItem(`connections-${globalState.auth.user?.id}`, JSON.stringify(all) || '')
+      setLocalStorageByUser(`connections-${globalState.auth.user?.id}`, JSON.stringify(all) || '')
       dispatch.connections.set({ all })
     },
   }),

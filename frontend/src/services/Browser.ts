@@ -1,4 +1,5 @@
 import { IP_PRIVATE, PORTAL } from '../shared/constants'
+import { store } from '../store'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -90,4 +91,33 @@ export function getApplicationObj(typeID?: number, username?: string) {
   }
 
   return { application: '' }
+}
+
+// this is a function to save information per user session in local storage
+export function getLocalStorageByUser(key: string) {
+  try {
+    const currentSession = store.getState().auth.user?.email
+    return currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null
+  } catch (error) {
+    console.error({ messageError: `Error: ${error}` })
+  }
+  return null
+}
+
+export async function setLocalStorageByUser(key: string, value: string) {
+  try {
+    const currentSession = await store.getState().auth.user?.email
+    currentSession && window.localStorage.setItem(currentSession + ':' + key, value)
+  } catch (error) {
+    console.error({ messageError: `Error: ${error}` })
+  }
+}
+
+export async function removeLocalStorageByUser(key: string) {
+  try {
+    const currentSession = await store.getState().auth.user?.email
+    currentSession && window.localStorage.removeItem(currentSession + ':' + key)
+  } catch (error) {
+    console.error({ messageError: `Error: ${error}` })
+  }
 }

@@ -6,7 +6,7 @@ import { Snackbar, Button, IconButton } from '@material-ui/core'
 import { version } from '../../../package.json'
 import { Icon } from '../../components/Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
-import { isHeadless } from '../../services/Browser'
+import { getLocalStorageByUser, isHeadless, setLocalStorageByUser } from '../../services/Browser'
 
 const NOTICE_VERSION_ID = 'notice-version'
 
@@ -17,12 +17,12 @@ export const UpdateNotice: React.FC = () => {
 
   useEffect(() => {
     if (update && update !== version) {
-      let noticeVersion = window.localStorage.getItem(NOTICE_VERSION_ID)
+      let noticeVersion = getLocalStorageByUser(NOTICE_VERSION_ID)
       if (noticeVersion) {
         noticeVersion = JSON.parse(noticeVersion)
         noticeVersion === update && setVersionShown(true)
       } else {
-        window.localStorage.setItem(NOTICE_VERSION_ID, JSON.stringify(update))
+        setLocalStorageByUser(NOTICE_VERSION_ID, JSON.stringify(update))
       }
       setUpdateNotice(true)
     }

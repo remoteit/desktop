@@ -15,6 +15,7 @@ import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 import { apiError } from '../helpers/apiHelper'
+import { getLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
 
 const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
 
@@ -78,7 +79,7 @@ export default createModel<RootModel>()({
     async init() {
       let states = {}
       SAVED_STATES.forEach(key => {
-        const value = window.localStorage.getItem(`device-${key}`)
+        const value = getLocalStorageByUser(`device-${key}`)
         if (value) states[key] = value
       })
       dispatch.devices.set(states)
@@ -306,11 +307,11 @@ export default createModel<RootModel>()({
       try {
         device.shared
           ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email || '')}`, {
-              devices: device.id,
-              emails: auth.user?.email,
-              state: 'off',
-              scripting: false,
-            })
+            devices: device.id,
+            emails: auth.user?.email,
+            state: 'off',
+            scripting: false,
+          })
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
         await dispatch.devices.fetch()
       } catch (error) {
@@ -333,7 +334,7 @@ export default createModel<RootModel>()({
     },
     set(state: IDeviceState, params: DeviceParams) {
       Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) window.localStorage.setItem(`device-${key}`, params[key] || '')
+        if (SAVED_STATES.includes(key)) setLocalStorageByUser(`device-${key}`, params[key] || '')
         state[key] = params[key]
       })
       return state
