@@ -1,6 +1,6 @@
 import React from 'react'
 import { ADD_EVENTS_ACTIONS } from '../../shared/constants'
-import { addDeviceName } from '../../shared/nameHelper'
+import { combinedName } from '../../shared/nameHelper'
 
 export const EventType = {
   login_state: 'AUTH_LOGIN',
@@ -10,6 +10,7 @@ export const EventType = {
   login_phone_change: 'AUTH_PHONE_CHANGE',
   login_mfa_enabled: 'AUTH_MFA_ENABLED',
   login_mfa_disabled: 'AUTH_MFA_DISABLED',
+  license_updated: 'LICENSE_UPDATED',
   device_state: 'DEVICE_STATE',
   device_connect: 'DEVICE_CONNECT',
   device_share: 'DEVICE_SHARE',
@@ -28,25 +29,37 @@ export function EventMessage({
   device?: IDevice
   loggedInUser: IUser | undefined
 }): JSX.Element {
-  const serviceName = (item.target?.map(service => service.name) || []).join(' + ')
-  let message: JSX.Element | string = ''
+  const target = item.target?.[0] //(item.target?.map(service => service.name) || []).join(' + ')
+  let name = combinedName(target, target?.device, ' - ')
+  if (!name) name = target?.id ? `${target.id} (deleted)` : 'Unknown'
 
+  let message: JSX.Element | string = ''
   switch (item.type) {
     case EventType.login_state:
+      message = 'Logged in'
+      break
     case EventType.login_attempt_state:
+      message = 'Login attempt'
+      break
     case EventType.login_password_change:
+      message = 'Password changed'
+      break
     case EventType.login_password_reset:
+      message = 'Password reset'
+      break
     case EventType.login_phone_change:
+      message = 'Phone number changed'
+      break
     case EventType.login_mfa_enabled:
+      message = 'Multi-factor authentication (MFA) enabled'
+      break
     case EventType.login_mfa_disabled:
-      message = <>{'Activity list: ' + item.type}</>
+      message = 'Multi-factor authentication (MFA) disabled'
       break
     case EventType.device_state:
-      let name = device?.id
-      if (device?.name || serviceName) name = serviceName ? addDeviceName(device?.name || '', serviceName) : device?.name
       message = (
         <>
-          <b> {item.target && name}  </b>
+          <b>{name} </b>
           {item.state === EventState.active ? 'went online' : 'went offline'}
         </>
       )
@@ -56,14 +69,15 @@ export function EventMessage({
       message = (
         <>
           <b>{item.actor?.email}</b> {item.state === EventState.connected ? 'connected to' : 'disconnected from'}{' '}
-          <i>{serviceName}</i>
+          <i>{name} </i>
         </>
       )
       break
 
     case EventType.device_share:
       const actor = item.actor?.email === loggedInUser?.email ? 'You' : item.actor?.email
-      const deviceName = device ? device.name : item.devices?.length && item.devices[0]?.name
+      const messageDevice = device || item.devices?.[0]
+      const deviceName = messageDevice?.name || ''
       const users = item.users && item.users.map(user => user.email || '(deleted)')
       const userList =
         users && users.length !== 1 ? users.slice(0, -1).join(', ') + ' and ' + users.slice(-1) : users && users[0]
@@ -95,6 +109,13 @@ export function EventMessage({
           </>
         )
       }
+      break
+
+    case EventType.license_updated:
+      message = <b>Your license was updated</b>
+      break
+    default:
+      message = <>Unknown event type {item.type} occurred</>
   }
 
   return <div>{message}</div>

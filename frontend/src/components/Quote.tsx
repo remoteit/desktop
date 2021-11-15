@@ -15,8 +15,5 @@ const useStyles = makeStyles({
     margin: `${margin}px 0`,
     paddingLeft: noInset ? undefined : spacing.lg,
     borderLeft: `1px solid ${colors.grayLighter}`,
-    // '& .MuiListItem-root, & > .MuiIconButton-root': {
-    //   marginLeft: -spacing.md,
-    // },
   }),
 })

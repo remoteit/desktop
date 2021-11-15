@@ -9,9 +9,15 @@ import { Duration } from './Duration'
 import { spacing } from '../styling'
 import { Avatar } from './Avatar'
 
-type Props = { member: IOrganizationMember; freeLicenses?: boolean; removing?: boolean; onClick?: () => void }
+type Props = {
+  member: IOrganizationMember
+  freeLicenses?: boolean
+  removing?: boolean
+  enterprise?: boolean
+  onClick?: () => void
+}
 
-export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, removing, onClick }) => {
+export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, removing, enterprise, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
   return (
@@ -29,9 +35,11 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
       />
       <ListItemSecondaryAction>
         <RoleSelect member={member} />
-        <span className={css.fixedWidth}>
-          <LicenseSelect member={member} disabled={!freeLicenses} />
-        </span>
+        {enterprise || (
+          <span className={css.fixedWidth}>
+            <LicenseSelect member={member} disabled={!freeLicenses} />
+          </span>
+        )}
         <ConfirmButton
           confirm
           confirmMessage="This will remove all access to this organization’s devices."

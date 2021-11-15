@@ -14,6 +14,10 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   if (limit.value === 0 && limit.actual === 0) return null
 
   switch (limit.name) {
+    case 'org-users':
+      template = 'value'
+      message = limit.value !== null ? `${v(limit.actual)} of ${v(limit.value)} user licenses used` : undefined
+      break
     case 'aws-services':
       template = 'value'
       message =

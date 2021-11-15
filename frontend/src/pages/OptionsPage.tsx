@@ -103,7 +103,7 @@ export const OptionsPage: React.FC = () => {
       </List>
       {!remoteUI && (
         <DesktopUI>
-          <AccordionMenuItem subtitle="Advanced">
+          <AccordionMenuItem subtitle="Advanced" gutters>
             <List>
               <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
               <SettingsDisableNetworkItem />

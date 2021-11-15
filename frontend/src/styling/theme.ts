@@ -149,10 +149,6 @@ const jssTheme: ThemeOptions = {
         lineHeight: '40px',
       },
       sticky: { zIndex: 2 },
-      gutters: {
-        paddingRight: gutters - 8,
-        paddingLeft: gutters,
-      },
     },
     MuiPaper: {
       rounded: { borderRadius: radius },
@@ -290,6 +286,10 @@ const jssTheme: ThemeOptions = {
       input: { padding: '22px 12px 10px' },
       underline: {
         '&:before, &:after': { display: 'none' },
+      },
+      inputHiddenLabel: {
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.sm,
       },
     },
     MuiSelect: {

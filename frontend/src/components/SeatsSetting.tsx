@@ -1,5 +1,5 @@
 import React from 'react'
-import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID, getRemoteitLicense } from '../models/licensing'
+import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID } from '../models/licensing'
 import { makeStyles, List, TextField, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { spacing, fontSizes, colors } from '../styling'
@@ -9,14 +9,13 @@ import { InlineSetting } from './InlineSetting'
 import { Confirm } from './Confirm'
 import { Icon } from './Icon'
 
-export const SeatsSetting: React.FC = () => {
+export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }) => {
   const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const fieldRef = React.useRef<HTMLInputElement>(null)
-  const { plans, license, purchasing } = useSelector((state: ApplicationState) => ({
+  const { plans, purchasing } = useSelector((state: ApplicationState) => ({
     plans: state.licensing.plans.filter(p => p.product.id === REMOTEIT_PRODUCT_ID),
     purchasing: !!state.licensing.purchasing,
-    license: getRemoteitLicense(state),
   }))
 
   const getDefaults = () => {
@@ -32,6 +31,7 @@ export const SeatsSetting: React.FC = () => {
   const [confirm, setConfirm] = React.useState<boolean>(false)
   const selectedPlan = plans.find(plan => plan.id === license?.plan?.id)
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
+  const enterprise = !license?.plan?.billing
 
   const setQuantity = (value: string | number) => {
     let quantity = Math.max(Math.min(+value, 9999), 0)
@@ -39,7 +39,7 @@ export const SeatsSetting: React.FC = () => {
     setForm({ ...form, quantity })
   }
 
-  if (license?.plan?.id === PERSONAL_PLAN_ID) return null
+  if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise) return null
 
   return (
     <>

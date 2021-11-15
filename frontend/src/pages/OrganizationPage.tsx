@@ -3,8 +3,10 @@ import { Dispatch, ApplicationState } from '../store'
 import { Typography, List } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectOwner } from '../models/organization'
+import { getRemoteitLicense } from '../models/licensing'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
+import { LicensingNoticeDisplay } from '../components/LicensingNoticeDisplay'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { SeatsSetting } from '../components/SeatsSetting'
@@ -15,12 +17,14 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationPage: React.FC = () => {
-  const { organization, owner } = useSelector((state: ApplicationState) => ({
+  const { organization, license, owner } = useSelector((state: ApplicationState) => ({
     organization: state.organization,
+    license: getRemoteitLicense(state),
     owner: selectOwner(state),
   }))
   const [removing, setRemoving] = React.useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
+  const enterprise = !license?.plan?.billing
 
   useEffect(() => {
     analyticsHelper.page('OrganizationPage')
@@ -61,13 +65,14 @@ export const OrganizationPage: React.FC = () => {
                 resetValue={organization.name}
                 onSave={name => dispatch.organization.setOrganization(name.toString())}
               />
-              <SeatsSetting />
+              <SeatsSetting license={license} />
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
                   Add members to your organization to automatically share all of your devices. &nbsp;
-                  <b>Unlicensed members will only be able to connect to the first five.</b>
+                  {!enterprise && <b>Unlicensed members will only be able to connect to the first five.</b>}
                 </Typography>
               </Gutters>
+              <LicensingNoticeDisplay noticeType="PERSONAL_ORGANIZATION" license={license} />
             </List>
           )}
         </>
@@ -76,7 +81,7 @@ export const OrganizationPage: React.FC = () => {
       {!organization.initialized ? (
         <LoadingMessage />
       ) : (
-        <OrganizationMemberList organization={organization} owner={owner} />
+        <OrganizationMemberList organization={organization} owner={owner} enterprise={enterprise} />
       )}
     </Container>
   )

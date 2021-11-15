@@ -52,13 +52,13 @@ export function addDeviceName(deviceName: string, name: string) {
 
 type nameObj = { name: string }
 
-export function combinedName(service?: nameObj, device?: nameObj): string {
+export function combinedName(service?: nameObj, device?: nameObj, join: string = ' '): string {
   let name: string[] = []
   if (device) {
     name.push(device.name)
     if (service && service.name !== device.name) name.push(removeDeviceName(device.name, service.name))
   } else if (service) name.push(service.name)
-  return name.join(' ')
+  return name.join(join)
 }
 
 export function safeHostname(name: string, blacklist: string[]) {

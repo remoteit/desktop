@@ -15,6 +15,7 @@ export interface IconProps {
   name?: string
   color?: Color | string
   className?: string
+  title?: string
   fixedWidth?: boolean
   onClick?: () => void
   size?: FontSize

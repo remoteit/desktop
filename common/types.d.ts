@@ -315,6 +315,7 @@ declare global {
     samlName: string
     members?: IOrganizationMember[]
     account?: IUserRef
+    licenses: ILicense[]
   }
 
   type IOrganizationMember = {
@@ -416,10 +417,14 @@ declare global {
     timestamp: Date
     type: string
     actor?: IUser
-    target?: (IService | IDevice)[]
+    target?: {
+      id: string
+      name: string
+      device: { id: string; name: string }
+    }[]
     users?: IUser[]
     action: string
-    devices?: { id?: number; name?: string }[]
+    devices?: { id: string; name: string }[]
   }
 
   interface IEventList {
@@ -620,6 +625,7 @@ declare global {
     chip?: string
     footer?: boolean
     chipPrimary?: boolean
+    Menu?: React.FC
   }
 }
 

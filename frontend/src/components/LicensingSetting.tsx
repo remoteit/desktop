@@ -11,10 +11,7 @@ import {
   Box,
   Divider,
 } from '@material-ui/core'
-import { ApplicationState } from '../store'
-import { useSelector } from 'react-redux'
 import { dateOptions } from './Duration/Duration'
-import { selectLicenses } from '../models/licensing'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemCopy } from './ListItemCopy'
@@ -23,15 +20,18 @@ import { Link } from 'react-router-dom'
 import { spacing } from '../styling'
 import { Quote } from './Quote'
 
-export const LicensingSetting: React.FC = () => {
-  const { licenses, limits } = useSelector((state: ApplicationState) => selectLicenses(state))
+export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[]; title?: string }> = ({
+  licenses,
+  limits = [],
+  title,
+}) => {
   const css = useStyles()
 
   if (!licenses.length) return null
 
   return (
     <>
-      <Typography variant="subtitle1">Licensing</Typography>
+      {title && <Typography variant="subtitle1">{title}</Typography>}
       {licenses.map((license, index) => (
         <React.Fragment key={index}>
           <List>
@@ -58,12 +58,12 @@ export const LicensingSetting: React.FC = () => {
                 )}
               </ListItemSecondaryAction>
             </ListItem>
-            {!!(license.id || license.limits.length) && (
+            {!!(license.id || license.limits?.length) && (
               <ListItem>
                 <ListItemIcon></ListItemIcon>
                 <Quote margin={0}>
                   <Box width={400} marginBottom={2} marginTop={1}>
-                    {license.limits.map(limit => (
+                    {license.limits?.map(limit => (
                       <LimitSetting key={limit.name} limit={limit} />
                     ))}
                   </Box>
