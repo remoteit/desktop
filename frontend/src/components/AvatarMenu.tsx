@@ -9,14 +9,11 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
-import { useLocation } from 'react-router-dom'
-import { FROM_PORTAL } from '../shared/constants'
 import { isPortal } from '../services/Browser'
 
 export interface Props { }
 
 export const AvatarMenu: React.FC<Props> = ({ }) => {
-  const location = useLocation()
   const [el, setEl] = React.useState<HTMLButtonElement | null>()
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
@@ -97,7 +94,7 @@ export const AvatarMenu: React.FC<Props> = ({ }) => {
             }}
           />
         </DesktopUI>
-        {location.search === FROM_PORTAL && isPortal() && (
+        {isPortal() && (
           <ListItemSetting
             confirm={backendAuthenticated}
             label="Switch to Legacy View"

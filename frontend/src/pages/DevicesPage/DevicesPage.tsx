@@ -9,15 +9,12 @@ import { getDevices, getOwnDevices } from '../../models/accounts'
 import { masterAttributes, deviceAttributes } from '../../helpers/attributes'
 
 import analyticsHelper from '../../helpers/analyticsHelper'
-import { useLocation } from 'react-router-dom'
 import { DialogNewFeatures } from '../../components/DialogNewFeatures'
-import { FROM_PORTAL } from '../../shared/constants'
 import { isPortal } from '../../services/Browser'
 
 type Props = { restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
-  const location = useLocation()
   const { devices, connections, myDevice, fetching, attributes, required } = useSelector((state: ApplicationState) => ({
     attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id) && !a.required),
     required: masterAttributes.find(a => a.required),
@@ -31,11 +28,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
       return lookup
     }, {}),
   }))
-  const [open, setOpen] = React.useState(location.search === FROM_PORTAL)
 
-  const onClose = () => {
-    setOpen(false)
-  }
   useEffect(() => {
     analyticsHelper.page('DevicesPage')
   }, [])
@@ -56,7 +49,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
           select={select}
         />
       )}
-      {isPortal() && (<DialogNewFeatures open={open} onClose={onClose} />)}
+      <DialogNewFeatures />
     </DevicesHeader>
   )
 }

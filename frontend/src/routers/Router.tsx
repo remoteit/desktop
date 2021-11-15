@@ -30,6 +30,7 @@ import { UserLogPage } from '../pages/UserLogPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
+import { DialogNewFeatures } from '../components/DialogNewFeatures'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
@@ -119,6 +120,12 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       <Route path="/devices/select">
         <Panel singlePanel={singlePanel}>
           <DevicesPage select />
+        </Panel>
+      </Route>
+
+      <Route path="/devices/welcome">
+        <Panel singlePanel={singlePanel}>
+          <DialogNewFeatures />
         </Panel>
       </Route>
 
