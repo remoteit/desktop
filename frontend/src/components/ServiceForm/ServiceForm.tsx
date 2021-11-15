@@ -240,7 +240,7 @@ export const ServiceForm: React.FC<Props> = ({
           />
         )}
       </List>
-      <AccordionMenuItem subtitle="Connection defaults" gutterTop={false}>
+      <AccordionMenuItem subtitle="Connection defaults" gutters>
         <>
           <List>
             <ListItem className={css.field}>

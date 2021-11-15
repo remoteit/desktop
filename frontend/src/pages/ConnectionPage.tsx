@@ -56,10 +56,10 @@ export const ConnectionPage: React.FC = () => {
       <Connect />
       <Gutters>
         <AccordionMenuItem
+          gutters
           subtitle="Service Details"
           expanded={accordion.service}
           onClick={() => ui.accordion({ service: !accordion.service })}
-          gutterTop
         >
           <ServiceAttributes service={service} disablePadding />
         </AccordionMenuItem>

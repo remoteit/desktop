@@ -149,12 +149,6 @@ const jssTheme: ThemeOptions = {
         lineHeight: '40px',
       },
       sticky: { zIndex: 2 },
-      gutters: {
-        marginLeft: spacing.md,
-        marginRight: spacing.md,
-        paddingLeft: spacing.xxs,
-        paddingRight: spacing.xxs,
-      },
     },
     MuiPaper: {
       rounded: { borderRadius: radius },

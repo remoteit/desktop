@@ -86,6 +86,7 @@ export const Connect: React.FC = () => {
       </List>
       <Gutters>
         <AccordionMenuItem
+          gutters
           subtitle="Configuration"
           expanded={accordion[accordionConfig]}
           onClick={() => ui.accordion({ [accordionConfig]: !accordion[accordionConfig] })}
@@ -101,6 +102,7 @@ export const Connect: React.FC = () => {
           </List>
         </AccordionMenuItem>
         <AccordionMenuItem
+          gutters
           subtitle="Options"
           expanded={accordion.options}
           onClick={() => ui.accordion({ options: !accordion.options })}

@@ -7,7 +7,7 @@ type IAccordionMenu = {
   subtitle: string
   expanded?: boolean
   defaultExpanded?: boolean
-  gutterTop?: boolean
+  gutters?: boolean
   elevation?: number
   square?: boolean
   onClick?: (expanded: boolean) => void
@@ -18,13 +18,13 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   expanded,
   defaultExpanded,
   subtitle,
-  gutterTop,
+  gutters,
   elevation = 0,
   square,
   onClick,
   children,
 }) => {
-  const css = useStyles({ gutterTop })
+  const css = useStyles({ gutters })
   const [open, setOpen] = useState<boolean>(!!defaultExpanded)
   const clickHandler = state => {
     onClick && onClick(state)
@@ -55,12 +55,14 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
 }
 
 const useStyles = makeStyles({
-  button: {
+  button: ({ gutters }: any) => ({
     width: '100%',
     textAlign: 'left',
     display: 'block',
     padding: 0,
     marginTop: spacing.xxs,
     marginBottom: spacing.xxs,
-  },
+    marginLeft: gutters && spacing.md,
+    marginRight: gutters && spacing.md,
+  }),
 })
