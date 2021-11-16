@@ -35,7 +35,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
       />
       <ListItemSecondaryAction>
         <RoleSelect member={member} />
-        {enterprise || (
+        {!enterprise && (
           <span className={css.fixedWidth}>
             <LicenseSelect member={member} disabled={!freeLicenses} />
           </span>

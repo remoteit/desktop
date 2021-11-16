@@ -26,11 +26,11 @@ export const SidebarNav: React.FC = () => {
 
   return (
     <List className={css.list}>
-      {menuItems.reduce((items: JSX.Element[], m) => {
+      {menuItems.reduce((items: JSX.Element[], m, index) => {
         const active = matchPath(location.pathname, { path: m.match, exact: true })
         if (m.show)
           items.push(
-            <>
+            <React.Fragment key={index}>
               <ListItem
                 key={m.path}
                 className={classnames(active && css.active, m.footer && css.footer)}
@@ -65,7 +65,7 @@ export const SidebarNav: React.FC = () => {
                 )}
               </ListItem>
               {m.Menu && <m.Menu />}
-            </>
+            </React.Fragment>
           )
         return items
       }, [])}
