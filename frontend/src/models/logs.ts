@@ -100,7 +100,7 @@ export default createModel<RootModel>()({
 
   reducers: {
     reset(state: ILogState) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
     set(state: ILogState, params: ILookup<any>) {

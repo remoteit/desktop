@@ -61,7 +61,7 @@ export default createModel<RootModel>()({
   }),
   reducers: {
     reset(state: IBilling) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
     set(state: IBilling, params: ILookup<any>) {
