@@ -93,7 +93,7 @@ export default createModel<RootModel>()({
       // restore guides
       const guides = Object.keys(globalState.ui).filter(key => key.startsWith('guide'))
       guides.forEach(guide => {
-        let item = getLocalStorageByUser(`ui-${guide}`)
+        let item = getLocalStorageByUser(globalState, `ui-${guide}`)
         if (item) {
           item = JSON.parse(item)
           dispatch.ui.set({ [guide]: item })
@@ -115,6 +115,23 @@ export default createModel<RootModel>()({
       dispatch.announcements.fetch()
       await dispatch.devices.fetch()
     },
+    async guide({ guide, ...props }: ILookup<any>, globalState) {
+      let state = globalState.ui[guide]
+      const active = props.active === undefined ? state.active : props.active
+
+      if (active) {
+        if (props.step > state.total) {
+          props.done = true
+          props.step = 0
+        }
+        if (props.done) props.active = false
+      }
+
+      state = { ...state, ...props }
+      setLocalStorageByUser(globalState, `ui-${guide}`, JSON.stringify(state))
+      dispatch.ui.set({ [guide]: state })
+    },
+
     async resetGuides(_, globalState) {
       Object.keys(globalState.ui).forEach(key => {
         if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, step: 0, done: false })
@@ -133,21 +150,6 @@ export default createModel<RootModel>()({
       state.restoring = false
       return state
     },
-    guide(state: UIState, { guide, ...props }: ILookup<any>) {
-      const active = props.active === undefined ? state[guide].active : props.active
-
-      if (active) {
-        if (props.step > state[guide].total) {
-          props.done = true
-          props.step = 0
-        }
-        if (props.done) props.active = false
-      }
-
-      state[guide] = { ...state[guide], ...props }
-      setLocalStorageByUser(`ui-${guide}`, JSON.stringify(state[guide]))
-      return state
-    },
     accordion(state: UIState, params: ILookup<boolean>) {
       state.accordion = { ...state.accordion, ...params }
       return state
@@ -157,7 +159,7 @@ export default createModel<RootModel>()({
       return state
     },
     reset(state: UIState) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
   },

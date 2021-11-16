@@ -76,10 +76,10 @@ export const defaultState: IDeviceState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init() {
+    async init(_, state) {
       let states = {}
       SAVED_STATES.forEach(key => {
-        const value = getLocalStorageByUser(`device-${key}`)
+        const value = getLocalStorageByUser(state, `device-${key}`)
         if (value) states[key] = value
       })
       dispatch.devices.set(states)
@@ -307,11 +307,11 @@ export default createModel<RootModel>()({
       try {
         device.shared
           ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email || '')}`, {
-            devices: device.id,
-            emails: auth.user?.email,
-            state: 'off',
-            scripting: false,
-          })
+              devices: device.id,
+              emails: auth.user?.email,
+              state: 'off',
+              scripting: false,
+            })
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
         await dispatch.devices.fetch()
       } catch (error) {
@@ -325,16 +325,22 @@ export default createModel<RootModel>()({
       const unique = new Set(userAttributes.concat(globalState.devices.userAttributes))
       dispatch.devices.set({ userAttributes: [...Array.from(unique)].sort() })
     },
+
+    async setPersistent(params: DeviceParams, state) {
+      Object.keys(params).forEach(key => {
+        if (SAVED_STATES.includes(key)) setLocalStorageByUser(state, `device-${key}`, params[key] || '')
+      })
+      dispatch.devices.set(params)
+    },
   }),
 
   reducers: {
     reset(state: IDeviceState) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
     set(state: IDeviceState, params: DeviceParams) {
       Object.keys(params).forEach(key => {
-        if (SAVED_STATES.includes(key)) setLocalStorageByUser(`device-${key}`, params[key] || '')
         state[key] = params[key]
       })
       return state

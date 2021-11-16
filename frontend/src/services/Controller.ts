@@ -180,7 +180,7 @@ function getEventHandlers() {
     'signed-out': () => auth.signedOut(),
 
     // AutoUpdate
-    'update/downloaded': version => {
+    'update/downloaded': (version: string) => {
       backend.set({ update: version })
     },
 

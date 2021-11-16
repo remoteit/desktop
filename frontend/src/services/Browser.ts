@@ -1,5 +1,5 @@
 import { IP_PRIVATE, PORTAL } from '../shared/constants'
-import { store } from '../store'
+import { ApplicationState } from '../store'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -94,30 +94,17 @@ export function getApplicationObj(typeID?: number, username?: string) {
 }
 
 // this is a function to save information per user session in local storage
-export function getLocalStorageByUser(key: string) {
-  try {
-    const currentSession = store.getState().auth.user?.email
-    return currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null
-  } catch (error) {
-    console.error({ messageError: `Error: ${error}` })
-  }
-  return null
+export function getLocalStorageByUser(state: ApplicationState, key: string) {
+  const currentSession = state.auth.user?.id
+  return currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null
 }
 
-export async function setLocalStorageByUser(key: string, value: string) {
-  try {
-    const currentSession = await store.getState().auth.user?.email
-    currentSession && window.localStorage.setItem(currentSession + ':' + key, value)
-  } catch (error) {
-    console.error({ messageError: `Error: ${error}` })
-  }
+export async function setLocalStorageByUser(state: ApplicationState, key: string, value: string) {
+  const currentSession = await state.auth.user?.id
+  currentSession && window.localStorage.setItem(currentSession + ':' + key, value)
 }
 
-export async function removeLocalStorageByUser(key: string) {
-  try {
-    const currentSession = await store.getState().auth.user?.email
-    currentSession && window.localStorage.removeItem(currentSession + ':' + key)
-  } catch (error) {
-    console.error({ messageError: `Error: ${error}` })
-  }
+export async function removeLocalStorageByUser(state: ApplicationState, key: string) {
+  const currentSession = await state.auth.user?.id
+  currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }

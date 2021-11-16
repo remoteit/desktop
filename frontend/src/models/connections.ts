@@ -20,7 +20,7 @@ export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
     async init(_, globalState) {
-      let item = getLocalStorageByUser(`connections-${globalState.auth.user?.id}`)
+      let item = getLocalStorageByUser(globalState, 'connections')
       if (item) dispatch.connections.setAll(JSON.parse(item))
     },
 
@@ -153,13 +153,13 @@ export default createModel<RootModel>()({
     },
 
     async setAll(all: IConnection[], globalState) {
-      setLocalStorageByUser(`connections-${globalState.auth.user?.id}`, JSON.stringify(all) || '')
+      setLocalStorageByUser(globalState, 'connections', JSON.stringify(all) || '')
       dispatch.connections.set({ all })
     },
   }),
   reducers: {
     reset(state: IConnectionsState) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
     set(state: IConnectionsState, params: ILookup<any>) {

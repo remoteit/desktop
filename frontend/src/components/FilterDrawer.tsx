@@ -46,7 +46,7 @@ export const FilterDrawer: React.FC = () => {
 
   const update = values => {
     values = { ...values, from: defaultState.from }
-    devices.set(values)
+    devices.setPersistent(values)
     devices.fetch()
   }
 

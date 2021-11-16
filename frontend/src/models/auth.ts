@@ -3,7 +3,13 @@ import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
-import { getLocalStorageByUser, isElectron, isPortal, removeLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
+import {
+  getLocalStorageByUser,
+  isElectron,
+  isPortal,
+  removeLocalStorageByUser,
+  setLocalStorageByUser,
+} from '../services/Browser'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
@@ -67,7 +73,7 @@ export default createModel<RootModel>()({
         dispatch.auth.setInitialized()
       }
     },
-    async fetchUser() {
+    async fetchUser(_, state) {
       const { auth } = dispatch as Dispatch
       try {
         const result = await graphQLRequest(
@@ -90,13 +96,15 @@ export default createModel<RootModel>()({
         )
         graphQLGetErrors(result)
         const data = result?.data?.data?.login
-        auth.setUser({
+        const user = {
           id: data.id,
           email: data.email,
           authHash: data.authhash,
           yoicsId: data.yoicsId,
           created: data.created,
-        })
+        }
+        auth.setUser(user)
+        setLocalStorageByUser(state, USER_KEY, JSON.stringify(user))
         analyticsHelper.identify(data.id)
         if (data.authhash && data.yoicsId) {
           Controller.setupConnection(data.yoicsId, data.authhash)
@@ -133,16 +141,16 @@ export default createModel<RootModel>()({
         console.log(err)
       }
     },
-    async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
+    async handleSignInSuccess(cognitoUser: CognitoUser, state): Promise<void> {
       if (cognitoUser?.username) {
-        if (cognitoUser?.attributes?.email && getLocalStorageByUser(CHECKBOX_REMEMBER_KEY)) {
-          setLocalStorageByUser('username', cognitoUser?.attributes?.email)
-        } else if (!getLocalStorageByUser(CHECKBOX_REMEMBER_KEY)) {
+        if (cognitoUser?.attributes?.email && getLocalStorageByUser(state, CHECKBOX_REMEMBER_KEY)) {
+          setLocalStorageByUser(state, 'username', cognitoUser?.attributes?.email)
+        } else if (!getLocalStorageByUser(state, CHECKBOX_REMEMBER_KEY)) {
           window.localStorage.removeItem('username')
         }
 
         if (cognitoUser?.authProvider === 'Google') {
-          setLocalStorageByUser('amplify-signin-with-hostedUI', 'true')
+          setLocalStorageByUser(state, 'amplify-signin-with-hostedUI', 'true')
         }
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.setInitialized()
@@ -196,9 +204,10 @@ export default createModel<RootModel>()({
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut(_: void, rootState) {
-      await rootState.auth.authService?.signOut()
-      removeLocalStorageByUser('amplify-signin-with-hostedUI')
+    async signedOut(_: void, state) {
+      await state.auth.authService?.signOut()
+      removeLocalStorageByUser(state, 'amplify-signin-with-hostedUI')
+      removeLocalStorageByUser(state, USER_KEY)
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.organization.reset()
@@ -236,7 +245,6 @@ export default createModel<RootModel>()({
     },
     signOutFinished(state: AuthState) {
       state.user = undefined
-      removeLocalStorageByUser(USER_KEY)
       return state
     },
     setAuthenticated(state: AuthState, authenticated: boolean) {
@@ -258,7 +266,6 @@ export default createModel<RootModel>()({
     setUser(state: AuthState, user: IUser) {
       state.user = user
       state.signInError = undefined
-      setLocalStorageByUser(USER_KEY, JSON.stringify(user))
       return state
     },
     setAuthService(state: AuthState, authService: AuthService) {

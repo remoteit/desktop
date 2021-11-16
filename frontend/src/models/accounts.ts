@@ -23,8 +23,8 @@ const accountsState: IAccountsState = {
 export default createModel<RootModel>()({
   state: accountsState,
   effects: dispatch => ({
-    async init() {
-      let activeId = getLocalStorageByUser(ACCOUNT_KEY)
+    async init(_, globalState) {
+      let activeId = getLocalStorageByUser(globalState, ACCOUNT_KEY)
       activeId = activeId && JSON.parse(activeId)
       if (activeId) dispatch.accounts.setActive(activeId)
       await dispatch.accounts.fetch()
@@ -143,6 +143,10 @@ export default createModel<RootModel>()({
       if (!exists && device) devices.push(device)
       await dispatch.accounts.setDevices({ devices, accountId })
     },
+    async setActive(id: string, globalState) {
+      setLocalStorageByUser(globalState, ACCOUNT_KEY, JSON.stringify(id))
+      dispatch.accounts.set({ activeId: id })
+    },
   }),
   reducers: {
     set(state: IAccountsState, params: ILookup<any>) {
@@ -151,11 +155,6 @@ export default createModel<RootModel>()({
     },
     reset(state: IAccountsState) {
       state = accountsState
-      return state
-    },
-    setActive(state: IAccountsState, id: string) {
-      setLocalStorageByUser(ACCOUNT_KEY, JSON.stringify(id))
-      state.activeId = id
       return state
     },
   },
