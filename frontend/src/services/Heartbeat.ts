@@ -13,7 +13,7 @@ class Heartbeat {
 
   beat() {
     const { auth } = store.getState()
-    document.hasFocus() && auth.authenticated && emit('heartbeat')
+    document.hasFocus() && auth.backendAuthenticated && emit('heartbeat')
   }
 
   caffeinate() {
