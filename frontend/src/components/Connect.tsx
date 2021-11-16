@@ -68,7 +68,11 @@ export const Connect: React.FC = () => {
         show={connection?.enabled}
       />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
-      <GuideStep guide="guideAWS" step={5} instructions="Now enable the connect on demand listener.">
+      <GuideStep
+        guide="guideAWS"
+        step={5}
+        instructions="Now enable the connect on demand listener by adding the service to your network."
+      >
         <Gutters className={css.gutters} top="lg">
           <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
           <ComboButton
@@ -77,6 +81,7 @@ export const Connect: React.FC = () => {
             autoConnect={location.state?.autoConnect}
             size="large"
             fullWidth
+            onClick={() => ui.guide({ guide: 'guideAWS', step: 6 })}
           />
           <ForgetButton connection={connection} inline />
         </Gutters>
