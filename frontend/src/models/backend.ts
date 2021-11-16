@@ -1,7 +1,10 @@
 import { createModel } from '@rematch/core'
 import { selectById } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
+import { getLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
+import { ApplicationState } from '../store'
 import { RootModel } from './rootModel'
+import { version } from '../../package.json'
 import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
@@ -13,7 +16,7 @@ type IBackendState = {
   interfaces: IInterface[]
   error: boolean
   freePort?: number
-  update?: string
+  updateReady?: string
   dataReady: boolean
   environment: {
     os?: Ios
@@ -40,7 +43,7 @@ const state: IBackendState = {
   interfaces: [],
   error: false,
   freePort: undefined,
-  update: undefined,
+  updateReady: undefined,
   dataReady: false,
   environment: {
     os: undefined,
@@ -159,6 +162,9 @@ export default createModel<RootModel>()({
       targets[tIndex] = target
       emit('targets', targets)
     },
+    async setUpdateNotice(updateVersion: string | undefined, globalState) {
+      setLocalStorageByUser(globalState, NOTICE_VERSION_ID, JSON.stringify(updateVersion))
+    },
   }),
 
   reducers: {
@@ -168,3 +174,14 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+const NOTICE_VERSION_ID = 'notice-version'
+
+export function selectUpdateNotice(state: ApplicationState) {
+  const { updateReady } = state.backend
+  if (updateReady && updateReady !== version) {
+    let notifiedVersion = getLocalStorageByUser(state, NOTICE_VERSION_ID)
+    if (notifiedVersion) notifiedVersion = JSON.parse(notifiedVersion)
+    if (notifiedVersion !== updateReady) return updateReady
+  }
+}
