@@ -181,7 +181,7 @@ function getEventHandlers() {
 
     // AutoUpdate
     'update/downloaded': (version: string) => {
-      backend.set({ update: version })
+      backend.set({ updateReady: version })
     },
 
     // AutoUpdate
