@@ -7,7 +7,7 @@ import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 import { apiError } from '../helpers/apiHelper'
 
-export const ROLE = {
+export const ROLE: ILookup<string> = {
   OWNER: 'Admin / Owner',
   ADMIN: 'Admin',
   MEMBER: 'Member',

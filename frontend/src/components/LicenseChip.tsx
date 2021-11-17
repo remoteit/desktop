@@ -11,12 +11,19 @@ const licenseChipLookup: ILookup<ILicenseChip> = {
     colorName: 'warning',
     show: true,
   },
-  LICENSED: { name: 'Licensed', color: colors.grayDarker, colorName: 'grayDarker' },
+  LICENSED: {
+    name: 'Licensed',
+    color: colors.white,
+    background: colors.primary,
+    colorName: 'primary',
+    hoverColor: colors.grayDarker,
+  },
   UNLICENSED: {
     name: 'Unlicensed',
     color: colors.warning,
     background: lighten(colors.warning, 0.94),
     colorName: 'warning',
+    hoverColor: lighten(colors.warning, 0.84),
     disabled: true,
     show: true,
   },
@@ -29,7 +36,8 @@ export function getLicenseChip(license?: ILicenseTypes): ILicenseChip {
   return licenseChipLookup[license || ''] || licenseChipLookup.UNKNOWN
 }
 
-export const LicenseChip: React.FC<{ chip: ILicenseChip }> = ({ chip }) => {
+export const LicenseChip: React.FC<{ license?: ILicenseTypes }> = ({ license }) => {
+  const chip = getLicenseChip(license)
   const css = useStyles(chip)
   return <Chip className={css.chip} label={chip.name} size="small" />
 }
@@ -38,6 +46,7 @@ const useStyles = makeStyles({
   chip: (chip: ILicenseChip) => ({
     color: chip.color,
     backgroundColor: chip.background,
-    fontFamily: 'Roboto Mono',
+    fontWeight: 500,
+    letterSpacing: 0.2,
   }),
 })

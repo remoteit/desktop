@@ -20,7 +20,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
 
   const getDefaults = () => {
     const plan = plans.find(plan => plan.id === license?.plan?.id) || plans[0]
-    const price = plan.prices?.find(p => p.id === license?.subscription?.price?.id) || plan.prices?.[0]
+    const price = plan?.prices?.find(p => p.id === license?.subscription?.price?.id) || plan?.prices?.[0]
     return {
       priceId: price?.id,
       quantity: license?.quantity || 1,

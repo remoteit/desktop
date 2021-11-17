@@ -61,7 +61,6 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
       setLaunchApp({ ...hostProps, ...applicationObj })
     }
     ui.launchState({ openApp: true })
-    onLaunch && onLaunch()
   }
 
   const onSubmit = (tokens: ILookup<string>) => {
@@ -74,6 +73,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   const clickHandler = () => {
     if (app.prompt) ui.launchState({ prompt: true })
     else onOpenApp()
+    onLaunch && onLaunch()
   }
 
   const closeAll = () => {

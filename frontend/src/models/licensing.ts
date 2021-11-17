@@ -261,7 +261,7 @@ export default createModel<RootModel>()({
   }),
   reducers: {
     reset(state: ILicensing) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
     set(state: ILicensing, params: ILookup<any>) {

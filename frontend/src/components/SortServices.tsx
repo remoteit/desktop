@@ -68,7 +68,7 @@ export const SortServices: React.FC = () => {
   }
 
   const servicesSort = async (option?: string) => {
-    devices.set({ sortServiceOption: option })
+    devices.setPersistent({ sortServiceOption: option })
     handleClose()
   }
 

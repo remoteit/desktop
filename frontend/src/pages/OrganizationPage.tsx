@@ -32,6 +32,7 @@ export const OrganizationPage: React.FC = () => {
 
   return (
     <Container
+      gutterBottom
       header={
         <>
           <Typography variant="h1">

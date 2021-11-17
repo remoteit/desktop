@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { makeStyles, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
+import { Box, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@material-ui/core'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { LicenseSelect } from './LicenseSelect'
 import { RoleSelect } from './RoleSelect'
@@ -19,7 +19,7 @@ type Props = {
 
 export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, removing, enterprise, onClick }) => {
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
+
   return (
     <ListItem key={member.user.email} dense>
       <ListItemIcon>
@@ -35,10 +35,10 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
       />
       <ListItemSecondaryAction>
         <RoleSelect member={member} />
-        {enterprise || (
-          <span className={css.fixedWidth}>
+        {!enterprise && (
+          <Box width={120} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
             <LicenseSelect member={member} disabled={!freeLicenses} />
-          </span>
+          </Box>
         )}
         <ConfirmButton
           confirm
@@ -59,12 +59,3 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
     </ListItem>
   )
 }
-
-const useStyles = makeStyles({
-  fixedWidth: {
-    width: '120px',
-    marginRight: spacing.md,
-    display: 'inline-block',
-    textAlign: 'right',
-  },
-})

@@ -68,7 +68,7 @@ export default createModel<RootModel>()({
   }),
   reducers: {
     reset(state: ITagState) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
     set(state: ITagState, params: ILookup<ITag[]>) {

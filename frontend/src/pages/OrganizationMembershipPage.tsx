@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import {
   Typography,
+  Box,
   Chip,
   List,
   ListItem,
@@ -11,10 +12,12 @@ import {
   Tooltip,
   IconButton,
 } from '@material-ui/core'
-import { useSelector, useDispatch } from 'react-redux'
 import { ROLE } from '../models/organization'
+import { useSelector, useDispatch } from 'react-redux'
+import { LicenseChip } from '../components/LicenseChip'
 import { Container } from '../components/Container'
 import { Duration } from '../components/Duration'
+import { spacing } from '../styling'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
@@ -54,6 +57,9 @@ export const OrganizationMembershipPage: React.FC = () => {
               />
               <ListItemSecondaryAction>
                 <Chip label={ROLE[m.role]} size="small" />
+                <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
+                  <LicenseChip license={m.license} />
+                </Box>
                 <Tooltip title="Leave Account">
                   <IconButton onClick={() => accounts.leaveMembership(m.organization.id)}>
                     <Icon name="sign-out" size="md" fixedWidth />

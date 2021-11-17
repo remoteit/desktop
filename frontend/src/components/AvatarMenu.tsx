@@ -7,9 +7,9 @@ import { ListItemSetting } from './ListItemSetting'
 import { colors, spacing } from '../styling'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
+import { PortalUI } from './PortalUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
-import { isPortal } from '../services/Browser'
 
 export const AvatarMenu: React.FC = () => {
   const [el, setEl] = React.useState<HTMLButtonElement | null>()
@@ -79,16 +79,14 @@ export const AvatarMenu: React.FC = () => {
           />
         )}
         <Divider />
-        {isPortal() && (
-          <>
-            <ListItemSetting
-              label="Switch to Legacy View"
-              icon="history"
-              onClick={() => (window.location.href = 'https://app.remote.it/#devices')}
-            />
-            <Divider />
-          </>
-        )}
+        <PortalUI>
+          <ListItemSetting
+            label="Switch to Legacy View"
+            icon="history"
+            onClick={() => (window.location.href = 'https://app.remote.it/#devices')}
+          />
+          <Divider />
+        </PortalUI>
         <DesktopUI>
           <ListItemSetting
             confirm

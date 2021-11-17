@@ -30,6 +30,7 @@ declare global {
     color: string
     colorName: Color
     background?: string
+    hoverColor?: string
     disabled?: boolean
     show?: boolean
   }
