@@ -37,6 +37,7 @@ export default createModel<RootModel>()({
                 membership {
                   created
                   role
+                  license
                   organization {
                     id
                     name
@@ -66,6 +67,7 @@ export default createModel<RootModel>()({
         membership: membership.map(m => ({
           created: new Date(m.created),
           role: m.role,
+          license: m.license,
           organization: {
             ...m.organization,
             licenses: m.organization?.licenses?.map(l => parseLicense(l)),

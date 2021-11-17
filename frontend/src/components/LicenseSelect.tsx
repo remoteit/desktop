@@ -1,6 +1,7 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import { getLicenseChip } from './LicenseChip'
 import { makeStyles, TextField, MenuItem } from '@material-ui/core'
 import { colors } from '../styling'
 
@@ -8,7 +9,7 @@ type Props = { member: IOrganizationMember; disabled?: boolean }
 
 export const LicenseSelect: React.FC<Props> = ({ member, disabled }) => {
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
+  const css = useStyles({ chip: getLicenseChip(member.license) })
 
   const handleSelect = (license: ILicenseTypes) => {
     dispatch.organization.setMembers([{ ...member, license }])
@@ -22,7 +23,7 @@ export const LicenseSelect: React.FC<Props> = ({ member, disabled }) => {
       disabled={disabled}
       value={member.license}
       variant="filled"
-      className={member.license === 'LICENSED' ? css.licensed : undefined}
+      className={css.licensed}
       onChange={e => handleSelect(e.target.value as ILicenseTypes)}
     >
       <MenuItem dense value="LICENSED">
@@ -36,14 +37,14 @@ export const LicenseSelect: React.FC<Props> = ({ member, disabled }) => {
 }
 
 const useStyles = makeStyles({
-  licensed: {
+  licensed: ({ chip }: { chip: ILicenseChip }) => ({
     '& .MuiFilledInput-root': {
-      backgroundColor: colors.primary,
-      color: colors.white,
+      color: chip.color,
+      backgroundColor: chip.background,
       fontWeight: 500,
       letterSpacing: 0.2,
-      '&:hover:not(.Mui-disabled)': { backgroundColor: colors.grayDarker },
+      '&:hover:not(.Mui-disabled)': { backgroundColor: chip.hoverColor },
     },
-    '& .MuiSelect-icon': { color: colors.white },
-  },
+    '& .MuiSelect-icon': { color: chip.color },
+  }),
 })

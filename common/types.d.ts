@@ -330,6 +330,7 @@ declare global {
     organization: IOrganization
     role: IOrganizationRole
     created: Date
+    license: ILicenseTypes
   }
 
   type IOrganizationRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'REMOVE'
