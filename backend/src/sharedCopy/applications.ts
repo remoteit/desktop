@@ -41,6 +41,9 @@ export class Application {
   }
 
   value(token: string) {
+    if (!this.lookup[token] && isWindows() && token === 'path' && this.connection?.typeID == 4) {
+      return "c:\\Program Files\\RealVNC\\VNC Viewer\\vncViewer.exe"
+    }
     return this.lookup[token]
   }
 
@@ -183,7 +186,7 @@ function getApplicationType(connection: {
         launchIcon: 'desktop',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultCommandTemplate: isWindows() ? ` "c:\\Program Files\\RealVNC\\VNC Viewer\\vncViewer.exe" -Username [username] [host]:[port]`  : ''
+        defaultCommandTemplate: isWindows() ? ` "[path]" -Username [username] [host]:[port]` : ''
       })
     case 28:
       return new Application({
