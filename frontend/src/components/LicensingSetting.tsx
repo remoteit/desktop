@@ -6,7 +6,6 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-  Typography,
   Button,
   Box,
   Divider,
@@ -20,18 +19,13 @@ import { Link } from 'react-router-dom'
 import { spacing } from '../styling'
 import { Quote } from './Quote'
 
-export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[]; title?: string }> = ({
-  licenses,
-  limits = [],
-  title,
-}) => {
+export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
   const css = useStyles()
 
   if (!licenses.length) return null
 
   return (
     <>
-      {title && <Typography variant="subtitle1">{title}</Typography>}
       {licenses.map((license, index) => (
         <React.Fragment key={index}>
           <List>
@@ -72,19 +66,17 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
               </ListItem>
             )}
           </List>
-          <Divider className={css.divider} />
+          {/* <Divider className={css.divider} /> */}
         </React.Fragment>
       ))}
-      {!!limits.length && (
-        <List>
-          {limits.map(limit => (
-            <ListItem key={limit.name}>
-              <ListItemIcon></ListItemIcon>
-              <LimitSetting limit={limit} />
-            </ListItem>
-          ))}
-        </List>
-      )}
+      <List>
+        {limits.map(limit => (
+          <ListItem key={limit.name}>
+            <ListItemIcon></ListItemIcon>
+            <LimitSetting limit={limit} />
+          </ListItem>
+        ))}
+      </List>
     </>
   )
 }

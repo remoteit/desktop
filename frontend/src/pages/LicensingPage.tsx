@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
 import { ApplicationState } from '../store'
-import { useSelector } from 'react-redux'
-import { selectLicenses } from '../models/licensing'
-import { Typography } from '@material-ui/core'
+import { Divider, Typography } from '@material-ui/core'
 import { LicensingSetting } from '../components/LicensingSetting'
+import { selectLicenses } from '../models/licensing'
+import { useSelector } from 'react-redux'
 import { Container } from '../components/Container'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -17,13 +17,19 @@ export const LicensingPage: React.FC = () => {
 
   return (
     <Container gutterBottom header={<Typography variant="h1">Licensing</Typography>}>
+      {!!membership.length && <Typography variant="subtitle1">Personal</Typography>}
       <LicensingSetting licenses={licenses} limits={limits} />
-      {membership.map(m => (
-        <LicensingSetting
-          licenses={m.organization.licenses}
-          title={m.organization.licenses.length ? `${m.organization.name} licensing` : undefined}
-        />
-      ))}
+      {membership.reduce((list: JSX.Element[], m) => {
+        if (m.organization.licenses.length)
+          list.push(
+            <React.Fragment key={m.organization.id}>
+              <Divider variant="inset" />
+              <Typography variant="subtitle1">{m.organization.name}</Typography>
+              <LicensingSetting licenses={m.organization.licenses} />
+            </React.Fragment>
+          )
+        return list
+      }, [])}
     </Container>
   )
 }

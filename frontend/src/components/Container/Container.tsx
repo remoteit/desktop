@@ -11,7 +11,6 @@ type Props = {
   bodyProps?: any
   bodyRef?: React.RefObject<HTMLDivElement>
   gutterBottom?: boolean
-  divider?: boolean
   backgroundColor?: string
 }
 
@@ -23,7 +22,6 @@ export const Container: React.FC<Props> = ({
   bodyProps,
   bodyRef,
   gutterBottom,
-  divider = true,
   backgroundColor,
   children,
 }) => {
