@@ -17,7 +17,7 @@ const defaultState: IConnectionsState = {
 }
 
 export default createModel<RootModel>()({
-  state: defaultState,
+  state: { ...defaultState },
   effects: dispatch => ({
     async init(_, globalState) {
       let item = getLocalStorageByUser(globalState, 'connections')

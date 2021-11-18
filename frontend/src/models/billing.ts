@@ -14,7 +14,7 @@ const defaultState: IBilling = {
 }
 
 export default createModel<RootModel>()({
-  state: defaultState,
+  state: { ...defaultState },
   effects: (dispatch: any) => ({
     async fetch() {
       dispatch.billing.set({ loading: true })

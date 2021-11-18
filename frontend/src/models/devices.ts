@@ -74,7 +74,7 @@ export const defaultState: IDeviceState = {
 }
 
 export default createModel<RootModel>()({
-  state: defaultState,
+  state: { ...defaultState },
   effects: dispatch => ({
     async init(_, state) {
       let states = {}

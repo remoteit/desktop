@@ -39,7 +39,7 @@ const defaultState: ILogState = {
 }
 
 export default createModel<RootModel>()({
-  state: defaultState,
+  state: { ...defaultState },
   effects: dispatch => ({
     async fetch(_, globalState) {
       const { set } = dispatch.logs
