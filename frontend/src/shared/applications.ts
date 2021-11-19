@@ -143,7 +143,8 @@ export class Application {
     this.tokens.forEach(token => {
       if (lookup[token]) {
         const search = new RegExp(`\\[${token}\\]`, 'g')
-        template = template.replace(search, encodeURI(lookup[token]))
+        template = template.replace(search,
+          isWindows() && token === 'path' ? `"${lookup[token]}"` : encodeURI(lookup[token]))
       }
     })
 
