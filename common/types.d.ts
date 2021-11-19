@@ -34,6 +34,7 @@ declare global {
     // App/settings
     | 'maximize'
     | 'showFolder'
+    | 'filePrompt'
 
     // Backend
     | 'init'

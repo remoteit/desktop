@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { makeStyles, TextField, Input } from '@material-ui/core'
-import { InlineSetting } from '../InlineSetting'
-import { spacing } from '../../styling'
+import { InlineSetting } from './InlineSetting'
+import { spacing } from '../styling'
 
 type Props = {
   value?: string | number

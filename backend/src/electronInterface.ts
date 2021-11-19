@@ -9,5 +9,7 @@ export const EVENTS = {
   available: 'update/available',
   recapitate: 'recapitate',
   signOut: 'sign-out',
+  filePrompt: 'app/filePrompt',
+  filePath: 'app/filePath',
 }
 export default { EVENTS }

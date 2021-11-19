@@ -1,6 +1,6 @@
 import React from 'react'
-import { REGEX_NAME_SAFE } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
+import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { useApplication } from '../hooks/useApplication'
 
@@ -14,23 +14,39 @@ export const CustomAttributeSettings: React.FC<Props> = ({ service, connection }
 
   return (
     <>
-      {app.customTokens.map(token => (
-        <InlineTextFieldSetting
-          hideIcon
-          key={token}
-          label={token}
-          value={app.value(token)}
-          disabled={disabled}
-          filter={REGEX_NAME_SAFE}
-          onSave={value =>
-            connection &&
-            setConnection({
-              ...connection,
-              [token]: value.toString(),
-            })
-          }
-        />
-      ))}
+      {app.customTokens.map(token =>
+        token === 'path' ? (
+          <InlineFileFieldSetting
+            key={token}
+            label={token}
+            value={app.value(token)}
+            disabled={disabled}
+            onSave={value =>
+              connection &&
+              setConnection({
+                ...connection,
+                [token]: value.toString(),
+              })
+            }
+          />
+        ) : (
+          <InlineTextFieldSetting
+            hideIcon
+            key={token}
+            label={token}
+            value={app.value(token)}
+            disabled={disabled}
+            // filter={REGEX_NAME_SAFE} // should be set by application type
+            onSave={value =>
+              connection &&
+              setConnection({
+                ...connection,
+                [token]: value.toString(),
+              })
+            }
+          />
+        )
+      )}
     </>
   )
 }

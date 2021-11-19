@@ -176,6 +176,8 @@ function getEventHandlers() {
 
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
+    filePath: (filePath: string) => backend.set({ filePath }),
+
     // User
     'signed-out': () => auth.signedOut(),
 
