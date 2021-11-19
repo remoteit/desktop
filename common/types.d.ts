@@ -84,7 +84,7 @@ declare global {
     | 'service/version'
     | 'service/unknown-event'
     | 'service/putty/required'
-    | 'required/app'
+    | 'service/error/command'
 
     // binary
     | 'binary/install/start'

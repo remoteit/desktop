@@ -210,6 +210,10 @@ function getEventHandlers() {
     'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: BinaryName) => binaries.notInstalled(binary),
+    'service/error/command': (result: string) => {
+      ui.set({ errorMessage: '' }) // So we re-trigger a new error if one exists
+      ui.set({ errorMessage: result })
+    },
   } as EventHandlers
 }
 

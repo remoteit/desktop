@@ -5,6 +5,7 @@ import environment from './environment'
 
 const EVENTS = {
   notInstalled: 'required/app',
+  onError: 'service/error/command',
   minimizeWindows: 'windows/minimize',
 }
 
@@ -17,7 +18,7 @@ export const openCMD = async (params: { launchApp: ILaunchApp; command: string }
   if (result) {
     try {
       if (result.includes('Command failed:')) {
-        EventBus.emit(EVENTS.notInstalled, { install: `${params.launchApp.application}`, loading: false })
+        EventBus.emit(EVENTS.onError, result.toString() )
       } else if (environment.isWindows) {
         launchApplication(params)
       }
