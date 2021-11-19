@@ -68,7 +68,7 @@ export class Application {
   }
 
   get template() {
-    return this.context === 'copy' ? this.commandTemplate : this.launchTemplate
+    return this.context === 'copy' || this.context === 'launch' ? this.commandTemplate : this.launchTemplate
   }
 
   get command() {
