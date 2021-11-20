@@ -6,14 +6,12 @@ import { useApplication } from '../hooks/useApplication'
 import { useClipboard } from 'use-clipboard-copy'
 import { PromptModal } from '../components/PromptModal'
 import { IconButton } from '../buttons/IconButton'
-import { Application } from '../shared/applications'
 import { DataButton } from './DataButton'
 import { Icon } from '../components/Icon'
 
 export interface CommandButtonProps {
   connection?: IConnection
   service?: IService
-  context?: Application['context']
   color?: Color
   title?: string
   menuItem?: boolean
@@ -30,7 +28,6 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
   connection,
   service,
   menuItem,
-  context = 'copy',
   title,
   size = 'md',
   show,
@@ -40,7 +37,7 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const app = useApplication(context, service, connection)
+  const app = useApplication(service, connection)
 
   if (!connection || (!show && (!connection?.enabled || !app))) return null
 
@@ -78,11 +75,11 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
           <ListItemText primary={title} />
         </MenuItem>
       ) : dataButton ? (
-        <DataButton label="Command" value={app.command} title={title || 'Command'} icon={CopyIcon} onClick={check} />
+        <DataButton label="Command" value={app.string} title={title || 'Command'} icon={CopyIcon} onClick={check} />
       ) : (
         <IconButton {...props} onClick={check} size={size} icon={clipboard.copied ? 'check' : 'copy'} />
       )}
-      <input type="hidden" ref={clipboard.target} value={app.command} />
+      <input type="hidden" ref={clipboard.target} value={app.string} />
       <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />
     </>
   )

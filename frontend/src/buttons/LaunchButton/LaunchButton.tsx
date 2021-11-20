@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { isWindows, getApplicationObj, isMac, safeWindowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
@@ -27,20 +27,16 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, onLaunch, ...props }) => {
+  const app = useApplication(service, connection)
   const { ui } = useDispatch<Dispatch>()
-
+  const disabled = !connection?.enabled
   const { loading, path, launchState } = useSelector((state: ApplicationState) => ({
     path: state.ui.launchPath,
     loading: state.ui.launchLoading,
     launchState: state.ui.launchState,
   }))
 
-  const app = useApplication(connection && connection.launchType === 'COMMAND' ? 'copy' : 'launch', service, connection)
-  const disabled = !connection?.enabled
-
-
   if (!app || !connection?.enabled) return null
-
 
   const onSubmit = (tokens: ILookup<string>) => {
     connection && setConnection({ ...connection, ...tokens })
@@ -59,10 +55,10 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   }
 
   const onOpenApp = (command?: string) => {
-    let currentCommand = command || app.command
+    let currentCommand = command || app.string
     const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
     if (isWindows() && applicationObj.application !== '') {
-      if (app.launchType === LAUNCH_TYPE.URL) return safeWindowOpen(currentCommand)
+      if (app.launchType === LAUNCH_TYPE.URL) return safeWindowOpen(currentCommand) // @FIXME thing this shouldn't be needed
       emit('launch/app', { launchApp: { path }, command: currentCommand })
     } else {
       currentCommand = isMac()
@@ -95,7 +91,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
         </MenuItem>
       ) : dataButton ? (
         <DataButton
-          value={app.command}
+          value={app.string}
           label={app.contextTitle}
           title={app.contextTitle}
           icon={LaunchIcon}

@@ -12,7 +12,6 @@ import { Gutters } from './Gutters'
 import { colors, spacing } from '../styling'
 import { CommandButton } from '../buttons/CommandButton'
 import { CopyButton } from '../buttons/CopyButton'
-import { LAUNCH_TYPE } from '../shared/applications'
 
 type Props = {
   connection?: IConnection
@@ -30,10 +29,8 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const [hover, setHover] = useState<'name' | 'port' | 'copy' | 'launch' | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
   const { ui } = useDispatch<Dispatch>()
-  const app = useApplication('copy', service, connection)
+  const app = useApplication(service, connection)
   const css = useStyles({ details })
-
-  app.context = app.launchType === LAUNCH_TYPE.URL ? 'launch' : 'copy' //@FIXME = this should be set in the app model automatically
 
   const measure = () => {
     const height = Math.max(
@@ -95,7 +92,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     <div ref={copyRef} className={hover === 'copy' ? css.show : css.hide}>
       <InputLabel shrink>Copy Command</InputLabel>
       <Typography variant="h3" className={css.h2}>
-        <span className={css.active}>{app.command}</span>
+        <span className={css.active}>{app.string}</span>
       </Typography>
     </div>
   )
@@ -104,7 +101,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     <div ref={launchRef} className={hover === 'launch' ? css.show : css.hide}>
       <InputLabel shrink>{app.contextTitle}</InputLabel>
       <Typography variant="h3" className={css.h2}>
-        <span className={css.active}>{app.command}</span>
+        <span className={css.active}>{app.string}</span>
       </Typography>
     </div>
   )

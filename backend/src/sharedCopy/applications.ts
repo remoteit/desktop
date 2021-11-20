@@ -16,8 +16,7 @@ export enum LAUNCH_TYPE {
 }
 
 export class Application {
-  context?: 'copy' | 'launch'
-  title: string = 'URL'
+  title: string = ''
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   publicTemplate: string = '[address]'
@@ -42,7 +41,7 @@ export class Application {
 
   value(token: string) {
     if (!this.lookup[token] && isWindows() && token === 'path' && this.connection?.typeID == 4) {
-      return "c:\\Program Files\\RealVNC\\VNC Viewer\\vncViewer.exe"
+      return 'c:\\Program Files\\RealVNC\\VNC Viewer\\vncViewer.exe'
     }
     return this.lookup[token]
   }
@@ -52,27 +51,53 @@ export class Application {
   }
 
   get icon() {
-    return this.context === 'copy' ? this.commandIcon : this.launchIcon
+    return this.launchType === LAUNCH_TYPE.COMMAND ? this.commandIcon : this.launchIcon
   }
 
   get templateKey() {
-    return this.context === 'copy' ? 'commandTemplate' : 'launchTemplate'
+    return this.launchType === LAUNCH_TYPE.COMMAND ? 'commandTemplate' : 'launchTemplate'
   }
 
   get contextTitle() {
-    return this.context === 'copy' ? 'Command' : `Launch ${this.title}`
+    return this.launchType === LAUNCH_TYPE.COMMAND ? this.commandTitle : this.launchTitle
+  }
+
+  get commandTitle() {
+    return `${this.title} Command`
+  }
+
+  get launchTitle() {
+    return `${this.title} URL`
   }
 
   get defaultTemplate() {
-    return this.context === 'copy' ? this.resolvedDefaultCommandTemplate : this.resolvedDefaultLaunchTemplate
+    return this.launchType === LAUNCH_TYPE.COMMAND
+      ? this.resolvedDefaultCommandTemplate
+      : this.resolvedDefaultLaunchTemplate
   }
 
   get template() {
-    return this.context === 'copy' || this.context === 'launch' ? this.commandTemplate : this.launchTemplate
+    return this.launchType === LAUNCH_TYPE.COMMAND ? this.commandTemplate : this.launchTemplate
   }
 
-  get command() {
+  get launchTemplate() {
+    return this.connection?.launchTemplate || this.resolvedDefaultLaunchTemplate
+  }
+
+  get commandTemplate() {
+    return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
+  }
+
+  get string() {
     return this.parse(this.template, this.lookup)
+  }
+
+  get commandString() {
+    return this.parse(this.commandTemplate, this.lookup)
+  }
+
+  get launchString() {
+    return this.parse(this.launchTemplate, this.lookup)
   }
 
   get address() {
@@ -84,7 +109,19 @@ export class Application {
   }
 
   get tokens() {
-    return this.extractTokens(this.launchTemplate + this.commandTemplate)
+    return this.extractTokens(this.template)
+  }
+
+  get allTokens() {
+    return this.extractTokens(this.commandTemplate + this.launchTemplate)
+  }
+
+  get commandTokens() {
+    return this.extractTokens(this.commandTemplate)
+  }
+
+  get launchTokens() {
+    return this.extractTokens(this.launchTemplate)
   }
 
   get launchType() {
@@ -95,8 +132,8 @@ export class Application {
     return this.connection?.public ? this.defaultPublicTokens : this.defaultAppTokens
   }
 
-  get allTokens() {
-    return this.defaultTokens.concat(this.customTokens)
+  get allCustomTokens() {
+    return this.allTokens.filter(token => !this.defaultTokens.includes(token))
   }
 
   get customTokens() {
@@ -130,21 +167,14 @@ export class Application {
       : this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
   }
 
-  private get launchTemplate() {
-    return this.connection?.launchTemplate || this.resolvedDefaultLaunchTemplate
-  }
-
-
-  private get commandTemplate() {
-    return this.connection?.commandTemplate || this.resolvedDefaultCommandTemplate
-  }
-
   private parse(template: string = '', lookup: ILookup<string>) {
-    this.tokens.forEach(token => {
+    this.allTokens.forEach(token => {
       if (lookup[token]) {
         const search = new RegExp(`\\[${token}\\]`, 'g')
-        template = template.replace(search,
-          isWindows() && token === 'path' ? `"${lookup[token]}"` : encodeURI(lookup[token]))
+        template = template.replace(
+          search,
+          isWindows() && token === 'path' ? `"${lookup[token]}"` : encodeURI(lookup[token])
+        )
       }
     })
 
@@ -159,7 +189,7 @@ export class Application {
   }
 }
 
-export function getApplication(context: Application['context'], service?: IService, connection?: IConnection) {
+export function getApplication(service?: IService, connection?: IConnection) {
   const app = getApplicationType({
     typeId: service?.typeID || connection?.typeID,
     host: connection?.host,
@@ -167,7 +197,6 @@ export function getApplication(context: Application['context'], service?: IServi
     username: connection?.username,
   })
 
-  app.context = context
   app.service = service
   app.connection = connection
 
@@ -187,21 +216,24 @@ function getApplicationType(connection: {
         launchIcon: 'desktop',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultCommandTemplate: isWindows() ? ` "[path]" -Username [username] [host]:[port]` : ''
+        defaultCommandTemplate: isWindows() ? '"[path]" -Username [username] [host]:[port]' : '',
       })
     case 28:
       return new Application({
         title: 'SSH',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        defaultCommandTemplate: isWindows() ? `start putty.exe -ssh [username]@[host] [port]` : 'ssh -l [username] [host] -p [port]',
+        defaultCommandTemplate: isWindows()
+          ? 'start putty.exe -ssh [username]@[host] [port]'
+          : 'ssh -l [username] [host] -p [port]',
       })
     case 5:
       return new Application({
-        title: 'remoteDesktop',
+        title: 'Remote Desktop',
         defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'http://[username]@[host]:[port]',
-        defaultCommandTemplate: `cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]`,
+        defaultCommandTemplate:
+          'cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]',
       })
     case 8:
     case 10:

@@ -1,13 +1,12 @@
 import React from 'react'
+import { Application } from '../shared/applications'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { useApplication } from '../hooks/useApplication'
 
-type Props = { service: IService; connection?: IConnection }
+type Props = { app: Application; service: IService; connection?: IConnection }
 
-export const CustomAttributeSettings: React.FC<Props> = ({ service, connection }) => {
-  const app = useApplication('launch', service, connection)
+export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connection }) => {
   const disabled = service.state !== 'active'
 
   if (!connection) connection = newConnection(service)
