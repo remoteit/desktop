@@ -526,12 +526,6 @@ declare global {
 
   type ILookup<T> = { [key: string]: T }
 
-  type ILaunchState = {
-    launch: boolean
-    prompt: boolean
-    openApp: boolean
-  }
-
   type ISelect = { [key: string]: string | number }
 
   type IGuide = {
@@ -604,14 +598,6 @@ declare global {
     host?: string
     isValid?: boolean
     loading?: boolean
-  }
-
-  type ILaunchApp = {
-    port?: number
-    host?: string
-    username?: string
-    path: string
-    application: string
   }
 
   type IShowFolderType = 'logs' | 'connections'

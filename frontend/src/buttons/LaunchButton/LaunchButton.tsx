@@ -1,8 +1,8 @@
 import React from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { isWindows, getApplicationObj, isMac, safeWindowOpen } from '../../services/Browser'
-import { ApplicationState, Dispatch } from '../../store'
-import { useDispatch, useSelector } from 'react-redux'
+import { safeWindowOpen } from '../../services/Browser'
+import { ApplicationState } from '../../store'
+import { useSelector } from 'react-redux'
 import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
@@ -28,47 +28,31 @@ type Props = {
 
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, onLaunch, ...props }) => {
   const app = useApplication(service, connection)
-  const { ui } = useDispatch<Dispatch>()
-  const disabled = !connection?.enabled
-  const { loading, path, launchState } = useSelector((state: ApplicationState) => ({
-    path: state.ui.launchPath,
-    loading: state.ui.launchLoading,
-    launchState: state.ui.launchState,
-  }))
+  const [prompt, setPrompt] = React.useState<boolean>(false)
+  const disabled = !connection?.enabled || connection.connecting
+  const loading = useSelector((state: ApplicationState) => state.ui.launchLoading)
 
   if (!app || !connection?.enabled) return null
 
-  const onSubmit = (tokens: ILookup<string>) => {
-    connection && setConnection({ ...connection, ...tokens })
-    ui.launchState({ prompt: false })
-    onOpenApp(app.preview(tokens))
-  }
-
   const clickHandler = () => {
-    if (app.prompt) ui.launchState({ prompt: true })
-    else onOpenApp()
+    if (app.prompt) setPrompt(true)
+    else launch()
     onLaunch && onLaunch()
   }
 
-  const closeAll = () => {
-    ui.launchState({ openApp: false, prompt: false, launch: false })
+  const close = () => setPrompt(false)
+
+  const onSubmit = (tokens: ILookup<string>) => {
+    const newConnection = { ...connection, ...tokens }
+    connection && setConnection(newConnection)
+    app.connection = newConnection
+    launch()
+    close()
   }
 
-  const onOpenApp = (command?: string) => {
-    let currentCommand = command || app.string
-    const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
-    if (isWindows() && applicationObj.application !== '') {
-      if (app.launchType === LAUNCH_TYPE.URL) return safeWindowOpen(currentCommand) // @FIXME thing this shouldn't be needed
-      emit('launch/app', { launchApp: { path }, command: currentCommand })
-    } else {
-      currentCommand = isMac()
-        ? app.launchDarwin.replace('[commandTemplate]', currentCommand)
-        : app.launchUnix.replace('[commandTemplate]', currentCommand)
-
-      app.launchType === LAUNCH_TYPE.URL
-        ? safeWindowOpen(currentCommand)
-        : emit('launch/app', { launchApp: { path }, command: currentCommand })
-    }
+  const launch = () => {
+    if (app.launchType === LAUNCH_TYPE.URL) safeWindowOpen(app.string)
+    else emit('launch/app', app.string)
   }
 
   const LaunchIcon = (
@@ -105,7 +89,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
           icon={loading ? 'spinner-third' : 'launch'}
         />
       )}
-      <PromptModal app={app} open={launchState.prompt} onClose={closeAll} onSubmit={onSubmit} />
+      <PromptModal app={app} open={prompt} onClose={close} onSubmit={onSubmit} />
     </>
   )
 }

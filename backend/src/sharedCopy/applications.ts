@@ -6,7 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { isWindows } from '../sharedAdaptor'
+import { getEnvironment } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 
@@ -20,8 +20,6 @@ export class Application {
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
   publicTemplate: string = '[address]'
-  launchDarwin: string = `osascript -e 'tell application "Terminal" to do script "[commandTemplate]" activate'`
-  launchUnix: string = `gnome-terminal -- /bin/bash -c '[commandTemplate]; read'`
   addressTemplate: string = '[host]:[port]'
   defaultLaunchType: LAUNCH_TYPE = LAUNCH_TYPE.URL
   defaultLaunchTemplate: string = 'http://[host]:[port]'
@@ -40,9 +38,6 @@ export class Application {
   }
 
   value(token: string) {
-    if (!this.lookup[token] && isWindows() && token === 'path' && this.connection?.typeID == 4) {
-      return 'c:\\Program Files\\RealVNC\\VNC Viewer\\vncViewer.exe'
-    }
     return this.lookup[token]
   }
 
@@ -171,13 +166,10 @@ export class Application {
     this.allTokens.forEach(token => {
       if (lookup[token]) {
         const search = new RegExp(`\\[${token}\\]`, 'g')
-        template = template.replace(
-          search,
-          isWindows() && token === 'path' ? `"${lookup[token]}"` : encodeURI(lookup[token])
-        )
+        const replace = this.launchType === LAUNCH_TYPE.URL ? encodeURI(lookup[token]) : lookup[token]
+        template = template.replace(search, replace)
       }
     })
-
     template = replaceHost(template, this.localhost)
     return template
   }
@@ -190,12 +182,7 @@ export class Application {
 }
 
 export function getApplication(service?: IService, connection?: IConnection) {
-  const app = getApplicationType({
-    typeId: service?.typeID || connection?.typeID,
-    host: connection?.host,
-    port: connection?.port,
-    username: connection?.username,
-  })
+  const app = getApplicationType(service?.typeID || connection?.typeID)
 
   app.service = service
   app.connection = connection
@@ -203,34 +190,29 @@ export function getApplication(service?: IService, connection?: IConnection) {
   return app
 }
 
-function getApplicationType(connection: {
-  typeId: number | undefined
-  host: string | undefined
-  port: number | undefined
-  username: string | undefined
-}) {
-  switch (connection.typeId) {
+function getApplicationType(typeId: number | undefined) {
+  const { os } = getEnvironment()
+  switch (typeId) {
     case 4:
       return new Application({
         title: 'VNC',
         launchIcon: 'desktop',
-        defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
+        defaultLaunchType: os === 'windows' ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'vnc://[username]@[host]:[port]',
-        defaultCommandTemplate: isWindows() ? '"[path]" -Username [username] [host]:[port]' : '',
+        defaultCommandTemplate: os === 'windows' ? '"[path]" -Username [username] [host]:[port]' : '',
       })
     case 28:
       return new Application({
         title: 'SSH',
-        defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
+        defaultLaunchType: os === 'windows' ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
-        defaultCommandTemplate: isWindows()
-          ? 'start putty.exe -ssh [username]@[host] [port]'
-          : 'ssh -l [username] [host] -p [port]',
+        defaultCommandTemplate:
+          os === 'windows' ? 'start putty.exe -ssh [username]@[host] [port]' : 'ssh -l [username] [host] -p [port]',
       })
     case 5:
       return new Application({
         title: 'Remote Desktop',
-        defaultLaunchType: isWindows() ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
+        defaultLaunchType: os === 'windows' ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'http://[username]@[host]:[port]',
         defaultCommandTemplate:
           'cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]',

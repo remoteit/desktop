@@ -17,7 +17,7 @@ import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import launch, { openCMD } from './launch'
+import launch from './launch'
 
 class Controller {
   private io: SocketIO.Server
@@ -42,7 +42,6 @@ class Controller {
       ...Object.values(environment.EVENTS),
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
-      ...Object.values(launch.EVENTS),
     ]
 
     new EventRelay(eventNames, EventBus, this.io.sockets)
@@ -66,7 +65,7 @@ class Controller {
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('launch/app', openCMD)
+    socket.on('launch/app', launch)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)

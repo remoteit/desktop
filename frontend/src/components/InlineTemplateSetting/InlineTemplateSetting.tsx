@@ -26,7 +26,6 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
       label={
         <>
           {app.contextTitle}
-          {console.log(app)}
           <Tooltip title={`Replacement tokens: ${app.tokens.join(', ')}`} placement="top" arrow>
             <span style={{ zIndex: 10 }}>
               <Icon name="question-circle" size="sm" type="regular" inline />

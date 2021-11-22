@@ -1,46 +1,19 @@
 import Logger from './Logger'
+import cli from './cliInterface'
 import EventBus from './EventBus'
 import Command from './Command'
 import environment from './environment'
 
-const EVENTS = {
-  notInstalled: 'required/app',
-  onError: 'service/error/command',
-  minimizeWindows: 'windows/minimize',
-}
+export default async function launchApplication(command: string) {
+  if (environment.isMac) command = `osascript -e 'tell application "Terminal" to do script "${command}" activate'`
+  else if (environment.isLinux) command = `gnome-terminal -- /bin/bash -c '${command}; read'`
 
-export const openCMD = async (params: { launchApp: ILaunchApp; command: string }) => {
-  if (params.launchApp.path) return launchApplication(params)
-  Logger.info('LAUNCH APP', { launchApp: params.launchApp })
-  const commands = new Command({})
-  commands.push(`${params.command}`)
+  const commands = new Command({ command })
+  commands.onError = (e: Error) => EventBus.emit(cli.EVENTS.error, e.toString())
   const result = await commands.exec()
-  if (result) {
-    try {
-      if (result.includes('Command failed:')) {
-        EventBus.emit(EVENTS.onError, result.toString() )
-      } else if (environment.isWindows) {
-        launchApplication(params)
-      }
-    } catch (error: any) {
-      Logger.warn('OPEN APP ON WINDOWS ERROR', { result, errorMessage: error.message.toString() })
-    }
+
+  if (result && result.includes('Command failed:')) {
+    EventBus.emit(cli.EVENTS.error, result.toString())
+    Logger.warn('LAUNCH APP PARSE ERROR', { result })
   }
 }
-
-async function launchApplication(params: { launchApp: ILaunchApp; command: string }) {
-  // use defaultTemplateCmd
-  const commands = new Command({})
-  commands.push(`${params.command}`)
-  const result = await commands.exec()
-  if (result) {
-    try {
-      const parsed = JSON.parse(result)
-      return parsed.data
-    } catch (error: any) {
-      Logger.warn('LAUNCH APP PARSE ERROR', { result, errorMessage: error.message.toString() })
-    }
-  }
-}
-
-export default { EVENTS }

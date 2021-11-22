@@ -56,43 +56,6 @@ export function isDev() {
   return environment() === DEVELOPMENT
 }
 
-export function launchPutty(typeID?: number) {
-  return typeID && [22, 28].includes(typeID) && isWindows()
-}
-
-export function launchVNC(typeID?: number) {
-  return typeID === 4 && isWindows()
-}
-
-export function launchRemoteDesktop(typeID?: number) {
-  return typeID === 5 && isWindows()
-}
-
-export function getApplicationObj(typeID?: number, username?: string) {
-  if (launchPutty(typeID)) {
-    return {
-      application: 'putty',
-    }
-  }
-
-  if (launchVNC(typeID)) {
-    return {
-      username,
-      application: 'vncviewer',
-    }
-  }
-
-  if (launchRemoteDesktop(typeID)) {
-    return {
-      username,
-      path: 'desktop',
-      application: 'remoteDesktop',
-    }
-  }
-
-  return { application: '' }
-}
-
 // this is a function to save information per user session in local storage
 export function getLocalStorageByUser(state: ApplicationState, key: string) {
   const currentSession = state.auth.user?.id
@@ -114,6 +77,6 @@ export function safeWindowOpen(url?: string, target?: string) {
   try {
     window.open(url, target)
   } catch {
-    ui.set({ errorMessage: `Windows Open URL not valid: ${url}` })
+    ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
   }
 }
