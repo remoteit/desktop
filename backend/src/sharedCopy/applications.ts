@@ -216,7 +216,7 @@ function getApplicationType(typeId: number | undefined) {
         defaultLaunchTemplate: 'rdp://[username]@[host]:[port]',
         defaultCommandTemplate:
           os === 'windows'
-            ? 'cmdkey /generic:[host] /user:[username] && mstsc /v: [host] && cmdkey /delete:TERMSRV/[host]'
+            ? 'cmdkey /generic:[host]:[port] /user:[username] && mstsc /v: [host]:[port] && cmdkey /delete:TERMSRV/[host]'
             : '[host]:[port]',
       })
     case 8:
