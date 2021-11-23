@@ -32,7 +32,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
 }) => {
   const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
-  const { connections } = useDispatch<Dispatch>()
+  const { connections, ui } = useDispatch<Dispatch>()
   const history = useHistory()
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
@@ -49,9 +49,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       onClick && onClick()
       analyticsHelper.trackConnect('connectionInitiated', service)
       connection = connection || newConnection(service)
+      if (connection.autoLaunch) ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
-      connection?.public ? connections.proxyConnect(connection) : emit('service/connect', connection)
+      connection.public ? connections.proxyConnect(connection) : emit('service/connect', connection)
     }
   }
 

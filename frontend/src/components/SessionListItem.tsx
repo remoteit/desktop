@@ -104,8 +104,8 @@ const useStyles = makeStyles({
     fontWeight: 500,
   }),
   item: {
-    '& .MuiIconButton-root': { display: 'none' },
-    '&:hover .MuiIconButton-root': { display: 'block' },
+    '& .MuiIconButton-root': { visibility: 'hidden' },
+    '&:hover .MuiIconButton-root': { visibility: 'visible' },
   },
   connectIcon: {
     position: 'relative',

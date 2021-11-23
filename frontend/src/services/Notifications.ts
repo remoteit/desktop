@@ -61,7 +61,7 @@ function connectNotification(event: ICloudEvent) {
   event.target.forEach(target => {
     createNotification({
       title: (event.authUserId === event.actor.id ? 'You ' : event.actor.email + ' ') + actions[event.state],
-      body: event.state === 'disconnected' ? 'From ' : 'To ' + target.name + (event.isP2P ? '' : ' by proxy'),
+      body: (event.state === 'disconnected' ? 'From ' : 'To ') + target.name + (event.isP2P ? '' : ' by proxy'),
       id: target.deviceId,
     })
   })

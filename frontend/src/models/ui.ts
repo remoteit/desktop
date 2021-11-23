@@ -34,12 +34,12 @@ type UIState = {
   successMessage: string
   noticeMessage: string
   errorMessage: string
-  launchLoading: boolean
   panelWidth: ILookup<number>
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
   accordion: ILookup<boolean>
+  autoLaunch: boolean
 }
 
 const defaultState: UIState = {
@@ -72,12 +72,12 @@ const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  launchLoading: false,
   panelWidth: { devices: 400, connections: 550, settings: 350 },
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 0, total: 7 },
   accordion: { config: true, configConnected: false },
+  autoLaunch: false,
 }
 
 export default createModel<RootModel>()({

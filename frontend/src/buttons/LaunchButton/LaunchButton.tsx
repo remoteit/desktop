@@ -1,8 +1,8 @@
 import React from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { safeWindowOpen } from '../../services/Browser'
-import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
@@ -27,10 +27,18 @@ type Props = {
 }
 
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, onLaunch, ...props }) => {
+  const { ui } = useDispatch<Dispatch>()
   const app = useApplication(service, connection)
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const disabled = !connection?.enabled || connection.connecting
-  const loading = useSelector((state: ApplicationState) => state.ui.launchLoading)
+  const disabled = !connection?.enabled || connection.connecting || !connection.host
+  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
+
+  React.useEffect(() => {
+    if (autoLaunch && app.connection?.enabled && app.connection?.host) {
+      ui.set({ autoLaunch: false })
+      clickHandler()
+    }
+  }, [autoLaunch, app.connection])
 
   if (!app || !connection?.enabled) return null
 
@@ -55,21 +63,12 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
     else emit('launch/app', app.string)
   }
 
-  const LaunchIcon = (
-    <Icon
-      name={loading ? 'spinner-third' : 'launch'}
-      spin={loading}
-      size={props.size}
-      color={props.color}
-      type={props.type}
-      fixedWidth
-    />
-  )
+  const LaunchIcon = <Icon name="launch" size={props.size} color={props.color} type={props.type} fixedWidth />
 
   return (
     <>
       {menuItem ? (
-        <MenuItem dense onClick={clickHandler} disabled={disabled || loading}>
+        <MenuItem dense onClick={clickHandler} disabled={disabled}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={app.contextTitle} />
         </MenuItem>
@@ -82,12 +81,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
           onClick={clickHandler}
         />
       ) : (
-        <IconButton
-          {...props}
-          onClick={clickHandler}
-          disabled={loading || disabled}
-          icon={loading ? 'spinner-third' : 'launch'}
-        />
+        <IconButton {...props} onClick={clickHandler} disabled={disabled} icon="launch" />
       )}
       <PromptModal app={app} open={prompt} onClose={close} onSubmit={onSubmit} />
     </>
