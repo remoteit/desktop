@@ -26,6 +26,7 @@ export class Application {
   defaultCommandTemplate: string = '[host]:[port]'
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultPublicTokens: string[] = ['address', 'id']
+  defaultTokenData: ILookup<string> = {}
   localhost?: boolean
 
   connection?: IConnection
@@ -140,9 +141,9 @@ export class Application {
   }
 
   get lookup() {
-    let lookup: ILookup<any> = {}
-    if (this.connection) lookup = { ...this.connection, ...lookup }
-    if (this.service) lookup = { ...this.service.attributes, ...lookup }
+    let lookup: ILookup<any> = { ...this.defaultTokenData }
+    if (this.service) lookup = { ...lookup, ...this.service.attributes }
+    if (this.connection) lookup = { ...lookup, ...this.connection }
     return lookup
   }
 
@@ -207,7 +208,8 @@ function getApplicationType(typeId: number | undefined) {
         defaultLaunchType: os === 'windows' ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate:
-          os === 'windows' ? 'start putty.exe -ssh [username]@[host] [port]' : 'ssh -l [username] [host] -p [port]',
+          os === 'windows' ? 'start [path] -ssh [username]@[host] [port]' : 'ssh -l [username] [host] -p [port]',
+        defaultTokenData: { path: 'putty.exe' },
       })
     case 5:
       return new Application({

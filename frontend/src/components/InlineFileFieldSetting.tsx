@@ -11,7 +11,7 @@ type Props = {
   label?: string
   value?: string
   disabled?: boolean
-  onSave?: (value: string) => void
+  onSave?: (value?: string) => void
 }
 
 export const InlineFileFieldSetting: React.FC<Props> = ({ label, value = '', disabled, onSave }) => {
@@ -35,6 +35,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({ label, value = '', dis
         {value || '–'}
       </ListItemText>
       <ListItemSecondaryAction>
+        <IconButton title="Reset" icon="undo" type="solid" size="sm" onClick={() => onSave && onSave(undefined)} />
         <IconButton title="Select Application" icon="folder-open" size="md" onClick={filePrompt} />
       </ListItemSecondaryAction>
     </ListItem>

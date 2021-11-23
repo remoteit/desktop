@@ -20,13 +20,15 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
             label="Application Path"
             value={app.value(token)}
             disabled={disabled}
-            onSave={value =>
-              connection &&
-              setConnection({
-                ...connection,
-                [token]: value.toString(),
-              })
-            }
+            onSave={value => {
+              if (!connection) return
+              if (value) {
+                setConnection({ ...connection, path: value })
+              } else {
+                delete connection.path
+                setConnection({ ...connection })
+              }
+            }}
           />
         ) : (
           <InlineTextFieldSetting

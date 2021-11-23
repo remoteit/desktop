@@ -55,7 +55,14 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                     key={token}
                     label="Application path"
                     value={app.value(token)}
-                    onSave={value => setTokens({ ...tokens, path: value.toString() })}
+                    onSave={value => {
+                      if (value) {
+                        setTokens({ ...tokens, path: value })
+                      } else {
+                        delete tokens.path
+                        setTokens({ ...tokens })
+                      }
+                    }}
                   />
                 ) : (
                   <ListItem key={token}>
