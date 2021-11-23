@@ -5,21 +5,15 @@ type Props = {
   label: string
   value?: string
   disabled: boolean
+  placeholder?: string
   onChange: (value: string) => void
   className?: string
 }
 
-export const TemplateSetting: React.FC<Props> = ({ label, value, disabled, onChange, className, children }) => {
+export const TemplateSetting: React.FC<Props> = ({ onChange, className, children, ...props }) => {
   return (
     <ListItem dense className={className}>
-      <TextField
-        label={label}
-        value={value}
-        disabled={disabled}
-        variant="filled"
-        onChange={event => onChange(event.target.value)}
-        multiline={true}
-      />
+      <TextField {...props} variant="filled" onChange={event => onChange(event.target.value)} multiline={true} />
       <Typography variant="caption">{children}</Typography>
     </ListItem>
   )

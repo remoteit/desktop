@@ -32,8 +32,8 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   attributes = {
     ...attributes,
     route: routingLock || attributes.route || ROUTES[0].key,
-    commandTemplate: attributes.commandTemplate || app.commandTemplate,
-    launchTemplate: attributes.launchTemplate || app.launchTemplate,
+    commandTemplate: attributes.commandTemplate,
+    launchTemplate: attributes.launchTemplate,
   }
 
   React.useEffect(() => {
@@ -68,6 +68,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         className={className}
         label={`${app.launchTitle} Template`}
         value={attributes.launchTemplate}
+        placeholder={app.launchTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, launchTemplate: value })}
       >
@@ -79,6 +80,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         className={className}
         label={`${app.commandTitle} Template`}
         value={attributes.commandTemplate}
+        placeholder={app.commandTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, commandTemplate: value })}
       >
