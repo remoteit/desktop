@@ -11,14 +11,23 @@ type Props = {
   connection?: IConnection
   actionIcon?: React.ReactElement
   disabled?: boolean
+  disableGutters?: boolean
 }
 
-export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connection, actionIcon, disabled }) => {
+export const InlineTemplateSetting: React.FC<Props> = ({
+  app,
+  service,
+  connection,
+  actionIcon,
+  disabled,
+  disableGutters,
+}) => {
   if (!connection) connection = newConnection(service)
 
   return (
     <InlineTextFieldSetting
       hideIcon
+      disableGutters={disableGutters}
       disabled={disabled}
       value={app.template}
       displayValue={app.string}

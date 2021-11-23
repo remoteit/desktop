@@ -17,7 +17,7 @@ export const CustomAttributeSettings: React.FC<Props> = ({ app, service, connect
         token === 'path' ? (
           <InlineFileFieldSetting
             key={token}
-            label={token}
+            label="Application Path"
             value={app.value(token)}
             disabled={disabled}
             onSave={value =>

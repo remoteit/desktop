@@ -66,7 +66,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
       </ListItem>
       <ListItem dense>
         <Quote margin={0} noInset listItem>
-          <List disablePadding className={css.indent}>
+          <List className={css.indent} disablePadding>
             <InlineTemplateSetting app={app} connection={connection} service={service} />
             <CustomAttributeSettings app={app} connection={connection} service={service} />
             <TestUI>
@@ -82,8 +82,5 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 const useStyles = makeStyles({
   menu: { textTransform: 'capitalize' },
   indent: { marginRight: -spacing.lg },
-  field: {
-    '&:hover': { backgroundColor: colors.primaryHighlight },
-    /*  marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } */
-  },
+  field: { '&:hover': { backgroundColor: colors.primaryHighlight } },
 })

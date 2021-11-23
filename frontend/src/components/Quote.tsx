@@ -10,11 +10,15 @@ export const Quote: React.FC<Props> = ({ margin = spacing.lg, listItem, noInset,
 }
 
 const useStyles = makeStyles({
-  quote: ({ margin, noInset, listItem }: Props) => ({
-    width: '100%',
-    margin: `${margin}px 0`,
-    paddingLeft: noInset ? undefined : spacing.lg,
-    borderLeft: `1px solid ${colors.grayLighter}`,
-    marginLeft: listItem ? 27 : undefined,
-  }),
+  quote: ({ margin, noInset, listItem }: Props) => {
+    const marginLeft = listItem ? 27 : undefined
+    return {
+      width: `calc(100% - ${marginLeft}px)`,
+      position: 'relative',
+      margin: `${margin}px 0`,
+      paddingLeft: noInset ? undefined : spacing.lg,
+      borderLeft: `1px solid ${colors.grayLighter}`,
+      marginLeft,
+    }
+  },
 })

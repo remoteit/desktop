@@ -1,21 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { emit } from '../services/Controller'
-import {
-  makeStyles,
-  TextField,
-  Input,
-  Button,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  InputLabel,
-} from '@material-ui/core'
+import { makeStyles, ListItem, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
 import { IconButton } from '../buttons/IconButton'
-import { Title } from './Title'
 import { spacing } from '../styling'
+import { Title } from './Title'
+import { emit } from '../services/Controller'
 
 type Props = {
   label?: string
@@ -40,14 +30,12 @@ export const InlineFileFieldSetting: React.FC<Props> = ({ label, value = '', dis
 
   return (
     <ListItem button onClick={filePrompt} disabled={disabled} dense>
-      <Title>
-        <ListItemText className={css.margin}>
-          {label && <InputLabel shrink>{label}</InputLabel>}
-          {value || '–'}
-        </ListItemText>
-      </Title>
+      <ListItemText className={css.margin}>
+        {label && <InputLabel shrink>{label}</InputLabel>}
+        {value || '–'}
+      </ListItemText>
       <ListItemSecondaryAction>
-        <IconButton title="Select file" icon="folder-open" size="md" onClick={filePrompt} />
+        <IconButton title="Select Application" icon="folder-open" size="md" onClick={filePrompt} />
       </ListItemSecondaryAction>
     </ListItem>
   )

@@ -16,6 +16,7 @@ type Props = {
   maxLength?: number
   hideIcon?: boolean
   warning?: string
+  disableGutters?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
   onDelete?: () => void
