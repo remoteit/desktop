@@ -7,6 +7,7 @@ import { TemplateSetting } from './TemplateSetting'
 import { ROUTES } from '../shared/constants'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
+import { spacing } from '../styling'
 
 type Props = IService['attributes'] & {
   className?: string
@@ -90,7 +91,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       </TemplateSetting>
       <ListItem className={subClassName}>
         {app.allCustomTokens.length ? (
-          <Quote>
+          <Quote margin={spacing.xs}>
             {app.allCustomTokens.map(token => (
               <TextField
                 fullWidth
