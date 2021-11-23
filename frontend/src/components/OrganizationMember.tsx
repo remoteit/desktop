@@ -42,7 +42,7 @@ export const OrganizationMember: React.FC<Props> = ({ member, freeLicenses, remo
         )}
         <ConfirmButton
           confirm
-          confirmMessage="This will remove all access to this organization’s devices."
+          confirmMessage="This will remove the user's access to all the organization’s devices"
           confirmTitle="Are you sure?"
           title="Remove Account"
           icon="times"
