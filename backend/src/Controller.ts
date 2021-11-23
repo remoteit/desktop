@@ -17,7 +17,7 @@ import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import launch, { checkAppForWindows, openCMD } from './launch'
+import launch from './launch'
 
 class Controller {
   private io: SocketIO.Server
@@ -29,6 +29,7 @@ class Controller {
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOut)
+    EventBus.on(electronInterface.EVENTS.filePath, path => this.io.emit('filePath', path))
 
     let eventNames = [
       ...Object.values(User.EVENTS),
@@ -41,7 +42,6 @@ class Controller {
       ...Object.values(environment.EVENTS),
       ...Object.values(electronInterface.EVENTS),
       ...Object.values(preferences.EVENTS),
-      ...Object.values(launch.EVENTS),
     ]
 
     new EventRelay(eventNames, EventBus, this.io.sockets)
@@ -65,8 +65,7 @@ class Controller {
     socket.on('service/clear-recent', this.pool.clearRecent)
     socket.on('service/forget', this.forget)
     socket.on('binaries/install', this.installBinaries)
-    socket.on('launch/app', openCMD)
-    socket.on('check/app', checkAppForWindows)
+    socket.on('launch/app', launch)
     socket.on('connection', this.connection)
     socket.on('targets', this.targets)
     socket.on('device', this.device)
@@ -83,6 +82,7 @@ class Controller {
     socket.on('heartbeat', this.check)
     socket.on('showFolder', this.showFolder)
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
+    socket.on('filePrompt', () => EventBus.emit(electronInterface.EVENTS.filePrompt))
 
     this.initBackend()
     this.check()

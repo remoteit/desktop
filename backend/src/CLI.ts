@@ -365,7 +365,9 @@ export default class CLI {
         else throw new Error(parsed)
         return parsed.data
       } catch (error) {
-        Logger.warn('CLI PARSE ERROR', { result, errorMessage: error.message.toString() })
+        if (error instanceof Error) {
+          Logger.warn('CLI PARSE ERROR', { result, errorMessage: error.message.toString() })
+        }
       }
     }
   }

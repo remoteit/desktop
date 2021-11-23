@@ -43,12 +43,12 @@ export function newConnection(service?: IService | null) {
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
     failover: service?.attributes.route !== 'p2p',
     proxyOnly: service?.attributes.route === 'proxy',
+    autoLaunch: [8, 10, 33, 7, 30, 38, 42].includes(service?.typeID || 0), // default for web type services
     public: state.auth.backendAuthenticated ? undefined : true,
   }
 
   if (service) {
     const device = getAllDevices(state).find((d: IDevice) => d.id === service.deviceID)
-    // @TODO The whole service obj should be in the connection
     connection.name = connectionName(service)
     connection.id = service.id
     connection.deviceID = service.deviceID

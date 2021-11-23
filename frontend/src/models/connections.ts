@@ -121,7 +121,7 @@ export default createModel<RootModel>()({
     },
 
     async proxyDisconnect(connection: IConnection) {
-      setConnection({ ...connection, enabled: false })
+      setConnection({ ...connection, address: undefined, enabled: false })
       console.log('PROXY DISCONNECT', connection)
       const data = { deviceaddress: connection.id, connectionid: connection.publicId }
       try {

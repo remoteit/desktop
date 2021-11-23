@@ -1,5 +1,16 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@material-ui/core'
+import {
+  List,
+  ListItem,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
+import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { Application } from '../shared/applications'
 
 type Props = {
@@ -37,18 +48,30 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
           <DialogTitle>Missing info found</DialogTitle>
           <DialogContent>
             <Typography variant="h4">{app.preview(tokens)}</Typography>
-            {app.missingTokens.map((token, index) => (
-              <TextField
-                fullWidth
-                autoFocus={index === 0}
-                key={token}
-                variant="filled"
-                label={token}
-                value={tokens[token]}
-                error={token === error}
-                onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
-              />
-            ))}
+            <List dense>
+              {app.missingTokens.map((token, index) =>
+                token === 'path' ? (
+                  <InlineFileFieldSetting
+                    key={token}
+                    label="Application path"
+                    value={app.value(token)}
+                    onSave={value => setTokens({ ...tokens, path: value.toString() })}
+                  />
+                ) : (
+                  <ListItem key={token}>
+                    <TextField
+                      fullWidth
+                      autoFocus={index === 0}
+                      variant="filled"
+                      label={token}
+                      value={tokens[token]}
+                      error={token === error}
+                      onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
+                    />
+                  </ListItem>
+                )
+              )}
+            </List>
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose} color="primary" type="button">

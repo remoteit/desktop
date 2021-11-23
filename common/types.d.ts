@@ -30,11 +30,11 @@ declare global {
     | 'service/clear'
     | 'service/clear-recent'
     | 'launch/app'
-    | 'check/app'
 
     // App/settings
     | 'maximize'
     | 'showFolder'
+    | 'filePrompt'
 
     // Backend
     | 'init'
@@ -84,7 +84,7 @@ declare global {
     | 'service/version'
     | 'service/unknown-event'
     | 'service/putty/required'
-    | 'required/app'
+    | 'service/error/command'
 
     // binary
     | 'binary/install/start'
@@ -526,12 +526,6 @@ declare global {
 
   type ILookup<T> = { [key: string]: T }
 
-  type ILaunchState = {
-    launch: boolean
-    prompt: boolean
-    openApp: boolean
-  }
-
   type ISelect = { [key: string]: string | number }
 
   type IGuide = {
@@ -604,14 +598,6 @@ declare global {
     host?: string
     isValid?: boolean
     loading?: boolean
-  }
-
-  type ILaunchApp = {
-    port?: number
-    host?: string
-    username?: string
-    path: string
-    application: string
   }
 
   type IShowFolderType = 'logs' | 'connections'

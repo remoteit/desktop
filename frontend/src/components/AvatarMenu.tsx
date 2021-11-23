@@ -10,6 +10,7 @@ import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
+import { safeWindowOpen } from '../services/Browser'
 
 export const AvatarMenu: React.FC = () => {
   const [el, setEl] = React.useState<HTMLButtonElement | null>()
@@ -53,17 +54,17 @@ export const AvatarMenu: React.FC = () => {
         <ListItemSetting
           label="Account"
           icon="user"
-          onClick={() => window.open('https://link.remote.it/portal/account')}
+          onClick={() => safeWindowOpen('https://link.remote.it/portal/account')}
         />
         <ListItemSetting
           label="Support"
           icon="life-ring"
-          onClick={() => window.open('https://link.remote.it/documentation-desktop/overview')}
+          onClick={() => safeWindowOpen('https://link.remote.it/documentation-desktop/overview')}
         />
         <ListItemSetting
           label="Documentation"
           icon="books"
-          onClick={() => window.open('https://link.remote.it/docs/api')}
+          onClick={() => safeWindowOpen('https://link.remote.it/docs/api')}
         />
         {altMenu && (
           <ListItemSetting

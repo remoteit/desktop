@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { makeStyles, TextField, Input } from '@material-ui/core'
-import { InlineSetting } from '../InlineSetting'
-import { spacing } from '../../styling'
+import { InlineSetting } from './InlineSetting'
+import { spacing } from '../styling'
 
 type Props = {
   value?: string | number
@@ -16,6 +16,7 @@ type Props = {
   maxLength?: number
   hideIcon?: boolean
   warning?: string
+  disableGutters?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
   onDelete?: () => void

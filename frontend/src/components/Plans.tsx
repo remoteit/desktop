@@ -10,6 +10,7 @@ import { currencyFormatter } from '../helpers/utilHelper'
 import { REMOTEIT_PRODUCT_ID, PERSONAL_PLAN_ID } from '../models/licensing'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { safeWindowOpen } from '../services/Browser'
 
 export const Plans: React.FC = () => {
   const css = useStyles()
@@ -141,7 +142,7 @@ export const Plans: React.FC = () => {
         selected={enterprise}
         onSelect={() => {
           if (enterprise) window.location.href = encodeURI(`mailto:sales@remote.it?subject=Enterprise Plan`)
-          else window.open('https://remote.it/contact-us/', '_blank')
+          else safeWindowOpen('https://remote.it/contact-us/', '_blank')
         }}
         feature={enterprise ? undefined : 'Volume devices* or user accounts'}
         features={enterprise ? undefined : ['1 year of activity logs', 'Slack support', 'Analytics and reporting']}

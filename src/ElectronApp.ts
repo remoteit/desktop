@@ -1,6 +1,6 @@
-import { WEB_DIR, EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
+import { EVENTS, environment, preferences, EventBus, Logger } from 'remoteit-headless'
 import AutoUpdater from './AutoUpdater'
-import electron, { Menu } from 'electron'
+import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
 import debug from 'debug'
 import path from 'path'
@@ -45,6 +45,7 @@ export default class ElectronApp {
     this.app.on('open-url', this.handleOpenUrl)
 
     EventBus.on(EVENTS.preferences, this.handleOpenAtLogin)
+    EventBus.on(EVENTS.filePrompt, this.handleFilePrompt)
     EventBus.on(EVENTS.maximize, this.handleMaximize)
     EventBus.on(EVENTS.open, this.openWindow)
   }
@@ -94,6 +95,19 @@ export default class ElectronApp {
       this.window?.maximize()
       this.isMaximized = true
     }
+  }
+
+  private handleFilePrompt = async () => {
+    if (!this.window) return
+
+    const result = await dialog.showOpenDialog(this.window, {
+      title: 'Find application',
+      message: 'Select the application location',
+      buttonLabel: 'Select',
+    })
+
+    EventBus.emit(EVENTS.filePath, result.filePaths[0])
+    Logger.info('FILE PROMPT RESULT', { result })
   }
 
   private setDeepLink(link?: string) {

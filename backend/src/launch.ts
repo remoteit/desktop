@@ -1,58 +1,19 @@
 import Logger from './Logger'
+import cli from './cliInterface'
 import EventBus from './EventBus'
 import Command from './Command'
 import environment from './environment'
-import { Application } from './sharedCopy/applications'
 
-const EVENTS = {
-  notInstalled: 'required/app',
-  minimizeWindows: 'windows/minimize',
-}
+export default async function launchApplication(command: string) {
+  if (environment.isMac) command = `osascript -e 'tell application "Terminal" to do script "${command}" activate'`
+  else if (environment.isLinux) command = `gnome-terminal -- /bin/bash -c '${command}; read'`
 
-export const openCMD = async (params: { launchApp: ILaunchApp; app: Application }) => {
-  if (params.launchApp.path) return launchApplication(params)
-  Logger.info('LAUNCH APP', { launchApp: params.launchApp })
-  const commands = new Command({})
-  commands.push(`${params.app.defaultTemplateCmd}`)
+  const commands = new Command({ command })
+  commands.onError = (e: Error) => EventBus.emit(cli.EVENTS.error, e.toString())
   const result = await commands.exec()
-  if (result) {
-    try {
-      if (result.includes('Command failed:')) {
-        EventBus.emit(EVENTS.notInstalled, { install: `${params.launchApp.application}`, loading: false })
-      } else if (environment.isWindows) {
-        launchApplication(params)
-      }
-    } catch (error) {
-      Logger.warn('OPEN APP ON WINDOWS ERROR', { result, errorMessage: error.message.toString() })
-    }
+
+  if (result && result.includes('Command failed:')) {
+    EventBus.emit(cli.EVENTS.error, result.toString())
+    Logger.warn('LAUNCH APP PARSE ERROR', { result })
   }
 }
-
-export const checkAppForWindows = async (params: { application: string; cmd: string }) => {
-  const commands = new Command({})
-  commands.push(`${params.cmd}`)
-  const result = await commands.exec()
-  Logger.info('CHECK APP EXISTS: ', { result })
-  if (result.includes('Command failed:')) {
-    EventBus.emit(EVENTS.notInstalled, { install: `${params.application}`, loading: false })
-  } else {
-    EventBus.emit(EVENTS.notInstalled, { install: `none`, loading: false })
-  }
-}
-
-async function launchApplication(params: { launchApp: ILaunchApp; app: Application }) {
-  // use defaultTemplateCmd
-  const commands = new Command({})
-  commands.push(params.app.defaultTemplateCmd)
-  const result = await commands.exec()
-  if (result) {
-    try {
-      const parsed = JSON.parse(result)
-      return parsed.data
-    } catch (error) {
-      Logger.warn('LAUNCH APP PARSE ERROR', { result, errorMessage: error.message.toString() })
-    }
-  }
-}
-
-export default { EVENTS }

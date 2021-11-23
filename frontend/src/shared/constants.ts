@@ -52,9 +52,7 @@ export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]/g
 export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_NAME_LENGTH = 100
 export const MAX_CONNECTION_NAME_LENGTH = 62
-
 export const SIDEBAR_WIDTH = 250
-
 export const ADD_EVENTS_ACTIONS = ['add', 'update']
 
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {

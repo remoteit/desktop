@@ -34,6 +34,7 @@ type IBackendState = {
   deferredAttributes?: IService['attributes']
   reachablePort: boolean
   reachablePortLoading: boolean
+  filePath?: string
 }
 
 const state: IBackendState = {
@@ -64,6 +65,7 @@ const state: IBackendState = {
   deferredAttributes: undefined,
   reachablePort: true,
   reachablePortLoading: false,
+  filePath: undefined,
 }
 
 export default createModel<RootModel>()({

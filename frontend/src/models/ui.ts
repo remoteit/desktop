@@ -34,15 +34,12 @@ type UIState = {
   successMessage: string
   noticeMessage: string
   errorMessage: string
-  launchLoading: boolean
-  launchPath: string
-  requireInstall: string
   panelWidth: ILookup<number>
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
   accordion: ILookup<boolean>
-  launchState: ILaunchState
+  autoLaunch: boolean
 }
 
 const defaultState: UIState = {
@@ -75,15 +72,12 @@ const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  launchLoading: false,
-  launchPath: '',
-  requireInstall: '',
   panelWidth: { devices: 400, connections: 550, settings: 350 },
   navigationBack: [],
   navigationForward: [],
   guideAWS: { title: 'AWS Guide', step: 0, total: 7 },
   accordion: { config: true, configConnected: false },
-  launchState: { launch: false, prompt: false, openApp: false },
+  autoLaunch: false,
 }
 
 export default createModel<RootModel>()({
@@ -152,10 +146,6 @@ export default createModel<RootModel>()({
     },
     accordion(state: UIState, params: ILookup<boolean>) {
       state.accordion = { ...state.accordion, ...params }
-      return state
-    },
-    launchState(state: UIState, params: ILookup<boolean>) {
-      state.launchState = { ...state.launchState, ...params }
       return state
     },
     reset(state: UIState) {

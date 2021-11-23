@@ -13,6 +13,7 @@ import { spacing } from '../../styling'
 import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
+import { safeWindowOpen } from '../../services/Browser'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
@@ -36,7 +37,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Typography variant="h1">
             <Title>
               <Tooltip title="Visit remote.it on the web">
-                <ButtonBase onClick={() => window.open('https://remote.it')}>
+                <ButtonBase onClick={() => safeWindowOpen('https://remote.it')}>
                   <Logo className={css.logo} width={110} />
                 </ButtonBase>
               </Tooltip>

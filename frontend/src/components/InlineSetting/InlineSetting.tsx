@@ -20,6 +20,7 @@ type Props = {
   fieldRef?: React.RefObject<HTMLInputElement>
   debug?: boolean
   warning?: string
+  disableGutters?: boolean
   onSubmit: () => void
   onResetClick: () => void
   onCancel: () => void
@@ -44,6 +45,7 @@ export const InlineSetting: React.FC<Props> = ({
   onShowEdit,
   onDelete,
   hideIcon,
+  disableGutters,
   children,
 }) => {
   const css = useStyles()
@@ -73,7 +75,7 @@ export const InlineSetting: React.FC<Props> = ({
   if (typeof icon === 'string') icon = <Icon name={icon} size="md" />
 
   const editForm = (
-    <ListItem className={css.active} dense>
+    <ListItem className={css.active} disableGutters={disableGutters} dense>
       <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
       <form
         className={css.form}
@@ -115,7 +117,7 @@ export const InlineSetting: React.FC<Props> = ({
   const viewForm = (
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
-      <ListItem button onClick={triggerEdit} disabled={disabled} dense>
+      <ListItem button onClick={triggerEdit} disabled={disabled} disableGutters={disableGutters} dense>
         <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
         <Title>
           <ListItemText>

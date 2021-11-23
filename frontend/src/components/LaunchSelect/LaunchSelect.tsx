@@ -22,10 +22,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   if (!connection) connection = newConnection(service)
 
   const [open, setOpen] = React.useState<boolean>(false)
-  const app = useApplication('launch', service, connection)
+  const app = useApplication(service, connection)
   const css = useStyles()
-
-  connection.context = app.launchType === LAUNCH_TYPE.COMMAND ? 'copy' : 'launch'
 
   const handleChange = (value: any) => {
     handleClick()
@@ -67,18 +65,11 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
         </TextField>
       </ListItem>
       <ListItem dense>
-        <ListItemIcon></ListItemIcon>
-        <Quote margin={0} noInset>
-          <List disablePadding className={css.indent}>
-            <InlineTemplateSetting
-              connection={connection}
-              service={service}
-              context={app.launchType === 'COMMAND' ? 'copy' : 'launch'}
-            />
-            <CustomAttributeSettings connection={connection} service={service} />
-            <TestUI>
-              <AutoLaunchToggle connection={connection} service={service} />
-            </TestUI>
+        <Quote margin={0} noInset listItem>
+          <List className={css.indent} disablePadding>
+            <AutoLaunchToggle connection={connection} service={service} />
+            <InlineTemplateSetting app={app} connection={connection} service={service} />
+            <CustomAttributeSettings app={app} connection={connection} service={service} />
           </List>
         </Quote>
       </ListItem>
@@ -89,8 +80,5 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 const useStyles = makeStyles({
   menu: { textTransform: 'capitalize' },
   indent: { marginRight: -spacing.lg },
-  field: {
-    '&:hover': { backgroundColor: colors.primaryHighlight },
-    /*  marginRight: spacing.sm, '& .MuiListItemSecondaryAction-root': { display: 'none' } */
-  },
+  field: { '&:hover': { backgroundColor: colors.primaryHighlight } },
 })

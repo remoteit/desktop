@@ -26,15 +26,14 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   onUpdate,
 }) => {
   const { routingLock, routingMessage } = useSelector((state: ApplicationState) => state.ui)
-  const copyApp = useApplication('copy', undefined, connection)
-  const launchApp = useApplication('launch', undefined, connection)
+  const app = useApplication(undefined, connection)
 
   // Defaults
   attributes = {
     ...attributes,
     route: routingLock || attributes.route || ROUTES[0].key,
-    commandTemplate: attributes.commandTemplate || copyApp.template,
-    launchTemplate: attributes.launchTemplate || launchApp.template,
+    commandTemplate: attributes.commandTemplate || app.commandTemplate,
+    launchTemplate: attributes.launchTemplate || app.launchTemplate,
   }
 
   React.useEffect(() => {
@@ -67,30 +66,30 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       </ListItem>
       <TemplateSetting
         className={className}
-        label={`${launchApp.contextTitle} Template`}
+        label={`${app.launchTitle} Template`}
         value={attributes.launchTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, launchTemplate: value })}
       >
-        Replacement tokens <b>{launchApp.tokens.join(', ')}</b>
+        Replacement tokens <b>{app.launchTokens.join(', ')}</b>
         <br />
-        <b>{launchApp.command}</b>
+        <b>{app.launchString}</b>
       </TemplateSetting>
       <TemplateSetting
         className={className}
-        label={`${copyApp.contextTitle} Template`}
+        label={`${app.commandTitle} Template`}
         value={attributes.commandTemplate}
         disabled={disabled}
         onChange={value => onUpdate({ ...attributes, commandTemplate: value })}
       >
-        Replacement tokens <b>{copyApp.tokens.join(', ')}</b>
+        Replacement tokens <b>{app.commandTokens.join(', ')}</b>
         <br />
-        <b>{copyApp.command}</b>
+        <b>{app.commandString}</b>
       </TemplateSetting>
       <ListItem className={subClassName}>
-        {launchApp.customTokens.length ? (
+        {app.allCustomTokens.length ? (
           <Quote>
-            {launchApp.customTokens.map(token => (
+            {app.allCustomTokens.map(token => (
               <TextField
                 fullWidth
                 key={token}

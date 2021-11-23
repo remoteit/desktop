@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { isWindows, getApplicationObj, isMac } from '../../services/Browser'
+import { safeWindowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { useApplication } from '../../hooks/useApplication'
 import { setConnection } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
 import { IconButton } from '../../buttons/IconButton'
 import { DataButton } from '../DataButton'
-import { DialogApp } from '../../components/DialogApp'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 import { Color, FontSize } from '../../styling'
@@ -29,113 +28,62 @@ type Props = {
 
 export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, onLaunch, ...props }) => {
   const { ui } = useDispatch<Dispatch>()
+  const app = useApplication(service, connection)
+  const [prompt, setPrompt] = React.useState<boolean>(false)
+  const disabled = !connection?.enabled || connection.connecting || !(connection.host || connection.address)
+  const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
 
-  const { loading, path, launchState } = useSelector((state: ApplicationState) => ({
-    path: state.ui.launchPath,
-    loading: state.ui.launchLoading,
-    launchState: state.ui.launchState,
-  }))
-
-  const [launchApp, setLaunchApp] = useState<ILaunchApp>()
-  const [launchIntent, setLaunchIntent] = useState<boolean>(false)
-  const app = useApplication(connection && connection.launchType === 'COMMAND' ? 'copy' : 'launch', service, connection)
-  const disabled = !connection?.enabled
-
-  useEffect(() => {
-    if (launchIntent && !loading) {
-      launchApplication()
-      setLaunchIntent(false)
+  React.useEffect(() => {
+    if (autoLaunch && app.connection?.enabled && app.connection?.host) {
+      ui.set({ autoLaunch: false })
+      clickHandler()
     }
-  }, [loading, launchIntent])
+  }, [autoLaunch, app.connection])
 
   if (!app || !connection?.enabled) return null
 
-  const launchApplication = () => {
-    const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
-    const hostProps = {
-      port: app.connection?.port,
-      host: app.connection?.host,
-      path,
-    }
-    if (applicationObj?.application) {
-      setLaunchApp({ ...hostProps, ...applicationObj })
-    }
-    ui.launchState({ openApp: true })
-  }
-
-  const onSubmit = (tokens: ILookup<string>) => {
-    connection && setConnection({ ...connection, ...tokens })
-    ui.launchState({ prompt: false })
-    // here is using preview because we don't know when setConnection respond with the socket emit
-    onOpenApp(app.preview(tokens))
-  }
-
   const clickHandler = () => {
-    if (app.prompt) ui.launchState({ prompt: true })
-    else onOpenApp()
+    if (app.prompt) setPrompt(true)
+    else launch()
     onLaunch && onLaunch()
   }
 
-  const closeAll = () => {
-    ui.launchState({ openApp: false, prompt: false, launch: false })
+  const close = () => setPrompt(false)
+
+  const onSubmit = (tokens: ILookup<string>) => {
+    const newConnection = { ...connection, ...tokens }
+    connection && setConnection(newConnection)
+    app.connection = newConnection
+    launch()
+    close()
   }
 
-  const onOpenApp = (command?: string) => {
-    const currentCommand = command || app.command
-    const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
-    if (isWindows() && applicationObj.application !== '') {
-      const applicationObj = getApplicationObj(service?.typeID, app.connection?.username)
-      ui.set({ launchLoading: true, requireInstall: 'none' })
-      emit('check/app', { application: applicationObj.application, cmd: app.checkApplicationCmd })
-      setLaunchIntent(true)
-    } else {
-      if (!isWindows()) {
-        app.defaultTemplateCmd = isMac()
-          ? app.launchDarwin.replace('[commandTemplate]', currentCommand)
-          : app.launchUnix.replace('[commandTemplate]', currentCommand)
-      }
-      app.launchType === LAUNCH_TYPE.URL
-        ? window.open(currentCommand)
-        : emit('launch/app', { launchApp: { path }, app })
-    }
+  const launch = () => {
+    if (app.launchType === LAUNCH_TYPE.URL) safeWindowOpen(app.string)
+    else emit('launch/app', app.string)
   }
 
-  const LaunchIcon = (
-    <Icon
-      name={loading ? 'spinner-third' : 'launch'}
-      spin={loading}
-      size={props.size}
-      color={props.color}
-      type={props.type}
-      fixedWidth
-    />
-  )
+  const LaunchIcon = <Icon name="launch" size={props.size} color={props.color} type={props.type} fixedWidth />
 
   return (
     <>
       {menuItem ? (
-        <MenuItem dense onClick={clickHandler} disabled={disabled || loading}>
+        <MenuItem dense onClick={clickHandler} disabled={disabled}>
           <ListItemIcon>{LaunchIcon}</ListItemIcon>
           <ListItemText primary={app.contextTitle} />
         </MenuItem>
       ) : dataButton ? (
         <DataButton
-          value={app.command}
+          value={app.string}
           label={app.contextTitle}
           title={app.contextTitle}
           icon={LaunchIcon}
           onClick={clickHandler}
         />
       ) : (
-        <IconButton
-          {...props}
-          onClick={clickHandler}
-          disabled={loading || disabled}
-          icon={loading ? 'spinner-third' : 'launch'}
-        />
+        <IconButton {...props} onClick={clickHandler} disabled={disabled} icon="launch" />
       )}
-      <PromptModal app={app} open={launchState.prompt} onClose={closeAll} onSubmit={onSubmit} />
-      <DialogApp launchApp={launchApp} app={app} type={service?.type} />
+      <PromptModal app={app} open={prompt} onClose={close} onSubmit={onSubmit} />
     </>
   )
 }

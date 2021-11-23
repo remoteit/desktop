@@ -1,5 +1,5 @@
 import { IP_PRIVATE, PORTAL } from '../shared/constants'
-import { ApplicationState } from '../store'
+import { ApplicationState, store } from '../store'
 
 const ELECTRON = 'electron'
 const BROWSER = 'browser'
@@ -56,43 +56,6 @@ export function isDev() {
   return environment() === DEVELOPMENT
 }
 
-export function launchPutty(typeID?: number) {
-  return typeID && [22, 28].includes(typeID) && isWindows()
-}
-
-export function launchVNC(typeID?: number) {
-  return typeID === 4 && isWindows()
-}
-
-export function launchRemoteDesktop(typeID?: number) {
-  return typeID === 5 && isWindows()
-}
-
-export function getApplicationObj(typeID?: number, username?: string) {
-  if (launchPutty(typeID)) {
-    return {
-      application: 'putty',
-    }
-  }
-
-  if (launchVNC(typeID)) {
-    return {
-      username,
-      application: 'vncviewer',
-    }
-  }
-
-  if (launchRemoteDesktop(typeID)) {
-    return {
-      username,
-      path: 'desktop',
-      application: 'remoteDesktop',
-    }
-  }
-
-  return { application: '' }
-}
-
 // this is a function to save information per user session in local storage
 export function getLocalStorageByUser(state: ApplicationState, key: string) {
   const currentSession = state.auth.user?.id
@@ -107,4 +70,13 @@ export async function setLocalStorageByUser(state: ApplicationState, key: string
 export async function removeLocalStorageByUser(state: ApplicationState, key: string) {
   const currentSession = await state.auth.user?.id
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
+}
+
+export function safeWindowOpen(url?: string, target?: string) {
+  const { ui } = store.dispatch
+  try {
+    window.open(url, target)
+  } catch {
+    ui.set({ errorMessage: `Could not launch, URL not valid: ${url}` })
+  }
 }
