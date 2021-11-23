@@ -102,7 +102,6 @@ export const Connect: React.FC = () => {
               <NameSetting connection={connection} service={service} device={device} />
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
-            {/* @TODO: add auto launch */}
             <LaunchSelect connection={connection} service={service} />
           </List>
         </AccordionMenuItem>

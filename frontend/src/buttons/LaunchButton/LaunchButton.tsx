@@ -30,7 +30,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   const { ui } = useDispatch<Dispatch>()
   const app = useApplication(service, connection)
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const disabled = !connection?.enabled || connection.connecting || !connection.host
+  const disabled = !connection?.enabled || connection.connecting || !(connection.host || connection.address)
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
 
   React.useEffect(() => {
