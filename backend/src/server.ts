@@ -96,8 +96,17 @@ class Server {
     credentials: UserCredentials,
     callback: (error: Error | null, success?: boolean) => void
   ) => {
+    const { admin } = cli.data
     d(`Authenticate`, credentials)
-    Logger.info('AUTHENTICATE CLIENT', { username: credentials.username })
+
+    Logger.info('AUTHENTICATE CLIENT', {
+      userId: user.id,
+      userUsername: user.username,
+      adminGuid: admin?.guid,
+      adminUsername: admin?.username,
+      credentialsGuid: credentials.guid || 'undefined',
+      credentialsUsername: credentials.username,
+    })
 
     // Signed in
     if (user.is(credentials)) {
@@ -106,17 +115,17 @@ class Server {
       return callback(null, true)
     }
     // Update credentials
-    else if (user.username === credentials.username) {
+    else if (user.id === credentials.guid) {
       Logger.info('UPDATE CREDENTIALS')
       return callback(null, !!(await user.checkSignIn(credentials)))
     }
     // Sign in
-    else if (credentials.username && credentials.authHash) {
-      const { admin } = cli.data
+    else if (credentials.guid && credentials.authHash) {
+      // const { admin } = cli.data
       Logger.info('USER SIGNING IN', { admin: admin?.username })
 
       // Not registered or signed in matches cli user
-      if (!admin || !admin.username || credentials.username === admin.username) {
+      if (!admin || !admin.guid || credentials.guid === admin.guid) {
         return callback(null, !!(await user.checkSignIn(credentials)))
       }
       // User not allowed
