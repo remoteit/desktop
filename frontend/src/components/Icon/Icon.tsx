@@ -8,6 +8,7 @@ import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
 import { OpenWrt } from '../../assets/OpenWrt'
 import { Nvidia } from '../../assets/Nvidia'
+import { Badge } from '@material-ui/core'
 import { R3 } from '../../assets/R3'
 
 library.add(fal, fab, far, fas)
@@ -24,12 +25,28 @@ export interface IconProps {
   type?: IconType
   inline?: boolean
   inlineLeft?: boolean
+  modified?: boolean
 }
 
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef(
-  ({ color, fixedWidth, name, size, rotate, spin, type = 'regular', inline, inlineLeft, ...props }: IconProps, ref) => {
+  (
+    {
+      color,
+      fixedWidth,
+      name,
+      size,
+      rotate,
+      spin,
+      type = 'regular',
+      inline,
+      inlineLeft,
+      modified,
+      ...props
+    }: IconProps,
+    ref
+  ) => {
     const styles: any = {}
 
     if (name === 'port') {
@@ -74,7 +91,7 @@ export const Icon = React.forwardRef(
       }
     }
 
-    return (
+    let icon = (
       <FontAwesomeIcon
         forwardedRef={ref}
         style={styles}
@@ -84,5 +101,14 @@ export const Icon = React.forwardRef(
         {...props}
       />
     )
+
+    if (modified)
+      icon = (
+        <Badge variant="dot" color="primary">
+          {icon}
+        </Badge>
+      )
+
+    return icon
   }
 )

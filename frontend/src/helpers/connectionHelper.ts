@@ -1,5 +1,5 @@
 import { emit } from '../services/Controller'
-import { DEFAULT_CONNECTION, MAX_CONNECTION_NAME_LENGTH, IP_PRIVATE } from '../shared/constants'
+import { DEFAULT_CONNECTION, REGEX_CONNECTION_NAME, MAX_CONNECTION_NAME_LENGTH, IP_PRIVATE } from '../shared/constants'
 import { getAllDevices, getActiveUser } from '../models/accounts'
 import { ApplicationState, store } from '../store'
 import { combinedName } from '../shared/nameHelper'
@@ -23,7 +23,7 @@ export function findLocalConnection(state: ApplicationState, id: string, session
 type nameObj = { name: string }
 
 export function sanitizeName(name: string) {
-  return name?.toLowerCase().replace(/[-\s]+/g, '-')
+  return name?.toLowerCase().replace(REGEX_CONNECTION_NAME, '-')
 }
 
 export function connectionName(service?: nameObj, device?: nameObj): string {

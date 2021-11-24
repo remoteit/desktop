@@ -107,7 +107,7 @@ export default createModel<RootModel>()({
         setLocalStorageByUser(state, USER_KEY, JSON.stringify(user))
         analyticsHelper.identify(data.id)
         if (data.authhash && data.yoicsId) {
-          Controller.setupConnection(data.yoicsId, data.authhash)
+          Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
           auth.setNotificationSettings(data.notificationSettings)
           auth.signedIn()
         } else console.warn('Login failed!', data)

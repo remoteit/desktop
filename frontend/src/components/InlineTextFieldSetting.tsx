@@ -16,6 +16,7 @@ type Props = {
   maxLength?: number
   hideIcon?: boolean
   warning?: string
+  modified?: boolean
   disableGutters?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
@@ -67,14 +68,14 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         className={css.field}
         helperText={error}
         onChange={event => {
-          let { value } = event.target
+          let value = event.target.value
           if (required && !value.length) {
             setError(`Required field`)
           } else if (maxLength && value.length > maxLength) {
             setError(`Cannot exceed ${maxLength} characters`)
             value = value.substring(0, maxLength)
           } else if (filter && value.length > 1) {
-            const original = value
+            const original = value.trim()
             value = value.replace(filter, '')
             if (original !== value) {
               setError(`Invalid character. (${original.replace(value, '')})`)

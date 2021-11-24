@@ -8,8 +8,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 class Controller extends EventEmitter {
   private socket?: SocketIOClient.Socket
   private retrying?: NodeJS.Timeout
-  private username?: string
-  private authHash?: string
+  private credentials?: UserCredentials
   private url: string = '/'
   handlers: ILookup<(result: any) => void> = {}
 
@@ -37,9 +36,8 @@ class Controller extends EventEmitter {
     }
   }
 
-  setupConnection(username: string, authHash: string) {
-    this.username = username
-    this.authHash = authHash
+  setupConnection(credentials: UserCredentials) {
+    this.credentials = credentials
     this.socket = io(this.url, {
       transports: ['websocket'],
       forceNew: true,
@@ -58,7 +56,7 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    emit('authentication', { username: this.username, authHash: this.authHash })
+    emit('authentication', this.credentials)
   }
 
   // Retry open with delay, force skips delay

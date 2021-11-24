@@ -24,6 +24,7 @@ export const TimeoutSetting: React.FC<{ service: IService; connection?: IConnect
   return (
     <InlineTextFieldSetting
       value={timeout}
+      modified={timeout !== DEFAULT_CONNECTION.timeout}
       filter={REGEX_CHARACTERS}
       displayValue={display}
       icon="hourglass"

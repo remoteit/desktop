@@ -213,7 +213,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
             </Switch>
           }
           singlePanel={singlePanel}
-          root={['/settings', '/settings/options']}
+          root={['/settings']}
         />
       </Route>
 

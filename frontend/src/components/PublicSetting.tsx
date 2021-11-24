@@ -1,6 +1,6 @@
 import React from 'react'
 import { Collapse, ListItemText } from '@material-ui/core'
-import { setConnection } from '../helpers/connectionHelper'
+import { setConnection, newConnection } from '../helpers/connectionHelper'
 import { IP_OPEN, IP_LATCH } from '../shared/constants'
 import { InlineSelectSetting } from './InlineSelectSetting'
 import { ListItemSetting } from './ListItemSetting'
@@ -8,8 +8,9 @@ import { DesktopUI } from './DesktopUI'
 import { Gutters } from './Gutters'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
-  if (!connection) return <>what?!</>
+  if (!connection) return null
 
+  const defaults = newConnection(service)
   const disabled = connection.enabled || service.attributes.route === 'p2p'
   const subLabel =
     connection.publicRestriction === IP_LATCH
@@ -22,6 +23,7 @@ export const PublicSetting: React.FC<{ service: IService; connection?: IConnecti
         <ListItemSetting
           label="Proxy connection"
           subLabel="Publicly sharable proxy connection"
+          modified={!!connection.public !== !!defaults.public}
           disabled={disabled}
           icon="share-alt"
           toggle={!!connection.public}

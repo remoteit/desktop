@@ -6,7 +6,6 @@ import { InlineTemplateSetting } from '../InlineTemplateSetting'
 import { AutoLaunchToggle } from '../AutoLaunchToggle'
 import { colors, spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
-import { TestUI } from '../TestUI'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
 import { isPortal } from '../../services/Browser'
@@ -50,7 +49,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
     <>
       <ListItem dense className={css.field} onClick={handleClick} button>
         <ListItemIcon>
-          <Icon name={app.icon} size="md" />
+          <Icon name={app.icon} size="md" modified={app.template !== app.defaultTemplate} fixedWidth />
         </ListItemIcon>
         <TextField
           {...inputProps}
