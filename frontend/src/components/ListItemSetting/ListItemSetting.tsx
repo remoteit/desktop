@@ -29,6 +29,7 @@ type Props = {
   confirmMessage?: string
   confirmTitle?: string
   quote?: boolean
+  modified?: boolean
   onClick?: () => void
   onButtonClick?: () => void
 }
@@ -46,6 +47,7 @@ export const ListItemSetting = ({
   onButtonClick,
   disabled,
   quote,
+  modified,
   confirm,
   confirmMessage = 'Are you sure?',
   confirmTitle = '',
@@ -91,7 +93,7 @@ export const ListItemSetting = ({
       >
         <TooltipWrapper>
           <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
-            <Icon ref={iconRef} name={icon} color={iconColor} size="md" />
+            <Icon ref={iconRef} name={icon} color={iconColor} size="md" modified={modified} fixedWidth />
           </ListItemIcon>
         </TooltipWrapper>
         {quote ? <Quote margin={0}>{ListItemContent}</Quote> : ListItemContent}

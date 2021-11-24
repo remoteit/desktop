@@ -12,7 +12,8 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
   const disabled = connection.enabled || connection.public
-  let host: string = connection.targetHost || service.host || IP_PRIVATE
+  const resetValue = service.host || IP_PRIVATE
+  let host: string = connection.targetHost || resetValue
 
   const save = (targetHost: string) =>
     connection &&
@@ -25,10 +26,11 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
     <InlineTextFieldSetting
       value={host}
       displayValue={host}
+      modified={host !== resetValue}
       icon="bullseye"
       label="Remote Host Address"
       disabled={disabled}
-      resetValue={service.host || IP_PRIVATE}
+      resetValue={resetValue}
       onSave={value => save(value.toString())}
     />
   )

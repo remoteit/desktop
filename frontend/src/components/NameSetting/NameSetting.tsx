@@ -8,13 +8,15 @@ export const NameSetting: React.FC<{ service: IService; device?: IDevice; connec
   device,
   connection,
 }) => {
+  const resetValue = connectionName(service, device)
   return (
     <InlineTextFieldSetting
       required
+      modified={connection.name !== resetValue}
       icon="i-cursor"
       value={connection.name}
       label="Connection Name"
-      resetValue={connectionName(service, device)}
+      resetValue={resetValue}
       disabled={connection.enabled || connection.public}
       filter={REGEX_CONNECTION_NAME}
       maxLength={MAX_CONNECTION_NAME_LENGTH}

@@ -14,15 +14,14 @@ export const LanShareSelect: React.FC<Props> = ({ connection, service }) => {
   const location = useLocation()
   const shared = lanShared(connection)
   const disabled = connection?.enabled || connection?.public
-  const color = shared ? 'primary' : undefined
+
   return (
     <ListItemLocation disabled={disabled} pathname={location.pathname + '/lan'} showDisabled dense>
       <ListItemIcon>
-        <Icon name="network-wired" color={color} size="md" />
+        <Icon name="network-wired" size="md" modified={shared} fixedWidth />
       </ListItemIcon>
       <ListItemText
         primary="Local Network Sharing"
-        secondaryTypographyProps={{ color }}
         secondary={(shared ? 'On - ' : '') + lanShareRestriction(connection)}
       />
     </ListItemLocation>

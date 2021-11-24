@@ -8,7 +8,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { AccountSelect } from '../AccountSelect'
 import { SidebarNav } from '../SidebarNav'
 import { AvatarMenu } from '../AvatarMenu'
-import { colors, spacing, fontSizes } from '../../styling'
+import { colors, spacing } from '../../styling'
 
 export const Sidebar: React.FC = () => {
   const addSpace = isMac() && isElectron()

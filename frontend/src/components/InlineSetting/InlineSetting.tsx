@@ -20,6 +20,7 @@ type Props = {
   fieldRef?: React.RefObject<HTMLInputElement>
   debug?: boolean
   warning?: string
+  modified?: boolean
   disableGutters?: boolean
   onSubmit: () => void
   onResetClick: () => void
@@ -45,6 +46,7 @@ export const InlineSetting: React.FC<Props> = ({
   onShowEdit,
   onDelete,
   hideIcon,
+  modified,
   disableGutters,
   children,
 }) => {
@@ -72,11 +74,12 @@ export const InlineSetting: React.FC<Props> = ({
     }
   }, [edit])
 
-  if (typeof icon === 'string') icon = <Icon name={icon} size="md" />
+  if (typeof icon === 'string') icon = <Icon name={icon} size="md" modified={modified} fixedWidth />
+  icon = <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
 
   const editForm = (
     <ListItem className={css.active} disableGutters={disableGutters} dense>
-      <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
+      {icon}
       <form
         className={css.form}
         onSubmit={e => {
@@ -118,7 +121,7 @@ export const InlineSetting: React.FC<Props> = ({
     <>
       {actionIcon && <span className={css.action}> {actionIcon}</span>}
       <ListItem button onClick={triggerEdit} disabled={disabled} disableGutters={disableGutters} dense>
-        <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
+        {icon}
         <Title>
           <ListItemText>
             {label && <InputLabel shrink>{label}</InputLabel>}

@@ -10,6 +10,7 @@ type Props = {
   displayValue?: string | number
   disabled?: boolean
   resetValue?: string | number
+  modified?: boolean
   onSave: (value: string | number) => void
 }
 
