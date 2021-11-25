@@ -40,7 +40,7 @@ export function SharingForm({
   const { shares } = useDispatch<Dispatch>()
   const [allowScript, setAllowScript] = useState<boolean>(script)
 
-  const disabled = !users?.length && email === '' ? true : false
+  const disabled = !users?.length && email === ''
   const handleChangeServices = (services: string[]) => {
     shares.changeServices(services)
   }
