@@ -208,7 +208,7 @@ function getApplicationType(typeId: number | undefined) {
         defaultLaunchType: os === 'windows' ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'ssh://[username]@[host]:[port]',
         defaultCommandTemplate:
-          os === 'windows' ? 'start [path] -ssh [username]@[host] [port]' : 'ssh -l [username] [host] -p [port]',
+          os === 'windows' ? 'start cmd /k ssh [username]@[host] -p [port]' : 'ssh -l [username] [host] -p [port]',
         defaultTokenData: { path: 'putty.exe' },
       })
     case 5:
