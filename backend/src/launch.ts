@@ -5,7 +5,8 @@ import Command from './Command'
 import environment from './environment'
 
 export default async function launchApplication(command: string) {
-  if (environment.isMac) command = `osascript -e 'tell application "Terminal" to do script "${command}" activate'`
+  if (environment.isMac)
+    command = `osascript -e 'tell application "Terminal" to do script "${command.replace(/"/g, '\\"')}" activate'`
   else if (environment.isLinux) command = `gnome-terminal -- /bin/bash -c '${command}; read'`
 
   const commands = new Command({ command })
