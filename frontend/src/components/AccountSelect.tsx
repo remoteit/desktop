@@ -11,15 +11,16 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
   const css = useStyles()
   const history = useHistory()
   const { accounts, devices } = useDispatch<Dispatch>()
-  const { user, fetching, options, activeId } = useSelector((state: ApplicationState) => ({
+  const { user, fetching, options, activeId, orgName } = useSelector((state: ApplicationState) => ({
     user: state.auth.user || { id: '', email: '' },
     fetching: state.devices.fetching,
     activeId: getActiveAccountId(state),
     options: state.accounts.membership.map(m => ({ id: m.organization.id, name: m.organization.name })),
+    orgName: state.organization.name,
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
-  options.unshift({ id: user.id, name: user.email })
+  options.unshift({ id: user.id, name: orgName || user.email })
   if (options.length < 2) return null
 
   return (
