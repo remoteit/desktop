@@ -58,13 +58,9 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
       <InputLabel shrink>Address</InputLabel>
-      <Typography variant="h3" className={css.h2}>
-        {name && <span className={hover === 'name' ? css.active : undefined}>{name}</span>}
-        {port && (
-          <>
-            :<span className={hover === 'port' ? css.active : undefined}>{port}</span>
-          </>
-        )}
+      <Typography variant="h3" className={css.h3}>
+        {name}
+        {port && <>:{port}</>}
       </Typography>
     </div>
   )
@@ -72,7 +68,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const nameDisplay = (
     <div className={hover === 'name' ? css.show : css.hide}>
       <InputLabel shrink>Copy Hostname</InputLabel>
-      <Typography variant="h3" className={css.h2}>
+      <Typography variant="h3" className={css.h3}>
         {name && <span className={css.active}>{name}</span>}
         {port && <>:{port}</>}
       </Typography>
@@ -82,7 +78,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const portDisplay = (
     <div className={hover === 'port' ? css.show : css.hide}>
       <InputLabel shrink>Copy Port</InputLabel>
-      <Typography variant="h3" className={css.h2}>
+      <Typography variant="h3" className={css.h3}>
         {name}:<span className={css.active}>{port}</span>
       </Typography>
     </div>
@@ -90,9 +86,11 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
 
   const copyDisplay = (
     <div ref={copyRef} className={hover === 'copy' ? css.show : css.hide}>
-      <InputLabel shrink>Copy Command</InputLabel>
-      <Typography variant="h3" className={css.h2}>
-        <span className={css.active}>{app.string}</span>
+      <InputLabel shrink>Copy Address</InputLabel>
+      <Typography variant="h3" className={css.h3}>
+        <span className={css.active}>
+          {name}:{port}
+        </span>
       </Typography>
     </div>
   )
@@ -100,7 +98,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const launchDisplay = (
     <div ref={launchRef} className={hover === 'launch' ? css.show : css.hide}>
       <InputLabel shrink>{app.contextTitle}</InputLabel>
-      <Typography variant="h3" className={css.h2}>
+      <Typography variant="h3" className={css.h3}>
         <span className={css.active}>{app.string}</span>
       </Typography>
     </div>
@@ -220,7 +218,7 @@ const useStyles = makeStyles({
     borderRadius: 4,
     backgroundColor: colors.darken,
   },
-  h2: {
+  h3: {
     wordBreak: 'break-all',
     overflow: 'hidden',
     fontWeight: 500,
@@ -230,7 +228,7 @@ const useStyles = makeStyles({
     transition: 'height 200ms',
     '-webkit-line-clamp': 2,
     '-webkit-box-orient': 'vertical',
-    '& span': { wordBreak: 'break-word' },
+    '& span': { wordBreak: 'break-all' },
   },
   address: ({ details }: Props) => ({
     backgroundColor: colors.primary,
