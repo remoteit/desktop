@@ -17,7 +17,7 @@ export const LicensingPage: React.FC = () => {
 
   return (
     <Container gutterBottom header={<Typography variant="h1">Licensing</Typography>}>
-      {!!membership.length && <Typography variant="subtitle1">Personal</Typography>}
+      {!!membership.length ? <Typography variant="subtitle1">Personal</Typography> : <br />}
       <LicensingSetting licenses={licenses} limits={limits} />
       {membership.reduce((list: JSX.Element[], m) => {
         if (m.organization.licenses.length)

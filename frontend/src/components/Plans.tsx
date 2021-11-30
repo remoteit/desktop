@@ -145,7 +145,11 @@ export const Plans: React.FC = () => {
           else safeWindowOpen('https://remote.it/contact-us/', '_blank')
         }}
         feature={enterprise ? undefined : 'Volume devices* or user accounts'}
-        features={enterprise ? undefined : ['1 year of activity logs', 'Slack support', 'Analytics and reporting']}
+        features={
+          enterprise
+            ? undefined
+            : ['1 year of activity logs', 'Slack support', 'Analytics and reporting', 'Dedicated proxy available']
+        }
       />
     </Gutters>
   )
