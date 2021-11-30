@@ -38,26 +38,22 @@ export default class AppUpdater {
 
   async check(force?: boolean) {
     try {
-      if (ENVIRONMENT !== 'development') {
-        if (environment.isLinux) {
-          try {
-            const response = await axios.get(LATEST)
-            Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })
-            const latest = response.data.tag_name
-            let desktopVersion = preferences.get().version
-            let current = desktopVersion && semverCompare(desktopVersion, latest) >= 0
-            if (!current) {
-              EventBus.emit(EVENTS.downloaded, latest.substring(1))
-            }
-          } catch (error) {
-            Logger.error('LATEST VERSION ERROR', { error })
+      if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
+        this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
+
+        if (ENVIRONMENT !== 'development' && environment.isLinux) {
+          const response = await axios.get(LATEST)
+          Logger.info('LATEST VERSION FOUND', { version: response.data.tag_name })
+          const latest = response.data.tag_name
+          let desktopVersion = preferences.get().version
+          let current = desktopVersion && semverCompare(desktopVersion, latest) >= 0
+          if (!current) {
+            EventBus.emit(EVENTS.downloaded, latest.substring(1))
           }
         } else if (environment.isWindows || environment.isMac) {
-          if (force || (this.nextCheck < Date.now() && preferences.get().autoUpdate)) {
-            Logger.info('CHECK FOR UPDATE')
-            autoUpdater.checkForUpdatesAndNotify()
-            this.nextCheck = Date.now() + AUTO_UPDATE_CHECK_INTERVAL
-          }
+          Logger.info('CHECK FOR UPDATE')
+          autoUpdater.checkForUpdatesAndNotify()
+          // TEST UPDATE NOTICE: EventBus.emit(EVENTS.downloaded, '9.9.9')
         }
       }
     } catch (error) {

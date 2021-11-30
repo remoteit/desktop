@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { emit } from '../../services/Controller'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
@@ -13,6 +13,10 @@ export const UpdateNotice: React.FC = () => {
   const [open, setOpen] = useState<boolean>(!!updateReady)
   const { backend } = useDispatch<Dispatch>()
 
+  useEffect(() => {
+    if (updateReady) setOpen(true)
+  }, [updateReady])
+
   if (isHeadless()) return null
 
   return (
@@ -21,6 +25,7 @@ export const UpdateNotice: React.FC = () => {
       message={`An update is available (v${updateReady}).`}
       action={[
         <Button
+          key="restart"
           variant="contained"
           color="primary"
           size="small"
@@ -32,6 +37,7 @@ export const UpdateNotice: React.FC = () => {
           Restart
         </Button>,
         <IconButton
+          key="close"
           onClick={() => {
             setOpen(false)
             backend.setUpdateNotice(updateReady)
