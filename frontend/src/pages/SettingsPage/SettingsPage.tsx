@@ -5,15 +5,16 @@ import { ApplicationState } from '../../store'
 import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
+import { safeWindowOpen } from '../../services/Browser'
+import { ListItemLink } from '../../components/ListItemLink'
 import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
-import { TestUI } from '../../components/TestUI'
 import { spacing } from '../../styling'
+import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
-import { safeWindowOpen } from '../../services/Browser'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
@@ -62,6 +63,9 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
+        <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="scroll" dense />
+        <ListItemLink title="Registrations" href="https://app.remote.it/#registrations" icon="upload" dense />
+        <ListItemLink title="Products" href="https://app.remote.it/#products" icon="server" dense />
         <ListItemLocation
           title="Organization"
           subtitle="Device list sharing"
