@@ -135,6 +135,7 @@ declare global {
     connected?: boolean
     connecting?: boolean
     createdTime?: number // unix timestamp track for garbage cleanup
+    default?: boolean // if the connection is in a default state - gets removed on modification
     deviceID?: string
     disconnecting?: boolean
     enabled?: boolean // if the connection is active

@@ -77,6 +77,7 @@ export const DEFAULT_CONNECTION = {
   autoLaunch: false,
   restriction: IP_OPEN,
   publicRestriction: IP_LATCH,
+  default: true,
 }
 
 export const PUBLIC_CONNECTION = {

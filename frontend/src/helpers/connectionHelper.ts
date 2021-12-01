@@ -64,6 +64,7 @@ export function newConnection(service?: IService | null) {
 export function setConnection(connection: IConnection) {
   const { auth } = store.getState()
   const { connections } = store.dispatch
+  connection.default = false
   if (!connection.id || !connection.name || !connection.deviceID) {
     var error = new Error()
     console.warn('Connection missing data. Set failed', connection, error.stack)

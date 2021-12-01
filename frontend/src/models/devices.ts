@@ -46,7 +46,7 @@ type IDeviceState = {
   from: number
   contacts: IUserRef[]
   eventsUrl: string
-  sortServiceOption?: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
+  sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
 }
 

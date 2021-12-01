@@ -115,7 +115,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
+        {device.services.sort(optionSortServices[sortService].sortService).map(s => (
           <GuideStep
             key={s.id}
             guide="guideAWS"

@@ -25,7 +25,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
     let recent: ISession[] = []
 
     for (const session of state.sessions.all) {
-      const index = allConnections.findIndex(c => c.sessionId === session.id)
+      const index = allConnections.findIndex(c => c.sessionId === session.id) // @TODO assign the connection id to the session if available on parsing
       if (index > -1) {
         session.state = connectionState(undefined, allConnections[index])
         if (session.public) proxy.push(session)

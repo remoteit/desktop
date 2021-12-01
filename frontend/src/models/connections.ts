@@ -138,6 +138,13 @@ export default createModel<RootModel>()({
       }
     },
 
+    async forget(id: string, globalState) {
+      const { set } = dispatch.connections
+      const { all } = globalState.connections
+      if (globalState.auth.backendAuthenticated) emit('service/forget', { id })
+      else set({ all: all.filter(c => c.id !== id) })
+    },
+
     async clear(id: string, globalState) {
       const { set } = dispatch.connections
       const { all } = globalState.connections
