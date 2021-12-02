@@ -6,7 +6,6 @@ import { ShareSaveActions } from '../ShareSaveActions'
 import { useHistory, useParams, useLocation } from 'react-router-dom'
 import { useSelector } from '../../hooks/reactReduxHooks'
 import { ApplicationState, Dispatch } from '../../store'
-import { Notice } from '../Notice'
 import { useDispatch } from 'react-redux'
 
 export interface SharingDetails {
@@ -41,8 +40,7 @@ export function SharingForm({
   const { shares } = useDispatch<Dispatch>()
   const [allowScript, setAllowScript] = useState<boolean>(script)
 
-  const disabled = !users?.length
-
+  const disabled = !users?.length && email === ''
   const handleChangeServices = (services: string[]) => {
     shares.changeServices(services)
   }
@@ -113,6 +111,13 @@ export function SharingForm({
 
   return (
     <>
+      <List>
+        <ListItem>
+          <Typography variant="body2" color="textSecondary">
+            Share this device by entering the user's email and choosing the services you'd like to provide them access to.
+          </Typography>
+        </ListItem>
+      </List>
       <Typography variant="subtitle1">Services</Typography>
       <ServiceCheckboxes
         onChange={handleChangeServices}
@@ -131,18 +136,7 @@ export function SharingForm({
           onClick={handleChangeScripting}
         />
       </List>
-      {disabled && (
-        <List>
-          <ListItem>
-            <Notice fullWidth>
-              <em>
-                Please select an option to share.
-                If you wish to remove this user click the trash icon at the top.
-              </em>
-            </Notice>
-          </ListItem>
-        </List>
-      )}
+
       <ShareSaveActions
         onCancel={() => history.push(location.pathname.replace(email ? `/${email}` : '/share', ''))}
         onSave={action}
