@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { safeWindowOpen } from '../services/Browser'
+import { windowOpen } from '../services/Browser'
 import { colors } from '../styling'
 import { Icon } from './Icon'
 
@@ -14,7 +14,7 @@ export type Props = {
 }
 
 export const ListItemLink: React.FC<Props> = ({ href, title, subtitle, icon, children, ...props }) => {
-  const onClick = () => safeWindowOpen(href)
+  const onClick = () => windowOpen(href)
 
   return (
     <ListItem {...props} button onClick={onClick}>

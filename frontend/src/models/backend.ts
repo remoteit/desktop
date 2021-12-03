@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { selectById } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
-import { getLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { RootModel } from './rootModel'
 import { version } from '../../package.json'
@@ -165,7 +165,7 @@ export default createModel<RootModel>()({
       emit('targets', targets)
     },
     async setUpdateNotice(updateVersion: string | undefined, globalState) {
-      setLocalStorageByUser(globalState, NOTICE_VERSION_ID, JSON.stringify(updateVersion))
+      setLocalStorage(globalState, NOTICE_VERSION_ID, updateVersion)
     },
   }),
 
@@ -182,7 +182,7 @@ const NOTICE_VERSION_ID = 'notice-version'
 export function selectUpdateNotice(state: ApplicationState) {
   const { updateReady } = state.backend
   if (updateReady && updateReady !== version) {
-    let notifiedVersion = getLocalStorageByUser(state, NOTICE_VERSION_ID)
+    let notifiedVersion = getLocalStorage(state, NOTICE_VERSION_ID)
     if (notifiedVersion) notifiedVersion = JSON.parse(notifiedVersion)
     if (notifiedVersion !== updateReady) return updateReady
   }

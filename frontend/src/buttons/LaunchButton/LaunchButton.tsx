@@ -1,6 +1,6 @@
 import React from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { safeWindowOpen } from '../../services/Browser'
+import { windowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useApplication } from '../../hooks/useApplication'
@@ -61,7 +61,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   }
 
   const launch = () => {
-    if (app.launchType === LAUNCH_TYPE.URL) safeWindowOpen(app.string)
+    if (app.launchType === LAUNCH_TYPE.URL) windowOpen(app.string)
     else emit('launch/app', app.string)
   }
 

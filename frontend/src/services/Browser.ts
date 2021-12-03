@@ -57,22 +57,27 @@ export function isDev() {
 }
 
 // this is a function to save information per user session in local storage
-export function getLocalStorageByUser(state: ApplicationState, key: string) {
+export function getLocalStorage(state: ApplicationState, key: string) {
   const currentSession = state.auth.user?.id
-  return currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null
+  const value = currentSession ? window.localStorage.getItem(currentSession + ':' + key) : null
+  try {
+    return value && JSON.parse(value)
+  } catch (e) {
+    return value
+  }
 }
 
-export async function setLocalStorageByUser(state: ApplicationState, key: string, value: string) {
+export async function setLocalStorage(state: ApplicationState, key: string, value: any) {
   const currentSession = await state.auth.user?.id
-  currentSession && window.localStorage.setItem(currentSession + ':' + key, value)
+  currentSession && window.localStorage.setItem(currentSession + ':' + key, JSON.stringify(value))
 }
 
-export async function removeLocalStorageByUser(state: ApplicationState, key: string) {
+export async function removeLocalStorage(state: ApplicationState, key: string) {
   const currentSession = await state.auth.user?.id
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }
 
-export function safeWindowOpen(url?: string, target?: string) {
+export function windowOpen(url?: string, target?: string) {
   const { ui } = store.dispatch
   try {
     window.open(url, target)

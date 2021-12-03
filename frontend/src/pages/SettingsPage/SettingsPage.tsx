@@ -5,7 +5,7 @@ import { ApplicationState } from '../../store'
 import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
-import { safeWindowOpen } from '../../services/Browser'
+import { windowOpen } from '../../services/Browser'
 import { ListItemLink } from '../../components/ListItemLink'
 import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -38,7 +38,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Typography variant="h1">
             <Title>
               <Tooltip title="Visit remote.it on the web">
-                <ButtonBase onClick={() => safeWindowOpen('https://remote.it')}>
+                <ButtonBase onClick={() => windowOpen('https://remote.it')}>
                   <Logo className={css.logo} width={110} />
                 </ButtonBase>
               </Tooltip>
