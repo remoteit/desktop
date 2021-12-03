@@ -50,14 +50,7 @@ export const DisconnectButton: React.FC<Props> = ({
           fullWidth={fullWidth}
           onClick={() => {
             analyticsHelper.trackConnect('connectionClosed', service)
-            connection?.public
-              ? connections.proxyDisconnect(connection)
-              : emit(
-                  state === 'ready' || state === 'offline' || state === 'disconnecting'
-                    ? 'service/disable'
-                    : 'service/disconnect',
-                  connection
-                )
+            connections.disconnect(connection)
           }}
         />
       </div>

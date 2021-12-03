@@ -131,9 +131,7 @@ export function cleanOrphanConnections() {
     .flat()
   if (!state.ui.offline && services.length) {
     state.connections.all.forEach(c => {
-      if (!services.includes(c.id)) {
-        emit('service/forget', c)
-      }
+      if (!services.includes(c.id)) store.dispatch.connections.forget(c.id)
     })
   }
 }

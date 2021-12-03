@@ -148,6 +148,7 @@ export default createModel<RootModel>()({
       if (!connection) return
       const { proxyDisconnect } = dispatch.connections
       if (connection.public) proxyDisconnect(connection)
+      else if (connection.disconnecting || connection.enabled || !connection.online) emit('service/disable', connection)
       else emit('service/disconnect', connection)
     },
 
