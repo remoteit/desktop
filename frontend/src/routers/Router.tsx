@@ -30,6 +30,7 @@ import { UserLogPage } from '../pages/UserLogPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
+import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
@@ -140,6 +141,10 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
       <Route path="/devices/:deviceID/:serviceID?">
         <DeviceRouter singlePanel={singlePanel} />
+      </Route>
+
+      <Route path="/device/:deviceID/transfer">
+        <DeviceTransferPage targetDevice={targetDevice} />
       </Route>
 
       <Route path="/announcements">

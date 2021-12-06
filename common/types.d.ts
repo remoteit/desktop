@@ -212,7 +212,7 @@ declare global {
     disabled: boolean //    service enabled / disabled
   }
 
-  interface ITargetDevice extends ITarget {}
+  interface ITargetDevice extends ITarget { }
 
   interface IDevice {
     id: string
@@ -593,6 +593,11 @@ declare global {
     }[]
   }
 
+  type ITransferProps = {
+    device: IDevice,
+    email: string
+  }
+
   type IReachablePort = {
     port: number
     host?: string
@@ -616,4 +621,4 @@ declare global {
   }
 }
 
-export {}
+export { }

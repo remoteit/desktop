@@ -9,7 +9,7 @@ import { UnregisterDeviceButton } from '../buttons/UnregisterDeviceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
-import { DeleteDeviceButton } from '../buttons/DeleteDeviceButton'
+import { OptionDeviceButton } from '../buttons/OptionDeviceButton'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Title } from './Title'
@@ -26,9 +26,9 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
         <>
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
-            {device.thisDevice ? <UnregisterDeviceButton device={device} /> : <DeleteDeviceButton device={device} />}
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
+            {device.thisDevice ? <UnregisterDeviceButton device={device} /> : <OptionDeviceButton device={device} />}
           </Typography>
           <ListHorizontal>
             <ListItemLocation

@@ -1,0 +1,1 @@
+export { DeviceTransferPage } from './DeviceTransferPage'

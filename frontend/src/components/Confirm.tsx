@@ -7,27 +7,40 @@ export const Confirm: React.FC<{
   open: boolean
   onConfirm: () => void
   onDeny: () => void
-}> = ({ title, open, onConfirm, onDeny, children }) => (
-  <Dialog
-    open={open}
-    maxWidth="xs"
-    TransitionComponent={Transition}
-    transitionDuration={200}
-    onClose={onDeny}
-    fullWidth
-  >
-    {title && <DialogTitle>{title}</DialogTitle>}
-    <DialogContent>{children}</DialogContent>
-    <DialogActions>
-      <Button color="primary" onClick={onDeny}>
-        Cancel
-      </Button>
-      <Button autoFocus variant="contained" color="primary" onClick={onConfirm}>
-        &nbsp; Ok &nbsp;
-      </Button>
-    </DialogActions>
-  </Dialog>
-)
+  type?: 'transfer' | 'delete'
+}> = ({ title, open, onConfirm, onDeny, children, type = 'delete' }) => {
+  let labelOk = ''
+  switch (type) {
+    case 'transfer':
+      labelOk = 'CONFIRM TRANSFER'
+      break
+    case 'delete':
+      labelOk = 'Ok'
+      break
+  }
+
+  return (
+    <Dialog
+      open={open}
+      maxWidth="xs"
+      TransitionComponent={Transition}
+      transitionDuration={200}
+      onClose={onDeny}
+      fullWidth
+    >
+      {title && <DialogTitle>{title}</DialogTitle>}
+      <DialogContent>{children}</DialogContent>
+      <DialogActions>
+        <Button color="primary" onClick={onDeny}>
+          Cancel
+        </Button>
+        <Button autoFocus variant="contained" color="primary" onClick={onConfirm}>
+          &nbsp; {labelOk} &nbsp;
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & { children?: React.ReactElement<any, any> },

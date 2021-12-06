@@ -12,6 +12,8 @@ type Props = {
   disabled?: boolean
   destroying?: boolean
   onDelete: () => void
+  color?: string
+  label?: string
 }
 
 export const DeleteButton: React.FC<Props> = ({
@@ -21,20 +23,26 @@ export const DeleteButton: React.FC<Props> = ({
   disabled,
   destroying,
   onDelete,
+  color,
+  label = '',
 }) => {
   const [open, setOpen] = useState<boolean>(false)
-  const css = useStyles()
+  const css = useStyles(color)()
 
   if (destroying) return <CircularProgress className={css.loading} size={styles.fontSizes.md} />
 
   return (
     <>
       <Tooltip title={tooltip}>
-        <span>
-          <IconButton disabled={disabled} onClick={() => setOpen(true)}>
-            <Icon name={icon} size="md" fixedWidth />
-          </IconButton>
-        </span>
+        <>
+          <span>
+            <IconButton disabled={disabled} onClick={() => setOpen(true)}>
+              <Icon name={icon} size="md" fixedWidth color={color} />
+              {label && (<span className={css.label}> {label} </span>)}
+            </IconButton>
+
+          </span>
+        </>
       </Tooltip>
       <Confirm
         open={open}
@@ -51,6 +59,14 @@ export const DeleteButton: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = (color) => makeStyles({
   loading: { color: styles.colors.danger, margin: styles.spacing.sm },
+  label: {
+    color: color,
+    fontSize: '1rem',
+    marginLeft: 15,
+    marginTop: 5,
+    minWidth: 150,
+    textAlign: 'left'
+  }
 })
