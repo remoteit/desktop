@@ -353,6 +353,7 @@ const jssTheme: ThemeOptions = {
       },
       body2: {
         fontSize: fontSizes.base,
+        '& b': { fontWeight: 500 },
       },
       caption: {
         fontSize: fontSizes.xs,

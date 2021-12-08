@@ -54,7 +54,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) =>
     >
       <Gutters>
         <Typography variant="body2" gutterBottom>
-          Your are transferring <b>{device.name}</b> to a new owner.
+          Your are transferring "{device.name}" to a new owner.
         </Typography>
         <Typography variant="body2" color="textSecondary">
           Device transfer typically takes a few seconds to complete. An email will be sent to you and the new owner when

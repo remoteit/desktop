@@ -340,10 +340,10 @@ export default createModel<RootModel>()({
         dispatch.devices.set({ transferring: true })
         try {
           await graphQLTransferDevice(data)
+          await dispatch.devices.fetch()
           dispatch.ui.set({
-            successMessage: `Device "${data.device.name}" successfully transferred to ${data.email}.`,
+            successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
           })
-          dispatch.devices.fetch()
         } catch (error) {
           if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
           console.warn(error)
