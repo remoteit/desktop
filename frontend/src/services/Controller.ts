@@ -56,7 +56,7 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    emit('authentication', this.credentials)
+    if (!isPortal()) emit('authentication', this.credentials)
   }
 
   // Retry open with delay, force skips delay
