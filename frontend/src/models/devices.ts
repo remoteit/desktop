@@ -5,6 +5,7 @@ import {
   graphQLUpdateService,
   graphQLRemoveService,
   graphQLSetDeviceNotification,
+  graphQLTransferDevice,
 } from '../services/graphQLMutation'
 import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
@@ -36,6 +37,7 @@ type IDeviceState = {
   fetching: boolean
   fetchingMore: boolean
   destroying: boolean // fixme - move to ui model
+  transferring: boolean
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
@@ -59,6 +61,7 @@ export const defaultState: IDeviceState = {
   fetching: true,
   fetchingMore: false,
   destroying: false,
+  transferring: false,
   query: '',
   append: false,
   filter: 'all',
@@ -331,6 +334,22 @@ export default createModel<RootModel>()({
         if (SAVED_STATES.includes(key)) setLocalStorageByUser(state, `device-${key}`, params[key] || '')
       })
       dispatch.devices.set(params)
+    },
+    async transferDevice(data: ITransferProps) {
+      if (data.email && data.device) {
+        dispatch.devices.set({ transferring: true })
+        try {
+          await graphQLTransferDevice(data)
+          await dispatch.devices.fetch()
+          dispatch.ui.set({
+            successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
+          })
+        } catch (error) {
+          if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
+          console.warn(error)
+        }
+        dispatch.devices.set({ transferring: false })
+      }
     },
   }),
 

@@ -40,7 +40,7 @@ export const OrganizationPage: React.FC = () => {
             {organization.id && (
               <>
                 <DeleteButton
-                  tooltip="Delete organization"
+                  title="Delete organization"
                   destroying={removing}
                   warning={
                     <>

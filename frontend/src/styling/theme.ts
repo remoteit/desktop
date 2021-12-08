@@ -94,7 +94,7 @@ const jssTheme: ThemeOptions = {
     },
     MuiSnackbar: {
       root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
-      anchorOriginBottomCenter: { bottom: '80px !important' },
+      anchorOriginBottomLeft: { bottom: '80px !important' },
     },
     MuiSnackbarContent: {
       root: { borderRadius: radius },
@@ -223,13 +223,16 @@ const jssTheme: ThemeOptions = {
     MuiMenuItem: {
       root: {
         '& .MuiListItemIcon-root': { minWidth: 50 },
+        paddingLeft: 0,
+        paddingRight: spacing.lg,
         color: colors.grayDarkest,
+        '&:hover, &:focus': { backgroundColor: colors.primaryLighter },
+      },
+      gutters: {
         paddingLeft: spacing.sm,
         paddingRight: spacing.sm,
         marginLeft: spacing.sm,
         marginRight: spacing.sm,
-        // '&:hover, &:focus': { backgroundColor: colors.grayLighter },
-        '&:hover, &:focus': { backgroundColor: colors.primaryLighter },
       },
     },
     MuiInput: {
@@ -350,6 +353,7 @@ const jssTheme: ThemeOptions = {
       },
       body2: {
         fontSize: fontSizes.base,
+        '& b': { fontWeight: 500 },
       },
       caption: {
         fontSize: fontSizes.xs,

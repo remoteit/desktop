@@ -66,12 +66,10 @@ export default createModel<RootModel>()({
           callbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
           signoutCallbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
         })
-
         await sleep(500)
-
         dispatch.auth.setAuthService(authService)
-        dispatch.auth.setInitialized()
       }
+      dispatch.auth.setInitialized()
     },
     async fetchUser(_, state) {
       const { auth } = dispatch as Dispatch

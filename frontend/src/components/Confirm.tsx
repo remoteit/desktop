@@ -4,10 +4,11 @@ import React from 'react'
 
 export const Confirm: React.FC<{
   title?: string
+  action?: string
   open: boolean
   onConfirm: () => void
   onDeny: () => void
-}> = ({ title, open, onConfirm, onDeny, children }) => (
+}> = ({ title, action = 'Ok', open, onConfirm, onDeny, children }) => (
   <Dialog
     open={open}
     maxWidth="xs"
@@ -23,7 +24,7 @@ export const Confirm: React.FC<{
         Cancel
       </Button>
       <Button autoFocus variant="contained" color="primary" onClick={onConfirm}>
-        &nbsp; Ok &nbsp;
+        &nbsp; {action} &nbsp;
       </Button>
     </DialogActions>
   </Dialog>

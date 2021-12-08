@@ -1,41 +1,53 @@
 import React, { useState } from 'react'
-import { Tooltip, IconButton, CircularProgress } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
+import { Tooltip, IconButton, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { Confirm } from '../components/Confirm'
 import { Icon } from '../components/Icon'
-import styles from '../styling'
 
 type Props = {
-  tooltip?: string
+  title?: string
   warning?: string | React.ReactElement
   icon?: string
   disabled?: boolean
   destroying?: boolean
+  menuItem?: boolean
   onDelete: () => void
 }
 
 export const DeleteButton: React.FC<Props> = ({
-  tooltip = 'delete',
+  title = 'delete',
   warning,
   icon = 'trash',
   disabled,
   destroying,
+  menuItem,
   onDelete,
 }) => {
   const [open, setOpen] = useState<boolean>(false)
-  const css = useStyles()
+  let color
 
-  if (destroying) return <CircularProgress className={css.loading} size={styles.fontSizes.md} />
+  if (destroying) {
+    icon = 'spinner-third'
+    color = 'danger'
+  }
 
   return (
     <>
-      <Tooltip title={tooltip}>
-        <span>
-          <IconButton disabled={disabled} onClick={() => setOpen(true)}>
-            <Icon name={icon} size="md" fixedWidth />
-          </IconButton>
-        </span>
-      </Tooltip>
+      {menuItem ? (
+        <MenuItem dense disableGutters onClick={() => setOpen(true)} disabled={disabled}>
+          <ListItemIcon>
+            <Icon name={icon} size="md" color={color} spin={destroying} />
+          </ListItemIcon>
+          <ListItemText primary={title} />
+        </MenuItem>
+      ) : (
+        <Tooltip title={title}>
+          <span>
+            <IconButton disabled={disabled} onClick={() => setOpen(true)}>
+              <Icon name={icon} size="md" fixedWidth />
+            </IconButton>
+          </span>
+        </Tooltip>
+      )}
       <Confirm
         open={open}
         onConfirm={() => {
@@ -44,13 +56,10 @@ export const DeleteButton: React.FC<Props> = ({
         }}
         onDeny={() => setOpen(false)}
         title="Are you sure?"
+        action="Delete"
       >
         {warning}
       </Confirm>
     </>
   )
 }
-
-const useStyles = makeStyles({
-  loading: { color: styles.colors.danger, margin: styles.spacing.sm },
-})

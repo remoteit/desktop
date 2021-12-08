@@ -218,3 +218,18 @@ export async function graphQLUpdateNotification(params: INotificationSetting) {
     params
   )
 }
+
+export async function graphQLTransferDevice(params: ITransferProps) {
+  return await graphQLBasicRequest(
+    ` mutation query($deviceId: String!, $email: String!) {
+        transfer(
+            deviceId: $deviceId, 
+            email: $email
+          )
+        }`,
+    {
+      deviceId: params.device?.id,
+      email: params.email,
+    }
+  )
+}
