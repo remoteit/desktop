@@ -37,7 +37,7 @@ type IDeviceState = {
   fetching: boolean
   fetchingMore: boolean
   destroying: boolean // fixme - move to ui model
-  transfering: boolean
+  transferring: boolean
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
@@ -47,7 +47,6 @@ type IDeviceState = {
   size: number
   from: number
   contacts: IUserRef[]
-  contactToTransfer: string
   eventsUrl: string
   sortServiceOption?: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
@@ -62,7 +61,7 @@ export const defaultState: IDeviceState = {
   fetching: true,
   fetchingMore: false,
   destroying: false,
-  transfering: false,
+  transferring: false,
   query: '',
   append: false,
   filter: 'all',
@@ -72,7 +71,6 @@ export const defaultState: IDeviceState = {
   size: 50,
   from: 0,
   contacts: [],
-  contactToTransfer: '',
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   userAttributes: [],
@@ -312,11 +310,11 @@ export default createModel<RootModel>()({
       try {
         device.shared
           ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email || '')}`, {
-            devices: device.id,
-            emails: auth.user?.email,
-            state: 'off',
-            scripting: false,
-          })
+              devices: device.id,
+              emails: auth.user?.email,
+              state: 'off',
+              scripting: false,
+            })
           : await r3.post(`/developer/device/delete/registered/${device.id}`)
         await dispatch.devices.fetch()
       } catch (error) {
@@ -337,23 +335,22 @@ export default createModel<RootModel>()({
       })
       dispatch.devices.set(params)
     },
-    async transferDevice(data: ITransferProps, globalState) {
-      const { devices } = globalState
-      if (devices.contactToTransfer !== '') {
+    async transferDevice(data: ITransferProps) {
+      if (data.email && data.device) {
+        dispatch.devices.set({ transferring: true })
         try {
           await graphQLTransferDevice(data)
           dispatch.ui.set({
-            successMessage: ` Device "${data.device.name}" successfully transferred to ${data.email}.`
+            successMessage: `Device "${data.device.name}" successfully transferred to ${data.email}.`,
           })
-          await dispatch.devices.fetch()
-
+          dispatch.devices.fetch()
         } catch (error) {
           if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
           console.warn(error)
         }
-        dispatch.devices.set({ transfering: false })
+        dispatch.devices.set({ transferring: false })
       }
-    }
+    },
   }),
 
   reducers: {

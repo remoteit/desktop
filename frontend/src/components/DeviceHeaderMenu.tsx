@@ -5,11 +5,10 @@ import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { ApplicationState } from '../store'
-import { UnregisterDeviceButton } from '../buttons/UnregisterDeviceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
-import { OptionDeviceButton } from '../buttons/OptionDeviceButton'
+import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UsersSelect } from './UsersSelect'
 import { Container } from './Container'
 import { Title } from './Title'
@@ -28,7 +27,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
             <Title>{attributeName(device) || 'Unknown'}</Title>
             <RefreshButton device={device} />
             <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
-            {device.thisDevice ? <UnregisterDeviceButton device={device} /> : <OptionDeviceButton device={device} />}
+            <DeviceOptionMenu device={device} />
           </Typography>
           <ListHorizontal>
             <ListItemLocation

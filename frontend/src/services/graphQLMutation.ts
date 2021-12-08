@@ -228,8 +228,8 @@ export async function graphQLTransferDevice(params: ITransferProps) {
           )
         }`,
     {
-      deviceId: params.device.id,
-      email: params.email
+      deviceId: params.device?.id,
+      email: params.email,
     }
   )
 }

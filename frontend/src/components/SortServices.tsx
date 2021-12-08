@@ -72,6 +72,8 @@ export const SortServices: React.FC = () => {
     handleClose()
   }
 
+  if (!option) return null
+
   return (
     <>
       <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick}>

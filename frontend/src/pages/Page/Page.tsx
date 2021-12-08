@@ -15,29 +15,21 @@ export interface Props {
 
 export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
-  const {
-    device,
-    connected,
-    successMessage,
-    noticeMessage,
-    errorMessage,
-    offline,
-    backendAuthenticated,
-    label,
-  } = useSelector((state: ApplicationState) => {
-    const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
-    return {
-      device,
-      connected: state.ui.connected,
-      successMessage: state.ui.successMessage,
-      noticeMessage: state.ui.noticeMessage,
-      errorMessage: state.ui.errorMessage,
-      offline: state.ui.offline,
-      backendAuthenticated: state.auth.backendAuthenticated,
-      os: state.backend.environment.os,
-      label: state.labels.find(l => l.id === device?.attributes.color),
-    }
-  })
+  const { device, connected, successMessage, noticeMessage, errorMessage, offline, backendAuthenticated, label } =
+    useSelector((state: ApplicationState) => {
+      const device = getOwnDevices(state).find(d => d.id === state.backend.device.uid)
+      return {
+        device,
+        connected: state.ui.connected,
+        successMessage: state.ui.successMessage,
+        noticeMessage: state.ui.noticeMessage,
+        errorMessage: state.ui.errorMessage,
+        offline: state.ui.offline,
+        backendAuthenticated: state.auth.backendAuthenticated,
+        os: state.backend.environment.os,
+        label: state.labels.find(l => l.id === device?.attributes.color),
+      }
+    })
 
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
@@ -57,6 +49,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <DragAppRegion />
       <Snackbar
         open={snackbar === 'offline'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message={
           <>
             <Icon name="exclamation-triangle" size="md" color="warning" type="regular" fixedWidth inlineLeft />
@@ -66,6 +59,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       />
       <Snackbar
         open={snackbar === 'retry'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message="Webserver connection lost. Retrying..."
         action={
           <IconButton onClick={reconnect}>
@@ -76,6 +70,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <Snackbar
         key={errorMessage || 'error'}
         open={snackbar === 'error'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message={
           <>
             <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
@@ -94,11 +89,13 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         open={snackbar === 'notice'}
         message={noticeMessage}
         onClose={() => ui.set({ noticeMessage: '' })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         autoHideDuration={20000}
       />
       <Snackbar
         key={successMessage || 'success'}
         open={snackbar === 'success'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message={
           <>
             <Icon name="check" size="md" color="success" type="regular" fixedWidth inlineLeft />
