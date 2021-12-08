@@ -18,11 +18,7 @@ type Props = {
 }
 
 export const DevicesHeader: React.FC<Props> = ({ fetching, restore, myDevice, children }) => {
-  const { initialized, loggedInUser, registeredId } = useSelector((state: ApplicationState) => ({
-    initialized: state.devices.initialized,
-    registeredId: state.backend.device.uid,
-    loggedInUser: isUserAccount(state),
-  }))
+  const { initialized } = useSelector((state: ApplicationState) => state.devices)
   const css = useStyles()
 
   useEffect(() => {
@@ -33,14 +29,11 @@ export const DevicesHeader: React.FC<Props> = ({ fetching, restore, myDevice, ch
     <Container
       header={
         <>
-          {initialized &&
-            (registeredId ? (
-              loggedInUser && !myDevice && <Notice gutterBottom>This device is not registered to you.</Notice>
-            ) : (
-              <List dense disablePadding>
-                <DeviceSetupItem restore={restore} />
-              </List>
-            ))}
+          {initialized && (
+            <List dense disablePadding>
+              <DeviceSetupItem restore={restore} />
+            </List>
+          )}
           {fetching && <LinearProgress className={css.fetching} />}
         </>
       }

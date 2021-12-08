@@ -23,6 +23,7 @@ export const UpdateNotice: React.FC = () => {
     <Snackbar
       open={open}
       message={`An update is available (v${updateReady}).`}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       action={[
         <Button
           key="restart"

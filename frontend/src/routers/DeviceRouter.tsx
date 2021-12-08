@@ -19,6 +19,7 @@ import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
 import { useDispatch, useSelector } from 'react-redux'
+import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
 export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
@@ -66,6 +67,9 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </Route>
           <Route path="/devices/:deviceID/edit">
             <DeviceEditPage targetDevice={targetDevice} device={device} />
+          </Route>
+          <Route path="/devices/:deviceID/transfer">
+            <DeviceTransferPage targetDevice={targetDevice} device={device} />
           </Route>
           <Route path="/devices/:deviceID/users">
             <UsersPageDevice device={device} />

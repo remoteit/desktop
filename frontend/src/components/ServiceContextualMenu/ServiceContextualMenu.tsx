@@ -44,7 +44,6 @@ export const ServiceContextualMenu: React.FC = () => {
     <Menu
       anchorEl={el}
       open={Boolean(el)}
-      className={css.menu}
       onClose={handleClose}
       anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
       disableScrollLock
@@ -63,7 +62,7 @@ export const ServiceContextualMenu: React.FC = () => {
         </ListItem>
       )}
       {connection?.enabled && (
-        <MenuItem dense onClick={() => handleGo(`/connections/${service?.id}`)}>
+        <MenuItem dense disableGutters onClick={() => handleGo(`/connections/${service?.id}`)}>
           <ListItemIcon>
             <Icon name="chart-network" size="md" color="primary" />
           </ListItemIcon>
@@ -71,14 +70,14 @@ export const ServiceContextualMenu: React.FC = () => {
         </MenuItem>
       )}
       {!device?.shared && (
-        <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/users/share`)}>
+        <MenuItem dense disableGutters onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/users/share`)}>
           <ListItemIcon>
             <Icon name="user-plus" size="md" />
           </ListItemIcon>
           <ListItemText primary="Share" />
         </MenuItem>
       )}
-      <MenuItem dense onClick={clipboard.copy}>
+      <MenuItem dense disableGutters onClick={clipboard.copy}>
         <ListItemIcon>
           <Icon
             name={clipboard.copied ? 'check' : 'share-alt'}
@@ -90,14 +89,14 @@ export const ServiceContextualMenu: React.FC = () => {
         <input type="hidden" ref={clipboard.target} value={`${PROTOCOL}connect/${service?.id}`} />
       </MenuItem>
       {!device?.shared && (
-        <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/edit`)}>
+        <MenuItem dense disableGutters onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/edit`)}>
           <ListItemIcon>
             <Icon name="pen" size="md" />
           </ListItemIcon>
           <ListItemText primary="Edit Service" />
         </MenuItem>
       )}
-      <MenuItem dense onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/details`)}>
+      <MenuItem dense disableGutters onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/details`)}>
         <ListItemIcon>
           <Icon name="info-circle" size="md" />
         </ListItemIcon>
@@ -108,12 +107,6 @@ export const ServiceContextualMenu: React.FC = () => {
 }
 
 const useStyles = makeStyles({
-  menu: {
-    '& .MuiMenuItem-root': {
-      paddingLeft: 0,
-      paddingRight: spacing.lg,
-    },
-  },
   name: { paddingTop: 0, paddingLeft: spacing.md },
   connect: {
     paddingTop: 0,

@@ -594,6 +594,11 @@ declare global {
     }[]
   }
 
+  type ITransferProps = {
+    device?: IDevice
+    email?: string
+  }
+
   type IReachablePort = {
     port: number
     host?: string

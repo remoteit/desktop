@@ -10,17 +10,24 @@ type Props = {
   selected?: IUser[]
   contacts: IUserRef[]
   onChange: (emails: string[]) => void
+  isTransfer?: boolean
 }
 
-export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onChange }) => {
+export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onChange, isTransfer = false }) => {
   const options = contactOptions(contacts, selected)
   const css = useStyles()
 
   const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
 
   const handleChange = (opts?: any) => {
-    opts = opts?.length ? opts : []
-    onChange(opts.map((r: IReactSelectOption) => r.value))
+    if (!isTransfer) {
+      opts = opts?.length ? opts : []
+      onChange(opts.map((r: IReactSelectOption) => r.value))
+    } else {
+      opts = opts?.value ? [opts.value] : []
+      onChange(opts)
+    }
+
   }
 
   const validateEmail = (inputValue: string) => {
@@ -33,20 +40,23 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
     )
   }
 
+
+
   return (
     <CreatableSelect
-      isMulti
+      isMulti={!isTransfer}
       autoFocus
       isClearable
       options={options}
       theme={selectTheme}
       className={css.select}
       classNamePrefix="select"
-      placeholder="Enter an email..."
+      placeholder={isTransfer ? "Enter new device owner..." : "Enter an email..."}
       onChange={handleChange}
       isValidNewOption={v => mailFormat.test(v)}
       formatCreateLabel={validateEmail}
       styles={customStyles}
+
     />
   )
 }
@@ -62,6 +72,15 @@ const useStyles = makeStyles({
     '& .select__multi-value': { backgroundColor: colors.primary, padding: `${spacing.xxs}px ${spacing.xs}px` },
     '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: colors.white },
     '& .select__multi-value__remove': { color: colors.white },
+    '& .select__single-value': {
+      backgroundColor: colors.primary,
+      padding: `${spacing.xxs}px ${spacing.sm}px ${spacing.xxs}px ${spacing.sm}px`,
+      fontSize: fontSizes.base,
+      fontWeight: 500,
+      color: colors.white,
+      borderRadius: `${spacing.xxs}px`,
+    },
+
   },
 })
 

@@ -1,22 +1,29 @@
 import React from 'react'
+import { emit } from '../services/Controller'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography } from '@material-ui/core'
-import { Notice } from '../components/Notice'
 import { DeleteButton } from './DeleteButton'
+import { Notice } from '../components/Notice'
 
-type Props = { device?: IDevice }
+type Props = {
+  device?: IDevice
+  menuItem?: boolean
+  onClick?: () => void
+}
 
-export const DeleteDeviceButton: React.FC<Props> = ({ device }) => {
-  const { devices } = useDispatch<Dispatch>()
-  const { destroying, userId } = useSelector((state: ApplicationState) => ({
+export const DeleteDeviceButton: React.FC<Props> = ({ device, menuItem, onClick }) => {
+  const { devices, ui } = useDispatch<Dispatch>()
+  const { destroying, userId, setupBusy, setupDeletingDevice } = useSelector((state: ApplicationState) => ({
     userId: state.auth.user?.id,
     destroying: state.devices.destroying,
+    setupBusy: state.ui.setupBusy,
+    setupDeletingDevice: state.ui.setupDeletingDevice,
   }))
 
   let disabled: boolean = false
   let icon: string = 'trash'
-  let tooltip: string = 'Delete this device'
+  let title: string = 'Delete device'
   let warning: string | React.ReactElement = (
     <>
       <Notice severity="danger" gutterBottom fullWidth>
@@ -31,26 +38,47 @@ export const DeleteDeviceButton: React.FC<Props> = ({ device }) => {
 
   if (!device || device.accountId !== userId) return null
 
+  const destroy = () => {
+    if (device.thisDevice) {
+      ui.set({ setupDeletingDevice: true, setupBusy: true })
+      emit('device', 'DELETE')
+    } else {
+      devices.destroy(device)
+    }
+    onClick && onClick()
+  }
+
   if (device.state === 'active') {
     disabled = true
-    tooltip = 'Device must be offline'
+    title = 'Device must be offline'
   }
 
   if (device.shared) {
     disabled = false
     icon = 'sign-out'
-    tooltip = 'Leave Device'
+    title = 'Leave Device'
     warning = 'This device will have to be re-shared to you if you wish to access it again.'
+  }
+
+  if (device.thisDevice) {
+    disabled = false
+    title = 'Unregister this device'
+    warning = (
+      <Notice severity="danger" fullWidth>
+        You are about to permanently remove this device and all of its services.
+      </Notice>
+    )
   }
 
   return (
     <DeleteButton
+      menuItem={menuItem}
       icon={icon}
       warning={warning}
-      tooltip={tooltip}
-      disabled={disabled}
-      destroying={destroying}
-      onDelete={() => devices.destroy(device)}
+      title={title}
+      disabled={disabled || setupBusy}
+      destroying={destroying || setupDeletingDevice}
+      onDelete={destroy}
     />
   )
 }
