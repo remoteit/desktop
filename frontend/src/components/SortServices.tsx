@@ -12,6 +12,10 @@ export interface ISortService {
   icon: string
 }
 
+export function getSortOptions(key: string) {
+  const option = optionSortServices[key]
+  return option || {}
+}
 export interface IOptionServiceSort {
   ATOZ: ISortService
   ZTOA: ISortService
@@ -19,7 +23,7 @@ export interface IOptionServiceSort {
   OLDEST: ISortService
 }
 
-export const optionSortServices: IOptionServiceSort = {
+const optionSortServices: IOptionServiceSort = {
   ATOZ: {
     name: 'Alpha A-Z',
     sortService: (a: IService, b: IService) =>
@@ -47,11 +51,8 @@ export const optionSortServices: IOptionServiceSort = {
 export const SortServices: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const { devices } = useDispatch<Dispatch>()
-  const { sortService } = useSelector((state: ApplicationState) => ({
-    sortService: state.devices.sortServiceOption,
-  }))
-  const option = optionSortServices[`${sortService}`]
-
+  const sortService = useSelector((state: ApplicationState) => state.devices.sortServiceOption)
+  const option = getSortOptions(sortService)
   const open = Boolean(anchorEl)
   const css = useStyles()
 
@@ -80,9 +81,9 @@ export const SortServices: React.FC = () => {
         <Icon name={option.icon} size="md" />
       </IconButton>
       <Menu id="long-menu" anchorEl={anchorEl} keepMounted open={open} onClose={handleClose}>
-        {Object.keys(optionSortServices).map((key, index) => (
-          <MenuItem key={index} selected={key === sortService} onClick={() => servicesSort(key)} className={css.list}>
-            {optionSortServices[`${key}`].name}
+        {Object.keys(optionSortServices).map(key => (
+          <MenuItem key={key} selected={key === sortService} onClick={() => servicesSort(key)} className={css.list}>
+            {optionSortServices[key].name}
           </MenuItem>
         ))}
       </Menu>
