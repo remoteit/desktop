@@ -69,7 +69,7 @@ export const defaultState: IDeviceState = {
   sort: 'name',
   owner: 'all',
   platform: undefined,
-  size: 5,
+  size: 50,
   from: 0,
   contacts: [],
   eventsUrl: '',
