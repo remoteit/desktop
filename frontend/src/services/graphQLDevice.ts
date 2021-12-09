@@ -108,8 +108,8 @@ export async function graphQLFetchDevices({
       sort,
       owner,
       account,
-      name: name?.trim() ? name : undefined,
       platform,
+      name: name?.trim() ? name : undefined,
     }
   )
 }

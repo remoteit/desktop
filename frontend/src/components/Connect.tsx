@@ -86,7 +86,7 @@ export const Connect: React.FC = () => {
           <ForgetButton connection={connection} inline />
         </Gutters>
       </GuideStep>
-      <List className={css.errorMessage}>
+      <List disablePadding>
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
       <Gutters>
@@ -137,6 +137,5 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  errorMessage: { padding: 0 },
   gutters: { display: 'flex' },
 })

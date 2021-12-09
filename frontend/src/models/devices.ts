@@ -44,7 +44,7 @@ type IDeviceState = {
   filter: 'all' | 'active' | 'inactive'
   sort: 'name' | '-name' | 'state' | '-state' | 'color' | '-color'
   owner: 'all' | 'me' | 'others'
-  platform?: number
+  platform: number[] | undefined
   size: number
   from: number
   contacts: IUserRef[]
@@ -366,6 +366,15 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
   const devices = gqlData?.data?.data?.login?.account?.devices?.items || {}
   const { connections, contacts, id } = gqlData?.data?.data?.login || {}
   return [devices, connections, total, id, contacts, error]
+}
+
+export function selectIsFiltered(state: ApplicationState) {
+  return (
+    state.devices.sort !== defaultState.sort ||
+    state.devices.filter !== defaultState.filter ||
+    state.devices.owner !== defaultState.owner ||
+    state.devices.platform !== defaultState.platform
+  )
 }
 
 export function isOffline(instance?: IDevice | IService, connection?: IConnection) {

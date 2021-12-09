@@ -3,15 +3,20 @@ import { makeStyles, List, ListItem, ListItemIcon, ListItemText } from '@materia
 import { Icon } from './Icon'
 
 type Props = {
-  value: string | number
+  value: string | number | string[] | number[]
   icon: string
-  filterList: { value: string; name: string }[]
+  filterList: { value: string | number; name: string }[]
   onSelect: (value: any) => void
 }
 
 export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSelect }) => {
   const css = useStyles()
-  const isActive = v => v === value.toString().replace('-', '')
+
+  const isActive = v => {
+    console.log(value, v, Array.isArray(value), Array.isArray(value) && value.includes(v as never))
+    if (Array.isArray(value)) return value.includes(v as never)
+    else return v === value.toString().replace('-', '')
+  }
 
   return (
     <List dense className={css.list}>

@@ -1,6 +1,6 @@
 import { FontSize } from '../styling'
 
-type ITargetPlatform = ILookup<string>
+type ITargetPlatform = INumberLookup<string>
 
 export const TARGET_PLATFORMS: ITargetPlatform = {
   0: 'Windows',

@@ -445,7 +445,7 @@ declare global {
     sort?: string
     name?: string
     ids?: string[]
-    platform?: number
+    platform?: number[]
   }
 
   interface IRegistration {
@@ -526,6 +526,8 @@ declare global {
   type IEvents = { [event: string]: string }
 
   type ILookup<T> = { [key: string]: T }
+
+  type INumberLookup<T> = { [key: number]: T }
 
   type ISelect = { [key: string]: string | number }
 

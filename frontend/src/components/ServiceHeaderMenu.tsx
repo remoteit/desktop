@@ -28,7 +28,6 @@ export const ServiceHeaderMenu: React.FC<{
   footer?: React.ReactNode
   backgroundColor?: string
 }> = ({ device, service, target, footer, backgroundColor, children }) => {
-  const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { connection, access } = useSelector((state: ApplicationState) => ({
@@ -88,9 +87,6 @@ export const ServiceHeaderMenu: React.FC<{
             )}
             <UsersSelect service={service} device={device} access={access} />
           </ListHorizontal>
-          <List className={css.errorMessage}>
-            <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
-          </List>
         </>
       }
       footer={footer}
@@ -99,7 +95,3 @@ export const ServiceHeaderMenu: React.FC<{
     </Container>
   )
 }
-
-const useStyles = makeStyles({
-  errorMessage: { padding: 0 },
-})

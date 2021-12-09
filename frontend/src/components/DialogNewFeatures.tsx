@@ -19,7 +19,7 @@ export const DialogNewFeatures = () => {
 
   return (
     <Route path="/devices/welcome">
-      <Dialog open onClose={() => history.push('/devices')}>
+      <Dialog open style={{ zIndex: 2000 }} onClose={() => history.push('/devices')}>
         <DialogContent>
           <Typography variant="h1" gutterBottom>
             Welcome!
