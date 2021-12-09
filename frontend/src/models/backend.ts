@@ -10,6 +10,7 @@ import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type IBackendState = {
+  initialized: boolean
   device: ITargetDevice
   targets: ITarget[]
   scanData: IScanData
@@ -17,7 +18,6 @@ type IBackendState = {
   error: boolean
   freePort?: number
   updateReady?: string
-  dataReady: boolean
   environment: {
     os?: Ios
     osVersion?: string
@@ -38,6 +38,7 @@ type IBackendState = {
 }
 
 const state: IBackendState = {
+  initialized: false,
   device: DEFAULT_TARGET,
   targets: [],
   scanData: { wlan0: { data: [], timestamp: 0 } },
@@ -45,7 +46,6 @@ const state: IBackendState = {
   error: false,
   freePort: undefined,
   updateReady: undefined,
-  dataReady: false,
   environment: {
     os: undefined,
     osVersion: '',
@@ -71,6 +71,9 @@ const state: IBackendState = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
+    async initialized(result: boolean, globalState) {
+      dispatch.backend.set({ initialized: result })
+    },
     async targetDeviceUpdated(targetDevice: ITargetDevice, globalState) {
       const { ui, backend, devices } = dispatch
       const { device } = globalState.backend

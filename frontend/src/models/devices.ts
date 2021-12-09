@@ -69,7 +69,7 @@ export const defaultState: IDeviceState = {
   sort: 'name',
   owner: 'all',
   platform: undefined,
-  size: 50,
+  size: 5,
   from: 0,
   contacts: [],
   eventsUrl: '',
@@ -94,6 +94,7 @@ export default createModel<RootModel>()({
     async fetch(optionalAccountId?: string, globalState?) {
       const accountId: string = optionalAccountId || getActiveAccountId(globalState)
       const userId = globalState.auth.user?.id
+      const ids = globalState.backend.device.uid ? [globalState.backend.device.uid] : []
       if (!userId) return console.error('NO AUTH USER ID')
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
       const { updateSearch } = dispatch.search
@@ -106,7 +107,7 @@ export default createModel<RootModel>()({
         account: accountId,
         state: filter === 'all' ? undefined : filter,
         name: query,
-        ids: append ? undefined : getConnectionIds(globalState),
+        ids: append ? undefined : ids.concat(getConnectionIds(globalState)),
         sort,
         owner: owner === 'all' ? undefined : owner === 'me',
         platform,

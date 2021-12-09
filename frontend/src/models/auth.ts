@@ -145,7 +145,6 @@ export default createModel<RootModel>()({
           setLocalStorage(state, 'amplify-signin-with-hostedUI', 'true')
         }
         dispatch.auth.setAuthenticated(true)
-        dispatch.auth.setInitialized()
         dispatch.auth.fetchUser()
       }
     },
@@ -160,7 +159,7 @@ export default createModel<RootModel>()({
     },
     async disconnect(_: void, rootState) {
       console.log('DISCONNECT')
-      if (!rootState.auth.authenticated && !rootState.auth.backendAuthenticated) {
+      if (!rootState.auth.authenticated && !rootState.auth.backendAuthenticated && !isPortal()) {
         await dispatch.auth.signedOut()
         dispatch.auth.setDefaultError('Sign in failed, please try again.')
       }

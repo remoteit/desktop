@@ -112,10 +112,7 @@ function getEventHandlers() {
 
     disconnect: () => auth.disconnect(),
 
-    dataReady: async (result: boolean) => {
-      console.log('Data ready')
-      backend.set({ dataReady: result })
-    },
+    dataReady: (result: boolean) => backend.initialized(result),
 
     connect_error: () => {
       backend.set({ error: true })
