@@ -148,9 +148,9 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   caption: {
-    color: styles.colors.gray,
+    color: palette.gray.main,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -176,7 +176,7 @@ const useStyles = makeStyles({
     '& p': {
       fontSize: styles.fontSizes.sm,
       margin: spacing.lg,
-      color: styles.colors.grayLight,
+      color: palette.grayLight.main,
     },
   },
-})
+}))

@@ -8,7 +8,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { AccountSelect } from '../AccountSelect'
 import { SidebarNav } from '../SidebarNav'
 import { AvatarMenu } from '../AvatarMenu'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 
 export const Sidebar: React.FC = () => {
   const addSpace = isMac() && isElectron()
@@ -33,11 +33,11 @@ export const Sidebar: React.FC = () => {
 }
 
 const useStyles = addSpace =>
-  makeStyles({
+  makeStyles( ({ palette }) => ({
     sidebar: {
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: colors.grayLighter,
+      backgroundColor: palette.grayLighter.main,
       width: SIDEBAR_WIDTH,
       minWidth: SIDEBAR_WIDTH,
       height: '100%',
@@ -52,4 +52,4 @@ const useStyles = addSpace =>
     select: {
       marginTop: spacing.md,
     },
-  })
+  }))

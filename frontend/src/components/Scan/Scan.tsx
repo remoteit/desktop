@@ -103,11 +103,11 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   loading: {
     alignItems: 'center',
     flexDirection: 'column',
-    color: styles.colors.grayLighter,
+    color: palette.grayLighter.main,
     fontSize: styles.fontSizes.xl,
   },
   controls: {
@@ -123,7 +123,7 @@ const useStyles = makeStyles({
     '& samp': {
       fontSize: styles.fontSizes.sm,
       fontFamily: 'Roboto Mono',
-      color: styles.colors.grayDark,
+      color: palette.grayDark.main,
     },
   },
-})
+}))

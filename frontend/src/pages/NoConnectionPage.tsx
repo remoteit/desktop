@@ -1,7 +1,7 @@
 import React from 'react'
 import { Body } from '../components/Body'
 import { makeStyles, Typography, Box } from '@material-ui/core'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 import { Icon } from '../components/Icon'
 
 export const NoConnectionPage: React.FC = () => {
@@ -20,16 +20,16 @@ export const NoConnectionPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   container: {
     display: 'flex',
     justifyContent: 'center',
   },
   box: {
-    backgroundColor: colors.primaryHighlight,
+    backgroundColor: palette.primaryHighlight.main,
     borderRadius: spacing.md,
     padding: spacing.xl,
     marginTop: '5vw',
   },
   icon: { marginBottom: spacing.md },
-})
+}))

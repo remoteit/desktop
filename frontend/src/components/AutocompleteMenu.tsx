@@ -110,7 +110,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   container: { width: 200 },
   listbox: { shadow: 'none', paddingTop: 0 },
   textField: { width: '100%', padding: `${spacing.xs}px ${spacing.xs}px 0` },
@@ -118,7 +118,7 @@ const useStyles = makeStyles({
     width: '100%',
     padding: `${spacing.xs}px ${spacing.sm}px`,
     fontSize: fontSizes.base,
-    color: colors.grayDarkest,
+    color: palette.grayDarkest.main,
   },
   popperDisablePortal: {
     position: 'relative',
@@ -132,10 +132,10 @@ const useStyles = makeStyles({
     marginRight: spacing.xs,
     marginBottom: 1,
     padding: `${2}px ${spacing.xxs}px`,
-    color: colors.grayDarker,
-    '&[data-focus="true"]': { backgroundColor: colors.primaryHighlight },
-    '&[aria-selected="true"]': { backgroundColor: colors.primaryHighlight },
+    color: palette.grayDarker.main,
+    '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
+    '&[aria-selected="true"]': { backgroundColor: palette.primaryHighlight.main },
     '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
     '& .MuiListItemIcon-root': { minWidth: 40 },
   },
-})
+}))

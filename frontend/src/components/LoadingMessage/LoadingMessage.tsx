@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Logo } from '../../components/Logo'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
-import { spacing, colors } from '../../styling'
+import { spacing } from '../../styling'
 
 export interface LoadingMessageProps {
   message?: string
@@ -30,7 +30,7 @@ export function LoadingMessage({ message, logo, spinner = true }: LoadingMessage
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   margin: { marginBottom: spacing.lg },
-  text: { color: colors.gray },
-})
+  text: { color: palette.gray.main },
+}))

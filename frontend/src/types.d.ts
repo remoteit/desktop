@@ -224,4 +224,61 @@ declare global {
 
 declare module 'remote.it' {}
 
+declare module "@material-ui/core/styles/createPalette" {
+  interface Palette {
+    primaryLight: Palette['primary']
+    primaryLighter: Palette['primary']
+    primaryHighlight: Palette['primaryHighlight']
+    secondary: Palette['secondary']
+    successLight: Palette['successLight']
+    success: Palette['success']
+    successDark: Palette['successDark']
+    dangerLight: Palette['dangerLight']
+    danger: Palette['danger']
+    dangerDark: Palette['dangerDark']
+    warning: Palette['warning']
+    gray: Palette['gray']
+    grayLightest: Palette['grayLightest']
+    grayLighter: Palette['grayLighter']
+    grayLight: Palette['grayLight']
+    grayDark: Palette['grayDark']
+    grayDarker: Palette['grayDarker']
+    grayDarkest: Palette['grayDarkest']
+    white: Palette['white']
+    black: Palette['black']
+    darken: Palette['darken']
+    screen: Palette['screen']
+    rpi: Palette['rpi']
+    guide: Palette['guide']
+    test: Palette['test']
+  }
+  interface PaletteOptions {
+    primaryLight?: PaletteOptions['primary']
+    primaryLighter?: PaletteOptions['primary']
+    primaryHighlight?: Palette['primaryHighlight']
+    secondary?: Palette['secondary']
+    successLight?: Palette['successLight']
+    success?: Palette['success']
+    successDark?: Palette['successDark']
+    dangerLight?: Palette['dangerLight']
+    danger?: Palette['danger']
+    dangerDark?: Palette['dangerDark']
+    warning?: Palette['warning']
+    gray?: Palette['gray']
+    grayLightest?: Palette['grayLightest']
+    grayLighter?: Palette['grayLighter']
+    grayLight?: Palette['grayLight']
+    grayDark?: Palette['grayDark']
+    grayDarker?: Palette['grayDarker']
+    grayDarkest?: Palette['grayDarkest']
+    white?: Palette['white']
+    black?: Palette['black']
+    darken?: Palette['darken']
+    screen?: Palette['screen']
+    rpi?: Palette['rpi']
+    guide?: Palette['guide']
+    test?: Palette['test']
+  }
+}
+
 export {}

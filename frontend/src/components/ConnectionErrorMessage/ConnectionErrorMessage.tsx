@@ -35,12 +35,12 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
 
 const size = 8
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   container: {
-    backgroundColor: styles.colors.danger,
+    backgroundColor: palette.danger.main,
     paddingLeft: styles.spacing.xl,
-    color: styles.colors.white,
-    '& .MuiListItemText-secondary': { color: styles.colors.white },
+    color: palette.white.main,
+    '& .MuiListItemText-secondary': { color: palette.white.main },
   },
   pointer: {
     position: 'absolute',
@@ -50,6 +50,6 @@ const useStyles = makeStyles({
     height: 0,
     borderLeft: `${size}px solid transparent`,
     borderRight: `${size}px solid transparent`,
-    borderBottom: `${size}px solid ${styles.colors.danger}`,
+    borderBottom: `${size}px solid ${palette.danger.main}`,
   },
-})
+}))

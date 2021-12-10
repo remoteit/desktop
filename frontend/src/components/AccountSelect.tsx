@@ -3,7 +3,7 @@ import { makeStyles, TextField, MenuItem, Divider, TextFieldProps } from '@mater
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getActiveAccountId } from '../models/accounts'
-import { spacing, colors } from '../styling'
+import { spacing } from '../styling'
 import { useHistory } from 'react-router-dom'
 import classnames from 'classnames'
 
@@ -51,8 +51,8 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
   )
 }
 
-const useStyles = makeStyles({
-  primary: { color: colors.primary },
+const useStyles = makeStyles( ({ palette }) => ({
+  primary: { color: palette.primary.main },
   divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
   action: { right: spacing.xs, marginLeft: spacing.sm },
-})
+}))

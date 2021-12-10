@@ -1,12 +1,40 @@
-import { colors, spacing, radius, fontSizes } from './'
+import { lightColors , darkColors, spacing, radius, fontSizes, checkDarkMode } from './'
 import { createTheme, ThemeOptions } from '@material-ui/core'
 
 const gutters = 32
-const jssTheme: ThemeOptions = {
+export const jssTheme  = ( isDark?: boolean): ThemeOptions => {
+  if (isDark === undefined) isDark = checkDarkMode() 
+  const colors =  isDark ? darkColors : lightColors
+  return { 
   palette: {
-    primary: { main: colors.primary },
-    secondary: { main: colors.secondary, contrastText: colors.white },
-    error: { main: colors.danger },
+    type: isDark ? 'dark' : 'light',
+    primary: { main: colors.primary, dark: darkColors.primary},
+    secondary: { main: colors.secondary, contrastText: colors.white, dark: darkColors.secondary },
+    error: { main: colors.danger, dark: darkColors.danger },
+    primaryLight: { main: colors.primaryLight, dark: darkColors.primaryLight},
+    primaryLighter: { main: colors.primaryLighter, dark: darkColors.primaryLighter},
+    primaryHighlight: { main: colors.primaryHighlight, dark: darkColors.primaryHighlight},
+    successLight: { main: colors.successLight, dark: darkColors.successLight},
+    success: { main: colors.success, dark: darkColors.success},
+    successDark: { main: colors.successDark, dark: darkColors.successDark},
+    dangerLight: { main: colors.dangerLight, dark: darkColors.dangerLight},
+    danger: { main: colors.danger, dark: darkColors.danger},
+    dangerDark: { main: colors.dangerDark, dark: darkColors.dangerDark},
+    warning: { main: colors.warning, dark: darkColors.warning},
+    gray: { main: colors.gray, dark: darkColors.gray},
+    grayLightest: { main: colors.grayLightest, dark: darkColors.grayLightest},
+    grayLighter: { main: colors.grayLighter, dark: darkColors.grayLighter},
+    grayLight: { main: colors.grayLight, dark: darkColors.grayLight},
+    grayDark: { main: colors.grayDark, dark: darkColors.grayDark},
+    grayDarker: { main: colors.grayDarker, dark: darkColors.grayDarker},
+    grayDarkest: { main: colors.grayDarkest, dark: darkColors.grayDarkest},
+    white: { main: colors.white, dark: darkColors.white},
+    black: { main: colors.black, dark: darkColors.black},
+    darken: { main: colors.darken, dark: darkColors.darken},
+    screen: { main: colors.screen, dark: darkColors.screen},
+    rpi: { main: colors.rpi, dark: darkColors.rpi},
+    guide: { main: colors.guide, dark: darkColors.guide},
+    test: { main: colors.test, dark: darkColors.test},
   },
   typography: {
     fontFamily: "'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
@@ -375,5 +403,6 @@ const jssTheme: ThemeOptions = {
     },
   },
 }
+}
 
-export default createTheme(jssTheme)
+export default createTheme(jssTheme())

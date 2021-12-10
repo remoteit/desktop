@@ -46,6 +46,6 @@ export const UnregisterServiceButton: React.FC<Props> = ({ target }) => {
   )
 }
 
-const useStyles = makeStyles({
-  loading: { color: styles.colors.danger, margin: styles.spacing.sm },
-})
+const useStyles = makeStyles( ({ palette }) => ({
+  loading: { color: palette.danger.main, margin: styles.spacing.sm },
+}))

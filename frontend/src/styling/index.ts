@@ -21,7 +21,6 @@ export type Color =
   | 'primaryLighter'
   | 'primaryHighlight'
   | 'secondary'
-  | 'guide'
   | 'successLight'
   | 'success'
   | 'successDark'
@@ -41,16 +40,15 @@ export type Color =
   | 'darken'
   | 'screen'
   | 'rpi'
+  | 'guide'
   | 'test'
 
-export const colors: { [key in Color]: string } = {
+export const lightColors: { [key in Color]: string } = {
   primary: '#0096e7',
-  // primaryLight: '#9ed3f0',
-  primaryLight: '#40a4db',
-  primaryLighter: '#d7effc',
+  primaryLight: '#9ed3f0',
+  primaryLighter: '#e7f2f9',
   primaryHighlight: '#edf8ff',
   secondary: '#75bd00',
-  guide: '#001247', //'#9651c4',
   successLight: '#a4db4c',
   success: '#75bd00',
   successDark: '#436807',
@@ -67,11 +65,45 @@ export const colors: { [key in Color]: string } = {
   grayDarkest: '#333',
   white: '#fff',
   black: '#000',
-  darken: 'rgba(0,0,0,0.15)',
+  darken: 'rgba(0,0,0,0.5)',
   screen: 'rgba(0,0,0,0.03)',
-  rpi: '#c51a4a',
+  rpi: '#C51A4A',
+  guide: '#001247',
   test: '#fffcf0',
 }
+
+export const darkColors: { [key in Color]: string } = {
+  primary: '#0096e7',
+  primaryLight: '#9ed3f0',
+  primaryLighter: '#e7f2f9',
+  primaryHighlight: '#edf8ff',
+  secondary: '#75bd00',
+  successLight: '#a4db4c',
+  success: '#75bd00',
+  successDark: '#436807',
+  dangerLight: '#e07562',
+  danger: '#d6290a',
+  dangerDark: '#871a06',
+  warning: '#ed9912',
+  grayLightest: '#333',
+  grayLighter: '#444',
+  grayLight: '#555',
+  gray: '#777',
+  grayDark: '#999',
+  grayDarker: '#aaa',
+  grayDarkest: '#bbb',
+  white: '#282828',
+  black: '#ccc',
+  darken: 'rgba(255,255,255,0.2)',
+  screen: 'rgba(255,255,255,0.03)',
+  rpi: '#C51A4A',
+  guide: '#001247',
+  test: '#fffcf0',
+}
+export const checkDarkMode = () => window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
+export const colors =  checkDarkMode() ? darkColors : lightColors;
+
+
 
 export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 

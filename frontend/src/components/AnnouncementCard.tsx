@@ -13,7 +13,7 @@ import {
   Button,
   Typography,
 } from '@material-ui/core'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 
 const types = {
   GENERIC: 'Notice',
@@ -78,21 +78,21 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
 }
 
 const useStyles = ({ unread }) =>
-  makeStyles({
+  makeStyles( ({ palette }) => ({
     card: {
       width: 500,
       overflow: 'hidden',
       marginTop: spacing.md,
       marginRight: spacing.md,
-      backgroundColor: colors.grayLightest,
+      backgroundColor: palette.grayLightest.main,
       '& .MuiButtonBase-root': { float: 'right' },
     },
     header: {
       transition: 'background-color 1s',
-      backgroundColor: unread ? colors.primary : colors.grayDarker,
+      backgroundColor: unread ? palette.primary.main : palette.grayDarker.main,
     },
     media: {
       height: 150,
-      backgroundColor: colors.primaryLight,
+      backgroundColor: palette.primaryLight.main,
     },
-  })
+  }))

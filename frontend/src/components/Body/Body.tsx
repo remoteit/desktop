@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import classnames from 'classnames'
-import { spacing, colors } from '../../styling'
+import { spacing } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 
 type Props = {
@@ -48,7 +48,7 @@ export const Body: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   body: {
     flexGrow: 1,
     height: '100%',
@@ -60,8 +60,8 @@ const useStyles = makeStyles({
     '&::-webkit-scrollbar:vertical': { width: 11 },
     '&::-webkit-scrollbar-thumb': {
       borderRadius: 8,
-      border: `2px solid ${colors.white}`, // should match background, can't be transparent
-      backgroundColor: colors.white,
+      border: `2px solid ${palette.white.main}`, // should match background, can't be transparent
+      backgroundColor: palette.white.main,
     },
   },
   inset: {
@@ -88,7 +88,7 @@ const useStyles = makeStyles({
   },
   showScroll: {
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: `${colors.darken} !important`,
+      backgroundColor: `${palette.darken.main} !important`,
     },
   },
-})
+}))

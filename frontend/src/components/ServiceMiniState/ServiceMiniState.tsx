@@ -113,7 +113,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   button: { padding: '8px 0' },
   icon: { padding: '0 0 8px' },
   indicator: {
@@ -135,7 +135,7 @@ const useStyles = makeStyles({
   clickable: {
     cursor: 'pointer',
     '&:hover > span': {
-      boxShadow: `0px 1px 2px ${colors.darken}`,
+      boxShadow: `0px 1px 2px ${palette.darken.main}`,
     },
   },
-})
+}))

@@ -111,7 +111,7 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   capitalize: { textTransform: 'capitalize' },
   mini: {
     '& > span': {
@@ -127,11 +127,11 @@ const useStyles = makeStyles({
       position: 'absolute',
       marginTop: -6,
       marginLeft: -8,
-      backgroundColor: colors.white,
+      backgroundColor: palette.white.main,
       borderRadius: '50%',
     },
   },
-  moderate: { backgroundColor: colors.warning },
-  poor: { backgroundColor: colors.danger },
+  moderate: { backgroundColor: palette.warning.main },
+  poor: { backgroundColor: palette.danger.main },
   button: { margin: `${-spacing.sm}px ${-spacing.sm}px` },
-})
+}))

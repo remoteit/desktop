@@ -1,7 +1,7 @@
 import React from 'react'
 import { IP_PRIVATE } from '../shared/constants'
 import { makeStyles, Typography, List, ListItem, ListItemText, Box } from '@material-ui/core'
-import { spacing, colors, fontSizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { ApplicationState } from '../store'
 import { attributeName } from '../shared/nameHelper'
 import { getOwnDevices } from '../models/accounts'
@@ -68,7 +68,7 @@ export const RemoteManagement: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   container: {
     padding: spacing.sm,
   },
@@ -84,7 +84,7 @@ const useStyles = makeStyles({
       justifyContent: 'space-between',
     },
     '& li > div': { justifyContent: 'left', minWidth: 45 },
-    '& li > div span': { fontSize: fontSizes.base, color: colors.grayDarker },
+    '& li > div span': { fontSize: fontSizes.base, color: palette.grayDarker.main },
     '& li > div + div': { flexGrow: 1 },
   },
-})
+}))

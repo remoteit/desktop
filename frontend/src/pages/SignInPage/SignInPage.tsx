@@ -53,21 +53,21 @@ export function SignInPage() {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   body: { '& > div': { maxWidth: 440 } },
   logo: {
     marginTop: -styles.spacing.xl,
     marginBottom: styles.spacing.lg,
   },
-  secure: { color: styles.colors.success },
+  secure: { color: palette.success.main },
   insecure: {
     margin: `${styles.spacing.xs}px auto`,
     textAlign: 'center',
     lineHeight: '1em',
-    '& > a': { color: styles.colors.success },
+    '& > a': { color: palette.success.main },
   },
   link: {
     marginTop: styles.spacing.xl,
     fontWeight: 400,
   },
-})
+}))

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useLayoutEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
 import { Typography, Box } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
@@ -118,10 +118,10 @@ export const ReportsPage: React.FC = () => {
     </Container>
   )
 }
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   reportSummaryBox: {
-    color: colors.white,
-    backgroundColor: colors.primary,
+    color: palette.white.main,
+    backgroundColor: palette.primary.main,
     width: '100%',
   },
   container: {
@@ -142,4 +142,4 @@ const useStyles = makeStyles({
   header: {
     margin: `${spacing.sm}px 0px`,
   },
-})
+}))

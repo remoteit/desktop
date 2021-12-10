@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 import { usePanelWidth } from '../hooks/usePanelWidth'
 import { makeStyles } from '@material-ui/core'
 import { Header } from './Header'
@@ -91,7 +91,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   panel: {
     height: '100%',
     display: 'flex',
@@ -123,14 +123,14 @@ const useStyles = makeStyles({
       marginLeft: 1,
       marginRight: 1,
       height: '100%',
-      backgroundColor: colors.grayLighter,
+      backgroundColor: palette.grayLighter.main,
       transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
     },
     '&:hover > div, & .active': {
       width: 3,
       marginLeft: 0,
       marginRight: 0,
-      backgroundColor: colors.primary,
+      backgroundColor: palette.primary.main,
     },
   },
-})
+}))

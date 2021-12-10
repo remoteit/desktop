@@ -26,7 +26,7 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => 
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   label: {
     display: 'flex',
     borderRadius: '50%',
@@ -34,7 +34,7 @@ const useStyles = makeStyles({
   avatar: {
     borderWidth: 3,
     borderStyle: 'solid',
-    borderColor: colors.white,
-    '&:hover': { borderColor: colors.primaryLight },
+    borderColor: palette.white.main,
+    '&:hover': { borderColor: palette.primaryLight.main },
   },
-})
+}))

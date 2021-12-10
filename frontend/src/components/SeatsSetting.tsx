@@ -2,7 +2,7 @@ import React from 'react'
 import { PERSONAL_PLAN_ID, REMOTEIT_PRODUCT_ID } from '../models/licensing'
 import { makeStyles, List, TextField, Button } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
-import { spacing, fontSizes, colors } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { InlineSetting } from './InlineSetting'
@@ -112,11 +112,11 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   group: {
-    border: `1px solid ${colors.grayLighter}`,
+    border: `1px solid ${palette.grayLighter.main}`,
     borderRadius: spacing.md,
-    backgroundColor: colors.white,
+    backgroundColor: palette.white.main,
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
     marginRight: spacing.md,
@@ -137,4 +137,4 @@ const useStyles = makeStyles({
       marginTop: 0,
     },
   },
-})
+}))

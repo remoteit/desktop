@@ -11,7 +11,7 @@ import {
   Chip,
   Badge,
 } from '@material-ui/core'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 import { Icon } from './Icon'
 import classnames from 'classnames'
 
@@ -73,25 +73,25 @@ export const SidebarNav: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   chip: {
     fontWeight: 500,
   },
   list: {
     position: 'static',
     marginTop: spacing.sm,
-    '& .MuiListItemText-primary': { color: colors.grayDark },
-    '& .MuiListItem-button:hover .MuiListItemText-primary': { color: colors.black },
-    '& .MuiListItem-button:hover path': { color: colors.grayDarkest },
+    '& .MuiListItemText-primary': { color: palette.grayDark.main },
+    '& .MuiListItem-button:hover .MuiListItemText-primary': { color: palette.black.main },
+    '& .MuiListItem-button:hover path': { color: palette.grayDarkest.main },
   },
   active: {
-    backgroundColor: colors.white,
+    backgroundColor: palette.white.main,
     '& .MuiListItemText-primary': {
-      color: colors.black,
+      color: palette.black.main,
     },
   },
   footer: {
     position: 'absolute',
     bottom: spacing.lg,
   },
-})
+}))

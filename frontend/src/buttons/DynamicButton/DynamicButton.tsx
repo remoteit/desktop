@@ -83,14 +83,20 @@ const useStyles = (props: Props) => {
   if (props.variant === 'text' && background) {
     foreground = background //  darken(background, 0.2)
     hover = lighten(background, 0.8)
-    background = colors.white
   }
 
-  return makeStyles({
+  const checkBackGround = (palette, background) => {
+    if (props.variant === 'text' && background) {
+      return palette.white.main
+    }
+    return background
+  }
+
+  return  makeStyles( ({ palette }) => ({
     button: {
-      backgroundColor: background,
+      backgroundColor: checkBackGround(palette, background),
       '& .MuiButton-label': { color: foreground },
       '&:hover': { backgroundColor: hover },
     },
-  })
+  }))
 }

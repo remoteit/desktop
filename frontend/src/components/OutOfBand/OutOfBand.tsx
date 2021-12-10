@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useSelector } from 'react-redux'
 import { Tooltip, Link } from '@material-ui/core'
 import { ApplicationState } from '../../store'
-import { colors, spacing, fontSizes } from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 
 export const OutOfBand: React.FC<{ inline?: boolean }> = ({ inline }) => {
   const css = useStyles()
@@ -28,7 +28,7 @@ export const OutOfBand: React.FC<{ inline?: boolean }> = ({ inline }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   container: {
     top: spacing.xs,
     right: spacing.lg,
@@ -36,11 +36,11 @@ const useStyles = makeStyles({
     zIndex: 3,
   },
   oob: {
-    border: `1px solid ${colors.grayLight}`,
+    border: `1px solid ${palette.grayLight.main}`,
     padding: `${spacing.xxs}px ${spacing.sm}px`,
     borderRadius: spacing.xs,
     display: 'inline-flex',
-    color: colors.gray,
+    color: palette.gray.main,
     alignItems: 'center',
     '& small': {
       fontWeight: 400,
@@ -54,19 +54,19 @@ const useStyles = makeStyles({
       borderRadius: '50%',
       display: 'block',
       marginRight: spacing.xs,
-      backgroundColor: colors.grayLight,
+      backgroundColor: palette.grayLight.main,
     },
   },
   active: {
     border: 0,
-    backgroundColor: colors.primary,
-    color: colors.white,
+    backgroundColor: palette.primary.main,
+    color: palette.white.main,
     '& small': {
       fontWeight: 500,
     },
     '& span': {
-      backgroundColor: colors.white,
-      boxShadow: `0 0 8px ${colors.white}`,
+      backgroundColor: palette.white.main,
+      boxShadow: `0 0 8px ${palette.white.main}`,
     },
   },
-})
+}))

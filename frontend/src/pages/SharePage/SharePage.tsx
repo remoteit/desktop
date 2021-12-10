@@ -82,6 +82,6 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   )
 }
 
-const useStyles = makeStyles({
-  loading: { color: styles.colors.danger, margin: styles.spacing.sm },
-})
+const useStyles = makeStyles( ({ palette }) => ({
+  loading: { color: palette.danger.main, margin: styles.spacing.sm },
+}))

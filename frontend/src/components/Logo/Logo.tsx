@@ -1,6 +1,5 @@
 import React from 'react'
 import { makeStyles, Box, BoxProps } from '@material-ui/core'
-import { colors } from '../../styling'
 
 type Props = BoxProps & {
   white?: boolean
@@ -85,8 +84,8 @@ export const Logo: React.FC<Props> = ({ white, ...props }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   light: { fill: '#1699d6' },
   dark: { fill: '#034b9d' },
-  white: { fill: colors.white },
-})
+  white: { fill: palette.white.main },
+}))
