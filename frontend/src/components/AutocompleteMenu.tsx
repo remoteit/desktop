@@ -2,7 +2,7 @@ import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import { Autocomplete } from '@material-ui/lab'
 import { makeStyles, Box, ListItemIcon, ListItemText, Paper, Popper, TextField } from '@material-ui/core'
-import { spacing, colors, radius, fontSizes } from '../styling'
+import { spacing, radius, fontSizes } from '../styling'
 import { REGEX_TAG_SAFE } from '../shared/constants'
 import { Icon } from './Icon'
 
@@ -87,7 +87,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
               </ListItemIcon>
               <ListItemText
                 primary={reactStringReplace(option.name, new RegExp(`(${inputValue})`, 'i'), (match, i) => (
-                  <span key={i} style={{ color: colors.primary }}>
+                  <span key={i} className={css.spanItem}>
                     {match}
                   </span>
                 ))}
@@ -125,6 +125,9 @@ const useStyles = makeStyles( ({ palette }) => ({
   },
   empty: {
     display: 'none',
+  },
+  spanItem: {
+    color: palette.primary.main
   },
   option: {
     borderRadius: radius,

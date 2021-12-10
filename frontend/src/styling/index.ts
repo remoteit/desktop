@@ -98,7 +98,7 @@ export const darkColors: { [key in Color]: string } = {
   screen: 'rgba(255,255,255,0.03)',
   rpi: '#C51A4A',
   guide: '#001247',
-  test: '#fffcf0',
+  test: '',
 }
 export const checkDarkMode = () => window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
 export const colors =  checkDarkMode() ? darkColors : lightColors;
