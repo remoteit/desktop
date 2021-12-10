@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react'
 import Controller from '../../services/Controller'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { Snackbar, IconButton, ThemeProvider, createTheme } from '@material-ui/core'
+import { Snackbar, IconButton } from '@material-ui/core'
 import { getOwnDevices } from '../../models/accounts'
 import { DragAppRegion } from '../../components/DragAppRegion'
 import { UpdateNotice } from '../../components/UpdateNotice'
 import { RemoteHeader } from '../../components/RemoteHeader'
 import { Icon } from '../../components/Icon'
-import theme, { jssTheme } from '../../styling/theme'
 
 export interface Props {
   children: React.ReactNode
@@ -35,7 +34,6 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
-  const [muiTheme, setMuiTheme] = useState<any>(theme)
 
   // only show one message at a time
   let snackbar = ''
@@ -45,82 +43,73 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   if (offline) snackbar = 'offline'
   if (backendAuthenticated && !connected) snackbar = 'retry'
 
-  useEffect(() => {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      const theme = createTheme(jssTheme(e.matches))
-      setMuiTheme(theme)
-    })
-  }, [])
-
   return (
-    <ThemeProvider theme={muiTheme}>
-      <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
-        {children}
-        <DragAppRegion />
-        <Snackbar
-          open={snackbar === 'offline'}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          message={
-            <>
-              <Icon name="exclamation-triangle" size="md" color="warning" type="regular" fixedWidth inlineLeft />
-              Network offline.
-            </>
-          }
-        />
-        <Snackbar
-          open={snackbar === 'retry'}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          message="Webserver connection lost. Retrying..."
-          action={
-            <IconButton onClick={reconnect}>
-              <Icon name="sync" size="md" color="white" fixedWidth />
-            </IconButton>
-          }
-        />
-        <Snackbar
-          key={errorMessage || 'error'}
-          open={snackbar === 'error'}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          message={
-            <>
-              <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
-              {errorMessage}
-            </>
-          }
-          action={
-            <IconButton onClick={clearErrorMessage}>
-              <Icon name="times" size="md" color="white" fixedWidth />
-            </IconButton>
-          }
-          onClose={clearErrorMessage}
-        />
-        <Snackbar
-          key={noticeMessage || 'notice'}
-          open={snackbar === 'notice'}
-          message={noticeMessage}
-          onClose={() => ui.set({ noticeMessage: '' })}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          autoHideDuration={20000}
-        />
-        <Snackbar
-          key={successMessage || 'success'}
-          open={snackbar === 'success'}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          message={
-            <>
-              <Icon name="check" size="md" color="success" type="regular" fixedWidth inlineLeft />
-              {successMessage}
-            </>
-          }
-          action={
-            <IconButton onClick={clearSuccessMessage}>
-              <Icon name="times" size="md" color="white" fixedWidth />
-            </IconButton>
-          }
-          onClose={clearSuccessMessage}
-        />
-        <UpdateNotice />
-      </RemoteHeader>
-    </ThemeProvider>
+    <RemoteHeader device={device} color={label?.id ? label.color : undefined}>
+      {children}
+      <DragAppRegion />
+      <Snackbar
+        open={snackbar === 'offline'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        message={
+          <>
+            <Icon name="exclamation-triangle" size="md" color="warning" type="regular" fixedWidth inlineLeft />
+            Network offline.
+          </>
+        }
+      />
+      <Snackbar
+        open={snackbar === 'retry'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        message="Webserver connection lost. Retrying..."
+        action={
+          <IconButton onClick={reconnect}>
+            <Icon name="sync" size="md" color="white" fixedWidth />
+          </IconButton>
+        }
+      />
+      <Snackbar
+        key={errorMessage || 'error'}
+        open={snackbar === 'error'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        message={
+          <>
+            <Icon name="exclamation-triangle" size="md" color="danger" type="regular" fixedWidth inlineLeft />
+            {errorMessage}
+          </>
+        }
+        action={
+          <IconButton onClick={clearErrorMessage}>
+            <Icon name="times" size="md" color="white" fixedWidth />
+          </IconButton>
+        }
+        onClose={clearErrorMessage}
+      />
+      <Snackbar
+        key={noticeMessage || 'notice'}
+        open={snackbar === 'notice'}
+        message={noticeMessage}
+        onClose={() => ui.set({ noticeMessage: '' })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        autoHideDuration={20000}
+      />
+      <Snackbar
+        key={successMessage || 'success'}
+        open={snackbar === 'success'}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        message={
+          <>
+            <Icon name="check" size="md" color="success" type="regular" fixedWidth inlineLeft />
+            {successMessage}
+          </>
+        }
+        action={
+          <IconButton onClick={clearSuccessMessage}>
+            <Icon name="times" size="md" color="white" fixedWidth />
+          </IconButton>
+        }
+        onClose={clearSuccessMessage}
+      />
+      <UpdateNotice />
+    </RemoteHeader>
   )
 }
