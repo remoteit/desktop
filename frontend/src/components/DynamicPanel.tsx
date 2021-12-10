@@ -1,6 +1,5 @@
 import React from 'react'
 import { useLocation, matchPath } from 'react-router-dom'
-import { Breadcrumbs } from './Breadcrumbs'
 import { DoublePanel } from './DoublePanel'
 import { Panel } from './Panel'
 
@@ -16,12 +15,7 @@ export const DynamicPanel: React.FC<Props> = ({ singlePanel, root, ...props }) =
   const match = matchPath(location.pathname, { path: root, exact: true })
 
   if (singlePanel) {
-    return (
-      <Panel>
-        <Breadcrumbs />
-        {match ? props.primary : props.secondary}
-      </Panel>
-    )
+    return <Panel>{match ? props.primary : props.secondary}</Panel>
   }
 
   return <DoublePanel {...props} />

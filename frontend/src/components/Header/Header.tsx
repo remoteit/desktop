@@ -12,6 +12,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { AccountSelect } from '../AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
+import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
 import { TestUI } from '../TestUI'
 import { Title } from '../Title'
@@ -72,6 +73,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           </IconButton>
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
+        {singlePanel && <Breadcrumbs />}
       </Title>
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />

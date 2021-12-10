@@ -112,7 +112,7 @@ const useStyles = makeStyles({
     zIndex: 5,
     position: 'absolute',
     height: '100%',
-    marginLeft: -spacing.xxs,
+    marginLeft: -spacing.xs,
     padding: `0 ${spacing.xxs}px`,
     '-webkit-app-region': 'no-drag',
     '&:hover': {
