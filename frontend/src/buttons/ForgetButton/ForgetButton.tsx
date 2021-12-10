@@ -1,5 +1,6 @@
 import React from 'react'
-import { emit } from '../../services/Controller'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../../store'
 import { IconButton } from '../IconButton'
 
 type Props = {
@@ -9,11 +10,11 @@ type Props = {
 }
 
 export const ForgetButton: React.FC<Props> = ({ disabled = false, connection, inline }) => {
-  if (connection?.enabled) return null
+  const dispatch = useDispatch<Dispatch>()
+  if (!connection || connection.enabled || connection.default) return null
 
   const forget = () => {
-    // @TODO fixme this needs to be a local clear unless in desktop ui
-    emit('service/forget', connection)
+    dispatch.connections.forget(connection.id)
   }
 
   return (

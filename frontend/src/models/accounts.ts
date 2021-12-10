@@ -1,12 +1,12 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { graphQLLicenses, parseLicense } from './licensing'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
 import { apiError } from '../helpers/apiHelper'
-import { getLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
 
 const ACCOUNT_KEY = 'account'
 
@@ -24,8 +24,7 @@ export default createModel<RootModel>()({
   state: accountsState,
   effects: dispatch => ({
     async init(_, globalState) {
-      let activeId = getLocalStorageByUser(globalState, ACCOUNT_KEY)
-      activeId = activeId && JSON.parse(activeId)
+      let activeId = getLocalStorage(globalState, ACCOUNT_KEY)
       if (activeId) dispatch.accounts.setActive(activeId)
       await dispatch.accounts.fetch()
     },
@@ -146,7 +145,7 @@ export default createModel<RootModel>()({
       await dispatch.accounts.setDevices({ devices, accountId })
     },
     async setActive(id: string, globalState) {
-      setLocalStorageByUser(globalState, ACCOUNT_KEY, JSON.stringify(id))
+      setLocalStorage(globalState, ACCOUNT_KEY, id)
       dispatch.accounts.set({ activeId: id })
     },
   }),

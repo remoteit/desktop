@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Typography, Button } from '@material-ui/core'
+import { selectIsFiltered } from '../../models/devices'
 import { isUserAccount } from '../../models/accounts'
 import { GuideStep } from '../GuideStep'
 import { spacing } from '../../styling'
@@ -13,7 +14,7 @@ export const DeviceListEmpty: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
   const { noResults, userAccount, claiming } = useSelector((state: ApplicationState) => ({
-    noResults: state.devices.searched && !state.devices.results,
+    noResults: (state.devices.searched || selectIsFiltered(state)) && !state.devices.results,
     userAccount: isUserAccount(state),
     claiming: state.ui.claiming,
   }))

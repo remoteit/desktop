@@ -17,11 +17,11 @@ type Props = {
   connection?: IConnection
   service?: IService
   session?: ISession
-  details?: boolean
+  showTitle?: string
   show?: boolean
 }
 
-export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, service, session }) => {
+export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session }) => {
   const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
@@ -30,7 +30,7 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
   const [displayHeight, setDisplayHeight] = useState<number>(33)
   const { ui } = useDispatch<Dispatch>()
   const app = useApplication(service, connection)
-  const css = useStyles({ details })
+  const css = useStyles()
 
   const measure = () => {
     const height = Math.max(
@@ -43,13 +43,15 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     }
   }
 
+  console.log('ConnectionDetails', { connection, service, session })
+
   const { ref } = useResizeObserver<HTMLDivElement>({ onResize: measure })
 
   useEffect(() => {
     setTimeout(measure, 100)
   }, [connection, service])
 
-  if (!connection) return null
+  if (!connection && !session) return null
 
   const address = app.address.split(':')
   const name = address[0]
@@ -108,94 +110,94 @@ export const ConnectionDetails: React.FC<Props> = ({ details, show, connection, 
     <Collapse in={show} timeout={800}>
       <Gutters top="lg" bottom={null}>
         <Paper className={css.address} elevation={0}>
-          <Gutters size="md" bottom={null}>
-            <div style={{ height: displayHeight, position: 'relative', transition: 'height 200ms' }} ref={ref}>
-              {basicDisplay}
-              {nameDisplay}
-              {portDisplay}
-              {copyDisplay}
-              {launchDisplay}
-            </div>
-          </Gutters>
-          <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
-            <span>
-              <InputLabel shrink>Copy</InputLabel>
-              <GuideStep
-                guide="guideAWS"
-                step={6}
-                instructions="Copy this address for use in your application. It will connect on demand even if you close remoteit."
-                placement="left"
-                component="span"
-              >
-                <CommandButton
-                  color="white"
-                  type="regular"
-                  size="lg"
-                  connection={connection}
-                  service={service}
-                  onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
-                  onMouseEnter={() => setHover('copy')}
-                  onMouseLeave={() => setHover(undefined)}
-                />
-              </GuideStep>
-              {connection.host && (
-                <>
-                  <CopyButton
-                    color="white"
-                    icon="i-cursor"
-                    type="solid"
-                    size="md"
-                    value={connection.host}
-                    onMouseEnter={() => setHover('name')}
-                    onMouseLeave={() => setHover(undefined)}
-                  />
-                  <CopyButton
-                    color="white"
-                    icon="port"
-                    type="solid"
-                    size="md"
-                    value={connection.port}
-                    onMouseEnter={() => setHover('port')}
-                    onMouseLeave={() => setHover(undefined)}
-                  />
-                </>
-              )}
-            </span>
-            <span>
-              <InputLabel shrink>Launch</InputLabel>
-              <GuideStep
-                guide="guideAWS"
-                step={7}
-                instructions="Or for web and some other services you can use the launch button."
-                placement="left"
-              >
-                <LaunchButton
-                  color="white"
-                  type="solid"
-                  size="md"
-                  connection={connection}
-                  service={service}
-                  onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
-                  onMouseEnter={() => setHover('launch')}
-                  onMouseLeave={() => setHover(undefined)}
-                />
-              </GuideStep>
-            </span>
+          {!!showTitle ? (
+            <Gutters size="md">
+              <Typography variant="h2">{showTitle}</Typography>
+            </Gutters>
+          ) : (
+            <>
+              <Gutters size="md" bottom={null}>
+                <div style={{ height: displayHeight, position: 'relative', transition: 'height 200ms' }} ref={ref}>
+                  {basicDisplay}
+                  {nameDisplay}
+                  {portDisplay}
+                  {copyDisplay}
+                  {launchDisplay}
+                </div>
+              </Gutters>
+              <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
+                <span>
+                  <InputLabel shrink>Copy</InputLabel>
+                  <GuideStep
+                    guide="guideAWS"
+                    step={6}
+                    instructions="Copy this address for use in your application. It will connect on demand even if you close remoteit."
+                    placement="left"
+                    component="span"
+                  >
+                    <CommandButton
+                      color="white"
+                      type="regular"
+                      size="lg"
+                      connection={connection}
+                      service={service}
+                      onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
+                      onMouseEnter={() => setHover('copy')}
+                      onMouseLeave={() => setHover(undefined)}
+                    />
+                  </GuideStep>
+                  {connection?.host && (
+                    <>
+                      <CopyButton
+                        color="white"
+                        icon="i-cursor"
+                        type="solid"
+                        size="md"
+                        value={connection.host}
+                        onMouseEnter={() => setHover('name')}
+                        onMouseLeave={() => setHover(undefined)}
+                      />
+                      <CopyButton
+                        color="white"
+                        icon="port"
+                        type="solid"
+                        size="md"
+                        value={connection.port}
+                        onMouseEnter={() => setHover('port')}
+                        onMouseLeave={() => setHover(undefined)}
+                      />
+                    </>
+                  )}
+                </span>
+                <span>
+                  <InputLabel shrink>Launch</InputLabel>
+                  <GuideStep
+                    guide="guideAWS"
+                    step={7}
+                    instructions="Or for web and some other services you can use the launch button."
+                    placement="left"
+                  >
+                    <LaunchButton
+                      color="white"
+                      type="solid"
+                      size="md"
+                      connection={connection}
+                      service={service}
+                      onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+                      onMouseEnter={() => setHover('launch')}
+                      onMouseLeave={() => setHover(undefined)}
+                    />
+                  </GuideStep>
+                </span>
+              </Gutters>
+            </>
+          )}
+        </Paper>
+        <Paper className={css.details} elevation={0}>
+          <Gutters bottom="xs">
+            <DataDisplay attributes={attributes} connection={connection} session={session} width={100} disablePadding />
           </Gutters>
         </Paper>
-        {details && (
-          <Paper className={css.details} elevation={0}>
-            <Gutters bottom="xs">
-              <DataDisplay
-                attributes={attributes}
-                connection={connection}
-                session={session}
-                width={100}
-                disablePadding
-              />
-            </Gutters>
-          </Paper>
-        )}
       </Gutters>
     </Collapse>
   )
@@ -230,21 +232,20 @@ const useStyles = makeStyles({
     '-webkit-box-orient': 'vertical',
     '& span': { wordBreak: 'break-all' },
   },
-  address: ({ details }: Props) => ({
+  address: {
     backgroundColor: colors.primary,
     color: colors.white,
     padding: spacing.xs,
-    borderBottomRightRadius: details ? 0 : undefined,
-    borderBottomLeftRadius: details ? 0 : undefined,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
     '& label': { color: colors.white },
-  }),
-  details: ({ details }: Props) => ({
+  },
+  details: {
     paddingTop: 1,
     paddingBottom: spacing.md,
-    borderTopRightRadius: details ? 0 : undefined,
-    borderTopLeftRadius: details ? 0 : undefined,
-  }),
-
+    borderTopRightRadius: 0,
+    borderTopLeftRadius: 0,
+  },
   buttons: {
     display: 'flex',
     justifyContent: 'space-between',

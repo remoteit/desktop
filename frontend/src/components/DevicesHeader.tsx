@@ -6,9 +6,7 @@ import { DeviceSetupItem } from './DeviceSetupItem'
 import { ColumnsDrawer } from './ColumnsDrawer'
 import { FilterDrawer } from './FilterDrawer'
 import { Container } from './Container'
-import { Notice } from './Notice'
 import styles from '../styling'
-import { isUserAccount } from '../models/accounts'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -17,8 +15,11 @@ type Props = {
   myDevice?: IDevice
 }
 
-export const DevicesHeader: React.FC<Props> = ({ fetching, restore, myDevice, children }) => {
-  const { initialized } = useSelector((state: ApplicationState) => state.devices)
+export const DevicesHeader: React.FC<Props> = ({ fetching, restore, children }) => {
+  const { initialized, registeredId } = useSelector((state: ApplicationState) => ({
+    initialized: state.devices.initialized,
+    registeredId: state.backend.device.uid,
+  }))
   const css = useStyles()
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export const DevicesHeader: React.FC<Props> = ({ fetching, restore, myDevice, ch
     <Container
       header={
         <>
-          {initialized && (
+          {initialized && !registeredId && (
             <List dense disablePadding>
               <DeviceSetupItem restore={restore} />
             </List>

@@ -5,13 +5,16 @@ import { AccordionMenuItem } from './AccordionMenuItem'
 type IAccordionMenu = {
   key: number | string
   subtitle: string
+  onClear?: () => void
   children: React.ReactElement
 }
 
-export const AccordionMenu: React.FC<{ menus: IAccordionMenu[]; defaultExpanded?: string | number }> = ({
-  menus,
-  defaultExpanded,
-}) => {
+type Props = {
+  menus: IAccordionMenu[]
+  defaultExpanded?: string | number
+}
+
+export const AccordionMenu: React.FC<Props> = ({ menus, defaultExpanded }) => {
   const [expanded, setExpanded] = useState<string | number | undefined>(defaultExpanded)
 
   return (
@@ -22,6 +25,7 @@ export const AccordionMenu: React.FC<{ menus: IAccordionMenu[]; defaultExpanded?
           <AccordionMenuItem
             expanded={expanded === menu.key}
             onClick={expanded => setExpanded(expanded ? menu.key : undefined)}
+            onClear={menu.onClear}
             subtitle={menu.subtitle}
             square
           >

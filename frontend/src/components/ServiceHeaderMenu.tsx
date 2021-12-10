@@ -1,23 +1,20 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { useParams, Route } from 'react-router-dom'
 import { PROTOCOL } from '../shared/constants'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
-import { makeStyles } from '@material-ui/core/styles'
 import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
 import { ApplicationState } from '../store'
-import { Typography, List } from '@material-ui/core'
-import { ConnectionErrorMessage } from './ConnectionErrorMessage'
+import { Typography } from '@material-ui/core'
 import { UnregisterServiceButton } from '../buttons/UnregisterServiceButton'
 import { DeleteServiceButton } from '../buttons/DeleteServiceButton'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
-import { ErrorButton } from '../buttons/ErrorButton'
 import { CopyButton } from '../buttons/CopyButton'
 import { Container } from './Container'
 
@@ -28,11 +25,8 @@ export const ServiceHeaderMenu: React.FC<{
   footer?: React.ReactNode
   backgroundColor?: string
 }> = ({ device, service, target, footer, backgroundColor, children }) => {
-  const css = useStyles()
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
-  const [showError, setShowError] = useState<boolean>(true)
-  const { connection, access } = useSelector((state: ApplicationState) => ({
-    connection: state.connections.all.find(c => c.id === serviceID),
+  const { access } = useSelector((state: ApplicationState) => ({
     access: state.organization.members.map(m => m.user),
   }))
 
@@ -47,7 +41,6 @@ export const ServiceHeaderMenu: React.FC<{
           <OutOfBand />
           <Typography variant="h1">
             <Title>{service.name || 'unknown'}</Title>
-            <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <Route path="/devices/:deviceID/:serviceID/edit">
               {device.thisDevice ? (
                 <UnregisterServiceButton target={target} />
@@ -88,9 +81,6 @@ export const ServiceHeaderMenu: React.FC<{
             )}
             <UsersSelect service={service} device={device} access={access} />
           </ListHorizontal>
-          <List className={css.errorMessage}>
-            <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
-          </List>
         </>
       }
       footer={footer}
@@ -99,7 +89,3 @@ export const ServiceHeaderMenu: React.FC<{
     </Container>
   )
 }
-
-const useStyles = makeStyles({
-  errorMessage: { padding: 0 },
-})

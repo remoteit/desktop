@@ -44,7 +44,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     heartbeat.caffeinate()
     if (connecting) {
       analyticsHelper.trackConnect('connectionClosed', service)
-      emit('service/disconnect', connection)
+      connections.disconnect(connection)
     } else {
       onClick && onClick()
       analyticsHelper.trackConnect('connectionInitiated', service)
@@ -52,7 +52,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       if (connection.autoLaunch) ui.set({ autoLaunch: true })
       connection.name = sanitizeName(connection?.name || '')
       connection.host = ''
-      connection.public ? connections.proxyConnect(connection) : emit('service/connect', connection)
+      connections.connect(connection)
     }
   }
 
@@ -61,9 +61,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       setAutoStart(false)
       clickHandler()
     }
-  })
+  }, [autoStart, service])
 
-  let title = connection?.public ? 'Create Connection' : 'Add to Network'
+  let title = connection?.public ? 'Connect' : 'Add to Network'
   let disabled = false
   let variant: 'text' | 'outlined' | 'contained' | undefined
 

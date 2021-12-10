@@ -1,16 +1,15 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { Typography, List } from '@material-ui/core'
+import { Typography } from '@material-ui/core'
 import { selectById } from '../models/devices'
 import { ConnectionDetails } from '../components/ConnectionDetails'
-import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState } from '../store'
 import { NoConnectionPage } from './NoConnectionPage'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
-import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
+import { colors } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionOtherPage: React.FC = () => {
@@ -33,24 +32,22 @@ export const ConnectionOtherPage: React.FC = () => {
 
   return (
     <Container
+      gutterBottom
+      backgroundColor={colors.primaryHighlight}
       header={
-        <>
-          <Typography variant="h1">
-            <Title>{session?.user?.email}</Title>
-            <InfoButton device={device} service={service} />
-          </Typography>
-          {/* <Icon name="arrow-right" size="lg" /> */}
-          {/* <Icon name="ellipsis-h" /> */}
-          {/* <Title inline>{session?.target.name}</Title> */}
-        </>
+        <Typography variant="h1" gutterBottom>
+          <Title>{session?.target.name}</Title>
+          <InfoButton device={device} service={service} />
+        </Typography>
       }
     >
-      <Gutters>
-        <ConnectionDetails connection={connection} session={session} show service={service} />
-      </Gutters>
-      <List>
-        <InlineTextFieldSetting disabled label="Connection Name" value={session.target.name} />
-      </List>
+      <ConnectionDetails
+        connection={connection}
+        session={session}
+        service={service}
+        showTitle={session?.user ? session.user.email : undefined}
+        show
+      />
     </Container>
   )
 }

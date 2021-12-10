@@ -3,7 +3,6 @@ import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { getLicenseChip } from './LicenseChip'
 import { makeStyles, TextField, MenuItem } from '@material-ui/core'
-import { colors } from '../styling'
 
 type Props = { member: IOrganizationMember; disabled?: boolean }
 

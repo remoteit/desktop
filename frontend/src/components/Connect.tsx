@@ -60,13 +60,7 @@ export const Connect: React.FC = () => {
 
   return (
     <>
-      <ConnectionDetails
-        details
-        connection={connection}
-        service={service}
-        session={session}
-        show={connection?.enabled}
-      />
+      <ConnectionDetails connection={connection} service={service} session={session} show={connection?.enabled} />
       {service.license === 'UNLICENSED' && <LicensingNotice device={device} />}
       <GuideStep
         guide="guideAWS"
@@ -86,7 +80,7 @@ export const Connect: React.FC = () => {
           <ForgetButton connection={connection} inline />
         </Gutters>
       </GuideStep>
-      <List className={css.errorMessage}>
+      <List disablePadding>
         <ConnectionErrorMessage connection={connection} service={service} visible={showError} />
       </List>
       <Gutters>
@@ -137,6 +131,5 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  errorMessage: { padding: 0 },
   gutters: { display: 'flex' },
 })

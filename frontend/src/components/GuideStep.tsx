@@ -16,6 +16,7 @@ type Props = {
   last?: boolean
   highlight?: boolean
   hideArrow?: boolean
+  showNavigation?: boolean
   show?: boolean
   hide?: boolean
 }
@@ -31,6 +32,7 @@ export const GuideStep: React.FC<Props> = ({
   last,
   highlight,
   hideArrow,
+  showNavigation,
   show,
   hide,
   children,
@@ -64,24 +66,26 @@ export const GuideStep: React.FC<Props> = ({
             className={css.close}
           />
           <Typography variant="body1">{instructions}</Typography>
-          <Box className={css.nav}>
-            <IconButton
-              icon="angle-left"
-              title="previous"
-              color="white"
-              type="light"
-              disabled={step <= 1}
-              onClick={() => ui.guide({ guide, step: step - 1, back: true })}
-            />
-            <IconButton
-              icon="angle-right"
-              title="next"
-              color="white"
-              type="light"
-              disabled={step >= state.total}
-              onClick={() => ui.guide({ guide, step: step + 1 })}
-            />
-          </Box>
+          {showNavigation && (
+            <Box className={css.nav}>
+              <IconButton
+                icon="angle-left"
+                title="previous"
+                color="white"
+                type="light"
+                disabled={step <= 1}
+                onClick={() => ui.guide({ guide, step: step - 1, back: true })}
+              />
+              <IconButton
+                icon="angle-right"
+                title="next"
+                color="white"
+                type="light"
+                disabled={step >= state.total}
+                onClick={() => ui.guide({ guide, step: step + 1 })}
+              />
+            </Box>
+          )}
           <Typography variant="caption">
             {step} of {state.total}
           </Typography>

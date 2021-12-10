@@ -3,13 +3,7 @@ import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
 import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
-import {
-  getLocalStorageByUser,
-  isElectron,
-  isPortal,
-  removeLocalStorageByUser,
-  setLocalStorageByUser,
-} from '../services/Browser'
+import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
@@ -102,7 +96,7 @@ export default createModel<RootModel>()({
           created: data.created,
         }
         auth.setUser(user)
-        setLocalStorageByUser(state, USER_KEY, JSON.stringify(user))
+        setLocalStorage(state, USER_KEY, user)
         analyticsHelper.identify(data.id)
         if (data.authhash && data.yoicsId) {
           Controller.setupConnection({ username: data.yoicsId, authHash: data.authhash, guid: data.id })
@@ -141,17 +135,16 @@ export default createModel<RootModel>()({
     },
     async handleSignInSuccess(cognitoUser: CognitoUser, state): Promise<void> {
       if (cognitoUser?.username) {
-        if (cognitoUser?.attributes?.email && getLocalStorageByUser(state, CHECKBOX_REMEMBER_KEY)) {
-          setLocalStorageByUser(state, 'username', cognitoUser?.attributes?.email)
-        } else if (!getLocalStorageByUser(state, CHECKBOX_REMEMBER_KEY)) {
+        if (cognitoUser?.attributes?.email && getLocalStorage(state, CHECKBOX_REMEMBER_KEY)) {
+          setLocalStorage(state, 'username', cognitoUser?.attributes?.email)
+        } else if (!getLocalStorage(state, CHECKBOX_REMEMBER_KEY)) {
           window.localStorage.removeItem('username')
         }
 
         if (cognitoUser?.authProvider === 'Google') {
-          setLocalStorageByUser(state, 'amplify-signin-with-hostedUI', 'true')
+          setLocalStorage(state, 'amplify-signin-with-hostedUI', 'true')
         }
         dispatch.auth.setAuthenticated(true)
-        dispatch.auth.setInitialized()
         dispatch.auth.fetchUser()
       }
     },
@@ -166,7 +159,7 @@ export default createModel<RootModel>()({
     },
     async disconnect(_: void, rootState) {
       console.log('DISCONNECT')
-      if (!rootState.auth.authenticated && !rootState.auth.backendAuthenticated) {
+      if (!rootState.auth.authenticated && !rootState.auth.backendAuthenticated && !isPortal()) {
         await dispatch.auth.signedOut()
         dispatch.auth.setDefaultError('Sign in failed, please try again.')
       }
@@ -204,8 +197,8 @@ export default createModel<RootModel>()({
      */
     async signedOut(_: void, state) {
       await state.auth.authService?.signOut()
-      removeLocalStorageByUser(state, 'amplify-signin-with-hostedUI')
-      removeLocalStorageByUser(state, USER_KEY)
+      removeLocalStorage(state, 'amplify-signin-with-hostedUI')
+      removeLocalStorage(state, USER_KEY)
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
       dispatch.organization.reset()

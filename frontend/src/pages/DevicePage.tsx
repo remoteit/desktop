@@ -18,7 +18,7 @@ import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { AddFromNetwork } from '../components/AddFromNetwork'
-import { optionSortServices, SortServices } from '../components/SortServices'
+import { getSortOptions, SortServices } from '../components/SortServices'
 import { ConnectionStateIcon } from '../components/ConnectionStateIcon'
 import { ServiceContextualMenu } from '../components/ServiceContextualMenu'
 import { LicensingNotice } from '../components/LicensingNotice'
@@ -115,7 +115,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             </ListItemSecondaryAction>
           </ListItem>
         )}
-        {device.services.sort(optionSortServices[`${sortService}`].sortService).map(s => (
+        {device.services.sort(getSortOptions(sortService).sortService).map(s => (
           <GuideStep
             key={s.id}
             guide="guideAWS"

@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Icon } from '../../components/Icon'
 import { Dispatch } from '../../store'
 import { useDispatch } from 'react-redux'
-import { safeWindowOpen } from '../../services/Browser'
+import { windowOpen } from '../../services/Browser'
 
 export function CSVDownloadButton() {
   const { logs } = useDispatch<Dispatch>()
@@ -12,7 +12,7 @@ export function CSVDownloadButton() {
   const download = async () => {
     setFetching(true)
     const url = await logs.fetchUrl()
-    if (url) safeWindowOpen(url)
+    if (url) windowOpen(url)
     setFetching(false)
   }
 

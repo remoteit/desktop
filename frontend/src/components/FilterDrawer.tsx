@@ -23,9 +23,9 @@ const ownerFilters = [
   { value: 'others', name: 'Others' },
 ]
 
-const platformFilter = [{ value: 'all', name: 'All' }].concat(
+const platformFilter = [{ value: -1, name: 'All' }].concat(
   Object.keys(TARGET_PLATFORMS)
-    .map(p => ({ value: p, name: TARGET_PLATFORMS[p] }))
+    .map(p => ({ value: parseInt(p), name: TARGET_PLATFORMS[p] }))
     .sort(
       (a, b) =>
         a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : b.name?.toLowerCase() > a.name?.toLowerCase() ? -1 : 0 // only to sort
@@ -58,6 +58,7 @@ export const FilterDrawer: React.FC = () => {
           {
             key: 'sort',
             subtitle: 'Sort',
+            onClear: defaultState.sort === state.sort ? undefined : () => update({ sort: defaultState.sort }),
             children: (
               <FilterSelector
                 icon={state.sort.substr(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
@@ -73,6 +74,7 @@ export const FilterDrawer: React.FC = () => {
           {
             key: 'state',
             subtitle: 'State',
+            onClear: defaultState.filter === state.filter ? undefined : () => update({ filter: defaultState.filter }),
             children: (
               <FilterSelector
                 icon="check"
@@ -85,6 +87,7 @@ export const FilterDrawer: React.FC = () => {
           {
             key: 'owner',
             subtitle: 'Owner',
+            onClear: defaultState.owner === state.owner ? undefined : () => update({ owner: defaultState.owner }),
             children: (
               <FilterSelector
                 icon="check"
@@ -97,11 +100,21 @@ export const FilterDrawer: React.FC = () => {
           {
             key: 'platform',
             subtitle: 'Platform',
+            onClear: state.platform === undefined ? undefined : () => update({ platform: undefined }),
             children: (
               <FilterSelector
                 icon="check"
-                value={state.platform || 'all'}
-                onSelect={value => update({ platform: parseInt(value) || undefined })}
+                value={state.platform === undefined ? [-1] : state.platform}
+                onSelect={value => {
+                  let result = Array.isArray(state.platform) ? state.platform : undefined
+                  const index = result && result.indexOf(value)
+
+                  if (index !== undefined && index >= 0) result?.splice(index, 1)
+                  else if (value === -1) result = undefined
+                  else result === undefined ? (result = [value]) : result.push(value)
+
+                  update({ platform: result })
+                }}
                 filterList={platformFilter}
               />
             ),

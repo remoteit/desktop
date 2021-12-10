@@ -1,6 +1,6 @@
 import React from 'react'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { safeWindowOpen } from '../../services/Browser'
+import { windowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useApplication } from '../../hooks/useApplication'
@@ -30,11 +30,13 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   const { ui } = useDispatch<Dispatch>()
   const app = useApplication(service, connection)
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const disabled = !connection?.enabled || connection.connecting || !(connection.host || connection.address)
+  const ready = !!(connection?.host || connection?.address)
+  const disabled = !connection?.enabled || connection.connecting || !ready
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
 
   React.useEffect(() => {
-    if (autoLaunch && app.connection?.enabled && app.connection?.host) {
+    console.log('connection ready?', ready)
+    if (autoLaunch && app.connection?.enabled && ready) {
       ui.set({ autoLaunch: false })
       clickHandler()
     }
@@ -59,7 +61,7 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   }
 
   const launch = () => {
-    if (app.launchType === LAUNCH_TYPE.URL) safeWindowOpen(app.string)
+    if (app.launchType === LAUNCH_TYPE.URL) windowOpen(app.string)
     else emit('launch/app', app.string)
   }
 

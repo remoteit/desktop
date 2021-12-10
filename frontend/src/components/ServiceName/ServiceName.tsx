@@ -22,7 +22,6 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   const instance = service || device
   const accessDisabled = !!device?.attributes?.accessDisabled
   const offline = isOffline(instance, connection)
-  const proxy = service && connection?.connected && connection?.isP2P === false
 
   let name = ''
 
@@ -36,11 +35,6 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   return (
     <Title enabled={connection?.enabled} offline={offline} inline={inline} license={instance?.license}>
       {name || 'No device found'}
-      {/* {!!targetPlatformId && (
-        <sup>
-          <TargetPlatform id={targetPlatformId} tooltip />
-        </sup>
-      )} */}
       {device?.configurable && !device?.shared && (
         <Tooltip title="Remote configurable" placement="top" arrow>
           <sup>
@@ -52,13 +46,6 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
         <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
           <sup>
             <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />
-          </sup>
-        </Tooltip>
-      )}
-      {proxy && (
-        <Tooltip title="Proxy connection" placement="top" arrow>
-          <sup>
-            <Icon name="cloud" size="xxxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )}

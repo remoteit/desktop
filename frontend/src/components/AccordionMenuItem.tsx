@@ -10,6 +10,7 @@ type IAccordionMenu = {
   gutters?: boolean
   elevation?: number
   square?: boolean
+  onClear?: () => void
   onClick?: (expanded: boolean) => void
   children?: React.ReactElement
 }
@@ -21,6 +22,7 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   gutters,
   elevation = 0,
   square,
+  onClear,
   onClick,
   children,
 }) => {
@@ -41,13 +43,25 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
       defaultExpanded={defaultExpanded}
       onChange={(_, state) => clickHandler(state)}
     >
-      <AccordionSummary>
-        <Button className={css.button}>
+      <AccordionSummary className={css.item}>
+        <Button>
           <ListSubheader>
             {subtitle}
             <ExpandIcon open={expanded} />
           </ListSubheader>
         </Button>
+        {onClear && (
+          <Button
+            size="small"
+            color="primary"
+            onClick={event => {
+              event.stopPropagation()
+              onClear()
+            }}
+          >
+            Clear
+          </Button>
+        )}
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>
     </Accordion>
@@ -55,14 +69,20 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
 }
 
 const useStyles = makeStyles({
-  button: ({ gutters }: any) => ({
-    width: '100%',
-    textAlign: 'left',
-    display: 'block',
-    padding: 0,
+  item: ({ gutters }: any) => ({
     marginTop: spacing.xxs,
     marginBottom: spacing.xxs,
     marginLeft: gutters && spacing.md,
     marginRight: gutters && spacing.md,
+    '& .MuiButton-root:first-child': {
+      width: '100%',
+      textAlign: 'left',
+      display: 'block',
+      padding: 0,
+      margin: 0,
+    },
+    '& .MuiButton-root + .MuiButton-root': {
+      marginRight: spacing.md,
+    },
   }),
 })

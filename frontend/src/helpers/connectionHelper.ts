@@ -64,6 +64,7 @@ export function newConnection(service?: IService | null) {
 export function setConnection(connection: IConnection) {
   const { auth } = store.getState()
   const { connections } = store.dispatch
+  connection.default = false
   if (!connection.id || !connection.name || !connection.deviceID) {
     var error = new Error()
     console.warn('Connection missing data. Set failed', connection, error.stack)
@@ -130,9 +131,7 @@ export function cleanOrphanConnections() {
     .flat()
   if (!state.ui.offline && services.length) {
     state.connections.all.forEach(c => {
-      if (!services.includes(c.id)) {
-        emit('service/forget', c)
-      }
+      if (!services.includes(c.id)) store.dispatch.connections.forget(c.id)
     })
   }
 }

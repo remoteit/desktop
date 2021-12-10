@@ -7,7 +7,7 @@ import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
 import axios from 'axios'
-import { getLocalStorageByUser, setLocalStorageByUser } from '../services/Browser'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 type IConnectionsState = { all: IConnection[]; useCommand: boolean }
 
@@ -20,8 +20,8 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init(_, globalState) {
-      let item = getLocalStorageByUser(globalState, 'connections')
-      if (item) dispatch.connections.setAll(JSON.parse(item))
+      let item = getLocalStorage(globalState, 'connections')
+      if (item) dispatch.connections.setAll(item)
     },
 
     async updateConnection(connection: IConnection, globalState) {
@@ -138,6 +138,27 @@ export default createModel<RootModel>()({
       }
     },
 
+    async connect(connection: IConnection) {
+      const { proxyConnect } = dispatch.connections
+      if (connection.public) proxyConnect(connection)
+      else emit('service/connect', connection)
+    },
+
+    async disconnect(connection: IConnection | undefined) {
+      if (!connection) return
+      const { proxyDisconnect } = dispatch.connections
+      if (connection.public) proxyDisconnect(connection)
+      else if (connection.disconnecting || connection.enabled || !connection.online) emit('service/disable', connection)
+      else emit('service/disconnect', connection)
+    },
+
+    async forget(id: string, globalState) {
+      const { set } = dispatch.connections
+      const { all } = globalState.connections
+      if (globalState.auth.backendAuthenticated) emit('service/forget', { id })
+      else set({ all: all.filter(c => c.id !== id) })
+    },
+
     async clear(id: string, globalState) {
       const { set } = dispatch.connections
       const { all } = globalState.connections
@@ -153,7 +174,7 @@ export default createModel<RootModel>()({
     },
 
     async setAll(all: IConnection[], globalState) {
-      setLocalStorageByUser(globalState, 'connections', JSON.stringify(all) || '')
+      setLocalStorage(globalState, 'connections', all)
       dispatch.connections.set({ all })
     },
   }),
