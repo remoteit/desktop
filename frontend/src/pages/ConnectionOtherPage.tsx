@@ -36,7 +36,7 @@ export const ConnectionOtherPage: React.FC = () => {
       backgroundColor={colors.primaryHighlight}
       header={
         <Typography variant="h1" gutterBottom>
-          <Title>{session?.user?.email}</Title>
+          <Title>{session?.target.name}</Title>
           <InfoButton device={device} service={service} />
         </Typography>
       }
@@ -45,7 +45,7 @@ export const ConnectionOtherPage: React.FC = () => {
         connection={connection}
         session={session}
         service={service}
-        showTitle={session ? session.target.name : undefined}
+        showTitle={session?.user ? session.user.email : undefined}
         show
       />
     </Container>
