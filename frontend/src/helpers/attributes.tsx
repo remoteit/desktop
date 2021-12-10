@@ -222,7 +222,7 @@ export const attributes: Attribute[] = [
     value: ({ connection, session }) =>
       connection?.public
         ? 'Public Proxy'
-        : !connection?.connected
+        : !connection?.connected && !session
         ? 'Idle'
         : connection?.isP2P || session?.isP2P
         ? 'Peer to peer'
