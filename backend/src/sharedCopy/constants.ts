@@ -28,6 +28,11 @@ export const ZENDESK_URL = process.env.ZENDESK_URL || 'https://remot3it.zendesk.
 export const ZENDESK_TOKEN =
   process.env.ZENDESK_TOKEN || '1ed4fc7b7b18a39a156395b4dd873abb96abc45ea4343cff2628ac9943ad1be1'
 
+  //segment-analytics
+export const SEGMENT_PROJECT_PORTAL_KEY = 'kYemtqKHE7qM7prQ1JWTP1ThMUYZBmym'
+
+export const SEGMENT_PROJECT_KEY = 'tMedSrVUwDIeRs6kndztUPgjPiVlDmAe'
+
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
