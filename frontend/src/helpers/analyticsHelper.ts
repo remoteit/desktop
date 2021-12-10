@@ -1,4 +1,5 @@
 import { version } from '../../package.json'
+import { isPortal } from '../services/Browser'
 
 ///  <reference types="@types/google.analytics" />
 
@@ -6,6 +7,8 @@ export const CONNECTION_TYPE_PROXY_FAILOVER = 'proxy_failover'
 export const CONNECTION_TYPE_PEER_TO_PEER = 'peer_to_peer'
 export const CONNECTION_TYPE_NONE = 'None'
 //segment-analytics
+export const SEGMENT_PROJECT_PORTAL_KEY = 'kYemtqKHE7qM7prQ1JWTP1ThMUYZBmym'
+
 export const SEGMENT_PROJECT_KEY = 'tMedSrVUwDIeRs6kndztUPgjPiVlDmAe'
 
 export class AnalyticsHelper {
@@ -68,7 +71,7 @@ export class AnalyticsHelper {
           analytics._loadOptions = e
         }
         analytics.SNIPPET_VERSION = '4.1.0'
-        analytics.load(SEGMENT_PROJECT_KEY)
+        analytics.load(isPortal() ? SEGMENT_PROJECT_PORTAL_KEY : SEGMENT_PROJECT_KEY)
 
         // analytics.page()
       }
