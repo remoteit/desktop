@@ -164,6 +164,14 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                         onMouseEnter={() => setHover('port')}
                         onMouseLeave={() => setHover(undefined)}
                       />
+                      <CopyButton
+                        color="white"
+                        icon="link"
+                        size="md"
+                        value={app.string}
+                        onMouseEnter={() => setHover('launch')}
+                        onMouseLeave={() => setHover(undefined)}
+                      />
                     </>
                   )}
                 </span>
