@@ -227,7 +227,7 @@ const useStyles = makeStyles({
     backgroundColor: colors.darken,
   },
   h3: {
-    wordBreak: 'break-all',
+    wordBreak: 'break-word',
     overflow: 'hidden',
     fontWeight: 500,
     lineHeight: '1.33em',
@@ -236,7 +236,7 @@ const useStyles = makeStyles({
     transition: 'height 200ms',
     '-webkit-line-clamp': 2,
     '-webkit-box-orient': 'vertical',
-    '& span': { wordBreak: 'break-all' },
+    '& span': { wordBreak: 'break-word' },
   },
   address: {
     backgroundColor: colors.primary,
