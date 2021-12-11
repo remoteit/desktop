@@ -29,7 +29,6 @@ export default class Connection extends EventEmitter {
   start() {
     this.params.enabled = true
     this.params.error = undefined
-    // if (cli.data.connections.find(c => c.id === this.params.id)) cli.setConnection(this.params, this.error) else
     if (!this.params.public) cli.addConnection(this.params, this.error)
     EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }

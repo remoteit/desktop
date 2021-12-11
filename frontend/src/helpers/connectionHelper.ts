@@ -75,7 +75,8 @@ export function setConnection(connection: IConnection) {
 
 export function clearConnectionError(connection: IConnection) {
   delete connection.error
-  emit('connection', connection)
+  console.log('CLEAR ERROR', connection)
+  setConnection(connection)
 }
 
 export function getConnectionIds(state: ApplicationState) {

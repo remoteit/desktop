@@ -20,7 +20,6 @@ type IData = {
   admin?: UserCredentials
   device: ITargetDevice
   targets: ITarget[]
-  connections: IConnection[]
   connectionDefaults: IConnectionDefaults
   errorCodes: number[]
 }
@@ -67,7 +66,6 @@ export default class CLI {
     admin: undefined,
     device: DEFAULT_TARGET,
     targets: [DEFAULT_TARGET],
-    connections: [],
     connectionDefaults: {},
     errorCodes: [],
   }
@@ -160,9 +158,8 @@ export default class CLI {
 
   async readConnections() {
     const connections = await this.connectionStatus()
-    this.data.connections = connections.map((c, i) => {
-      const connection = this.data.connections[i] || {}
-      let error = connection?.error
+    return connections.map((c, i) => {
+      let error: ISimpleError | undefined
 
       if (c.reachable === false) {
         error = {
@@ -170,17 +167,17 @@ export default class CLI {
           code: REACHABLE_ERROR_CODE,
         }
       } else if (c.reachable === true) {
-        if (error && error.code === REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
+        if (error && error?.code === REACHABLE_ERROR_CODE) error = { code: 0, message: '' }
       }
 
       if (c.error?.message) {
         error = { message: c.error.message, code: c.error.code }
       }
 
+      console.log('CONNECTION ERROR', c.namedPort, c.reachable, error)
       d('CONNECTION STATE', c.id, c.state)
 
-      return {
-        ...connection,
+      let result: IConnection = {
         id: c.id,
         host: c.namedHost,
         port: c.namedPort,
@@ -196,8 +193,11 @@ export default class CLI {
         sessionId: c.sessionID?.toLowerCase(),
         restriction: c.restrict,
         timeout: c.timeout,
-        error,
       }
+
+      if (error) result.error = error
+
+      return result
     })
   }
 
