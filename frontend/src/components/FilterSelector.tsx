@@ -13,7 +13,6 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
   const css = useStyles()
 
   const isActive = v => {
-    console.log(value, v, Array.isArray(value), Array.isArray(value) && value.includes(v as never))
     if (Array.isArray(value)) return value.includes(v as never)
     else return v === value.toString().replace('-', '')
   }
