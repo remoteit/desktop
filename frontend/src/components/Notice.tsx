@@ -1,7 +1,8 @@
 import React from 'react'
 import { Icon } from './Icon'
-import { spacing, colors, fontSizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { makeStyles, Paper, Box, lighten, darken } from '@material-ui/core'
+import theme from '../styling/theme'
 
 type Props = {
   severity?: 'info' | 'warning' | 'danger' | 'success'
@@ -27,19 +28,19 @@ export const Notice: React.FC<Props> = ({
   switch (severity) {
     case 'info':
       icon = 'info-circle'
-      color = colors.primary
+      color = theme.palette.primary.main
       break
     case 'danger':
       icon = 'exclamation-triangle'
-      color = colors.danger
+      color = theme.palette.danger
       break
     case 'warning':
       icon = 'exclamation-triangle'
-      color = colors.warning
+      color = theme.palette.warning.main
       break
     case 'success':
       icon = 'check-circle'
-      color = colors.success
+      color = theme.palette.success.main
       break
   }
 

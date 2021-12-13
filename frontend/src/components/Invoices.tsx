@@ -57,7 +57,7 @@ export const Invoices: React.FC = () => {
                 <TableCell className={css.plan}>
                   {invoice.plan.name.toLowerCase()} / {invoice.price.interval.toLowerCase()}
                 </TableCell>
-                <TableCell className={css.amount} style={{ color: invoice.total < 0 ? colors.danger : undefined }}>
+                <TableCell className={invoice.total < 0 ? css.amount : css.amountWithoutColor } >
                   {currencyFormatter(invoice.price.currency, invoice.total)}
                 </TableCell>
                 <TableCell>
@@ -78,7 +78,15 @@ export const Invoices: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
-  amount: { paddingRight: spacing.md, textAlign: 'right' },
+const useStyles = makeStyles( ({ palette }) => ({
+  amount: { 
+    paddingRight: spacing.md, 
+    textAlign: 'right', 
+    color:  palette.danger,
+  },
+  amountWithoutColor: {
+    paddingRight: spacing.md, 
+    textAlign: 'right', 
+  },
   plan: { textTransform: 'capitalize' },
-})
+}))
