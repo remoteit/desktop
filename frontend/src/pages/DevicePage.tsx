@@ -59,7 +59,6 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
   device.services.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   let servicePage = '/' + (location.pathname.split('/')[4] || 'connect')
 
-  console.log({ path: location.pathname, servicePage })
   return (
     <Container
       header={

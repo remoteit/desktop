@@ -42,8 +42,6 @@ export const ConnectionInfo: React.FC<Props> = ({ showTitle, show, connection, s
     }
   }
 
-  console.log('ConnectionDetails', { connection, service, session })
-
   const { ref } = useResizeObserver<HTMLDivElement>({ onResize: measure })
 
   useEffect(() => {

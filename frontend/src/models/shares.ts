@@ -71,7 +71,6 @@ export default createModel<RootModel>()({
     async share(data: IShareProps, globalState) {
       const { set } = dispatch.shares
       const device = getDevices(globalState).find((d: IDevice) => d.id === data.deviceId)
-      console.log({data})
       set({ sharing: true })
       try {
         const response = await graphQLShareDevice(data)

@@ -38,6 +38,7 @@ type UIState = {
   navigationBack: string[]
   navigationForward: string[]
   guideAWS: IGuide
+  guideLaunch: IGuide
   accordion: ILookup<boolean>
   autoLaunch: boolean
 }
@@ -75,7 +76,8 @@ const defaultState: UIState = {
   panelWidth: { devices: 400, connections: 500, settings: 350 },
   navigationBack: [],
   navigationForward: [],
-  guideAWS: { title: 'AWS Guide', step: 0, total: 7 },
+  guideAWS: { title: 'AWS Guide', step: 1, total: 7 },
+  guideLaunch: { title: 'Launch Guide', active: true, step: 1, total: 1 },
   accordion: { config: true, configConnected: false },
   autoLaunch: false,
 }

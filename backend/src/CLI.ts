@@ -174,7 +174,6 @@ export default class CLI {
         error = { message: c.error.message, code: c.error.code }
       }
 
-      console.log('CONNECTION ERROR', c.namedPort, c.reachable, error)
       d('CONNECTION STATE', c.id, c.state)
 
       let result: IConnection = {
