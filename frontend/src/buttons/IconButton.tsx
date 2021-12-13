@@ -13,6 +13,7 @@ export type ButtonProps = IconProps & {
   shiftDown?: boolean
   loading?: boolean
   submit?: boolean
+  inline?: boolean
   onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: (e: React.MouseEvent) => void
   onMouseDown?: (e: React.MouseEvent) => void
@@ -26,6 +27,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   to,
   shiftDown,
   size = 'base',
+  inline,
   className,
   loading,
   submit,
@@ -54,7 +56,11 @@ export const IconButton: React.FC<ButtonProps> = ({
       disabled={disabled}
       className={className}
       type={submit ? 'submit' : undefined}
-      style={{ opacity: disabled ? 0.5 : undefined, marginBottom: shiftDown ? -spacing.sm : undefined }}
+      style={{
+        opacity: disabled ? 0.5 : undefined,
+        marginBottom: shiftDown ? -spacing.sm : undefined,
+        marginLeft: inline ? spacing.sm : undefined,
+      }}
     >
       <Icon {...props} name={icon} size={size} fixedWidth />
     </MuiIconButton>

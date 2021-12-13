@@ -63,7 +63,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [autoStart, service])
 
-  let title = connection?.public ? 'Connect' : 'Add to Network'
+  let title = connection?.autoLaunch ? 'Connect and Launch' : connection?.public ? 'Connect' : 'Add to Network'
   let disabled = false
   let variant: 'text' | 'outlined' | 'contained' | undefined
 

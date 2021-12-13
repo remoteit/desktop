@@ -19,10 +19,10 @@ export const ForgetButton: React.FC<Props> = ({ disabled = false, connection, in
 
   return (
     <IconButton
-      title="Clear all settings"
+      title="Reset connect settings"
       disabled={disabled}
       onClick={forget}
-      icon="trash"
+      icon="undo"
       size="md"
       inline={inline}
       fixedWidth
