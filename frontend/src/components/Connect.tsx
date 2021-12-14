@@ -96,7 +96,16 @@ export const Connect: React.FC = () => {
               <NameSetting connection={connection} service={service} device={device} />
               <PortSetting connection={connection} service={service} />
             </DesktopUI>
-            <LaunchSelect connection={connection} service={service} />
+            <GuideStep
+              step={1}
+              highlight
+              placement="left"
+              guide="guideLaunch"
+              hide={!accordion[accordionConfig]}
+              instructions="You can now launch services by deep link URL or terminal command."
+            >
+              <LaunchSelect connection={connection} service={service} />
+            </GuideStep>
           </List>
         </AccordionMenuItem>
         <AccordionMenuItem

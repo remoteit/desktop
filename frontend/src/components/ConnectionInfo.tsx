@@ -3,10 +3,8 @@ import useResizeObserver from 'use-resize-observer'
 import { makeStyles, Typography, InputLabel, Collapse, Paper } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
-import { getAttributes } from '../helpers/attributes'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { useApplication } from '../hooks/useApplication'
-import { DataDisplay } from './DataDisplay'
 import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import { colors, spacing } from '../styling'
@@ -21,8 +19,9 @@ type Props = {
   show?: boolean
 }
 
-export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection, service, session }) => {
-  const attributes = getAttributes(['lanShare', 'connection', 'duration', 'location', 'initiatorPlatform'])
+/* FOR USE LATER WHEN SPLITTING THE CONNECTION DETAILS  */
+
+export const ConnectionInfo: React.FC<Props> = ({ showTitle, show, connection, service, session }) => {
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
@@ -106,105 +105,93 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   return (
     <Collapse in={show} timeout={800}>
-      <Gutters top="lg" bottom={null}>
-        <Paper className={css.address} elevation={0}>
-          {!!showTitle ? (
-            <Gutters size="md">
-              <Typography variant="h2">{showTitle}</Typography>
+      <Paper className={css.address} elevation={0}>
+        {!!showTitle ? (
+          <Gutters size="md">
+            <InputLabel shrink>User</InputLabel>
+            <Typography variant="h3" className={css.h3}>
+              {showTitle}
+            </Typography>
+          </Gutters>
+        ) : (
+          <>
+            <Gutters size="md" bottom={null}>
+              <div style={{ height: displayHeight, position: 'relative', transition: 'height 200ms' }} ref={ref}>
+                {basicDisplay}
+                {nameDisplay}
+                {portDisplay}
+                {copyDisplay}
+                {launchDisplay}
+              </div>
             </Gutters>
-          ) : (
-            <>
-              <Gutters size="md" bottom={null}>
-                <div style={{ height: displayHeight, position: 'relative', transition: 'height 200ms' }} ref={ref}>
-                  {basicDisplay}
-                  {nameDisplay}
-                  {portDisplay}
-                  {copyDisplay}
-                  {launchDisplay}
-                </div>
-              </Gutters>
-              <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
-                <span>
-                  <InputLabel shrink>Copy</InputLabel>
-                  <GuideStep
-                    guide="guideAWS"
-                    step={6}
-                    instructions="Copy this address for use in your application. It will connect on demand even if you close remoteit."
-                    placement="left"
-                    component="span"
-                  >
-                    <CommandButton
+            <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
+              <span>
+                <InputLabel shrink>Copy</InputLabel>
+                <GuideStep
+                  guide="guideAWS"
+                  step={6}
+                  instructions="Copy this address for use in your application. It will connect on demand even if you close remoteit."
+                  placement="left"
+                  component="span"
+                >
+                  <CommandButton
+                    color="white"
+                    type="regular"
+                    size="lg"
+                    connection={connection}
+                    service={service}
+                    onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
+                    onMouseEnter={() => setHover('copy')}
+                    onMouseLeave={() => setHover(undefined)}
+                  />
+                </GuideStep>
+                {connection?.host && (
+                  <>
+                    <CopyButton
                       color="white"
-                      type="regular"
-                      size="lg"
-                      connection={connection}
-                      service={service}
-                      onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
-                      onMouseEnter={() => setHover('copy')}
-                      onMouseLeave={() => setHover(undefined)}
-                    />
-                  </GuideStep>
-                  {connection?.host && (
-                    <>
-                      <CopyButton
-                        color="white"
-                        icon="i-cursor"
-                        type="solid"
-                        size="md"
-                        value={connection.host}
-                        onMouseEnter={() => setHover('name')}
-                        onMouseLeave={() => setHover(undefined)}
-                      />
-                      <CopyButton
-                        color="white"
-                        icon="port"
-                        type="solid"
-                        size="md"
-                        value={connection.port}
-                        onMouseEnter={() => setHover('port')}
-                        onMouseLeave={() => setHover(undefined)}
-                      />
-                      <CopyButton
-                        color="white"
-                        icon="link"
-                        size="md"
-                        value={app.string}
-                        onMouseEnter={() => setHover('launch')}
-                        onMouseLeave={() => setHover(undefined)}
-                      />
-                    </>
-                  )}
-                </span>
-                <span>
-                  <InputLabel shrink>Launch</InputLabel>
-                  <GuideStep
-                    guide="guideAWS"
-                    step={7}
-                    instructions="Or for web and some other services you can use the launch button."
-                    placement="left"
-                  >
-                    <LaunchButton
-                      color="white"
+                      icon="i-cursor"
                       type="solid"
                       size="md"
-                      connection={connection}
-                      service={service}
-                      onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
-                      onMouseEnter={() => setHover('launch')}
+                      value={connection.host}
+                      onMouseEnter={() => setHover('name')}
                       onMouseLeave={() => setHover(undefined)}
                     />
-                  </GuideStep>
-                </span>
-              </Gutters>
-            </>
-          )}
-        </Paper>
-        <Paper className={css.details} elevation={0}>
-          <Gutters bottom="xs">
-            <DataDisplay attributes={attributes} connection={connection} session={session} width={100} disablePadding />
-          </Gutters>
-        </Paper>
-      </Gutters>
+                    <CopyButton
+                      color="white"
+                      icon="port"
+                      type="solid"
+                      size="md"
+                      value={connection.port}
+                      onMouseEnter={() => setHover('port')}
+                      onMouseLeave={() => setHover(undefined)}
+                    />
+                  </>
+                )}
+              </span>
+              <span>
+                <InputLabel shrink>Launch</InputLabel>
+                <GuideStep
+                  guide="guideAWS"
+                  step={7}
+                  instructions="Or for web and some other services you can use the launch button."
+                  placement="left"
+                >
+                  <LaunchButton
+                    color="white"
+                    type="solid"
+                    size="md"
+                    connection={connection}
+                    service={service}
+                    onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+                    onMouseEnter={() => setHover('launch')}
+                    onMouseLeave={() => setHover(undefined)}
+                  />
+                </GuideStep>
+              </span>
+            </Gutters>
+          </>
+        )}
+      </Paper>
     </Collapse>
   )
 }
@@ -227,7 +214,7 @@ const useStyles = makeStyles({
     backgroundColor: colors.darken,
   },
   h3: {
-    wordBreak: 'break-word',
+    wordBreak: 'break-all',
     overflow: 'hidden',
     fontWeight: 500,
     lineHeight: '1.33em',
@@ -236,21 +223,14 @@ const useStyles = makeStyles({
     transition: 'height 200ms',
     '-webkit-line-clamp': 2,
     '-webkit-box-orient': 'vertical',
-    '& span': { wordBreak: 'break-word' },
+    '& span': { wordBreak: 'break-all' },
   },
   address: {
     backgroundColor: colors.primary,
     color: colors.white,
     padding: spacing.xs,
-    borderBottomRightRadius: 0,
-    borderBottomLeftRadius: 0,
+    borderRadius: 0,
     '& label': { color: colors.white },
-  },
-  details: {
-    paddingTop: 1,
-    paddingBottom: spacing.md,
-    borderTopRightRadius: 0,
-    borderTopLeftRadius: 0,
   },
   buttons: {
     display: 'flex',

@@ -199,7 +199,6 @@ export function graphQLAdaptor(
       hidden,
     })
   )
-  // console.log('USER ATTRIBUTES', metaData.userAttributes)
   store.dispatch.devices.userAttributes({ userAttributes: metaData.userAttributes })
   return updateConnections(data)
 }

@@ -56,32 +56,19 @@ export default class ConnectionPool {
   check = async () => {
     if (binaryInstaller.uninstallInitiated || !user.signedIn) return
 
-    await cli.readConnections()
+    const cliData = await cli.readConnections()
 
     // move connections: cli -> desktop
-    cli.data.connections.forEach(async c => {
+    cliData.forEach(async c => {
       const connection = this.find(c.id)?.params
-      if (
-        !connection ||
-        (!connection.public &&
-          (connection.ip !== c.ip ||
-            connection.host !== c.host ||
-            connection.port !== c.port ||
-            connection.enabled !== c.enabled ||
-            connection.startTime !== c.startTime ||
-            connection.connected !== c.connected ||
-            connection.connecting !== c.connecting ||
-            connection.disconnecting !== c.disconnecting ||
-            connection.reachable !== c.reachable ||
-            connection.sessionId !== c.sessionId))
-      ) {
+      if (!connection || (!connection.public && this.changed(connection, c))) {
         // Logger.info('SYNC CLI CONNECTION', { connection, c })
         this.set({ ...connection, ...c }, false)
       }
     })
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
-      const cliConnection = cli.data.connections.find(c => c.id === connection.params.id)
+      const cliConnection = cliData.find(c => c.id === connection.params.id)
       if (!cliConnection && connection.params.connected && !connection.params.public) {
         Logger.info('SYNC START CONNECTION', { connection: connection.params })
         connection.start()
@@ -117,6 +104,21 @@ export default class ConnectionPool {
     d('ADDING CONNECTION', connection.id)
     this.pool.push(instance)
     return instance
+  }
+
+  changed = (c1: IConnection, c2: IConnection) => {
+    return (
+      c1.ip !== c2.ip ||
+      c1.host !== c2.host ||
+      c1.port !== c2.port ||
+      c1.enabled !== c2.enabled ||
+      c1.startTime !== c2.startTime ||
+      c1.connected !== c2.connected ||
+      c1.connecting !== c2.connecting ||
+      c1.disconnecting !== c2.disconnecting ||
+      c1.reachable !== c2.reachable ||
+      c1.sessionId !== c2.sessionId
+    )
   }
 
   find = (id: string) => {

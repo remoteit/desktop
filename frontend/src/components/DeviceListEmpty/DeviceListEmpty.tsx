@@ -29,6 +29,7 @@ export const DeviceListEmpty: React.FC = () => {
         <>
           <GuideStep
             step={1}
+            showStart
             guide="guideAWS"
             instructions="Click the button below to have our device shared with you."
             autoStart
