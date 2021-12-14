@@ -110,6 +110,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
         <Paper className={css.address} elevation={0}>
           {!!showTitle ? (
             <Gutters size="md">
+              <InputLabel shrink>User</InputLabel>
               <Typography variant="h2">{showTitle}</Typography>
             </Gutters>
           ) : (

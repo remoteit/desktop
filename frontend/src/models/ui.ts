@@ -127,7 +127,7 @@ export default createModel<RootModel>()({
 
     async resetGuides(_, globalState) {
       Object.keys(globalState.ui).forEach(key => {
-        if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, step: 0, done: false })
+        if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
       })
     },
   }),
