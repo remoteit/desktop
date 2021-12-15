@@ -80,7 +80,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) =>
         action="Transfer"
       >
         <Notice severity="warning" gutterBottom fullWidth>
-          You will loose all access and control of this device upon transfer.
+          You will lose all access and control of this device upon transfer.
         </Notice>
         <Typography variant="body2">
           You are about to transfer ownership of <b>{device.name}</b> and all of its services to

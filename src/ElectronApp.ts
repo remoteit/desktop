@@ -174,6 +174,26 @@ export default class ElectronApp {
       event.preventDefault()
       electron.shell.openExternal(url)
     })
+
+    this.logWebErrors()
+  }
+
+  private logWebErrors = () => {
+    if (!this.window) return
+    this.window.webContents.on('render-process-gone', (event, details) =>
+      Logger.error('ELECTRON WEB CONSOLE render-process-gone', { details })
+    )
+    this.window.webContents.on('unresponsive', () => Logger.warn('ELECTRON WEB CONSOLE unresponsive'))
+    this.window.webContents.on('responsive', () => Logger.warn('ELECTRON WEB CONSOLE responsive'))
+    this.window.webContents.on('plugin-crashed', (event, name, version) =>
+      Logger.error('ELECTRON WEB CONSOLE plugin-crashed', { name, version })
+    )
+    this.window.webContents.on('preload-error', (event, preloadPath, error) =>
+      Logger.error('ELECTRON WEB CONSOLE preload-error', { preloadPath, error })
+    )
+    this.window.webContents.on('console-message', (event, level, message, line, sourceId) => {
+      if (level > 2) Logger.error('ELECTRON WEB console error', { level, message, line, sourceId })
+    })
   }
 
   private getStartUrl(): string {
@@ -238,6 +258,7 @@ export default class ElectronApp {
     } else if (location) {
       this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     }
+
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
   }
 
