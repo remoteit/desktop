@@ -214,7 +214,7 @@ function getApplicationType(typeId: number | undefined) {
     case 5:
       return new Application({
         title: 'Remote Desktop',
-        defaultLaunchType: LAUNCH_TYPE.COMMAND,
+        defaultLaunchType: os === 'windows' ? LAUNCH_TYPE.COMMAND : LAUNCH_TYPE.URL,
         defaultLaunchTemplate: 'rdp://[username]@[host]:[port]',
         defaultCommandTemplate: os === 'windows' ? 'mstsc /v: [host]:[port]' : '[host]:[port]',
       })
