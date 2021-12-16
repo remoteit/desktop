@@ -124,10 +124,10 @@ export const LanSharePage: React.FC = () => {
       </List>
 
       <div className={css.container}>
-        <p>
+        <div>
           <Typography variant="caption">Your local IP address</Typography>
           <Typography variant="h3">{lanIp}</Typography>
-        </p>
+        </div>
         <Typography variant="body2" color="textSecondary">
           Allow users to connect to your remote device through your IP address using a custom port.
         </Typography>

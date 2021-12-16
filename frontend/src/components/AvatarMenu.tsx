@@ -13,7 +13,7 @@ import { emit } from '../services/Controller'
 import { windowOpen } from '../services/Browser'
 
 export const AvatarMenu: React.FC = () => {
-  const [el, setEl] = React.useState<HTMLButtonElement | null>()
+  const [open, setOpen] = React.useState<boolean>(false)
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const dispatch = useDispatch<Dispatch>()
@@ -26,12 +26,12 @@ export const AvatarMenu: React.FC = () => {
 
   const css = useStyles()
   const handleClose = () => {
-    setEl(null)
+    setOpen(false)
     setAltMenu(false)
   }
   const handleOpen = event => {
     if (event.altKey && event.shiftKey) setAltMenu(true)
-    setEl(buttonRef.current)
+    setOpen(true)
   }
 
   return (
@@ -42,8 +42,8 @@ export const AvatarMenu: React.FC = () => {
         </ButtonBase>
       </Tooltip>
       <Menu
-        open={Boolean(el)}
-        anchorEl={el}
+        open={open}
+        anchorEl={buttonRef.current}
         className={css.menu}
         onClose={handleClose}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
