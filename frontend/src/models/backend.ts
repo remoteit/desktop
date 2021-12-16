@@ -186,7 +186,6 @@ export function selectUpdateNotice(state: ApplicationState) {
   const { updateReady } = state.backend
   if (updateReady && updateReady !== version) {
     let notifiedVersion = getLocalStorage(state, NOTICE_VERSION_ID)
-    if (notifiedVersion) notifiedVersion = JSON.parse(notifiedVersion)
     if (notifiedVersion !== updateReady) return updateReady
   }
 }
