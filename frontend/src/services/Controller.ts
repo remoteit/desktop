@@ -38,13 +38,14 @@ class Controller extends EventEmitter {
 
   setupConnection(credentials: UserCredentials) {
     this.credentials = credentials
-    this.socket = io(this.url, {
-      transports: ['websocket'],
-      forceNew: true,
-      reconnection: !isPortal(),
-      reconnectionDelay: FRONTEND_RETRY_DELAY,
-    })
     this.handlers = getEventHandlers()
+
+    if (!isPortal())
+      this.socket = io(this.url, {
+        transports: ['websocket'],
+        forceNew: true,
+        reconnectionDelay: FRONTEND_RETRY_DELAY,
+      })
 
     for (const eventName in this.handlers) {
       if (this.handlers.hasOwnProperty(eventName)) {

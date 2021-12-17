@@ -12,17 +12,7 @@ const actions = {
 }
 
 export function notify(event: ICloudEvent) {
-  const target = event.target[0]
-
-  let onlineDeviceNotification
-  if (typeof target?.device?.notificationSettings.desktopNotifications === 'boolean') {
-    onlineDeviceNotification = !!target?.device?.notificationSettings.desktopNotifications
-  } else {
-    onlineDeviceNotification = !!event?.metadata?.desktopNotifications
-  }
-
-  if (!onlineDeviceNotification) return
-
+  if (!showNotice(event)) return
   checkNotificationPermission()
 
   switch (event.type) {
@@ -77,12 +67,23 @@ function createNotification({ title, body, id }: { title: string; body: string; 
   notification.onclose = e => e.preventDefault()
 }
 
-function checkNotificationPermission() {
+function showNotice(event: ICloudEvent) {
+  const target = event.target[0]
+  let show
+
+  if (typeof target?.device?.notificationSettings.desktopNotifications === 'boolean') {
+    show = !!target?.device?.notificationSettings.desktopNotifications
+  } else {
+    show = !!event?.metadata?.desktopNotifications
+  }
+
+  return show
+}
+
+async function checkNotificationPermission() {
+  console.log('NOTIFICATION PERMISSION', Notification.permission)
   if (Notification.permission === 'granted') return
 
-  Notification.requestPermission(permission => {
-    if (permission === 'granted') {
-      console.log('Notification permission granted')
-    }
-  })
+  const permission = await Notification.requestPermission()
+  if (permission === 'granted') console.log('Notification permission granted')
 }
