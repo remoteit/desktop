@@ -9,6 +9,8 @@ import { emit } from '../services/Controller'
 import sleep from '../services/sleep'
 import analyticsHelper from '../helpers/analyticsHelper'
 
+const NOTICE_VERSION_ID = 'notice-version'
+
 type IBackendState = {
   initialized: boolean
   device: ITargetDevice
@@ -179,8 +181,6 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-const NOTICE_VERSION_ID = 'notice-version'
 
 export function selectUpdateNotice(state: ApplicationState) {
   const { updateReady } = state.backend

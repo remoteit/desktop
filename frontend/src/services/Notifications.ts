@@ -1,6 +1,8 @@
 import { DEVICE_TYPE } from '../shared/applications'
 import { getTargetPlatform } from '../helpers/platformHelper'
+import { isPortal } from '../services/Browser'
 import { store } from '../store'
+import icon from '../assets/noticeIcon.png'
 
 const actions = {
   active: 'came online',
@@ -20,6 +22,8 @@ export function notify(event: ICloudEvent) {
   }
 
   if (!onlineDeviceNotification) return
+
+  checkNotificationPermission()
 
   switch (event.type) {
     case 'DEVICE_STATE':
@@ -68,7 +72,17 @@ function connectNotification(event: ICloudEvent) {
 }
 
 function createNotification({ title, body, id }: { title: string; body: string; id: string }) {
-  const notification = new Notification(title, { body })
+  const notification = new Notification(title, { body, icon: isPortal() ? icon : undefined })
   notification.onclick = () => store.dispatch.ui.set({ redirect: `/devices/${id}` })
   notification.onclose = e => e.preventDefault()
+}
+
+function checkNotificationPermission() {
+  if (Notification.permission === 'granted') return
+
+  Notification.requestPermission(permission => {
+    if (permission === 'granted') {
+      console.log('Notification permission granted')
+    }
+  })
 }
