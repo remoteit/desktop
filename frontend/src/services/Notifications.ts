@@ -11,9 +11,9 @@ const actions = {
   disconnected: 'disconnected',
 }
 
-export function notify(event: ICloudEvent) {
+export async function notify(event: ICloudEvent) {
   if (!showNotice(event)) return
-  checkNotificationPermission()
+  await checkNotificationPermission()
 
   switch (event.type) {
     case 'DEVICE_STATE':
@@ -85,5 +85,5 @@ async function checkNotificationPermission() {
   if (Notification.permission === 'granted') return
 
   const permission = await Notification.requestPermission()
-  if (permission === 'granted') console.log('Notification permission granted')
+  if (permission === 'granted') console.log('User granted notification permission')
 }
