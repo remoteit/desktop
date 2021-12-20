@@ -27,6 +27,13 @@ class CloudController {
     this.socket.addEventListener('message', this.onMessage)
     this.socket.addEventListener('close', e => console.log('CLOUD WS closed', e))
     this.socket.addEventListener('error', e => console.warn('CLOUD WS error', e))
+    window.addEventListener('online', this.checkOffline)
+    window.addEventListener('offline', this.checkOffline)
+  }
+
+  checkOffline = () => {
+    if (navigator.onLine) this.socket?.reconnect()
+    else this.close()
   }
 
   close() {

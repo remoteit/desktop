@@ -12,8 +12,8 @@ class Heartbeat {
   }
 
   beat() {
-    const { auth } = store.getState()
-    document.hasFocus() && auth.backendAuthenticated && emit('heartbeat')
+    const { auth, ui } = store.getState()
+    document.hasFocus() && !ui.offline && auth.backendAuthenticated && emit('heartbeat')
   }
 
   caffeinate() {
