@@ -34,7 +34,7 @@ export default createModel<RootModel>()({
         })
         dispatch.ui.set({ successMessage: 'Thank you. Your feedback was sent!' })
       } catch (error) {
-        dispatch.ui.set({ warningMessage: 'Sending feedback encountered an error. Please try again.' })
+        dispatch.ui.set({ errorMessage: 'Sending feedback encountered an error. Please try again.' })
         await apiError(error)
       }
     },
