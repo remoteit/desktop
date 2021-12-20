@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Controller from './services/Controller'
-import theme from './styling/theme'
 import { CssBaseline } from '@material-ui/core'
 import { App } from './components/App'
 import { HashRouter } from 'react-router-dom'

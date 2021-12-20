@@ -7,9 +7,9 @@ import { AxisBottom, AxisLeft } from '@visx/axis'
 import { ITimeSeriesData } from '../../models/analytics'
 import { scaleBand, scaleLinear } from '@visx/scale'
 import { spacing } from '../../styling'
-import { format as formatDate, max as maxDate, min as minDate } from 'date-fns'
+import { format as formatDate } from 'date-fns'
 import { Typography } from '@material-ui/core'
-import theme from '../../styling/theme'
+import { lightColors } from '../../styling'
 
 // accessors
 
@@ -28,7 +28,6 @@ export type TooltipProps = {
 
 type TooltipData = ITimeSeriesData
 
-const positionIndicatorSize = 8
 const formattedDate = (date: Date) => formatDate(date, 'MMM d')
 
 const getDate = (d: ITimeSeriesData) => formattedDate(d.date)
@@ -37,8 +36,8 @@ const getCount = (d: ITimeSeriesData) => Math.round(d.count)
 const tooltipStyles = {
   ...defaultStyles,
   minWidth: 60,
-  backgroundColor: theme.palette.grayLighter,
-  color: theme.palette.grayDark,
+  backgroundColor: lightColors.grayLighter,
+  color: lightColors.grayDark,
 }
 let tooltipTimeout
 
@@ -49,7 +48,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
   width,
   height,
 }) => {
-  const { containerRef, containerBounds, TooltipInPortal } = useTooltipInPortal({
+  const { containerRef, TooltipInPortal } = useTooltipInPortal({
     scroll: true,
     detectBounds: true,
   })
@@ -127,12 +126,12 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
           <AxisLeft
             left={0}
             scale={yScale}
-            stroke={theme.palette.gray}
+            stroke={lightColors.gray}
             hideZero={false}
             tickValues={yTickValues()}
             tickFormat={d => (+d).toString()}
           />
-          <AxisBottom scale={xScale} numTicks={5} top={yMax} stroke={theme.palette.gray} />
+          <AxisBottom scale={xScale} numTicks={5} top={yMax} stroke={lightColors.gray} />
           {timeseriesData.map(d => {
             const label = getDate(d)
             const barWidth = xScale.bandwidth()
@@ -146,7 +145,7 @@ export const ReportTimeSeriesVis: React.FC<ReportTimeSeriesChartProps> = ({
                 height={barHeight}
                 x={barX}
                 y={barY}
-                fill={theme.palette.primary.main}
+                fill={lightColors.primary}
                 onMouseEnter={e => handleMouseOver(e, { date: label, count: d.count })}
                 onMouseOut={() =>
                   (tooltipTimeout = setTimeout(() => {

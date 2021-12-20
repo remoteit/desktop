@@ -224,7 +224,7 @@ declare global {
 
 declare module 'remote.it' {}
 
-declare module "@material-ui/core/styles/createPalette" {
+declare module '@material-ui/core/styles/createPalette' {
   interface Palette {
     primaryLight: Palette['primary']
     primaryLighter: Palette['primary']
