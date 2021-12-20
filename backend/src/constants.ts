@@ -54,11 +54,25 @@ export const SSL_PORT = WEB_PORT - 1
 // Install paths
 export const PATHS = {
   LINUX_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
-  LINUX_BINARIES: path.resolve(__dirname, '../../../../'),
-  LINUX_BINARIES_DEV: path.resolve('./bin'),
+  LINUX_BINARIES: path.resolve(__dirname, '../../../../linux'),
+  LINUX_BINARIES_DEV: path.resolve('./bin/linux'),
   LINUX_ADMIN_SETTINGS: '/etc/remoteit',
-  LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/remoteit'],
-  LINUX_SYMLINKS: '/usr/bin/',
+  LINUX_DEPRECATED_BINARIES: ['/usr/local/bin/linux/remoteit'],
+  LINUX_SYMLINKS: '/usr/bin/linux',
+
+  ARMV7L_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
+  ARMV7L_BINARIES: path.resolve(__dirname, '../../../../armv7l'),
+  ARMV7L_BINARIES_DEV: path.resolve('./bin/armv7l'),
+  ARMV7L_ADMIN_SETTINGS: '/etc/remoteit',
+  ARMV7L_DEPRECATED_BINARIES: ['/usr/local/bin/armv7l/remoteit'],
+  ARMV7L_SYMLINKS: '/usr/bin/armv7l',
+
+  ARM64_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
+  ARM64_BINARIES: path.resolve(__dirname, '../../../../arm64'),
+  ARM64_BINARIES_DEV: path.resolve('./bin/arm64'),
+  ARM64_ADMIN_SETTINGS: '/etc/remoteit',
+  ARM64_DEPRECATED_BINARIES: ['/usr/local/bin/arm64/remoteit'],
+  ARM64_SYMLINKS: '/usr/bin/arm64',
 
   MAC_USER_SETTINGS: path.resolve(os.homedir(), '.remoteit'),
   MAC_BINARIES: path.resolve(__dirname, '../../../../'),

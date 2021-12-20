@@ -67,11 +67,30 @@ export class Environment {
       this.deprecatedBinaries = PATHS.MAC_DEPRECATED_BINARIES
       this.symlinkPath = PATHS.MAC_SYMLINKS
     } else {
-      this.userPath = PATHS.LINUX_USER_SETTINGS
-      this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
-      this.binPath = this.isDev ? PATHS.LINUX_BINARIES_DEV : PATHS.LINUX_BINARIES
-      this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
-      this.symlinkPath = PATHS.LINUX_SYMLINKS
+      
+      if ( this.isPi || this.isPiZero) {
+        this.userPath = PATHS.ARMV7L_USER_SETTINGS
+        this.adminPath = PATHS.ARMV7L_ADMIN_SETTINGS
+        this.binPath = this.isDev ? PATHS.ARMV7L_BINARIES_DEV : PATHS.ARMV7L_BINARIES
+        this.deprecatedBinaries = PATHS.ARMV7L_DEPRECATED_BINARIES
+        this.symlinkPath = PATHS.ARMV7L_SYMLINKS
+
+      } else if ( this.isArmLinux ) {
+
+        this.userPath = PATHS.ARM64_USER_SETTINGS
+        this.adminPath = PATHS.ARM64_ADMIN_SETTINGS
+        this.binPath = this.isDev ? PATHS.ARM64_BINARIES_DEV : PATHS.ARM64_BINARIES
+        this.deprecatedBinaries = PATHS.ARM64_DEPRECATED_BINARIES
+        this.symlinkPath = PATHS.ARM64_SYMLINKS
+
+      } else {
+        this.userPath = PATHS.LINUX_USER_SETTINGS
+        this.adminPath = PATHS.LINUX_ADMIN_SETTINGS
+        this.binPath = this.isDev ? PATHS.LINUX_BINARIES_DEV : PATHS.LINUX_BINARIES
+        this.deprecatedBinaries = PATHS.LINUX_DEPRECATED_BINARIES
+        this.symlinkPath = PATHS.LINUX_SYMLINKS
+      }
+      
     }
 
     this.logPath = path.resolve(this.userPath, 'log')
