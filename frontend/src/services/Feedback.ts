@@ -5,7 +5,7 @@ import { version } from '../../package.json'
 
 export async function createTicketZendesk(params: IFeedbackState) {
   const bodyVersion = ` \n\n\n ================ \n Version: ${version}`
-  const data = JSON.stringify({
+  const data = {
     ticket: {
       subject: params.subject,
       comment: {
@@ -17,17 +17,14 @@ export async function createTicketZendesk(params: IFeedbackState) {
       },
       custom_fields: [{ desktopVersion: version }],
     },
-  })
-  try {
-    if (params.body.length > 0) {
-      await axios.post(`${ZENDESK_URL}tickets.json`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${ZENDESK_TOKEN}`,
-        },
-      })
-    }
-  } catch (error) {
-    console.log(`Error trying to send to zendesk`, { error })
   }
+  if (params.body.length > 0) {
+    await axios.post(`${ZENDESK_URL}tickets.json`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${ZENDESK_TOKEN}`,
+      },
+    })
+  }
+
 }
