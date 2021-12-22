@@ -13,7 +13,6 @@ import { SetupWaiting } from '../pages/SetupWaiting'
 import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
-import { OrganizationPage } from '../pages/OrganizationPage'
 import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
@@ -30,6 +29,11 @@ import { UserLogPage } from '../pages/UserLogPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
+import { OverviewPage } from '../pages/OverviewPage'
+import { OrganizationPage } from '../pages/OrganizationPage'
+import { SettingsAccountPage } from '../pages/SettingsAccountPage/SettingsAccountPage'
+import { SecurityPage } from '../pages/SecurityPage'
+import { AccessKeyPage } from '../pages/AccessKeyPage'
 
 export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const history = useHistory()
@@ -191,18 +195,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
                 <ReportsPage />
               </Route>
 
-              <Route path="/settings/notifications">
-                <NotificationsPage />
-              </Route>
-
-              <Route path="/settings/licensing">
-                <LicensingPage />
-              </Route>
-
-              <Route path="/settings/billing">
-                <BillingPage />
-              </Route>
-
               <Route path="/settings/test">
                 <TestPage />
               </Route>
@@ -210,10 +202,52 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               <Route path={['/settings/options', '/settings']}>
                 <OptionsPage />
               </Route>
+
+
             </Switch>
           }
           singlePanel={singlePanel}
           root={['/settings']}
+        />
+      </Route>
+
+      <Route path="/settingsAccount">
+        <DynamicPanel
+          primary={<SettingsAccountPage singlePanel={singlePanel} />}
+          secondary={
+            <Switch>
+              <Route path="/settingsAccount/overview">
+                <OverviewPage />
+              </Route>
+
+              <Route path="/settingsAccount/security">
+                <SecurityPage />
+              </Route>
+
+              <Route path="/settingsAccount/plans">
+                <PlansPage />
+              </Route>
+
+              <Route path="/settingsAccount/notifications">
+                <NotificationsPage />
+              </Route>
+
+              <Route path="/settingsAccount/licensing">
+                <LicensingPage />
+              </Route>
+
+              <Route path="/settingsAccount/billing">
+                <BillingPage />
+              </Route>
+
+              <Route path="/settingsAccount/accessKey">
+                <AccessKeyPage />
+              </Route>
+
+            </Switch>
+          }
+          singlePanel={singlePanel}
+          root={['/settingsAccount']}
         />
       </Route>
 

@@ -11,12 +11,14 @@ import { PortalUI } from './PortalUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 import { windowOpen } from '../services/Browser'
+import { useHistory } from 'react-router-dom'
 
 export const AvatarMenu: React.FC = () => {
   const [open, setOpen] = React.useState<boolean>(false)
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
   const { user, remoteUI, preferences, backendAuthenticated } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     remoteUI: isRemoteUI(state),
@@ -54,8 +56,14 @@ export const AvatarMenu: React.FC = () => {
         <ListItemSetting
           label="Account"
           icon="user"
-          onClick={() => windowOpen('https://link.remote.it/portal/account')}
+          onClick={() => history.push('/settingsAccount/overview')}
         />
+        <ListItemSetting
+          label="Settings"
+          icon="cog"
+          onClick={() => history.push('/settings')}
+        />
+        <Divider className={css.divider} />
         <ListItemSetting
           label="Support"
           icon="life-ring"
@@ -79,14 +87,14 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         )}
-        <Divider />
+        <Divider className={css.divider} />
         <PortalUI>
           <ListItemSetting
             label="Switch to Legacy View"
             icon="history"
             onClick={() => (window.location.href = 'https://app.remote.it/#devices')}
           />
-          <Divider />
+          <Divider className={css.divider} />
         </PortalUI>
         <DesktopUI>
           <ListItemSetting
@@ -113,7 +121,7 @@ export const AvatarMenu: React.FC = () => {
           }}
         />
         <DesktopUI>
-          {remoteUI || <Divider />}
+          {remoteUI || <Divider className={css.divider} />}
           {remoteUI || (
             <ListItemSetting
               confirm
@@ -147,6 +155,11 @@ const useStyles = makeStyles({
     '& .MuiListItem-root': {
       paddingLeft: 0,
       paddingRight: spacing.lg,
+      borderRadius: spacing.xxs
     },
   },
+  divider: {
+    marginTop: 10,
+    marginBottom: 10
+  }
 })

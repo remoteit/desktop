@@ -622,6 +622,7 @@ declare global {
     footer?: boolean
     chipPrimary?: boolean
     Menu?: React.FC
+    divider?: boolean
   }
 }
 
