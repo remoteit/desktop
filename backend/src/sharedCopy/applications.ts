@@ -6,7 +6,7 @@
 */
 
 import { replaceHost } from './nameHelper'
-import { getEnvironment } from '../sharedAdaptor'
+import { getEnvironment, isPortal } from '../sharedAdaptor'
 
 export const DEVICE_TYPE = 35
 
@@ -19,18 +19,18 @@ export class Application {
   title: string = ''
   launchIcon: string = 'launch'
   commandIcon: string = 'terminal'
-  publicTemplate: string = '[address]'
-  addressTemplate: string = '[host]:[port]'
   defaultLaunchType: LAUNCH_TYPE = LAUNCH_TYPE.URL
+  reverseProxyTemplate: string = 'https://[host]'
   defaultLaunchTemplate: string = 'http://[host]:[port]'
   defaultCommandTemplate: string = '[host]:[port]'
   defaultAppTokens: string[] = ['host', 'port', 'id']
-  defaultPublicTokens: string[] = ['address', 'id']
   defaultTokenData: ILookup<string> = {}
   localhost?: boolean
 
   connection?: IConnection
   service?: IService
+
+  isPortal: boolean = isPortal()
 
   REGEX_PARSE: RegExp = /\[[^\W\[\]]+\]/g
 
@@ -96,10 +96,6 @@ export class Application {
     return this.parse(this.launchTemplate, this.lookup)
   }
 
-  get address() {
-    return this.parse(this.resolvedAddressTemplate, this.lookup)
-  }
-
   get prompt() {
     return this.missingTokens.length
   }
@@ -125,7 +121,7 @@ export class Application {
   }
 
   get defaultTokens() {
-    return this.connection?.public ? this.defaultPublicTokens : this.defaultAppTokens
+    return this.defaultAppTokens
   }
 
   get allCustomTokens() {
@@ -147,20 +143,14 @@ export class Application {
     return lookup
   }
 
-  private get resolvedAddressTemplate() {
-    return this.connection?.public ? this.publicTemplate : this.addressTemplate
-  }
-
   private get resolvedDefaultLaunchTemplate() {
-    return this.connection?.public
-      ? this.publicTemplate
+    return this.connection?.reverseProxy
+      ? this.reverseProxyTemplate
       : this.service?.attributes.launchTemplate || this.defaultLaunchTemplate
   }
 
   private get resolvedDefaultCommandTemplate() {
-    return this.connection?.public
-      ? this.publicTemplate
-      : this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
+    return this.service?.attributes.commandTemplate || this.defaultCommandTemplate || this.defaultLaunchTemplate
   }
 
   private parse(template: string = '', lookup: ILookup<string>) {

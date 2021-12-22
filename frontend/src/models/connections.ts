@@ -108,10 +108,11 @@ export default createModel<RootModel>()({
           isP2P: false,
           startTime: Date.now(),
           sessionId: proxyResult.sessionID?.toLowerCase(),
+          reverseProxy: proxyResult.reverseProxy,
           address: proxyResult.proxy,
           timeout: proxyResult.proxyExpirationSec / 60,
-          // port: +proxyResult.proxyport,
-          // host: proxyResult.proxyURL,
+          port: proxyResult.reverseProxy ? undefined : +proxyResult.proxyport,
+          host: proxyResult.reverseProxy ? proxyResult.proxyURL : proxyResult.proxyserver,
         })
       } catch (error) {
         console.log('CONNECTION ERROR', error)

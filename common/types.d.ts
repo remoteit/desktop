@@ -159,6 +159,7 @@ declare global {
     publicRestriction?: ipAddress // public proxy restriction IP
     reachable?: boolean // if remote connection resource is reachable
     restriction?: ipAddress // Restriction IP address
+    reverseProxy?: boolean // if the connection is a reverse proxy
     sessionId?: string //the connection session id
     startTime?: number // unix timestamp connection start time
     targetHost?: ipAddress // default localhost

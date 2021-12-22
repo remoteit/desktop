@@ -75,11 +75,17 @@ export const CommandButton: React.FC<CommandButtonProps> = ({
           <ListItemText primary={title} />
         </MenuItem>
       ) : dataButton ? (
-        <DataButton label="Command" value={app.address} title={title || 'Command'} icon={CopyIcon} onClick={check} />
+        <DataButton
+          label="Command"
+          value={app.commandString}
+          title={title || 'Command'}
+          icon={CopyIcon}
+          onClick={check}
+        />
       ) : (
         <IconButton {...props} onClick={check} size={size} icon={clipboard.copied ? 'check' : 'copy'} />
       )}
-      <input type="hidden" ref={clipboard.target} value={app.address} />
+      <input type="hidden" ref={clipboard.target} value={app.commandString} />
       <PromptModal app={app} open={open} onClose={() => setOpen(false)} onSubmit={onSubmit} />
     </>
   )
