@@ -50,9 +50,8 @@ export const ConnectionInfo: React.FC<Props> = ({ showTitle, show, connection, s
 
   if (!connection && !session) return null
 
-  const address = app.address.split(':')
-  const name = address[0]
-  const port = address[1]
+  const name = connection?.host
+  const port = connection?.port
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
