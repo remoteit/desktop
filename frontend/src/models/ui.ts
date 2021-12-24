@@ -1,7 +1,6 @@
 import { RootModel } from './rootModel'
 import { createModel } from '@rematch/core'
 import { getTheme } from '../styling/theme'
-import { checkDarkMode } from '../styling'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { Theme } from '@material-ui/core'
 
@@ -117,7 +116,7 @@ export default createModel<RootModel>()({
       dispatch.sessions.fetch()
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
-      await dispatch.devices.fetch()
+      dispatch.devices.fetch()
     },
     async guide({ guide, ...props }: ILookup<any>, globalState) {
       let state = globalState.ui[guide]
@@ -164,3 +163,7 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function checkDarkMode() {
+  return window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
+}

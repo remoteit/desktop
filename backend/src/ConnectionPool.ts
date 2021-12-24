@@ -55,22 +55,22 @@ export default class ConnectionPool {
   // Sync with CLI
   check = async () => {
     if (binaryInstaller.uninstallInitiated || !user.signedIn) return
-
     const cliData = await cli.readConnections()
 
     // move connections: cli -> desktop
-    cliData.forEach(async c => {
-      const connection = this.find(c.id)?.params
-      if (!connection || (!connection.public && this.changed(connection, c))) {
-        // Logger.info('SYNC CLI CONNECTION', { connection, c })
-        this.set({ ...connection, ...c }, false)
+    cliData.forEach(async cliConnection => {
+      const connection = this.find(cliConnection.id)?.params
+      if (!connection || (!connection.public && this.changed(connection, cliConnection))) {
+        // Logger.info('SYNC CLI -> DESKTOP CONNECTION', { connection, cliConnection })
+        this.set({ ...connection, ...cliConnection }, false)
       }
     })
+
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
       const cliConnection = cliData.find(c => c.id === connection.params.id)
       if (!cliConnection && connection.params.connected && !connection.params.public) {
-        Logger.info('SYNC START CONNECTION', { connection: connection.params })
+        Logger.info('SYNC START DESKSTOP -> CLI CONNECTION', { connection: connection.params })
         connection.start()
       }
       if (connection.params.host === IP_PRIVATE && connection.params.enabled && preferences.get().useCertificate) {
