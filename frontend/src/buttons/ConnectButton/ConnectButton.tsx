@@ -26,7 +26,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
   size = 'medium',
-  color = 'grayDarker',
+  color = 'grayDarkest',
   autoConnect,
   fullWidth,
   onClick,

@@ -1,5 +1,4 @@
 import React from 'react'
-import { emit } from '../../services/Controller'
 import { Fade } from '@material-ui/core'
 import { Color } from '../../styling'
 import { DynamicButton } from '../DynamicButton'

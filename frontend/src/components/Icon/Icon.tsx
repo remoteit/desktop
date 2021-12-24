@@ -46,9 +46,9 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     if (!name) return null
 
     // Special Icon Handling
-    if (name === 'r3') return <R3 className={css.icon} /*height={styles.fontSize} */ {...props} />
-    if (name === 'nvidia') return <Nvidia className={css.icon} /*height={styles.fontSize} */ {...props} />
-    if (name === 'openwrt') return <OpenWrt className={css.icon} /*height={styles.fontSize} */ {...props} />
+    if (name === 'r3') return <R3 className={css.icon} {...props} />
+    if (name === 'nvidia') return <Nvidia className={css.icon} {...props} />
+    if (name === 'openwrt') return <OpenWrt className={css.icon} {...props} />
 
     let fontType: IconPrefix = 'far'
 
@@ -96,10 +96,10 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 const useStyles = makeStyles(({ palette }) => ({
   icon: ({ color, inline, inlineLeft, size, rotate }: IconProps) => {
     const styles: any = {}
-    if (color) styles.color = palette[color].main || color
+    if (color) styles.color = palette[color]?.main || color
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
-    if (size) styles.fontSize = fontSizes[size]
+    if (size) styles.fontSize = styles.height = fontSizes[size]
     if (rotate) styles.transform = `rotate(${rotate}deg)`
     return styles
   },
