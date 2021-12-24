@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Tooltip, Select, MenuItem, makeStyles } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 
 export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
   const [tooltip, setTooltip] = useState<boolean>(false)
@@ -42,14 +42,14 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
     </Tooltip>
   )
 }
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   all: {
-    border: `3px solid ${colors.grayLighter}`,
+    border: `3px solid ${palette.grayLighter.main}`,
     width: 30,
     height: 30,
     borderRadius: '50%',
     '& .MuiSelect-select:focus': { background: 'none' },
-    '&:hover': { borderColor: colors.primaryLight },
+    '&:hover': { borderColor: palette.primaryLight.main },
   },
   item: {
     width: spacing.xxl,
@@ -62,9 +62,9 @@ const useStyles = makeStyles({
       borderRadius: '50%',
       height: spacing.lg,
       width: spacing.lg,
-      border: `1px solid ${colors.grayLighter}`,
+      border: `1px solid ${palette.grayLighter.main}`,
     },
   },
   menu: { marginLeft: -10 },
   icon: { display: 'none' },
-})
+}))

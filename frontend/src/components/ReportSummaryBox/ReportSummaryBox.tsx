@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography, Box } from '@material-ui/core'
-import { colors, spacing, fontSizes } from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
 
@@ -32,15 +32,15 @@ export const ReportSummaryBox: React.FC<ReportSummaryBoxProps> = ({ iconTitle, c
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   report: {
-    color: colors.white,
-    backgroundColor: colors.primary,
+    color: palette.white.main,
+    backgroundColor: palette.primary.main,
     display: 'flex',
   },
   header: {
     fontSize: fontSizes.xxl,
-    color: colors.white,
+    color: palette.white.main,
     padding: `${spacing.xxs} 0px`,
   },
   descriptor: {
@@ -53,4 +53,4 @@ const useStyles = makeStyles({
     padding: `${spacing.md}px ${spacing.xs}px ${spacing.md}px ${spacing.md}px`,
     flexGrow: 1,
   },
-})
+}))

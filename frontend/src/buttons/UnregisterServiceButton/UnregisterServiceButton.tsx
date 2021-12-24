@@ -5,7 +5,7 @@ import { Tooltip, IconButton, CircularProgress } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Confirm } from '../../components/Confirm'
 import { Icon } from '../../components/Icon'
-import styles from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 
 type Props = {
   target?: ITarget
@@ -23,7 +23,7 @@ export const UnregisterServiceButton: React.FC<Props> = ({ target }) => {
   if (!target) return null
 
   return deleting ? (
-    <CircularProgress className={css.loading} size={styles.fontSizes.md} />
+    <CircularProgress className={css.loading} size={fontSizes.md} />
   ) : (
     <>
       <Tooltip title="Unregister Service">
@@ -46,6 +46,6 @@ export const UnregisterServiceButton: React.FC<Props> = ({ target }) => {
   )
 }
 
-const useStyles = makeStyles({
-  loading: { color: styles.colors.danger, margin: styles.spacing.sm },
-})
+const useStyles = makeStyles(({ palette }) => ({
+  loading: { color: palette.danger.main, margin: spacing.sm },
+}))

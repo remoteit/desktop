@@ -1,5 +1,5 @@
 import React from 'react'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 import { makeStyles, Box } from '@material-ui/core'
 
 type Props = { margin?: number; listItem?: boolean; noInset?: boolean }
@@ -9,7 +9,7 @@ export const Quote: React.FC<Props> = ({ margin = spacing.lg, listItem, noInset,
   return <Box className={css.quote}>{children}</Box>
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   quote: ({ margin, noInset, listItem }: Props) => {
     const marginLeft = listItem ? 27 : undefined
     return {
@@ -17,8 +17,8 @@ const useStyles = makeStyles({
       position: 'relative',
       margin: `${margin}px 0`,
       paddingLeft: noInset ? undefined : spacing.lg,
-      borderLeft: `1px solid ${colors.grayLighter}`,
+      borderLeft: `1px solid ${palette.grayLighter.main}`,
       marginLeft,
     }
   },
-})
+}))

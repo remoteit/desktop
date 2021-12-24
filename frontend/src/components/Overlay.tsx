@@ -1,15 +1,15 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
-import { spacing, colors } from '../styling'
+import { spacing } from '../styling'
 
 export const Overlay: React.FC = ({ children }) => {
   const css = useStyles()
   return <section className={css.overlay}>{children}</section>
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   overlay: {
-    backgroundColor: colors.white,
+    backgroundColor: palette.white.main,
     padding: spacing.md,
     position: 'absolute',
     alignItems: 'center',
@@ -22,4 +22,4 @@ const useStyles = makeStyles({
     bottom: 0,
     zIndex: 1,
   },
-})
+}))

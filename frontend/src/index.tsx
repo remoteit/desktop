@@ -1,8 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Controller from './services/Controller'
-import theme from './styling/theme'
-import { ThemeProvider, CssBaseline } from '@material-ui/core'
+import { CssBaseline } from '@material-ui/core'
 import { App } from './components/App'
 import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
@@ -13,17 +12,18 @@ import * as serviceWorker from './serviceWorker'
 import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
+import { Layout } from './components/Layout'
 
 analyticsHelper.setup()
 
 ReactDOM.render(
   <Provider store={store}>
-    <ThemeProvider theme={theme}>
+    <Layout>
       <CssBaseline />
       <HashRouter>
         <App />
       </HashRouter>
-    </ThemeProvider>
+    </Layout>
   </Provider>,
   document.getElementById('root')
 )

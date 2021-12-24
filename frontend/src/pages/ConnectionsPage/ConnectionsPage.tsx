@@ -8,10 +8,10 @@ import { ClearButton } from '../../buttons/ClearButton'
 import { useSelector } from 'react-redux'
 import { selectById } from '../../models/devices'
 import { NewSession } from '../../components/NewSession'
+import { spacing } from '../../styling'
 import { Body } from '../../components/Body'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
-import styles from '../../styling'
 
 export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
@@ -98,5 +98,5 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
 }
 
 const useStyles = makeStyles({
-  message: { marginBottom: styles.spacing.xl, marginTop: '5vw' },
+  message: { marginBottom: spacing.xl, marginTop: '5vw' },
 })

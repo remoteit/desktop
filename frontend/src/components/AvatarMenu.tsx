@@ -4,7 +4,7 @@ import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/cor
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from './ListItemSetting'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
@@ -130,23 +130,23 @@ export const AvatarMenu: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   label: {
     display: 'flex',
   },
   avatar: {
     borderWidth: 3,
     borderStyle: 'solid',
-    borderColor: colors.white,
-    '&:hover': { borderColor: colors.primaryLight },
+    borderColor: palette.white.main,
+    '&:hover': { borderColor: palette.primaryLight.main },
   },
   menu: {
     '& .MuiMenu-list': {
-      backgroundColor: colors.white,
+      backgroundColor: palette.white.main,
     },
     '& .MuiListItem-root': {
       paddingLeft: 0,
       paddingRight: spacing.lg,
     },
   },
-})
+}))

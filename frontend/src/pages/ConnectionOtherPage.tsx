@@ -9,7 +9,6 @@ import { NoConnectionPage } from './NoConnectionPage'
 import { InfoButton } from '../buttons/InfoButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
-import { colors } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionOtherPage: React.FC = () => {
@@ -33,7 +32,7 @@ export const ConnectionOtherPage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      backgroundColor={colors.primaryHighlight}
+      backgroundColor="primaryHighlight"
       header={
         <Typography variant="h1" gutterBottom>
           <Title>{session?.target.name}</Title>

@@ -1,10 +1,14 @@
-import { createModel } from '@rematch/core'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { RootModel } from './rootModel'
+import { createModel } from '@rematch/core'
+import { getTheme } from '../styling/theme'
+import { checkDarkMode } from '../styling'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { Theme } from '@material-ui/core'
 
 export const DEFAULT_INTERFACE = 'searching'
 
 type UIState = {
+  theme: Theme
   navigation: ILookup<string>
   connected: boolean
   offline: boolean
@@ -44,6 +48,7 @@ type UIState = {
 }
 
 const defaultState: UIState = {
+  theme: getTheme(checkDarkMode()),
   navigation: {},
   connected: false,
   offline: false,
@@ -91,6 +96,12 @@ export default createModel<RootModel>()({
       guides.forEach(guide => {
         let item = getLocalStorage(globalState, `ui-${guide}`)
         if (item) dispatch.ui.set({ [guide]: item })
+      })
+
+      // add color scheme listener
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        console.log('DARK MODE:', e.matches)
+        dispatch.ui.set({ theme: getTheme(e.matches) })
       })
     },
     async setupUpdated(count: number, globalState) {

@@ -6,7 +6,6 @@ import { ServiceHeaderMenu } from '../components/ServiceHeaderMenu'
 import { selectConnection } from '../helpers/connectionHelper'
 import { Connect } from '../components/Connect'
 import { Notice } from '../components/Notice'
-import { colors } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[] }> = ({ device, targets }) => {
@@ -28,7 +27,7 @@ export const ServiceConnectPage: React.FC<{ device?: IDevice; targets: ITarget[]
       device={device}
       service={service}
       target={target}
-      backgroundColor={connection.enabled ? colors.primaryHighlight : colors.grayLighter}
+      backgroundColor={connection.enabled ? 'primaryHighlight' : 'grayLighter'}
     >
       {service.state === 'inactive' && (
         <Notice severity="warning" gutterTop>

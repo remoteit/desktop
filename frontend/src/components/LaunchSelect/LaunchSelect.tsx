@@ -4,7 +4,7 @@ import { newConnection, setConnection } from '../../helpers/connectionHelper'
 import { CustomAttributeSettings } from '../CustomAttributeSettings'
 import { InlineTemplateSetting } from '../InlineTemplateSetting'
 import { AutoLaunchToggle } from '../AutoLaunchToggle'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 import { useApplication } from '../../hooks/useApplication'
 import { Quote } from '../Quote'
 import { Icon } from '../Icon'
@@ -76,8 +76,8 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   menu: { textTransform: 'capitalize' },
   indent: { marginRight: -spacing.lg },
-  field: { '&:hover': { backgroundColor: colors.primaryHighlight } },
-})
+  field: { '&:hover': { backgroundColor: palette.primaryHighlight.main } },
+}))

@@ -4,7 +4,6 @@ import { useNavigation } from '../hooks/useNavigation'
 import { BottomNavigation, BottomNavigationAction, Badge } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from './Icon'
-import { colors } from '../styling'
 
 export const FooterNav: React.FC = () => {
   const { menu, menuItems } = useNavigation()
@@ -37,11 +36,11 @@ export const FooterNav: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   footer: {
-    borderTop: `1px solid ${colors.grayLight}`,
+    borderTop: `1px solid ${palette.grayLight.main}`,
     minHeight: 62,
     justifyContent: 'space-evenly',
     '& .MuiButtonBase-root': { maxWidth: '18%' },
   },
-})
+}))

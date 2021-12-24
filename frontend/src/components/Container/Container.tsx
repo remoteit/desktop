@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles, Divider } from '@material-ui/core'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 import { Body } from '../Body'
 
 type Props = {
@@ -55,9 +55,9 @@ export const Container: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   container: ({ backgroundColor }: any) => ({
-    backgroundColor,
+    backgroundColor: backgroundColor ? palette[backgroundColor].main : palette.white.main,
     display: 'flex',
     alignItems: 'stretch',
     flexFlow: 'column',
@@ -68,8 +68,8 @@ const useStyles = makeStyles({
   header: ({ backgroundColor }: any) => ({
     position: 'relative',
     zIndex: 3,
-    backgroundColor: colors.white,
-    borderBottom: backgroundColor && `1px solid ${colors.grayLighter}`,
+    backgroundColor: palette.white.main,
+    borderBottom: backgroundColor && `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-h1': {
       display: 'flex',
       alignItems: 'center',
@@ -86,7 +86,7 @@ const useStyles = makeStyles({
   },
   sideContent: {
     display: 'flex',
-    boxShadow: `-1px 0 2px ${colors.grayLighter}`,
+    boxShadow: `-1px 0 2px ${palette.grayLighter.main}`,
     position: 'relative',
     zIndex: 2,
   },
@@ -94,4 +94,4 @@ const useStyles = makeStyles({
     position: 'relative',
     zIndex: 3,
   },
-})
+}))

@@ -1,6 +1,6 @@
 import React from 'react'
 import { List, ListItem, Tooltip } from '@material-ui/core'
-import { colors, fontSizes } from '../../styling'
+import { fontSizes } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
 import { Attribute } from '../../helpers/attributes'
 import { Icon } from '../Icon'
@@ -41,19 +41,19 @@ export const DataDisplay: React.FC<Props> = ({ attributes, width = 140, disableP
 }
 
 const useStyles = minWidth =>
-  makeStyles({
+  makeStyles( ({ palette }) => ({
     list: { width: '100%' },
     item: {
       padding: `4px 0`,
       fontSize: fontSizes.sm,
       fontFamily: 'Roboto Mono',
-      color: colors.grayDarker,
+      color: palette.grayDarker.main,
       alignItems: 'start',
       '& > span': {
         fontFamily: 'Roboto',
-        color: colors.grayDark,
+        color: palette.grayDark.main,
         textTransform: 'capitalize',
         minWidth,
       },
     },
-  })
+  }))

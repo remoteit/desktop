@@ -5,7 +5,7 @@ import { makeStyles, IconButton, Typography } from '@material-ui/core'
 import { selectSessionsByService } from '../../models/sessions'
 import { ApplicationState } from '../../store'
 import { SessionsTooltip } from '../../components/SessionsTooltip'
-import { spacing, colors } from '../../styling'
+import { spacing } from '../../styling'
 import { Icon } from '../../components/Icon'
 
 interface Props {
@@ -32,7 +32,7 @@ export const SessionsButton: React.FC<Props> = ({ service }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   button: { padding: spacing.sm },
-  label: { marginLeft: spacing.xs, color: colors.primary },
-})
+  label: { marginLeft: spacing.xs, color: palette.primary.main },
+}))

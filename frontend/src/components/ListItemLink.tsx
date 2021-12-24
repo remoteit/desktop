@@ -1,7 +1,6 @@
 import React from 'react'
 import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { windowOpen } from '../services/Browser'
-import { colors } from '../styling'
 import { Icon } from './Icon'
 
 export type Props = {
@@ -25,7 +24,7 @@ export const ListItemLink: React.FC<Props> = ({ href, title, subtitle, icon, chi
       )}
       {title && <ListItemText primary={title} secondary={subtitle} />}
       {children}
-      <Icon name="launch" size="sm" color={colors.grayDark} fixedWidth />
+      <Icon name="launch" size="sm" color="grayDark" fixedWidth />
     </ListItem>
   )
 }

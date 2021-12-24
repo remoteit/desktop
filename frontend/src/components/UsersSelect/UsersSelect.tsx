@@ -2,9 +2,8 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { selectSessionUsers } from '../../models/sessions'
-import { ListItemIcon, ListItemText } from '@material-ui/core'
+import { makeStyles, ListItemIcon, ListItemText } from '@material-ui/core'
 import { ListItemLocation } from '../ListItemLocation'
-import { colors } from '../../styling'
 import { Icon } from '../Icon'
 
 type Props = {
@@ -14,6 +13,7 @@ type Props = {
 }
 
 export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
+  const css = useStyles()
   const connected = useSelector(
     (state: ApplicationState) => selectSessionUsers(state, service ? service.id : device?.id).length
   )
@@ -39,7 +39,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
             <>
               {total ? total + ' total' : ''}
               <br />
-              {!!connected && <span style={{ color: colors.primary }}>{connected} connected</span>}
+              {!!connected && <span className={css.text}>{connected} connected</span>}
             </>
           )
         }
@@ -47,3 +47,7 @@ export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
     </ListItemLocation>
   )
 }
+
+const useStyles = makeStyles(({ palette }) => ({
+  text: { color: palette.primary.main },
+}))
