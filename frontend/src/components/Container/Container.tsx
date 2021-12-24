@@ -55,9 +55,9 @@ export const Container: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   container: ({ backgroundColor }: any) => ({
-    backgroundColor,
+    backgroundColor: backgroundColor ? palette[backgroundColor].main : palette.white.main,
     display: 'flex',
     alignItems: 'stretch',
     flexFlow: 'column',

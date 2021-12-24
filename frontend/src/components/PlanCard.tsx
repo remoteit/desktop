@@ -85,10 +85,10 @@ export const Item: React.FC = ({ children }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   card: { display: 'flex', width: '100%', maxWidth: 260, flexDirection: 'column', alignItems: 'center' },
   selected: {
-    backgroundColor: palette.primaryHighlight.palette,
+    backgroundColor: palette.primaryHighlight.main,
     borderRadius: radius,
     overflow: 'hidden',
     position: 'relative',

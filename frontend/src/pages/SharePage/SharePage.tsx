@@ -8,9 +8,9 @@ import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { useHistory } from 'react-router-dom'
 import { ContactSelector } from '../../components/ContactSelector'
-import analyticsHelper from '../../helpers/analyticsHelper'
-import styles from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 import { SharingForm } from '../../components/SharingForm'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { email = '', serviceID = '' } = useParams<{ email: string; serviceID: string }>()
@@ -55,7 +55,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
               <>
                 <Title>{email || 'Share'}</Title>
                 {deleting ? (
-                  <CircularProgress className={css.loading} size={styles.fontSizes.md} />
+                  <CircularProgress className={css.loading} size={fontSizes.md} />
                 ) : (
                   <Tooltip title={`Remove ${email}`}>
                     <IconButton onClick={handleUnshare} disabled={deleting}>
@@ -82,6 +82,6 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
-  loading: { color: palette.danger.main, margin: styles.spacing.sm },
+const useStyles = makeStyles(({ palette }) => ({
+  loading: { color: palette.danger.main, margin: spacing.sm },
 }))

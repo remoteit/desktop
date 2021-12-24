@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles, IconButton, Tooltip, Button, darken, lighten } from '@material-ui/core'
-import { Color, colors } from '../../styling'
+import { Color } from '../../styling'
 import { Icon } from '../../components/Icon'
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
 }
 
 export const DynamicButton: React.FC<Props> = props => {
-  const css = useStyles(props)()
+  const css = useStyles(props)
   let { title, icon, onClick, color, size = 'icon', variant = 'contained', disabled, loading, fullWidth }: Props = props
   let styles = {}
 
@@ -75,28 +75,21 @@ export const DynamicButton: React.FC<Props> = props => {
   )
 }
 
-const useStyles = (props: Props) => {
-  let background = props.color ? colors[props.color] : undefined
-  let hover = background ? darken(background, 0.3) : undefined
-  let foreground
+const useStyles = makeStyles(({ palette }) => ({
+  button: (props: Props) => {
+    let background = props.color ? palette[props.color].main : undefined
+    let hover = background ? darken(background, 0.3) : undefined
+    let foreground
 
-  if (props.variant === 'text' && background) {
-    foreground = background //  darken(background, 0.2)
-    hover = lighten(background, 0.8)
-  }
-
-  const checkBackGround = (palette, background) => {
     if (props.variant === 'text' && background) {
-      return palette.white.main
+      foreground = background
+      hover = lighten(background, 0.8)
     }
-    return background
-  }
 
-  return  makeStyles( ({ palette }) => ({
-    button: {
-      backgroundColor: checkBackGround(palette, background),
+    return {
+      backgroundColor: background,
       '& .MuiButton-label': { color: foreground },
       '&:hover': { backgroundColor: hover },
-    },
-  }))
-}
+    }
+  },
+}))

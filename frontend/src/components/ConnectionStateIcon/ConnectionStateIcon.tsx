@@ -5,7 +5,7 @@ import { Tooltip } from '@material-ui/core'
 import { useHistory } from 'react-router-dom'
 import { makeStyles, IconButton, Badge } from '@material-ui/core'
 import { getTargetPlatformIcon } from '../../helpers/platformHelper'
-import { colors, spacing, Color } from '../../styling'
+import { spacing, Color } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
   connection?: IConnection
@@ -15,7 +15,6 @@ export interface ConnectionStateIconProps extends Partial<IconProps> {
 }
 
 export function ConnectionStateIcon({ connection, service, device, mini, ...props }: ConnectionStateIconProps) {
-  const css = useStyles()
   const history = useHistory()
   const instance = device || service
 
@@ -55,10 +54,11 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
     title = 'Unlicensed'
   }
 
+  const css = useStyles({ colorName })
   if (mini)
     element = (
       <span className={css.mini}>
-        <span style={{ backgroundColor: colors[colorName] }} />
+        <span />
       </span>
     )
   else {
@@ -111,17 +111,18 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   capitalize: { textTransform: 'capitalize' },
-  mini: {
+  mini: ({ colorName }: { colorName: Color }) => ({
     '& > span': {
       height: 4,
       borderRadius: 4,
       width: spacing.md,
       display: 'inline-block',
       marginLeft: spacing.xxs,
+      backgroundColor: palette[colorName].main,
     },
-  },
+  }),
   combo: {
     '& sup': {
       position: 'absolute',

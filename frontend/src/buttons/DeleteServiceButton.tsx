@@ -5,7 +5,7 @@ import { Tooltip, IconButton, CircularProgress } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Confirm } from '../components/Confirm'
 import { Icon } from '../components/Icon'
-import styles from '../styling'
+import { spacing, fontSizes } from '../styling'
 
 type Props = {
   device?: IDevice
@@ -23,7 +23,7 @@ export const DeleteServiceButton: React.FC<Props> = ({ device, service }) => {
 
   if (!service || device?.accountId !== userId) return null
 
-  if (deleting) return <CircularProgress className={css.loading} size={styles.fontSizes.md} />
+  if (deleting) return <CircularProgress className={css.loading} size={fontSizes.md} />
 
   return (
     <>
@@ -49,6 +49,6 @@ export const DeleteServiceButton: React.FC<Props> = ({ device, service }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
-  loading: { color: palette.danger.main, margin: styles.spacing.sm },
+const useStyles = makeStyles(({ palette }) => ({
+  loading: { color: palette.danger.main, margin: spacing.sm },
 }))

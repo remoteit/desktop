@@ -2,8 +2,8 @@ import React from 'react'
 import { TextField, IconButton, Tooltip, Typography } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { spacing, colors } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
+import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
 export const SearchField: React.FC = () => {

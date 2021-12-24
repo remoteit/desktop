@@ -19,8 +19,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     successDark: { main: colors.successDark, dark: darkColors.successDark },
     dangerLight: { main: colors.dangerLight, dark: darkColors.dangerLight },
     danger: { main: colors.danger, dark: darkColors.danger },
-    dangerDark: { main: colors.dangerDark, dark: darkColors.dangerDark },
     warning: { main: colors.warning, dark: darkColors.warning },
+    warningLightest: { main: colors.warningLightest, dark: darkColors.warningLightest },
+    warningHighlight: { main: colors.warningHighlight, dark: darkColors.warningHighlight },
     gray: { main: colors.gray, dark: darkColors.gray },
     grayLightest: { main: colors.grayLightest, dark: darkColors.grayLightest },
     grayLighter: { main: colors.grayLighter, dark: darkColors.grayLighter },
@@ -28,8 +29,9 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     grayDark: { main: colors.grayDark, dark: darkColors.grayDark },
     grayDarker: { main: colors.grayDarker, dark: darkColors.grayDarker },
     grayDarkest: { main: colors.grayDarkest, dark: darkColors.grayDarkest },
-    white: { main: colors.white, dark: darkColors.white },
     black: { main: colors.black, dark: darkColors.black },
+    white: { main: colors.white, dark: darkColors.white },
+    alwaysWhite: { main: colors.alwaysWhite, dark: darkColors.alwaysWhite },
     darken: { main: colors.darken, dark: darkColors.darken },
     screen: { main: colors.screen, dark: darkColors.screen },
     rpi: { main: colors.rpi, dark: darkColors.rpi },
@@ -183,6 +185,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
       },
       MuiPaper: {
         rounded: { borderRadius: radius },
+        root: { backgroundColor: palette.white.main },
       },
       MuiListItem: {
         root: {

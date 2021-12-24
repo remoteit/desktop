@@ -27,7 +27,6 @@ declare global {
 
   type ILicenseChip = {
     name: string
-    color: string
     colorName: Color
     background?: string
     hoverColor?: string
@@ -235,8 +234,9 @@ declare module '@material-ui/core/styles/createPalette' {
     successDark: Palette['successDark']
     dangerLight: Palette['dangerLight']
     danger: Palette['danger']
-    dangerDark: Palette['dangerDark']
     warning: Palette['warning']
+    warningLightest: Palette['warningLightest']
+    warningHighlight: Palette['warningHighlight']
     gray: Palette['gray']
     grayLightest: Palette['grayLightest']
     grayLighter: Palette['grayLighter']
@@ -246,6 +246,7 @@ declare module '@material-ui/core/styles/createPalette' {
     grayDarkest: Palette['grayDarkest']
     white: Palette['white']
     black: Palette['black']
+    alwaysWhite?: Palette['alwaysWhite']
     darken: Palette['darken']
     screen: Palette['screen']
     rpi: Palette['rpi']
@@ -262,8 +263,9 @@ declare module '@material-ui/core/styles/createPalette' {
     successDark?: Palette['successDark']
     dangerLight?: Palette['dangerLight']
     danger?: Palette['danger']
-    dangerDark?: Palette['dangerDark']
     warning?: Palette['warning']
+    warningLightest: Palette['warningLightest']
+    warningHighlight: Palette['warningHighlight']
     gray?: Palette['gray']
     grayLightest?: Palette['grayLightest']
     grayLighter?: Palette['grayLighter']
@@ -273,6 +275,7 @@ declare module '@material-ui/core/styles/createPalette' {
     grayDarkest?: Palette['grayDarkest']
     white?: Palette['white']
     black?: Palette['black']
+    alwaysWhite?: Palette['alwaysWhite']
     darken?: Palette['darken']
     screen?: Palette['screen']
     rpi?: Palette['rpi']

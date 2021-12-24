@@ -14,7 +14,6 @@ import { Container } from '../components/Container'
 import { Connect } from '../components/Connect'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
-import { colors } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const ConnectionPage: React.FC = () => {
@@ -44,7 +43,7 @@ export const ConnectionPage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      backgroundColor={connection.enabled ? colors.primaryHighlight : colors.grayLighter}
+      backgroundColor={connection.enabled ? 'primaryHighlight' : 'grayLighter'}
       header={
         <Typography variant="h1" gutterBottom>
           <Title>{connection.name}</Title>

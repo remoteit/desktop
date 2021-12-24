@@ -9,7 +9,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { getDevices } from '../../models/accounts'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
-import styles from '../../styling'
+import { spacing } from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { os?: Ios }
@@ -101,8 +101,8 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
 
 const useStyles = makeStyles({
   button: {
-    marginTop: styles.spacing.xxs,
-    marginLeft: styles.spacing.lg,
+    marginTop: spacing.xxs,
+    marginLeft: spacing.lg,
   },
   device: {
     display: 'flex',

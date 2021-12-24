@@ -135,7 +135,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                     component="span"
                   >
                     <CommandButton
-                      color="white"
+                      color="alwaysWhite"
                       type="regular"
                       size="lg"
                       connection={connection}
@@ -148,7 +148,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   {connection?.host && (
                     <>
                       <CopyButton
-                        color="white"
+                        color="alwaysWhite"
                         icon="i-cursor"
                         type="solid"
                         size="md"
@@ -157,7 +157,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                         onMouseLeave={() => setHover(undefined)}
                       />
                       <CopyButton
-                        color="white"
+                        color="alwaysWhite"
                         icon="port"
                         type="solid"
                         size="md"
@@ -166,7 +166,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                         onMouseLeave={() => setHover(undefined)}
                       />
                       <CopyButton
-                        color="white"
+                        color="alwaysWhite"
                         icon="link"
                         size="md"
                         value={app.string}
@@ -185,7 +185,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                     placement="left"
                   >
                     <LaunchButton
-                      color="white"
+                      color="alwaysWhite"
                       type="solid"
                       size="md"
                       connection={connection}
@@ -241,11 +241,11 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   address: {
     backgroundColor: palette.primary.main,
-    color: palette.white.main,
+    color: palette.alwaysWhite.main,
     padding: spacing.xs,
     borderBottomRightRadius: 0,
     borderBottomLeftRadius: 0,
-    '& label': { color: palette.white.main },
+    '& label': { color: palette.alwaysWhite.main },
   },
   details: {
     paddingTop: 1,

@@ -5,7 +5,7 @@ import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import { ScanNetwork } from '../ScanNetwork'
-import styles from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 
 type Props = {
   data: IScanData
@@ -90,7 +90,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
           {selectedLoading ? (
             <>
               Scanning
-              <CircularProgress size={styles.fontSizes.lg} color="inherit" />
+              <CircularProgress size={fontSizes.lg} color="inherit" />
             </>
           ) : (
             'Scan'
@@ -103,25 +103,25 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   loading: {
     alignItems: 'center',
     flexDirection: 'column',
     color: palette.grayLighter.main,
-    fontSize: styles.fontSizes.xl,
+    fontSize: fontSizes.xl,
   },
   controls: {
-    paddingBottom: styles.spacing.md,
+    paddingBottom: spacing.md,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     '& > div': { flexGrow: 1 },
-    '& .MuiCircularProgress-root': { marginLeft: styles.spacing.md },
+    '& .MuiCircularProgress-root': { marginLeft: spacing.md },
     '& .MuiButton-contained': { marginRight: 0 },
     '& .MuiFormControl-root': { width: 250 },
-    '& .MuiTypography-root': { textAlign: 'right', marginRight: styles.spacing.md },
+    '& .MuiTypography-root': { textAlign: 'right', marginRight: spacing.md },
     '& samp': {
-      fontSize: styles.fontSizes.sm,
+      fontSize: fontSizes.sm,
       fontFamily: 'Roboto Mono',
       color: palette.grayDark.main,
     },

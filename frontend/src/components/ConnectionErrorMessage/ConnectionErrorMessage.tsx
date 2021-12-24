@@ -4,7 +4,7 @@ import { clearConnectionError } from '../../helpers/connectionHelper'
 import { ListItem, ListItemSecondaryAction, ListItemText, Tooltip, Collapse } from '@material-ui/core'
 import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
-import styles from '../../styling'
+import { spacing } from '../../styling'
 
 type Props = { connection?: IConnection; service?: IService; visible?: boolean }
 
@@ -35,10 +35,10 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
 
 const size = 8
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   container: {
     backgroundColor: palette.danger.main,
-    paddingLeft: styles.spacing.xl,
+    paddingLeft: spacing.xl,
     color: palette.white.main,
     '& .MuiListItemText-secondary': { color: palette.white.main },
   },

@@ -14,8 +14,8 @@ import {
 import { currencyFormatter } from '../helpers/utilHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { colors, spacing } from '../styling'
 import { LoadingMessage } from './LoadingMessage'
+import { spacing } from '../styling'
 import { Icon } from './Icon'
 
 const dateOptions: Intl.DateTimeFormatOptions = {
@@ -57,7 +57,7 @@ export const Invoices: React.FC = () => {
                 <TableCell className={css.plan}>
                   {invoice.plan.name.toLowerCase()} / {invoice.price.interval.toLowerCase()}
                 </TableCell>
-                <TableCell className={invoice.total < 0 ? css.amount : css.amountWithoutColor } >
+                <TableCell className={invoice.total < 0 ? css.amount : css.amountWithoutColor}>
                   {currencyFormatter(invoice.price.currency, invoice.total)}
                 </TableCell>
                 <TableCell>
@@ -78,15 +78,15 @@ export const Invoices: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
-  amount: { 
-    paddingRight: spacing.md, 
-    textAlign: 'right', 
-    color:  palette.danger,
+const useStyles = makeStyles(({ palette }) => ({
+  amount: {
+    paddingRight: spacing.md,
+    textAlign: 'right',
+    color: palette.danger,
   },
   amountWithoutColor: {
-    paddingRight: spacing.md, 
-    textAlign: 'right', 
+    paddingRight: spacing.md,
+    textAlign: 'right',
   },
   plan: { textTransform: 'capitalize' },
 }))

@@ -2,7 +2,6 @@ import md5 from 'md5'
 import React from 'react'
 import fallbackImage from './user.png'
 import { makeStyles, Avatar as MuiAvatar } from '@material-ui/core'
-import { colors } from '../../styling'
 
 export interface Props {
   email?: string
@@ -18,30 +17,31 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label }) => 
   return (
     <span className={label ? css.label : ''}>
       <MuiAvatar component="span" className={button ? css.avatar : ''} alt={email} src={url}>
-        <img src={fallbackImage} alt={email} className={css.img}/>
+        <img src={fallbackImage} alt={email} className={css.img} />
       </MuiAvatar>
       {label && email}
     </span>
   )
 }
 
-const useStyles = size => makeStyles( ({ palette } ) => ({
-  label: {
-    display: 'flex',
-    borderRadius: '50%',
-  },
-  avatar: {
-    borderWidth: 3,
-    borderStyle: 'solid',
-    borderColor: palette.white.main,
-    '&:hover': { borderColor: palette.primaryLight.main },
-    height: `${size}px`, 
-    width: `${size}px`, 
-    backgroundColor: palette.primary.main
-  },
-  img: {
-    height: `${size}px`, 
-    width: `${size}px`, 
-    backgroundColor: palette.primary.main
-  }
-}))
+const useStyles = size =>
+  makeStyles(({ palette }) => ({
+    label: {
+      display: 'flex',
+      borderRadius: '50%',
+    },
+    avatar: {
+      borderWidth: 3,
+      borderStyle: 'solid',
+      borderColor: palette.white.main,
+      '&:hover': { borderColor: palette.primaryLight.main },
+      height: `${size}px`,
+      width: `${size}px`,
+      backgroundColor: palette.primary.main,
+    },
+    img: {
+      height: `${size}px`,
+      width: `${size}px`,
+      backgroundColor: palette.primary.main,
+    },
+  }))
