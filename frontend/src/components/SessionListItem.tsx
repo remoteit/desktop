@@ -82,16 +82,21 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   title: ({ state, offline }: any) => ({
     opacity: state === 'offline' ? 0.5 : 1,
-    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap', color: offline ? palette.grayDark.main : palette.primaryLight.main },
+    '& > span': {
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      color: offline ? palette.grayDark.main : palette.primaryLight.main,
+    },
   }),
   connection: ({ offline, state }: any) => ({
     borderColor: offline ? palette.grayLight.main : palette.primary.main,
     borderWidth: '0 0 1px 1px',
-    borderBottomWidth: state === 'offline' ? 0 : 1,
-    borderBottomColor: state === 'connected' ? palette.primary.main : offline ? palette.grayLight.main : palette.primary.main,
+    borderBottomWidth: 1,
+    borderBottomColor:
+      state === 'connected' ? palette.primary.main : offline ? palette.grayLight.main : palette.primary.main,
     borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',
     borderStyle: 'solid',
     height: '2.6em',

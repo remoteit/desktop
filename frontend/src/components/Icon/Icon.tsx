@@ -73,12 +73,12 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 
     let icon = (
       <FontAwesomeIcon
+        {...props}
         forwardedRef={ref}
         icon={[fontType, name as IconName]}
         spin={spin}
         fixedWidth={fixedWidth}
-        className={classnames(css.icon, props.className)}
-        {...props}
+        className={classnames(props.className, css.icon)}
       />
     )
 
@@ -96,7 +96,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 const useStyles = makeStyles(({ palette }) => ({
   icon: ({ color, inline, inlineLeft, size, rotate }: IconProps) => {
     const styles: any = {}
-    if (color) styles.color = palette[color]?.main || color
+    if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
     if (size) styles.fontSize = styles.height = fontSizes[size]
