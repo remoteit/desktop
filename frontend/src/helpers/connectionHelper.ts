@@ -125,14 +125,15 @@ export function updateConnections(devices: IDevice[]) {
   return devices
 }
 
-export function cleanOrphanConnections() {
+export function cleanOrphanConnections(ids?: string[]) {
+  if (!ids) return
   const state = store.getState()
   const services = getAllDevices(state)
     .map(d => d.services.map(s => s.id))
     .flat()
   if (!state.ui.offline && services.length) {
     state.connections.all.forEach(c => {
-      if (!services.includes(c.id)) store.dispatch.connections.forget(c.id)
+      if (ids.includes(c.id) && !services.includes(c.id)) store.dispatch.connections.forget(c.id)
     })
   }
 }

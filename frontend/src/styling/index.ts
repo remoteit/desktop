@@ -107,8 +107,6 @@ export const darkColors: { [key in Color]: string } = {
   test: '#2B2926',
 }
 
-export const checkDarkMode = () => window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
-
 export type Spacing = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 
 export const spacing: { [key in Spacing]: number } = {

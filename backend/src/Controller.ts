@@ -179,7 +179,7 @@ class Controller {
     this.io.emit(ConnectionPool.EVENTS.updated, this.pool.toJSON())
     this.io.emit(environment.EVENTS.send, environment.frontend)
     this.io.emit('preferences', preferences.data)
-    this.io.emit('dataReady', true)
+    this.io.emit('dataReady')
   }
 
   connection = async (connection: IConnection) => {
