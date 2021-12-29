@@ -94,6 +94,7 @@ export default createModel<RootModel>()({
           authHash: data.authhash,
           yoicsId: data.yoicsId,
           created: data.created,
+          apiKey: data.apiKey
         }
         auth.setUser(user)
         setLocalStorage(state, USER_KEY, user)
@@ -116,6 +117,13 @@ export default createModel<RootModel>()({
       } catch (error) {
         await apiError(error)
       }
+    },
+    async changePassword(passwordValues: IPasswordValue) {
+      const { auth } = dispatch as Dispatch
+      const existingPassword = passwordValues.currentPassword
+      const newPassword = passwordValues.password
+
+      // auth.authService.changePassword(existingPassword, newPassword)
     },
     async checkSession(_: void, rootState) {
       const { ui } = dispatch

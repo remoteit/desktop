@@ -214,7 +214,7 @@ declare global {
     disabled: boolean //    service enabled / disabled
   }
 
-  interface ITargetDevice extends ITarget {}
+  interface ITargetDevice extends ITarget { }
 
   interface IDevice {
     id: string
@@ -295,6 +295,7 @@ declare global {
     created?: Date
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
+    apiKey?: string
   }
 
   type INotificationSetting = {
@@ -408,6 +409,11 @@ declare global {
     icon: string
     name: string
     description: string
+  }
+
+  interface IPasswordValue {
+    currentPassword: string
+    password: string
   }
 
   type IRouteType = 'failover' | 'p2p' | 'proxy'
@@ -626,4 +632,4 @@ declare global {
   }
 }
 
-export {}
+export { }

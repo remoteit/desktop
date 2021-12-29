@@ -89,8 +89,8 @@ export function useNavigation(): INavigationHook {
   const menuItems: INavigation[] = [
     { label: 'This Device', path: '/devices', match: '/devices/:any?/:any?/:any?', icon: 'hdd', show: remoteUI },
     {
-      label: 'Connections',
-      icon: 'arrow-right',
+      label: 'Network',
+      icon: 'chart-network',
       path: '/connections', // recallPath('/connections')
       match: '/connections/:any?/:any?/:any?',
       show: !remoteUI,
@@ -107,11 +107,12 @@ export function useNavigation(): INavigationHook {
       // Menu: AccountMenu,
     },
     {
-      label: 'Organizations',
-      path: '/settings/organization',
-      match: '/settings/organization',
-      icon: 'industry-alt',
-      show: true,
+      label: 'Announcements',
+      path: '/announcements',
+      match: '/announcements',
+      icon: 'megaphone',
+      badge: unreadAnnouncements,
+      show: !remoteUI
     },
     {
       label: 'Tags',
@@ -137,21 +138,13 @@ export function useNavigation(): INavigationHook {
       show: true,
     },
     {
-      label: 'Reports',
-      path: '/settings/reports',
-      match: '/settings/reports',
-      icon: 'chart-line',
-      show: true,
-      divider: true
-    },
-    {
-      label: 'Announcements',
-      path: '/announcements',
-      match: '/announcements',
-      icon: 'megaphone',
-      badge: unreadAnnouncements,
-      show: !remoteUI,
-    },
+      label: 'More',
+      path: '/settings',
+      match: '/settings',
+      icon: 'ellipsis-h',
+      badge: licenseIndicator,
+      show: true
+    }
   ]
 
   return { menu, menuItems, handleBack, handleForward }

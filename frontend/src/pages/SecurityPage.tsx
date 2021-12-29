@@ -1,22 +1,11 @@
 import React, { useEffect } from 'react'
-import { Dispatch, ApplicationState } from '../store'
-import { Typography, List } from '@material-ui/core'
-import { useSelector, useDispatch } from 'react-redux'
-import { selectOwner } from '../models/organization'
-import { getRemoteitLicense } from '../models/licensing'
+import { Typography } from '@material-ui/core'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
+import { ChangePassword } from '../components/ChangePassword'
 
 export const SecurityPage: React.FC = () => {
-  const { organization, license, owner } = useSelector((state: ApplicationState) => ({
-    organization: state.organization,
-    license: getRemoteitLicense(state),
-    owner: selectOwner(state),
-  }))
-  const [removing, setRemoving] = React.useState<boolean>(false)
-  const dispatch = useDispatch<Dispatch>()
-  const enterprise = !license?.plan?.billing
 
   useEffect(() => {
     analyticsHelper.page('SecurityPage')
@@ -31,6 +20,7 @@ export const SecurityPage: React.FC = () => {
             <Title>Security & Login</Title>
 
           </Typography>
+          <ChangePassword />
 
         </>
       }
