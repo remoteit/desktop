@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { List, Typography } from '@material-ui/core'
+import { ButtonBase, List, Tooltip, Typography } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { getRemoteitLicense, selectLicenseIndicator } from '../../models/licensing'
@@ -7,6 +7,10 @@ import { ListItemLocation } from '../../components/ListItemLocation'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import analyticsHelper from '../../helpers/analyticsHelper'
+import { AvatarMenu } from '../../components/AvatarMenu'
+import { DeviceSetupItem } from '../../components/DeviceSetupItem'
+import { OutOfBand } from '../../components/OutOfBand'
+import { Logo } from '../../components/Logo'
 
 export const SettingsAccountPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
@@ -23,7 +27,6 @@ export const SettingsAccountPage: React.FC<{ singlePanel?: boolean }> = ({ singl
 
   return (
     <Container
-      bodyProps={{ style: { with: 300 } }}
       gutterBottom
       header={
         <>

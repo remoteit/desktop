@@ -19,6 +19,7 @@ import sessions from './sessions'
 import shares from './shares'
 import tags from './tags'
 import ui from './ui'
+import mfa from './mfa'
 
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts
@@ -41,6 +42,7 @@ export interface RootModel extends Models<RootModel> {
   shares: typeof shares
   tags: typeof tags
   ui: typeof ui
+  mfa: typeof mfa
 }
 
 export const models: RootModel = {
@@ -64,4 +66,5 @@ export const models: RootModel = {
   shares,
   tags,
   ui,
+  mfa
 }

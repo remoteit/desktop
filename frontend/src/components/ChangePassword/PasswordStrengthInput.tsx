@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import zxcvbn from 'zxcvbn'
 import { Box, Grid, makeStyles, TextField, Typography } from '@material-ui/core'
-import LinearProgress from '@material-ui/core/LinearProgress'
 import { ProgressBar } from './ProgressBar'
 
 export interface Props {
@@ -150,7 +149,6 @@ const useStyles = makeStyles({
     marginBottom: 10
   },
   input: {
-    fontSize: 10,
     minWidth: 350,
   },
   caption: {

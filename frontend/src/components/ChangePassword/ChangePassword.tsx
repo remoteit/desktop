@@ -1,24 +1,17 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TextBlock } from '../../components/TextBlock'
 import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { Box, Button, makeStyles, TextField, Typography } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
-import { Alert } from '../Alert'
 import { colors } from '../../styling'
 
 
 
 export const ChangePassword = () => {
-  const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
   const [currentPassword, setCurrentPassword] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [isValidPassword, setIsValidPassword] = useState<boolean>(false)
-  const [disabled, setDisabled] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(false)
-  const { t } = useTranslation()
   const { auth } = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -26,49 +19,23 @@ export const ChangePassword = () => {
   const setPasswordValidation = (password: React.SetStateAction<string>, valid: boolean | ((prevState: boolean) => boolean)) => {
     setPassword(password)
     setIsValidPassword(valid)
-    setDisabled(valid && currentPassword !== '')
   }
   const evaluateCurrentPassword = (e: { target: { value: React.SetStateAction<string> } }) => {
     setCurrentPassword(e.target.value)
-    setDisabled(isValidPassword && e.target.value !== '')
   }
   const updatePassword = (event: { preventDefault: () => void }) => {
     event.preventDefault()
-    setMessage(null)
-    setError(null)
-    setLoading(true)
     auth.changePassword({ currentPassword: currentPassword, password: password })
-      .then(() => {
-        setMessage('Password Changed Successfully')
-      })
       .catch(error => {
         console.error(error)
-        setError(t(`pages.change-password.errors.${error.code}`))
-      })
-      .finally(() => {
-        setLoading(false)
       })
   }
   return (
     <Box m={4}>
       {false ? (
-        <TextBlock>{t('pages.change-password.is-google-user')}</TextBlock>
+        <p>You are signed in with your Google account. You can change your password in your Google account settings. If you also have remote.it login and password, you can sign in with those credentials and then change your password.</p>
       ) : (
         <form style={{ maxWidth: '360px' }} onSubmit={updatePassword}>
-          {error && (
-            <Alert
-              type="danger"
-            >
-              {error}
-            </Alert>
-          )}
-          {message && (
-            <Alert
-              type="info"
-            >
-              {message}
-            </Alert>
-          )}
           <Typography variant="subtitle1" gutterBottom style={{ padding: 0 }}>
             Change Password
           </Typography>
@@ -76,7 +43,13 @@ export const ChangePassword = () => {
             Current Password
           </Typography>
           <Box mb={0}>
-            <TextField variant='filled' type="password" label="Enter current password" className={css.input} />
+            <TextField
+              variant='filled'
+              type="password"
+              label="Enter current password"
+              className={css.input}
+              onChange={e => evaluateCurrentPassword(e)}
+            />
           </Box>
           <Typography variant="subtitle1" className={css.subtitle} gutterBottom>
             New Password

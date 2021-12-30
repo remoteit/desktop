@@ -67,10 +67,9 @@ export function CreateAccessKey({ ...props }) {
             <Icon
               fixedWidth
               name="check-circle"
-              className="success ml-md txt-xl"
               size='lg'
             />
-            <Typography className="f-1 txt-md pl-sm fw-bold w-90">
+            <Typography>
               Your new access key is ready to use
             </Typography>
             <IconButton aria-label="close" onClick={onClose}>

@@ -1,21 +1,28 @@
 import React, { useEffect } from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, List, Box, Grid, Button, ListItemText, ListItemIcon, ListItem } from '@material-ui/core'
+import { Typography, List, Box, Button, TextField, MenuItem, ListItem, ListItemIcon, makeStyles } from '@material-ui/core'
 import { useSelector, useDispatch } from 'react-redux'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
-import { DesktopUI } from '../components/DesktopUI'
 import { Avatar } from '../components/Avatar'
 import { Icon } from '../components/Icon'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { TextBlock } from '../components/TextBlock'
+import { colors, spacing } from '../styling'
 
 export const OverviewPage: React.FC = () => {
 
   const { user } = useSelector((state: ApplicationState) => state.auth)
+  const { auth } = useDispatch<Dispatch>()
+  const [open, setOpen] = React.useState<boolean>(false)
+  const css = useStyles()
+  let inputProps = {
+    select: true,
+    disabled: false,
+  }
 
+  const handleClick = () => setOpen(!open)
   useEffect(() => {
     analyticsHelper.page('OverviewPage')
   }, [])
@@ -27,7 +34,6 @@ export const OverviewPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Overview</Title>
-
           </Typography>
 
         </>
@@ -57,16 +63,25 @@ export const OverviewPage: React.FC = () => {
             label="EMAIL"
             disabled={false}
             resetValue={user?.email}
-            onSave={(e) => { }}
+            onSave={e => { }}
           />
-          <InlineTextFieldSetting
-            icon="language"
-            value='English'
-            label='LENGUAJE PREFERENCE'
-            disabled={false}
-            resetValue={user?.email}
-            onSave={(e) => { }}
-          />
+
+          <ListItem dense className={css.field} onClick={handleClick} button>
+            <ListItemIcon>
+              <Icon name='language' size="md" fixedWidth />
+            </ListItemIcon>
+            <TextField
+              {...inputProps}
+              fullWidth
+              // SelectProps={{ open }}
+              label="Language preference"
+              value={'en'}
+              onChange={e => auth.changeLanguage(e.target.value)}
+            >
+              <MenuItem value='en'>English</MenuItem>
+              <MenuItem value='ja'>Japanese</MenuItem>
+            </TextField>
+          </ListItem>
           <AccordionMenuItem subtitle="Account deletion" gutters >
             <DeleteAccountSection email={user?.email} paidPlan={false} />
           </AccordionMenuItem>
@@ -121,3 +136,9 @@ function DeleteAccountSection({ email, paidPlan = false }: DeleteAccountSectionP
     </Box>
   )
 }
+
+const useStyles = makeStyles({
+  menu: { textTransform: 'capitalize' },
+  indent: { marginRight: -spacing.lg },
+  field: { '&:hover': { backgroundColor: colors.primaryHighlight } },
+})

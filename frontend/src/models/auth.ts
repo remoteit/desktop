@@ -2,16 +2,18 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
-import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
+import { CLIENT_ID, CALLBACK_URL, DEVELOPER_KEY, AUTH_API_URL } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
-import { CognitoUser } from '@remote.it/types'
+import { AvailableLanguage, CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
-import { Dispatch } from '../store'
+import { Dispatch, store } from '../store'
 import { apiError } from '../helpers/apiHelper'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
+import { getToken, r3 } from '../services/remote.it'
+import axios from 'axios'
 
 function sleep(ms) {
   return new Promise(resolve => {
@@ -23,6 +25,18 @@ const USER_KEY = 'user'
 
 export const CHECKBOX_REMEMBER_KEY = 'remember-username'
 
+export interface AWSUser {
+  authProvider: string
+  email?: string
+  email_verified?: boolean
+  phone_number?: string
+  phone_number_verified?: boolean
+  given_name?: string //first_name
+  family_name?: string //last_name
+  gender?: string
+  'custom:backup_code'?: string
+}
+
 export interface AuthState {
   initialized: boolean
   signInStarted: boolean
@@ -33,6 +47,9 @@ export interface AuthState {
   user?: IUser
   localUsername?: string
   notificationSettings: INotificationSetting
+  mfaMethod: string
+  AWSUser: AWSUser
+  loggedIn?: boolean
 }
 
 const state: AuthState = {
@@ -45,6 +62,18 @@ const state: AuthState = {
   authService: undefined,
   localUsername: undefined,
   notificationSettings: {},
+  mfaMethod: '',
+  AWSUser: {
+    authProvider: '',
+  } as AWSUser,
+  loggedIn: false
+}
+
+const configAuthService = {
+  cognitoClientID: CLIENT_ID,
+  redirectURL: isPortal() || isElectron() ? '' : window.origin + '/v1/callback/',
+  callbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
+  signoutCallbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
 }
 
 export default createModel<RootModel>()({
@@ -54,16 +83,137 @@ export default createModel<RootModel>()({
       let { user } = rootState.auth
       console.log('AUTH INIT', { user })
       if (!user) {
-        const authService = new AuthService({
-          cognitoClientID: CLIENT_ID,
-          redirectURL: isPortal() || isElectron() ? '' : window.origin + '/v1/callback/',
-          callbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
-          signoutCallbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
-        })
+        const authService = new AuthService(configAuthService)
         await sleep(500)
         dispatch.auth.setAuthService(authService)
       }
       dispatch.auth.setInitialized()
+    },
+    async getTotpCode() {
+      return store.getState().auth.authService?.setupTOTP()
+    },
+    async verifyTotpCode(code: string) {
+      try {
+        const authService = new AuthService(configAuthService)
+        await authService.verifyTotpToken(code)
+      } catch (e: any) {
+        console.error(e.message)
+        return false
+      }
+      return this.setMFAPreference('SOFTWARE_TOKEN_MFA')
+    },
+    async signInSuccess() {
+      this.signInFinished()
+    },
+    async changeLanguage(language: AvailableLanguage) {
+      return r3.post('/user/language/', { language }).then(() => this.setLanguage(language))
+    },
+    async changeEmail(email: string) {
+      const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
+      if (mailFormat.test(email)) {
+        r3.post('/user/email/', { email }).then(() => this.setEamil(email))
+        dispatch.ui.set({ successMessage: `Email modified successfully.` })
+      } else {
+        dispatch.ui.set({ errorMessage: `Invalid format.` })
+      }
+
+    },
+    async getMfaMethod() {
+      const { auth } = dispatch as Dispatch
+      const Authorization = await getToken()
+      // Get MFA Preference
+      const response = await axios.get(`${AUTH_API_URL}/mfaPref`, {
+        headers: {
+          developerKey: DEVELOPER_KEY,
+          Authorization,
+        },
+      })
+      console.log('getMfaMethod ', { response })
+      auth.setMfaMethod(response.data['MfaPref'])
+    },
+    async setMFAPreference(mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA') {
+      const Authorization = await getToken()
+      const { auth } = dispatch
+
+      const response = await axios.post(
+        `${AUTH_API_URL}/mfaPref`,
+        {
+          MfaPref: mfaMethod,
+        },
+        {
+          headers: {
+            developerKey: DEVELOPER_KEY,
+            Authorization,
+          },
+        }
+      )
+
+      auth.setMfaMethod(response.data['MfaPref'])
+      return response.data['backupCode']
+    },
+    async updatePhone(phone: string) {
+      const { auth } = dispatch
+      try {
+        store.getState().auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
+        await auth.getAuthenticatedUserInfo(true)
+
+        store.getState().auth.authService?.verifyCurrentUserAttribute('phone_number')
+        auth.setMFAPreference('NO_MFA')
+        return true
+      } catch (error) {
+        console.error(error)
+        throw error
+      }
+    },
+    async verifyPhone(verificationCode: string) {
+      console.log('verifyPhone')
+      const { auth } = dispatch
+      try {
+        store.getState().auth.authService?.verifyCurrentUserAttributeSubmit(
+          'phone_number',
+          verificationCode
+        )
+        const response = auth.setMFAPreference('SMS_MFA')
+        auth.getAuthenticatedUserInfo(true)
+        return response
+      } catch (error) {
+        console.log(error)
+        throw error
+      }
+    },
+    async getAuthenticatedUserInfo(_fetch, rootState) {
+      const userInfo = await store.getState().auth.authService.currentUserInfo()
+      // if (userInfo && userInfo.attributes) {
+      //   this.setLoginCookies(userInfo.attributes['email'])
+      // }
+      console.log({ userInfo })
+
+      const Authorization = await getToken()
+      // Get MFA Preference
+      const response = await axios.get(`${AUTH_API_URL}/mfaPref`, {
+        headers: {
+          developerKey: DEVELOPER_KEY,
+          Authorization,
+        },
+      })
+      dispatch.auth.setMfaMethod(response.data['MfaPref'])
+      if (userInfo && userInfo.attributes) {
+        delete userInfo.attributes['identities']
+        delete userInfo.attributes['sub']
+      }
+      const AWSUser = {
+        ...userInfo.attributes,
+        ...{
+          authProvider: userInfo.username.includes('Google') || userInfo.username.includes('google') ? 'Google' : '',
+        },
+      }
+      const updatedAWSUser = { ...rootState.auth.AWSUser, ...AWSUser }
+      if (rootState.auth.awsUser !== updatedAWSUser) {
+        console.log('setAwsUser')
+        dispatch.auth.setAWSUser(updatedAWSUser)
+      }
+      dispatch.mfa.set({ showEnableSelection: response.data['MfaPref'] === 'NO_MFA' })
+      return updatedAWSUser
     },
     async fetchUser(_, state) {
       const { auth } = dispatch as Dispatch
@@ -75,6 +225,7 @@ export default createModel<RootModel>()({
                 email
                 authhash
                 yoicsId
+                language
                 created
                 notificationSettings {
                   emailNotifications
@@ -94,7 +245,8 @@ export default createModel<RootModel>()({
           authHash: data.authhash,
           yoicsId: data.yoicsId,
           created: data.created,
-          apiKey: data.apiKey
+          apiKey: data.apiKey,
+          language: data.language
         }
         auth.setUser(user)
         setLocalStorage(state, USER_KEY, user)
@@ -119,11 +271,15 @@ export default createModel<RootModel>()({
       }
     },
     async changePassword(passwordValues: IPasswordValue) {
-      const { auth } = dispatch as Dispatch
       const existingPassword = passwordValues.currentPassword
       const newPassword = passwordValues.password
 
-      // auth.authService.changePassword(existingPassword, newPassword)
+      try {
+        const response = await store.getState().auth.authService?.changePassword(existingPassword, newPassword)
+        dispatch.ui.set({ successMessage: `Password Changed Successfully ${response}` })
+      } catch (error) {
+        dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
+      }
     },
     async checkSession(_: void, rootState) {
       const { ui } = dispatch
@@ -228,6 +384,16 @@ export default createModel<RootModel>()({
       cloudController.close()
       Controller.close()
     },
+    async globalSignOut() {
+      const Authorization = await getToken()
+      const response = await axios.get(`${AUTH_API_URL}/globalSignout`, {
+        headers: {
+          Authorization,
+        },
+      })
+      console.log(`globalSignOut: `, response)
+      this.signOut()
+    },
   }),
   reducers: {
     setInitialized(state: AuthState) {
@@ -277,6 +443,23 @@ export default createModel<RootModel>()({
     },
     setNotificationSettings(state: AuthState, notificationSettings: INotificationSetting) {
       state.notificationSettings = notificationSettings
+      return state
+    },
+    setLoggedIn(state: AuthState, loggedIn: boolean) {
+      state.loggedIn = loggedIn
+      return state
+    },
+    setMfaMethod(state: AuthState, value: string) {
+      state.mfaMethod = value
+      return state
+    },
+    setAWSUser(state: AuthState, AWSUser: AWSUser) {
+      state.AWSUser = AWSUser
+      return state
+    },
+    setLanguage(state: AuthState, language: AvailableLanguage) {
+      if (!state.user) return
+      state.user.language = language
       return state
     },
   },

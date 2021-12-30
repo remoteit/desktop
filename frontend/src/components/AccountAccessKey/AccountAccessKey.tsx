@@ -79,6 +79,7 @@ export function AccountAccessKey({ ...props }): JSX.Element {
             color="primary"
             onClick={handleCreateKey}
             disabled={!(maxlimit < 2)}
+            style={{ borderRadius: 3 }}
           >
             Create Access key
           </Button>
