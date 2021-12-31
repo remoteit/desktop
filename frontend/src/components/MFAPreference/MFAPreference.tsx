@@ -22,11 +22,11 @@ const mapState = (state: ApplicationState) => ({
 
 const mapDispatch = (dispatch: any) => ({
   verifyPhone: dispatch.auth.verifyPhone,
-  updatePhone: dispatch.auth.updatePhone,//
-  setMFAPreference: dispatch.auth.setMFAPreference,//
-  checkSession: dispatch.auth.checkSession,//
-  getTotpCode: dispatch.auth.getTotpCode,//
-  verifyTotpCode: dispatch.auth.verifyTotpCode,//
+  updatePhone: dispatch.auth.updatePhone,
+  setMFAPreference: dispatch.auth.setMFAPreference,
+  checkSession: dispatch.auth.checkSession,
+  getLastCode: dispatch.auth.getLastCode,
+  verifyTopCode: dispatch.auth.verifyTopCode,
 })
 export const MFAPreference = connect(
   mapState,
@@ -38,8 +38,8 @@ export const MFAPreference = connect(
     verifyPhone,
     updatePhone,
     setMFAPreference,
-    getTotpCode,
-    verifyTotpCode,
+    getLastCode,
+    verifyTopCode,
     checkSession,
   }: MFASectionProps) => {
     const { t } = useTranslation()
@@ -69,11 +69,12 @@ export const MFAPreference = connect(
 
     useEffect(() => {
       analyticsHelper.page('mfaMethod')
-      auth.getAuthenticatedUserInfo(true)
+      auth.getAuthenticatedUserInfo()
     }, [])
 
-    const loadTotpCode = async () => {
-      setTotpCode(await auth.getTotpCode())
+    const loadLastCode = async () => {
+      let totpCode = auth.getLastCode()
+      setTotpCode(totpCode.toString())
     }
 
     const setShowEnableSelection = (param: boolean) => {
@@ -120,7 +121,7 @@ export const MFAPreference = connect(
       event.preventDefault()
       setError(null)
       setLoading(true)
-      verifyTotpCode(totpVerificationCode)
+      verifyTopCode(totpVerificationCode)
         .then(async (backupCode: string | boolean) => {
           if (typeof backupCode == 'string') {
             setBackupCode(backupCode)
@@ -224,7 +225,7 @@ export const MFAPreference = connect(
         setShowSMSConfig(true)
         setShowPhone(true)
       } else {
-        loadTotpCode()
+        loadLastCode()
         setShowMFASelection(false)
         setShowAuthenticatorConfig(true)
       }
@@ -292,7 +293,7 @@ export const MFAPreference = connect(
                 <p>
                   Two-Factor Authentication is <b>OFF</b>
                 </p>
-                <Button variant="contained" color="primary" type="submit" type="submit" className={css.button}>
+                <Button variant="contained" color="primary" type="submit" className={css.button}>
                   Turn on
                 </Button>
               </Box>
@@ -313,7 +314,7 @@ export const MFAPreference = connect(
             <MFAConfigureApp
               email={AWSUser.email}
               totpCode={totpCode || ''}
-              loadTotpCode={loadTotpCode}
+              loadLastCode={loadLastCode}
               totpVerified={totpVerified}
               sendVerifyTotp={sendVerifyTotp}
               setTotpVerificationCode={setTotpVerificationCode}
@@ -354,6 +355,7 @@ export const MFAPreference = connect(
     }
   }
 )
+
 
 const useStyles = makeStyles({
   input: {

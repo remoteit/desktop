@@ -8,7 +8,7 @@ import { AvailableLanguage, CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
-import { Dispatch, store } from '../store'
+import { Dispatch } from '../store'
 import { apiError } from '../helpers/apiHelper'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
@@ -89,29 +89,30 @@ export default createModel<RootModel>()({
       }
       dispatch.auth.setInitialized()
     },
-    async getTotpCode() {
-      return store.getState().auth.authService?.setupTOTP()
+    async getLastCode(_: void, state) {
+      // return state.auth.authService?.setupTOTP().toString()
     },
-    async verifyTotpCode(code: string) {
+    async verifyTopCode(code: string) {
+      const { setMFAPreference } = dispatch.mfa
       try {
         const authService = new AuthService(configAuthService)
         await authService.verifyTotpToken(code)
-      } catch (e: any) {
-        console.error(e.message)
-        return false
-      }
-      return this.setMFAPreference('SOFTWARE_TOKEN_MFA')
+      } catch { }
+      setMFAPreference('SOFTWARE_TOKEN_MFA')
     },
     async signInSuccess() {
-      this.signInFinished()
+      const { auth } = dispatch as Dispatch
+      auth.signInFinished()
     },
-    async changeLanguage(language: AvailableLanguage) {
-      return r3.post('/user/language/', { language }).then(() => this.setLanguage(language))
+    async changeLanguage(language: string) {
+      const { setLanguage } = dispatch.auth
+      await r3.post('/user/language/', { language })
+      setLanguage(language)
     },
     async changeEmail(email: string) {
       const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
       if (mailFormat.test(email)) {
-        r3.post('/user/email/', { email }).then(() => this.setEamil(email))
+        r3.post('/user/email/', { email }).then(() => dispatch.auth.setEmail(email))
         dispatch.ui.set({ successMessage: `Email modified successfully.` })
       } else {
         dispatch.ui.set({ errorMessage: `Invalid format.` })
@@ -131,62 +132,40 @@ export default createModel<RootModel>()({
       console.log('getMfaMethod ', { response })
       auth.setMfaMethod(response.data['MfaPref'])
     },
-    async setMFAPreference(mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA') {
-      const Authorization = await getToken()
-      const { auth } = dispatch
-
-      const response = await axios.post(
-        `${AUTH_API_URL}/mfaPref`,
-        {
-          MfaPref: mfaMethod,
-        },
-        {
-          headers: {
-            developerKey: DEVELOPER_KEY,
-            Authorization,
-          },
-        }
-      )
-
-      auth.setMfaMethod(response.data['MfaPref'])
-      return response.data['backupCode']
-    },
-    async updatePhone(phone: string) {
-      const { auth } = dispatch
+    async updatePhone(phone: string, state) {
+      const { getAuthenticatedUserInfo } = dispatch.auth
+      const { setMFAPreference } = dispatch.mfa
       try {
-        store.getState().auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
-        await auth.getAuthenticatedUserInfo(true)
+        state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
+        await getAuthenticatedUserInfo()
 
-        store.getState().auth.authService?.verifyCurrentUserAttribute('phone_number')
-        auth.setMFAPreference('NO_MFA')
-        return true
+        state.auth.authService?.verifyCurrentUserAttribute('phone_number')
+        setMFAPreference('NO_MFA')
       } catch (error) {
-        console.error(error)
         throw error
       }
     },
-    async verifyPhone(verificationCode: string) {
-      console.log('verifyPhone')
-      const { auth } = dispatch
+    async verifyPhone(verificationCode: string, state) {
+      const { setMFAPreference } = dispatch.mfa
       try {
-        store.getState().auth.authService?.verifyCurrentUserAttributeSubmit(
+        state.auth.authService?.verifyCurrentUserAttributeSubmit(
           'phone_number',
           verificationCode
         )
-        const response = auth.setMFAPreference('SMS_MFA')
-        auth.getAuthenticatedUserInfo(true)
-        return response
+        const response = setMFAPreference('SMS_MFA')
+        dispatch.auth.getAuthenticatedUserInfo()
+        // return response
       } catch (error) {
         console.log(error)
         throw error
       }
     },
-    async getAuthenticatedUserInfo(_fetch, rootState) {
-      const userInfo = await store.getState().auth.authService.currentUserInfo()
+    async getAuthenticatedUserInfo(_fetch, state) {
+      // const  { authService } = dispatch.auth
+      const userInfo = await state.auth.authService?.currentUserInfo()
       // if (userInfo && userInfo.attributes) {
       //   this.setLoginCookies(userInfo.attributes['email'])
       // }
-      console.log({ userInfo })
 
       const Authorization = await getToken()
       // Get MFA Preference
@@ -202,18 +181,17 @@ export default createModel<RootModel>()({
         delete userInfo.attributes['sub']
       }
       const AWSUser = {
-        ...userInfo.attributes,
+        ...userInfo?.attributes,
         ...{
-          authProvider: userInfo.username.includes('Google') || userInfo.username.includes('google') ? 'Google' : '',
+          authProvider: userInfo?.username.includes('Google') || userInfo?.username.includes('google') ? 'Google' : '',
         },
       }
-      const updatedAWSUser = { ...rootState.auth.AWSUser, ...AWSUser }
-      if (rootState.auth.awsUser !== updatedAWSUser) {
+      const updatedAWSUser = { ...state.auth.AWSUser, ...AWSUser }
+      if (state.auth.AWSUser !== updatedAWSUser) {
         console.log('setAwsUser')
         dispatch.auth.setAWSUser(updatedAWSUser)
       }
       dispatch.mfa.set({ showEnableSelection: response.data['MfaPref'] === 'NO_MFA' })
-      return updatedAWSUser
     },
     async fetchUser(_, state) {
       const { auth } = dispatch as Dispatch
@@ -270,12 +248,12 @@ export default createModel<RootModel>()({
         await apiError(error)
       }
     },
-    async changePassword(passwordValues: IPasswordValue) {
+    async changePassword(passwordValues: IPasswordValue, state) {
       const existingPassword = passwordValues.currentPassword
       const newPassword = passwordValues.password
 
       try {
-        const response = await store.getState().auth.authService?.changePassword(existingPassword, newPassword)
+        const response = await state.auth.authService?.changePassword(existingPassword, newPassword)
         dispatch.ui.set({ successMessage: `Password Changed Successfully ${response}` })
       } catch (error) {
         dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
@@ -392,7 +370,7 @@ export default createModel<RootModel>()({
         },
       })
       console.log(`globalSignOut: `, response)
-      this.signOut()
+      dispatch.auth.signOut()
     },
   }),
   reducers: {
@@ -453,12 +431,16 @@ export default createModel<RootModel>()({
       state.mfaMethod = value
       return state
     },
+    setEmail(state: AuthState, value: string) {
+      state.AWSUser.email = value
+      return state
+    },
     setAWSUser(state: AuthState, AWSUser: AWSUser) {
       state.AWSUser = AWSUser
       return state
     },
-    setLanguage(state: AuthState, language: AvailableLanguage) {
-      if (!state.user) return
+    setLanguage(state: AuthState, language: string) {
+      if (!state.user) return state
       state.user.language = language
       return state
     },

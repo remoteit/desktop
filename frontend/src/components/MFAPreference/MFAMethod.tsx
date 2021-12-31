@@ -50,11 +50,8 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
           <List>
             <Quote margin={10} noInset={true}>
               <ListItemCopy
-                mfaMethod={method}
                 label={t('pages.auth-mfa.recovery-code-title').toUpperCase()}
-                labelWeight={500}
                 value={backupCode}
-                iconPosition="right"
               />
             </Quote>
           </List>

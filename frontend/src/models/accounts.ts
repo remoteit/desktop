@@ -18,6 +18,8 @@ export type IAccountsState = {
   activeId?: string // user.id
   keyArray?: []
   apiKey?: string
+  key?: string
+  secretKey?: string
 }
 
 const accountsState: IAccountsState = {
@@ -202,8 +204,12 @@ export default createModel<RootModel>()({
       try {
         const result = await graphQLCreateAccessKey()
         graphQLGetErrors(result)
+        const data = result?.data.data.createAccessKey
+        dispatch.accounts.set({ key: data.key, secretKey: data.secret })
         await dispatch.accounts.fetchAccessKeys()
-        return result
+        // // setKey(data.key)
+        // // setSecretKey(data.secret)
+        // return result
       } catch (error) {
         await apiError(error)
       }

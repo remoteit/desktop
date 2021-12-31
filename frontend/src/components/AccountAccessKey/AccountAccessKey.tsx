@@ -18,12 +18,12 @@ import { ApplicationState, Dispatch } from '../../store'
 export function AccountAccessKey({ ...props }): JSX.Element {
   const classes = useStyles()
   const [maxlimit, setMaxLimit] = useState(0)
-  const [secretKey, setSecretKey] = useState('')
-  const [key, setKey] = useState('')
   const [showSection, setShowSection] = useState(false)
 
-  const { keyArray } = useSelector((state: ApplicationState) => ({
-    keyArray: state.accounts.keyArray
+  const { keyArray, secretKey, key } = useSelector((state: ApplicationState) => ({
+    keyArray: state.accounts.keyArray,
+    secretKey: state.accounts.secretKey,
+    key: state.accounts.key
   }))
   const { accounts } = useDispatch<Dispatch>()
 
@@ -46,10 +46,7 @@ export function AccountAccessKey({ ...props }): JSX.Element {
   }
 
   const handleCreateKey = () => {
-    const res: any = accounts.createAccessKey()
-    const data = res.data.data.createAccessKey
-    setKey(data.key)
-    setSecretKey(data.secret)
+    accounts.createAccessKey()
     setShowSection(true)
   }
 
@@ -152,10 +149,12 @@ export function AccountAccessKey({ ...props }): JSX.Element {
           )
         })}
       </List>
+
+
+
     </>
   )
 }
-
 
 const useStyles = makeStyles(theme => ({
   root: {

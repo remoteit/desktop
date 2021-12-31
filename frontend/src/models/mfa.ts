@@ -1,5 +1,8 @@
 import { createModel } from '@rematch/core'
+import { getToken } from '../services/remote.it'
+import { AUTH_API_URL, DEVELOPER_KEY } from '../shared/constants'
 import { RootModel } from './rootModel'
+import axios from 'axios'
 
 
 type IMfa = {
@@ -34,6 +37,25 @@ export default createModel<RootModel>()({
     async init() {
       await dispatch.licensing.fetch()
       dispatch.licensing.set({ initialized: true })
+    },
+    async setMFAPreference(mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA') {
+      const Authorization = await getToken()
+      const { auth } = dispatch
+      const response = await axios.post(
+        `${AUTH_API_URL}/mfaPref`,
+        {
+          MfaPref: mfaMethod,
+        },
+        {
+          headers: {
+            developerKey: DEVELOPER_KEY,
+            Authorization,
+          },
+        }
+      )
+
+      auth.setMfaMethod(response.data['MfaPref'])
+      // return response.data['backupCode']
     },
 
   }),

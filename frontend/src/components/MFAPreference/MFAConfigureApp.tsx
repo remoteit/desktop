@@ -5,7 +5,7 @@ import { Box, Button, Input } from '@material-ui/core'
 type Props = {
   email?: string
   totpCode: string
-  loadTotpCode: () => Promise<void>
+  loadLastCode: () => Promise<void>
   totpVerified: boolean
   sendVerifyTotp: (event: any) => void
   setTotpVerificationCode: (event: any) => void
@@ -17,7 +17,7 @@ type Props = {
 export const MFAConfigureApp: React.FC<Props> = ({
   email,
   totpCode,
-  loadTotpCode,
+  loadLastCode,
   totpVerified,
   sendVerifyTotp,
   setTotpVerificationCode,
@@ -39,7 +39,7 @@ export const MFAConfigureApp: React.FC<Props> = ({
           <div>
             <a
               onClick={() => {
-                loadTotpCode()
+                loadLastCode()
               }}
             >
               Generate new QR Code

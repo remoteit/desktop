@@ -31,7 +31,7 @@ export const MFAPhoneForm = connect(
   const css = useStyles()
   const originalPhone = AWSUser.phone_number
   const [phone, setPhone] = useState<string | undefined>(AWSUser && AWSUser.phone_number)
-  const [validPhone, setValidPhone] = React.useState<boolean | undefined>(AWSUser && AWSUser.phone_number)
+  const [validPhone, setValidPhone] = React.useState<boolean>(false)
   const [error, setError] = React.useState<string | null>(null)
   const [message, setMessage] = React.useState<string | null>(null)
   const country = 'us'
@@ -100,7 +100,7 @@ export const MFAPhoneForm = connect(
             }}
           />
         </Box>
-        {AWSUser.phone_number_verified && AWSUser.phone_number && AWSUser.phone === phone && (
+        {AWSUser.phone_number_verified && AWSUser.phone_number && AWSUser.phone_number === phone && (
           <Box className={css.success}>Your mobile device is verified.</Box>
         )}
         <Box mt={3}>
