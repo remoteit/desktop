@@ -4,10 +4,11 @@ import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/cor
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from './ListItemSetting'
-import { spacing } from '../styling'
+import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
+import { spacing } from '../styling'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 import { windowOpen } from '../services/Browser'
@@ -51,21 +52,14 @@ export const AvatarMenu: React.FC = () => {
         disableScrollLock
         elevation={2}
       >
-        <ListItemSetting
-          label="Account"
-          icon="user"
-          onClick={() => windowOpen('https://link.remote.it/portal/account')}
-        />
-        <ListItemSetting
-          label="Support"
+        <ListItemLink title="Account" icon="user" href="https://link.remote.it/portal/account" dense />
+        <ListItemLink
+          title="Support"
           icon="life-ring"
-          onClick={() => windowOpen('https://link.remote.it/documentation-desktop/overview')}
+          href="https://link.remote.it/documentation-desktop/overview"
+          dense
         />
-        <ListItemSetting
-          label="Documentation"
-          icon="books"
-          onClick={() => windowOpen('https://link.remote.it/docs/api')}
-        />
+        <ListItemLink title="Documentation" icon="books" href="https://link.remote.it/docs/api" dense />
         {altMenu && (
           <ListItemSetting
             confirm
@@ -130,7 +124,7 @@ export const AvatarMenu: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   label: {
     display: 'flex',
   },

@@ -39,7 +39,7 @@ const useStyles = makeStyles(({ palette }) => ({
   licensed: ({ chip }: { chip: ILicenseChip }) => ({
     '& .MuiFilledInput-root': {
       color: palette[chip.colorName].main,
-      backgroundColor: chip.background,
+      backgroundColor: chip.background && palette[chip.background].main,
       fontWeight: 500,
       letterSpacing: 0.2,
       '&:hover:not(.Mui-disabled)': { backgroundColor: chip.hoverColor },

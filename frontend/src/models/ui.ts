@@ -1,13 +1,15 @@
+import { Theme } from '@material-ui/core'
 import { RootModel } from './rootModel'
 import { createModel } from '@rematch/core'
-import { getTheme } from '../styling/theme'
+import { selectTheme } from '../styling/theme'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { Theme } from '@material-ui/core'
 
 export const DEFAULT_INTERFACE = 'searching'
+const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode']
 
 type UIState = {
   theme: Theme
+  themeMode: 'light' | 'dark' | 'system'
   navigation: ILookup<string>
   connected: boolean
   offline: boolean
@@ -47,7 +49,8 @@ type UIState = {
 }
 
 const defaultState: UIState = {
-  theme: getTheme(checkDarkMode()),
+  theme: selectTheme(),
+  themeMode: 'system',
   navigation: {},
   connected: false,
   offline: false,
@@ -90,18 +93,20 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async init(_, globalState) {
-      // restore guides
-      const guides = Object.keys(globalState.ui).filter(key => key.startsWith('guide'))
-      guides.forEach(guide => {
-        let item = getLocalStorage(globalState, `ui-${guide}`)
-        if (item) dispatch.ui.set({ [guide]: item })
-      })
-
       // add color scheme listener
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        console.log('DARK MODE:', e.matches)
-        dispatch.ui.set({ theme: getTheme(e.matches) })
+        dispatch.ui.setTheme()
       })
+
+      // restore state
+      let states = {}
+      SAVED_STATES.forEach(key => {
+        const value = getLocalStorage(globalState, `ui-${key}`)
+        if (value) states[key] = value
+      })
+
+      dispatch.ui.set(states)
+      dispatch.ui.setTheme()
     },
     async setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
@@ -117,6 +122,10 @@ export default createModel<RootModel>()({
       dispatch.licensing.fetch()
       dispatch.announcements.fetch()
       dispatch.devices.fetch()
+    },
+    async theme(themeMode: UIState['themeMode'], globalState) {
+      dispatch.ui.setTheme(themeMode)
+      setLocalStorage(globalState, `ui-themeMode`, themeMode)
     },
     async guide({ guide, ...props }: ILookup<any>, globalState) {
       let state = globalState.ui[guide]
@@ -146,6 +155,11 @@ export default createModel<RootModel>()({
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
+    setTheme(state: UIState, themeMode: UIState['themeMode'] | undefined) {
+      state.themeMode = themeMode || state.themeMode
+      state.theme = selectTheme(state)
+      return state
+    },
     updated(state: UIState) {
       state.setupBusy = false
       state.setupAddingService = false
@@ -163,7 +177,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-function checkDarkMode() {
-  return window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
-}

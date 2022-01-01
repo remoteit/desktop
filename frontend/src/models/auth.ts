@@ -177,12 +177,12 @@ export default createModel<RootModel>()({
     },
     async signedIn() {
       dispatch.licensing.init()
+      dispatch.ui.init()
       await cloudController.init()
       await dispatch.accounts.init()
       await dispatch.organization.init()
       await dispatch.devices.init()
       await dispatch.connections.init()
-      await dispatch.ui.init()
       await dispatch.devices.fetch()
       dispatch.applicationTypes.fetch()
       dispatch.announcements.fetch()

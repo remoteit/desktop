@@ -5,7 +5,7 @@ import classnames from 'classnames'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { TextField, Typography, ListSubheader, ButtonBase, Paper } from '@material-ui/core'
+import { TextField, Typography, ListSubheader, ButtonBase } from '@material-ui/core'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
 import { spacing, fontSizes } from '../styling'
 import { connectionName } from '../helpers/connectionHelper'
@@ -157,7 +157,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   container: {
     padding: 0,
     width: '100%',
@@ -172,6 +172,7 @@ const useStyles = makeStyles( ({ palette }) => ({
     padding: `${spacing.sm}px ${spacing.md}px`,
     fontSize: fontSizes.base,
     color: palette.grayDarker.main,
+    backgroundColor: palette.white.main,
     width: '100%',
     borderRadius: 0,
     '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },

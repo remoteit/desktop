@@ -1,5 +1,6 @@
 import { lightColors, darkColors, spacing, radius, fontSizes } from './'
 import { createTheme, ThemeOptions } from '@material-ui/core'
+import { ApplicationState } from '../store'
 
 const gutters = 32
 
@@ -411,7 +412,15 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   }
 }
 
-export function getTheme(darkMode: boolean = false) {
+export function selectTheme(state?: ApplicationState['ui']) {
+  let darkMode = isSystemDarkMode()
+  if (state?.themeMode === 'dark') darkMode = true
+  if (state?.themeMode === 'light') darkMode = false
+  console.log('SELECT THEME. DARK MODE:', darkMode)
   const theme = createTheme(jssTheme(darkMode))
   return theme
+}
+
+function isSystemDarkMode() {
+  return window?.matchMedia && window?.matchMedia('(prefers-color-scheme: dark)').matches
 }
