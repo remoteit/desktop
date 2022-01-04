@@ -56,23 +56,35 @@ export const AvatarMenu: React.FC = () => {
         <ListItemSetting
           label="Account"
           icon="user"
-          onClick={() => history.push('/settingsAccount/overview')}
+          onClick={() => {
+            history.push('/settingsAccount/overview')
+            handleClose()
+          }}
         />
         <ListItemSetting
           label="Settings"
           icon="cog"
-          onClick={() => history.push('/settings')}
+          onClick={() => {
+            history.push('/settings')
+            handleClose()
+          }}
         />
         <Divider className={css.divider} />
         <ListItemSetting
           label="Support"
           icon="life-ring"
-          onClick={() => windowOpen('https://link.remote.it/documentation-desktop/overview')}
+          onClick={() => {
+            windowOpen('https://link.remote.it/documentation-desktop/overview')
+            handleClose()
+          }}
         />
         <ListItemSetting
           label="Documentation"
           icon="books"
-          onClick={() => windowOpen('https://link.remote.it/docs/api')}
+          onClick={() => {
+            windowOpen('https://link.remote.it/docs/api')
+            handleClose()
+          }}
         />
         {altMenu && (
           <ListItemSetting
