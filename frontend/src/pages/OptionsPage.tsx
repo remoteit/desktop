@@ -94,6 +94,7 @@ export const OptionsPage: React.FC = () => {
             confirm
           />
         </DesktopUI>
+        <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
@@ -118,7 +119,6 @@ export const OptionsPage: React.FC = () => {
         <DesktopUI>
           <AccordionMenuItem subtitle="Advanced" gutters>
             <List>
-              <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
               <SettingsDisableNetworkItem />
               <ListItemSetting
                 confirm
