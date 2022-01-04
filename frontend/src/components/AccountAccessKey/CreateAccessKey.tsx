@@ -5,12 +5,12 @@ import { Icon } from '../Icon'
 import Paper from '@material-ui/core/Paper'
 import Grid from '@material-ui/core/Grid'
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
-import classnames from 'classnames'
 
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Box, Typography } from '@material-ui/core'
+import { colors } from '../../styling'
 
 
 
@@ -52,28 +52,25 @@ export function CreateAccessKey({ ...props }) {
   return (
     <>
       {props.showSection ? (
-        <div
-          className={classnames(
-            'bg-gray-lightest py-sm my-sm',
-            classes.mainBox
-          )}
-        >
+        <div className={classes.mainBox}>
           <Box
             display="flex"
-            className="w-100 success"
+            className={classes.successMessage}
             textAlign="left"
             alignItems="center"
+            p={2}
           >
             <Icon
               fixedWidth
               name="check-circle"
-              size='lg'
+              size='md'
+              className={classes.icon}
             />
             <Typography>
               Your new access key is ready to use
             </Typography>
             <IconButton aria-label="close" onClick={onClose}>
-              <Icon name='times' />
+              <Icon name='times' size='md' color='success' />
             </IconButton>
           </Box>
 
@@ -128,10 +125,10 @@ export function CreateAccessKey({ ...props }) {
               </Grid>
               <Button
                 variant="contained"
-                className="mt-sm"
+                className={classes.download}
                 onClick={downloadCSV}
               >
-                <Icon name="download" className="mr-sm" />
+                <Icon name="download" className={classes.icon} />
                 Download CREDENTIALS
               </Button>
             </Paper>
@@ -148,6 +145,9 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     mainBox: {
       width: 650,
+      backgroundColor: colors.grayLightest,
+      borderRadius: 3,
+      padding: 5
     },
     root: {
       flexGrow: 1,
@@ -160,5 +160,15 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(2),
       fontSize: '10px',
     },
+    successMessage: {
+      color: colors.success,
+      fontWeight: 500,
+    },
+    icon: {
+      marginRight: 10
+    },
+    download: {
+      marginTop: 10
+    }
   })
 )

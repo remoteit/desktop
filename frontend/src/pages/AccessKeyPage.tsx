@@ -26,35 +26,34 @@ export const AccessKeyPage: React.FC = () => {
           <Typography variant="h1">
             <Title>Access Keys</Title>
           </Typography>
-          <Typography variant="subtitle1">Developer api key</Typography>
-          <List>
-            <ListItem>
-              <Typography variant="body1">
-                This is your unique Developer API key to use and access remote.it APIs.
-                <br></br>
-                <em>Do not share it with anyone.</em>
-              </Typography>
-            </ListItem>
-            <ListItem>
-              <Box mt={4}>
-                <Grid container>
-                  <Grid item >
-                    <Box borderRadius={3} p={1} bgcolor="#F0F0F0">
-                      <Typography variant="caption" >{apiKey}</Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={1} md={1}>
-                    <CopyButton value={apiKey} icon='copy' />
-                  </Grid>
-                </Grid>
-              </Box>
-            </ListItem>
-          </List>
-          <AccountAccessKey />
         </>
       }
     >
-
+      <Typography variant="subtitle1">Developer api key</Typography>
+      <List>
+        <ListItem>
+          <Typography variant="body1">
+            This is your unique Developer API key to use and access remote.it APIs.
+            <br></br>
+            <em>Do not share it with anyone.</em>
+          </Typography>
+        </ListItem>
+        <ListItem>
+          <Box mt={4}>
+            <Grid container>
+              <Grid item>
+                <Box borderRadius={3} p={1} bgcolor="#F0F0F0">
+                  <Typography variant="caption">{apiKey}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={1} md={1}>
+                <CopyButton value={apiKey} icon="copy" />
+              </Grid>
+            </Grid>
+          </Box>
+        </ListItem>
+      </List>
+      <AccountAccessKey />
     </Container>
   )
 }

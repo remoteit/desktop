@@ -50,17 +50,7 @@ export const MFAPhoneForm = connect(
   const updateUsersPhone = event => {
     event.preventDefault()
     if (AWSUser.phone_number !== phone) {
-      setError(null)
-      setMessage(null)
-      console.log('Update phone number')
-      updatePhone(phone)
-        .then(() => {
-          onSuccess(originalPhone, phone)
-        })
-        .catch(error => {
-          console.error(error)
-          setError(t(`pages.auth-mfa.errors.${error.code}`))
-        })
+      updatePhone({ originalPhone, phone })
     } else {
       onSuccess(originalPhone, phone)
     }
@@ -101,7 +91,7 @@ export const MFAPhoneForm = connect(
           />
         </Box>
         {AWSUser.phone_number_verified && AWSUser.phone_number && AWSUser.phone_number === phone && (
-          <Box className={css.success}>Your mobile device is verified.</Box>
+          <Box className={css.success} p={1} mt={1}>Your mobile device is verified.</Box>
         )}
         <Box mt={3}>
           <Typography variant="caption" className={css.caption}>
@@ -155,6 +145,7 @@ const useStyles = makeStyles({
     opacity: '0.9',
   },
   success: {
-    backgroundColor: colors.success
+    color: colors.success,
+    fontWeight: 'bold',
   }
 })

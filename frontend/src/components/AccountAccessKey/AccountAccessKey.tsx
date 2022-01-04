@@ -131,20 +131,20 @@ export function AccountAccessKey({ ...props }): JSX.Element {
                     />
                   </ListItemSecondaryAction>
                 </ListItem>
+                {index === 0 ? (
+                  <Collapse in={showSection}>
+                    <CreateAccessKey
+                      maxlimit={maxlimit}
+                      secretKey={secretKey}
+                      showSection={showSection}
+                      accessKey={key}
+                      closePanel={closePanel}
+                    />
+                  </Collapse>
+                ) : (
+                  <></>
+                )}
               </List>
-              {index === 0 ? (
-                <Collapse in={showSection}>
-                  <CreateAccessKey
-                    maxlimit={maxlimit}
-                    secretKey={secretKey}
-                    showSection={showSection}
-                    accessKey={key}
-                    closePanel={closePanel}
-                  />
-                </Collapse>
-              ) : (
-                <></>
-              )}
             </div>
           )
         })}

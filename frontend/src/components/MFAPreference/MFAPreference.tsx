@@ -23,7 +23,7 @@ const mapState = (state: ApplicationState) => ({
 const mapDispatch = (dispatch: any) => ({
   verifyPhone: dispatch.auth.verifyPhone,
   updatePhone: dispatch.auth.updatePhone,
-  setMFAPreference: dispatch.auth.setMFAPreference,
+  setMFAPreference: dispatch.mfa.setMFAPreference,
   checkSession: dispatch.auth.checkSession,
   getLastCode: dispatch.auth.getLastCode,
   verifyTopCode: dispatch.auth.verifyTopCode,
@@ -55,11 +55,11 @@ export const MFAPreference = connect(
     const [showLearnMore, setShowLearnMore] = React.useState<boolean>(false)
     const [verificationMethod, setVerificationMethod] = React.useState<string>('sms')
     const { mfa } = useDispatch<Dispatch>()
-    const { verificationCode, showMFASelection, showSMSConfig, totpCode, totpVerificationCode, error, showAuthenticatorConfig, showEnableSelection } = useSelector((state: ApplicationState) => ({
+    const { verificationCode, showMFASelection, showSMSConfig, lastCode, totpVerificationCode, error, showAuthenticatorConfig, showEnableSelection } = useSelector((state: ApplicationState) => ({
       verificationCode: state.mfa.verificationCode,
       showMFASelection: state.mfa.showMFASelection,
       showSMSConfig: state.mfa.showSMSConfig,
-      totpCode: state.mfa.totpCode,
+      lastCode: state.mfa.lastCode,
       totpVerificationCode: state.mfa.totpVerificationCode,
       error: state.mfa.error,
       showAuthenticatorConfig: state.mfa.showAuthenticatorConfig,
@@ -73,9 +73,11 @@ export const MFAPreference = connect(
     }, [])
 
     const loadLastCode = async () => {
-      let totpCode = auth.getLastCode()
-      setTotpCode(totpCode.toString())
+      let lastCode = auth.getLastCode()
+      setLastCode(lastCode.toString())
     }
+
+    const  setPreferences = ( preference: string ) => setMFAPreference(preference)
 
     const setShowEnableSelection = (param: boolean) => {
       mfa.set({ showEnableSelection: param })
@@ -93,8 +95,8 @@ export const MFAPreference = connect(
       mfa.set({ error: param })
     }
 
-    const setTotpCode = (param: string | null) => {
-      mfa.set({ totpCode: param })
+    const setLastCode = (param: string | null) => {
+      mfa.set({ lastCode: param })
     }
 
     const setVerificationCode = (param: string) => {
@@ -155,7 +157,6 @@ export const MFAPreference = connect(
     }
 
     const sendVerifyPhone = event => {
-      console.log('sendVerifyPhone ', { event })
       event.preventDefault()
       setError(null)
       setLoading(true)
@@ -238,7 +239,7 @@ export const MFAPreference = connect(
             onSubmit={e => {
               e.preventDefault()
               setShowEnableSelection(true)
-              setMFAPreference('NO_MFA')
+              setPreferences('NO_MFA')
               setError(null)
             }}
           >
@@ -313,7 +314,7 @@ export const MFAPreference = connect(
           {mfaMethod === 'NO_MFA' && showAuthenticatorConfig && (
             <MFAConfigureApp
               email={AWSUser.email}
-              totpCode={totpCode || ''}
+              lastCode={lastCode || ''}
               loadLastCode={loadLastCode}
               totpVerified={totpVerified}
               sendVerifyTotp={sendVerifyTotp}

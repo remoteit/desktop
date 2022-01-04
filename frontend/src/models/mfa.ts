@@ -11,7 +11,7 @@ type IMfa = {
   showMFASelection: boolean
   showVerificationCode: boolean
   showSMSConfig: boolean
-  totpCode: string | null
+  lastCode: string | null
   totpVerificationCode: string
   error: string | null
   showAuthenticatorConfig: boolean
@@ -24,7 +24,7 @@ const defaultState: IMfa = {
   showMFASelection: false,
   showVerificationCode: false,
   showSMSConfig: false,
-  totpCode: null,
+  lastCode: null,
   totpVerificationCode: '',
   error: null,
   showAuthenticatorConfig: false,
@@ -41,21 +41,25 @@ export default createModel<RootModel>()({
     async setMFAPreference(mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA') {
       const Authorization = await getToken()
       const { auth } = dispatch
-      const response = await axios.post(
-        `${AUTH_API_URL}/mfaPref`,
-        {
-          MfaPref: mfaMethod,
-        },
-        {
-          headers: {
-            developerKey: DEVELOPER_KEY,
-            Authorization,
+      try {
+        const response = await axios.post(
+          `${AUTH_API_URL}/mfaPref`,
+          {
+            MfaPref: mfaMethod,
           },
-        }
-      )
+          {
+            headers: {
+              developerKey: DEVELOPER_KEY,
+              Authorization,
+            },
+          }
+        )
+        auth.setMfaMethod(response.data['MfaPref'])
+        dispatch.ui.set({ successMessage: 'Set preferences success!.' })
+      } catch (error) {
+        dispatch.ui.set({ errorMessage: `Error when trying set preferences: ${error.message}` })
+      }
 
-      auth.setMfaMethod(response.data['MfaPref'])
-      // return response.data['backupCode']
     },
 
   }),

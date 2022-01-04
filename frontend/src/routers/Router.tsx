@@ -216,7 +216,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           primary={<SettingsAccountPage singlePanel={singlePanel} />}
           secondary={
             <Switch>
-              <Route path={['/settingsAccount/overview','/settingsAccount']}>
+              <Route path='/settingsAccount/overview'>
                 <OverviewPage />
               </Route>
 

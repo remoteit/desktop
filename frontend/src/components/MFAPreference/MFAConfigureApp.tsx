@@ -4,7 +4,7 @@ import { Box, Button, Input } from '@material-ui/core'
 
 type Props = {
   email?: string
-  totpCode: string
+  lastCode: string
   loadLastCode: () => Promise<void>
   totpVerified: boolean
   sendVerifyTotp: (event: any) => void
@@ -16,7 +16,7 @@ type Props = {
 
 export const MFAConfigureApp: React.FC<Props> = ({
   email,
-  totpCode,
+  lastCode,
   loadLastCode,
   totpVerified,
   sendVerifyTotp,
@@ -30,11 +30,11 @@ export const MFAConfigureApp: React.FC<Props> = ({
       <p>
         <b>Scan the QR below with your preferred Authenticator app to configure.</b>
       </p>
-      {totpCode && (
+      {lastCode && (
         <Box>
-          <QRCode value={'otpauth://totp/AWSCognito:' + email + '?secret=' + totpCode + '&issuer=remote.it'}></QRCode>
+          <QRCode value={'otpauth://totp/AWSCognito:' + email + '?secret=' + lastCode + '&issuer=remote.it'}></QRCode>
           <p>
-            <b>{'Code: ' + totpCode}</b>
+            <b>{'Code: ' + lastCode}</b>
           </p>
           <div>
             <a

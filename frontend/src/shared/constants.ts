@@ -5,6 +5,8 @@
   ONLY EDIT THE SOURCE FILE IN frontend
 */
 export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID || '26g0ltne0gr8lk1vs51mihrmig'
+export const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
+export const COGNITO_AUTH_DOMAIN = process.env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
 export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = process.env.REACT_AUTH_API_URL || process.env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.remote.it/graphql/beta'
@@ -29,7 +31,7 @@ export const ZENDESK_URL = process.env.ZENDESK_URL || 'https://remot3it.zendesk.
 export const ZENDESK_TOKEN =
   process.env.ZENDESK_TOKEN || '1ed4fc7b7b18a39a156395b4dd873abb96abc45ea4343cff2628ac9943ad1be1'
 
-  //segment-analytics
+//segment-analytics
 export const SEGMENT_PROJECT_PORTAL_KEY = 'kYemtqKHE7qM7prQ1JWTP1ThMUYZBmym'
 
 export const SEGMENT_PROJECT_KEY = 'tMedSrVUwDIeRs6kndztUPgjPiVlDmAe'

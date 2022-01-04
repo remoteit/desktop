@@ -56,7 +56,7 @@ export const AvatarMenu: React.FC = () => {
         <ListItemSetting
           label="Account"
           icon="user"
-          onClick={() => history.push('/settingsAccount')}
+          onClick={() => history.push('/settingsAccount/overview')}
         />
         <ListItemSetting
           label="Settings"

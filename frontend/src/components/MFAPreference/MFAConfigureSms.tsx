@@ -54,7 +54,7 @@ export const MFAConfigureSms: React.FC<Props> = ({
           <div>
             <form onSubmit={sendVerifyPhone} style={{ maxWidth: '360px' }}>
               <div className={css.modalMessage}>
-                <Icon name="info-circle" className={css.icon} fixedWidth />
+                <Icon name="info-circle" className={css.icon} fixedWidth size='md' />
                 <div className={css.message}>
                   {hasOldSentVerification
                     ? `A verification code had previously been sent to your mobile device. A code is only valid for 24 hours; please request the code again if it has been over 24 hours since requested.`
@@ -122,7 +122,8 @@ const useStyles = makeStyles({
     fontSize: 14,
     color: '#3aa1db',
     marginBottom: 10,
-    minWidth: 500
+    minWidth: 500,
+    marginTop: 10,
   },
   message: {
     color: '',
@@ -130,9 +131,5 @@ const useStyles = makeStyles({
   },
   icon: {
     marginRight: 12,
-    padding: '7px 0',
-    display: 'flex',
-    fontSize: '22px',
-    opacity: '0.9',
   },
 })

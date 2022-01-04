@@ -2,9 +2,16 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
-import { CLIENT_ID, CALLBACK_URL, DEVELOPER_KEY, AUTH_API_URL } from '../shared/constants'
+import {
+  CLIENT_ID,
+  CALLBACK_URL,
+  DEVELOPER_KEY,
+  AUTH_API_URL,
+  COGNITO_USER_POOL_ID,
+  COGNITO_AUTH_DOMAIN,
+} from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
-import { AvailableLanguage, CognitoUser } from '@remote.it/types'
+import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
@@ -50,6 +57,7 @@ export interface AuthState {
   mfaMethod: string
   AWSUser: AWSUser
   loggedIn?: boolean
+  cognitoUser?: CognitoUser
 }
 
 const state: AuthState = {
@@ -66,11 +74,15 @@ const state: AuthState = {
   AWSUser: {
     authProvider: '',
   } as AWSUser,
-  loggedIn: false
+  loggedIn: false,
+  cognitoUser: {} as CognitoUser,
 }
 
 const configAuthService = {
   cognitoClientID: CLIENT_ID,
+  cognitoUserPoolID: COGNITO_USER_POOL_ID,
+  cognitoAuthDomain: COGNITO_AUTH_DOMAIN,
+  checkSamlURL: AUTH_API_URL + '/checkSaml',
   redirectURL: isPortal() || isElectron() ? '' : window.origin + '/v1/callback/',
   callbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
   signoutCallbackURL: isPortal() ? window.origin : isElectron() ? REDIRECT_URL : CALLBACK_URL,
@@ -85,12 +97,15 @@ export default createModel<RootModel>()({
       if (!user) {
         const authService = new AuthService(configAuthService)
         await sleep(500)
+        await authService.checkSignIn()
         dispatch.auth.setAuthService(authService)
       }
       dispatch.auth.setInitialized()
     },
-    async getLastCode(_: void, state) {
-      // return state.auth.authService?.setupTOTP().toString()
+    async getLastCode() {
+      const authService = new AuthService(configAuthService)
+      await authService.checkSignIn()
+      return authService?.setupTOTP()
     },
     async verifyTopCode(code: string) {
       const { setMFAPreference } = dispatch.mfa
@@ -117,7 +132,6 @@ export default createModel<RootModel>()({
       } else {
         dispatch.ui.set({ errorMessage: `Invalid format.` })
       }
-
     },
     async getMfaMethod() {
       const { auth } = dispatch as Dispatch
@@ -132,40 +146,36 @@ export default createModel<RootModel>()({
       console.log('getMfaMethod ', { response })
       auth.setMfaMethod(response.data['MfaPref'])
     },
-    async updatePhone(phone: string, state) {
+    async updatePhone(params: { originalPhone: string, phone: string }, state) {
       const { getAuthenticatedUserInfo } = dispatch.auth
       const { setMFAPreference } = dispatch.mfa
       try {
-        state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
+        // const authService = state.authService
+        const authService = new AuthService(configAuthService)
+        await authService.checkSignIn()
+        authService.updateCurrentUserAttributes({ phone_number: params.phone })
         await getAuthenticatedUserInfo()
 
         state.auth.authService?.verifyCurrentUserAttribute('phone_number')
         setMFAPreference('NO_MFA')
+        dispatch.ui.set({ successMessage: 'Phone Number updated!.' })
       } catch (error) {
-        throw error
+        dispatch.ui.set({ errorMessage: ' Update phone error: ' + error })
       }
     },
     async verifyPhone(verificationCode: string, state) {
       const { setMFAPreference } = dispatch.mfa
       try {
-        state.auth.authService?.verifyCurrentUserAttributeSubmit(
-          'phone_number',
-          verificationCode
-        )
-        const response = setMFAPreference('SMS_MFA')
+        state.auth.authService?.verifyCurrentUserAttributeSubmit('phone_number', verificationCode)
+        setMFAPreference('SMS_MFA')
         dispatch.auth.getAuthenticatedUserInfo()
-        // return response
       } catch (error) {
         console.log(error)
         throw error
       }
     },
     async getAuthenticatedUserInfo(_fetch, state) {
-      // const  { authService } = dispatch.auth
       const userInfo = await state.auth.authService?.currentUserInfo()
-      // if (userInfo && userInfo.attributes) {
-      //   this.setLoginCookies(userInfo.attributes['email'])
-      // }
 
       const Authorization = await getToken()
       // Get MFA Preference
@@ -188,7 +198,6 @@ export default createModel<RootModel>()({
       }
       const updatedAWSUser = { ...state.auth.AWSUser, ...AWSUser }
       if (state.auth.AWSUser !== updatedAWSUser) {
-        console.log('setAwsUser')
         dispatch.auth.setAWSUser(updatedAWSUser)
       }
       dispatch.mfa.set({ showEnableSelection: response.data['MfaPref'] === 'NO_MFA' })
@@ -224,7 +233,7 @@ export default createModel<RootModel>()({
           yoicsId: data.yoicsId,
           created: data.created,
           apiKey: data.apiKey,
-          language: data.language
+          language: data.language,
         }
         auth.setUser(user)
         setLocalStorage(state, USER_KEY, user)
@@ -442,6 +451,10 @@ export default createModel<RootModel>()({
     setLanguage(state: AuthState, language: string) {
       if (!state.user) return state
       state.user.language = language
+      return state
+    },
+    setCognitoUser(state: AuthState, cognitoUser: CognitoUser) {
+      state.cognitoUser = cognitoUser
       return state
     },
   },
