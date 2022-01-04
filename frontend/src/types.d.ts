@@ -27,7 +27,6 @@ declare global {
 
   type ILicenseChip = {
     name: string
-    color: string
     colorName: Color
     background?: string
     hoverColor?: string
@@ -223,5 +222,66 @@ declare global {
 }
 
 declare module 'remote.it' {}
+
+declare module '@material-ui/core/styles/createPalette' {
+  interface Palette {
+    primaryLight: Palette['primary']
+    primaryLighter: Palette['primary']
+    primaryHighlight: Palette['primaryHighlight']
+    secondary: Palette['secondary']
+    successLight: Palette['successLight']
+    success: Palette['success']
+    successDark: Palette['successDark']
+    dangerLight: Palette['dangerLight']
+    danger: Palette['danger']
+    warning: Palette['warning']
+    warningLightest: Palette['warningLightest']
+    warningHighlight: Palette['warningHighlight']
+    gray: Palette['gray']
+    grayLightest: Palette['grayLightest']
+    grayLighter: Palette['grayLighter']
+    grayLight: Palette['grayLight']
+    grayDark: Palette['grayDark']
+    grayDarker: Palette['grayDarker']
+    grayDarkest: Palette['grayDarkest']
+    white: Palette['white']
+    black: Palette['black']
+    alwaysWhite?: Palette['alwaysWhite']
+    darken: Palette['darken']
+    screen: Palette['screen']
+    rpi: Palette['rpi']
+    guide: Palette['guide']
+    test: Palette['test']
+  }
+  interface PaletteOptions {
+    primaryLight?: PaletteOptions['primary']
+    primaryLighter?: PaletteOptions['primary']
+    primaryHighlight?: Palette['primaryHighlight']
+    secondary?: Palette['secondary']
+    successLight?: Palette['successLight']
+    success?: Palette['success']
+    successDark?: Palette['successDark']
+    dangerLight?: Palette['dangerLight']
+    danger?: Palette['danger']
+    warning?: Palette['warning']
+    warningLightest: Palette['warningLightest']
+    warningHighlight: Palette['warningHighlight']
+    gray?: Palette['gray']
+    grayLightest?: Palette['grayLightest']
+    grayLighter?: Palette['grayLighter']
+    grayLight?: Palette['grayLight']
+    grayDark?: Palette['grayDark']
+    grayDarker?: Palette['grayDarker']
+    grayDarkest?: Palette['grayDarkest']
+    white?: Palette['white']
+    black?: Palette['black']
+    alwaysWhite?: Palette['alwaysWhite']
+    darken?: Palette['darken']
+    screen?: Palette['screen']
+    rpi?: Palette['rpi']
+    guide?: Palette['guide']
+    test?: Palette['test']
+  }
+}
 
 export {}

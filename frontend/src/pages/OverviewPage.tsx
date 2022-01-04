@@ -9,7 +9,7 @@ import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { Avatar } from '../components/Avatar'
 import { Icon } from '../components/Icon'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 
 export const OverviewPage: React.FC = () => {
 
@@ -137,8 +137,8 @@ function DeleteAccountSection({ email, paidPlan = false }: DeleteAccountSectionP
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   menu: { textTransform: 'capitalize' },
   indent: { marginRight: -spacing.lg },
-  field: { '&:hover': { backgroundColor: colors.primaryHighlight } },
-})
+  field: { '&:hover': { backgroundColor: palette.primaryHighlight.main } },
+}))

@@ -17,7 +17,7 @@ import { IconButton } from '../../buttons/IconButton'
 import { TestUI } from '../TestUI'
 import { Title } from '../Title'
 import { Route } from 'react-router-dom'
-import styles from '../../styling'
+import { spacing } from '../../styling'
 
 export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const { searched, navigationBack, navigationForward, device } = useSelector((state: ApplicationState) => ({
@@ -98,8 +98,8 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 const useStyles = makeStyles({
   header: {
     display: 'flex',
-    margin: `${styles.spacing.sm}px 0`,
-    padding: `0 ${styles.spacing.md}px`,
+    margin: `${spacing.sm}px 0`,
+    padding: `0 ${spacing.md}px`,
     justifyContent: 'flex-start',
     alignItems: 'center',
     height: 45,
@@ -107,7 +107,7 @@ const useStyles = makeStyles({
     width: '100%',
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
-    '& .MuiTypography-root': { marginLeft: styles.spacing.lg, letterSpacing: 0.5 },
+    '& .MuiTypography-root': { marginLeft: spacing.lg, letterSpacing: 0.5 },
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {
@@ -117,6 +117,6 @@ const useStyles = makeStyles({
   },
   button: {
     justifyContent: 'flex-start',
-    minHeight: styles.spacing.xxl,
+    minHeight: spacing.xxl,
   },
 })

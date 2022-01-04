@@ -19,7 +19,7 @@ import { DEFAULT_TARGET, REGEX_NAME_SAFE, REGEX_LAST_PATH, IP_PRIVATE } from '..
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import styles, { spacing } from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 
 type Props = {
   data: IScan[]
@@ -148,9 +148,9 @@ export const ScanNetwork: React.FC<Props> = ({ data, targets, interfaceType, pri
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   caption: {
-    color: styles.colors.gray,
+    color: palette.gray.main,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -174,9 +174,9 @@ const useStyles = makeStyles({
     alignItems: 'center',
     flexDirection: 'column',
     '& p': {
-      fontSize: styles.fontSizes.sm,
+      fontSize: fontSizes.sm,
       margin: spacing.lg,
-      color: styles.colors.grayLight,
+      color: palette.grayLight.main,
     },
   },
-})
+}))

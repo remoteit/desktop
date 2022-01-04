@@ -4,10 +4,11 @@ import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/cor
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemSetting } from './ListItemSetting'
-import { colors, spacing } from '../styling'
+import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { PortalUI } from './PortalUI'
+import { spacing } from '../styling'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 import { windowOpen } from '../services/Browser'
@@ -86,6 +87,14 @@ export const AvatarMenu: React.FC = () => {
             handleClose()
           }}
         />
+        <ListItemLink title="Account" icon="user" href="https://link.remote.it/portal/account" dense />
+        <ListItemLink
+          title="Support"
+          icon="life-ring"
+          href="https://link.remote.it/documentation-desktop/overview"
+          dense
+        />
+        <ListItemLink title="Documentation" icon="books" href="https://link.remote.it/docs/api" dense />
         {altMenu && (
           <ListItemSetting
             confirm
@@ -150,19 +159,19 @@ export const AvatarMenu: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   label: {
     display: 'flex',
   },
   avatar: {
     borderWidth: 3,
     borderStyle: 'solid',
-    borderColor: colors.white,
-    '&:hover': { borderColor: colors.primaryLight },
+    borderColor: palette.white.main,
+    '&:hover': { borderColor: palette.primaryLight.main },
   },
   menu: {
     '& .MuiMenu-list': {
-      backgroundColor: colors.white,
+      backgroundColor: palette.white.main,
     },
     '& .MuiListItem-root': {
       paddingLeft: 0,
@@ -174,4 +183,4 @@ const useStyles = makeStyles({
     marginTop: 10,
     marginBottom: 10
   }
-})
+}))

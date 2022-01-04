@@ -1,7 +1,6 @@
 import React from 'react'
 import { Box, Button, makeStyles, MenuItem, Select } from '@material-ui/core'
 import { useTranslation } from 'react-i18next'
-import { colors } from '../../styling'
 
 type Props = {
   verificationMethod: string
@@ -54,7 +53,7 @@ export const MFASelectMethod: React.FC<Props> = ({
 }
 
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   input: {
     // fontSize: 10,
     minWidth: 350,
@@ -65,7 +64,7 @@ const useStyles = makeStyles({
   subtitle: {
     margin: 0,
     padding: 0,
-    color: colors.grayDark,
+    color: palette.grayDark.main,
     fontSize: 9
   }
-})
+}))

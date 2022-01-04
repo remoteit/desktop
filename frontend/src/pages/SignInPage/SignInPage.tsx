@@ -5,7 +5,7 @@ import { IP_PRIVATE } from '../../shared/constants'
 import { isElectron } from '../../services/Browser'
 import { Body } from '../../components/Body'
 import { Icon } from '../../components/Icon'
-import styles from '../../styling'
+import { spacing } from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export function SignInPage() {
@@ -53,21 +53,21 @@ export function SignInPage() {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   body: { '& > div': { maxWidth: 440 } },
   logo: {
-    marginTop: -styles.spacing.xl,
-    marginBottom: styles.spacing.lg,
+    marginTop: -spacing.xl,
+    marginBottom: spacing.lg,
   },
-  secure: { color: styles.colors.success },
+  secure: { color: palette.success.main },
   insecure: {
-    margin: `${styles.spacing.xs}px auto`,
+    margin: `${spacing.xs}px auto`,
     textAlign: 'center',
     lineHeight: '1em',
-    '& > a': { color: styles.colors.success },
+    '& > a': { color: palette.success.main },
   },
   link: {
-    marginTop: styles.spacing.xl,
+    marginTop: spacing.xl,
     fontWeight: 400,
   },
-})
+}))

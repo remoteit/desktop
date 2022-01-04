@@ -1,5 +1,4 @@
 import { createModel } from '@rematch/core'
-import { colors } from '../styling'
 import { RootModel } from './rootModel'
 import { toLookup } from '../helpers/utilHelper'
 
@@ -8,14 +7,14 @@ const state: ILabel[] = [
     id: 0,
     key: 'NONE',
     name: 'none',
-    color: colors.white,
+    color: 'none',
     hidden: true,
   },
   {
     id: 1,
     key: 'GRAY',
     name: 'gray',
-    color: colors.grayDark,
+    color: '#797c86',
   },
   {
     id: 2,

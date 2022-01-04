@@ -1,7 +1,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import { makeStyles, Typography, List, ListItem, ListItemIcon, Divider, Button } from '@material-ui/core'
-import { spacing, fontSizes, colors, radius } from '../styling'
+import { spacing, fontSizes, radius } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
@@ -85,23 +85,23 @@ export const Item: React.FC = ({ children }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   card: { display: 'flex', width: '100%', maxWidth: 260, flexDirection: 'column', alignItems: 'center' },
   selected: {
-    backgroundColor: colors.primaryHighlight,
+    backgroundColor: palette.primaryHighlight.main,
     borderRadius: radius,
     overflow: 'hidden',
     position: 'relative',
-    '& .MuiDivider-root': { backgroundColor: colors.primaryLighter },
+    '& .MuiDivider-root': { backgroundColor: palette.primaryLighter.main },
     '& header': {
       width: '100%',
       position: 'absolute',
       textTransform: 'uppercase',
       textAlign: 'center',
-      backgroundColor: colors.primaryLight,
+      backgroundColor: palette.primaryLight.main,
       letterSpacing: spacing.xxs,
       fontSize: fontSizes.xxxs,
-      color: colors.white,
+      color: palette.white.main,
       fontWeight: 600,
       lineHeight: 2,
     },
@@ -127,11 +127,11 @@ const useStyles = makeStyles({
   },
   features: {
     paddingBottom: spacing.lg,
-    color: colors.grayDarker,
+    color: palette.grayDarker.main,
     fontSize: fontSizes.sm,
     maxWidth: 250,
     lineHeight: 1.3,
-    '& b': { fontWeight: 400, color: colors.grayDarkest },
+    '& b': { fontWeight: 400, color: palette.grayDarkest.main },
     '& .MuiListItemIcon-root': { minWidth: 40 },
   },
-})
+}))

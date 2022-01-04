@@ -11,7 +11,7 @@ import {
   Button,
 } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
-import { spacing, fontSizes, colors } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { Icon } from './Icon'
@@ -178,7 +178,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   list: {
     width: '50%',
     minWidth: 400,
@@ -186,9 +186,9 @@ const useStyles = makeStyles({
     '& h2': { textTransform: 'capitalize' },
   },
   group: {
-    border: `1px solid ${colors.grayLighter}`,
+    border: `1px solid ${palette.grayLighter.main}`,
     borderRadius: spacing.md,
-    backgroundColor: colors.white,
+    backgroundColor: palette.white.main,
     display: 'inline-block',
     '& > .MuiButton-root': { height: 30, borderRadius: 0 },
     '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
@@ -208,4 +208,4 @@ const useStyles = makeStyles({
       textAlign: 'center',
     },
   },
-})
+}))

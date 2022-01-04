@@ -2,7 +2,7 @@ import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import { Autocomplete } from '@material-ui/lab'
 import { makeStyles, Box, ListItemIcon, ListItemText, Paper, Popper, TextField } from '@material-ui/core'
-import { spacing, colors, radius, fontSizes } from '../styling'
+import { spacing, radius, fontSizes } from '../styling'
 import { REGEX_TAG_SAFE } from '../shared/constants'
 import { Icon } from './Icon'
 
@@ -87,7 +87,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
               </ListItemIcon>
               <ListItemText
                 primary={reactStringReplace(option.name, new RegExp(`(${inputValue})`, 'i'), (match, i) => (
-                  <span key={i} style={{ color: colors.primary }}>
+                  <span key={i} className={css.spanItem}>
                     {match}
                   </span>
                 ))}
@@ -110,7 +110,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   container: { width: 200 },
   listbox: { shadow: 'none', paddingTop: 0 },
   textField: { width: '100%', padding: `${spacing.xs}px ${spacing.xs}px 0` },
@@ -118,7 +118,7 @@ const useStyles = makeStyles({
     width: '100%',
     padding: `${spacing.xs}px ${spacing.sm}px`,
     fontSize: fontSizes.base,
-    color: colors.grayDarkest,
+    color: palette.grayDarkest.main,
   },
   popperDisablePortal: {
     position: 'relative',
@@ -126,16 +126,19 @@ const useStyles = makeStyles({
   empty: {
     display: 'none',
   },
+  spanItem: {
+    color: palette.primary.main
+  },
   option: {
     borderRadius: radius,
     marginLeft: spacing.xs,
     marginRight: spacing.xs,
     marginBottom: 1,
     padding: `${2}px ${spacing.xxs}px`,
-    color: colors.grayDarker,
-    '&[data-focus="true"]': { backgroundColor: colors.primaryHighlight },
-    '&[aria-selected="true"]': { backgroundColor: colors.primaryHighlight },
+    color: palette.grayDarker.main,
+    '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
+    '&[aria-selected="true"]': { backgroundColor: palette.primaryHighlight.main },
     '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
     '& .MuiListItemIcon-root': { minWidth: 40 },
   },
-})
+}))

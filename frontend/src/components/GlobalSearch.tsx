@@ -5,9 +5,9 @@ import classnames from 'classnames'
 import { selectAllSearch } from '../models/search'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { TextField, Typography, ListSubheader, ButtonBase, Paper } from '@material-ui/core'
+import { TextField, Typography, ListSubheader, ButtonBase } from '@material-ui/core'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
-import { colors, spacing, fontSizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { connectionName } from '../helpers/connectionHelper'
 import { TargetPlatform } from './TargetPlatform'
 import { makeStyles } from '@material-ui/core/styles'
@@ -157,21 +157,22 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   container: {
     padding: 0,
     width: '100%',
     zIndex: 1,
   },
   button: { marginBottom: -spacing.sm },
-  enabled: { color: colors.primary },
+  enabled: { color: palette.primary.main },
   offline: { opacity: 0.3 },
   group: {
     display: 'flex',
     justifyContent: 'space-between',
     padding: `${spacing.sm}px ${spacing.md}px`,
     fontSize: fontSizes.base,
-    color: colors.grayDarker,
+    color: palette.grayDarker.main,
+    backgroundColor: palette.white.main,
     width: '100%',
     borderRadius: 0,
     '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
@@ -183,19 +184,19 @@ const useStyles = makeStyles({
     padding: 0,
     paddingLeft: spacing.xxs,
     fontSize: fontSizes.base,
-    color: colors.grayDarker,
-    '&[data-focus="true"]': { backgroundColor: colors.grayLightest },
+    color: palette.grayDarker.main,
+    '&[data-focus="true"]': { backgroundColor: palette.grayLightest.main },
   },
   listbox: { maxHeight: '60vh' },
   indent: {
     display: 'inline-block',
     marginLeft: spacing.lg,
     padding: `${spacing.xs}px ${spacing.lg}px`,
-    borderLeft: `1px solid ${colors.grayLight}`,
+    borderLeft: `1px solid ${palette.grayLight.main}`,
   },
   highlight: {
     borderRadius: 4,
-    backgroundColor: colors.primaryLighter,
-    color: colors.black,
+    backgroundColor: palette.primaryLighter.main,
+    color: palette.black.main,
   },
-})
+}))

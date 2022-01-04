@@ -8,7 +8,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { DocsLinks } from '../../components/DocsLinks'
 import { osName } from '../../shared/nameHelper'
 import { Body } from '../../components/Body'
-import styles from '../../styling'
+import { spacing } from '../../styling'
 
 type Props = { os?: Ios; targetDevice: ITargetDevice }
 
@@ -46,6 +46,6 @@ export const SetupWaiting: React.FC<Props> = ({ targetDevice, os }) => {
 }
 
 const useStyles = makeStyles({
-  title: { marginBottom: styles.spacing.sm },
+  title: { marginBottom: spacing.sm },
   divider: { width: 400 },
 })

@@ -6,6 +6,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { SettingsDisableNetworkItem } from '../components/SettingsDisableNetworkItem'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
 import { ListItemSetting } from '../components/ListItemSetting'
+import { ListItemSelect } from '../components/ListItemSelect'
 import { UpdateSetting } from '../components/UpdateSetting'
 import { getOwnDevices } from '../models/accounts'
 import { isRemoteUI } from '../helpers/uiHelper'
@@ -17,7 +18,7 @@ import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OptionsPage: React.FC = () => {
-  const { os, installing, cliVersion, preferences, targetDevice, notOwner, remoteUI } = useSelector(
+  const { os, installing, cliVersion, preferences, targetDevice, notOwner, themeMode, remoteUI } = useSelector(
     (state: ApplicationState) => ({
       os: state.backend.environment.os,
       installing: state.binaries.installing,
@@ -25,6 +26,7 @@ export const OptionsPage: React.FC = () => {
       preferences: state.backend.preferences,
       targetDevice: state.backend.device,
       notOwner: !!state.backend.device.uid && !getOwnDevices(state).find(d => d.id === state.backend.device.uid),
+      themeMode: state.ui.themeMode,
       remoteUI: isRemoteUI(state),
     })
   )
@@ -46,6 +48,17 @@ export const OptionsPage: React.FC = () => {
     >
       <Typography variant="subtitle1">General</Typography>
       <List>
+        <ListItemSelect
+          label="Theme"
+          icon="palette"
+          value={themeMode}
+          options={[
+            { label: 'Same as system', value: 'system' },
+            { label: 'Light', value: 'light' },
+            { label: 'Dark', value: 'dark' },
+          ]}
+          onChange={e => ui.theme(e.target.value as ApplicationState['ui']['themeMode'])}
+        />
         {isRemote() && (
           <ListItemSetting
             confirm={!preferences.remoteUIOverride}
@@ -81,6 +94,7 @@ export const OptionsPage: React.FC = () => {
             confirm
           />
         </DesktopUI>
+        <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
@@ -105,7 +119,6 @@ export const OptionsPage: React.FC = () => {
         <DesktopUI>
           <AccordionMenuItem subtitle="Advanced" gutters>
             <List>
-              <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
               <SettingsDisableNetworkItem />
               <ListItemSetting
                 confirm

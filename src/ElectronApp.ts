@@ -180,9 +180,10 @@ export default class ElectronApp {
 
   private logWebErrors = () => {
     if (!this.window) return
-    this.window.webContents.on('render-process-gone', (event, details) =>
+    this.window.webContents.on('render-process-gone', (event, details) => {
       Logger.error('ELECTRON WEB CONSOLE render-process-gone', { details })
-    )
+      this.reload()
+    })
     this.window.webContents.on('unresponsive', () => Logger.warn('ELECTRON WEB CONSOLE unresponsive'))
     this.window.webContents.on('responsive', () => Logger.warn('ELECTRON WEB CONSOLE responsive'))
     this.window.webContents.on('plugin-crashed', (event, name, version) =>
@@ -194,6 +195,11 @@ export default class ElectronApp {
     this.window.webContents.on('console-message', (event, level, message, line, sourceId) => {
       if (level > 2) Logger.error('ELECTRON WEB console error', { level, message, line, sourceId })
     })
+  }
+
+  private reload() {
+    if (!this.window) return
+    this.window.webContents.reload()
   }
 
   private getStartUrl(): string {

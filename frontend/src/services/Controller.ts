@@ -113,7 +113,7 @@ function getEventHandlers() {
 
     disconnect: () => auth.disconnect(),
 
-    dataReady: (result: boolean) => backend.initialized(result),
+    dataReady: backend.initialized,
 
     connect_error: () => {
       backend.set({ error: true })

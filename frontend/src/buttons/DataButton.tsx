@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles, ListItemText, IconButton, InputLabel, Tooltip } from '@material-ui/core'
-import { colors, spacing, fontSizes, Color } from '../styling'
+import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
 type Props = {
@@ -28,7 +28,7 @@ export const DataButton: React.FC<Props> = ({ title, value, label, icon, iconCol
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   box: {
     display: 'flex',
     alignItems: 'center',
@@ -41,8 +41,8 @@ const useStyles = makeStyles({
   },
   key: {
     fontSize: fontSizes.sm,
-    color: colors.grayDarker,
+    color: palette.grayDarker.main,
     margin: 0,
     whiteSpace: 'pre-wrap',
   },
-})
+}))

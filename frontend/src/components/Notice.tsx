@@ -1,7 +1,9 @@
 import React from 'react'
 import { Icon } from './Icon'
-import { spacing, colors, fontSizes } from '../styling'
-import { makeStyles, Paper, Box, lighten, darken } from '@material-ui/core'
+import { spacing, fontSizes } from '../styling'
+import { Paper, Box } from '@material-ui/core'
+import { makeStyles, alpha } from '@material-ui/core/styles'
+import classnames from 'classnames'
 
 type Props = {
   severity?: 'info' | 'warning' | 'danger' | 'success'
@@ -21,34 +23,26 @@ export const Notice: React.FC<Props> = ({
   loading,
   children,
 }) => {
-  const css = useStyles({ fullWidth, gutterBottom, gutterTop })()
-  let icon, color
+  const css = useStyles({ fullWidth, gutterBottom, gutterTop })
+  let icon
 
   switch (severity) {
     case 'info':
       icon = 'info-circle'
-      color = colors.primary
       break
     case 'danger':
       icon = 'exclamation-triangle'
-      color = colors.danger
       break
     case 'warning':
       icon = 'exclamation-triangle'
-      color = colors.warning
       break
     case 'success':
       icon = 'check-circle'
-      color = colors.success
       break
   }
 
   return (
-    <Paper
-      elevation={0}
-      style={{ backgroundColor: lighten(color, 0.9), color: darken(color, 0.1) }}
-      className={css.notice}
-    >
+    <Paper elevation={0} className={classnames(css.notice, css[severity])}>
       {loading ? (
         <Icon name="spinner-third" spin size="md" fixedWidth />
       ) : (
@@ -60,20 +54,23 @@ export const Notice: React.FC<Props> = ({
   )
 }
 
-const useStyles = ({ fullWidth, gutterBottom, gutterTop }) =>
-  makeStyles({
-    notice: {
-      flexGrow: 1,
-      alignItems: 'center',
-      margin: `${spacing.xxs}px ${fullWidth ? 0 : spacing.md}px`,
-      marginBottom: gutterBottom ? spacing.md : spacing.xxs,
-      marginTop: gutterTop ? spacing.md : spacing.xxs,
-      padding: `${spacing.sm}px ${spacing.md}px`,
-      display: 'flex',
-      fontWeight: 500,
-      '& .MuiBox-root': { flexGrow: 1, alignSelf: 'flex-start', marginTop: spacing.xxs },
-      '& .MuiButton-root': { minWidth: 90, marginLeft: spacing.md },
-      '& > svg': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
-      '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
-    },
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  info: { color: palette.primary.main, backgroundColor: alpha(palette.primary.main, 0.1) },
+  danger: { color: palette.danger.main, backgroundColor: alpha(palette.danger.main, 0.1) },
+  warning: { color: palette.warning.main, backgroundColor: alpha(palette.warning.main, 0.1) },
+  success: { color: palette.success.main, backgroundColor: alpha(palette.success.main, 0.1) },
+  notice: ({ fullWidth, gutterBottom, gutterTop }: Props) => ({
+    flexGrow: 1,
+    alignItems: 'center',
+    margin: `${spacing.xxs}px ${fullWidth ? 0 : spacing.md}px`,
+    marginBottom: gutterBottom ? spacing.md : spacing.xxs,
+    marginTop: gutterTop ? spacing.md : spacing.xxs,
+    padding: `${spacing.sm}px ${spacing.md}px`,
+    display: 'flex',
+    fontWeight: 500,
+    '& .MuiBox-root': { flexGrow: 1, alignSelf: 'flex-start', marginTop: spacing.xxs },
+    '& .MuiButton-root': { minWidth: 90, marginLeft: spacing.md },
+    '& > svg': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
+    '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
+  }),
+}))

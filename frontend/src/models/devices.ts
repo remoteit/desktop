@@ -130,7 +130,7 @@ export default createModel<RootModel>()({
       }
 
       updateSearch()
-      if (!error) cleanOrphanConnections()
+      if (!error) cleanOrphanConnections(options.ids)
 
       // @TODO pull contacts out into its own model / request on page load
       set({ fetching: false, append: false, initialized: true, contacts })

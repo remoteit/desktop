@@ -3,7 +3,7 @@ import { makeStyles, Tooltip, ListItem, ListItemText, ListItemIcon } from '@mate
 import { InitiatorPlatform } from './InitiatorPlatform'
 import { ListItemLocation } from './ListItemLocation'
 import { TargetPlatform } from './TargetPlatform'
-import { spacing, colors } from '../styling'
+import { spacing } from '../styling'
 import { ApplicationState } from '../store'
 import { attributeName } from '../shared/nameHelper'
 import { ClearButton } from '../buttons/ClearButton'
@@ -82,16 +82,21 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   title: ({ state, offline }: any) => ({
     opacity: state === 'offline' ? 0.5 : 1,
-    '& > span': { overflow: 'hidden', whiteSpace: 'nowrap', color: offline ? colors.grayDark : colors.primaryLight },
+    '& > span': {
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      color: offline ? palette.grayDark.main : palette.primaryLight.main,
+    },
   }),
   connection: ({ offline, state }: any) => ({
-    borderColor: offline ? colors.grayLight : colors.primary,
+    borderColor: offline ? palette.grayLight.main : palette.primary.main,
     borderWidth: '0 0 1px 1px',
-    borderBottomWidth: state === 'offline' ? 0 : 1,
-    borderBottomColor: state === 'connected' ? colors.primary : offline ? colors.grayLight : colors.primary,
+    borderBottomWidth: 1,
+    borderBottomColor:
+      state === 'connected' ? palette.primary.main : offline ? palette.grayLight.main : palette.primary.main,
     borderBottomStyle: state === 'connected' ? 'solid' : 'dashed',
     borderStyle: 'solid',
     height: '2.6em',
@@ -100,7 +105,7 @@ const useStyles = makeStyles({
     marginRight: '-1.5em',
   }),
   service: ({ offline }: any) => ({
-    color: offline ? colors.grayDarker : colors.primary,
+    color: offline ? palette.grayDarker.main : palette.primary.main,
     fontWeight: 500,
   }),
   item: {
@@ -114,6 +119,6 @@ const useStyles = makeStyles({
   platform: {
     minWidth: 48,
   },
-  mergeIcon: { zIndex: 2, backgroundColor: colors.white },
+  mergeIcon: { zIndex: 2, backgroundColor: palette.white.main },
   icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
-})
+}))

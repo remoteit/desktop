@@ -1,7 +1,7 @@
 import React from 'react'
 import { humanizeDays } from '../models/licensing'
 import { makeStyles, LinearProgress, Typography, Box } from '@material-ui/core'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const css = useStyles()
@@ -78,7 +78,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   }
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   box: {
     width: '70%',
     marginBottom: spacing.sm,
@@ -90,12 +90,12 @@ const useStyles = makeStyles({
     marginTop: spacing.xxs,
   },
   background: {
-    backgroundColor: colors.grayLighter,
+    backgroundColor: palette.grayLighter.main,
   },
   warning: {
-    backgroundColor: colors.warning,
+    backgroundColor: palette.warning.main,
   },
   warningBar: {
-    backgroundColor: colors.primary,
+    backgroundColor: palette.primary.main,
   },
-})
+}))

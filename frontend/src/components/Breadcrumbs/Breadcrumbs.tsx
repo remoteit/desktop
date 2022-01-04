@@ -8,7 +8,7 @@ import { attributeName } from '../../shared/nameHelper'
 import { getAllDevices } from '../../models/accounts'
 import { Icon } from '../Icon'
 import { REGEX_LAST_PATH } from '../../shared/constants'
-import { spacing, colors, fontSizes } from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 
 const pageNameMap: { [path: string]: string } = {
   connections: 'Connections',
@@ -64,22 +64,22 @@ export const Breadcrumbs: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   header: {
     marginLeft: spacing.md,
     marginBottom: spacing.xs,
-    color: colors.grayDark,
+    color: palette.grayDark.main,
     position: 'relative',
     zIndex: 2,
     '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
       fontSize: fontSizes.xs,
-      color: colors.grayDark,
+      color: palette.grayDark.main,
       padding: `${spacing.xxs}px ${spacing.xs}px`,
       marginLeft: spacing.xs,
       marginRight: spacing.xs,
       // letterSpacing: 2,
     },
   },
-})
+}))

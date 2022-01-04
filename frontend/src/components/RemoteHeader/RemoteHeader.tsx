@@ -3,7 +3,7 @@ import { Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { isElectron, isMac, isRemote } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
-import { spacing, colors } from '../../styling'
+import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 import { Logo } from '../Logo'
 import classnames from 'classnames'
@@ -54,7 +54,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
 }
 
 const useStyles = showBorder =>
-  makeStyles({
+  makeStyles( ({ palette }) => ({
     full: {
       top: 0,
       left: 0,
@@ -66,9 +66,9 @@ const useStyles = showBorder =>
       overflow: 'hidden',
       display: 'flex',
       flexFlow: 'column',
-      backgroundColor: colors.white,
+      backgroundColor: palette.white.main,
       margin: 'auto',
-      borderTop: showBorder ? `1px solid ${colors.grayLighter}` : undefined,
+      borderTop: showBorder ? `1px solid ${palette.grayLighter.main}` : undefined,
     },
     inset: {
       top: spacing.xl,
@@ -77,11 +77,11 @@ const useStyles = showBorder =>
       bottom: spacing.sm,
       borderRadius: spacing.sm,
     },
-    default: { backgroundColor: colors.grayDarker, padding: spacing.xs },
+    default: { backgroundColor: palette.grayDarker.main, padding: spacing.xs },
     remote: {
-      color: colors.white,
+      color: palette.white.main,
       textAlign: 'center',
-      '& button': { position: 'absolute', left: 0, top: 0, color: colors.white },
+      '& button': { position: 'absolute', left: 0, top: 0, color: palette.white.main },
     },
     icon: {
       position: 'absolute',
@@ -89,4 +89,4 @@ const useStyles = showBorder =>
       right: spacing.md,
       top: spacing.xs,
     },
-  })
+  }))

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/core'
-import { spacing, colors } from '../styling'
+import { spacing } from '../styling'
 import { PinButton } from '../buttons/PinButton'
 import { Body } from './Body'
 
@@ -27,10 +27,10 @@ export const Drawer: React.FC<{ open: boolean }> = ({ open, children }) => {
 }
 
 const useStyles = width =>
-  makeStyles({
+  makeStyles( ({ palette }) => ({
     body: {
       maxHeight: '100%',
-      backgroundColor: colors.white,
+      backgroundColor: palette.white.main,
     },
     drawer: {
       maxWidth: width,
@@ -46,4 +46,4 @@ const useStyles = width =>
       justifyContent: 'space-between',
       paddingRight: spacing.sm,
     },
-  })
+  }))

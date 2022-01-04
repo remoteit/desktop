@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { makeStyles, Box, lighten } from '@material-ui/core'
-import { spacing, colors, fontSizes, Color, radius } from '../../styling'
+import { makeStyles, Box, alpha } from '@material-ui/core'
+import { spacing, fontSizes, Color, radius } from '../../styling'
 import { selectSessionsByService } from '../../models/sessions'
 import { ApplicationState } from '../../store'
 import { connectionState } from '../../helpers/connectionHelper'
@@ -24,7 +24,6 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   }))
   const cState = connectionState(service, connection)
   const connected = showConnected && !!sessions.length
-  const css = useStyles()
 
   let colorName: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
@@ -38,8 +37,6 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
     if (cState === 'connected' || cState === 'ready') state = 'connected'
     if (connection.error?.message) state = 'error'
   }
-
-  if (!service) return null
 
   switch (state) {
     case 'error':
@@ -64,14 +61,16 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
       colorName = 'grayLight'
   }
 
+  const css = useStyles({ colorName, opacity, textDecoration: state === 'inactive' ? 'line-through' : undefined })
+
+  if (!service) return null
+
   const chip = getLicenseChip(service.license)
 
   if (chip.show) {
     colorName = chip.colorName
     label = chip.name
   }
-
-  const color = colors[colorName]
 
   return (
     <>
@@ -95,14 +94,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
             setOpenTooltip(false)
           }}
         >
-          <span
-            style={{
-              color,
-              opacity,
-              backgroundColor: lighten(color, 0.94),
-              textDecoration: state === 'inactive' ? 'line-through' : '',
-            }}
-          >
+          <span className={css.background}>
             {connected && <Icon name="user" type="solid" size="xxxs" color="primary" fixedWidth />}
             {proxy && <Icon name="cloud" type="solid" size="xxxs" color={colorName} fixedWidth />}
             {service.type}
@@ -113,7 +105,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   button: { padding: '8px 0' },
   icon: { padding: '0 0 8px' },
   indicator: {
@@ -132,10 +124,24 @@ const useStyles = makeStyles({
       '& svg': { marginRight: 2 },
     },
   },
+  background: ({
+    colorName,
+    opacity,
+    textDecoration,
+  }: {
+    colorName: Color
+    opacity: number
+    textDecoration?: string
+  }) => ({
+    opacity,
+    color: palette[colorName].main,
+    backgroundColor: alpha(palette[colorName].main, 0.1),
+    textDecoration,
+  }),
   clickable: {
     cursor: 'pointer',
     '&:hover > span': {
-      boxShadow: `0px 1px 2px ${colors.darken}`,
+      boxShadow: `0px 1px 2px ${palette.darken.main}`,
     },
   },
-})
+}))

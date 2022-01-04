@@ -130,6 +130,12 @@ class Server {
       }
       // User not allowed
       else {
+        Logger.warn('USER ALREADY SIGNED IN', {
+          attempting: credentials.username,
+          signedIn: admin.username,
+          attemptingID: credentials.guid,
+          signedInID: admin.guid,
+        })
         return callback(
           new Error(
             `${admin.username} is currently signed in. They must first sign out to allow ${credentials.username} to sign in.`

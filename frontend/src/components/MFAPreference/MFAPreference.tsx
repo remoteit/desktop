@@ -9,9 +9,7 @@ import { MFASelectMethod } from './MFASelectMethod'
 import { MFAConfigureApp } from './MFAConfigureApp'
 import { MFAConfigureSms } from './MFAConfigureSms'
 import { Box, Button, makeStyles, Typography } from '@material-ui/core'
-import { colors } from '../../styling'
 import analyticsHelper from '../../helpers/analyticsHelper'
-import auth from '../../models/auth'
 
 export type MFASectionProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
@@ -358,7 +356,7 @@ export const MFAPreference = connect(
 )
 
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   input: {
     // fontSize: 10,
     minWidth: 350,
@@ -369,7 +367,7 @@ const useStyles = makeStyles({
   subtitle: {
     margin: 0,
     padding: 0,
-    color: colors.grayDark,
+    color: palette.grayDark.main,
     fontSize: 9
   }
-})
+}))

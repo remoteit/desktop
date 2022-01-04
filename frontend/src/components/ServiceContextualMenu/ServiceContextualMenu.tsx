@@ -12,7 +12,7 @@ import { selectConnection } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, Typography, Menu, MenuItem, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { spacing, colors } from '../../styling'
+import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
 export const ServiceContextualMenu: React.FC = () => {
@@ -106,7 +106,7 @@ export const ServiceContextualMenu: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   name: { paddingTop: 0, paddingLeft: spacing.md },
   connect: {
     paddingTop: 0,
@@ -115,5 +115,5 @@ const useStyles = makeStyles({
     '& > button + button': { marginLeft: -spacing.xs },
     '& > div': { margin: `${spacing.xs}px ${spacing.xs}px`, width: '100%', minWidth: 150 },
   },
-  connected: { color: colors.primary },
-})
+  connected: { color: palette.primary.main },
+}))

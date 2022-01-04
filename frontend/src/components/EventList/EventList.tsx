@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { List, Box, Button, makeStyles, Typography } from '@material-ui/core'
-import { colors, fontSizes, spacing } from '../../styling'
+import { fontSizes, spacing } from '../../styling'
 import { getLimit, humanizeDays } from '../../models/licensing'
 import { EventItem } from './EventItem'
 import { Notice } from '../Notice'
@@ -61,7 +61,7 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   box: {
     display: 'flex',
     justifyContent: 'center',
@@ -75,7 +75,7 @@ const useStyles = makeStyles({
     '& li': {
       padding: `4px 0`,
       fontSize: fontSizes.sm,
-      color: colors.grayDark,
+      color: palette.grayDark.main,
       alignItems: 'start',
       '& > span': {
         fontSize: fontSizes.xxs,
@@ -84,13 +84,13 @@ const useStyles = makeStyles({
         minWidth: 150,
       },
       '& b': {
-        color: colors.grayDarkest,
+        color: palette.grayDarkest.main,
         fontWeight: 400,
       },
       '& i': {
-        color: colors.grayDarker,
+        color: palette.grayDarker.main,
         fontStyle: 'normal',
       },
     },
   },
-})
+}))

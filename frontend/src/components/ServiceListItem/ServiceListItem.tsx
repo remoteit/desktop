@@ -14,7 +14,7 @@ import { ServiceName } from '../ServiceName'
 import { CommandButton } from '../../buttons/CommandButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { Icon } from '../Icon'
-import { colors, spacing } from '../../styling'
+import { spacing } from '../../styling'
 
 export interface ServiceListItemProps {
   connection?: IConnection
@@ -63,9 +63,9 @@ export function ServiceListItem({ connection, service, indent, dense, secondary 
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   indent: { paddingLeft: 57 },
   details: { '& > span': { marginRight: spacing.sm } },
-  restriction: { color: colors.grayDarker },
-  evaluation: { color: colors.warning },
-})
+  restriction: { color: palette.grayDarker.main },
+  evaluation: { color: palette.warning.main },
+}))

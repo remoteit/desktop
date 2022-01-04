@@ -10,7 +10,6 @@ import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Box, Typography } from '@material-ui/core'
-import { colors } from '../../styling'
 
 
 

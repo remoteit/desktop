@@ -6,7 +6,7 @@ import { DeviceSetupItem } from './DeviceSetupItem'
 import { ColumnsDrawer } from './ColumnsDrawer'
 import { FilterDrawer } from './FilterDrawer'
 import { Container } from './Container'
-import styles from '../styling'
+import { spacing } from '../styling'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
@@ -55,7 +55,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: `0 ${styles.spacing.md}px ${styles.spacing.sm}px`,
+    padding: `0 ${spacing.md}px ${spacing.sm}px`,
   },
   fetching: {
     position: 'absolute',

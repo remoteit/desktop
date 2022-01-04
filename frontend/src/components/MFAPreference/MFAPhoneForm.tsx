@@ -6,7 +6,6 @@ import { startsWith } from 'lodash'
 import 'react-phone-input-2/lib/material.css'
 import PhoneInput from 'react-phone-input-2'
 import { Typography, makeStyles, Button, Box } from '@material-ui/core'
-import { colors } from '../../styling'
 
 export interface Props {
   onClose: () => void
@@ -119,7 +118,7 @@ export const MFAPhoneForm = connect(
   )
 })
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   caption: {
     fontWeight: 400,
     fontSize: 11,
@@ -145,7 +144,7 @@ const useStyles = makeStyles({
     opacity: '0.9',
   },
   success: {
-    color: colors.success,
+    color: palette.success.main,
     fontWeight: 'bold',
   }
-})
+}))

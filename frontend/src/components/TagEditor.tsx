@@ -4,7 +4,6 @@ import { ApplicationState, Dispatch } from '../store'
 import { makeStyles, Chip } from '@material-ui/core'
 import { AutocompleteMenu } from './AutocompleteMenu'
 import { IconButton } from '../buttons/IconButton'
-import { colors } from '../styling'
 import { Icon } from './Icon'
 import { Tags } from './Tags'
 
@@ -91,6 +90,6 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
   )
 }
 
-const useStyles = makeStyles({
-  chip: { fontWeight: 'bold', letterSpacing: 1, color: colors.grayDarker },
-})
+const useStyles = makeStyles( ({ palette }) => ({
+  chip: { fontWeight: 'bold', letterSpacing: 1, color: palette.grayDarker.main },
+}))

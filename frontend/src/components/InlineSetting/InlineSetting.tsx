@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, InputLabel } from '@material-ui/core'
-import { colors, spacing, fontSizes } from '../../styling'
+import { spacing, fontSizes } from '../../styling'
 import { EditButton } from '../../buttons/EditButton'
 import { IconButton } from '../../buttons/IconButton'
 import { DeleteButton } from '../../buttons/DeleteButton'
@@ -141,7 +141,7 @@ export const InlineSetting: React.FC<Props> = ({
   return edit ? editForm : viewForm
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   form: {
     display: 'flex',
     width: '100%',
@@ -156,7 +156,7 @@ const useStyles = makeStyles({
   active: {
     paddingTop: 0,
     paddingBottom: 0,
-    backgroundColor: colors.primaryHighlight,
+    backgroundColor: palette.primaryHighlight.main,
   },
   action: {
     position: 'absolute',
@@ -171,4 +171,4 @@ const useStyles = makeStyles({
   hideIcon: {
     minWidth: spacing.sm,
   },
-})
+}))

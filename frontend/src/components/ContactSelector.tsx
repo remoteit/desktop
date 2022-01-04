@@ -3,7 +3,7 @@ import CreatableSelect from 'react-select/creatable'
 import { Theme } from 'react-select'
 import { makeStyles } from '@material-ui/core'
 import { contactOptions } from '../helpers/contacts'
-import { colors, spacing, fontSizes } from '../styling'
+import { spacing, fontSizes } from '../styling'
 import { Typography, Link } from '@material-ui/core'
 
 type Props = {
@@ -27,7 +27,6 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
       opts = opts?.value ? [opts.value] : []
       onChange(opts)
     }
-
   }
 
   const validateEmail = (inputValue: string) => {
@@ -40,8 +39,6 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
     )
   }
 
-
-
   return (
     <CreatableSelect
       isMulti={!isTransfer}
@@ -51,38 +48,36 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
       theme={selectTheme}
       className={css.select}
       classNamePrefix="select"
-      placeholder={isTransfer ? "Enter new device owner..." : "Enter an email..."}
+      placeholder={isTransfer ? 'Enter new device owner...' : 'Enter an email...'}
       onChange={handleChange}
       isValidNewOption={v => mailFormat.test(v)}
       formatCreateLabel={validateEmail}
       styles={customStyles}
-
     />
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   select: {
     flexGrow: 1,
     margin: `${spacing.md}px 0`,
     fontSize: fontSizes.base,
     width: '100%',
     fontWeight: 400,
-    '& .select__placeholder': { color: colors.primary },
-    '& .select__multi-value': { backgroundColor: colors.primary, padding: `${spacing.xxs}px ${spacing.xs}px` },
-    '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: colors.white },
-    '& .select__multi-value__remove': { color: colors.white },
+    '& .select__placeholder': { color: palette.primary.main },
+    '& .select__multi-value': { backgroundColor: palette.primary.main, padding: `${spacing.xxs}px ${spacing.xs}px` },
+    '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: palette.white.main },
+    '& .select__multi-value__remove': { color: palette.white.main },
     '& .select__single-value': {
-      backgroundColor: colors.primary,
+      backgroundColor: palette.primary.main,
       padding: `${spacing.xxs}px ${spacing.sm}px ${spacing.xxs}px ${spacing.sm}px`,
       fontSize: fontSizes.base,
       fontWeight: 500,
-      color: colors.white,
+      color: palette.white.main,
       borderRadius: `${spacing.xxs}px`,
     },
-
   },
-})
+}))
 
 const selectTheme = (theme: Theme) => {
   return {
@@ -90,8 +85,8 @@ const selectTheme = (theme: Theme) => {
     borderRadius: spacing.xs,
     colors: {
       ...theme.colors,
-      primary25: colors.primaryHighlight,
-      primary: colors.primary,
+      primary25: theme.colors.primaryHighlight,
+      primary: theme.colors.primary,
     },
   }
 }

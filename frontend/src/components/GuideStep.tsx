@@ -3,7 +3,7 @@ import { makeStyles, Box, Tooltip, Typography, TooltipProps, BoxProps } from '@m
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { IconButton } from '../buttons/IconButton'
-import { spacing, colors, radius, fontSizes } from '../styling'
+import { spacing, radius, fontSizes } from '../styling'
 
 type Props = {
   guide: string
@@ -114,10 +114,10 @@ export const GuideStep: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   icon: { position: 'absolute', zIndex: 1, top: -spacing.lg, right: -spacing.xl },
   box: ({ highlight }: any) => ({
-    border: highlight ? `1px dotted ${colors.guide}` : undefined,
+    border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
     borderRadius: radius,
     position: 'relative',
   }),
@@ -127,21 +127,21 @@ const useStyles = makeStyles({
     bottom: spacing.sm,
   },
   tip: {
-    backgroundColor: colors.guide,
-    color: colors.white,
+    backgroundColor: palette.guide.main,
+    color: palette.white.main,
     fontSize: fontSizes.lg,
     padding: spacing.lg,
     paddingRight: spacing.xxl,
     position: 'relative',
     borderRadius: radius,
-    '& .MuiTypography-caption': { color: colors.white, marginTop: spacing.md, display: 'block' },
+    '& .MuiTypography-caption': { color: palette.white.main, marginTop: spacing.md, display: 'block' },
   },
   arrow: {
-    color: colors.guide,
+    color: palette.guide.main,
   },
   close: {
     position: 'absolute',
     right: spacing.xs,
     top: spacing.xs,
   },
-})
+}))

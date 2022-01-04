@@ -7,7 +7,7 @@ import { LaunchButton } from '../buttons/LaunchButton'
 import { useApplication } from '../hooks/useApplication'
 import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
-import { colors, spacing } from '../styling'
+import { spacing } from '../styling'
 import { CommandButton } from '../buttons/CommandButton'
 import { CopyButton } from '../buttons/CopyButton'
 
@@ -195,7 +195,7 @@ export const ConnectionInfo: React.FC<Props> = ({ showTitle, show, connection, s
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
   show: {
     opacity: 1,
     position: 'absolute',
@@ -210,7 +210,7 @@ const useStyles = makeStyles({
   },
   active: {
     borderRadius: 4,
-    backgroundColor: colors.darken,
+    backgroundColor: palette.darken.main,
   },
   h3: {
     wordBreak: 'break-all',
@@ -225,14 +225,14 @@ const useStyles = makeStyles({
     '& span': { wordBreak: 'break-all' },
   },
   address: {
-    backgroundColor: colors.primary,
-    color: colors.white,
+    backgroundColor: palette.primary.main,
+    color: palette.white.main,
     padding: spacing.xs,
     borderRadius: 0,
-    '& label': { color: colors.white },
+    '& label': { color: palette.white.main },
   },
   buttons: {
     display: 'flex',
     justifyContent: 'space-between',
   },
-})
+}))

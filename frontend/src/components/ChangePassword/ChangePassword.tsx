@@ -4,7 +4,6 @@ import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { Box, Button, makeStyles, TextField, Typography } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
-import { colors } from '../../styling'
 
 
 
@@ -72,7 +71,7 @@ export const ChangePassword = () => {
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles( ({ palette }) => ({
   input: {
     // fontSize: 10,
     minWidth: 350,
@@ -83,7 +82,7 @@ const useStyles = makeStyles({
   subtitle: {
     margin: 0,
     padding: 0,
-    color: colors.grayDark,
+    color: palette.grayDark.main,
     fontSize: 9
   }
-})
+}))

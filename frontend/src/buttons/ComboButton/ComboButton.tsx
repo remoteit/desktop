@@ -1,8 +1,11 @@
 import React from 'react'
+import { PROTOCOL } from '../../shared/constants'
 import { makeStyles } from '@material-ui/core'
 import { DisconnectButton } from '../DisconnectButton'
 import { ConnectButton } from '../ConnectButton'
+import { DynamicButton } from '../DynamicButton'
 import { Notice } from '../../components/Notice'
+import { windowOpen } from '../../services/Browser'
 
 type Props = {
   className?: string
@@ -19,11 +22,19 @@ export const ComboButton: React.FC<Props> = ({ className, ...props }) => {
   return (
     <div className={css.buttons + (className ? ' ' + className : '')}>
       {props.service?.attributes.route === 'p2p' && props.connection?.public ? (
-        <Notice fullWidth severity="warning">
-          {props.size === 'small'
-            ? 'Peer to peer only'
-            : 'You cannot make a proxy connection to this service, it is set to peer to peer only.'}
-        </Notice>
+        <div>
+          <Notice fullWidth severity="info" gutterBottom>
+            {props.size === 'small'
+              ? 'Peer to peer only'
+              : 'You cannot make a proxy connection to this service, it is set to peer to peer only.'}
+          </Notice>
+          <DynamicButton
+            {...props}
+            title="Launch Desktop"
+            color="grayDarkest"
+            onClick={() => windowOpen(`${PROTOCOL}connect/${props.service?.id || props.connection?.id}`)}
+          />
+        </div>
       ) : (
         <>
           <DisconnectButton {...props} />
