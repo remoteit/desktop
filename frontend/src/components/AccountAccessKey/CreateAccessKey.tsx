@@ -144,7 +144,7 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     mainBox: {
       width: 650,
-      backgroundColor: colors.grayLightest,
+      backgroundColor: theme.palette.grayLightest.main,
       borderRadius: 3,
       padding: 5
     },
@@ -160,7 +160,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: '10px',
     },
     successMessage: {
-      color: colors.success,
+      color: theme.palette.success.main,
       fontWeight: 500,
     },
     icon: {
