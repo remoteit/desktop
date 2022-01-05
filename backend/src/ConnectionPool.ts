@@ -18,8 +18,6 @@ const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
-  freePort?: number
-
   private pool: Connection[] = []
   private file?: JSONFile<IConnection[]>
 
@@ -209,12 +207,9 @@ export default class ConnectionPool {
   sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
 
   nextFreePort = async () => {
-    const usedPorts = this.usedPorts
-    let lastPort = usedPorts.sort((a, b) => b - a)[0] || PEER_PORT_RANGE[0]
-    if (lastPort >= PEER_PORT_RANGE[1]) lastPort = PEER_PORT_RANGE[0]
-    this.freePort = await PortScanner.findFreePortInRange(lastPort, PEER_PORT_RANGE[1], usedPorts)
-    Logger.info('NEXT_FREE_PORT', { freePort: this.freePort, lastPort, usedPorts })
-    return this.freePort
+    const next = await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
+    Logger.info('NEXT_FREE_PORT', { next })
+    return next
   }
 
   private assignPort = async (connection: Connection) => {
