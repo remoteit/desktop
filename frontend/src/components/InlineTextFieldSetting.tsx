@@ -77,7 +77,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
           } else if (filter && value.length > 1) {
             const original = value.trim()
             value = value.replace(filter, '')
-            if (original !== value) {
+            if (original !== value.trim()) {
               setError(`Invalid character. (${original.replace(value, '')})`)
             } else {
               setError(undefined)
