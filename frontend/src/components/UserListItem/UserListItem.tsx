@@ -26,8 +26,6 @@ export const UserListItem: React.FC<Props> = ({ user, isConnected, isUserLinked 
           primary={user.email}
           secondary={<Duration startTime={user.timestamp?.getTime()} ago />}
         />
-      ) : isUserLinked ? (
-        <ListItemText primary={user.email} />
       ) : (
         <ListItemText primary={user.email} />
       )}

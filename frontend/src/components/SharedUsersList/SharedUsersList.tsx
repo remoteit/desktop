@@ -15,7 +15,10 @@ interface Props {
 const sort = (users: IUser[]) => users.sort((a, b) => (a.email > b.email ? 1 : b.email > a.email ? -1 : 0))
 
 export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users = [] }) => {
-  const access = useSelector((state: ApplicationState) => state.organization.members.map(m => m.user))
+  const { access, isOwner } = useSelector((state: ApplicationState) => ({
+    access: state.organization.members.map(m => m.user),
+    isOwner: state.auth.user?.id === device?.owner.id,
+  }))
   const filtered = sort(users.filter(user => !connected.find(_u => _u.email === user.email)))
   const listUserLinked = sort(access.filter(user => !connected.find(_u => _u.email === user.email)))
 
@@ -51,7 +54,7 @@ export const SharedUsersList: React.FC<Props> = ({ device, connected = [], users
           </List>
         </>
       )}
-      {!!listUserLinked.length && (
+      {!!listUserLinked.length && isOwner && (
         <>
           <Typography variant="subtitle1">Organization members</Typography>
           <List>

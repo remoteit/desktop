@@ -22,6 +22,7 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   const instance = service || device
   const accessDisabled = !!device?.attributes?.accessDisabled
   const offline = isOffline(instance, connection)
+  const configurable = device?.configurable && device?.permissions.includes('MANAGE')
 
   let name = ''
 
@@ -35,14 +36,14 @@ export const ServiceName: React.FC<Props> = ({ connection, service, device, inli
   return (
     <Title enabled={connection?.enabled} offline={offline} inline={inline} license={instance?.license}>
       {name || 'No device found'}
-      {device?.configurable && !device?.shared && (
+      {configurable && (
         <Tooltip title="Remote configurable" placement="top" arrow>
           <sup>
             <Icon name="wifi" size="xxs" type="solid" fixedWidth />
           </sup>
         </Tooltip>
       )}
-      {device?.shared && (
+      {device?.shared && !configurable && (
         <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
           <sup>
             <Icon name="user-friends" size="xxxs" type="solid" fixedWidth />

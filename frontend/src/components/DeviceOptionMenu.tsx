@@ -16,7 +16,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
-  if (!device || device.accountId !== userId) return null
+  if (!device || !device.permissions.includes('MANAGE')) return null
 
   return (
     <div>
@@ -24,7 +24,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
         <Icon name="ellipsis-v" size="md" fixedWidth />
       </IconButton>
       <Menu
-        id="long-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}

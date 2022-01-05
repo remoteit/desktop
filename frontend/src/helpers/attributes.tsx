@@ -3,7 +3,7 @@ import { TargetPlatform } from '../components/TargetPlatform'
 import { QualityDetails } from '../components/QualityDetails'
 import { ServiceIndicators } from '../components/ServiceIndicators'
 import { INITIATOR_PLATFORMS } from '../components/InitiatorPlatform'
-import { ListItemText } from '@material-ui/core'
+import { ListItemText, Chip } from '@material-ui/core'
 import { ServiceName } from '../components/ServiceName'
 import { LicenseChip } from '../components/LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
@@ -14,7 +14,6 @@ import { Duration } from '../components/Duration'
 import { toLookup } from './utilHelper'
 import { TestUI } from '../components/TestUI'
 import { Tags } from '../components/Tags'
-// type AttributeParams = Omit<Attribute, 'value'>
 
 export class Attribute {
   id: string = ''
@@ -95,6 +94,18 @@ export const attributes: Attribute[] = [
     label: 'Connectivity',
     value: ({ device }) => <QualityDetails device={device} />,
     column: false,
+  }),
+  new DeviceAttribute({
+    id: 'permissions',
+    label: 'Permissions',
+    value: ({ device }) => {
+      const lookup: ILookup<string> = {
+        CONNECT: 'Connect',
+        SCRIPTING: 'Script',
+        MANAGE: 'Manage',
+      }
+      return device?.permissions.map(p => <Chip label={lookup[p]} size="small" variant="outlined" key={p} />)
+    },
   }),
   new DeviceAttribute({
     id: 'owner',

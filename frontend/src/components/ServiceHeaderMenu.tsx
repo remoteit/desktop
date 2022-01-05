@@ -1,5 +1,4 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { useParams, Route } from 'react-router-dom'
 import { PROTOCOL } from '../shared/constants'
 import { Title } from './Title'
@@ -7,7 +6,6 @@ import { OutOfBand } from './OutOfBand'
 import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
-import { ApplicationState } from '../store'
 import { Typography } from '@material-ui/core'
 import { UnregisterServiceButton } from '../buttons/UnregisterServiceButton'
 import { DeleteServiceButton } from '../buttons/DeleteServiceButton'
@@ -26,9 +24,6 @@ export const ServiceHeaderMenu: React.FC<{
   backgroundColor?: string
 }> = ({ device, service, target, footer, backgroundColor, children }) => {
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
-  const { access } = useSelector((state: ApplicationState) => ({
-    access: state.organization.members.map(m => m.user),
-  }))
 
   if (!service || !device) return <UnauthorizedPage />
 
@@ -49,7 +44,10 @@ export const ServiceHeaderMenu: React.FC<{
               )}
             </Route>
             <RefreshButton device={device} />
-            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
+            <AddUserButton
+              to={`/devices/${device.id}/${service.id}/share`}
+              hide={!device.permissions.includes('MANAGE')}
+            />
             <CopyButton icon="share-alt" title="Copy connection link" value={`${PROTOCOL}connect/${service?.id}`} />
           </Typography>
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
@@ -70,7 +68,7 @@ export const ServiceHeaderMenu: React.FC<{
               pathname={`/devices/${device.id}/${serviceID}/details`}
               dense
             />
-            {!device.shared && (
+            {device.permissions.includes('MANAGE') && (
               <ListItemLocation
                 title="Edit"
                 icon="pen"
@@ -79,7 +77,7 @@ export const ServiceHeaderMenu: React.FC<{
                 dense
               />
             )}
-            <UsersSelect service={service} device={device} access={access} />
+            <UsersSelect service={service} device={device} />
           </ListHorizontal>
         </>
       }
