@@ -301,14 +301,15 @@ export default createModel<RootModel>()({
       const { auth } = globalState
       dispatch.devices.set({ destroying: true })
       try {
-        device.shared
-          ? await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email || '')}`, {
+        device.permissions.includes('MANAGE')
+          ? await r3.post(`/developer/device/delete/registered/${device.id}`)
+          : await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email || '')}`, {
               devices: device.id,
               emails: auth.user?.email,
               state: 'off',
               scripting: false,
             })
-          : await r3.post(`/developer/device/delete/registered/${device.id}`)
+
         await dispatch.devices.fetch()
       } catch (error) {
         if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })

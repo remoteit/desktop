@@ -36,7 +36,7 @@ export const DeleteDeviceButton: React.FC<Props> = ({ device, menuItem, onClick 
     </>
   )
 
-  if (!device?.permissions.includes('MANAGE')) return null
+  if (!device || (device.accountId !== userId && !device.permissions.includes('MANAGE'))) return null
 
   const destroy = () => {
     if (device.thisDevice) {
@@ -53,7 +53,7 @@ export const DeleteDeviceButton: React.FC<Props> = ({ device, menuItem, onClick 
     title = 'Device must be offline'
   }
 
-  if (device.shared && device.accountId !== userId) {
+  if (!device?.permissions.includes('MANAGE')) {
     disabled = false
     icon = 'sign-out'
     title = 'Leave Device'

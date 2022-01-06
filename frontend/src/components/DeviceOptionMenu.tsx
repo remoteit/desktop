@@ -16,7 +16,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
-  if (!device || !device.permissions.includes('MANAGE')) return null
+  if (!device || (userId !== device.accountId && !device.permissions.includes('MANAGE'))) return null
 
   return (
     <div>
@@ -33,7 +33,14 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
         autoFocus={false}
         elevation={2}
       >
-        <MenuItem dense to={`/devices/${device.id}/transfer`} component={Link} autoFocus={false} disableGutters>
+        <MenuItem
+          dense
+          to={`/devices/${device.id}/transfer`}
+          component={Link}
+          autoFocus={false}
+          disabled={!device.permissions.includes('MANAGE')}
+          disableGutters
+        >
           <ListItemIcon>
             <Icon name="share" size="md" />
           </ListItemIcon>
