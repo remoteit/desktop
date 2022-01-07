@@ -11,6 +11,7 @@ type Props = {
   className?: string
   connection?: IConnection
   service?: IService
+  permissions?: IPermission[]
   size?: 'icon' | 'medium' | 'small' | 'large'
   autoConnect?: boolean
   fullWidth?: boolean

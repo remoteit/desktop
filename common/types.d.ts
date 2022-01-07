@@ -232,6 +232,7 @@ declare global {
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
     configurable: boolean // cloudshift device
+    permissions: IPermission[]
     accountId: string
     thisDevice?: boolean
     license: ILicenseTypes
@@ -286,6 +287,8 @@ declare global {
   }
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT' | string
+
+  type IPermission = 'CONNECT' | 'SCRIPTING' | 'MANAGE'
 
   type IUser = {
     id: string

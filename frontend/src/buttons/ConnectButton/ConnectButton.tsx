@@ -15,6 +15,7 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 export type ConnectButtonProps = {
   connection?: IConnection
   service?: IService
+  permissions?: IPermission[]
   size?: 'icon' | 'medium' | 'small' | 'large'
   color?: Color
   autoConnect?: boolean
@@ -25,6 +26,7 @@ export type ConnectButtonProps = {
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
   connection,
   service,
+  permissions,
   size = 'medium',
   color = 'grayDarkest',
   autoConnect,
@@ -64,7 +66,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }, [autoStart, service])
 
   let title = connection?.autoLaunch ? 'Connect and Launch' : connection?.public ? 'Connect' : 'Add to Network'
-  let disabled = false
+  let disabled = !permissions?.includes('CONNECT')
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
   if (chip && chip.show) {

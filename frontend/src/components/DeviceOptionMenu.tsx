@@ -16,7 +16,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
-  if (!device || device.accountId !== userId) return null
+  if (!device || (userId !== device.accountId && !device.permissions.includes('MANAGE'))) return null
 
   return (
     <div>
@@ -24,7 +24,6 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
         <Icon name="ellipsis-v" size="md" fixedWidth />
       </IconButton>
       <Menu
-        id="long-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
@@ -34,7 +33,14 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
         autoFocus={false}
         elevation={2}
       >
-        <MenuItem dense to={`/devices/${device.id}/transfer`} component={Link} autoFocus={false} disableGutters>
+        <MenuItem
+          dense
+          to={`/devices/${device.id}/transfer`}
+          component={Link}
+          autoFocus={false}
+          disabled={!device.permissions.includes('MANAGE')}
+          disableGutters
+        >
           <ListItemIcon>
             <Icon name="share" size="md" />
           </ListItemIcon>

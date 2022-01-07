@@ -52,7 +52,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
       </span>
     )
 
-  const editable = device.thisDevice || device.configurable
+  const editable = device.thisDevice || (device.configurable && device.permissions.includes('MANAGE'))
   const connection = connections.find(c => c.deviceID === device.id && c.enabled)
 
   // reverse sort services by creation date

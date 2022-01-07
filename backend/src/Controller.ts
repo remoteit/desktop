@@ -154,8 +154,8 @@ class Controller {
   }
 
   freePort = async () => {
-    await this.pool.nextFreePort()
-    this.io.emit(ConnectionPool.EVENTS.freePort, this.pool.freePort)
+    const freePort = await this.pool.nextFreePort()
+    this.io.emit(ConnectionPool.EVENTS.freePort, freePort)
   }
 
   isReachablePort = async (data: IReachablePort) => {

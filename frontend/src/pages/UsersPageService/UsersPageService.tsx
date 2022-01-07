@@ -21,7 +21,7 @@ export const UsersPageService: React.FC<{ device?: IDevice }> = ({ device }) => 
 
   return (
     <ServiceHeaderMenu device={device} service={service}>
-      <SharedUsersList users={users} connected={connected} />
+      <SharedUsersList users={users} connected={connected} device={device} />
     </ServiceHeaderMenu>
   )
 }

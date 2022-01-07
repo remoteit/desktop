@@ -36,7 +36,7 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
         required
         value={name}
         label="Device Name"
-        disabled={device.shared}
+        disabled={!device.permissions.includes('MANAGE')}
         resetValue={defaultValue}
         maxLength={MAX_NAME_LENGTH}
         filter={REGEX_NAME_SAFE}

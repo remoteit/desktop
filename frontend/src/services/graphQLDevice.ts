@@ -13,6 +13,7 @@ const DEVICE_SELECT = `
   platform
   version
   configurable
+  permissions
   license
   attributes
   access {
@@ -163,6 +164,7 @@ export function graphQLAdaptor(
       version: d.version,
       geo: d.endpoint?.geo,
       license: d.license,
+      permissions: d.permissions,
       attributes: processDeviceAttributes(d, metaData),
       tags: labelsToTags(d),
       services: d.services.map(

@@ -113,6 +113,7 @@ export const FilterDrawer: React.FC = () => {
                   else if (value === -1) result = undefined
                   else result === undefined ? (result = [value]) : result.push(value)
 
+                  if (!result?.length) result = undefined
                   update({ platform: result })
                 }}
                 filterList={platformFilter}

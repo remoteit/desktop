@@ -73,6 +73,7 @@ export const Connect: React.FC = () => {
             connection={connection}
             service={service}
             autoConnect={location.state?.autoConnect}
+            permissions={device.permissions}
             size="large"
             fullWidth
             onClick={() => ui.guide({ guide: 'guideAWS', step: 6 })}
