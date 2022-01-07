@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { Box, Button, makeStyles, TextField, Typography } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
@@ -25,9 +24,6 @@ export const ChangePassword = () => {
   const updatePassword = (event: { preventDefault: () => void }) => {
     event.preventDefault()
     auth.changePassword({ currentPassword: currentPassword, password: password })
-      .catch(error => {
-        console.error(error)
-      })
   }
   return (
     <Box m={4}>
@@ -71,9 +67,8 @@ export const ChangePassword = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   input: {
-    // fontSize: 10,
     minWidth: 350,
   },
   button: {

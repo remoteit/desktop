@@ -44,7 +44,7 @@ export const NotificationMode: React.FC = () => {
 
   const checkWebHookUrl = (value: string) => {
     setWebhookUrl(value)
-    if (webHook) setError(!REGEX_VALID_URL.test(value))
+    if (webHook) setError(!REGEX_VALID_URL.test(value) && webHookUrl !== '')
   }
 
   const onSave = async () => {

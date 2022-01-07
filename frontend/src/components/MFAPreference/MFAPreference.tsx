@@ -46,7 +46,6 @@ export const MFAPreference = connect(
 
     const [cancelShowVerificationCode, setCancelShowVerificationCode] = useState<boolean>(false)
     const [backupCode, setBackupCode] = React.useState<string>(AWSUser['custom:backup_code'] || '')
-    const [loading, setLoading] = React.useState<boolean>(false)
     const [hasOldSentVerification, setHasOldSentVerification] = React.useState<boolean>(
       AWSUser && !AWSUser.phone_number_verified
     )
@@ -71,11 +70,11 @@ export const MFAPreference = connect(
     }, [])
 
     const loadLastCode = async () => {
-      let lastCode = auth.getLastCode()
-      setLastCode(lastCode.toString())
+      auth.getLastCode()
+      setLastCode(lastCode)
     }
 
-    const  setPreferences = ( preference: string ) => setMFAPreference(preference)
+    const setPreferences = (preference: string) => setMFAPreference(preference)
 
     const setShowEnableSelection = (param: boolean) => {
       mfa.set({ showEnableSelection: param })
@@ -120,19 +119,7 @@ export const MFAPreference = connect(
     const sendVerifyTotp = event => {
       event.preventDefault()
       setError(null)
-      setLoading(true)
       verifyTopCode(totpVerificationCode)
-        .then(async (backupCode: string | boolean) => {
-          if (typeof backupCode == 'string') {
-            setBackupCode(backupCode)
-            setShowAuthenticatorConfig(false)
-          } else {
-            setError('Invalid Totp Code')
-          }
-        })
-        .finally(() => {
-          setLoading(false)
-        })
     }
 
     const successfulPhoneUpdate = async (orginalNumber, newNumber) => {
@@ -157,7 +144,6 @@ export const MFAPreference = connect(
     const sendVerifyPhone = event => {
       event.preventDefault()
       setError(null)
-      setLoading(true)
       verifyPhone(verificationCode)
         .then(async (backupCode: string) => {
           setVerificationCode('')
@@ -171,16 +157,12 @@ export const MFAPreference = connect(
           console.error(error)
           setError(t(`pages.auth-mfa.errors.${error.code}`))
         })
-        .finally(() => {
-          setLoading(false)
-        })
     }
 
     const resendCode = event => {
       console.log('resendCode: ', { event })
       event.preventDefault()
       setError(null)
-      setLoading(true)
       updatePhone(AWSUser.phone_number)
         .then(() => {
           setHasOldSentVerification(false)
@@ -192,9 +174,6 @@ export const MFAPreference = connect(
         .catch(error => {
           console.error(error)
           setError(t(`pages.auth-mfa.errors.${error.code}`))
-        })
-        .finally(() => {
-          setLoading(false)
         })
     }
 
@@ -241,8 +220,8 @@ export const MFAPreference = connect(
               setError(null)
             }}
           >
-            <Box mt={3}>
-              <Button disabled={loading} type="submit">
+            <Box mt={0}>
+              <Button type="submit" variant="outlined" style={{ borderRadius: 3 }} color="primary">
                 TURN OFF
               </Button>
             </Box>
@@ -332,7 +311,6 @@ export const MFAPreference = connect(
               sendVerifyPhone={sendVerifyPhone}
               hasOldSentVerification={hasOldSentVerification}
               verificationCode={verificationCode}
-              loading={loading}
               resendCode={resendCode}
               setCancelShowVerificationCode={setCancelShowVerificationCode}
             />
@@ -356,7 +334,7 @@ export const MFAPreference = connect(
 )
 
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   input: {
     // fontSize: 10,
     minWidth: 350,

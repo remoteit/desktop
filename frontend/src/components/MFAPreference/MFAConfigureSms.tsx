@@ -13,7 +13,6 @@ type Props = {
   sendVerifyPhone: (event: any) => void
   hasOldSentVerification: boolean
   verificationCode: string
-  loading: boolean
   resendCode: (event: any) => void
   setCancelShowVerificationCode: (event: any) => void
 }
@@ -79,7 +78,7 @@ export const MFAConfigureSms: React.FC<Props> = ({
                 <Button
                   disabled={verificationCode === '' || verificationCode.length < 6}
                   type="submit"
-                  color='default'
+                  color='primary'
                   variant='contained'
                   style={{ borderRadius: 3 }}
                 >

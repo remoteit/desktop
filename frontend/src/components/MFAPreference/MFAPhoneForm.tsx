@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { ApplicationState } from '../../store'
-import { useTranslation } from 'react-i18next'
 import { connect } from 'react-redux'
 import { startsWith } from 'lodash'
 import 'react-phone-input-2/lib/material.css'
@@ -26,11 +25,10 @@ export const MFAPhoneForm = connect(
   mapState,
   mapDispatch
 )(({ AWSUser, mfaMethod, updatePhone, onClose, onSuccess }: MFAPhoneProps) => {
-  const { t } = useTranslation()
   const css = useStyles()
   const originalPhone = AWSUser.phone_number
   const [phone, setPhone] = useState<string | undefined>(AWSUser && AWSUser.phone_number)
-  const [validPhone, setValidPhone] = React.useState<boolean>(false)
+  const [validPhone, setValidPhone] = React.useState<boolean>(!!AWSUser.phone_number_verified)
   const [error, setError] = React.useState<string | null>(null)
   const [message, setMessage] = React.useState<string | null>(null)
   const country = 'us'
@@ -99,13 +97,14 @@ export const MFAPhoneForm = connect(
         </Box>
         <Box mt={3}>
           <Button
-            disabled={phone === '' || !validPhone}
+            disabled={!validPhone}
             onClick={e => {
               updateUsersPhone(e)
             }}
             color='primary'
             variant='contained'
             style={{ borderRadius: 3 }}
+            color="primary"
           >
             Submit
           </Button>
@@ -118,7 +117,7 @@ export const MFAPhoneForm = connect(
   )
 })
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   caption: {
     fontWeight: 400,
     fontSize: 11,

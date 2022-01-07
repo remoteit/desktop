@@ -55,9 +55,9 @@ export default createModel<RootModel>()({
           }
         )
         auth.setMfaMethod(response.data['MfaPref'])
-        dispatch.ui.set({ successMessage: 'Set preferences success!.' })
+        dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
       } catch (error) {
-        dispatch.ui.set({ errorMessage: `Error when trying set preferences: ${error.message}` })
+        dispatch.ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
       }
 
     },

@@ -21,7 +21,7 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
       {method === 'SOFTWARE_TOKEN_MFA' && (
         <div>
           <p>
-            {'Two-factor configured with'}
+            {'Two-Factor Authentication is '}
             <b style={{ color: '#81c606' }}>{' ON '}</b>
             <b>{' (Authenticator App)'}</b>
           </p>
@@ -32,9 +32,9 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
       {method === 'SMS_MFA' && (
         <div>
           <p>
-            {'Two-factor configured with'}
+            {'Two-Factor Authentication is '}
             <b style={{ color: '#81c606' }}>{' ON '}</b>
-            <b>{'(SMS)'}</b>
+            <b>{' (SMS) '}</b>
           </p>
           {verified && (
             <p>

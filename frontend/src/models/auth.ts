@@ -37,7 +37,7 @@ export interface AWSUser {
   email?: string
   email_verified?: boolean
   phone_number?: string
-  phone_number_verified?: boolean
+  phone_number_verified: boolean
   given_name?: string //first_name
   family_name?: string //last_name
   gender?: string
@@ -105,14 +105,17 @@ export default createModel<RootModel>()({
     async getLastCode() {
       const authService = new AuthService(configAuthService)
       await authService.checkSignIn()
-      return authService?.setupTOTP()
+      const code = await authService?.setupTOTP()
+      dispatch.mfa.set({ lastCode: code })
     },
     async verifyTopCode(code: string) {
       const { setMFAPreference } = dispatch.mfa
       try {
         const authService = new AuthService(configAuthService)
         await authService.verifyTotpToken(code)
-      } catch { }
+      } catch {
+        dispatch.ui.set({ errorMessage: 'Invalid Totp Code.' })
+      }
       setMFAPreference('SOFTWARE_TOKEN_MFA')
     },
     async signInSuccess() {
@@ -262,8 +265,10 @@ export default createModel<RootModel>()({
       const newPassword = passwordValues.password
 
       try {
-        const response = await state.auth.authService?.changePassword(existingPassword, newPassword)
-        dispatch.ui.set({ successMessage: `Password Changed Successfully ${response}` })
+        await state.auth.authService?.changePassword(existingPassword, newPassword)
+        sleep(300)
+        window.location.reload()
+        dispatch.ui.set({ successMessage: `Password Changed Successfully` })
       } catch (error) {
         dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
       }

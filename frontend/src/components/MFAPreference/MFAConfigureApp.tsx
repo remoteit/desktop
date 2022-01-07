@@ -1,6 +1,6 @@
 import React from 'react'
 import QRCode from 'qrcode.react'
-import { Box, Button, Input } from '@material-ui/core'
+import { Box, Button, TextField } from '@material-ui/core'
 
 type Props = {
   email?: string
@@ -52,22 +52,19 @@ export const MFAConfigureApp: React.FC<Props> = ({
           <div>
             <form onSubmit={sendVerifyTotp} style={{ maxWidth: '360px' }}>
               <Box mt={3}>
-                <Input
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  autoComplete="off"
+                <TextField
                   required
                   onChange={e => setTotpVerificationCode(e.currentTarget.value.trim())}
                   value={totpVerificationCode}
-                  className="mr-sm"
-                  placeholder='Enter verification code'
-                />
+                  style={{ marginRight: 3 }}
+                  variant='outlined'
+                  placeholder="Enter verification code" />
               </Box>
               <Box mt={3}>
                 <Button
                   disabled={totpVerificationCode === '' || totpVerificationCode.length < 6}
                   type="submit"
-                  variant='contained'
+                  variant="contained"
                   style={{ borderRadius: 3 }}
                 >
                   Submit
