@@ -26,7 +26,7 @@ export const ListItemCheckbox: React.FC<Props> = ({
     <ListItem disabled={disabled} button dense onClick={() => inputRef.current?.click()}>
       <ListItemIcon>
         <Checkbox
-          checked={checked}
+          checked={!!checked}
           indeterminate={indeterminate}
           inputRef={inputRef}
           onChange={event => onClick(event.target.checked)}

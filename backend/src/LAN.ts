@@ -46,7 +46,7 @@ class LAN {
   }
 
   async getInterfaces() {
-    return new Promise<IInterface[]>((success, failure) => {
+    return new Promise<void>((success, failure) => {
       nw.get_interfaces_list((listErr: Error, list: any) => {
         if (listErr) failure(listErr)
         nw.get_active_interface((activeErr: Error, active: any) => {
@@ -76,7 +76,10 @@ class LAN {
   }
 
   async scan(interfaceName: string) {
-    if (!interfaceName) return
+    if (!interfaceName) {
+      Logger.warn('SCANNING SKIPPED:', { reason: 'no interface name' })
+      return
+    }
 
     try {
       const ipMask = this.findNetmask(interfaceName)

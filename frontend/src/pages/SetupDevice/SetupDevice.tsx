@@ -10,14 +10,12 @@ import { getDevices } from '../../models/accounts'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
 import { spacing } from '../../styling'
-import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { os?: Ios }
 
 export const SetupDevice: React.FC<Props> = ({ os }) => {
-  const { hostname, loading, nameBlacklist } = useSelector((state: ApplicationState) => ({
+  const { hostname, nameBlacklist } = useSelector((state: ApplicationState) => ({
     hostname: state.backend.environment.hostname,
-    loading: !state.backend.scanData.localhost,
     nameBlacklist: getDevices(state)
       .filter((device: IDevice) => !device.shared)
       .map((d: IDevice) => d.name.toLowerCase()),
@@ -25,19 +23,14 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   const css = useStyles()
   const history = useHistory()
   const { backend } = useDispatch<Dispatch>()
-  const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist))
+  const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist) || '')
   const [disableRegister, setDisableRegister] = useState<boolean>(false)
   const [nameError, setNameError] = useState<string>()
   const [selected, setSelected] = useState<ITarget[]>([])
 
   useEffect(() => {
-    if (loading) {
-      emit('scan', 'localhost')
-      analyticsHelper.track('networkScan')
-    } else {
-      setName(safeHostname(hostname, nameBlacklist))
-    }
-  }, [loading])
+    setName(safeHostname(hostname, nameBlacklist))
+  }, [hostname])
 
   useEffect(() => {
     // Refresh target device data
@@ -93,7 +86,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             Register
           </Button>
         </section>
-        <LocalhostScanForm onSelect={setSelected} loading={loading} />
+        <LocalhostScanForm onSelect={setSelected} />
       </form>
     </Body>
   )
