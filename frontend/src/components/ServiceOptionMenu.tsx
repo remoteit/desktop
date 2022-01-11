@@ -1,14 +1,15 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { PROTOCOL } from '../shared/constants'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { DeleteDevice } from '../buttons/DeleteDevice'
+import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
+import { CopyMenuItem } from './CopyMenuItem'
 import { Icon } from './Icon'
 
-type Props = { device?: IDevice }
+type Props = { device?: IDevice; service?: IService; target?: ITarget }
 
-export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
+export const ServiceOptionMenu: React.FC<Props> = ({ device, service, target }) => {
   const { userId } = useSelector((state: ApplicationState) => ({
     userId: state.auth.user?.id,
   }))
@@ -33,21 +34,11 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
         autoFocus={false}
         elevation={2}
       >
-        <MenuItem
-          dense
-          to={`/devices/${device.id}/transfer`}
-          component={Link}
-          autoFocus={false}
-          disabled={!device.permissions.includes('MANAGE')}
-          disableGutters
-        >
-          <ListItemIcon>
-            <Icon name="share" size="md" />
-          </ListItemIcon>
-          <ListItemText primary="Transfer Device" />
-        </MenuItem>
+        <div>
+          <CopyMenuItem icon="share-alt" title="Copy connection link" value={`${PROTOCOL}connect/${service?.id}`} />
+        </div>
         <Divider />
-        <DeleteDevice device={device} menuItem />
+        <DeleteServiceMenuItem device={device} service={service} target={target} />
       </Menu>
     </div>
   )

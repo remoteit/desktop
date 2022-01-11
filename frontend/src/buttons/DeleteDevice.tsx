@@ -12,7 +12,7 @@ type Props = {
   onClick?: () => void
 }
 
-export const DeleteDeviceButton: React.FC<Props> = ({ device, menuItem, onClick }) => {
+export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => {
   const { devices, ui } = useDispatch<Dispatch>()
   const { destroying, userId, setupBusy, setupDeletingDevice } = useSelector((state: ApplicationState) => ({
     userId: state.auth.user?.id,

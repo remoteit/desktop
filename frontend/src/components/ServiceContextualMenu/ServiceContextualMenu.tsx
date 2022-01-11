@@ -2,7 +2,6 @@ import React from 'react'
 import { PROTOCOL } from '../../shared/constants'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
-import { useClipboard } from 'use-clipboard-copy'
 import { CommandButton } from '../../buttons/CommandButton'
 import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
@@ -12,6 +11,7 @@ import { selectConnection } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, Typography, Menu, MenuItem, ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { CopyMenuItem } from '../CopyMenuItem'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -28,7 +28,6 @@ export const ServiceContextualMenu: React.FC = () => {
       device,
     }
   })
-  const clipboard = useClipboard({ copiedTimeout: 1000 })
   const history = useHistory()
   const css = useStyles()
 
@@ -77,17 +76,7 @@ export const ServiceContextualMenu: React.FC = () => {
           <ListItemText primary="Share" />
         </MenuItem>
       )}
-      <MenuItem dense disableGutters onClick={clipboard.copy}>
-        <ListItemIcon>
-          <Icon
-            name={clipboard.copied ? 'check' : 'share-alt'}
-            color={clipboard.copied ? 'success' : undefined}
-            size="md"
-          />
-        </ListItemIcon>
-        <ListItemText primary={clipboard.copied ? 'Copied!' : 'Copy Sharable Link'} />
-        <input type="hidden" ref={clipboard.target} value={`${PROTOCOL}connect/${service?.id}`} />
-      </MenuItem>
+      <CopyMenuItem icon="share-alt" title="Copy Sharable Link" value={`${PROTOCOL}connect/${service?.id}`} />
       {!device?.shared && (
         <MenuItem dense disableGutters onClick={() => handleGo(`/devices/${device?.id}/${service?.id}/edit`)}>
           <ListItemIcon>
