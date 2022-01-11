@@ -2,11 +2,12 @@ import React from 'react'
 import { PROTOCOL } from '../../shared/constants'
 import { useHistory } from 'react-router-dom'
 import { isRemoteUI } from '../../helpers/uiHelper'
-import { CommandButton } from '../../buttons/CommandButton'
+import { CopyButton } from '../../buttons/CopyButton'
 import { getDevices } from '../../models/accounts'
 import { findService } from '../../models/devices'
 import { ComboButton } from '../../buttons/ComboButton'
 import { LaunchButton } from '../../buttons/LaunchButton'
+import { useApplication } from '../../hooks/useApplication'
 import { selectConnection } from '../../helpers/connectionHelper'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -28,6 +29,7 @@ export const ServiceContextualMenu: React.FC = () => {
       device,
     }
   })
+  const app = useApplication(service, connection)
   const history = useHistory()
   const css = useStyles()
 
@@ -56,7 +58,7 @@ export const ServiceContextualMenu: React.FC = () => {
       {!remoteUI && (
         <ListItem className={css.connect} dense>
           <ComboButton connection={connection} service={service} size="small" permissions={device?.permissions} />
-          <CommandButton connection={connection} service={service} size="base" />
+          <CopyButton app={app} icon="copy" size="base" />
           <LaunchButton connection={connection} service={service} size="base" />
         </ListItem>
       )}
@@ -89,6 +91,7 @@ export const ServiceContextualMenu: React.FC = () => {
         <ListItemIcon>
           <Icon name="info-circle" size="md" />
         </ListItemIcon>
+        remoteitdev://connect/80:00:00:00:01:08:D8:97
         <ListItemText primary="Service Details" />
       </MenuItem>
     </Menu>

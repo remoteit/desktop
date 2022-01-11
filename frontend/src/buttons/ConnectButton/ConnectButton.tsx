@@ -28,7 +28,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   service,
   permissions,
   size = 'medium',
-  color = 'grayDarkest',
+  color = 'primary',
   autoConnect,
   fullWidth,
   onClick,
@@ -65,7 +65,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [autoStart, service])
 
-  let title = connection?.autoLaunch ? 'Connect and Launch' : connection?.public ? 'Connect' : 'Add to Network'
+  let title = connection?.public ? 'Connect' : 'Add to Network'
   let disabled = !permissions?.includes('CONNECT')
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
@@ -76,9 +76,11 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     variant = 'text'
   }
 
+  if (connection?.autoLaunch) title += ' + Launch'
+
   if (state === 'ready') {
     title = 'Connecting'
-    color = 'grayDarker'
+    color = 'primary'
   }
   if (stopping) {
     title = 'Removing'

@@ -77,7 +77,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
     <>
       <Typography className={css.body} variant="body2" color="textSecondary">
         <Title>Services</Title>
-        <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="re-scan" />
+        <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" />
       </Typography>
       <List className="collapseList">
         {scanData.map((row, key) => (
