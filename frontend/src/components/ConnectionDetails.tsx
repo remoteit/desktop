@@ -211,8 +211,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       color="alwaysWhite"
                       type="solid"
                       size="md"
-                      connection={connection}
-                      service={service}
+                      app={app}
                       onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
                       onMouseEnter={() => setHover('launch')}
                       onMouseLeave={() => setHover(undefined)}

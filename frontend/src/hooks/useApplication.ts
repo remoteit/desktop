@@ -5,8 +5,8 @@ export const useApplication = (service?: IService, connection?: IConnection) => 
   const [app, setApp] = React.useState<Application>(getApplication(service, connection))
 
   React.useEffect(() => {
-    setApp(getApplication(service, connection))
-  }, [service, connection])
+    if (service) setApp(getApplication(service, connection))
+  }, [service?.typeID, connection])
 
   return app
 }

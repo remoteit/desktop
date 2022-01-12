@@ -58,8 +58,12 @@ export const ServiceContextualMenu: React.FC = () => {
       {!remoteUI && (
         <ListItem className={css.connect} dense>
           <ComboButton connection={connection} service={service} size="small" permissions={device?.permissions} />
-          <CopyButton app={app} icon="copy" size="base" />
-          <LaunchButton connection={connection} service={service} size="base" />
+          {connection?.enabled && (
+            <>
+              <CopyButton app={app} icon="copy" size="base" />
+              <LaunchButton app={app} size="base" />
+            </>
+          )}
         </ListItem>
       )}
       {connection?.enabled && (
@@ -91,7 +95,6 @@ export const ServiceContextualMenu: React.FC = () => {
         <ListItemIcon>
           <Icon name="info-circle" size="md" />
         </ListItemIcon>
-        remoteitdev://connect/80:00:00:00:01:08:D8:97
         <ListItemText primary="Service Details" />
       </MenuItem>
     </Menu>
