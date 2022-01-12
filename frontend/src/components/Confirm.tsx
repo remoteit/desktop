@@ -6,7 +6,7 @@ export const Confirm: React.FC<{
   title?: string
   action?: string
   open: boolean
-  onConfirm: () => void
+  onConfirm: (e: React.MouseEvent) => void
   onDeny: () => void
 }> = ({ title, action = 'Ok', open, onConfirm, onDeny, children }) => (
   <Dialog
