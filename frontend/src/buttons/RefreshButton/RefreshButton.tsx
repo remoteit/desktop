@@ -1,9 +1,8 @@
 import React from 'react'
-import { Tooltip, IconButton } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { Icon } from '../../components/Icon'
+import { IconButton } from '../IconButton'
 
 export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
   const { fetching } = useSelector((state: ApplicationState) => ({
@@ -25,12 +24,15 @@ export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
   }
 
   return (
-    <Tooltip title={title}>
-      <div>
-        <IconButton onClick={onClick} disabled={fetching}>
-          <Icon name="sync" size="sm" type="regular" spin={fetching} />
-        </IconButton>
-      </div>
-    </Tooltip>
+    <IconButton
+      onClick={onClick}
+      disabled={fetching}
+      title={title}
+      icon="sync"
+      size="sm"
+      type="regular"
+      spin={fetching}
+      fixedWidth
+    />
   )
 }
