@@ -149,6 +149,7 @@ export default class ElectronApp {
       titleBarStyle: 'hiddenInset',
       frame: !environment.isMac,
       autoHideMenuBar: true,
+      webPreferences: { preload: path.join(__dirname, 'preload.js') },
     })
 
     this.window.setVisibleOnAllWorkspaces(true)

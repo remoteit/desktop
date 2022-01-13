@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { makeStyles, Popover, ListItem, ListSubheader, TextField, Divider } from '@material-ui/core'
+import { makeStyles, Popover, List, ListItem, ListSubheader, TextField, Divider } from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -45,7 +45,7 @@ export const RegisterButton: React.FC = () => {
   return (
     <>
       <IconButton
-        title="Device Registration"
+        title="Add device"
         variant="contained"
         onClick={handleOpen}
         color="primary"
@@ -59,24 +59,21 @@ export const RegisterButton: React.FC = () => {
         onClose={handleClose}
         anchorEl={el}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        // getContentAnchorEl={null}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <ListSubheader>Add a device</ListSubheader>
-        <ListItemLocation icon="hdd" pathname="/devices/setup" title="This device" onClick={handleClose} dense />
-        <ListItemLocation
-          icon="raspberry-pi"
-          iconType="brands"
-          pathname="/devices/setup"
-          title="Linux / Raspberry Pi"
-          onClick={handleClose}
-          dense
-        />
-        <ListItemLocation icon="vial" pathname="/devices/setup" title="Demo device" onClick={handleClose} dense />
-        &nbsp;
+        <List disablePadding dense>
+          <ListSubheader>Add a device</ListSubheader>
+          <ListItemLocation icon="hdd" pathname="/devices/setup" title="This device" onClick={handleClose} dense />
+          <ListItemLocation
+            icon="raspberry-pi"
+            iconType="brands"
+            pathname="/devices/setup"
+            title="Linux / Raspberry Pi"
+            onClick={handleClose}
+            dense
+          />
+          <ListItemLocation icon="vial" pathname="/devices/setup" title="Demo device" onClick={handleClose} dense />
+        </List>
         <Divider />
         <ListSubheader>Or register a device</ListSubheader>
         {/*

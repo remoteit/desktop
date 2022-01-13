@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { makeStyles, Tooltip, IconButton as MuiIconButton } from '@material-ui/core'
+import { makeStyles, Tooltip, IconButton as MuiIconButton, darken } from '@material-ui/core'
 import { Icon, IconProps } from '../components/Icon/Icon'
 import { spacing } from '../styling'
 import classnames from 'classnames'
@@ -85,5 +85,8 @@ const useStyles = makeStyles(({ palette }) => ({
   contained: ({ color = 'primary' }: IconProps) => ({
     color: palette.alwaysWhite.main,
     backgroundColor: palette[color].main,
+    '&:hover': {
+      backgroundColor: darken(palette[color].main, 0.2),
+    },
   }),
 }))
