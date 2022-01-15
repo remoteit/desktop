@@ -180,7 +180,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         root: {
           color: palette.grayDarkest.main,
           fontSize: fontSizes.xxs,
-          lineHeight: '40px',
+          lineHeight: `${spacing.xl}px`,
+          textTransform: 'uppercase',
+          letterSpacing: 2,
+          fontWeight: 500,
         },
         sticky: { zIndex: 2 },
       },

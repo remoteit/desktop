@@ -19,7 +19,7 @@ export interface IconProps {
   className?: string
   title?: string
   fixedWidth?: boolean
-  onClick?: () => void
+  onClick?: (event: React.MouseEvent) => void
   size?: FontSize
   rotate?: number
   spin?: boolean

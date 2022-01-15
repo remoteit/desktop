@@ -8,12 +8,11 @@ import {
   ListItemSecondaryAction,
   Button,
   Box,
-  Divider,
 } from '@material-ui/core'
 import { dateOptions } from './Duration/Duration'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
-import { ListItemCopy } from './ListItemCopy'
+import { DataCopy } from './DataCopy'
 import { LimitSetting } from './LimitSetting'
 import { Link } from 'react-router-dom'
 import { spacing } from '../styling'
@@ -61,7 +60,7 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
                       <LimitSetting key={limit.name} limit={limit} />
                     ))}
                   </Box>
-                  <ListItemCopy label="License Key" value={license.id} />
+                  <DataCopy label="License Key" value={license.id} />
                 </Quote>
               </ListItem>
             )}

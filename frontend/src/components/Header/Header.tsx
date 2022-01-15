@@ -41,6 +41,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
   return (
     <div className={css.header}>
       <IconButton
+        title="Back"
         disabled={disabledBack}
         onClick={handleBack}
         icon="chevron-left"
@@ -48,6 +49,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         color={disabledBack ? 'grayLight' : 'grayDark'}
       />
       <IconButton
+        title="Forward"
         disabled={disabledForward}
         onClick={handleForward}
         icon="chevron-right"

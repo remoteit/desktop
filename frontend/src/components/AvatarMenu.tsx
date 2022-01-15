@@ -11,7 +11,6 @@ import { PortalUI } from './PortalUI'
 import { spacing } from '../styling'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
-import { windowOpen } from '../services/Browser'
 
 export const AvatarMenu: React.FC = () => {
   const [open, setOpen] = React.useState<boolean>(false)

@@ -7,7 +7,12 @@ import {
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
 } from '../services/graphQLMutation'
-import { graphQLFetchDevices, graphQLFetchDevice, graphQLAdaptor } from '../services/graphQLDevice'
+import {
+  graphQLFetchDevices,
+  graphQLFetchDevice,
+  graphQLCreateRegistration,
+  graphQLAdaptor,
+} from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices } from './accounts'
@@ -51,6 +56,7 @@ type IDeviceState = {
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
+  registrationCode: string
 }
 
 export const defaultState: IDeviceState = {
@@ -75,6 +81,7 @@ export const defaultState: IDeviceState = {
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   userAttributes: [],
+  registrationCode: '',
 }
 
 export default createModel<RootModel>()({
@@ -297,6 +304,15 @@ export default createModel<RootModel>()({
       dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
     },
 
+    async createRegistration(services: IApplicationType['id'][], globalState) {
+      const result = await graphQLCreateRegistration(services)
+      if (result !== 'ERROR') {
+        const { registrationCode } = result?.data?.data?.login
+        console.log('CREATE REGISTRATION', registrationCode)
+        dispatch.devices.set({ registrationCode })
+      }
+    },
+
     async destroy(device: IDevice, globalState) {
       const { auth } = globalState
       dispatch.devices.set({ destroying: true })
@@ -353,6 +369,7 @@ export default createModel<RootModel>()({
       return state
     },
     set(state: IDeviceState, params: DeviceParams) {
+      console.log('SET DEVICE', Object.keys(params))
       Object.keys(params).forEach(key => {
         state[key] = params[key]
       })

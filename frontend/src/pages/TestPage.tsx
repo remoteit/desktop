@@ -17,6 +17,7 @@ export const TestPage: React.FC = () => {
     preferences: state.backend.preferences,
   }))
   const { licensing, ui } = useDispatch<Dispatch>()
+  const showStats = window.location.search === '?stats'
 
   const onSave = (url: string) => {
     emit('preferences', { ...preferences, apiGraphqlURL: url })
@@ -58,6 +59,14 @@ export const TestPage: React.FC = () => {
             onClick={() =>
               emit('preferences', { ...preferences, testUI: 'OFF', allowPrerelease: false, switchApi: false })
             }
+          />
+          <ListItemSetting
+            label={showStats ? 'Hide memory stats' : 'Show memory stats'}
+            subLabel="The site will have to reload for changes to take effect. For best performance --enable-precise-memory-info."
+            onClick={() => {
+              if (showStats) window.location.href = '/'
+              else window.location.href = '/?stats'
+            }}
           />
           <ListItemSetting
             label="Override default APIs"

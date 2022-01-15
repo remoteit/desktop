@@ -10,6 +10,7 @@ import { SettingsPage } from '../pages/SettingsPage'
 import { TestPage } from '../pages/TestPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
+import { SetupLinuxPage } from '../pages/SetupLinuxPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
@@ -101,6 +102,12 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       <Route path="/devices/membership">
         <Panel>
           <OrganizationMembershipPage />
+        </Panel>
+      </Route>
+
+      <Route path="/devices/add/linux">
+        <Panel>
+          <SetupLinuxPage />
         </Panel>
       </Route>
 

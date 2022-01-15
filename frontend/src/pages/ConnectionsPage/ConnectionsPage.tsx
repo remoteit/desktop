@@ -70,7 +70,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
   }, [])
 
   return (
-    <Body>
+    <Body gutterBottom>
       <NewSession />
       {noConnections && (
         <>

@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { DEMO_DEVICE_CLAIM_CODE } from '../../shared/constants'
 import { Typography, Button } from '@material-ui/core'
 import { selectIsFiltered } from '../../models/devices'
 import { isUserAccount } from '../../models/accounts'
@@ -41,7 +42,7 @@ export const DeviceListEmpty: React.FC = () => {
               hideArrow
             >
               <Button
-                onClick={() => devices.claimDevice('GUESTVPC')}
+                onClick={() => devices.claimDevice(DEMO_DEVICE_CLAIM_CODE)}
                 variant="contained"
                 color="primary"
                 size="medium"
