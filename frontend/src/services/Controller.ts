@@ -62,7 +62,7 @@ class Controller extends EventEmitter {
 
   // Retry open with delay, force skips delay
   open(retry?: boolean, force?: boolean) {
-    if (force || (!this.socket?.connected && !this.retrying)) {
+    if (force || (navigator.onLine && !this.socket?.connected && !this.retrying)) {
       this.retrying = setTimeout(
         () => {
           console.log('Retrying socket.io connection')

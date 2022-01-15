@@ -1,4 +1,4 @@
-import { graphQLRequest } from './graphQL'
+import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
 import { updateConnections } from '../helpers/connectionHelper'
 import { store } from '../store'
@@ -228,4 +228,17 @@ function labelsToTags(response: any): IDevice['tags'] {
   const attributes = processAttributes(response)
   if (attributes.color) tags.push(1000 + attributes.color)
   return tags
+}
+
+export async function graphQLCreateRegistration(services: IApplicationType['id'][]) {
+  return await graphQLBasicRequest(
+    ` query($services: [ServiceInput!]) {
+        login {
+          registrationCode(services: $services)
+        }
+      }`,
+    {
+      services: services.map(s => ({ application: s })),
+    }
+  )
 }

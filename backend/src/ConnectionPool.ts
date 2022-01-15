@@ -47,7 +47,8 @@ export default class ConnectionPool {
     Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
     // load connection data
-    connections.map(c => this.set(c))
+    connections.map(c => this.set(c, true, true))
+    this.updated()
   }
 
   // Sync with CLI
@@ -81,7 +82,7 @@ export default class ConnectionPool {
   }
 
   // update single connection
-  set = (connection: IConnection, setCLI?: boolean) => {
+  set = (connection: IConnection, setCLI?: boolean, skipUpdate?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
     d('SET SINGLE CONNECTION', { name: connection.name, id: connection.id })
@@ -92,7 +93,7 @@ export default class ConnectionPool {
       }
     } else {
       instance = this.add(connection)
-      this.updated()
+      if (!skipUpdate) this.updated()
     }
     return instance
   }

@@ -13,6 +13,7 @@ export type Props = {
   iconType?: IconType
   disabled?: boolean
   showDisabled?: boolean
+  disableGutters?: boolean
   dense?: boolean
   className?: string
   match?: string | string[]

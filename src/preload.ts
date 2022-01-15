@@ -5,4 +5,4 @@ function log() {
   console.table(usage)
 }
 
-setInterval(log, 5000)
+// setInterval(log, 5000) - disabled since we seem to have found the memory leak

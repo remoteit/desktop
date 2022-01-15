@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import { makeStyles, Popover, List, ListItem, ListSubheader, TextField, Divider } from '@material-ui/core'
+import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
+import {
+  makeStyles,
+  Popover,
+  List,
+  ListItem,
+  ListSubheader,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+  Divider,
+} from '@material-ui/core'
+import { selectDevice } from '../models/devices'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
-// import { spacing } from '../styling'
-// import { Body } from '../components/Body'
 import { IconButton } from '../buttons/IconButton'
+import { spacing } from '../styling'
+import { Icon } from '../components/Icon'
 
 const CLAIM_CODE_LENGTH = 8
 
@@ -15,7 +27,10 @@ export const RegisterButton: React.FC = () => {
   const [el, setEl] = useState<Element | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming } = useSelector((state: ApplicationState) => state.ui)
+  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
+    claiming: state.ui.claiming,
+    hasDemo: selectDevice(state, DEMO_DEVICE_ID) !== undefined,
+  }))
 
   const handleClose = () => {
     setEl(null)
@@ -61,52 +76,67 @@ export const RegisterButton: React.FC = () => {
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <List disablePadding dense>
+        <List className={css.list} disablePadding dense>
           <ListSubheader>Add a device</ListSubheader>
-          <ListItemLocation icon="hdd" pathname="/devices/setup" title="This device" onClick={handleClose} dense />
+          <ListItemLocation
+            icon="hdd"
+            pathname="/devices/setup"
+            title="This device"
+            onClick={handleClose}
+            disableGutters
+          />
           <ListItemLocation
             icon="raspberry-pi"
             iconType="brands"
-            pathname="/devices/setup"
+            pathname="/devices/add/linux"
             title="Linux / Raspberry Pi"
             onClick={handleClose}
-            dense
+            disableGutters
           />
-          <ListItemLocation icon="vial" pathname="/devices/setup" title="Demo device" onClick={handleClose} dense />
+          <ListItem
+            button
+            disableGutters
+            disabled={hasDemo || claiming}
+            onClick={() => {
+              setCode(DEMO_DEVICE_CLAIM_CODE)
+              devices.claimDevice(DEMO_DEVICE_CLAIM_CODE)
+            }}
+          >
+            <ListItemIcon>
+              <Icon name="aws" size="md" type="brands" fixedWidth />
+            </ListItemIcon>
+            <ListItemText primary="remote.it demo device" secondary={hasDemo && 'Already shared'} />
+          </ListItem>
         </List>
         <Divider />
-        <ListSubheader>Or register a device</ListSubheader>
-        {/*
-         <ListItem>
-            <Typography variant="caption">Or enter a claim code</Typography>
-          </ListItem> */}
         <form
           onSubmit={e => {
             e.preventDefault()
             devices.claimDevice(code)
           }}
         >
-          <ListItem>
-            <TextField
-              autoFocus
-              label="Claim Code"
-              value={code}
-              variant="filled"
-              disabled={claiming}
-              onChange={handleChange}
-              fullWidth
-            />
-            <IconButton
-              inline
-              submit
-              title="Claim"
-              icon="check"
-              size="base"
-              color={claiming || !valid ? 'gray' : 'success'}
-              loading={claiming}
-              disabled={claiming || !valid}
-            />
-          </ListItem>
+          <List className={css.form}>
+            <ListItem disableGutters>
+              <TextField
+                autoFocus
+                label="Claim Code"
+                value={code}
+                variant="filled"
+                disabled={claiming}
+                onChange={handleChange}
+                fullWidth
+              />
+              <IconButton
+                submit
+                title="Claim"
+                icon="check"
+                size="base"
+                color={claiming || !valid ? 'grayDark' : 'success'}
+                loading={claiming}
+                disabled={claiming || !valid}
+              />
+            </ListItem>
+          </List>
         </form>
       </Popover>
     </>
@@ -114,11 +144,13 @@ export const RegisterButton: React.FC = () => {
 }
 
 const useStyles = makeStyles({
+  list: {
+    padding: spacing.xs,
+  },
   form: {
-    display: 'flex',
-    // paddingTop: spacing.md,
-    // paddingBottom: spacing.sm,
-    // '& .MuiList-root, & form': { width: '100%' },
-    // '& .MuiListItem-root': { margin: 0, width: '100%' },
+    padding: spacing.xs,
+    paddingLeft: spacing.sm,
+    paddingRight: spacing.sm,
+    '& button': { marginLeft: spacing.xs },
   },
 })

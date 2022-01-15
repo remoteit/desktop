@@ -164,16 +164,19 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions, licensing } = store.dispatch
+    const { accounts, sessions, licensing, ui } = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
         // active | inactive
         const state = event.state === 'active' ? 'active' : 'inactive'
         event.target.forEach(target => {
+          // if device and device exists
           if (target.device?.id === target.id) {
             target.device.state = state
             console.log('DEVICE STATE', target.device.name, target.device.state)
+
+            // if service and service exists
           } else {
             target.device?.services.find(service => {
               if (service.id === target.service?.id) {
@@ -184,8 +187,20 @@ class CloudController {
               return false
             })
           }
+
+          // if device exists
           if (target.device?.id) {
             accounts.setDevice({ id: target.device.id, device: target.device })
+          }
+
+          // if new unknown device discovered
+          if (!target.device && target.id === target.deviceId && state === 'active') {
+            if (store.getState().devices.registrationCode) {
+              ui.set({
+                redirect: `/devices/${target.deviceId}`,
+                successMessage: `${target.name} registered successfully!`,
+              })
+            }
           }
         })
         break

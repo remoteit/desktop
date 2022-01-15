@@ -1,5 +1,4 @@
 import React from 'react'
-import { PROTOCOL } from '../shared/constants'
 import { useClipboard } from 'use-clipboard-copy'
 import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { Icon } from './Icon'
