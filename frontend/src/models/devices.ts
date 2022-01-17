@@ -369,7 +369,6 @@ export default createModel<RootModel>()({
       return state
     },
     set(state: IDeviceState, params: DeviceParams) {
-      console.log('SET DEVICE', Object.keys(params))
       Object.keys(params).forEach(key => {
         state[key] = params[key]
       })

@@ -38,7 +38,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
   }, [])
 
   return (
-    <Body center>
+    <Body center maxHeight="85%">
       <Typography variant="body2" align="center" color="textSecondary">
         Register your {osName(os)} for remote access
       </Typography>

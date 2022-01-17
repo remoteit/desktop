@@ -19,6 +19,7 @@ export interface IconProps {
   className?: string
   title?: string
   fixedWidth?: boolean
+  fontSize?: number
   onClick?: (event: React.MouseEvent) => void
   size?: FontSize
   rotate?: number
@@ -32,7 +33,10 @@ export interface IconProps {
 export type Ref = HTMLSpanElement
 
 export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
-  ({ color, fixedWidth, name, size, rotate, spin, type = 'regular', inline, inlineLeft, modified, ...props }, ref) => {
+  (
+    { color, fixedWidth, name, size, fontSize, rotate, spin, type = 'regular', inline, inlineLeft, modified, ...props },
+    ref
+  ) => {
     if (name === 'port') {
       name = 'neuter'
       rotate = 90
@@ -42,7 +46,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
       rotate = -45
     }
 
-    const css = useStyles({ color, inline, inlineLeft, size, rotate })
+    const css = useStyles({ color, inline, inlineLeft, size, rotate, fontSize })
     if (!name) return null
 
     // Special Icon Handling
@@ -94,12 +98,13 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
 )
 
 const useStyles = makeStyles(({ palette }) => ({
-  icon: ({ color, inline, inlineLeft, size, rotate }: IconProps) => {
+  icon: ({ color, inline, inlineLeft, size, fontSize, rotate }: IconProps) => {
     const styles: any = {}
     if (color) styles.color = palette[color] ? palette[color].main : color
     if (inline) styles.marginLeft = size ? fontSizes[size] : spacing.md
     if (inlineLeft) styles.marginRight = size ? fontSizes[size] : spacing.md
     if (size) styles.fontSize = styles.height = fontSizes[size]
+    if (fontSize) styles.fontSize = styles.height = fontSize
     if (rotate) styles.transform = `rotate(${rotate}deg)`
     return styles
   },

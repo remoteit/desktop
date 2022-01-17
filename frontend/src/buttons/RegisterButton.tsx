@@ -17,6 +17,7 @@ import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
+import { Link } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 
 const CLAIM_CODE_LENGTH = 8
@@ -27,9 +28,10 @@ export const RegisterButton: React.FC = () => {
   const [el, setEl] = useState<Element | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming, hasDemo } = useSelector((state: ApplicationState) => ({
+  const { claiming, hasDemo, hasThisDevice } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
     hasDemo: selectDevice(state, DEMO_DEVICE_ID) !== undefined,
+    hasThisDevice: !!state.backend.device.uid,
   }))
 
   const handleClose = () => {
@@ -78,18 +80,40 @@ export const RegisterButton: React.FC = () => {
       >
         <List className={css.list} disablePadding dense>
           <ListSubheader>Add a device</ListSubheader>
-          <ListItemLocation
-            icon="hdd"
-            pathname="/devices/setup"
-            title="This device"
-            onClick={handleClose}
+          <ListItem
+            button
             disableGutters
-          />
+            disabled={hasThisDevice}
+            onClick={handleClose}
+            to="/devices/setup"
+            component={Link}
+          >
+            <ListItemIcon>
+              <Icon name="hdd" size="md" fixedWidth />
+            </ListItemIcon>
+            <ListItemText primary="This device" secondary={hasThisDevice && 'Already created'} />
+          </ListItem>
           <ListItemLocation
             icon="raspberry-pi"
             iconType="brands"
             pathname="/devices/add/linux"
-            title="Linux / Raspberry Pi"
+            title="Linux & Raspberry Pi"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            icon="windows"
+            iconType="brands"
+            pathname="/devices/add/windows"
+            title="Windows"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            icon="apple"
+            iconType="brands"
+            pathname="/devices/add/apple"
+            title="Mac"
             onClick={handleClose}
             disableGutters
           />
