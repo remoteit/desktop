@@ -94,7 +94,12 @@ export const OptionsPage: React.FC = () => {
             confirm
           />
         </DesktopUI>
-        <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
+        <ListItemSetting
+          label="Reset interactive guides"
+          subLabel="Turn back on the in-app help bubbles."
+          icon="sparkles"
+          onClick={() => ui.resetGuides()}
+        />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
