@@ -1,8 +1,5 @@
 import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../store'
-import { makeStyles, LinearProgress, List } from '@material-ui/core'
-import { DeviceSetupItem } from './DeviceSetupItem'
+import { makeStyles, LinearProgress } from '@material-ui/core'
 import { ColumnsDrawer } from './ColumnsDrawer'
 import { FilterDrawer } from './FilterDrawer'
 import { Container } from './Container'
@@ -16,10 +13,6 @@ type Props = {
 }
 
 export const DevicesHeader: React.FC<Props> = ({ fetching, restore, children }) => {
-  const { initialized, registeredId } = useSelector((state: ApplicationState) => ({
-    initialized: state.devices.initialized,
-    registeredId: state.backend.device.uid,
-  }))
   const css = useStyles()
 
   useEffect(() => {
@@ -28,16 +21,7 @@ export const DevicesHeader: React.FC<Props> = ({ fetching, restore, children }) 
 
   return (
     <Container
-      header={
-        <>
-          {initialized && !registeredId && (
-            <List dense disablePadding>
-              <DeviceSetupItem restore={restore} />
-            </List>
-          )}
-          {fetching && <LinearProgress className={css.fetching} />}
-        </>
-      }
+      header={fetching && <LinearProgress className={css.fetching} />}
       sidebar={
         <>
           <FilterDrawer />

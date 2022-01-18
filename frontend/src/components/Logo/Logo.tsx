@@ -85,7 +85,7 @@ export const Logo: React.FC<Props> = ({ white, ...props }) => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  light: { fill: '#1699d6' },
-  dark: { fill: '#1699d6' /* '#034b9d' */ },
+  light: { fill: palette.primary.dark /* '#1699d6'  */ },
+  dark: { fill: palette.primary.dark },
   white: { fill: palette.white.main },
 }))

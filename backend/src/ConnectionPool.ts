@@ -47,7 +47,7 @@ export default class ConnectionPool {
     Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
     // load connection data
-    connections.map(c => this.set(c, true, true))
+    connections.map(c => this.set(c, false, true))
     this.updated()
   }
 
@@ -60,7 +60,6 @@ export default class ConnectionPool {
     cliData.forEach(async cliConnection => {
       const connection = this.find(cliConnection.id)?.params
       if (!connection || (!connection.public && this.changed(connection, cliConnection))) {
-        // Logger.info('SYNC CLI -> DESKTOP CONNECTION', { connection, cliConnection })
         this.set({ ...connection, ...cliConnection }, false)
       }
     })

@@ -11,7 +11,7 @@ export function environment() {
   return BROWSER
 }
 
-export function os() {
+export function getOs(): Ios {
   if (isMac()) return 'mac'
   if (isWindows()) return 'windows'
   return 'linux'
@@ -20,6 +20,10 @@ export function os() {
 export function agent() {
   const result = navigator.userAgent.match(/\(.*?\)/)
   return result?.length ? result[0] : ''
+}
+
+export function isActive() {
+  return document.hasFocus() && navigator.onLine
 }
 
 export function isPortal() {

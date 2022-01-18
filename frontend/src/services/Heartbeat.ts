@@ -1,6 +1,7 @@
 import { HEARTBEAT_INTERVAL } from '../shared/constants'
-import { emit } from './Controller'
+import { isActive } from '../services/Browser'
 import { store } from '../store'
+import { emit } from './Controller'
 
 class Heartbeat {
   count = 0
@@ -12,8 +13,8 @@ class Heartbeat {
   }
 
   beat() {
-    const { auth, ui } = store.getState()
-    document.hasFocus() && !ui.offline && auth.backendAuthenticated && emit('heartbeat')
+    const { auth } = store.getState()
+    isActive() && auth.backendAuthenticated && emit('heartbeat')
   }
 
   caffeinate() {

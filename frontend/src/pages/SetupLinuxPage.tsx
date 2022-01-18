@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
-import { Typography } from '@material-ui/core'
+import { Box, Typography } from '@material-ui/core'
 import { DataCopy } from '../components/DataCopy'
 import { Body } from '../components/Body'
+import { Icon } from '../components/Icon'
 
 // const defaultServices = [28, 4]
 
@@ -21,6 +22,9 @@ export const SetupLinuxPage: React.FC = () => {
 
   return (
     <Body center>
+      <Box margin={`-80px 0 -160px 0 `}>
+        <Icon name="linux" fontSize={260} color="grayLightest" type="brands" />
+      </Box>
       <Typography variant="h3" align="center" gutterBottom>
         Run this command on your Linux / Raspberry Pi system to register your device.
       </Typography>

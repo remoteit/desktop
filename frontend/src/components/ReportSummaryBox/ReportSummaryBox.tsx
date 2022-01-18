@@ -25,14 +25,14 @@ export const ReportSummaryBox: React.FC<ReportSummaryBoxProps> = ({ iconTitle, c
           </Typography>
         </div>
         <div className={css.iconContainer}>
-          <Icon name={icon} size="xxxl" />
+          <Icon name={icon} size="max" />
         </div>
       </div>
     </Box>
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   report: {
     color: palette.white.main,
     backgroundColor: palette.primary.main,
