@@ -179,17 +179,17 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'servicePort',
-    label: 'Remote Port',
+    label: 'Service Port',
     value: ({ service }) => service?.port,
   }),
   new ServiceAttribute({
     id: 'serviceHost',
-    label: 'Remote Host',
+    label: 'Service Host',
     value: ({ service }) => service?.host,
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',
-    label: 'Remote Protocol',
+    label: 'Service Protocol',
     value: ({ service }) => service?.protocol,
   }),
   new ServiceAttribute({
