@@ -22,7 +22,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
             <RefreshButton device={device} />
-            <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
+            <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
           <ListHorizontal>
