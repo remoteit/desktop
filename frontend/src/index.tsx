@@ -13,9 +13,6 @@ import './services/Controller'
 import './styling/index.css'
 import './styling/fonts.css'
 import { Layout } from './components/Layout'
-import MemoryStats from 'react-memorystats'
-
-const showStats = window.location.search === '?stats'
 
 analyticsHelper.setup()
 
@@ -25,7 +22,6 @@ ReactDOM.render(
       <CssBaseline />
       <HashRouter>
         <App />
-        {showStats && <MemoryStats corner="bottomLeft" />}
       </HashRouter>
     </Layout>
   </Provider>,
