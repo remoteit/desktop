@@ -44,7 +44,7 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
           <ListItemIcon className={css.mergeIcon}>
             <InitiatorPlatform id={session.platform} connected={!offline} />
           </ListItemIcon>
-          <ListItemText primary={<Title enabled={!offline}>{other ? session.user?.email : 'This device'}</Title>} />
+          <ListItemText primary={<Title enabled={!offline}>{other ? session.user?.email : 'This system'}</Title>} />
         </ListItem>
       )}
       <ListItemLocation

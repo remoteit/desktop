@@ -245,7 +245,7 @@ export const ServiceForm: React.FC<Props> = ({
           <List>
             <ListItem className={css.field}>
               <TextField
-                label="Default Connection Port"
+                label="Default Local Port"
                 value={form.attributes.defaultPort || ''}
                 disabled={disabled}
                 variant="filled"
@@ -255,7 +255,7 @@ export const ServiceForm: React.FC<Props> = ({
                 }}
               />
               <Typography variant="caption">
-                Default local port to use when a device connects to this service.
+                Default local port to use when a system connects to this service.
               </Typography>
             </ListItem>
             <ServiceAttributesForm

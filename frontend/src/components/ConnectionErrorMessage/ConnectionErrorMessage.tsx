@@ -24,7 +24,7 @@ export const ConnectionErrorMessage: React.FC<Props> = ({ connection, service, v
         <ListItemSecondaryAction>
           <Tooltip title="clear">
             <IconButton onClick={() => clearConnectionError(connection)}>
-              <Icon name="times" color="white" size="md" fixedWidth />
+              <Icon name="times" color="alwaysWhite" size="md" fixedWidth />
             </IconButton>
           </Tooltip>
         </ListItemSecondaryAction>
@@ -39,8 +39,8 @@ const useStyles = makeStyles(({ palette }) => ({
   container: {
     backgroundColor: palette.danger.main,
     paddingLeft: spacing.xl,
-    color: palette.white.main,
-    '& .MuiListItemText-secondary': { color: palette.white.main },
+    color: palette.alwaysWhite.main,
+    '& .MuiListItemText-secondary': { color: palette.alwaysWhite.main },
   },
   pointer: {
     position: 'absolute',

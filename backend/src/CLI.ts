@@ -192,6 +192,7 @@ export default class CLI {
         sessionId: c.sessionID?.toLowerCase(),
         restriction: c.restrict,
         timeout: c.timeout,
+        default: false,
       }
 
       if (error) result.error = error

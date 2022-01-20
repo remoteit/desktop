@@ -91,7 +91,7 @@ export const RegisterButton: React.FC = () => {
             <ListItemIcon>
               <Icon name="hdd" size="md" fixedWidth />
             </ListItemIcon>
-            <ListItemText primary="This device" secondary={hasThisDevice && 'Already created'} />
+            <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
           </ListItem>
           <ListItemLocation
             icon="raspberry-pi"

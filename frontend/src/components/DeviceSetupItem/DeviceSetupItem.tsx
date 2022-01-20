@@ -40,7 +40,7 @@ export const DeviceSetupItem: React.FC<{ restore?: boolean }> = ({ restore }) =>
       title = attributeName(thisDevice) || targetDevice.name || ''
       subtitle = `Configure this system.`
     } else {
-      return <Notice>This device is not registered to you.</Notice>
+      return <Notice>This system is not registered to you.</Notice>
     }
   }
 
