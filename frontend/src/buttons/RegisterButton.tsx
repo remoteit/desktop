@@ -11,7 +11,7 @@ import {
   TextField,
   Divider,
 } from '@material-ui/core'
-import { selectDevice } from '../models/devices'
+import { selectDeviceByAccount } from '../models/devices'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -30,7 +30,7 @@ export const RegisterButton: React.FC = () => {
   const [valid, setValid] = useState<boolean>(false)
   const { claiming, hasDemo, hasThisDevice } = useSelector((state: ApplicationState) => ({
     claiming: state.ui.claiming,
-    hasDemo: selectDevice(state, DEMO_DEVICE_ID) !== undefined,
+    hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.auth.user?.id) !== undefined,
     hasThisDevice: !!state.backend.device.uid,
   }))
 

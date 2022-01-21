@@ -15,7 +15,7 @@ import {
 } from '../services/graphQLDevice'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
-import { getActiveAccountId, getAllDevices } from './accounts'
+import { getActiveAccountId, getAllDevices, getDevices } from './accounts'
 import { r3, hasCredentials } from '../services/remote.it'
 import { graphQLGetErrors } from '../services/graphQL'
 import { ApplicationState } from '../store'
@@ -288,6 +288,7 @@ export default createModel<RootModel>()({
       dispatch.ui.guide({ guide: 'guideAWS', step: 2 })
 
       const result = await graphQLClaimDevice(code)
+      if (globalState.auth.user) await dispatch.accounts.setActive(globalState.auth.user.id)
 
       if (result !== 'ERROR') {
         const device = result?.data?.data?.claimDevice
@@ -300,12 +301,13 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ claiming: false })
       }
 
-      if (globalState.auth.user) await dispatch.accounts.setActive(globalState.auth.user.id.toString())
       dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
     },
 
     async createRegistration(services: IApplicationType['id'][], globalState) {
-      const result = await graphQLCreateRegistration(services)
+      const accountId: string = getActiveAccountId(globalState)
+      // if not account id admin then use user id
+      const result = await graphQLCreateRegistration(services, accountId)
       if (result !== 'ERROR') {
         const { registrationCode } = result?.data?.data?.login
         console.log('CREATE REGISTRATION', registrationCode)
@@ -326,6 +328,7 @@ export default createModel<RootModel>()({
               scripting: false,
             })
 
+        await dispatch.connections.clearByDevice(device.id)
         await dispatch.devices.fetch()
       } catch (error) {
         if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
@@ -401,6 +404,10 @@ export function isOffline(instance?: IDevice | IService, connection?: IConnectio
 
 export function selectDevice(state: ApplicationState, deviceId?: string) {
   return getAllDevices(state).find(d => d.id === deviceId)
+}
+
+export function selectDeviceByAccount(state: ApplicationState, deviceId?: string, accountId?: string) {
+  return getDevices(state, accountId).find(d => d.id === deviceId)
 }
 
 export function selectById(state: ApplicationState, id?: string) {
