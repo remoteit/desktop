@@ -53,6 +53,7 @@ export default class ConnectionPool {
 
   // Sync with CLI
   check = async () => {
+    let update = false
     if (binaryInstaller.uninstallInitiated || !user.signedIn) return
     const cliData = await cli.readConnections()
 
@@ -60,7 +61,9 @@ export default class ConnectionPool {
     cliData.forEach(async cliConnection => {
       const connection = this.find(cliConnection.id)?.params
       if (!connection || (!connection.public && this.changed(connection, cliConnection))) {
-        this.set({ ...connection, ...cliConnection }, false)
+        Logger.info('SYNC CONNECTION CLI -> DESKTOP', { connection: { ...connection, ...cliConnection } })
+        this.set({ ...connection, ...cliConnection }, false, true)
+        update = true
       }
     })
 
@@ -68,7 +71,7 @@ export default class ConnectionPool {
     this.pool.forEach(connection => {
       const cliConnection = cliData.find(c => c.id === connection.params.id)
       if (!cliConnection && connection.params.connected && !connection.params.public) {
-        Logger.info('SYNC START DESKSTOP -> CLI CONNECTION', { connection: connection.params })
+        Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         connection.start()
       }
       if (connection.params.host === IP_PRIVATE && connection.params.enabled && preferences.get().useCertificate) {
@@ -78,6 +81,8 @@ export default class ConnectionPool {
         }
       }
     })
+
+    if (update) this.updated()
   }
 
   // update single connection
@@ -88,7 +93,7 @@ export default class ConnectionPool {
     if (instance) {
       if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
         instance.set(connection, setCLI)
-        this.updated()
+        if (!skipUpdate) this.updated()
       }
     } else {
       instance = this.add(connection)
@@ -193,7 +198,7 @@ export default class ConnectionPool {
     const json = this.toJSON()
     if (!user.signedIn) return
     this.file?.write(json)
-    d('CONNECTION POOL UPDATED')
+    // Logger.info('CONNECTION POOL UPDATED')
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
 
@@ -246,14 +251,11 @@ export default class ConnectionPool {
   private migrateConnectionData(connections: IConnection[]) {
     // migrate active to enabled and connected
     return connections.map(c => {
-      // @ts-ignore
-      const enabled = c.active
-      // @ts-ignore
+      c.enabled = c.enabled || c.active
       delete c.active
       // setup safe names for hostname
       c.name = c.name?.toLowerCase().replace(/[-\s]+/g, '-')
-
-      return { ...c, enabled, connected: enabled }
+      return { ...c }
     })
   }
 }

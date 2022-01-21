@@ -28,6 +28,8 @@ class Controller extends EventEmitter {
     ui.set({ offline })
     if (offline) return
 
+    console.log('ONLINE - REFRESHING')
+
     if (state.auth.backendAuthenticated) {
       ui.refreshAll()
     } else {
