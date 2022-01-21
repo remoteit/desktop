@@ -6,7 +6,7 @@ import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
 import { Typography } from '@material-ui/core'
-import { ServiceOptionMenu } from './ServiceOptionMenu'
+import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
@@ -38,7 +38,7 @@ export const ServiceHeaderMenu: React.FC<{
               to={`/devices/${device.id}/${service.id}/share`}
               hide={!device.permissions.includes('MANAGE')}
             />
-            <ServiceOptionMenu device={device} service={service} target={target} />
+            <DeviceOptionMenu device={device} service={service} target={target} />
           </Typography>
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
