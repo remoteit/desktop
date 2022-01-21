@@ -264,6 +264,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           paddingLeft: 0,
           paddingRight: spacing.lg,
           color: palette.grayDarkest.main,
+          fontSize: fontSizes.base,
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
         },
         gutters: {

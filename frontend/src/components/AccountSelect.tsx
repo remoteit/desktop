@@ -1,26 +1,25 @@
 import React from 'react'
-import { makeStyles, TextField, MenuItem, Divider, TextFieldProps } from '@material-ui/core'
+import { makeStyles, Chip, TextField, MenuItem, Divider, TextFieldProps } from '@material-ui/core'
+import { ROLE } from '../models/organization'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getActiveAccountId } from '../models/accounts'
 import { spacing } from '../styling'
 import { useHistory } from 'react-router-dom'
-import classnames from 'classnames'
 
 export const AccountSelect: React.FC<TextFieldProps> = props => {
   const css = useStyles()
   const history = useHistory()
   const { accounts, devices } = useDispatch<Dispatch>()
-  const { user, fetching, options, activeId, orgName } = useSelector((state: ApplicationState) => ({
+  const { user, options, activeId, orgName } = useSelector((state: ApplicationState) => ({
     user: state.auth.user || { id: '', email: '' },
-    fetching: state.devices.fetching,
     activeId: getActiveAccountId(state),
-    options: state.accounts.membership.map(m => ({ id: m.organization.id, name: m.organization.name })),
+    options: state.accounts.membership.map(m => ({ id: m.organization.id, name: m.organization.name, role: m.role })),
     orgName: state.organization.name,
   }))
 
   options.sort((a, b) => (a.name > b.name ? 1 : -1))
-  options.unshift({ id: user.id, name: orgName || user.email })
+  options.unshift({ id: user.id, name: orgName || user.email, role: 'OWNER' })
   if (options.length < 2) return null
 
   return (
@@ -29,9 +28,9 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
       select
       variant="filled"
       value={activeId}
-      disabled={fetching}
+      className={css.selectMenu}
       onChange={async event => {
-        const id = event.target.value
+        const id = event.target.value as string
         if (id) {
           await accounts.setActive(id.toString())
           devices.set({ query: '', searched: false, from: 0 })
@@ -41,8 +40,9 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
       }}
     >
       {options.map(option => (
-        <MenuItem className={classnames(option.id === user?.id && css.primary)} value={option.id} key={option.id}>
+        <MenuItem className={css.menu} value={option.id} key={option.id}>
           {option.name}
+          <Chip label={ROLE[option.role]} size="small" />
         </MenuItem>
       ))}
       <Divider className={css.divider} />
@@ -51,8 +51,12 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
-  primary: { color: palette.primary.main },
-  divider: { marginTop: spacing.xxs, marginBottom: spacing.xxs },
-  action: { right: spacing.xs, marginLeft: spacing.sm },
+const useStyles = makeStyles(({ palette }) => ({
+  selectMenu: { '& .MuiChip-root': { display: 'none' } },
+  menu: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    '& .MuiChip-root': { color: palette.gray.main, marginLeft: spacing.md },
+  },
+  divider: { marginTop: spacing.sm, marginBottom: spacing.xs },
 }))
