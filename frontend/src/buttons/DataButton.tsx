@@ -6,7 +6,7 @@ import { Icon } from '../components/Icon'
 type Props = {
   title: string
   value?: string
-  label: string
+  label?: string
   icon: string | React.ReactElement
   iconColor?: Color
   showBackground?: boolean

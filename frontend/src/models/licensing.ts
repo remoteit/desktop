@@ -288,7 +288,7 @@ export function parseLicense(data) {
   }
 }
 
-export function getRemoteitLicense(state: ApplicationState) {
+export function getRemoteitLicense(state: ApplicationState): ILicense | null {
   return getLicenses(state).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 }
 

@@ -90,7 +90,7 @@ export const darkColors: { [key in Color]: string } = {
   warning: '#ed9912',
   warningLightest: 'rgba(237,153,18,0.16)',
   warningHighlight: 'rgba(237,153,18,0.06)',
-  grayLightest: '#222326',
+  grayLightest: '#1a1b1d', //'#222326',
   grayLighter: '#292A2D', //'#35363A',
   grayLight: '#35363A', //'#54565b',
   gray: '#797c86',

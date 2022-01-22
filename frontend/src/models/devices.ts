@@ -304,12 +304,10 @@ export default createModel<RootModel>()({
       dispatch.ui.guide({ guide: 'guideAWS', step: 3 })
     },
 
-    async createRegistration(services: IApplicationType['id'][], globalState) {
-      const accountId: string = getActiveAccountId(globalState)
-      // if not account id admin then use user id
+    async createRegistration({ services, accountId }: { services: IApplicationType['id'][]; accountId: string }) {
       const result = await graphQLCreateRegistration(services, accountId)
       if (result !== 'ERROR') {
-        const { registrationCode } = result?.data?.data?.login
+        const { registrationCode } = result?.data?.data?.login?.account
         console.log('CREATE REGISTRATION', registrationCode)
         dispatch.devices.set({ registrationCode })
       }

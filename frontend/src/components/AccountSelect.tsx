@@ -35,7 +35,7 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
           await accounts.setActive(id.toString())
           devices.set({ query: '', searched: false, from: 0 })
           devices.fetch()
-          history.push('/devices')
+          // history.push('/devices')
         }
       }}
     >
