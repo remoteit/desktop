@@ -47,7 +47,7 @@ type IDeviceState = {
   query: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
-  sort: 'name' | '-name' | 'state' | '-state' | 'color' | '-color'
+  sort: string
   owner: 'all' | 'me' | 'others'
   platform: number[] | undefined
   size: number
@@ -56,7 +56,7 @@ type IDeviceState = {
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
-  registrationCode: string
+  registrationCommands?: { curl: string; wget: string }
 }
 
 export const defaultState: IDeviceState = {
@@ -81,7 +81,7 @@ export const defaultState: IDeviceState = {
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   userAttributes: [],
-  registrationCode: '',
+  registrationCommands: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -307,9 +307,9 @@ export default createModel<RootModel>()({
     async createRegistration({ services, accountId }: { services: IApplicationType['id'][]; accountId: string }) {
       const result = await graphQLCreateRegistration(services, accountId)
       if (result !== 'ERROR') {
-        const { registrationCode } = result?.data?.data?.login?.account
-        console.log('CREATE REGISTRATION', registrationCode)
-        dispatch.devices.set({ registrationCode })
+        const { wget, curl } = result?.data?.data?.login?.account
+        console.log('CREATE REGISTRATION', wget, curl)
+        dispatch.devices.set({ registrationCommands: { wget, curl } })
       }
     },
 

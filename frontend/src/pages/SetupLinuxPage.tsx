@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getActiveOrganizationMembership } from '../models/accounts'
-import { makeStyles, Box, Typography, Chip } from '@material-ui/core'
+import { makeStyles, Box, Typography, Chip, Link } from '@material-ui/core'
 import { DataCopy } from '../components/DataCopy'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
@@ -10,11 +10,11 @@ import { Icon } from '../components/Icon'
 // const defaultServices = [28, 4]
 
 export const SetupLinuxPage: React.FC = () => {
-  const { user, organization, activeMembership, registrationCode } = useSelector((state: ApplicationState) => ({
+  const { user, organization, activeMembership, registrationCommands } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     organization: state.organization,
     activeMembership: getActiveOrganizationMembership(state),
-    registrationCode: state.devices.registrationCode,
+    registrationCommands: state.devices.registrationCommands,
   }))
   const [type, setType] = useState<'curl' | 'wget'>('wget')
   const dispatch = useDispatch<Dispatch>()
@@ -31,7 +31,7 @@ export const SetupLinuxPage: React.FC = () => {
     dispatch.devices.createRegistration({ services: [28], accountId }) // ssh
     return () => {
       // remove registration code so we don't redirect to new device page
-      dispatch.devices.set({ registrationCode: undefined })
+      dispatch.devices.set({ registrationCommands: undefined })
     }
   }, [accountId])
 
@@ -54,13 +54,14 @@ export const SetupLinuxPage: React.FC = () => {
         </Box>
         <DataCopy
           showBackground
-          value={`R3_REGISTRATION_CODE="${registrationCode || '...generating code...'}" \\\nsh -c "$(${
-            type === 'curl' ? 'curl -L' : 'wget -qO-'
-          } https://downloads.remote.it/remoteit/install_agent.sh)"`}
+          value={registrationCommands ? registrationCommands[type] : '...generating command...'}
         />
       </section>
       <Typography variant="body2" align="center" color="textSecondary">
-        This page will automatically update when complete
+        This page will automatically update when complete.
+        <Link href="https://link.remote.it/support/streamline-install" target="_blank">
+          Learn more.
+        </Link>
       </Typography>
       {/* <Typography variant="body2" color="textSecondary">
         Services
@@ -89,5 +90,6 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiBox-root': { display: 'flex', flexDirection: 'column' },
     '& .MuiChip-root': { marginRight: -20, paddingRight: 20 },
     '& .MuiChip-outlined': { borderWidth: 0, color: palette.gray.main },
+    '& .MuiIconButton-root': { minHeight: '3em', minWidth: 600 },
   },
 }))
