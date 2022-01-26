@@ -184,7 +184,7 @@ export default createModel<RootModel>()({
 
     async setAll(all: IConnection[], globalState) {
       setLocalStorage(globalState, 'connections', all)
-      dispatch.connections.set({ all })
+      dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },
   }),
   reducers: {

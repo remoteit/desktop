@@ -287,7 +287,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiInputBase: {
-        input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
+        input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs, borderRadius: radius },
       },
       MuiInputLabel: {
         shrink: {
