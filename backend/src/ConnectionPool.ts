@@ -70,7 +70,7 @@ export default class ConnectionPool {
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
       const cliConnection = cliData.find(c => c.id === connection.params.id)
-      if (!cliConnection && connection.params.connected && !connection.params.public) {
+      if (!cliConnection && connection.params.enabled && !connection.params.public) {
         Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         connection.start()
       }
