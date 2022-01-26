@@ -9,8 +9,8 @@ import { Drawer } from './Drawer'
 
 const sortFilters = [
   { value: 'name', name: 'Name' },
-  { value: 'state', name: 'State' },
-  { value: 'attributes.$remoteit.color', name: 'Color' },
+  { value: 'state,name', name: 'State' },
+  { value: 'attributes.$remoteit.color,name', name: 'Color' },
 ]
 const deviceFilters = [
   { value: 'all', name: 'All' },
