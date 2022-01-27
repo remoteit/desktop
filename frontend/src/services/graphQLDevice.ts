@@ -230,14 +230,18 @@ function labelsToTags(response: any): IDevice['tags'] {
   return tags
 }
 
-export async function graphQLCreateRegistration(services: IApplicationType['id'][]) {
+export async function graphQLCreateRegistration(services: IApplicationType['id'][], account: string) {
   return await graphQLBasicRequest(
-    ` query($services: [ServiceInput!]) {
+    ` query($account: String, $services: [ServiceInput!]) {
         login {
-          registrationCode(services: $services)
+          account(id: $account) {
+            wget: registrationCommand(method: WGET, services: $services)
+            curl: registrationCommand(method: CURL, services: $services)
+          }
         }
       }`,
     {
+      account,
       services: services.map(s => ({ application: s })),
     }
   )

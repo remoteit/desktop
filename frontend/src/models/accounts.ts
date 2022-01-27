@@ -184,6 +184,11 @@ export function getActiveUser(state: ApplicationState): IUserRef | undefined {
   return membershipOrganizations.find(m => m.id === id) || state.auth.user
 }
 
+export function getActiveOrganizationMembership(state: ApplicationState): IOrganizationMembership | undefined {
+  const id = getActiveAccountId(state)
+  return state.accounts.membership.find(m => m.organization.id === id)
+}
+
 export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {
   return state.devices.all[accountId || getActiveAccountId(state)] || []
 }

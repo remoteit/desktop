@@ -101,7 +101,6 @@ export default createModel<RootModel>()({
       console.log('PUBLIC CONNECTIONS', publicConnections)
       publicConnections.forEach(connection => {
         const session = all.find(s => s.id === connection.sessionId)
-        console.log('PUBLIC CONNECTION SESSION', session, connection)
         connection.connecting = false
         connection.enabled = !!session
         connection.connected = !!session

@@ -264,6 +264,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           paddingLeft: 0,
           paddingRight: spacing.lg,
           color: palette.grayDarkest.main,
+          fontSize: fontSizes.base,
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
         },
         gutters: {
@@ -286,7 +287,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiInputBase: {
-        input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
+        input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs, borderRadius: radius },
       },
       MuiInputLabel: {
         shrink: {

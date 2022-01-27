@@ -199,8 +199,10 @@ export default class ElectronApp {
   }
 
   private reload() {
-    if (!this.window) return
-    this.window.webContents.reload()
+    const lastWindow = this.window
+    this.window = undefined
+    this.createMainWindow()
+    lastWindow?.destroy()
   }
 
   private getStartUrl(): string {

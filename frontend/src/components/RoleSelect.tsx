@@ -9,6 +9,7 @@ type Props = { member: IOrganizationMember }
 export const RoleSelect: React.FC<Props> = ({ member }) => {
   const dispatch = useDispatch<Dispatch>()
   const disabled = member.role === 'OWNER' || member.license !== 'LICENSED'
+  const role = member.license === 'UNLICENSED' ? 'MEMBER' : member.role
 
   const handleSelect = (role: IOrganizationRole) => {
     dispatch.organization.setMembers([{ ...member, role }])
@@ -20,7 +21,7 @@ export const RoleSelect: React.FC<Props> = ({ member }) => {
       hiddenLabel
       size="small"
       disabled={disabled}
-      value={member.role}
+      value={role}
       variant="filled"
       onChange={e => handleSelect(e.target.value as IOrganizationRole)}
     >

@@ -22,7 +22,8 @@ export const DeleteServiceMenuItem: React.FC<Props> = ({ device, service, target
 
   let disabled = deleting || setupBusy
 
-  if (!service || !device?.permissions.includes('MANAGE')) disabled = true
+  if (!service) return null
+  if (!device?.permissions.includes('MANAGE')) disabled = true
 
   let title = 'Delete this service'
   let message = "Deleting services can't be undone."

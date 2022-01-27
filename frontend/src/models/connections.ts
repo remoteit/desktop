@@ -167,6 +167,14 @@ export default createModel<RootModel>()({
       else set({ all: all.filter(c => c.id !== id) })
     },
 
+    async clearByDevice(deviceId: string, globalState) {
+      const { clear } = dispatch.connections
+      const { all } = globalState.connections
+      all.forEach(c => {
+        if (c.deviceID === deviceId) clear(c.id)
+      })
+    },
+
     async clearRecent(_, globalState) {
       const { set } = dispatch.connections
       const { all } = globalState.connections
@@ -176,7 +184,7 @@ export default createModel<RootModel>()({
 
     async setAll(all: IConnection[], globalState) {
       setLocalStorage(globalState, 'connections', all)
-      dispatch.connections.set({ all })
+      dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },
   }),
   reducers: {

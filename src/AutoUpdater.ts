@@ -13,6 +13,7 @@ export default class AppUpdater {
 
   constructor() {
     autoUpdater.logger = Logger
+    autoUpdater.autoDownload = false
 
     autoUpdater.on('update-available', info => {
       Logger.info('Update available', { info })

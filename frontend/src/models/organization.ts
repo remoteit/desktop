@@ -114,7 +114,7 @@ export default createModel<RootModel>()({
         if (index > -1) updated[index] = m
         else updated.push(m)
       })
-      dispatch.organization.set({ members: updated })
+      await dispatch.organization.set({ members: updated })
 
       const action = updated.length > state.organization.members.length ? 'added' : 'updated'
       const result = await graphQLSetMembers(

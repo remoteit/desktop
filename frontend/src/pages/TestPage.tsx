@@ -1,15 +1,15 @@
 import React from 'react'
 import { Dispatch, ApplicationState } from '../store'
 import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
+import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { useSelector, useDispatch } from 'react-redux'
+import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { Container } from '../components/Container'
 import { TestUI } from '../components/TestUI'
-import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
-import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 
 export const TestPage: React.FC = () => {
   const { tests, informed, preferences } = useSelector((state: ApplicationState) => ({
@@ -17,7 +17,6 @@ export const TestPage: React.FC = () => {
     preferences: state.backend.preferences,
   }))
   const { licensing, ui } = useDispatch<Dispatch>()
-  const showStats = window.location.search === '?stats'
 
   const onSave = (url: string) => {
     emit('preferences', { ...preferences, apiGraphqlURL: url })
@@ -59,14 +58,6 @@ export const TestPage: React.FC = () => {
             onClick={() =>
               emit('preferences', { ...preferences, testUI: 'OFF', allowPrerelease: false, switchApi: false })
             }
-          />
-          <ListItemSetting
-            label={showStats ? 'Hide memory stats' : 'Show memory stats'}
-            subLabel="The site will have to reload for changes to take effect. For best performance --enable-precise-memory-info."
-            onClick={() => {
-              if (showStats) window.location.href = '/'
-              else window.location.href = '/?stats'
-            }}
           />
           <ListItemSetting
             label="Override default APIs"
