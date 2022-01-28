@@ -171,9 +171,18 @@ export default class ElectronApp {
       event.preventDefault()
     })
 
-    this.window.webContents.on('new-window', (event, url) => {
-      event.preventDefault()
-      electron.shell.openExternal(url)
+    this.window.webContents.setWindowOpenHandler(({ url }) => {
+      // console.log('Open window:', url)
+      electron.shell.openExternal(url);
+      return { action: 'deny' };
+    });
+    
+    let wc = this.window.webContents
+    wc.on('will-navigate', function (e, url) {
+      if (url != wc.getURL()) {
+        e.preventDefault()
+        electron.shell.openExternal(url)
+      }
     })
 
     this.logWebErrors()
