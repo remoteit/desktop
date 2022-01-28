@@ -56,7 +56,7 @@ type IDeviceState = {
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
-  registrationCommands?: { curl: string; wget: string }
+  registrationCommand?: string
 }
 
 export const defaultState: IDeviceState = {
@@ -81,7 +81,7 @@ export const defaultState: IDeviceState = {
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   userAttributes: [],
-  registrationCommands: undefined,
+  registrationCommand: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -307,9 +307,9 @@ export default createModel<RootModel>()({
     async createRegistration({ services, accountId }: { services: IApplicationType['id'][]; accountId: string }) {
       const result = await graphQLCreateRegistration(services, accountId)
       if (result !== 'ERROR') {
-        const { wget, curl } = result?.data?.data?.login?.account
-        console.log('CREATE REGISTRATION', wget, curl)
-        dispatch.devices.set({ registrationCommands: { wget, curl } })
+        const { registrationCommand } = result?.data?.data?.login?.account
+        console.log('CREATE REGISTRATION', registrationCommand)
+        dispatch.devices.set({ registrationCommand })
       }
     },
 

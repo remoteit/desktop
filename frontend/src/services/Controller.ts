@@ -194,7 +194,6 @@ function getEventHandlers() {
     // Connections --- TODO validate we need these three channels
     'service/connected': (msg: ConnectionMessage) => {
       connections.updateConnection(msg.connection)
-      analyticsHelper.trackConnect('connectionSucceeded', msg.connection)
     },
     'service/disconnected': (msg: ConnectionMessage) => {
       connections.updateConnection(msg.connection)
