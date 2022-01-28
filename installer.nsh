@@ -139,7 +139,7 @@
                             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
 
                             ; Waits for unregister to complete
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -jj status'
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j --skipCloud status'
 
                             MessageBox MB_OK "Your device was unregistered!"
 
