@@ -32,10 +32,14 @@ class CloudController {
   }
 
   checkOffline = () => {
-    if (navigator.onLine) this.socket?.reconnect()
+    if (navigator.onLine && store.getState().auth.authenticated) {
+      console.log('ONLINE - RECONNECT CLOUD SOCKET')
+      this.socket?.reconnect()
+    }
   }
 
   close() {
+    console.log('CLOSE CLOUD SOCKET')
     this.socket?.close()
   }
 

@@ -28,7 +28,8 @@ class Controller extends EventEmitter {
     ui.set({ offline })
     if (offline) return
 
-    console.log('ONLINE - REFRESHING')
+    this.socket?.open()
+    console.log('ONLINE - RECONNECT LOCAL SOCKET')
 
     if (state.auth.backendAuthenticated) {
       ui.refreshAll()
@@ -67,16 +68,17 @@ class Controller extends EventEmitter {
     if (force || (navigator.onLine && !this.socket?.connected && !this.retrying)) {
       this.retrying = setTimeout(
         () => {
-          console.log('Retrying socket.io connection')
+          console.log('Retrying local socket.io connection')
           this.retrying = undefined
           this.socket?.open()
         },
-        retry && !isPortal() ? FRONTEND_RETRY_DELAY : 0
+        retry ? FRONTEND_RETRY_DELAY : 0
       )
     }
   }
 
   close() {
+    console.log('CLOSE LOCAL SOCKET')
     this.socket?.close()
   }
 
@@ -104,6 +106,7 @@ function getEventHandlers() {
 
   return {
     connect: () => {
+      console.log('CONNECT LOCAL SOCKET')
       controller.auth()
       ui.set({ connected: true })
       backend.set({ error: false })
