@@ -163,7 +163,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions, licensing, ui } = store.dispatch
+    const { accounts, sessions, licensing, ui, devices } = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -199,6 +199,7 @@ class CloudController {
                 redirect: `/devices/${target.deviceId}`,
                 successMessage: `${target.name} registered successfully!`,
               })
+              devices.fetch()
             }
           }
         })
