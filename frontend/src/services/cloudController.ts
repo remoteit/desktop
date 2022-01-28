@@ -33,7 +33,6 @@ class CloudController {
 
   checkOffline = () => {
     if (navigator.onLine) this.socket?.reconnect()
-    else this.close()
   }
 
   close() {

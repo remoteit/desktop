@@ -20,7 +20,7 @@ function sleep(ms) {
 }
 
 const USER_KEY = 'user'
-
+const HOSTED_UI_KEY = 'amplify-signin-with-hostedUI'
 export const CHECKBOX_REMEMBER_KEY = 'remember-username'
 
 export interface AuthState {
@@ -128,9 +128,8 @@ export default createModel<RootModel>()({
           console.error('SESSION ERROR', result.error, result)
           if (result.error?.message) ui.set({ errorMessage: result.error.message })
         }
-      } catch (err) {
-        console.log('check sign in error:')
-        console.log(err)
+      } catch (error) {
+        console.error('Check sign in error', error)
       }
     },
     async handleSignInSuccess(cognitoUser: CognitoUser, state): Promise<void> {
@@ -142,7 +141,7 @@ export default createModel<RootModel>()({
         }
 
         if (cognitoUser?.authProvider === 'Google') {
-          setLocalStorage(state, 'amplify-signin-with-hostedUI', 'true')
+          setLocalStorage(state, HOSTED_UI_KEY, 'true')
         }
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.fetchUser()
@@ -197,7 +196,7 @@ export default createModel<RootModel>()({
      */
     async signedOut(_: void, state) {
       await state.auth.authService?.signOut()
-      removeLocalStorage(state, 'amplify-signin-with-hostedUI')
+      removeLocalStorage(state, HOSTED_UI_KEY)
       removeLocalStorage(state, USER_KEY)
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
