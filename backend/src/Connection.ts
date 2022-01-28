@@ -30,7 +30,6 @@ export default class Connection extends EventEmitter {
     this.params.enabled = true
     this.params.error = undefined
     if (!this.params.public) cli.addConnection(this.params, this.error)
-    EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
   stop() {

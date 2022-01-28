@@ -84,10 +84,10 @@ class Controller {
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
     socket.on('filePrompt', () => EventBus.emit(electronInterface.EVENTS.filePrompt))
 
-    this.initBackend()
-    this.check()
     binaryInstaller.check()
     headlessUpdater.check()
+    this.initBackend()
+    this.check()
   }
 
   recapitate = () => {

@@ -54,14 +54,14 @@ export default class ConnectionPool {
   // Sync with CLI
   check = async () => {
     let update = false
-    if (binaryInstaller.uninstallInitiated || !user.signedIn) return
+    if (!binaryInstaller.ready || binaryInstaller.inProgress || !user.signedIn) return
     const cliData = await cli.readConnections()
 
     // move connections: cli -> desktop
-    cliData.forEach(async cliConnection => {
+    cliData.forEach(cliConnection => {
       const connection = this.find(cliConnection.id)?.params
       if (!connection || (!connection.public && this.changed(connection, cliConnection))) {
-        Logger.info('SYNC CONNECTION CLI -> DESKTOP', { connection: { ...connection, ...cliConnection } })
+        Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
         this.set({ ...connection, ...cliConnection }, false, true)
         update = true
       }
@@ -69,12 +69,15 @@ export default class ConnectionPool {
 
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
+      if (!connection.params.enabled || connection.params.public) return
+
       const cliConnection = cliData.find(c => c.id === connection.params.id)
-      if (!cliConnection && connection.params.enabled && !connection.params.public) {
+      if (!cliConnection) {
         Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         connection.start()
+        update = true
       }
-      if (connection.params.host === IP_PRIVATE && connection.params.enabled && preferences.get().useCertificate) {
+      if (connection.params.host === IP_PRIVATE && preferences.get().useCertificate) {
         if (!connection.params.error) {
           Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: connection.params })
           connection.error(new Error('Connection certificate error, unable to use custom hostname.'))
@@ -110,18 +113,23 @@ export default class ConnectionPool {
   }
 
   changed = (c1: IConnection, c2: IConnection) => {
-    return (
-      c1.ip !== c2.ip ||
-      c1.host !== c2.host ||
-      c1.port !== c2.port ||
-      c1.enabled !== c2.enabled ||
-      c1.startTime !== c2.startTime ||
-      c1.connected !== c2.connected ||
-      c1.connecting !== c2.connecting ||
-      c1.disconnecting !== c2.disconnecting ||
-      c1.reachable !== c2.reachable ||
-      c1.sessionId !== c2.sessionId
-    )
+    const props: (keyof IConnection)[] = [
+      'host',
+      'port',
+      'enabled',
+      'startTime',
+      'connected',
+      'connecting',
+      'disconnecting',
+      'reachable',
+      'sessionId',
+    ]
+    return props.some(prop => {
+      if (c1[prop] !== c2[prop]) {
+        Logger.info('CONNECTION CHANGED', { prop, conn: c1[prop], cli: c2[prop] })
+        return true
+      }
+    })
   }
 
   find = (id: string) => {
@@ -251,7 +259,9 @@ export default class ConnectionPool {
   private migrateConnectionData(connections: IConnection[]) {
     // migrate active to enabled and connected
     return connections.map(c => {
-      c.enabled = c.enabled || c.active
+      // @ts-ignore
+      c.enabled = !!(c.enabled || c.active)
+      // @ts-ignore
       delete c.active
       // setup safe names for hostname
       c.name = c.name?.toLowerCase().replace(/[-\s]+/g, '-')

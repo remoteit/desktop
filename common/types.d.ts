@@ -138,7 +138,7 @@ declare global {
     default?: boolean // if the connection is in a default state - gets removed on modification
     deviceID?: string
     disconnecting?: boolean
-    enabled?: boolean // if the connection is active
+    enabled: boolean // if the connection is active
     endTime?: number // unix timestamp connection close time
     error?: ISimpleError
     failover?: boolean // allow proxy failover
@@ -152,6 +152,7 @@ declare global {
     name?: string
     online?: boolean // online if service is online
     owner?: IUserRef
+    path?: string // application path
     port?: number
     proxyOnly?: boolean // disabled p2p
     public?: boolean // if the connection should be a public proxy link
@@ -166,7 +167,7 @@ declare global {
     timeout?: number // timeout to disconnect in minutes
     typeID?: number // service type ID
     username?: string // support for launching where username could be saved
-    [index: string]: any // needed to be able to iterate the keys :(
+    // [index: string]: any // needed to be able to iterate the keys :(
   }
 
   type IConnectionState =
