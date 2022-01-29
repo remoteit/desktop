@@ -55,7 +55,6 @@ export const ServiceEditPage: React.FC<Props> = ({ targets, targetDevice, device
             service.attributes = { ...service.attributes, ...form.attributes }
             devices.setServiceAttributes(service)
           }
-          exit()
         }}
       />
     </ServiceHeaderMenu>

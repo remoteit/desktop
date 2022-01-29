@@ -3,6 +3,7 @@ import { store } from '../store'
 import { isPortal } from '../services/Browser'
 import { PORT, FRONTEND_RETRY_DELAY } from '../shared/constants'
 import { EventEmitter } from 'events'
+import network from '../services/Network'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 class Controller extends EventEmitter {
@@ -16,22 +17,22 @@ class Controller extends EventEmitter {
     const { protocol, host } = window.location
     const isDev = host === 'localhost:3000'
     this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
-    this.setOffline()
-    window.addEventListener('online', this.setOffline)
-    window.addEventListener('offline', this.setOffline)
+    this.onNetworkConnect()
+    network.on('connect', this.onNetworkConnect)
   }
 
-  setOffline = () => {
+  log(...args) {
+    console.log(`%c${args[0]}`, 'color:lime;font-weight:bold', ...args.slice(1))
+  }
+
+  onNetworkConnect = () => {
     const state = store.getState()
     const { ui, auth } = store.dispatch
-    const offline = !navigator.onLine
-    ui.set({ offline })
-    if (offline) return
 
-    this.socket?.open()
-    console.log('ONLINE - RECONNECT LOCAL SOCKET')
+    this.log('ONLINE - CONNECT LOCAL SOCKET')
 
     if (state.auth.backendAuthenticated) {
+      this.open()
       ui.refreshAll()
     } else {
       ui.set({ errorMessage: '' })
@@ -68,7 +69,7 @@ class Controller extends EventEmitter {
     if (force || (navigator.onLine && !this.socket?.connected && !this.retrying)) {
       this.retrying = setTimeout(
         () => {
-          console.log('Retrying local socket.io connection')
+          this.log('Retrying local socket.io connection')
           this.retrying = undefined
           this.socket?.open()
         },
@@ -78,7 +79,7 @@ class Controller extends EventEmitter {
   }
 
   close() {
-    console.log('CLOSE LOCAL SOCKET')
+    this.log('CLOSE LOCAL SOCKET')
     this.socket?.close()
   }
 
@@ -93,7 +94,7 @@ class Controller extends EventEmitter {
   }
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
-    console.log('Controller emit', event, args)
+    this.log('Controller emit', event, args)
     this.socket?.emit(event, ...args)
     return true
   }
@@ -106,7 +107,7 @@ function getEventHandlers() {
 
   return {
     connect: () => {
-      console.log('CONNECT LOCAL SOCKET')
+      controller.log('CONNECT LOCAL SOCKET')
       controller.auth()
       ui.set({ connected: true })
       backend.set({ error: false })
@@ -125,17 +126,17 @@ function getEventHandlers() {
     },
 
     pool: (result: IConnection[]) => {
-      console.log('socket pool', result)
+      controller.log('socket pool', result)
       connections.restoreConnections(result)
     },
 
     connection: (result: IConnection) => {
-      console.log('socket connection', result)
+      controller.log('socket connection', result)
       connections.updateConnection(result)
     },
 
     targets: (result: ITarget[]) => {
-      console.log('socket targets', result)
+      controller.log('socket targets', result)
       if (result) {
         backend.set({ targets: result })
         backend.targetUpdated(result)
@@ -143,17 +144,17 @@ function getEventHandlers() {
     },
 
     device: (result: ITargetDevice) => {
-      console.log('socket device', result)
+      controller.log('socket device', result)
       if (result) backend.targetDeviceUpdated(result)
     },
 
     scan: (result: IScanData) => {
-      console.log('socket scan', result)
+      controller.log('socket scan', result)
       if (result) backend.set({ scanData: result })
     },
 
     interfaces: (result: IInterface[]) => {
-      console.log('socket interfaces', result)
+      controller.log('socket interfaces', result)
       if (result) {
         backend.set({ interfaces: result })
         analyticsHelper.setOobActive(result.length > 1)
@@ -207,7 +208,7 @@ function getEventHandlers() {
     },
 
     'binary/install/error': (error: string) => binaries.installError(error),
-    'binary/install/progress': (progress: number) => console.log('binary/install/progress', progress),
+    'binary/install/progress': (progress: number) => controller.log('binary/install/progress', progress),
     'binary/installed': (info: InstallationInfo) => binaries.installed(info),
     'binary/not-installed': (binary: BinaryName) => binaries.notInstalled(binary),
   } as EventHandlers
