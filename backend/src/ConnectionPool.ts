@@ -235,13 +235,15 @@ export default class ConnectionPool {
   }
 
   private get usedPorts() {
-    return this.pool.reduce(
-      (result: number[], c) => {
-        if (c.params.port) result.push(c.params.port)
-        return result
-      },
-      [WEB_PORT]
-    )
+    return this.pool
+      .reduce(
+        (result: number[], c) => {
+          if (c.params.port) result.push(c.params.port)
+          return result
+        },
+        [WEB_PORT]
+      )
+      .sort()
   }
 
   private migrateLegacyFile() {
