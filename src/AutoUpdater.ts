@@ -13,7 +13,6 @@ export default class AppUpdater {
 
   constructor() {
     autoUpdater.logger = Logger
-    autoUpdater.autoDownload = false
 
     autoUpdater.on('update-available', info => {
       Logger.info('Update available', { info })
@@ -30,8 +29,8 @@ export default class AppUpdater {
 
     EventBus.on(EVENTS.preferences, ({ autoUpdate }: IPreferences) => {
       autoUpdater.allowPrerelease = preferences.get().allowPrerelease || false
-      if (autoUpdate !== this.autoUpdate) this.check(true)
       this.autoUpdate = !!autoUpdate
+      if (this.autoUpdate) this.check(true)
     })
 
     this.autoUpdate = !!preferences.get().autoUpdate

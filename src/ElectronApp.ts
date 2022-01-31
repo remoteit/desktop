@@ -35,7 +35,7 @@ export default class ElectronApp {
       this.app.quit()
     }
     this.app.setAsDefaultProtocolClient(this.protocol)
-    Logger.info('ELECTRON STARTING UP')
+    Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
     // Windows event
     this.app.on('ready', this.handleAppReady)
@@ -173,10 +173,10 @@ export default class ElectronApp {
 
     this.window.webContents.setWindowOpenHandler(({ url }) => {
       // console.log('Open window:', url)
-      electron.shell.openExternal(url);
-      return { action: 'deny' };
-    });
-    
+      electron.shell.openExternal(url)
+      return { action: 'deny' }
+    })
+
     let wc = this.window.webContents
     wc.on('will-navigate', function (e, url) {
       if (url != wc.getURL()) {
