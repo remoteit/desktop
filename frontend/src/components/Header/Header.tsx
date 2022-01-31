@@ -40,6 +40,13 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
   return (
     <div className={css.header}>
+      {singlePanel && (
+        <>
+          <RegisterButton />
+          <RefreshButton />
+          <AccountSelect label="Device List" />
+        </>
+      )}
       <IconButton
         title="Back"
         disabled={disabledBack}
@@ -85,13 +92,6 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         <TestUI>
           <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
         </TestUI>
-        {singlePanel && (
-          <>
-            <RegisterButton />
-            <RefreshButton />
-            <AccountSelect label="Device List" />
-          </>
-        )}
       </Route>
     </div>
   )
