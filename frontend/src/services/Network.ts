@@ -33,7 +33,7 @@ class Network extends EventEmitter {
 
   awake = () => {
     this.log('SYSTEM WAKE')
-    this.emit('connect')
+    this.connect()
   }
 
   offline = () => {
@@ -44,9 +44,12 @@ class Network extends EventEmitter {
 
   online = () => {
     this.log('NETWORK ONLINE')
-    const online = navigator.onLine
-    store.dispatch.ui.set({ offline: !online })
-    if (online) this.emit('connect')
+    store.dispatch.ui.set({ offline: !navigator.onLine })
+    this.connect()
+  }
+
+  connect = () => {
+    if (navigator.onLine) this.emit('connect')
   }
 
   emit(event: string | symbol, ...args: any[]) {
