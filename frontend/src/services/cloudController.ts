@@ -134,6 +134,8 @@ class CloudController {
   }
 
   parse(response): ICloudEvent | undefined {
+    if (response.data === 'pong') return
+
     const state = store.getState()
     try {
       const json = JSON.parse(response.data)
