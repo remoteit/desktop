@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect, useCallback, useMemo } from 'react'
 import { DEFAULT_INTERFACE } from '../../models/ui'
 import { Button, CircularProgress, TextField, MenuItem, Typography } from '@material-ui/core'
 import { Dispatch, ApplicationState } from '../../store'
@@ -6,33 +6,37 @@ import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import { ScanNetwork } from '../ScanNetwork'
 import { spacing, fontSizes } from '../../styling'
+import { emit } from '../../services/Controller'
+import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = {
   data: IScanData
-  onScan: (network: string) => void
   interfaces: IInterface[]
   targets: ITarget[]
   privateIP: string
 }
 
-export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, privateIP }) => {
+export const Scan: React.FC<Props> = ({ data, interfaces, targets, privateIP }) => {
   const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: ApplicationState) => state.ui)
-  const selected = data[scanInterface] || {}
+
+  const selected = useMemo(() => data[scanInterface] || {}, [data, scanInterface])
+
   const selectedTimestamp = scanTimestamp[scanInterface]
   const selectedLoading = scanLoading[scanInterface]
   const noResults = selected.data && !selected.data.length
 
   const scan = useCallback(
     (i: string) => {
-      onScan(i)
+      emit('scan', i)
       ui.set({
         scanLoading: { [i]: true },
         scanTimestamp: { [i]: selected.timestamp },
       })
+      analyticsHelper.track('networkScan')
     },
-    [selected, onScan, ui]
+    [selected, ui]
   )
 
   useEffect(() => {
@@ -40,7 +44,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
       let name = interfaces[0].name
       interfaces.forEach(i => i.active && (name = i.name))
       ui.set({ scanInterface: name })
-      scan(name) // auto scan
+      if (!selected.data) scan(name) // auto scan
     }
   }, [interfaces, scanInterface, scan, ui])
 
@@ -82,10 +86,7 @@ export const Scan: React.FC<Props> = ({ data, onScan, interfaces, targets, priva
             )}
           </TextField>
         </div>
-        <Typography variant="caption">
-          Scan your system and network <br />
-          for open ports to host
-        </Typography>
+        <Typography variant="caption">Scan your system and network for open ports to host</Typography>
         <Button color="primary" variant="contained" onClick={() => scan(scanInterface)} disabled={selectedLoading}>
           {selectedLoading ? (
             <>
@@ -119,7 +120,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiCircularProgress-root': { marginLeft: spacing.md },
     '& .MuiButton-contained': { marginRight: 0 },
     '& .MuiFormControl-root': { width: 250 },
-    '& .MuiTypography-root': { textAlign: 'right', marginRight: spacing.md },
+    '& .MuiTypography-root': { textAlign: 'right', marginRight: spacing.md, marginLeft: spacing.md, maxWidth: 150 },
     '& samp': {
       fontSize: fontSizes.sm,
       fontFamily: 'Roboto Mono',
