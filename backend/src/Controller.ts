@@ -19,6 +19,8 @@ import server from './server'
 import user, { User } from './User'
 import launch from './launch'
 
+const DEFAULT_SOCKETS_LENGTH = 3
+
 class Controller {
   private io: SocketIO.Server
   private pool: ConnectionPool
@@ -52,7 +54,7 @@ class Controller {
 
     if (!socket) throw new Error('Socket.io server failed to start.')
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
-    if (socket.eventNames().includes('init')) socket.removeAllListeners()
+    if (socket.eventNames().length > DEFAULT_SOCKETS_LENGTH) socket.removeAllListeners()
 
     socket.on('user/lock', user.signOut)
     socket.on('user/sign-out', this.signOut)
@@ -84,10 +86,10 @@ class Controller {
     socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
     socket.on('filePrompt', () => EventBus.emit(electronInterface.EVENTS.filePrompt))
 
-    this.initBackend()
-    this.check()
     binaryInstaller.check()
     headlessUpdater.check()
+    this.initBackend()
+    this.check()
   }
 
   recapitate = () => {

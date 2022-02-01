@@ -41,16 +41,16 @@ export function SignInForm() {
 
   return (
     <CognitoAuth
+      fullWidth
+      hideCaptcha
+      showCheckboxRemember
       authService={authService}
       checkedCheckboxRemember={rememberMe}
       errorMessage={signInError}
-      fullWidth
-      hideCaptcha={true}
       inputEmail={localUsername}
       onClickCheckboxRemember={onClickCheckboxRemember}
       onSignInSuccess={(user: CognitoUser) => auth.handleSignInSuccess(user)}
       segmentSettings={segmentSettings}
-      showCheckboxRemember={true}
       themeOverride={theme}
     />
   )

@@ -235,8 +235,7 @@ export async function graphQLCreateRegistration(services: IApplicationType['id']
     ` query($account: String, $services: [ServiceInput!]) {
         login {
           account(id: $account) {
-            wget: registrationCommand(method: WGET, services: $services)
-            curl: registrationCommand(method: CURL, services: $services)
+            registrationCommand(services: $services)
           }
         }
       }`,

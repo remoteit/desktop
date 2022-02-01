@@ -22,7 +22,6 @@ export function getRestApi(): string {
   } catch {
     return API_URL
   }
-
 }
 
 export function getWebSocketURL(): string {
@@ -36,6 +35,7 @@ export function getWebSocketURL(): string {
 export async function apiError(error: unknown) {
   const { ui, auth } = store.dispatch
   console.error('API ERROR:', error)
+  console.trace()
 
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401 || error.response?.status === 403) {

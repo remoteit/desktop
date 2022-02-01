@@ -18,12 +18,12 @@ export class HeadlessUpdater {
     if (!environment.isHeadless) return
     try {
       const response = await Axios.get(LATEST)
-      Logger.info('LATEST VERSION IS', { version: response.data.tag_name })
+      Logger.info('LATEST HEADLESS VERSION IS', { version: response.data.tag_name })
       const latest = response.data.tag_name
       let desktopVersion = preferences.get().version
       let current = desktopVersion && semverCompare(desktopVersion, latest) >= 0
       if (!current) {
-        Logger.warn('THERE IS A NEW VERSION AVAILABLE', { latest })
+        Logger.warn('THERE IS A NEW HEADLESS VERSION AVAILABLE', { latest })
         EventBus.emit(HeadlessUpdater.EVENTS.downloaded, latest.substring(1))
       }
 

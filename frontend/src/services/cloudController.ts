@@ -1,4 +1,5 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
+import network from '../services/Network'
 import { getToken } from './remote.it'
 import { AxiosResponse } from 'axios'
 import { getWebSocketURL } from '../helpers/apiHelper'
@@ -9,15 +10,23 @@ import { selectById } from '../models/devices'
 import { combinedName } from '../shared/nameHelper'
 import { setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
-import { emit } from './Controller'
 import { agent } from '../services/Browser'
+import { emit } from './Controller'
 
 class CloudController {
   socket?: ReconnectingWebSocket
   token?: string
+  pingInterval = 5 * 60 * 1000 // 5 minutes
+  timer?: NodeJS.Timeout
 
   init() {
     this.connect()
+    network.on('connect', this.reconnect)
+    this.timer = setTimeout(this.ping, this.pingInterval)
+  }
+
+  log(...args) {
+    console.log(`%c${args[0]}`, 'color:cyan;font-weight:bold', ...args.slice(1))
   }
 
   connect() {
@@ -25,24 +34,29 @@ class CloudController {
     this.socket = new ReconnectingWebSocket(getWebSocketURL())
     this.socket.addEventListener('open', this.onOpen)
     this.socket.addEventListener('message', this.onMessage)
-    this.socket.addEventListener('close', e => console.log('CLOUD WS closed', e))
-    this.socket.addEventListener('error', e => console.warn('CLOUD WS error', e))
-    window.addEventListener('online', this.checkOffline)
-    window.addEventListener('offline', this.checkOffline)
+    this.socket.addEventListener('close', e => this.log('CLOSED CLOUD SOCKET', e))
+    this.socket.addEventListener('error', e => this.log('ERROR CLOUD SOCKET', e))
   }
 
-  checkOffline = () => {
-    if (navigator.onLine) this.socket?.reconnect()
-    else this.close()
+  ping = () => {
+    this.log('PING CLOUD SOCKET')
+    this.socket?.send('ping')
+  }
+
+  reconnect = () => {
+    if (store.getState().auth.authenticated) {
+      this.log('ONLINE - RECONNECT CLOUD SOCKET')
+      this.socket?.reconnect()
+    }
   }
 
   close() {
+    this.log('CLOSE CLOUD SOCKET')
     this.socket?.close()
   }
 
   onOpen = event => {
-    console.log('\n-------------------------> SOCKET OPEN\n\n')
-    console.log('CLOUD WS opened', event)
+    this.log('OPENED CLOUD SOCKET', event)
     this.authenticate()
   }
 
@@ -105,9 +119,9 @@ class CloudController {
   }
 
   onMessage = response => {
-    console.log('\n-------------------------> SOCKET MESSAGE\n\n', response.data)
+    this.log('\nCLOUD SOCKET MESSAGE\n\n', response.data)
     let event = this.parse(response)
-    console.log('EVENT', event)
+    this.log('EVENT', event)
     if (!event) return
     event = this.update(event)
     notify(event)
@@ -120,6 +134,8 @@ class CloudController {
   }
 
   parse(response): ICloudEvent | undefined {
+    if (response.data === 'pong') return
+
     const state = store.getState()
     try {
       const json = JSON.parse(response.data)
@@ -164,7 +180,7 @@ class CloudController {
   }
 
   update(event: ICloudEvent) {
-    const { accounts, sessions, licensing, ui } = store.dispatch
+    const { accounts, sessions, licensing, ui, devices } = store.dispatch
 
     switch (event.type) {
       case 'DEVICE_STATE':
@@ -174,14 +190,14 @@ class CloudController {
           // if device and device exists
           if (target.device?.id === target.id) {
             target.device.state = state
-            console.log('DEVICE STATE', target.device.name, target.device.state)
+            this.log('DEVICE STATE', target.device.name, target.device.state)
 
             // if service and service exists
           } else {
             target.device?.services.find(service => {
               if (service.id === target.service?.id) {
                 service.state = state
-                console.log('SERVICE STATE', service.name, service.state)
+                this.log('SERVICE STATE', service.name, service.state)
                 return true
               }
               return false
@@ -195,11 +211,12 @@ class CloudController {
 
           // if new unknown device discovered
           if (!target.device && target.id === target.deviceId && state === 'active') {
-            if (store.getState().devices.registrationCommands) {
+            if (store.getState().devices.registrationCommand) {
               ui.set({
                 redirect: `/devices/${target.deviceId}`,
                 successMessage: `${target.name} registered successfully!`,
               })
+              devices.fetch()
             }
           }
         })
@@ -243,7 +260,7 @@ class CloudController {
             accounts.setDevice({ id: target.device.id, device: target.device })
           }
 
-          console.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)
+          this.log('CONNECTION STATE', target.connection?.name, target.connection?.connected)
         })
         break
 
@@ -252,7 +269,7 @@ class CloudController {
         break
 
       case 'LICENSE_UPDATED':
-        console.log('LICENSE UPDATED EVENT', event)
+        this.log('LICENSE UPDATED EVENT', event)
         licensing.updated()
         break
     }

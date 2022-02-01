@@ -73,13 +73,14 @@ export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   uid: '',
 }
 
-export const DEFAULT_CONNECTION = {
+export const DEFAULT_CONNECTION: IConnection = {
   id: '',
   name: '',
   owner: { id: '', email: '' },
   deviceID: '',
   online: false,
   timeout: 15,
+  enabled: false,
   ip: IP_PRIVATE,
   autoLaunch: false,
   restriction: IP_OPEN,

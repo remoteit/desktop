@@ -1,22 +1,23 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { getActiveOrganizationMembership } from '../models/accounts'
-import { makeStyles, Box, Typography, Chip, Link } from '@material-ui/core'
+import { makeStyles, Box, Typography, Link } from '@material-ui/core'
 import { DataCopy } from '../components/DataCopy'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
+import { Help } from '../components/Help'
 
 // const defaultServices = [28, 4]
 
 export const SetupLinuxPage: React.FC = () => {
-  const { user, organization, activeMembership, registrationCommands } = useSelector((state: ApplicationState) => ({
+  const { user, organization, activeMembership, registrationCommand } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     organization: state.organization,
     activeMembership: getActiveOrganizationMembership(state),
-    registrationCommands: state.devices.registrationCommands,
+    registrationCommand: state.devices.registrationCommand,
   }))
-  const [type, setType] = useState<'curl' | 'wget'>('wget')
+  // const [type, setType] = useState<'curl' | 'wget'>('wget')
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
@@ -31,7 +32,7 @@ export const SetupLinuxPage: React.FC = () => {
     dispatch.devices.createRegistration({ services: [28], accountId }) // ssh
     return () => {
       // remove registration code so we don't redirect to new device page
-      dispatch.devices.set({ registrationCommands: undefined })
+      dispatch.devices.set({ registrationCommand: undefined })
     }
   }, [accountId])
 
@@ -45,22 +46,24 @@ export const SetupLinuxPage: React.FC = () => {
       </Typography>
       <Typography variant="h3" align="center">
         Run this command to register your device
-        {accountName && <> with {accountName}</>}
+        {accountName && (
+          <>
+            {' '}
+            with <Help message="You can register to any organization you are an Admin">{accountName}</Help>
+          </>
+        )}
       </Typography>
       <section className={css.section}>
-        <Box>
+        {/* <Box>
           <Chip label="wget" variant={type === 'wget' ? 'default' : 'outlined'} onClick={() => setType('wget')} />
           <Chip label="curl" variant={type === 'curl' ? 'default' : 'outlined'} onClick={() => setType('curl')} />
-        </Box>
-        <DataCopy
-          showBackground
-          value={registrationCommands ? registrationCommands[type] : '...generating command...'}
-        />
+        </Box> */}
+        <DataCopy showBackground value={registrationCommand ? registrationCommand : '...generating command...'} />
       </section>
       <Typography variant="body2" align="center" color="textSecondary">
         This page will automatically update when complete.
         <Link href="https://link.remote.it/support/streamline-install" target="_blank">
-          Learn more.
+          Troubleshooting & instructions.
         </Link>
       </Typography>
       {/* <Typography variant="body2" color="textSecondary">
@@ -87,9 +90,9 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    '& .MuiBox-root': { display: 'flex', flexDirection: 'column' },
-    '& .MuiChip-root': { marginRight: -20, paddingRight: 20 },
-    '& .MuiChip-outlined': { borderWidth: 0, color: palette.gray.main },
+    // '& .MuiBox-root': { display: 'flex', flexDirection: 'column' },
+    // '& .MuiChip-root': { marginRight: -20, paddingRight: 20 },
+    // '& .MuiChip-outlined': { borderWidth: 0, color: palette.gray.main },
     '& .MuiIconButton-root': { minHeight: '3em', minWidth: 600 },
   },
 }))

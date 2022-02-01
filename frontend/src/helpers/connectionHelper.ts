@@ -35,11 +35,9 @@ export function connectionName(service?: nameObj, device?: nameObj): string {
 export function newConnection(service?: IService | null) {
   const state = store.getState()
   const user = getActiveUser(state)
-  const port = service?.attributes.defaultPort //|| state.backend.freePort
 
   let connection: IConnection = {
     ...DEFAULT_CONNECTION,
-    port,
     owner: { id: user?.id || '', email: user?.email || 'Unknown' },
     failover: service?.attributes.route !== 'p2p',
     proxyOnly: service?.attributes.route === 'proxy',

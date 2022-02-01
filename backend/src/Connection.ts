@@ -1,12 +1,11 @@
 import cli from './cliInterface'
 import debug from 'debug'
 import EventBus from './EventBus'
-import { EventEmitter } from 'events'
 import { IP_OPEN, IP_PRIVATE } from './sharedCopy/constants'
 
 const d = debug('r3:backend:Connection')
 
-export default class Connection extends EventEmitter {
+export default class Connection {
   params!: IConnection
 
   static EVENTS: { [name: string]: SocketEvent } = {
@@ -16,7 +15,6 @@ export default class Connection extends EventEmitter {
   }
 
   constructor(connection: IConnection) {
-    super()
     this.set(connection)
   }
 
@@ -30,7 +28,6 @@ export default class Connection extends EventEmitter {
     this.params.enabled = true
     this.params.error = undefined
     if (!this.params.public) cli.addConnection(this.params, this.error)
-    EventBus.emit(Connection.EVENTS.connected, { connection: this.params, raw: 'Connected' })
   }
 
   stop() {
