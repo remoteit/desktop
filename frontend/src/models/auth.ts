@@ -174,9 +174,9 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
       dispatch.auth.setError(error)
     },
-    async signedIn() {
+    async dataReady() {
+      dispatch.backend.set({ initialized: true })
       dispatch.licensing.init()
-      dispatch.ui.init()
       await cloudController.init()
       await dispatch.accounts.init()
       await dispatch.organization.init()
@@ -186,6 +186,9 @@ export default createModel<RootModel>()({
       dispatch.applicationTypes.fetch()
       dispatch.announcements.fetch()
       dispatch.sessions.fetch()
+    },
+    async signedIn() {
+      dispatch.ui.init()
     },
     async signOut(_, rootState) {
       if (rootState.auth.backendAuthenticated) emit('user/sign-out')
