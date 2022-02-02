@@ -119,11 +119,11 @@ function getEventHandlers() {
 
     unauthorized: (error: Error) => auth.backendSignInError(error.message),
 
-    authenticated: () => auth.backendAuthenticated(),
+    authenticated: auth.backendAuthenticated,
 
-    disconnect: () => auth.disconnect(),
+    disconnect: auth.disconnect,
 
-    dataReady: backend.initialized,
+    dataReady: auth.dataReady,
 
     connect_error: () => {
       backend.set({ error: true })

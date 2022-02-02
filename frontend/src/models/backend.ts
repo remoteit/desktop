@@ -73,9 +73,6 @@ const state: IBackendState = {
 export default createModel<RootModel>()({
   state,
   effects: dispatch => ({
-    async initialized() {
-      dispatch.backend.set({ initialized: true })
-    },
     async targetDeviceUpdated(targetDevice: ITargetDevice, globalState) {
       const { ui, backend, devices } = dispatch
       const { device } = globalState.backend
