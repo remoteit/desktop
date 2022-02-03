@@ -174,7 +174,8 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
       dispatch.auth.setError(error)
     },
-    async dataReady() {
+    async dataReady(_: void, rootState) {
+      if (rootState.backend.initialized) return
       dispatch.backend.set({ initialized: true })
       dispatch.licensing.init()
       await cloudController.init()
