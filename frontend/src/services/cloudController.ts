@@ -146,6 +146,7 @@ class CloudController {
 
   onMessage = response => {
     this.log('CLOUD SOCKET MESSAGE\n', response.data)
+    if (response.data === 'pong') return
     let event = this.parse(response)
     this.log('EVENT', event)
     if (!event) return
