@@ -39,7 +39,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => 
   if (!device || (device.accountId !== userId && !device.permissions.includes('MANAGE'))) return null
 
   const destroy = () => {
-    if (device.thisDevice) {
+    if (device.thisDevice && device.owner.id === userId) {
       ui.set({ setupDeletingDevice: true, setupBusy: true })
       emit('device', 'DELETE')
     } else {
@@ -60,7 +60,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => 
     warning = 'This device will have to be re-shared to you if you wish to access it again.'
   }
 
-  if (device.thisDevice) {
+  if (device.thisDevice && device.permissions.includes('MANAGE')) {
     disabled = false
     title = 'Unregister this device'
     warning = (

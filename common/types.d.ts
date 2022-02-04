@@ -129,7 +129,6 @@ declare global {
     offline: boolean
   }
   interface IConnection {
-    address?: string // the connection url returned from cli
     autoLaunch?: boolean
     commandTemplate?: string // command line launch template
     connected?: boolean

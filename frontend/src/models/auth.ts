@@ -175,7 +175,10 @@ export default createModel<RootModel>()({
       dispatch.auth.setError(error)
     },
     async dataReady(_: void, rootState) {
-      if (rootState.backend.initialized) return
+      if (rootState.backend.initialized && !isPortal()) {
+        console.warn('BACKEND ALREADY INITIALIZED')
+        return
+      }
       dispatch.backend.set({ initialized: true })
       dispatch.licensing.init()
       await cloudController.init()
@@ -189,6 +192,7 @@ export default createModel<RootModel>()({
       dispatch.sessions.fetch()
     },
     async signedIn() {
+      if (isPortal()) dispatch.auth.dataReady()
       dispatch.ui.init()
     },
     async signOut(_, rootState) {
@@ -213,6 +217,7 @@ export default createModel<RootModel>()({
       dispatch.search.reset()
       dispatch.licensing.reset()
       dispatch.billing.reset()
+      dispatch.backend.reset()
       dispatch.tags.reset()
       dispatch.ui.reset()
       dispatch.accounts.setActive('')

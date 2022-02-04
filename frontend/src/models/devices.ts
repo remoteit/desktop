@@ -19,7 +19,6 @@ import {
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices } from './accounts'
-import { r3, hasCredentials } from '../services/remote.it'
 import { graphQLGetErrors } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -123,8 +122,6 @@ export default createModel<RootModel>()({
         platform,
       }
 
-      if (!(await hasCredentials())) return
-
       set({ fetching: true })
       const { devices, connections, total, contacts, error } = await graphQLFetchProcessor(options)
 
@@ -153,10 +150,8 @@ export default createModel<RootModel>()({
       const { set } = dispatch.devices
       const device = selectDevice(globalState, id)
       const accountId = device?.accountId || getActiveAccountId(globalState)
-
       let result: IDevice | undefined
-
-      if (!(await hasCredentials()) || !id) return
+      if (!id) return
 
       set({ fetching: true })
       try {

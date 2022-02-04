@@ -1,13 +1,10 @@
 import { createModel } from '@rematch/core'
-import { DEVELOPER_KEY } from '../shared/constants'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { getRestApi, apiError } from '../helpers/apiHelper'
-import { r3, getToken } from '../services/remote.it'
+import { graphQLConnect, graphQLDisconnect } from '../services/graphQLMutation'
+import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { selectById } from '../models/devices'
 import { RootModel } from './rootModel'
 import { emit } from '../services/Controller'
-import axios from 'axios'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 type IConnectionsState = { all: IConnection[]; useCommand: boolean }
 
@@ -63,22 +60,8 @@ export default createModel<RootModel>()({
       dispatch.connections.setAll(connections)
     },
 
-    async headerOptions() {
-      const token = await getToken()
-      return {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          developerKey: DEVELOPER_KEY,
-          authorization: token,
-        },
-      }
-    },
-
     async proxyConnect(connection: IConnection): Promise<any> {
-      const data = { wait: 'true', hostip: connection.publicRestriction, deviceaddress: connection.id }
-
-      let proxyConnection = {
+      const proxyConnection = {
         ...connection,
         createdTime: Date.now(),
         startTime: Date.now(),
@@ -88,55 +71,31 @@ export default createModel<RootModel>()({
 
       setConnection(proxyConnection)
 
-      try {
-        let result = await axios.post(
-          `${getRestApi()}/device/connect`,
-          data,
-          await dispatch.connections.headerOptions()
-        )
-        console.log('CONNECTION RESULT', result)
-        const response = r3.processData(result)
-        const proxyResult: ProxyConnectionResult = response.connection || {}
-        console.log('PROXY CONNECTED', proxyResult)
-
+      const result = await graphQLConnect(connection.id, connection.publicRestriction)
+      if (result !== 'ERROR') {
+        const data = result?.data?.data?.connect
+        console.log('PROXY CONNECTED', data)
         setConnection({
           ...proxyConnection,
-          publicId: proxyResult.connectionid,
+          publicId: data.id,
           connecting: false,
           connected: true,
           error: undefined,
           isP2P: false,
-          startTime: Date.now(),
-          sessionId: proxyResult.sessionID?.toLowerCase(),
-          reverseProxy: proxyResult.reverseProxy,
-          address: proxyResult.proxy,
-          timeout: proxyResult.proxyExpirationSec / 60,
-          port: proxyResult.reverseProxy ? undefined : +proxyResult.proxyport,
-          host: proxyResult.reverseProxy ? proxyResult.proxyURL : proxyResult.proxyserver,
+          startTime: data.created,
+          sessionId: data.session.id,
+          reverseProxy: data.reverseProxy,
+          timeout: data.timeout / 60,
+          port: data.port,
+          host: data.host,
         })
-      } catch (error) {
-        console.log('CONNECTION ERROR', error)
-        if (axios.isAxiosError(error)) r3.processError(error)
-        apiError(error)
       }
     },
 
     async proxyDisconnect(connection: IConnection) {
-      setConnection({ ...connection, address: undefined, enabled: false, host: undefined, port: undefined })
-      console.log('PROXY DISCONNECT', connection)
-      const data = { deviceaddress: connection.id, connectionid: connection.publicId }
-      try {
-        let result = await axios.post(
-          `${getRestApi()}/device/connect/stop`,
-          data,
-          await dispatch.connections.headerOptions()
-        )
-        const proxyResult = r3.processData(result)
-        console.log('PROXY DISCONNECTED', proxyResult)
-      } catch (error) {
-        if (axios.isAxiosError(error)) r3.processError(error)
-        apiError(error)
-      }
+      setConnection({ ...connection, enabled: false, host: undefined, port: undefined })
+      const result = await graphQLDisconnect(connection.id, connection.publicId)
+      if (result !== 'ERROR') console.log('PROXY DISCONNECTED', result)
     },
 
     async connect(connection: IConnection) {
