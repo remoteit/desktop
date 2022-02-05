@@ -14,7 +14,7 @@ export default class Command {
   admin: boolean = false
   quiet: boolean = false
 
-  onError: ErrorCallback = () => {}
+  onError: (error: Error) => void = () => {}
 
   constructor(options: { command?: string; admin?: boolean; onError?: ErrorCallback; quiet?: boolean }) {
     if (options.command) this.commands = [options.command]
@@ -64,7 +64,6 @@ export default class Command {
         quiet: !this.onError,
         exec: this.toString(),
         admin: this.admin,
-        headless: environment.isHeadless,
         elevated: environment.isElevated,
       })
 

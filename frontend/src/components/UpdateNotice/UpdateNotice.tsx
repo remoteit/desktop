@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { Snackbar, Button, IconButton } from '@material-ui/core'
 import { selectUpdateNotice } from '../../models/backend'
-import { isHeadless } from '../../services/Browser'
+import { isElectron } from '../../services/Browser'
 import { Icon } from '../Icon'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -17,7 +17,7 @@ export const UpdateNotice: React.FC = () => {
     if (updateReady) setOpen(true)
   }, [updateReady])
 
-  if (isHeadless()) return null
+  if (!isElectron()) return null
 
   return (
     <Snackbar
@@ -32,7 +32,7 @@ export const UpdateNotice: React.FC = () => {
           size="small"
           onClick={() => {
             analyticsHelper.track('update')
-            emit('restart', updateReady)
+            emit('restart')
           }}
         >
           Restart

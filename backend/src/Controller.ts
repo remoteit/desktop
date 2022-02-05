@@ -10,7 +10,6 @@ import Connection from './Connection'
 import preferences from './preferences'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
-import headlessUpdater from './headlessUpdater'
 import ConnectionPool from './ConnectionPool'
 import environment from './environment'
 import Binary from './Binary'
@@ -87,7 +86,6 @@ class Controller {
     socket.on('filePrompt', () => EventBus.emit(electronInterface.EVENTS.filePrompt))
 
     binaryInstaller.check()
-    headlessUpdater.check()
     this.initBackend()
     this.check()
   }
@@ -198,10 +196,10 @@ class Controller {
     app.quit()
   }
 
-  restart = async (update?: string) => {
+  restart = async () => {
     Logger.info('WEB UI AUTO UPDATE RESTART')
     await cli.serviceUninstall()
-    app.restart(update)
+    app.restart()
   }
 
   signOut = async () => {
