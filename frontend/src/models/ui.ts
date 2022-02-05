@@ -45,7 +45,9 @@ type UIState = {
   guideAWS: IGuide
   guideLaunch: IGuide
   accordion: ILookup<boolean>
+  autoConnect: boolean
   autoLaunch: boolean
+  autoCopy: boolean
 }
 
 const defaultState: UIState = {
@@ -86,7 +88,9 @@ const defaultState: UIState = {
   guideAWS: { title: 'AWS Guide', step: 1, total: 7 },
   guideLaunch: { title: 'Launch Guide', active: true, step: 1, total: 1 },
   accordion: { config: true, configConnected: false },
+  autoConnect: false,
   autoLaunch: false,
+  autoCopy: false,
 }
 
 export default createModel<RootModel>()({

@@ -174,13 +174,21 @@ export default class TrayMenu {
   private copy(connection: IConnection) {
     const app = getApplication(undefined, connection)
     Logger.info('COPY', { command: app.string, connection })
-    electron.clipboard.writeText(app.string)
+    if (app.prompt) {
+      this.handleOpen(`copy/${connection.id}`)
+    } else {
+      electron.clipboard.writeText(app.string)
+    }
   }
 
   private launch(connection: IConnection) {
     const app = getApplication(undefined, connection)
     Logger.info('LAUNCH', { command: app.string, connection })
-    electron.shell.openExternal(app.string)
+    if (app.prompt) {
+      this.handleOpen(`launch/${connection.id}`)
+    } else {
+      electron.shell.openExternal(app.string)
+    }
   }
 
   private updateCheck() {

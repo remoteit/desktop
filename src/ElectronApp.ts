@@ -274,6 +274,7 @@ export default class ElectronApp {
       Logger.info('Opening', { url: fullUrl })
       this.window.loadURL(fullUrl)
     } else if (location) {
+      Logger.info('Open location', { location })
       this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     }
 

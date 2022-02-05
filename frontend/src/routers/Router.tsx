@@ -62,6 +62,20 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           state: { autoConnect: true },
         }}
       />
+      <Redirect
+        from={'/launch/:serviceID'}
+        to={{
+          pathname: '/connections/:serviceID',
+          state: { autoLaunch: true },
+        }}
+      />
+      <Redirect
+        from={'/copy/:serviceID'}
+        to={{
+          pathname: '/connections/:serviceID',
+          state: { autoCopy: true },
+        }}
+      />
 
       {/* Connections */}
       <Route path={['/connections/new/:deviceID/:serviceID', '/connections']}>
