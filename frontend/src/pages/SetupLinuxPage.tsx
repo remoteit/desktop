@@ -45,10 +45,9 @@ export const SetupLinuxPage: React.FC = () => {
         For any Raspberry Pi or Linux based system
       </Typography>
       <Typography variant="h3" align="center">
-        Run this command to register your device
+        Run this command to register the device{' '}
         {accountName && (
           <>
-            {' '}
             with <Help message="You can register to any organization you are an Admin">{accountName}</Help>
           </>
         )}

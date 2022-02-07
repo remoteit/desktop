@@ -112,7 +112,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           <Redirect to={`/devices/add/${os}`} />
         ) : (
           <Panel>
-            {' '}
             <SetupDevice os={os} />
           </Panel>
         )}

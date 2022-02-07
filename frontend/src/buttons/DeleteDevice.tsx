@@ -23,7 +23,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => 
 
   let disabled: boolean = false
   let icon: string = 'trash'
-  let title: string = 'Delete device'
+  let title: string = 'Delete Device'
   let warning: string | React.ReactElement = (
     <>
       <Notice severity="danger" gutterBottom fullWidth>
@@ -62,7 +62,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, onClick }) => 
 
   if (device.thisDevice && device.permissions.includes('MANAGE')) {
     disabled = false
-    title = 'Unregister this device'
+    title = 'Unregister Device'
     warning = (
       <Notice severity="danger" fullWidth>
         You are about to permanently remove this device and all of its services.
