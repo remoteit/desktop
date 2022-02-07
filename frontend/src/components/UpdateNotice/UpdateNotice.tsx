@@ -69,7 +69,7 @@ export const UpdateNotice: React.FC = () => {
           <Notice severity="danger" fullWidth gutterBottom>
             Restarting while connected over a remote.it connection will cause the connection to be permanently lost.
           </Notice>
-          You must be connected locally to update.
+          You must be at the computer locally to update.
         </Confirm>
       )}
     </>
