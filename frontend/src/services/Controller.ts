@@ -94,6 +94,10 @@ class Controller extends EventEmitter {
   }
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
+    if (!this.socket?.connected) {
+      this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
+      return false
+    }
     this.log('Controller emit', event, args)
     this.socket?.emit(event, ...args)
     return true
@@ -115,11 +119,11 @@ function getEventHandlers() {
 
     unauthorized: (error: Error) => auth.backendSignInError(error.message),
 
-    authenticated: () => auth.backendAuthenticated(),
+    authenticated: auth.backendAuthenticated,
 
-    disconnect: () => auth.disconnect(),
+    disconnect: auth.disconnect,
 
-    dataReady: backend.initialized,
+    dataReady: auth.dataReady,
 
     connect_error: () => {
       backend.set({ error: true })

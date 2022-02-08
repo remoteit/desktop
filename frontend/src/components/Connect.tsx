@@ -31,7 +31,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const Connect: React.FC = () => {
   const css = useStyles()
-  const location = useLocation<{ autoConnect: boolean }>()
+  const location = useLocation<{ autoConnect?: boolean; autoLaunch?: boolean; autoCopy?: boolean }>()
   const { deviceID, serviceID, sessionID } = useParams<{ deviceID?: string; serviceID?: string; sessionID?: string }>()
   const [showError, setShowError] = useState<boolean>(true)
   const { devices, ui } = useDispatch<Dispatch>()
@@ -55,6 +55,13 @@ export const Connect: React.FC = () => {
     if (!device && id) devices.fetchSingle({ id, hidden: true })
   }, [deviceID])
 
+  useEffect(() => {
+    if (!location.state) return
+    if (location.state.autoConnect) ui.set({ autoConnect: true })
+    if (location.state.autoLaunch) ui.set({ autoLaunch: true })
+    if (location.state.autoCopy) ui.set({ autoCopy: true })
+  }, [location])
+
   if (!device && fetching) return <LoadingMessage message="Fetching data..." />
   if (!service || !device) return <NoConnectionPage />
 
@@ -72,7 +79,6 @@ export const Connect: React.FC = () => {
           <ComboButton
             connection={connection}
             service={service}
-            autoConnect={location.state?.autoConnect}
             permissions={device.permissions}
             size="large"
             fullWidth

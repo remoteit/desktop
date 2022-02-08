@@ -28,7 +28,53 @@ export async function graphQLSetDeviceNotification(
   )
 }
 
-export async function graphQLUnShareDevice(params: IShareProps) {
+export async function graphQLConnect(serviceId: string, hostIP?: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: String!, $hostIP: String) {
+        connect(serviceId: $serviceId, hostIP: $hostIP) {
+          id
+          created
+          host
+          port
+          reverseProxy
+          timeout
+          session {
+            id
+          }
+        }
+      }`,
+    { serviceId, hostIP }
+  )
+}
+
+export async function graphQLDisconnect(serviceId: string, connectionId?: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: String!, $connectionId: String!) {
+        disconnect(serviceId: $serviceId, connectionId: $connectionId)
+      }`,
+    { serviceId, connectionId }
+  )
+}
+
+export async function graphQLRename(serviceId: string, name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: String!, $name: String!) {
+        renameService(serviceId: $serviceId, name: $name)
+      }`,
+    { serviceId, name }
+  )
+}
+
+export async function graphQLDeleteDevice(deviceId: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($deviceId: String!) {
+        deleteDevice(deviceId: $deviceId)
+      }`,
+    { deviceId }
+  )
+}
+
+export async function graphQLRemoveDevice(params: IShareProps) {
   return await graphQLBasicRequest(
     ` mutation query($deviceId: String!, $email: [String!]!) {
         share(deviceId: $deviceId, email: $email, action: REMOVE)
@@ -200,8 +246,7 @@ export async function graphQLReadNotice(id: string) {
 
 export async function graphQLUpdateNotification(params: INotificationSetting) {
   return await graphQLBasicRequest(
-    `
-        mutation UpdateUserMetadata(
+    `  mutation UpdateUserMetadata(
           $emailNotifications: Boolean
           $desktopNotifications: Boolean
           $urlNotifications: Boolean

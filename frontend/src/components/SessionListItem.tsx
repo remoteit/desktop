@@ -50,7 +50,8 @@ export const SessionListItem: React.FC<Props> = ({ session, merge, other, offlin
       <ListItemLocation
         className={css.item}
         pathname={pathname}
-        match={isNew ? '/connections/new' : `/connections/${session.target.id}`}
+        match={isNew ? '/connections/new' : pathname}
+        exactMatch
         dense
       >
         <Tooltip title={offline ? 'Disconnected' : connected ? 'Connected' : 'Idle'} placement="left" arrow>

@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.5.0-alpha.6",
+  "version": "3.5.2",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -112,12 +112,21 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "artifactName": "${productName}-installer.${ext}",
+      "artifactName": "${productName}-installer-${arch}.${ext}",
       "extendInfo": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         }
-      }
+      },
+      "target": [
+        {
+          "target": "default",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
     },
     "extraResources": [
       {

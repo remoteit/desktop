@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../../store'
+import React, { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { connectionState, sanitizeName } from '../../helpers/connectionHelper'
 import { getLicenseChip } from '../../components/LicenseChip'
 import { newConnection } from '../../helpers/connectionHelper'
@@ -8,7 +8,6 @@ import { DynamicButton } from '../DynamicButton'
 import { useHistory } from 'react-router-dom'
 import { Color } from '../../styling'
 import { Fade } from '@material-ui/core'
-import { emit } from '../../services/Controller'
 import heartbeat from '../../services/Heartbeat'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
@@ -18,7 +17,6 @@ export type ConnectButtonProps = {
   permissions?: IPermission[]
   size?: 'icon' | 'medium' | 'small' | 'large'
   color?: Color
-  autoConnect?: boolean
   fullWidth?: boolean
   onClick?: () => void
 }
@@ -29,11 +27,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   permissions,
   size = 'medium',
   color = 'primary',
-  autoConnect,
   fullWidth,
   onClick,
 }) => {
-  const [autoStart, setAutoStart] = useState<boolean>(!!autoConnect)
+  const autoConnect = useSelector((state: ApplicationState) => state.ui.autoConnect)
   const { connections, ui } = useDispatch<Dispatch>()
   const history = useHistory()
   const chip = getLicenseChip(service?.license)
@@ -59,11 +56,11 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   }
 
   useEffect(() => {
-    if (autoStart && service) {
-      setAutoStart(false)
+    if (autoConnect && service) {
+      ui.set({ autoConnect: false })
       clickHandler()
     }
-  }, [autoStart, service])
+  }, [autoConnect, service])
 
   let title = connection?.public ? 'Connect' : 'Add to Network'
   let disabled = !permissions?.includes('CONNECT')

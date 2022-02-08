@@ -4,7 +4,6 @@ import { ApplicationState } from '../../store'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Scan } from '../../components/Scan'
 import { Container } from '../../components/Container'
-import { Breadcrumbs } from '../../components/Breadcrumbs'
 import { Typography } from '@material-ui/core'
 import { emit } from '../../services/Controller'
 import analyticsHelper from '../../helpers/analyticsHelper'
@@ -16,10 +15,6 @@ export const NetworkPage: React.FC = () => {
     scanData: state.backend.scanData,
     privateIP: state.backend.environment.privateIP,
   }))
-  const scan = (interfaceName: string) => {
-    analyticsHelper.track('networkScan')
-    emit('scan', interfaceName)
-  }
 
   useEffect(() => {
     emit('interfaces')
@@ -38,7 +33,7 @@ export const NetworkPage: React.FC = () => {
         </>
       }
     >
-      <Scan data={scanData} targets={targets} interfaces={interfaces} onScan={scan} privateIP={privateIP} />
+      <Scan data={scanData} targets={targets} interfaces={interfaces} privateIP={privateIP} />
     </Container>
   )
 }

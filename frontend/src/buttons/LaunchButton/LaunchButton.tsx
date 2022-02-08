@@ -28,7 +28,7 @@ type Props = {
 export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, app, ...props }) => {
   const { ui } = useDispatch<Dispatch>()
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const ready = !!(app?.connection?.host || app?.connection?.address)
+  const ready = !!app?.connection?.host
   const disabled = !app?.connection?.enabled || app?.connection.connecting || !ready
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
 

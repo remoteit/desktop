@@ -115,7 +115,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'lastReported',
     label: 'Last reported',
-    value: ({ device }) => <Duration startDate={device?.lastReported} ago />,
+    value: ({ device }) => (device?.state !== 'active' ? <Duration startDate={device?.lastReported} ago /> : undefined),
   }),
   new DeviceAttribute({ id: 'isp', label: 'ISP', value: ({ device }) => device?.geo?.isp }),
   new DeviceAttribute({
@@ -195,7 +195,8 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceLastReported',
     label: 'Last Reported',
-    value: ({ service }) => <Duration startDate={service?.lastReported} ago />,
+    value: ({ service }) =>
+      service?.state !== 'active' ? <Duration startDate={service?.lastReported} ago /> : undefined,
   }),
   new ServiceAttribute({
     id: 'serviceType',
@@ -211,11 +212,6 @@ export const attributes: Attribute[] = [
     id: 'license',
     label: 'License',
     value: ({ service }) => <LicenseChip license={service?.license} />,
-  }),
-  new ConnectionAttribute({
-    id: 'address',
-    label: 'Address',
-    value: ({ connection }) => connection?.address,
   }),
   new ConnectionAttribute({
     id: 'duration',

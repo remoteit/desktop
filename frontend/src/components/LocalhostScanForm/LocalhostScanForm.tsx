@@ -5,6 +5,7 @@ import { getTypeId, findType } from '../../models/applicationTypes'
 import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 import { ListItemCheckbox } from '../ListItemCheckbox'
+import { LoadingMessage } from '../LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { spacing } from '../../styling'
@@ -71,7 +72,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
     }
   }, [applicationTypes, scanData])
 
-  if (!scanData) return null
+  if (!scanData) return <LoadingMessage message="Scanning..." />
 
   return (
     <>

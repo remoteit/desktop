@@ -46,6 +46,7 @@ export const TestPage: React.FC = () => {
         <Typography variant="subtitle1">Test Options</Typography>
         <List>
           <ListItemSetting
+            hideIcon
             label="Hide test UI backgrounds"
             toggle={preferences.testUI === 'ON'}
             onClick={() =>
@@ -53,6 +54,7 @@ export const TestPage: React.FC = () => {
             }
           />
           <ListItemSetting
+            hideIcon
             label="Disable Test UI"
             subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
             onClick={() =>
@@ -60,57 +62,62 @@ export const TestPage: React.FC = () => {
             }
           />
           <ListItemSetting
+            hideIcon
             label="Override default APIs"
             onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
             toggle={!!preferences.switchApi}
           />
           <ListItem>
-            <ListItemIcon />
-            <Quote margin={0}>
-              <InlineTextFieldSetting
-                value={getGraphQLApi()}
-                label="Switch GraphQL APIs"
-                disabled={!preferences.switchApi}
-                resetValue={getGraphQLApi()}
-                maxLength={200}
-                onSave={url => onSave(url.toString())}
-                hideIcon
-              />
-              <InlineTextFieldSetting
-                value={getRestApi()}
-                label="Rest Api"
-                disabled={!preferences.switchApi}
-                resetValue={getRestApi()}
-                maxLength={200}
-                onSave={url => onSaveRest(url.toString())}
-                hideIcon
-              />
-              <InlineTextFieldSetting
-                value={getWebSocketURL()}
-                label="WebSocket URL"
-                disabled={!preferences.switchApi}
-                resetValue={getWebSocketURL()}
-                maxLength={200}
-                onSave={url => onSaveWebSocket(url.toString())}
-                hideIcon
-              />
+            <Quote margin={0} listItem noInset>
+              <List disablePadding>
+                <InlineTextFieldSetting
+                  value={getGraphQLApi()}
+                  label="Switch GraphQL APIs"
+                  disabled={!preferences.switchApi}
+                  resetValue={getGraphQLApi()}
+                  maxLength={200}
+                  onSave={url => onSave(url.toString())}
+                  hideIcon
+                />
+                <InlineTextFieldSetting
+                  value={getRestApi()}
+                  label="Rest Api"
+                  disabled={!preferences.switchApi}
+                  resetValue={getRestApi()}
+                  maxLength={200}
+                  onSave={url => onSaveRest(url.toString())}
+                  hideIcon
+                />
+                <InlineTextFieldSetting
+                  value={getWebSocketURL()}
+                  label="WebSocket URL"
+                  disabled={!preferences.switchApi}
+                  resetValue={getWebSocketURL()}
+                  maxLength={200}
+                  onSave={url => onSaveWebSocket(url.toString())}
+                  hideIcon
+                />
+              </List>
             </Quote>
           </ListItem>
         </List>
         <Typography variant="subtitle1">Licensing Options</Typography>
         <List>
           <ListItemSetting
+            hideIcon
             label="Override licenses and limits"
             toggle={tests.limit}
             onClick={() => licensing.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
           />
-          <ListItemSetting label="Clear licenses and limits" onClick={() => licensing.testClearLicensing()} />
+          <ListItemSetting hideIcon label="Clear licenses and limits" onClick={() => licensing.testClearLicensing()} />
           <ListItemSetting
+            hideIcon
             label="Set service licenses"
             subLabel="Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY"
             onClick={() => licensing.testServiceLicensing()}
           />
           <ListItemSetting
+            hideIcon
             label="License message cleared"
             toggle={informed}
             onClick={() => licensing.set({ informed: !informed })}

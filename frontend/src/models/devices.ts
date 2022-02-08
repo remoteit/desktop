@@ -1,4 +1,7 @@
 import {
+  graphQLDeleteDevice,
+  graphQLRemoveDevice,
+  graphQLRename,
   graphQLSetAttributes,
   graphQLClaimDevice,
   graphQLAddService,
@@ -16,7 +19,6 @@ import {
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices } from './accounts'
-import { r3, hasCredentials } from '../services/remote.it'
 import { graphQLGetErrors } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
@@ -120,8 +122,6 @@ export default createModel<RootModel>()({
         platform,
       }
 
-      if (!(await hasCredentials())) return
-
       set({ fetching: true })
       const { devices, connections, total, contacts, error } = await graphQLFetchProcessor(options)
 
@@ -150,10 +150,8 @@ export default createModel<RootModel>()({
       const { set } = dispatch.devices
       const device = selectDevice(globalState, id)
       const accountId = device?.accountId || getActiveAccountId(globalState)
-
       let result: IDevice | undefined
-
-      if (!(await hasCredentials()) || !id) return
+      if (!id) return
 
       set({ fetching: true })
       try {
@@ -205,12 +203,9 @@ export default createModel<RootModel>()({
     },
 
     async rename({ id, name }: { id: string; name: string }) {
-      try {
-        await r3.post(`/device/name/`, { deviceaddress: id, devicealias: name })
+      const result = await graphQLRename(id, name)
+      if (result !== 'ERROR') {
         await dispatch.devices.fetch()
-      } catch (error) {
-        if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
-        console.warn(error)
       }
     },
 
@@ -316,21 +311,15 @@ export default createModel<RootModel>()({
     async destroy(device: IDevice, globalState) {
       const { auth } = globalState
       dispatch.devices.set({ destroying: true })
-      try {
-        device.permissions.includes('MANAGE')
-          ? await r3.post(`/developer/device/delete/registered/${device.id}`)
-          : await r3.post(`/developer/device/share/${device.id}/${encodeURIComponent(auth.user?.email || '')}`, {
-              devices: device.id,
-              emails: auth.user?.email,
-              state: 'off',
-              scripting: false,
-            })
-
+      const result = device.permissions.includes('MANAGE')
+        ? await graphQLDeleteDevice(device.id)
+        : await graphQLRemoveDevice({
+            deviceId: device.id,
+            email: [auth.user?.email || ''],
+          })
+      if (result !== 'ERROR') {
         await dispatch.connections.clearByDevice(device.id)
         await dispatch.devices.fetch()
-      } catch (error) {
-        if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
-        console.warn(error)
       }
       dispatch.devices.set({ destroying: false })
     },
@@ -349,16 +338,12 @@ export default createModel<RootModel>()({
     async transferDevice(data: ITransferProps) {
       if (data.email && data.device) {
         dispatch.devices.set({ transferring: true })
-        try {
-          await graphQLTransferDevice(data)
+        const result = await graphQLTransferDevice(data)
+        if (result !== 'ERROR') {
           await dispatch.devices.fetch()
-          dispatch.ui.set({
-            successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
-          })
-        } catch (error) {
-          if (error instanceof Error) dispatch.ui.set({ errorMessage: error.message })
-          console.warn(error)
+          dispatch.ui.set({ successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.` })
         }
+        await dispatch.connections.clearByDevice(data.device.id)
         dispatch.devices.set({ transferring: false })
       }
     },

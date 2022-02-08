@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { FontSize, Color } from '../styling'
 import { setConnection } from '../helpers/connectionHelper'
 import { useClipboard } from 'use-clipboard-copy'
@@ -22,6 +24,15 @@ export interface CopyButtonProps {
 export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, onCopy, ...props }) => {
   const [open, setOpen] = useState<boolean>(false)
   const clipboard = useClipboard({ copiedTimeout: 1000 })
+  const autoCopy = useSelector((state: ApplicationState) => state.ui.autoCopy)
+  const { ui } = useDispatch<Dispatch>()
+
+  React.useEffect(() => {
+    if (autoCopy) {
+      check()
+      ui.set({ autoCopy: false })
+    }
+  }, [autoCopy])
 
   const check = () => {
     app?.prompt ? setOpen(true) : copy()
@@ -37,6 +48,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ icon, app, value, onCopy
   const onSubmit = (tokens: ILookup<string>) => {
     if (app?.connection) setConnection({ ...app.connection, ...tokens })
     setTimeout(copy, 100)
+    setOpen(false)
   }
 
   props.title = clipboard.copied ? 'Copied!' : props.title

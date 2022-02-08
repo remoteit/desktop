@@ -39,7 +39,7 @@ type IBackendState = {
   filePath?: string
 }
 
-const state: IBackendState = {
+const defaultState: IBackendState = {
   initialized: false,
   device: DEFAULT_TARGET,
   targets: [],
@@ -71,11 +71,8 @@ const state: IBackendState = {
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
-    async initialized() {
-      dispatch.backend.set({ initialized: true })
-    },
     async targetDeviceUpdated(targetDevice: ITargetDevice, globalState) {
       const { ui, backend, devices } = dispatch
       const { device } = globalState.backend
@@ -175,6 +172,10 @@ export default createModel<RootModel>()({
   }),
 
   reducers: {
+    reset(state: IBackendState) {
+      state = { ...defaultState }
+      return state
+    },
     set(state: IBackendState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
