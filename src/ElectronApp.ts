@@ -4,7 +4,6 @@ import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
 import debug from 'debug'
 import path from 'path'
-import url from 'url'
 
 const d = debug('r3:headless:ElectronApp')
 
@@ -114,12 +113,12 @@ export default class ElectronApp {
     const scheme = this.protocol + '://'
     const authCallbackCode = 'authCallback'
     if (link?.includes(scheme)) {
-      this.deepLinkUrl = link.substr(scheme.length)
+      this.deepLinkUrl = link.substring(scheme.length)
       Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
     }
     if (link?.includes(authCallbackCode)) {
       this.authCallback = true
-      Logger.info('Auth Callback', { link: link })
+      Logger.info('Auth Callback', { link })
     }
   }
 
@@ -158,10 +157,10 @@ export default class ElectronApp {
 
     this.window.loadURL(startUrl)
 
-    this.window.on('close', e => {
+    this.window.on('close', event => {
       d('Window closed')
       if (!this.quitSelected) {
-        e.preventDefault()
+        event.preventDefault()
         this.closeWindow()
       }
     })
@@ -172,15 +171,15 @@ export default class ElectronApp {
     })
 
     this.window.webContents.setWindowOpenHandler(({ url }) => {
-      // console.log('Open window:', url)
+      Logger.info('OPEN EXTERNAL URL', { url })
       electron.shell.openExternal(url)
       return { action: 'deny' }
     })
 
-    let wc = this.window.webContents
-    wc.on('will-navigate', function (e, url) {
-      if (url != wc.getURL()) {
-        e.preventDefault()
+    this.window.webContents.on('will-navigate', (event, url) => {
+      if (url.includes('auth.remote.it')) {
+        Logger.info('AUTH NAVIGATION DETECTED')
+        event.preventDefault()
         electron.shell.openExternal(url)
       }
     })
@@ -190,19 +189,20 @@ export default class ElectronApp {
 
   private logWebErrors = () => {
     if (!this.window) return
-    this.window.webContents.on('render-process-gone', (event, details) => {
+    const { webContents } = this.window
+    webContents.on('render-process-gone', (event, details) => {
       Logger.error('ELECTRON WEB CONSOLE render-process-gone', { details })
       this.reload()
     })
-    this.window.webContents.on('unresponsive', () => Logger.warn('ELECTRON WEB CONSOLE unresponsive'))
-    this.window.webContents.on('responsive', () => Logger.warn('ELECTRON WEB CONSOLE responsive'))
-    this.window.webContents.on('plugin-crashed', (event, name, version) =>
+    webContents.on('unresponsive', () => Logger.warn('ELECTRON WEB CONSOLE unresponsive'))
+    webContents.on('responsive', () => Logger.warn('ELECTRON WEB CONSOLE responsive'))
+    webContents.on('plugin-crashed', (event, name, version) =>
       Logger.error('ELECTRON WEB CONSOLE plugin-crashed', { name, version })
     )
-    this.window.webContents.on('preload-error', (event, preloadPath, error) =>
+    webContents.on('preload-error', (event, preloadPath, error) =>
       Logger.error('ELECTRON WEB CONSOLE preload-error', { preloadPath, error })
     )
-    this.window.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    webContents.on('console-message', (event, level, message, line, sourceId) => {
       if (level > 2) Logger.error('ELECTRON WEB console error', { level, message, line, sourceId })
     })
   }
@@ -215,17 +215,7 @@ export default class ElectronApp {
   }
 
   private getStartUrl(): string {
-    return process.env.NODE_ENV === 'development'
-      ? url.format({
-          protocol: 'http',
-          hostname: 'localhost',
-          port: '3000',
-        })
-      : url.format({
-          protocol: 'http',
-          hostname: 'localhost',
-          port: '29999',
-        })
+    return process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://localhost:29999'
   }
 
   private createSystemTray() {
