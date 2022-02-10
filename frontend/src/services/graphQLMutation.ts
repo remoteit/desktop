@@ -47,7 +47,7 @@ export async function graphQLConnect(serviceId: string, hostIP?: string) {
   )
 }
 
-export async function graphQLDisconnect(serviceId: string, connectionId?: string) {
+export async function graphQLDisconnect(serviceId: string, connectionId: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: String!, $connectionId: String!) {
         disconnect(serviceId: $serviceId, connectionId: $connectionId)

@@ -93,6 +93,7 @@ export default createModel<RootModel>()({
     },
 
     async proxyDisconnect(connection: IConnection) {
+      if (!connection.publicId) return
       setConnection({ ...connection, enabled: false, host: undefined, port: undefined })
       const result = await graphQLDisconnect(connection.id, connection.publicId)
       if (result !== 'ERROR') console.log('PROXY DISCONNECTED', result)
