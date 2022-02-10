@@ -43,6 +43,7 @@ export const ContactSelector: React.FC<Props> = ({ selected = [], contacts, onCh
     <CreatableSelect
       isMulti={!isTransfer}
       autoFocus
+      // menuIsOpen // debug
       isClearable
       options={options}
       theme={selectTheme}
@@ -66,8 +67,13 @@ const useStyles = makeStyles(({ palette }) => ({
     fontWeight: 400,
     '& .select__placeholder': { color: palette.primary.main },
     '& .select__multi-value': { backgroundColor: palette.primary.main, padding: `${spacing.xxs}px ${spacing.xs}px` },
-    '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: palette.white.main },
+    '& .select__multi-value__label': { fontSize: fontSizes.base, fontWeight: 500, color: palette.alwaysWhite.main },
     '& .select__multi-value__remove': { color: palette.white.main },
+    '& .select__control': { backgroundColor: palette.white.main, borderColor: palette.primary.main },
+    '& .select__input': { color: palette.grayDarkest.main },
+    '& .select__menu': { backgroundColor: palette.grayLightest.main },
+    '& .select__option:active': { backgroundColor: palette.primary.main },
+    '& .select__option--is-focused': { backgroundColor: palette.primaryHighlight.main },
     '& .select__single-value': {
       backgroundColor: palette.primary.main,
       padding: `${spacing.xxs}px ${spacing.sm}px ${spacing.xxs}px ${spacing.sm}px`,
