@@ -35,21 +35,22 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
   return await axios.request(request)
 }
 
-export async function graphQLRequestWithErrorHandling(query: String, variables: ILookup<any> = {}, parse : any = undefined) {
-  try {
-    const result = await graphQLRequest(
-      query,
-      variables
-    )
-    const errors = graphQLGetErrors(result)
-    if(parse) {
-      await parse(result)
-    }
-    return errors ? 'ERROR' : result
-  } catch (error) {
-    await apiError(error)
-  }
-}
+// We should replace the code duplication following this pattern with this code.
+// export async function graphQLRequestWithErrorHandling(query: String, variables: ILookup<any> = {}, parse : any = undefined) {
+//   try {
+//     const result = await graphQLRequest(
+//       query,
+//       variables
+//     )
+//     const errors = graphQLGetErrors(result)
+//     if(parse) {
+//       await parse(result)
+//     }
+//     return errors ? 'ERROR' : result
+//   } catch (error) {
+//     await apiError(error)
+//   }
+// }
 
 export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silent?: boolean) {
   if (!response || response === 'ERROR') return
@@ -70,16 +71,16 @@ export async function apiError(error: unknown) {
   const { ui, auth } = store.dispatch
   console.error('API ERROR:', error)
   console.trace()
+  errorCount = errorCount + 1
 
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401 || error.response?.status === 403) {
-      console.log('Incrementing error count: ', errorCount)
-      errorCount = errorCount + 1
-      auth.checkSession({ bypassCache: true })
-      if( errorCount > 1000 ) {
+      if( errorCount > 10 ) {
         auth.signOut()
       }
-      sleep(1000 * errorCount)
+      console.log('Incrementing error count: ', errorCount)
+      await sleep(1000 * errorCount * errorCount)
+      auth.checkSession({ bypassCache: true })
     } else if (error.message !== 'Network Error') {
       ui.set({ errorMessage: error.message })
     }
