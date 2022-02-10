@@ -120,7 +120,7 @@ export default createModel<RootModel>()({
       if (!rootState.auth.authService) return
       await rootState.auth.authService.forceTokenRefresh()
     },
-    async checkSession(options: {}, rootState) {
+    async checkSession(options: { refreshToken: boolean }, rootState) {
       const { ui } = dispatch
       if (!rootState.auth.authService) return
       try {

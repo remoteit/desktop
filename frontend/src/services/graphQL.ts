@@ -80,7 +80,7 @@ export async function apiError(error: unknown) {
       }
       console.log('Incrementing error count: ', errorCount)
       await sleep(1000 * errorCount * errorCount)
-      auth.checkSession({ bypassCache: true })
+      auth.checkSession({ refreshToken: true })
     } else if (error.message !== 'Network Error') {
       ui.set({ errorMessage: error.message })
     }
