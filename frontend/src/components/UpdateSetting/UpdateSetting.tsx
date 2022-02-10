@@ -1,11 +1,10 @@
 import React from 'react'
 import { emit } from '../../services/Controller'
-import { environment } from '../../services/Browser'
-import { useSelector } from 'react-redux'
-import { ApplicationState } from '../../store'
-import { ListItemSetting } from '../ListItemSetting'
 import { version } from '../../../package.json'
-import { isPortal, isRemote } from '../../services/Browser'
+import { useSelector } from 'react-redux'
+import { ListItemSetting } from '../ListItemSetting'
+import { ApplicationState } from '../../store'
+import { environment, isPortal, isRemote } from '../../services/Browser'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const UpdateSetting: React.FC = () => {
