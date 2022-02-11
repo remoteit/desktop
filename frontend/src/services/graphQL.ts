@@ -79,7 +79,7 @@ export async function apiError(error: unknown) {
       if( errorCount > 1000 ) {
         auth.signOut()
       }
-      sleep(1000 * errorCount)
+     await sleep(1000 * errorCount)
     } else if (error.message !== 'Network Error') {
       ui.set({ errorMessage: error.message })
     }
