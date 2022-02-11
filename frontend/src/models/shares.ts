@@ -1,11 +1,9 @@
 import { createModel } from '@rematch/core'
 import { graphQLRemoveDevice, graphQLShareDevice } from '../services/graphQLMutation'
-import { graphQLGetErrors } from '../services/graphQL'
 import { getPermissions } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 type ShareParams = { [key: string]: any }
 

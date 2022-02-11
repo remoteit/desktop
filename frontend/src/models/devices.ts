@@ -19,12 +19,11 @@ import {
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { cleanOrphanConnections, getConnectionIds } from '../helpers/connectionHelper'
 import { getActiveAccountId, getAllDevices, getDevices } from './accounts'
-import { graphQLGetErrors } from '../services/graphQL'
+import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
 

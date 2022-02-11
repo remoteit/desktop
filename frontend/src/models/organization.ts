@@ -1,11 +1,10 @@
 import { createModel } from '@rematch/core'
 import { graphQLSetOrganization, graphQLRemoveOrganization, graphQLSetMembers } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getRemoteitLicense } from './licensing'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 export const ROLE: ILookup<string> = {
   OWNER: 'Admin / Owner',

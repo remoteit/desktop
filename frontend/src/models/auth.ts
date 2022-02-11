@@ -1,7 +1,7 @@
 import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { CLIENT_ID, CALLBACK_URL } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
 import { CognitoUser } from '@remote.it/types'
@@ -9,7 +9,6 @@ import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
-import { apiError } from '../helpers/apiHelper'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
 
@@ -117,11 +116,15 @@ export default createModel<RootModel>()({
         await apiError(error)
       }
     },
-    async checkSession(_: void, rootState) {
+    async forceRefreshToken(_: void, rootState) {
+      if (!rootState.auth.authService) return
+      await rootState.auth.authService.forceTokenRefresh()
+    },
+    async checkSession(options: { refreshToken: boolean }, rootState) {
       const { ui } = dispatch
       if (!rootState.auth.authService) return
       try {
-        const result = await rootState.auth.authService.checkSignIn()
+        const result = await rootState.auth.authService.checkSignIn(options)
         if (result.cognitoUser) {
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
