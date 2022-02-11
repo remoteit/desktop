@@ -68,9 +68,10 @@ const useStyles = makeStyles(({ palette }) => ({
     padding: `${spacing.sm}px ${spacing.md}px`,
     display: 'flex',
     fontWeight: 500,
-    '& .MuiBox-root': { flexGrow: 1, alignSelf: 'flex-start', marginTop: spacing.xxs },
+    '& .MuiBox-root': { flexGrow: 1, marginTop: spacing.xxs },
     '& .MuiButton-root': { minWidth: 90, marginLeft: spacing.md },
-    '& > svg': { marginTop: spacing.xxs, marginRight: spacing.md, width: 21, alignSelf: 'flex-start' },
+    '& .MuiIconButton-root': { marginLeft: spacing.sm },
+    '& > svg': { marginLeft: spacing.xxs, marginRight: spacing.md, width: 21 },
     '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
   }),
 }))

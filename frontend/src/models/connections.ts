@@ -93,6 +93,7 @@ export default createModel<RootModel>()({
     },
 
     async proxyDisconnect(connection: IConnection) {
+      if (!connection.publicId) return
       setConnection({ ...connection, enabled: false, host: undefined, port: undefined })
       const result = await graphQLDisconnect(connection.id, connection.publicId)
       if (result !== 'ERROR') console.log('PROXY DISCONNECTED', result)
@@ -108,8 +109,8 @@ export default createModel<RootModel>()({
       if (!connection) return
       const { proxyDisconnect } = dispatch.connections
       if (connection.public) proxyDisconnect(connection)
-      else if (connection.disconnecting || connection.enabled || !connection.online) emit('service/disable', connection)
-      else emit('service/disconnect', connection)
+      else if (connection.connected) emit('service/disconnect', connection)
+      else if (connection.enabled) emit('service/disable', connection)
     },
 
     async forget(id: string, globalState) {
@@ -159,32 +160,3 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-interface ProxyConnectionResult {
-  clientID: string // "Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3"
-  connectionid: string // "3c031b52-7cea-46de-b56b-a1cece5adad6"
-  deviceaddress: string // "80:00:00:00:01:0B:52:E5"
-  expirationsec: string // "28800"
-  filteredIP: string // "none"
-  idleLeft: number //  900
-  initiator: string // "jamie@remote.it"
-  initiatorUID: string // "f0:63:c5:03:f9:52:42:c6"
-  latchedIP: string // "0.0.0.0"
-  lifeLeft: number // 86400
-  p2pConnected: true
-  peerEP: string // "18.144.28.173:15029"
-  peerReqEP: string // "18.144.28.173:15029"
-  proxy: string // "https://b2e3fsxn5q6.p19.rt3.io"
-  proxyExpirationSec: number // 28800
-  proxyServerPort: number // 24292
-  proxyURL: string // "b2e3fsxn5q6.p19.rt3.io"
-  proxyport: string // "24292"
-  proxyserver: string // "proxy19.rt3.io"
-  requested: string // "4/17/2021T7:49 PM"
-  requestedAt: string // "2021-04-17T23:49:00+00:00"
-  reverseProxy: boolean // true
-  serviceConnected: boolean // true
-  sessionID: string // "8AE6503C29282CDFD4717CABF91A7169F353C39E"
-  status: string // "running"
-  targetUID: string // "80:00:00:00:01:0B:52:E5"
-}

@@ -11,7 +11,7 @@ export const Title: React.FC<Props> = ({ children, offline, inline, enabled, lic
   return <span className={classnames(css.title, className)}>{children}</span>
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   title: ({ inline, offline, enabled, unlicensed }: any) => ({
     display: 'block',
     flexGrow: 1,
@@ -21,6 +21,7 @@ const useStyles = makeStyles( ({ palette }) => ({
     color: unlicensed ? palette.warning.main : enabled ? palette.primary.main : undefined,
     opacity: offline ? 0.3 : 1,
     '& sup': {
+      lineHeight: 1,
       marginLeft: spacing.xs,
       marginRight: spacing.xxs,
       color: unlicensed ? palette.warning.main : enabled ? palette.primary.main : palette.grayDark.main,

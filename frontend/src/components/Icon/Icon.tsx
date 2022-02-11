@@ -7,6 +7,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
+import { Advantech } from '../../assets/Advantech'
 import { OpenWrt } from '../../assets/OpenWrt'
 import { Nvidia } from '../../assets/Nvidia'
 import { R3 } from '../../assets/R3'
@@ -53,6 +54,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     if (name === 'r3') return <R3 className={css.icon} {...props} />
     if (name === 'nvidia') return <Nvidia className={css.icon} {...props} />
     if (name === 'openwrt') return <OpenWrt className={css.icon} {...props} />
+    if (name === 'advantech') return <Advantech className={css.icon} {...props} />
 
     let fontType: IconPrefix = 'far'
 
@@ -106,6 +108,7 @@ const useStyles = makeStyles(({ palette }) => ({
     if (size) styles.fontSize = styles.height = fontSizes[size]
     if (fontSize) styles.fontSize = styles.height = fontSize
     if (rotate) styles.transform = `rotate(${rotate}deg)`
+    if (styles.fontSize) styles.maxWidth = styles.fontSize + spacing.sm
     return styles
   },
 }))
