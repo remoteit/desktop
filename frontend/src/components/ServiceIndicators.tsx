@@ -41,6 +41,6 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
 }
 
 const useStyles = makeStyles({
-  indicators: { textAlign: 'right', position: 'relative', zIndex: 3 },
+  indicators: { textAlign: 'left', position: 'relative', zIndex: 3 },
   chip: ({ device }: Props) => ({ opacity: device?.state === 'active' ? 1 : 0.3 }),
 })

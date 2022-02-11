@@ -79,14 +79,6 @@ export const App: React.FC = () => {
 // neuter
 const useStyles = overlapHeader =>
   makeStyles({
-    main: {
-      flexGrow: 1,
-      height: '100%',
-      display: 'flex',
-      flexFlow: 'column',
-      justifyContent: 'space-between',
-      flexWrap: 'nowrap',
-    },
     columns: {
       flexGrow: 1,
       position: 'relative',
@@ -96,13 +88,5 @@ const useStyles = overlapHeader =>
       alignItems: 'start',
       justifyContent: 'start',
       paddingTop: overlapHeader ? 30 : 0,
-    },
-    rows: {
-      flexGrow: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      overflow: 'hidden',
-      position: 'relative',
     },
   })

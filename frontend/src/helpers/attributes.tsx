@@ -65,6 +65,7 @@ export const attributes: Attribute[] = [
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
+    width: '200px',
     required: true,
   }),
   new Attribute({
@@ -77,12 +78,13 @@ export const attributes: Attribute[] = [
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    width: 'auto',
+    width: '350px',
   }),
   new DeviceAttribute({
     id: 'tagEditor',
     label: 'tags',
     value: ({ device }) => (TestUI({}) ? <TagEditor device={device} /> : undefined),
+    column: false,
   }),
   new DeviceAttribute({
     id: 'targetPlatform',
