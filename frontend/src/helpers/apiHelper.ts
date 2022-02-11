@@ -32,20 +32,3 @@ export function getWebSocketURL(): string {
   return webSocketURL && switchApi ? webSocketURL : defaultURL
 }
 
-export async function apiError(error: unknown) {
-  const { ui, auth } = store.dispatch
-  console.error('API ERROR:', error)
-  console.trace()
-
-  if (axios.isAxiosError(error)) {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      auth.checkSession()
-    } else if (error.message !== 'Network Error') {
-      ui.set({ errorMessage: error.message })
-    }
-  }
-
-  if (error instanceof Error) {
-    ui.set({ errorMessage: error.message })
-  }
-}
