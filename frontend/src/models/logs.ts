@@ -1,8 +1,7 @@
 import { createModel } from '@rematch/core'
-import { graphQLGetErrors } from '../services/graphQL'
+import { graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUrl } from '../services/graphQLLogs'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 type ILogState = {
   from: number

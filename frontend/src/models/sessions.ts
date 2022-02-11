@@ -1,11 +1,10 @@
 import { createModel } from '@rematch/core'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { findLocalConnection, setConnection } from '../helpers/connectionHelper'
 import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 type ISessionsState = ILookup<ISession[]> & {
   all: ISession[]

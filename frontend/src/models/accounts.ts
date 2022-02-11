@@ -1,12 +1,11 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLicenses, parseLicense } from './licensing'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 const ACCOUNT_KEY = 'account'
 

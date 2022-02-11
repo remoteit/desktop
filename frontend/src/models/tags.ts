@@ -1,8 +1,7 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_TARGET } from '../shared/constants'
-import { graphQLRequest } from '../services/graphQL'
+import { graphQLRequest, apiError } from '../services/graphQL'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 type ITagState = ILookup<ITag[]> & {
   all: ITag[]

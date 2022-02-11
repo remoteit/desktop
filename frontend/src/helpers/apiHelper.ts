@@ -1,7 +1,7 @@
-import axios from 'axios'
 import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL } from '../shared/constants'
 import { store } from '../store'
 import { version } from '../../package.json'
+
 
 export function getGraphQLApi(): string {
   if (!store) return GRAPHQL_API
@@ -30,5 +30,15 @@ export function getWebSocketURL(): string {
   const { webSocketURL, switchApi } = store.getState().backend.preferences
   const defaultURL = version.includes('alpha') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
   return webSocketURL && switchApi ? webSocketURL : defaultURL
+}
+
+export async function apiError(error: unknown) {
+  const { ui } = store.dispatch
+  console.error('API ERROR:', error)
+  console.trace()
+
+  if (error instanceof Error) {
+    ui.set({ errorMessage: error.message })
+  }
 }
 

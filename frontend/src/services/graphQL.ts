@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios'
 import { getGraphQLApi } from '../helpers/apiHelper'
 import { getToken } from '../services/remote.it'
 import { store } from '../store'
+import sleep from './sleep'
 
 let errorCount = 0
 
@@ -58,6 +59,7 @@ export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silen
     errors.forEach(error => console.warn('graphQL error:', error))
     if (!silent) store.dispatch.ui.set({ errorMessage: 'GraphQL: ' + errors[0].message })
   } else {
+    // console.log('No errors, setting count to 0')
     errorCount = 0 //Set error count back to 0, no errors
   }
 
@@ -71,11 +73,13 @@ export async function apiError(error: unknown) {
 
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401 || error.response?.status === 403) {
+      console.log('Incrementing error count: ', errorCount)
       errorCount = errorCount + 1
       auth.checkSession({ bypassCache: true })
-      if( errorCount > 5 ) {
+      if( errorCount > 1000 ) {
         auth.signOut()
       }
+      sleep(1000 * errorCount)
     } else if (error.message !== 'Network Error') {
       ui.set({ errorMessage: error.message })
     }
