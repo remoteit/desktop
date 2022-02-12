@@ -5,7 +5,7 @@ import { selectTheme } from '../styling/theme'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
-const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode']
+const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode', 'drawerMenu', 'columns']
 
 type UIState = {
   theme: Theme
@@ -99,18 +99,18 @@ export default createModel<RootModel>()({
     async init(_, globalState) {
       // add color scheme listener
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        dispatch.ui.setTheme()
+        dispatch.ui.setTheme(undefined)
       })
 
       // restore state
-      let states = {}
+      let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(globalState, `ui-${key}`)
         if (value) states[key] = value
       })
 
       dispatch.ui.set(states)
-      dispatch.ui.setTheme()
+      dispatch.ui.setTheme(states.themeMode)
     },
     async setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
@@ -127,9 +127,10 @@ export default createModel<RootModel>()({
       dispatch.announcements.fetch()
       dispatch.devices.fetch()
     },
-    async theme(themeMode: UIState['themeMode'], globalState) {
-      dispatch.ui.setTheme(themeMode)
-      setLocalStorage(globalState, `ui-themeMode`, themeMode)
+    async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
+      themeMode = themeMode || globalState.ui.themeMode
+      dispatch.ui.setPersistent({ themeMode })
+      dispatch.ui.set({ theme: selectTheme(themeMode) })
     },
     async guide({ guide, ...props }: ILookup<any>, globalState) {
       let state = globalState.ui[guide]
@@ -144,8 +145,7 @@ export default createModel<RootModel>()({
       }
 
       state = { ...state, ...props }
-      setLocalStorage(globalState, `ui-${guide}`, state)
-      dispatch.ui.set({ [guide]: state })
+      dispatch.ui.setPersistent({ [guide]: state })
     },
 
     async resetGuides(_, globalState) {
@@ -153,15 +153,16 @@ export default createModel<RootModel>()({
         if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
       })
     },
+    async setPersistent(params: ILookup<any>, state) {
+      Object.keys(params).forEach(key => {
+        if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
+      })
+      dispatch.ui.set(params)
+    },
   }),
   reducers: {
     set(state: UIState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
-      return state
-    },
-    setTheme(state: UIState, themeMode: UIState['themeMode'] | undefined) {
-      state.themeMode = themeMode || state.themeMode
-      state.theme = selectTheme(state)
       return state
     },
     updated(state: UIState) {

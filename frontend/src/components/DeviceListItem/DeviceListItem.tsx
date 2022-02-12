@@ -52,14 +52,8 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, 
       ) : (
         largeScreen &&
         attributes?.map(attribute => (
-          <Box>
-            <AttributeValue
-              key={attribute.id}
-              device={device}
-              connection={connected}
-              connections={connections}
-              attribute={attribute}
-            />
+          <Box key={attribute.id}>
+            <AttributeValue device={device} connection={connected} connections={connections} attribute={attribute} />
           </Box>
         ))
       )}

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Attribute } from '../helpers/attributes'
 import { Icon } from './Icon'
-import { makeStyles, Checkbox, ListItem, ListItemIcon, ListSubheader, useMediaQuery } from '@material-ui/core'
+import { makeStyles, Checkbox, Box, ListItemIcon, ListSubheader, useMediaQuery } from '@material-ui/core'
 type Props = {
   primary?: Attribute
   attributes?: Attribute[]
@@ -13,7 +13,7 @@ export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], se
   const css = useStyles({ attributes, primary })
 
   return (
-    <ListItem className={css.header}>
+    <ListSubheader>
       {select && (
         <Checkbox
           // checked={checked}
@@ -29,19 +29,13 @@ export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], se
         />
       )}
       <ListItemIcon></ListItemIcon>
-      <ListSubheader disableGutters>Role</ListSubheader>
-      {largeScreen && attributes?.map(attribute => <ListSubheader disableGutters>{attribute.label}</ListSubheader>)}
-    </ListItem>
+      <Box>Role</Box>
+      {largeScreen && attributes?.map(attribute => <Box key={attribute.id}>{attribute.label}</Box>)}
+    </ListSubheader>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  header: {
-    position: 'sticky',
-    backgroundColor: palette.white.main,
-    zIndex: 10,
-    top: 0,
-  },
   checkbox: {
     maxWidth: 60,
   },

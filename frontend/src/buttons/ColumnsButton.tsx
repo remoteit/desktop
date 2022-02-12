@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Tooltip, IconButton, Badge } from '@material-ui/core'
+import { Tooltip, IconButton } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { Icon } from '../components/Icon'
 
@@ -10,7 +10,7 @@ export const ColumnsButton: React.FC = () => {
 
   return (
     <Tooltip title="Columns">
-      <IconButton onClick={() => ui.set({ drawerMenu: open ? null : 'COLUMNS' })}>
+      <IconButton onClick={() => ui.setPersistent({ drawerMenu: open ? null : 'COLUMNS' })}>
         <Icon name="line-columns" size="base" fixedWidth />
       </IconButton>
     </Tooltip>

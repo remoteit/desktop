@@ -70,11 +70,12 @@ type StyleProps = {
 
 const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, primary }: StyleProps) => ({
-    boxShadow: `inset 0px 0px 14px 2px ${palette.white.main}`,
-    '& .MuiListItem-root': {
+    fontSize: fontSizes.sm,
+    display: 'inline-block',
+    '& .MuiListItem-root, & .MuiListSubheader-root': {
       display: 'grid',
       gridGap: spacing.md,
-      gridTemplateColumns: `auto ${primary?.width} ${attributes?.map(a => a.width).join(' ')}`,
+      gridTemplateColumns: `60px ${primary?.width} ${attributes?.map(a => a.width).join(' ')}`,
       alignItems: 'center',
       height: 42,
     },
@@ -82,7 +83,6 @@ const useStyles = makeStyles(({ palette }) => ({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
-      fontSize: fontSizes.sm,
     },
   }),
 }))

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/core'
 import { spacing } from '../styling'
-import { PinButton } from '../buttons/PinButton'
 import { Body } from './Body'
 
 export const Drawer: React.FC<{ open: boolean }> = ({ open, children }) => {
@@ -15,19 +14,13 @@ export const Drawer: React.FC<{ open: boolean }> = ({ open, children }) => {
 
   return (
     <div className={css.drawer}>
-      {/* <div className={css.drawerHeader}>
-        <Button size="small" onClick={handleClear}>
-          clear
-        </Button>
-        <PinButton onClick={() => ui.set({ drawerMenu: false })} />
-      </div> */}
       <Body className={css.body}>{children}</Body>
     </div>
   )
 }
 
 const useStyles = width =>
-  makeStyles( ({ palette }) => ({
+  makeStyles(({ palette }) => ({
     body: {
       maxHeight: '100%',
       backgroundColor: palette.white.main,

@@ -27,8 +27,6 @@ import { RootModel } from './rootModel'
 
 const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
 
-type DeviceParams = { [key: string]: any }
-
 type IGetDevice = {
   id: string
   hidden?: boolean
@@ -99,8 +97,8 @@ export default createModel<RootModel>()({
     /* 
       GraphQL search query for all device data
     */
-    async fetch(optionalAccountId?: string, globalState?) {
-      const accountId: string = optionalAccountId || getActiveAccountId(globalState)
+    async fetch(_, globalState) {
+      const accountId = getActiveAccountId(globalState)
       const userId = globalState.auth.user?.id
       const ids = globalState.backend.device.uid ? [globalState.backend.device.uid] : []
       if (!userId) return console.error('NO AUTH USER ID')
@@ -328,7 +326,7 @@ export default createModel<RootModel>()({
       dispatch.devices.set({ userAttributes: [...Array.from(unique)].sort() })
     },
 
-    async setPersistent(params: DeviceParams, state) {
+    async setPersistent(params: ILookup<any>, state) {
       Object.keys(params).forEach(key => {
         if (SAVED_STATES.includes(key)) setLocalStorage(state, `device-${key}`, params[key] || '')
       })
@@ -353,7 +351,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: IDeviceState, params: DeviceParams) {
+    set(state: IDeviceState, params: ILookup<any>) {
       Object.keys(params).forEach(key => {
         state[key] = params[key]
       })

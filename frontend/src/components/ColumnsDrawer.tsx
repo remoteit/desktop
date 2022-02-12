@@ -14,10 +14,10 @@ export const ColumnsDrawer: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
 
-  const add = name => ui.set({ columns: [...selected, name] })
+  const add = name => ui.setPersistent({ columns: [...selected, name] })
   const remove = index => {
     selected.splice(index, 1)
-    ui.set({ columns: selected })
+    ui.setPersistent({ columns: [...selected] })
   }
 
   const attributes = masterAttributes.concat(deviceAttributes).filter(a => a.column)

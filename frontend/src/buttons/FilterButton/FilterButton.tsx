@@ -14,7 +14,7 @@ export const FilterButton: React.FC = () => {
 
   return (
     <Tooltip title={open ? 'Hide filters' : 'Show filters'}>
-      <IconButton onMouseDown={() => ui.set({ drawerMenu: open ? null : 'FILTER' })}>
+      <IconButton onMouseDown={() => ui.setPersistent({ drawerMenu: open ? null : 'FILTER' })}>
         {changed ? (
           <Badge variant="dot" color="primary">
             <Icon name="filter" size="base" type="regular" />

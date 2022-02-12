@@ -43,16 +43,16 @@ class ConnectionAttribute extends Attribute {
 }
 
 const ATTRIBUTES = [
-  'categoryA',
-  'categoryB',
-  'categoryC',
-  'categoryD',
-  'categoryE',
-  'statusA',
-  'statusB',
-  'statusC',
-  'statusD',
-  'statusE',
+  { label: 'Category A', id: 'categoryA' },
+  { label: 'Category B', id: 'categoryB' },
+  { label: 'Category C', id: 'categoryC' },
+  { label: 'Category D', id: 'categoryD' },
+  { label: 'Category E', id: 'categoryE' },
+  { label: 'Status A', id: 'statusA' },
+  { label: 'Status B', id: 'statusB' },
+  { label: 'Status C', id: 'statusC' },
+  { label: 'Status D', id: 'statusD' },
+  { label: 'Status E', id: 'statusE' },
 ]
 
 export const attributes: Attribute[] = [
@@ -71,7 +71,7 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'tags',
     label: 'Tags',
-    value: ({ device }) => (TestUI({}) ? <Tags ids={device?.tags || []} small /> : undefined),
+    value: ({ device }) => <Tags ids={device?.tags || []} small />,
     width: '80px',
   }),
   new Attribute({
@@ -135,12 +135,12 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'externalAddress',
-    label: 'External IP address',
+    label: 'External IP',
     value: ({ device }) => device?.externalAddress,
   }),
   new DeviceAttribute({
     id: 'internalAddress',
-    label: 'Internal IP address',
+    label: 'Internal IP',
     value: ({ device }) => device?.internalAddress,
   }),
   new DeviceAttribute({ id: 'id', label: 'Device ID', value: ({ device }) => device?.id }),
@@ -162,11 +162,11 @@ export const attributes: Attribute[] = [
   }),
   // @TODO add attributes to the device model on graphql request
   ...ATTRIBUTES.map(
-    id =>
+    a =>
       new DeviceAttribute({
-        id,
-        label: id,
-        value: ({ device }) => device?.attributes[id],
+        id: a.id,
+        label: a.label,
+        value: ({ device }) => device?.attributes[a.id],
       })
   ),
   new ServiceAttribute({
@@ -255,6 +255,7 @@ export const attributes: Attribute[] = [
     id: 'initiatorPlatform',
     label: 'Platform',
     value: ({ session }) => session && INITIATOR_PLATFORMS[session.platform],
+    column: false,
   }),
 ]
 
