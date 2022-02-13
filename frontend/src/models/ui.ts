@@ -50,7 +50,7 @@ type UIState = {
   autoCopy: boolean
 }
 
-const defaultState: UIState = {
+export const defaultState: UIState = {
   theme: selectTheme(),
   themeMode: 'system',
   navigation: {},
