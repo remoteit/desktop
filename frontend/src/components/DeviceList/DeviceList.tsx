@@ -1,12 +1,12 @@
 import React from 'react'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
 import { DeviceListHeader } from '../DeviceListHeader'
+import { makeStyles, List } from '@material-ui/core'
 import { DeviceListItem } from '../DeviceListItem'
 import { Attribute } from '../../helpers/attributes'
 import { isOffline } from '../../models/devices'
 import { GuideStep } from '../GuideStep'
 import { LoadMore } from '../LoadMore'
-import { makeStyles, List } from '@material-ui/core'
 import { spacing, fontSizes } from '../../styling'
 
 export interface DeviceListProps {
@@ -31,7 +31,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   return (
     <>
       <List className={css.grid}>
-        <DeviceListHeader primary={primary} attributes={attributes} select={select} />
+        <DeviceListHeader attributes={attributes} select={select} />
         <GuideStep
           guide="guideAWS"
           step={3}
@@ -70,14 +70,21 @@ type StyleProps = {
 
 const useStyles = makeStyles(({ palette }) => ({
   grid: ({ attributes, primary }: StyleProps) => ({
-    fontSize: fontSizes.sm,
     display: 'inline-block',
+    minWidth: '100%',
     '& .MuiListItem-root, & .MuiListSubheader-root': {
       display: 'grid',
       gridGap: spacing.md,
-      gridTemplateColumns: `60px ${primary?.width} ${attributes?.map(a => a.width).join(' ')}`,
+      gridTemplateColumns: `${primary?.width} ${attributes?.map(a => a.width).join(' ')}`,
       alignItems: 'center',
+    },
+    '& .MuiListItem-root': {
       height: 42,
+      fontSize: fontSizes.sm,
+    },
+    '& .MuiListSubheader-root': {
+      marginLeft: spacing.xs,
+      borderBottom: `1px solid ${palette.grayLighter.main}`,
     },
     '& .MuiBox-root': {
       overflow: 'hidden',

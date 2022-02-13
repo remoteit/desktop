@@ -1,4 +1,5 @@
 import React from 'react'
+import classnames from 'classnames'
 import { makeStyles, Divider } from '@material-ui/core'
 import { spacing } from '../../styling'
 import { Body } from '../Body'
@@ -12,6 +13,7 @@ type Props = {
   bodyRef?: React.RefObject<HTMLDivElement>
   gutterBottom?: boolean
   backgroundColor?: string
+  className?: string
 }
 
 export const Container: React.FC<Props> = ({
@@ -23,12 +25,12 @@ export const Container: React.FC<Props> = ({
   bodyRef,
   gutterBottom,
   backgroundColor,
+  className,
   children,
 }) => {
   const css = useStyles({ backgroundColor })
-
   return (
-    <div className={css.container}>
+    <div className={classnames(className, css.container)}>
       <div className={integrated ? undefined : css.header}>
         {header}
         {integrated || !!backgroundColor || <Divider variant="inset" />}

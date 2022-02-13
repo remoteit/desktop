@@ -8,11 +8,10 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 type Props = {
   fetching?: boolean
-  restore?: boolean
   myDevice?: IDevice
 }
 
-export const DevicesHeader: React.FC<Props> = ({ fetching, restore, children }) => {
+export const DevicesHeader: React.FC<Props> = ({ fetching, children }) => {
   const css = useStyles()
 
   useEffect(() => {
@@ -21,6 +20,7 @@ export const DevicesHeader: React.FC<Props> = ({ fetching, restore, children }) 
 
   return (
     <Container
+      integrated
       header={fetching && <LinearProgress className={css.fetching} />}
       sidebar={
         <>

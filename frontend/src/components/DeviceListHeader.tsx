@@ -1,41 +1,54 @@
 import React from 'react'
+import { useMediaQuery, makeStyles, Checkbox, Box, ListSubheader, ListItemIcon, Divider } from '@material-ui/core'
 import { Attribute } from '../helpers/attributes'
+import { radius } from '../styling'
 import { Icon } from './Icon'
-import { makeStyles, Checkbox, Box, ListItemIcon, ListSubheader, useMediaQuery } from '@material-ui/core'
+
 type Props = {
-  primary?: Attribute
   attributes?: Attribute[]
   select?: boolean
 }
 
-export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], select }) => {
+export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select }) => {
   const largeScreen = useMediaQuery('(min-width:600px)')
-  const css = useStyles({ attributes, primary })
+  const css = useStyles({ attributes })
 
   return (
     <ListSubheader>
-      {select && (
-        <Checkbox
-          // checked={checked}
-          // indeterminate={indeterminate}
-          // inputRef={inputRef}
-          // onChange={event => onClick(event.target.checked)}
-          className={css.checkbox}
-          onClick={event => event.stopPropagation()}
-          checkedIcon={<Icon name="check-square" size="md" type="solid" />}
-          indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
-          icon={<Icon name="square" size="md" />}
-          color="primary"
-        />
-      )}
-      <ListItemIcon></ListItemIcon>
-      <Box>Role</Box>
+      <Box className={css.sticky}>
+        <ListItemIcon>
+          {select && (
+            <Checkbox
+              // checked={checked}
+              // indeterminate={indeterminate}
+              // inputRef={inputRef}
+              // onChange={event => onClick(event.target.checked)}
+              className={css.checkbox}
+              onClick={event => event.stopPropagation()}
+              checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+              indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
+              icon={<Icon name="square" size="md" />}
+              color="primary"
+            />
+          )}
+        </ListItemIcon>
+        Name
+      </Box>
       {largeScreen && attributes?.map(attribute => <Box key={attribute.id}>{attribute.label}</Box>)}
     </ListSubheader>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  sticky: {
+    position: 'sticky',
+    left: 0,
+    zIndex: 4,
+    background: palette.white.main,
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: radius,
+  },
   checkbox: {
     maxWidth: 60,
   },

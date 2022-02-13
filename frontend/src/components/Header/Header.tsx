@@ -100,7 +100,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 const useStyles = makeStyles({
   header: {
     display: 'flex',
-    margin: `${spacing.sm}px 0`,
+    margin: `${spacing.sm}px 0 0`,
     padding: `0 ${spacing.md}px`,
     justifyContent: 'flex-start',
     alignItems: 'center',

@@ -1,12 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
-import { DeviceLabel } from '../DeviceLabel'
-import { RestoreButton } from '../../buttons/RestoreButton'
-import { ConnectionStateIcon } from '../ConnectionStateIcon'
-import { Attribute } from '../../helpers/attributes'
-import { Icon } from '../Icon'
 import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
+import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { RestoreButton } from '../../buttons/RestoreButton'
+import { DeviceLabel } from '../DeviceLabel'
+import { Attribute } from '../../helpers/attributes'
+import { radius } from '../../styling'
+import { Icon } from '../Icon'
 
 type Props = {
   device?: IDevice
@@ -26,25 +27,26 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, 
   return (
     <ListItem to={`/devices/${device.id}`} component={Link} button>
       {/* <pre style={{ backgroundColor: 'black' }}> attributes: {JSON.stringify(attributes.map(a => a.id))}</pre> */}
-      {select && (
-        <Checkbox
-          // checked={checked}
-          // indeterminate={indeterminate}
-          // inputRef={inputRef}
-          // onChange={event => onClick(event.target.checked)}
-          className={css.checkbox}
-          onClick={event => event.stopPropagation()}
-          checkedIcon={<Icon name="check-square" size="md" type="solid" />}
-          indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
-          icon={<Icon name="square" size="md" />}
-          color="primary"
-        />
-      )}
-      <DeviceLabel device={device} />
-      <ListItemIcon>
-        <ConnectionStateIcon device={device} connection={connected} size="lg" />
-      </ListItemIcon>
-      <Box>
+      <Box className={css.sticky}>
+        <DeviceLabel device={device} />
+        <ListItemIcon>
+          {select ? (
+            <Checkbox
+              // checked={checked}
+              // indeterminate={indeterminate}
+              // inputRef={inputRef}
+              // onChange={event => onClick(event.target.checked)}
+              className={css.checkbox}
+              onClick={event => event.stopPropagation()}
+              checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+              indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
+              icon={<Icon name="square" size="md" />}
+              color="primary"
+            />
+          ) : (
+            <ConnectionStateIcon device={device} connection={connected} size="lg" />
+          )}
+        </ListItemIcon>
         <AttributeValue device={device} connection={connected} attribute={primary} />
       </Box>
       {restore ? (
@@ -61,7 +63,16 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, 
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
+  sticky: {
+    position: 'sticky',
+    left: 0,
+    zIndex: 4,
+    background: palette.white.main,
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: radius,
+  },
   button: {
     position: 'absolute',
     height: '100%',
@@ -70,4 +81,4 @@ const useStyles = makeStyles({
   checkbox: {
     maxWidth: 60,
   },
-})
+}))
