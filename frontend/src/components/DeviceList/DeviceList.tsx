@@ -12,6 +12,7 @@ import { spacing, fontSizes } from '../../styling'
 export interface DeviceListProps {
   connections: { [deviceID: string]: IConnection[] }
   attributes: Attribute[]
+  fetching?: boolean
   primary?: Attribute
   devices?: IDevice[]
   restore?: boolean
@@ -22,6 +23,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   devices = [],
   connections = {},
   attributes,
+  fetching,
   primary,
   restore,
   select,
@@ -30,8 +32,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 
   return (
     <>
-      <List className={css.grid}>
-        <DeviceListHeader attributes={attributes} select={select} />
+      <List className={css.grid} disablePadding>
+        <DeviceListHeader attributes={attributes} select={select} fetching={fetching} />
         <GuideStep
           guide="guideAWS"
           step={3}

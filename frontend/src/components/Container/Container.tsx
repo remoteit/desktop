@@ -5,7 +5,7 @@ import { spacing } from '../../styling'
 import { Body } from '../Body'
 
 type Props = {
-  header: any
+  header?: any
   sidebar?: any
   footer?: any
   integrated?: boolean
@@ -31,10 +31,12 @@ export const Container: React.FC<Props> = ({
   const css = useStyles({ backgroundColor })
   return (
     <div className={classnames(className, css.container)}>
-      <div className={integrated ? undefined : css.header}>
-        {header}
-        {integrated || !!backgroundColor || <Divider variant="inset" />}
-      </div>
+      {header && (
+        <div className={integrated ? undefined : css.header}>
+          {header}
+          {integrated || !!backgroundColor || <Divider variant="inset" />}
+        </div>
+      )}
       {sidebar ? (
         <div className={css.sidebar}>
           <Body {...bodyProps} gutterBottom={gutterBottom}>

@@ -32,7 +32,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   }, [])
 
   return (
-    <DevicesHeader fetching={fetching} myDevice={myDevice}>
+    <DevicesHeader myDevice={myDevice}>
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." spinner={false} />
       ) : !devices.length ? (
@@ -42,6 +42,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
           devices={devices}
           connections={connections}
           attributes={attributes}
+          fetching={fetching}
           primary={required}
           restore={restore}
           select={select}

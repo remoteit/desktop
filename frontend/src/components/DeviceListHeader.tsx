@@ -1,5 +1,13 @@
 import React from 'react'
-import { useMediaQuery, makeStyles, Checkbox, Box, ListSubheader, ListItemIcon, Divider } from '@material-ui/core'
+import {
+  useMediaQuery,
+  makeStyles,
+  Checkbox,
+  Box,
+  ListSubheader,
+  ListItemIcon,
+  LinearProgress,
+} from '@material-ui/core'
 import { Attribute } from '../helpers/attributes'
 import { radius } from '../styling'
 import { Icon } from './Icon'
@@ -7,9 +15,10 @@ import { Icon } from './Icon'
 type Props = {
   attributes?: Attribute[]
   select?: boolean
+  fetching?: boolean
 }
 
-export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select }) => {
+export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select, fetching }) => {
   const largeScreen = useMediaQuery('(min-width:600px)')
   const css = useStyles({ attributes })
 
@@ -35,6 +44,7 @@ export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select }) =
         Name
       </Box>
       {largeScreen && attributes?.map(attribute => <Box key={attribute.id}>{attribute.label}</Box>)}
+      {fetching && <LinearProgress className={css.fetching} />}
     </ListSubheader>
   )
 }
@@ -48,6 +58,13 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     alignItems: 'center',
     borderRadius: radius,
+  },
+  fetching: {
+    position: 'absolute',
+    width: '100%',
+    zIndex: 10,
+    height: 2,
+    bottom: 0,
   },
   checkbox: {
     maxWidth: 60,
