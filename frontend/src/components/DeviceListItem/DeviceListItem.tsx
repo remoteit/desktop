@@ -21,11 +21,12 @@ type Props = {
 export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, attributes = [], restore, select }) => {
   const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
-  const css = useStyles({ attributes, primary })
+  const offline = device?.state === 'inactive'
+  const css = useStyles({ offline })
   if (!device) return null
 
   return (
-    <ListItem to={`/devices/${device.id}`} component={Link} button>
+    <ListItem className={css.row} to={`/devices/${device.id}`} component={Link} button>
       {/* <pre style={{ backgroundColor: 'black' }}> attributes: {JSON.stringify(attributes.map(a => a.id))}</pre> */}
       <Box className={css.sticky}>
         <DeviceLabel device={device} />
@@ -64,6 +65,10 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, 
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  row: ({ offline }: { offline: boolean }) => ({
+    '& > div:not(:first-child)': { opacity: offline ? 0.3 : 1 },
+    '& > div:first-child > div ': { opacity: offline ? 0.3 : 1 },
+  }),
   sticky: {
     position: 'sticky',
     left: 0,

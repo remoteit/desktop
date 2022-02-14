@@ -65,7 +65,7 @@ export const attributes: Attribute[] = [
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
-    width: '260px',
+    width: '280px',
     required: true,
   }),
   new Attribute({

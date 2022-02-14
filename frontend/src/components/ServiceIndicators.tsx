@@ -32,7 +32,7 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
         />
       ))}
       {!!extra && (
-        <Tooltip className={css.chip} title={`${device.services.length} services total`} arrow placement="top">
+        <Tooltip title={`${device.services.length} services total`} arrow placement="top">
           <Chip label={`+${extra}`} size="small" />
         </Tooltip>
       )}
@@ -42,5 +42,4 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
 
 const useStyles = makeStyles({
   indicators: { textAlign: 'left', position: 'relative', zIndex: 3 },
-  chip: ({ device }: Props) => ({ opacity: device?.state === 'active' ? 1 : 0.3 }),
 })

@@ -83,6 +83,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItem-root': {
       height: 42,
       fontSize: fontSizes.sm,
+      color: palette.grayDark.main,
     },
     '& .MuiListSubheader-root': {
       marginLeft: spacing.xs,

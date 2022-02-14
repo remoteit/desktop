@@ -28,7 +28,6 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   let colorName: Color = 'grayDarker'
   let state = service ? service.state : 'unknown'
   let proxy: boolean = false
-  let opacity: number = 1
   let label: string = ''
 
   if (connection) {
@@ -45,9 +44,6 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
     case 'active':
       colorName = 'grayDarker'
       break
-    case 'inactive':
-      opacity = 0.3
-      break
     case 'connected':
       colorName = 'primary'
       break
@@ -61,7 +57,7 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
       colorName = 'grayLight'
   }
 
-  const css = useStyles({ colorName, opacity, textDecoration: state === 'inactive' ? 'line-through' : undefined })
+  const css = useStyles({ colorName, textDecoration: state === 'inactive' ? 'line-through' : undefined })
 
   if (!service) return null
 
@@ -124,16 +120,7 @@ const useStyles = makeStyles(({ palette }) => ({
       '& svg': { marginRight: 2 },
     },
   },
-  background: ({
-    colorName,
-    opacity,
-    textDecoration,
-  }: {
-    colorName: Color
-    opacity: number
-    textDecoration?: string
-  }) => ({
-    opacity,
+  background: ({ colorName, textDecoration }: { colorName: Color; textDecoration?: string }) => ({
     color: palette[colorName].main,
     backgroundColor: alpha(palette[colorName].main, 0.1),
     textDecoration,

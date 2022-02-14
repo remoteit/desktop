@@ -40,7 +40,6 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
     spin = true
   }
   if (instance?.state === 'inactive') {
-    opacity = 0.3
     title = 'Offline'
     showQuality = false
   }
@@ -54,7 +53,7 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
     title = 'Unlicensed'
   }
 
-  const css = useStyles({ colorName, opacity })
+  const css = useStyles({ colorName })
 
   if (mini)
     element = (
@@ -110,15 +109,13 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
 
 type StyleProps = {
   colorName: Color
-  opacity: number
 }
 
 const useStyles = makeStyles(({ palette }) => ({
   capitalize: { textTransform: 'capitalize' },
-  icon: ({ opacity }: StyleProps) => ({
-    opacity,
+  icon: {
     lineHeight: 1,
-  }),
+  },
   mini: ({ colorName }: StyleProps) => ({
     '& > span': {
       height: 4,
