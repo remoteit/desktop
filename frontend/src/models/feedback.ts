@@ -1,7 +1,9 @@
+import axios from 'axios'
 import { createModel } from '@rematch/core'
-import { createTicketZendesk } from '../services/Feedback'
+import { ZENDESK_URL } from '../shared/constants'
 import { RootModel } from './rootModel'
 import { apiError } from '../helpers/apiHelper'
+import { fullVersion } from '../helpers/versionHelper'
 
 type FeedbackParams = { [key: string]: any }
 
@@ -46,3 +48,31 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+async function createTicketZendesk(params: IFeedbackState) {
+  const bodyVersion = ` \n\n\n ================ \n ${fullVersion()}`
+  if (params.body.trim().length > 0) {
+    const result = await axios.post(
+      `${ZENDESK_URL}requests.json`,
+      {
+        request: {
+          subject: params.subject,
+          comment: {
+            body: params.body + bodyVersion,
+          },
+          requester: {
+            name: params.name,
+            email: params.email,
+          },
+          custom_fields: [{ version: fullVersion() }],
+        },
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    console.log('FEEDBACK RESULT', result)
+  }
+}
