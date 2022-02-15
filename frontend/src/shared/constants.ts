@@ -27,8 +27,6 @@ export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
 
 //API Zendesk
 export const ZENDESK_URL = process.env.ZENDESK_URL || 'https://remot3it.zendesk.com/api/v2/'
-export const ZENDESK_TOKEN =
-  process.env.ZENDESK_TOKEN || '1ed4fc7b7b18a39a156395b4dd873abb96abc45ea4343cff2628ac9943ad1be1'
 
 //segment-analytics
 export const SEGMENT_PROJECT_PORTAL_KEY = 'kYemtqKHE7qM7prQ1JWTP1ThMUYZBmym'

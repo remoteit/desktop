@@ -5,7 +5,7 @@ import { makeStyles, Button, Typography, Link, TextField } from '@material-ui/co
 import { useHistory } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
-import { version } from '../../../package.json'
+import { fullVersion } from '../../helpers/versionHelper'
 
 export const ShareFeedback: React.FC<{}> = () => {
   const { feedback } = useDispatch<Dispatch>()
@@ -20,7 +20,7 @@ export const ShareFeedback: React.FC<{}> = () => {
   }
 
   const email = () => {
-    window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${version} Feedback`)
+    window.location.href = encodeURI(`mailto:support@remote.it?subject=Desktop v${fullVersion()} Feedback`)
   }
 
   return (
