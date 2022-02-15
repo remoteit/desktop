@@ -86,9 +86,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       </Title>
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
-        <TestUI>
-          <ColumnsButton />
-        </TestUI>
+        <ColumnsButton />
         <TestUI>
           <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
         </TestUI>
@@ -107,6 +105,7 @@ const useStyles = makeStyles({
     height: 45,
     maxHeight: 45,
     width: '100%',
+    zIndex: 8,
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
     '& .MuiTypography-root': { marginLeft: spacing.lg, letterSpacing: 0.5 },

@@ -91,7 +91,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   panel: {
     height: '100%',
     display: 'flex',
@@ -109,10 +109,10 @@ const useStyles = makeStyles( ({ palette }) => ({
     height: '100%',
   },
   handle: {
-    zIndex: 5,
+    zIndex: 8,
     position: 'absolute',
     height: '100%',
-    marginLeft: -spacing.xs,
+    marginLeft: -5,
     padding: `0 ${spacing.xxs}px`,
     '-webkit-app-region': 'no-drag',
     '&:hover': {

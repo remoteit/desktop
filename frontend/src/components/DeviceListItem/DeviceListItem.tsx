@@ -29,7 +29,7 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, 
     <ListItem className={css.row} to={`/devices/${device.id}`} component={Link} button>
       {/* <pre style={{ backgroundColor: 'black' }}> attributes: {JSON.stringify(attributes.map(a => a.id))}</pre> */}
       <Box className={css.sticky}>
-        <DeviceLabel device={device} />
+        {/* <DeviceLabel device={device} /> */}
         <ListItemIcon>
           {select ? (
             <Checkbox

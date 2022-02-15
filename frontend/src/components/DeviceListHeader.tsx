@@ -9,7 +9,7 @@ import {
   LinearProgress,
 } from '@material-ui/core'
 import { Attribute } from '../helpers/attributes'
-import { radius } from '../styling'
+import { radius, spacing } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
@@ -23,7 +23,7 @@ export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select, fet
   const css = useStyles({ attributes })
 
   return (
-    <ListSubheader>
+    <ListSubheader className={css.header}>
       <Box className={css.sticky}>
         <ListItemIcon>
           {select && (
@@ -43,13 +43,21 @@ export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select, fet
         </ListItemIcon>
         Name
       </Box>
-      {largeScreen && attributes?.map(attribute => <Box key={attribute.id}>{attribute.label}</Box>)}
+      {largeScreen &&
+        attributes?.map(attribute => (
+          <Box key={attribute.id} className={css.title}>
+            {attribute.label}
+          </Box>
+        ))}
       {fetching && <LinearProgress className={css.fetching} />}
     </ListSubheader>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
+  header: {
+    borderBottom: `1px solid ${palette.grayLighter.main}`,
+  },
   sticky: {
     position: 'sticky',
     left: 0,
@@ -68,5 +76,14 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   checkbox: {
     maxWidth: 60,
+  },
+  title: {
+    paddingLeft: spacing.sm,
+    marginLeft: -spacing.xs,
+    borderLeft: `1px solid ${palette.white.main}`,
+    '&:hover': {
+      borderLeft: `1px dotted ${palette.primary.main}`,
+      cursor: 'col-resize',
+    },
   },
 }))

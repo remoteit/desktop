@@ -71,7 +71,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }),
   header: ({ backgroundColor }: any) => ({
     position: 'relative',
-    zIndex: 3,
+    zIndex: 7,
     backgroundColor: palette.white.main,
     borderBottom: backgroundColor && `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-h1': {
@@ -90,12 +90,11 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   sideContent: {
     display: 'flex',
-    boxShadow: `-1px 0 2px ${palette.grayLighter.main}`,
     position: 'relative',
-    zIndex: 2,
+    zIndex: 6,
   },
   footer: {
     position: 'relative',
-    zIndex: 3,
+    zIndex: 7,
   },
 }))
