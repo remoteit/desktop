@@ -22,10 +22,6 @@ export function agent() {
   return result?.length ? result[0] : ''
 }
 
-export function isActive() {
-  return document.hasFocus() && navigator.onLine
-}
-
 export function isPortal() {
   const { port } = window.location
   return PORTAL || (!isElectron() && port === '3000')
@@ -38,18 +34,15 @@ export function isRemote() {
 }
 
 export function isElectron() {
-  const userAgent = navigator.userAgent.toLowerCase()
-  return userAgent.includes('electron')
+  return navigator.userAgent.toLowerCase().includes('electron')
 }
 
 export function isMac() {
-  const platform = navigator.platform.toLowerCase()
-  return platform.includes('mac')
+  return navigator.userAgent.toLowerCase().includes('mac')
 }
 
 export function isWindows() {
-  const platform = navigator.platform.toLowerCase()
-  return platform.includes('win')
+  return navigator.userAgent.toLowerCase().includes('win')
 }
 
 export function isHeadless() {

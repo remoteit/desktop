@@ -1,4 +1,5 @@
 import React from 'react'
+import network from '../../services/Network'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
@@ -20,6 +21,7 @@ export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
       if (logPage) logs.fetch()
     } else {
       ui.refreshAll()
+      network.connect()
     }
   }
 
