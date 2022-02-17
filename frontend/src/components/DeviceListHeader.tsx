@@ -6,6 +6,8 @@ import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
 import { Attribute } from '../helpers/attributes'
 import { Icon } from './Icon'
 
+const MIN_WIDTH = 50
+
 type Props = {
   primary: Attribute
   attributes?: Attribute[]
@@ -35,11 +37,15 @@ export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], co
     event.preventDefault()
     window.removeEventListener('mousemove', onMove)
     window.removeEventListener('mouseup', onUp)
-    ui.resizeColumn({ id: moveRef.current[0], width: moveRef.current[1] + (event.clientX - moveRef.current[2]) })
+    ui.resizeColumn({
+      id: moveRef.current[0],
+      width: Math.max(moveRef.current[1] + (event.clientX - moveRef.current[2]), MIN_WIDTH),
+    })
     setResize(0)
   }
 
   const onMove = (event: MouseEvent) => {
+    if (moveRef.current[1] + (event.clientX - moveRef.current[2]) < MIN_WIDTH) return
     setResize(event.pageX - moveRef.current[3])
   }
 
