@@ -4,7 +4,7 @@ import { AttributeValue } from '../AttributeValue'
 import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { RestoreButton } from '../../buttons/RestoreButton'
-// import { DeviceLabel } from '../DeviceLabel'
+import { DeviceLabel } from '../DeviceLabel'
 import { Attribute } from '../../helpers/attributes'
 import { radius, spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -26,10 +26,9 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, 
   if (!device) return null
 
   return (
-    <ListItem className={css.row} to={`/devices/${device.id}`} component={Link} button>
-      {/* <pre style={{ backgroundColor: 'black' }}> attributes: {JSON.stringify(attributes.map(a => a.id))}</pre> */}
+    <ListItem className={css.row} to={`/devices/${device.id}`} component={Link} button disableGutters>
       <Box className={css.sticky}>
-        {/* <DeviceLabel device={device} /> */}
+        <DeviceLabel device={device} />
         <ListItemIcon>
           {select ? (
             <Checkbox
@@ -68,6 +67,9 @@ const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: { offline: boolean }) => ({
     '& > div:not(:first-child)': { opacity: offline ? 0.3 : 1 },
     '& > div:first-child > div ': { opacity: offline ? 0.3 : 1 },
+
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
   }),
   sticky: {
     position: 'sticky',
@@ -76,8 +78,10 @@ const useStyles = makeStyles(({ palette }) => ({
     background: palette.white.main,
     display: 'flex',
     alignItems: 'center',
-    borderRadius: radius,
-    marginRight: spacing.md,
+    borderTopRightRadius: radius,
+    borderBottomRightRadius: radius,
+    overflow: 'visible',
+    paddingLeft: spacing.md,
   },
   button: {
     position: 'absolute',

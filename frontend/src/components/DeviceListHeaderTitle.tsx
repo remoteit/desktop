@@ -6,12 +6,11 @@ import { spacing } from '../styling'
 type Props = {
   attribute: Attribute
   sticky?: boolean
-  columnWidths: ILookup<number>
   onMouseDown: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, Attribute) => void
   children?: React.ReactNode
 }
 
-export const DeviceListHeaderTitle: React.FC<Props> = ({ attribute, sticky, columnWidths, onMouseDown, children }) => {
+export const DeviceListHeaderTitle: React.FC<Props> = ({ attribute, sticky, onMouseDown, children }) => {
   const css = useStyles()
 
   return (
@@ -29,7 +28,7 @@ const useStyles = makeStyles(({ palette }) => ({
     zIndex: 4,
     position: 'sticky',
     background: palette.white.main,
-    marginRight: spacing.md,
+    paddingLeft: spacing.md,
   },
   title: {
     paddingLeft: spacing.xxs,

@@ -75,20 +75,21 @@ export const attributes: Attribute[] = [
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
-    defaultWidth: 300,
+    defaultWidth: 320,
     required: true,
   }),
   new Attribute({
     id: 'tags',
     label: 'Tags',
-    value: ({ device }) => <Tags ids={device?.tags || []} small />,
     defaultWidth: 100,
+    value: ({ device }) => (TestUI({}) ? <Tags ids={device?.tags || []} small /> : undefined),
+    column: false,
   }),
   new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 370,
+    defaultWidth: 360,
   }),
   new DeviceAttribute({
     id: 'tagEditor',
@@ -99,6 +100,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'targetPlatform',
     label: 'Platform',
+    defaultWidth: 180,
     value: ({ device }) => TargetPlatform({ id: device?.targetPlatform, label: true }),
   }),
   new DeviceAttribute({
@@ -110,6 +112,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'permissions',
     label: 'Permissions',
+    defaultWidth: 210,
     value: ({ device }) => {
       const lookup: ILookup<string> = {
         CONNECT: 'Connect',
@@ -147,21 +150,25 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'city',
     label: 'City',
+    defaultWidth: 115,
     value: ({ device }) => device?.geo?.city,
   }),
   new DeviceAttribute({
     id: 'state',
     label: 'State',
+    defaultWidth: 100,
     value: ({ device }) => device?.geo?.stateName,
   }),
   new DeviceAttribute({
     id: 'country',
     label: 'Country',
+    defaultWidth: 130,
     value: ({ device }) => device?.geo?.countryName,
   }),
   new DeviceAttribute({
     id: 'externalAddress',
     label: 'External IP',
+    defaultWidth: 180,
     value: ({ device }) => device?.externalAddress,
   }),
   new DeviceAttribute({
@@ -169,21 +176,28 @@ export const attributes: Attribute[] = [
     label: 'Internal IP',
     value: ({ device }) => device?.internalAddress,
   }),
-  new DeviceAttribute({ id: 'id', label: 'Device ID', value: ({ device }) => device?.id }),
+  new DeviceAttribute({
+    id: 'id',
+    label: 'Device ID',
+    defaultWidth: 180,
+    value: ({ device }) => device?.id,
+  }),
   new DeviceAttribute({
     id: 'hardwareID',
     label: 'Hardware ID',
+    defaultWidth: 190,
     value: ({ device }) => device?.hardwareID,
   }),
   new DeviceAttribute({
     id: 'version',
     label: 'Daemon version',
+    defaultWidth: 80,
     value: ({ device }) => device?.version,
-    defaultWidth: 50,
   }),
   new DeviceAttribute({
     id: 'license',
     label: 'License',
+    defaultWidth: 100,
     value: ({ device }) => <LicenseChip license={device?.license} />,
   }),
   // @TODO add attributes to the device model on graphql request
@@ -223,6 +237,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'serviceLastReported',
     label: 'Last Reported',
+    defaultWidth: 230,
     value: ({ service }) =>
       service?.state !== 'active' ? <Duration startDate={service?.lastReported} ago /> : undefined,
   }),
@@ -239,6 +254,7 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'license',
     label: 'License',
+    defaultWidth: 100,
     value: ({ service }) => <LicenseChip license={service?.license} />,
   }),
   new ConnectionAttribute({

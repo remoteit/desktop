@@ -16,7 +16,8 @@ const useStyles = makeStyles({
   label: {
     height: '100%',
     width: 8,
-    left: -spacing.md,
+    left: 0,
+    zIndex: 8,
     position: 'absolute',
     borderTopRightRadius: spacing.xxs,
     borderBottomRightRadius: spacing.xxs,

@@ -25,7 +25,6 @@ export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], co
   const onDown = (event: React.MouseEvent, attribute: Attribute) => {
     const containerX = containerRef.current?.getBoundingClientRect().left || 0
     const containerY = containerRef.current?.parentElement?.getBoundingClientRect().height || 0
-    console.log('ONDOWN', containerX, containerY, event)
     moveRef.current = [attribute.id, attribute.width(columnWidths), event.clientX, containerX, containerY]
     event.preventDefault()
     window.addEventListener('mousemove', onMove)
@@ -41,17 +40,16 @@ export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], co
   }
 
   const onMove = (event: MouseEvent) => {
-    console.log(event.screenX, event.clientX - moveRef.current[2], event)
     setResize(event.pageX - moveRef.current[3])
   }
 
   return (
-    <ListSubheader className={css.header} ref={containerRef}>
+    <ListSubheader className={css.header} ref={containerRef} disableGutters>
       <span
         className={css.handle}
         style={{ left: resize, height: moveRef.current[4], display: resize ? 'block' : 'none' }}
       />
-      <DeviceListHeaderTitle attribute={primary} columnWidths={columnWidths} onMouseDown={onDown} sticky>
+      <DeviceListHeaderTitle attribute={primary} onMouseDown={onDown} sticky>
         <ListItemIcon>
           {select && (
             <Checkbox
@@ -71,12 +69,7 @@ export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], co
       </DeviceListHeaderTitle>
       {largeScreen &&
         attributes?.map(attribute => (
-          <DeviceListHeaderTitle
-            key={attribute.id}
-            attribute={attribute}
-            columnWidths={columnWidths}
-            onMouseDown={onDown}
-          />
+          <DeviceListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
         ))}
       {fetching && <LinearProgress className={css.fetching} />}
     </ListSubheader>

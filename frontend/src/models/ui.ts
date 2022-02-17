@@ -5,7 +5,7 @@ import { selectTheme } from '../styling/theme'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
-const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode', 'drawerMenu', 'columns']
+const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode', 'drawerMenu', 'columns', 'columnWidths']
 
 type UIState = {
   theme: Theme
@@ -134,6 +134,10 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ themeMode })
       dispatch.ui.set({ theme: selectTheme(themeMode) })
     },
+    async resizeColumn(params: { id: string; width: number }, globalState) {
+      const columnWidths = { ...globalState.ui.columnWidths, [params.id]: params.width }
+      dispatch.ui.setPersistent({ columnWidths })
+    },
     async guide({ guide, ...props }: ILookup<any>, globalState) {
       let state = globalState.ui[guide]
       const active = props.active === undefined ? state.active : props.active
@@ -164,10 +168,6 @@ export default createModel<RootModel>()({
   reducers: {
     set(state: UIState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
-      return state
-    },
-    resizeColumn(state: UIState, params: { id: string; width: number }) {
-      state.columnWidths = { ...state.columnWidths, [params.id]: params.width }
       return state
     },
     updated(state: UIState) {
