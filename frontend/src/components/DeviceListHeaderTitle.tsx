@@ -48,11 +48,16 @@ const useStyles = makeStyles(({ palette }) => ({
     '&:hover': {
       cursor: 'col-resize',
     },
-    '&:hover::after': {
+    '&::after': {
       content: '""',
+      width: 1,
+      height: spacing.sm,
+      display: 'inline-block',
+      background: palette.grayLighter.main,
+    },
+    '&:hover::after': {
       width: 3,
       height: '100%',
-      display: 'inline-block',
       background: palette.primary.main,
     },
   },
