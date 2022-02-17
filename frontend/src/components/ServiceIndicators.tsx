@@ -41,5 +41,5 @@ export const ServiceIndicators: React.FC<Props> = ({ device, connections = [] })
 }
 
 const useStyles = makeStyles({
-  indicators: { textAlign: 'left', position: 'relative', zIndex: 3 },
+  indicators: { position: 'relative', zIndex: 3 },
 })

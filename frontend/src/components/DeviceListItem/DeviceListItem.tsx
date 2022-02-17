@@ -67,7 +67,6 @@ const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: { offline: boolean }) => ({
     '& > div:not(:first-child)': { opacity: offline ? 0.3 : 1 },
     '& > div:first-child > div ': { opacity: offline ? 0.3 : 1 },
-
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }),

@@ -20,6 +20,7 @@ export class Attribute {
   label: string = ''
   help?: string
   required: boolean = false
+  align?: 'left' | 'right' | 'center'
   column: boolean = true
   defaultWidth: number = 150
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
@@ -31,6 +32,7 @@ export class Attribute {
     label: string
     help?: string
     required?: boolean
+    align?: Attribute['align']
     column?: boolean
     defaultWidth?: number
     type?: Attribute['type']
@@ -90,6 +92,7 @@ export const attributes: Attribute[] = [
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
     defaultWidth: 360,
+    align: 'right',
   }),
   new DeviceAttribute({
     id: 'tagEditor',

@@ -14,7 +14,11 @@ export const DeviceListHeaderTitle: React.FC<Props> = ({ attribute, sticky, onMo
   const css = useStyles()
 
   return (
-    <Box className={sticky ? css.sticky : css.title}>
+    <Box
+      className={sticky ? css.sticky : css.title}
+      textAlign={attribute?.align}
+      marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
+    >
       {children}
       {attribute.label}
       <span className={css.drag} onMouseDown={event => onMouseDown(event, attribute)} />
