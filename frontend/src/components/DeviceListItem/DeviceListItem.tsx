@@ -4,9 +4,9 @@ import { AttributeValue } from '../AttributeValue'
 import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { RestoreButton } from '../../buttons/RestoreButton'
-import { DeviceLabel } from '../DeviceLabel'
+// import { DeviceLabel } from '../DeviceLabel'
 import { Attribute } from '../../helpers/attributes'
-import { radius } from '../../styling'
+import { radius, spacing } from '../../styling'
 import { Icon } from '../Icon'
 
 type Props = {
@@ -77,6 +77,7 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     alignItems: 'center',
     borderRadius: radius,
+    marginRight: spacing.md,
   },
   button: {
     position: 'absolute',

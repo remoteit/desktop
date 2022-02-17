@@ -1,30 +1,57 @@
-import React from 'react'
-import {
-  useMediaQuery,
-  makeStyles,
-  Checkbox,
-  Box,
-  ListSubheader,
-  ListItemIcon,
-  LinearProgress,
-} from '@material-ui/core'
+import React, { useState, useRef } from 'react'
+import { Dispatch } from '../store'
+import { useDispatch } from 'react-redux'
+import { useMediaQuery, makeStyles, Checkbox, ListSubheader, ListItemIcon, LinearProgress } from '@material-ui/core'
+import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
 import { Attribute } from '../helpers/attributes'
-import { radius, spacing } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
+  primary: Attribute
   attributes?: Attribute[]
+  columnWidths: ILookup<number>
   select?: boolean
   fetching?: boolean
 }
 
-export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select, fetching }) => {
+export const DeviceListHeader: React.FC<Props> = ({ primary, attributes = [], columnWidths, select, fetching }) => {
   const largeScreen = useMediaQuery('(min-width:600px)')
-  const css = useStyles({ attributes })
+  const [resize, setResize] = useState<number>(0)
+  const { ui } = useDispatch<Dispatch>()
+  const containerRef = useRef<HTMLLIElement>(null)
+  const moveRef = useRef<[string, number, number, number, number]>(['', 0, 0, 0, 0])
+  const css = useStyles()
+
+  const onDown = (event: React.MouseEvent, attribute: Attribute) => {
+    const containerX = containerRef.current?.getBoundingClientRect().left || 0
+    const containerY = containerRef.current?.parentElement?.getBoundingClientRect().height || 0
+    console.log('ONDOWN', containerX, containerY, event)
+    moveRef.current = [attribute.id, attribute.width(columnWidths), event.clientX, containerX, containerY]
+    event.preventDefault()
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  const onUp = (event: MouseEvent) => {
+    event.preventDefault()
+    window.removeEventListener('mousemove', onMove)
+    window.removeEventListener('mouseup', onUp)
+    ui.resizeColumn({ id: moveRef.current[0], width: moveRef.current[1] + (event.clientX - moveRef.current[2]) })
+    setResize(0)
+  }
+
+  const onMove = (event: MouseEvent) => {
+    console.log(event.screenX, event.clientX - moveRef.current[2], event)
+    setResize(event.pageX - moveRef.current[3])
+  }
 
   return (
-    <ListSubheader className={css.header}>
-      <Box className={css.sticky}>
+    <ListSubheader className={css.header} ref={containerRef}>
+      <span
+        className={css.handle}
+        style={{ left: resize, height: moveRef.current[4], display: resize ? 'block' : 'none' }}
+      />
+      <DeviceListHeaderTitle attribute={primary} columnWidths={columnWidths} onMouseDown={onDown} sticky>
         <ListItemIcon>
           {select && (
             <Checkbox
@@ -41,13 +68,15 @@ export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select, fet
             />
           )}
         </ListItemIcon>
-        Name
-      </Box>
+      </DeviceListHeaderTitle>
       {largeScreen &&
         attributes?.map(attribute => (
-          <Box key={attribute.id} className={css.title}>
-            {attribute.label}
-          </Box>
+          <DeviceListHeaderTitle
+            key={attribute.id}
+            attribute={attribute}
+            columnWidths={columnWidths}
+            onMouseDown={onDown}
+          />
         ))}
       {fetching && <LinearProgress className={css.fetching} />}
     </ListSubheader>
@@ -57,15 +86,6 @@ export const DeviceListHeader: React.FC<Props> = ({ attributes = [], select, fet
 const useStyles = makeStyles(({ palette }) => ({
   header: {
     borderBottom: `1px solid ${palette.grayLighter.main}`,
-  },
-  sticky: {
-    position: 'sticky',
-    left: 0,
-    zIndex: 4,
-    background: palette.white.main,
-    display: 'flex',
-    alignItems: 'center',
-    borderRadius: radius,
   },
   fetching: {
     position: 'absolute',
@@ -77,13 +97,11 @@ const useStyles = makeStyles(({ palette }) => ({
   checkbox: {
     maxWidth: 60,
   },
-  title: {
-    paddingLeft: spacing.sm,
-    marginLeft: -spacing.xs,
-    borderLeft: `1px solid ${palette.white.main}`,
-    '&:hover': {
-      borderLeft: `1px dotted ${palette.primary.main}`,
-      cursor: 'col-resize',
-    },
+  handle: {
+    position: 'absolute',
+    zIndex: 80,
+    top: 0,
+    width: 1,
+    borderRight: `1px dotted ${palette.primaryLight.main}`,
   },
 }))

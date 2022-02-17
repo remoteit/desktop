@@ -19,6 +19,7 @@ type UIState = {
   routingMessage?: string
   drawerMenu: 'FILTER' | 'COLUMNS' | null
   columns: string[]
+  columnWidths: ILookup<number>
   serviceContextMenu?: IContextMenu
   redirect?: string
   restoring: boolean
@@ -62,6 +63,7 @@ export const defaultState: UIState = {
   routingMessage: undefined,
   drawerMenu: null,
   columns: ['deviceName', 'services'],
+  columnWidths: {},
   serviceContextMenu: undefined,
   redirect: undefined,
   restoring: false,
@@ -147,7 +149,6 @@ export default createModel<RootModel>()({
       state = { ...state, ...props }
       dispatch.ui.setPersistent({ [guide]: state })
     },
-
     async resetGuides(_, globalState) {
       Object.keys(globalState.ui).forEach(key => {
         if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
@@ -163,6 +164,10 @@ export default createModel<RootModel>()({
   reducers: {
     set(state: UIState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
+    },
+    resizeColumn(state: UIState, params: { id: string; width: number }) {
+      state.columnWidths = { ...state.columnWidths, [params.id]: params.width }
       return state
     },
     updated(state: UIState) {

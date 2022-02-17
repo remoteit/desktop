@@ -12,8 +12,9 @@ import { spacing, fontSizes } from '../../styling'
 export interface DeviceListProps {
   connections: { [deviceID: string]: IConnection[] }
   attributes: Attribute[]
+  primary: Attribute
+  columnWidths: ILookup<number>
   fetching?: boolean
-  primary?: Attribute
   devices?: IDevice[]
   restore?: boolean
   select?: boolean
@@ -23,17 +24,24 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   devices = [],
   connections = {},
   attributes,
+  columnWidths,
   fetching,
   primary,
   restore,
   select,
 }) => {
-  const css = useStyles({ attributes, primary })
+  const css = useStyles({ attributes, primary, columnWidths })
 
   return (
     <>
       <List className={css.grid} disablePadding>
-        <DeviceListHeader attributes={attributes} select={select} fetching={fetching} />
+        <DeviceListHeader
+          primary={primary}
+          attributes={attributes}
+          select={select}
+          fetching={fetching}
+          columnWidths={columnWidths}
+        />
         <GuideStep
           guide="guideAWS"
           step={3}
@@ -67,22 +75,27 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 
 type StyleProps = {
   attributes: Attribute[]
-  primary?: Attribute
+  primary: Attribute
+  columnWidths: ILookup<number>
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  grid: ({ attributes, primary }: StyleProps) => ({
+  grid: ({ attributes, primary, columnWidths }: StyleProps) => ({
     display: 'inline-block',
     minWidth: '100%',
     '& .MuiListItem-root, & .MuiListSubheader-root': {
       display: 'grid',
-      gridGap: spacing.md,
-      gridTemplateColumns: `${primary?.width} ${attributes?.map(a => a.width).join(' ')}`,
+      gridTemplateColumns: `${primary.width(columnWidths)}px ${attributes
+        ?.map(a => a.width(columnWidths))
+        .join('px ')}px`,
       alignItems: 'center',
+      '& > .MuiBox-root': {
+        paddingRight: spacing.sm,
+      },
     },
     '& .MuiListItem-root': {
       height: 42,
-      fontSize: fontSizes.sm,
+      fontSize: fontSizes.base,
       color: palette.grayDarkest.main,
     },
     '& .MuiBox-root': {

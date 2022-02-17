@@ -18,14 +18,24 @@ import { Tags } from '../components/Tags'
 export class Attribute {
   id: string = ''
   label: string = ''
-  width?: string = '130px'
   help?: string
-  required?: boolean = false
-  column?: boolean = true
-  type?: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
+  required: boolean = false
+  column: boolean = true
+  defaultWidth: number = 150
+  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
   value: (options: IDataOptions) => any = () => {}
+  width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
-  constructor(options: Attribute) {
+  constructor(options: {
+    id: string
+    label: string
+    help?: string
+    required?: boolean
+    column?: boolean
+    defaultWidth?: number
+    type?: Attribute['type']
+    value?: Attribute['value']
+  }) {
     Object.assign(this, options)
   }
 }
@@ -58,27 +68,27 @@ const ATTRIBUTES = [
 export const attributes: Attribute[] = [
   new Attribute({
     id: 'deviceName',
-    label: 'Device Name',
+    label: 'Name',
     value: ({ device, connection }) => (
       <ListItemText
         primary={<ServiceName device={device} connection={connection} />}
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
-    width: '280px',
+    defaultWidth: 300,
     required: true,
   }),
   new Attribute({
     id: 'tags',
     label: 'Tags',
     value: ({ device }) => <Tags ids={device?.tags || []} small />,
-    width: '80px',
+    defaultWidth: 100,
   }),
   new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    width: '350px',
+    defaultWidth: 370,
   }),
   new DeviceAttribute({
     id: 'tagEditor',
@@ -128,10 +138,26 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'location',
     label: 'Location',
+    column: false,
     value: ({ device, session }) => {
       const geo = device?.geo || session?.geo
       return geo && <DeviceGeo geo={geo} />
     },
+  }),
+  new DeviceAttribute({
+    id: 'city',
+    label: 'City',
+    value: ({ device }) => device?.geo?.city,
+  }),
+  new DeviceAttribute({
+    id: 'state',
+    label: 'State',
+    value: ({ device }) => device?.geo?.stateName,
+  }),
+  new DeviceAttribute({
+    id: 'country',
+    label: 'Country',
+    value: ({ device }) => device?.geo?.countryName,
   }),
   new DeviceAttribute({
     id: 'externalAddress',
@@ -153,7 +179,7 @@ export const attributes: Attribute[] = [
     id: 'version',
     label: 'Daemon version',
     value: ({ device }) => device?.version,
-    width: '30px',
+    defaultWidth: 50,
   }),
   new DeviceAttribute({
     id: 'license',

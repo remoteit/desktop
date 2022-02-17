@@ -1,5 +1,5 @@
-import network from '../services/Network'
-import { isPortal } from '../services/Browser'
+import network from './Network'
+import { isPortal } from './Browser'
 import { HEARTBEAT_INTERVAL } from '../shared/constants'
 import { store } from '../store'
 import { emit } from './Controller'
