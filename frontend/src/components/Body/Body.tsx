@@ -48,16 +48,18 @@ export const Body: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   body: {
     flexGrow: 1,
     height: '100%',
-    overflowY: 'auto',
+    overflow: 'auto',
     position: 'relative',
     '-webkit-overflow-scrolling': 'touch',
     '& section': { padding: spacing.xl },
     '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
     '&::-webkit-scrollbar:vertical': { width: 11 },
+    '&::-webkit-scrollbar:horizontal': { height: 11 },
+    '&::-webkit-scrollbar-corner': { background: palette.white.main },
     '&::-webkit-scrollbar-thumb': {
       borderRadius: 8,
       border: `2px solid ${palette.white.main}`, // should match background, can't be transparent

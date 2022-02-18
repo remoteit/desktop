@@ -10,6 +10,7 @@ import { fas } from '@fortawesome/pro-solid-svg-icons'
 import { Advantech } from '../../assets/Advantech'
 import { OpenWrt } from '../../assets/OpenWrt'
 import { Nvidia } from '../../assets/Nvidia'
+import { Axis } from '../../assets/Axis'
 import { R3 } from '../../assets/R3'
 import classnames from 'classnames'
 
@@ -55,6 +56,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     if (name === 'nvidia') return <Nvidia className={css.icon} {...props} />
     if (name === 'openwrt') return <OpenWrt className={css.icon} {...props} />
     if (name === 'advantech') return <Advantech className={css.icon} {...props} />
+    if (name === 'axis') return <Axis className={css.icon} {...props} />
 
     let fontType: IconPrefix = 'far'
 

@@ -20,6 +20,7 @@ export const TARGET_PLATFORMS: ITargetPlatform = {
   1201: 'NVIDIA Jetson',
   1205: 'OpenWrt',
   1206: 'Advantech',
+  1209: 'AXIS',
   65535: 'Unknown',
 }
 
@@ -78,6 +79,9 @@ export function getTargetPlatformIcon(id?: number): { name: string; type: IconTy
       break
     case 1206:
       name = 'advantech'
+      break
+    case 1209:
+      name = 'axis'
       break
     case 1202:
       name = 'router'

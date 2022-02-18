@@ -6,7 +6,6 @@ import { selectAnnouncements } from '../models/announcements'
 import { AnnouncementCard } from '../components/AnnouncementCard'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
-import { Icon } from '../components/Icon'
 
 export const AnnouncementsPage = () => {
   const announcements = useSelector((state: ApplicationState) => selectAnnouncements(state))

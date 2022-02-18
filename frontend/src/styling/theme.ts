@@ -185,7 +185,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           letterSpacing: 2,
           fontWeight: 500,
         },
-        sticky: { zIndex: 2 },
+        sticky: {
+          zIndex: 5,
+          backgroundColor: palette.white.main,
+        },
       },
       MuiPaper: {
         rounded: { borderRadius: radius },
@@ -416,10 +419,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   }
 }
 
-export function selectTheme(state?: ApplicationState['ui']) {
+export function selectTheme(themeMode?: ApplicationState['ui']['themeMode']) {
   let darkMode = isSystemDarkMode()
-  if (state?.themeMode === 'dark') darkMode = true
-  if (state?.themeMode === 'light') darkMode = false
+  if (themeMode === 'dark') darkMode = true
+  if (themeMode === 'light') darkMode = false
   console.log('SELECT THEME. DARK MODE:', darkMode)
   const theme = createTheme(jssTheme(darkMode))
   return theme

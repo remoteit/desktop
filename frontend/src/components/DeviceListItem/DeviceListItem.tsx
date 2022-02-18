@@ -1,13 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
-import { DeviceLabel } from '../DeviceLabel'
-import { RestoreButton } from '../../buttons/RestoreButton'
+import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
+import { RestoreButton } from '../../buttons/RestoreButton'
+import { DeviceLabel } from '../DeviceLabel'
 import { Attribute } from '../../helpers/attributes'
+import { radius, spacing } from '../../styling'
 import { Icon } from '../Icon'
-import { makeStyles, Checkbox, ListItemSecondaryAction, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
-import { spacing, fontSizes } from '../../styling'
 
 type Props = {
   device?: IDevice
@@ -21,53 +21,67 @@ type Props = {
 export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, attributes = [], restore, select }) => {
   const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
-  const css = useStyles({ attributes })
+  const offline = device?.state === 'inactive'
+  const css = useStyles({ offline })
   if (!device) return null
 
   return (
-    <>
-      <ListItem className={css.columns} to={`/devices/${device.id}`} component={Link} button>
-        {select && (
-          <Checkbox
-            // checked={checked}
-            // indeterminate={indeterminate}
-            // inputRef={inputRef}
-            // onChange={event => onClick(event.target.checked)}
-            className={css.checkbox}
-            onClick={event => event.stopPropagation()}
-            checkedIcon={<Icon name="check-square" size="md" type="solid" />}
-            indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
-            icon={<Icon name="square" size="md" />}
-            color="primary"
-          />
-        )}
+    <ListItem className={css.row} to={`/devices/${device.id}`} component={Link} button disableGutters>
+      <Box className={css.sticky}>
         <DeviceLabel device={device} />
         <ListItemIcon>
-          <ConnectionStateIcon device={device} connection={connected} size="lg" />
+          {select ? (
+            <Checkbox
+              // checked={checked}
+              // indeterminate={indeterminate}
+              // inputRef={inputRef}
+              // onChange={event => onClick(event.target.checked)}
+              className={css.checkbox}
+              onClick={event => event.stopPropagation()}
+              checkedIcon={<Icon name="check-square" size="md" type="solid" />}
+              indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
+              icon={<Icon name="square" size="md" />}
+              color="primary"
+            />
+          ) : (
+            <ConnectionStateIcon device={device} connection={connected} size="lg" />
+          )}
         </ListItemIcon>
         <AttributeValue device={device} connection={connected} attribute={primary} />
-        <ListItemSecondaryAction className={css.column}>
-          {restore ? (
-            <RestoreButton device={device} />
-          ) : (
-            largeScreen &&
-            attributes?.map(attribute => (
-              <AttributeValue
-                key={attribute.id}
-                device={device}
-                connection={connected}
-                connections={connections}
-                attribute={attribute}
-              />
-            ))
-          )}
-        </ListItemSecondaryAction>
-      </ListItem>
-    </>
+      </Box>
+      {restore ? (
+        <RestoreButton device={device} />
+      ) : (
+        largeScreen &&
+        attributes?.map(attribute => (
+          <Box key={attribute.id}>
+            <AttributeValue device={device} connection={connected} connections={connections} attribute={attribute} />
+          </Box>
+        ))
+      )}
+    </ListItem>
   )
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(({ palette }) => ({
+  row: ({ offline }: { offline: boolean }) => ({
+    '& > div:not(:first-child)': { opacity: offline ? 0.3 : 1 },
+    '& > div:first-child > div ': { opacity: offline ? 0.3 : 1 },
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+  }),
+  sticky: {
+    position: 'sticky',
+    left: 0,
+    zIndex: 4,
+    background: palette.white.main,
+    display: 'flex',
+    alignItems: 'center',
+    borderTopRightRadius: radius,
+    borderBottomRightRadius: radius,
+    overflow: 'visible',
+    paddingLeft: spacing.md,
+  },
   button: {
     position: 'absolute',
     height: '100%',
@@ -76,25 +90,4 @@ const useStyles = makeStyles({
   checkbox: {
     maxWidth: 60,
   },
-  column: ({ attributes }: { attributes: Props['attributes'] }) => ({
-    // display: 'flex',
-    // flexDirection: 'row-reverse',
-    // width: '60%',
-    display: 'grid',
-    gridGap: spacing.md,
-    gridTemplateColumns: `${attributes?.map(a => a.width).join(' ')}`,
-  }),
-  columns: {
-    // display: 'grid',
-    // gridGap: spacing.md,
-    // gridTemplateColumns: `auto ${attributes?.map(a => a.width).join(' ')}`,
-    alignItems: 'center',
-    height: 42,
-    '& .MuiBox-root': {
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      fontSize: fontSizes.sm,
-    },
-  },
-})
+}))
