@@ -146,9 +146,12 @@ export class BinaryInstaller {
     }
   }
 
-  envVar() {
+  envVar(): string {
+    if (!preferences.get().switchApi) return ''
+
     const remoteAPI = preferences.get().apiURL
     const graphqlURL = preferences.get().apiGraphqlURL
+
     let envVar = ''
 
     if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `

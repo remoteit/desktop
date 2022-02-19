@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dispatch, ApplicationState } from '../store'
-import { Typography, List, ListItem, ListItemIcon } from '@material-ui/core'
+import { Typography, List, ListItem } from '@material-ui/core'
 import { getGraphQLApi, getRestApi, getWebSocketURL } from '../helpers/apiHelper'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -34,6 +34,11 @@ export const TestPage: React.FC = () => {
     emit('binaries/install')
   }
 
+  const onToggleAPIs = () => {
+    emit('preferences', { ...preferences, switchApi: !preferences.switchApi })
+    emit('binaries/install')
+  }
+
   return (
     <TestUI>
       <Container
@@ -64,7 +69,7 @@ export const TestPage: React.FC = () => {
           <ListItemSetting
             hideIcon
             label="Override default APIs"
-            onClick={() => emit('preferences', { ...preferences, switchApi: !preferences.switchApi })}
+            onClick={onToggleAPIs}
             toggle={!!preferences.switchApi}
           />
           <ListItem>
