@@ -53,7 +53,7 @@ const useStyles = makeStyles(({ palette }) => ({
       width: 1,
       height: spacing.sm,
       display: 'inline-block',
-      background: palette.grayLighter.main,
+      background: palette.grayLight.main,
     },
     '&:hover::after': {
       width: 3,

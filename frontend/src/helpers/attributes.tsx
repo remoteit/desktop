@@ -77,7 +77,7 @@ export const attributes: Attribute[] = [
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
-    defaultWidth: 350,
+    defaultWidth: 420,
     required: true,
   }),
   new Attribute({
@@ -91,7 +91,7 @@ export const attributes: Attribute[] = [
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 360,
+    defaultWidth: 590,
     align: 'right',
   }),
   new DeviceAttribute({
