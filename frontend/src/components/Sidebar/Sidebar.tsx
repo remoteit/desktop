@@ -25,7 +25,7 @@ export const Sidebar: React.FC = () => {
         </span>
       </section>
       <ListItem className={css.select} dense>
-        <AccountSelect fullWidth hiddenLabel />
+        <AccountSelect fullWidth />
       </ListItem>
       <SidebarNav />
       <RemoteManagement />
