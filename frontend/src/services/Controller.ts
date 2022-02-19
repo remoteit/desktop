@@ -194,7 +194,6 @@ function getEventHandlers() {
 
     // AutoUpdate
     'cli/error': error => {
-      ui.set({ errorMessage: '' }) // So we re-trigger a new error if one exists
       ui.set({ errorMessage: error })
       ui.updated()
     },
