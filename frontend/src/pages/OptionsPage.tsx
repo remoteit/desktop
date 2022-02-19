@@ -84,8 +84,8 @@ export const OptionsPage: React.FC = () => {
             onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
           />
           <ListItemSetting
-            label="HTTPS Certificate"
-            subLabel="Use a remote.it certificate to handle and name local connections"
+            label="Named connections"
+            subLabel="Use a remote.it HTTPS certificate to handle and name local connections"
             icon="file-certificate"
             toggle={!!preferences.useCertificate}
             onClick={() => emit('useCertificate', !preferences.useCertificate)}
