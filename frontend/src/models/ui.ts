@@ -169,7 +169,7 @@ export default createModel<RootModel>()({
       if (!isElectron() || isHeadless()) return
       const { preferences } = globalState.backend
       dispatch.ui.set({
-        errorMessage: 'This version of Desktop is deprecated and will be removed in a future release.',
+        errorMessage: 'This version of Desktop is no longer supported. It should auto update shortly.',
       })
       emit('preferences', { ...preferences, autoUpdate: true })
     },
