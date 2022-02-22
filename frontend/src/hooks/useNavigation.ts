@@ -113,21 +113,6 @@ export function useNavigation(): INavigationHook {
       show: !remoteUI
     },
     {
-      label: 'Tags',
-      path: '/settings/tags',
-      match: '/settings/tags',
-      icon: 'tag',
-      show: true,
-      divider: true
-    },
-    {
-      label: 'Logs',
-      path: '/settings/logs',
-      match: '/settings/logs',
-      icon: 'file-alt',
-      show: true,
-    },
-    {
       label: 'Feedback',
       path: '/shareFeedback',
       match: '/shareFeedback',
