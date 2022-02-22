@@ -2,7 +2,7 @@
 !include x64.nsh
 !include LogicLib.nsh
 !define REMOTEIT_BACKUP "$PROFILE\AppData\Local\remoteit-backup"
-!define PKGVERSION "3.4.2"
+!define PKGVERSION "3.6.0-alpha.0"
 
 !macro customInit
     Var /GLOBAL path_i
@@ -139,7 +139,7 @@
                             FileWrite $uninstallLog "$ps_command_uninstall     [$0]  [$1]$\r$\n"
 
                             ; Waits for unregister to complete
-                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -jj status'
+                            nsExec::ExecToStack /OEM 'powershell "& " "$\'"$path_u\remoteit.exe$\'" -j --skipCloud status'
 
                             MessageBox MB_OK "Your device was unregistered!"
 

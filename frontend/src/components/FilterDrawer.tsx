@@ -9,8 +9,8 @@ import { Drawer } from './Drawer'
 
 const sortFilters = [
   { value: 'name', name: 'Name' },
-  { value: 'state', name: 'State' },
-  { value: 'attributes.$remoteit.color', name: 'Color' },
+  { value: 'state,name', name: 'State' },
+  { value: 'attributes.$remoteit.color,name', name: 'Color' },
 ]
 const deviceFilters = [
   { value: 'all', name: 'All' },
@@ -113,6 +113,7 @@ export const FilterDrawer: React.FC = () => {
                   else if (value === -1) result = undefined
                   else result === undefined ? (result = [value]) : result.push(value)
 
+                  if (!result?.length) result = undefined
                   update({ platform: result })
                 }}
                 filterList={platformFilter}

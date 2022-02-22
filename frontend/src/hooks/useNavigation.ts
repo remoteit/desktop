@@ -6,7 +6,6 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { selectConnections } from '../helpers/connectionHelper'
 import { selectAnnouncements } from '../models/announcements'
 import { selectLicenseIndicator } from '../models/licensing'
-import { AccountMenu } from '../components/AccountMenu'
 import { isRemoteUI } from '../helpers/uiHelper'
 
 interface INavigationHook {
@@ -104,7 +103,6 @@ export function useNavigation(): INavigationHook {
       icon: 'hdd',
       show: !remoteUI,
       chip: devices.toLocaleString(),
-      // Menu: AccountMenu,
     },
     {
       label: 'Announcements',

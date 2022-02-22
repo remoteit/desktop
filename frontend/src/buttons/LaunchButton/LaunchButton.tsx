@@ -3,7 +3,7 @@ import { MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
 import { windowOpen } from '../../services/Browser'
 import { ApplicationState, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { useApplication } from '../../hooks/useApplication'
+import { Application } from '../../shared/applications'
 import { setConnection } from '../../helpers/connectionHelper'
 import { PromptModal } from '../../components/PromptModal'
 import { IconButton } from '../../buttons/IconButton'
@@ -14,34 +14,32 @@ import { Color, FontSize } from '../../styling'
 import { LAUNCH_TYPE } from '../../shared/applications'
 
 type Props = {
-  connection?: IConnection
-  service?: IService
   menuItem?: boolean
   dataButton?: boolean
   size?: FontSize
   color?: Color
   type?: IconType
+  app?: Application
   onMouseEnter?: () => void
   onMouseLeave?: () => void
   onLaunch?: () => void
 }
 
-export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, dataButton, onLaunch, ...props }) => {
+export const LaunchButton: React.FC<Props> = ({ menuItem, dataButton, onLaunch, app, ...props }) => {
   const { ui } = useDispatch<Dispatch>()
-  const app = useApplication(service, connection)
   const [prompt, setPrompt] = React.useState<boolean>(false)
-  const ready = !!(connection?.host || connection?.address)
-  const disabled = !connection?.enabled || connection.connecting || !ready
+  const ready = !!app?.connection?.host
+  const disabled = !app?.connection?.enabled || app?.connection.connecting || !ready
   const autoLaunch = useSelector((state: ApplicationState) => state.ui.autoLaunch)
 
   React.useEffect(() => {
-    if (autoLaunch && app.connection?.enabled && ready) {
+    if (autoLaunch && app?.connection?.enabled && ready) {
       ui.set({ autoLaunch: false })
       clickHandler()
     }
-  }, [autoLaunch, app.connection])
+  }, [autoLaunch, app?.connection])
 
-  if (!app || !connection?.enabled) return null
+  if (!app) return null
 
   const clickHandler = () => {
     if (app.prompt) setPrompt(true)
@@ -52,8 +50,9 @@ export const LaunchButton: React.FC<Props> = ({ connection, service, menuItem, d
   const close = () => setPrompt(false)
 
   const onSubmit = (tokens: ILookup<string>) => {
-    const newConnection = { ...connection, ...tokens }
-    connection && setConnection(newConnection)
+    if (!app.connection) return
+    const newConnection = { ...app.connection, ...tokens }
+    setConnection(newConnection)
     app.connection = newConnection
     launch()
     close()

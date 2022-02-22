@@ -18,8 +18,6 @@ const d = debug('ConnectionPool')
 const PEER_PORT_RANGE = [33000, 42999]
 
 export default class ConnectionPool {
-  freePort?: number
-
   private pool: Connection[] = []
   private file?: JSONFile<IConnection[]>
 
@@ -49,52 +47,60 @@ export default class ConnectionPool {
     Logger.info('INITIALIZING CONNECTIONS', { file: this.file.location, length: connections.length })
 
     // load connection data
-    connections.map(c => this.set(c))
+    connections.map(c => this.set(c, false, true))
+    this.updated()
   }
 
   // Sync with CLI
   check = async () => {
-    if (binaryInstaller.uninstallInitiated || !user.signedIn) return
+    let update = false
+    if (!binaryInstaller.ready || binaryInstaller.inProgress || !user.signedIn) return
     const cliData = await cli.readConnections()
 
     // move connections: cli -> desktop
-    cliData.forEach(async cliConnection => {
+    cliData.forEach(cliConnection => {
       const connection = this.find(cliConnection.id)?.params
       if (!connection || (!connection.public && this.changed(connection, cliConnection))) {
-        // Logger.info('SYNC CLI -> DESKTOP CONNECTION', { connection, cliConnection })
-        this.set({ ...connection, ...cliConnection }, false)
+        Logger.info('SYNC CONNECTION CLI -> DESKTOP', { id: cliConnection.id })
+        this.set({ ...connection, ...cliConnection }, false, true)
+        update = true
       }
     })
 
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
+      if (!connection.params.enabled || connection.params.public) return
+
       const cliConnection = cliData.find(c => c.id === connection.params.id)
-      if (!cliConnection && connection.params.connected && !connection.params.public) {
-        Logger.info('SYNC START DESKSTOP -> CLI CONNECTION', { connection: connection.params })
+      if (!cliConnection) {
+        Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         connection.start()
+        update = true
       }
-      if (connection.params.host === IP_PRIVATE && connection.params.enabled && preferences.get().useCertificate) {
+      if (connection.params.host === IP_PRIVATE && preferences.get().useCertificate) {
         if (!connection.params.error) {
           Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: connection.params })
           connection.error(new Error('Connection certificate error, unable to use custom hostname.'))
         }
       }
     })
+
+    if (update) this.updated()
   }
 
   // update single connection
-  set = (connection: IConnection, setCLI?: boolean) => {
+  set = (connection: IConnection, setCLI?: boolean, skipUpdate?: boolean) => {
     if (!connection) Logger.warn('No connections to set!', { connection })
     let instance = this.find(connection.id)
     d('SET SINGLE CONNECTION', { name: connection.name, id: connection.id })
     if (instance) {
       if (JSON.stringify(connection) !== JSON.stringify(instance.params)) {
         instance.set(connection, setCLI)
-        this.updated()
+        if (!skipUpdate) this.updated()
       }
     } else {
       instance = this.add(connection)
-      this.updated()
+      if (!skipUpdate) this.updated()
     }
     return instance
   }
@@ -107,18 +113,23 @@ export default class ConnectionPool {
   }
 
   changed = (c1: IConnection, c2: IConnection) => {
-    return (
-      c1.ip !== c2.ip ||
-      c1.host !== c2.host ||
-      c1.port !== c2.port ||
-      c1.enabled !== c2.enabled ||
-      c1.startTime !== c2.startTime ||
-      c1.connected !== c2.connected ||
-      c1.connecting !== c2.connecting ||
-      c1.disconnecting !== c2.disconnecting ||
-      c1.reachable !== c2.reachable ||
-      c1.sessionId !== c2.sessionId
-    )
+    const props: (keyof IConnection)[] = [
+      'host',
+      'port',
+      'enabled',
+      'startTime',
+      'connected',
+      'connecting',
+      'disconnecting',
+      'reachable',
+      'sessionId',
+    ]
+    return props.some(prop => {
+      if (c1[prop] !== c2[prop]) {
+        Logger.info('CONNECTION CHANGED', { prop, conn: c1[prop], cli: c2[prop] })
+        return true
+      }
+    })
   }
 
   find = (id: string) => {
@@ -195,7 +206,7 @@ export default class ConnectionPool {
     const json = this.toJSON()
     if (!user.signedIn) return
     this.file?.write(json)
-    d('CONNECTION POOL UPDATED')
+    // Logger.info('CONNECTION POOL UPDATED')
     EventBus.emit(ConnectionPool.EVENTS.updated, json)
   }
 
@@ -209,12 +220,9 @@ export default class ConnectionPool {
   sort = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
 
   nextFreePort = async () => {
-    const usedPorts = this.usedPorts
-    let lastPort = usedPorts.sort((a, b) => b - a)[0] || PEER_PORT_RANGE[0]
-    if (lastPort >= PEER_PORT_RANGE[1]) lastPort = PEER_PORT_RANGE[0]
-    this.freePort = await PortScanner.findFreePortInRange(lastPort, PEER_PORT_RANGE[1], usedPorts)
-    Logger.info('NEXT_FREE_PORT', { freePort: this.freePort, lastPort, usedPorts })
-    return this.freePort
+    const next = await PortScanner.findFreePortInRange(PEER_PORT_RANGE[0], PEER_PORT_RANGE[1], this.usedPorts)
+    Logger.info('NEXT_FREE_PORT', { next })
+    return next
   }
 
   private assignPort = async (connection: Connection) => {
@@ -227,13 +235,15 @@ export default class ConnectionPool {
   }
 
   private get usedPorts() {
-    return this.pool.reduce(
-      (result: number[], c) => {
-        if (c.params.port) result.push(c.params.port)
-        return result
-      },
-      [WEB_PORT]
-    )
+    return this.pool
+      .reduce(
+        (result: number[], c) => {
+          if (c.params.port) result.push(c.params.port)
+          return result
+        },
+        [WEB_PORT]
+      )
+      .sort()
   }
 
   private migrateLegacyFile() {
@@ -252,13 +262,12 @@ export default class ConnectionPool {
     // migrate active to enabled and connected
     return connections.map(c => {
       // @ts-ignore
-      const enabled = c.active
+      c.enabled = !!(c.enabled || c.active)
       // @ts-ignore
       delete c.active
       // setup safe names for hostname
       c.name = c.name?.toLowerCase().replace(/[-\s]+/g, '-')
-
-      return { ...c, enabled, connected: enabled }
+      return { ...c }
     })
   }
 }

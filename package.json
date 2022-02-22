@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.4.2",
+  "version": "3.6.0-alpha.0",
   "private": true,
   "main": "build/index.js",
   "description": "remote.it cross platform desktop application for creating and hosting connections",
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "axios": "^0.21.2",
-    "electron-updater": "^4.3.8",
+    "electron-updater": "^4.6.5",
     "keyboardjs": "2.6.4",
     "remoteit-headless": "file:backend",
     "semver": "^7.3.5"
@@ -112,7 +112,21 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "artifactName": "${productName}-installer.${ext}"
+      "artifactName": "${productName}-installer-${arch}.${ext}",
+      "extendInfo": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      },
+      "target": [
+        {
+          "target": "default",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
     },
     "extraResources": [
       {

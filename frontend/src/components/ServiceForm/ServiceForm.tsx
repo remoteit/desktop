@@ -50,7 +50,7 @@ export const ServiceForm: React.FC<Props> = ({
       port: service?.port || target.port,
       type: service?.typeID || target.type,
       disabled: service?.enabled === undefined ? target.disabled : !service?.enabled,
-      name: service?.name || serviceNameValidation(defaultAppType.description).value,
+      name: service?.name || serviceNameValidation(defaultAppType.name).value,
       attributes: service?.attributes || {},
       ...setupAdded,
     }
@@ -118,7 +118,7 @@ export const ServiceForm: React.FC<Props> = ({
                   ...form,
                   type,
                   port: findType(applicationTypes, type).port || 0,
-                  name: serviceNameValidation(updatedAppType.description).value,
+                  name: serviceNameValidation(updatedAppType.name).value,
                   attributes: {
                     ...form.attributes,
                     commandTemplate: undefined,
@@ -151,7 +151,7 @@ export const ServiceForm: React.FC<Props> = ({
             error={!!error}
             variant="filled"
             helperText={error || ''}
-            placeholder={appType.description}
+            placeholder={appType.name}
             onChange={event => {
               const validation = serviceNameValidation(event.target.value)
               setForm({ ...form, name: validation.value })
@@ -245,7 +245,7 @@ export const ServiceForm: React.FC<Props> = ({
           <List>
             <ListItem className={css.field}>
               <TextField
-                label="Default Connection Port"
+                label="Default Local Port"
                 value={form.attributes.defaultPort || ''}
                 disabled={disabled}
                 variant="filled"
@@ -255,7 +255,7 @@ export const ServiceForm: React.FC<Props> = ({
                 }}
               />
               <Typography variant="caption">
-                Default local port to use when a device connects to this service.
+                Default local port to use when a system connects to this service.
               </Typography>
             </ListItem>
             <ServiceAttributesForm

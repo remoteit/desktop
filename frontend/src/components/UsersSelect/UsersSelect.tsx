@@ -9,19 +9,19 @@ import { Icon } from '../Icon'
 type Props = {
   device?: IDevice
   service?: IService
-  access: IUser[]
 }
 
-export const UsersSelect: React.FC<Props> = ({ device, service, access }) => {
+export const UsersSelect: React.FC<Props> = ({ device, service }) => {
   const css = useStyles()
-  const connected = useSelector(
-    (state: ApplicationState) => selectSessionUsers(state, service ? service.id : device?.id).length
-  )
+  const { connected, access } = useSelector((state: ApplicationState) => ({
+    connected: selectSessionUsers(state, service ? service.id : device?.id).length,
+    access: device?.owner.id === state.auth.user?.id ? state.organization.members.map(m => m.user) : [],
+  }))
   const users = (service ? service.access : device?.access) || []
   const usersLinked = access.filter(user => !users.find(_u => _u.email === user.email))
   const total = users.length + usersLinked.length
 
-  if (device?.shared) return null
+  if (!device?.permissions.includes('MANAGE')) return null
 
   let pathname = `/devices/${device?.id}`
   if (service) pathname += `/${service.id}`

@@ -40,7 +40,15 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
   return (
     <div className={css.header}>
+      {singlePanel && (
+        <>
+          <RegisterButton />
+          <RefreshButton />
+          <AccountSelect label="Device List" />
+        </>
+      )}
       <IconButton
+        title="Back"
         disabled={disabledBack}
         onClick={handleBack}
         icon="chevron-left"
@@ -48,6 +56,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         color={disabledBack ? 'grayLight' : 'grayDark'}
       />
       <IconButton
+        title="Forward"
         disabled={disabledForward}
         onClick={handleForward}
         icon="chevron-right"
@@ -77,19 +86,10 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       </Title>
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
-        <TestUI>
-          <ColumnsButton />
-        </TestUI>
+        <ColumnsButton />
         <TestUI>
           <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
         </TestUI>
-        {singlePanel && (
-          <>
-            <RegisterButton />
-            <RefreshButton />
-            <AccountSelect label="Device List" />
-          </>
-        )}
       </Route>
     </div>
   )
@@ -98,13 +98,14 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 const useStyles = makeStyles({
   header: {
     display: 'flex',
-    margin: `${spacing.sm}px 0`,
+    margin: `${spacing.sm}px 0 0`,
     padding: `0 ${spacing.md}px`,
     justifyContent: 'flex-start',
     alignItems: 'center',
     height: 45,
     maxHeight: 45,
     width: '100%',
+    zIndex: 8,
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
     '& .MuiTypography-root': { marginLeft: spacing.lg, letterSpacing: 0.5 },

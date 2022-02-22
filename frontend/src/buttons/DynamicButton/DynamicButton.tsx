@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, IconButton, Tooltip, Button, alpha } from '@material-ui/core'
+import { makeStyles, IconButton, Tooltip, Button, alpha, darken } from '@material-ui/core'
 import { Color } from '../../styling'
 import { Icon } from '../../components/Icon'
 
@@ -78,13 +78,13 @@ export const DynamicButton: React.FC<Props> = props => {
 const useStyles = makeStyles(({ palette }) => ({
   button: (props: Props) => {
     let background = props.color ? palette[props.color].main : undefined
-    let hover = background ? alpha(background, 0.6) : undefined
-    let foreground
+    let hover = background ? darken(background, 0.25) : undefined
+    let foreground = palette.alwaysWhite.main
 
     if (props.variant === 'text' && background) {
       foreground = background
       background = palette.white.main
-      hover = alpha(background, 0.6)
+      hover = alpha(foreground, 0.1)
     }
 
     return {

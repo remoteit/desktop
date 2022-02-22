@@ -19,8 +19,9 @@ export const Sidebar: React.FC = () => {
       <section className={css.header}>
         <AvatarMenu />
         <span className={css.header}>
-          <RegisterButton />
           <RefreshButton />
+          &nbsp;
+          <RegisterButton />
         </span>
       </section>
       <ListItem className={css.select} dense>
@@ -33,7 +34,7 @@ export const Sidebar: React.FC = () => {
 }
 
 const useStyles = addSpace =>
-  makeStyles( ({ palette }) => ({
+  makeStyles(({ palette }) => ({
     sidebar: {
       display: 'flex',
       flexDirection: 'column',

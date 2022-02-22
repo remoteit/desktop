@@ -2,15 +2,12 @@ import { version } from '../../package.json'
 import { isPortal } from '../services/Browser'
 import { SEGMENT_PROJECT_KEY, SEGMENT_PROJECT_PORTAL_KEY } from '../shared/constants'
 
-///  <reference types="@types/google.analytics" />
-
 export const CONNECTION_TYPE_PROXY_FAILOVER = 'proxy_failover'
 export const CONNECTION_TYPE_PEER_TO_PEER = 'peer_to_peer'
 export const CONNECTION_TYPE_NONE = 'None'
 
 export class AnalyticsHelper {
   private context: SegmentContext
-  private gaAppSet: boolean
 
   public constructor() {
     this.context = {
@@ -19,7 +16,6 @@ export class AnalyticsHelper {
       appVersion: version,
       // remaining retrieved from backend if available
     }
-    this.gaAppSet = false
   }
 
   public setup = () => {
@@ -110,16 +106,7 @@ export class AnalyticsHelper {
     window.analytics.reset()
   }
 
-  private setGAAppVersion() {
-    if (typeof window.ga !== 'undefined' && !this.gaAppSet) {
-      window.ga('set', 'appName', 'Desktop')
-      window.ga('set', 'appVersion', version)
-      this.gaAppSet = true
-    }
-  }
-
   public page = (pageName: string, additionalContext?: any) => {
-    this.setGAAppVersion()
     let localContext = this.context
     if (additionalContext) {
       localContext = { ...additionalContext, ...localContext }
@@ -147,7 +134,6 @@ export class AnalyticsHelper {
       }
     }
 
-    this.setGAAppVersion()
     window.analytics.track(name, context)
   }
 

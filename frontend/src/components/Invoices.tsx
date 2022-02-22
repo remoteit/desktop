@@ -55,7 +55,7 @@ export const Invoices: React.FC = () => {
               <TableRow key={index}>
                 <TableCell>{invoice.created.toLocaleString(undefined, dateOptions)}</TableCell>
                 <TableCell className={css.plan}>
-                  {invoice.plan.name.toLowerCase()} / {invoice.price.interval.toLowerCase()}
+                  {invoice.plan.name.toLowerCase()} / {invoice.price.interval ? invoice.price.interval.toLowerCase() : 'one-time'}
                 </TableCell>
                 <TableCell className={invoice.total < 0 ? css.amount : css.amountWithoutColor}>
                   {currencyFormatter(invoice.price.currency, invoice.total)}

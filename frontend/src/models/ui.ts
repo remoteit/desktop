@@ -5,7 +5,7 @@ import { selectTheme } from '../styling/theme'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
-const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode']
+const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode', 'drawerMenu', 'columns', 'columnWidths']
 
 type UIState = {
   theme: Theme
@@ -19,6 +19,7 @@ type UIState = {
   routingMessage?: string
   drawerMenu: 'FILTER' | 'COLUMNS' | null
   columns: string[]
+  columnWidths: ILookup<number>
   serviceContextMenu?: IContextMenu
   redirect?: string
   restoring: boolean
@@ -45,10 +46,12 @@ type UIState = {
   guideAWS: IGuide
   guideLaunch: IGuide
   accordion: ILookup<boolean>
+  autoConnect: boolean
   autoLaunch: boolean
+  autoCopy: boolean
 }
 
-const defaultState: UIState = {
+export const defaultState: UIState = {
   theme: selectTheme(),
   themeMode: 'system',
   navigation: {},
@@ -60,6 +63,7 @@ const defaultState: UIState = {
   routingMessage: undefined,
   drawerMenu: null,
   columns: ['deviceName', 'services'],
+  columnWidths: {},
   serviceContextMenu: undefined,
   redirect: undefined,
   restoring: false,
@@ -86,7 +90,9 @@ const defaultState: UIState = {
   guideAWS: { title: 'AWS Guide', step: 1, total: 7 },
   guideLaunch: { title: 'Launch Guide', active: true, step: 1, total: 1 },
   accordion: { config: true, configConnected: false },
+  autoConnect: false,
   autoLaunch: false,
+  autoCopy: false,
 }
 
 export default createModel<RootModel>()({
@@ -95,18 +101,18 @@ export default createModel<RootModel>()({
     async init(_, globalState) {
       // add color scheme listener
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        dispatch.ui.setTheme()
+        dispatch.ui.setTheme(undefined)
       })
 
       // restore state
-      let states = {}
+      let states: ILookup<any> = {}
       SAVED_STATES.forEach(key => {
         const value = getLocalStorage(globalState, `ui-${key}`)
         if (value) states[key] = value
       })
 
       dispatch.ui.set(states)
-      dispatch.ui.setTheme()
+      dispatch.ui.setTheme(states.themeMode)
     },
     async setupUpdated(count: number, globalState) {
       if (count !== globalState.ui.setupServicesCount) {
@@ -123,9 +129,14 @@ export default createModel<RootModel>()({
       dispatch.announcements.fetch()
       dispatch.devices.fetch()
     },
-    async theme(themeMode: UIState['themeMode'], globalState) {
-      dispatch.ui.setTheme(themeMode)
-      setLocalStorage(globalState, `ui-themeMode`, themeMode)
+    async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
+      themeMode = themeMode || globalState.ui.themeMode
+      dispatch.ui.setPersistent({ themeMode })
+      dispatch.ui.set({ theme: selectTheme(themeMode) })
+    },
+    async resizeColumn(params: { id: string; width: number }, globalState) {
+      const columnWidths = { ...globalState.ui.columnWidths, [params.id]: params.width }
+      dispatch.ui.setPersistent({ columnWidths })
     },
     async guide({ guide, ...props }: ILookup<any>, globalState) {
       let state = globalState.ui[guide]
@@ -140,24 +151,23 @@ export default createModel<RootModel>()({
       }
 
       state = { ...state, ...props }
-      setLocalStorage(globalState, `ui-${guide}`, state)
-      dispatch.ui.set({ [guide]: state })
+      dispatch.ui.setPersistent({ [guide]: state })
     },
-
     async resetGuides(_, globalState) {
       Object.keys(globalState.ui).forEach(key => {
         if (key.startsWith('guide')) dispatch.ui.guide({ guide: key, ...defaultState[key] })
       })
     },
+    async setPersistent(params: ILookup<any>, state) {
+      Object.keys(params).forEach(key => {
+        if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
+      })
+      dispatch.ui.set(params)
+    },
   }),
   reducers: {
     set(state: UIState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
-      return state
-    },
-    setTheme(state: UIState, themeMode: UIState['themeMode'] | undefined) {
-      state.themeMode = themeMode || state.themeMode
-      state.theme = selectTheme(state)
       return state
     },
     updated(state: UIState) {

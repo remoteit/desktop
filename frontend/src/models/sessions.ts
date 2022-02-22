@@ -1,11 +1,10 @@
 import { createModel } from '@rematch/core'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { findLocalConnection, setConnection } from '../helpers/connectionHelper'
 import { combinedName } from '../shared/nameHelper'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 type ISessionsState = ILookup<ISession[]> & {
   all: ISession[]
@@ -101,7 +100,6 @@ export default createModel<RootModel>()({
       console.log('PUBLIC CONNECTIONS', publicConnections)
       publicConnections.forEach(connection => {
         const session = all.find(s => s.id === connection.sessionId)
-        console.log('PUBLIC CONNECTION SESSION', session, connection)
         connection.connecting = false
         connection.enabled = !!session
         connection.connected = !!session

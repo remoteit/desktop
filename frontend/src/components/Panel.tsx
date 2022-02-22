@@ -1,9 +1,12 @@
 import React from 'react'
+import { SIDEBAR_WIDTH } from '../shared/constants'
 import { makeStyles } from '@material-ui/core'
 import { Header } from './Header'
 
-export const Panel: React.FC<{ singlePanel?: boolean }> = ({ singlePanel, children }) => {
-  const css = useStyles()
+type Props = { singlePanel?: boolean }
+
+export const Panel: React.FC<Props> = ({ singlePanel, children }) => {
+  const css = useStyles({ singlePanel })
 
   return (
     <div className={css.panel}>
@@ -14,10 +17,11 @@ export const Panel: React.FC<{ singlePanel?: boolean }> = ({ singlePanel, childr
 }
 
 const useStyles = makeStyles({
-  panel: {
+  panel: ({ singlePanel }: Props) => ({
     flexGrow: 1,
     height: '100%',
+    maxWidth: `calc(100% - ${singlePanel ? 0 : SIDEBAR_WIDTH}px)`,
     display: 'flex',
     flexDirection: 'column',
-  },
+  }),
 })

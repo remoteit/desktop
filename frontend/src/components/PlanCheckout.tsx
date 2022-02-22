@@ -32,7 +32,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   const selectedPrice = selectedPlan?.prices?.find(price => price.id === form.priceId)
 
   const setQuantity = (value: string | number) => {
-    let quantity = Math.max(Math.min(+value, 9999), 0)
+    let quantity = Math.ceil(Math.max(Math.min(+value, 9999), 0))
     if (isNaN(quantity)) quantity = 1
     onChange({ ...form, quantity })
   }
@@ -178,7 +178,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   list: {
     width: '50%',
     minWidth: 400,

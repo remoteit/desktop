@@ -1,8 +1,10 @@
 import React from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles, ListSubheader, List, ListItemText, ListItem, ListItemIcon } from '@material-ui/core'
+import { makeStyles, ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@material-ui/core'
 import { masterAttributes, deviceAttributes } from '../helpers/attributes'
+import { defaultState } from '../models/ui'
+import { spacing } from '../styling'
 import { Drawer } from './Drawer'
 import { Icon } from './Icon'
 
@@ -14,18 +16,27 @@ export const ColumnsDrawer: React.FC = () => {
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
 
-  const add = name => ui.set({ columns: [...selected, name] })
+  const add = name => ui.setPersistent({ columns: [...selected, name] })
   const remove = index => {
     selected.splice(index, 1)
-    ui.set({ columns: selected })
+    ui.setPersistent({ columns: [...selected] })
   }
 
   const attributes = masterAttributes.concat(deviceAttributes).filter(a => a.column)
+  const onReset = () => {
+    ui.setPersistent({ columns: [...defaultState.columns] })
+    ui.set({ drawerMenu: null })
+  }
 
   return (
     <Drawer open={open}>
       <List dense className={css.list}>
-        <ListSubheader>Columns</ListSubheader>
+        <ListSubheader>
+          Columns
+          <Button size="small" color="primary" onClick={onReset}>
+            Reset
+          </Button>
+        </ListSubheader>
         {attributes.map(data => {
           const checked = selected.indexOf(data.id)
           return (
@@ -52,7 +63,9 @@ export const ColumnsDrawer: React.FC = () => {
 const useStyles = makeStyles({
   list: {
     padding: 0,
+    marginBottom: spacing.lg,
     textTransform: 'capitalize',
     '& .MuiListItem-dense': { paddingTop: 0, paddingBottom: 0, paddingLeft: 0 },
+    '& .MuiListSubheader-root': { display: 'flex', justifyContent: 'space-between', paddingRight: 0 },
   },
 })

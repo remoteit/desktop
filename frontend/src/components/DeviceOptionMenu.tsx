@@ -1,30 +1,30 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { PROTOCOL } from '../shared/constants'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Divider, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@material-ui/core'
-import { DeleteDeviceButton } from '../buttons/DeleteDeviceButton'
+import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
+import { DeleteDevice } from '../buttons/DeleteDevice'
+import { CopyMenuItem } from './CopyMenuItem'
 import { Icon } from './Icon'
 
-type Props = { device?: IDevice }
+type Props = { device?: IDevice; service?: IService; target?: ITarget }
 
-export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
-  const { userId } = useSelector((state: ApplicationState) => ({
-    userId: state.auth.user?.id,
-  }))
+export const DeviceOptionMenu: React.FC<Props> = ({ device, service, target }) => {
+  const userId = useSelector((state: ApplicationState) => state.auth.user?.id)
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
-  if (!device || device.accountId !== userId) return null
+  if (!device || (userId !== device.accountId && !device.permissions.includes('MANAGE'))) return null
 
   return (
-    <div>
+    <>
       <IconButton onClick={handleClick}>
         <Icon name="ellipsis-v" size="md" fixedWidth />
       </IconButton>
       <Menu
-        id="long-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
@@ -34,15 +34,26 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device }) => {
         autoFocus={false}
         elevation={2}
       >
-        <MenuItem dense to={`/devices/${device.id}/transfer`} component={Link} autoFocus={false} disableGutters>
+        {service && (
+          <CopyMenuItem icon="share-alt" title="Copy connection link" value={`${PROTOCOL}connect/${service?.id}`} />
+        )}
+        <MenuItem
+          dense
+          to={`/devices/${device.id}/transfer`}
+          component={Link}
+          autoFocus={false}
+          disabled={!device.permissions.includes('MANAGE')}
+          disableGutters
+        >
           <ListItemIcon>
             <Icon name="share" size="md" />
           </ListItemIcon>
           <ListItemText primary="Transfer Device" />
         </MenuItem>
         <Divider />
-        <DeleteDeviceButton device={device} menuItem />
+        <DeleteServiceMenuItem device={device} service={service} target={target} />
+        <DeleteDevice device={device} menuItem />
       </Menu>
-    </div>
+    </>
   )
 }

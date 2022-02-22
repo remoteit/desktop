@@ -57,7 +57,7 @@ export const OptionsPage: React.FC = () => {
             { label: 'Light', value: 'light' },
             { label: 'Dark', value: 'dark' },
           ]}
-          onChange={e => ui.theme(e.target.value as ApplicationState['ui']['themeMode'])}
+          onChange={e => ui.setTheme(e.target.value as ApplicationState['ui']['themeMode'])}
         />
         {isRemote() && (
           <ListItemSetting
@@ -94,7 +94,12 @@ export const OptionsPage: React.FC = () => {
             confirm
           />
         </DesktopUI>
-        <ListItemSetting label="Reset interactive guides" icon="sparkles" onClick={() => ui.resetGuides()} />
+        <ListItemSetting
+          label="Reset interactive guides"
+          subLabel="Turn back on the in-app help bubbles."
+          icon="sparkles"
+          onClick={() => ui.resetGuides()}
+        />
         {(os === 'mac' || os === 'windows') && (
           <>
             <ListItemSetting
@@ -134,7 +139,9 @@ export const OptionsPage: React.FC = () => {
                 <ListItemSetting
                   confirm
                   label="Uninstall"
-                  subLabel={`De-register this device, completely remove all saved data, and uninstall the system agent and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.`}
+                  subLabel={
+                    'De-register this device, completely remove all saved data, and uninstall the system agent and command line tools link. Do this before removing, the application from your system. Can only be done by the device owner.'
+                  }
                   icon="trash"
                   confirmTitle="Are you sure?"
                   confirmMessage="You will remove this system as a host, your connections and command line utilities."

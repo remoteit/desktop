@@ -1,10 +1,9 @@
 import { createModel } from '@rematch/core'
 import { ApplicationState } from '../store'
 import { removeDeviceName } from '../shared/nameHelper'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getAllDevices, getActiveAccountId, getAccountIds } from './accounts'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 type ISearchState = ILookup<any> & {
   search: ISearch[]

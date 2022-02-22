@@ -40,7 +40,7 @@ export const OrganizationPage: React.FC = () => {
             {organization.id && (
               <>
                 <DeleteButton
-                  title="Delete organization"
+                  title="Delete Organization"
                   destroying={removing}
                   warning={
                     <>
@@ -70,7 +70,11 @@ export const OrganizationPage: React.FC = () => {
               <Gutters>
                 <Typography variant="body2" color="textSecondary">
                   Add members to your organization to automatically share all of your devices. &nbsp;
-                  {!enterprise && <b>Unlicensed members will only be able to connect to the first five.</b>}
+                  {!enterprise && (
+                    <b>
+                      Unlicensed members will only be able to connect to the first five and can not be device admins.
+                    </b>
+                  )}
                 </Typography>
               </Gutters>
               <LicensingNoticeDisplay noticeType="PERSONAL_ORGANIZATION" license={license} />

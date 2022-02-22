@@ -1,21 +1,16 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { useParams, Route } from 'react-router-dom'
-import { PROTOCOL } from '../shared/constants'
+import { useParams } from 'react-router-dom'
 import { Title } from './Title'
 import { OutOfBand } from './OutOfBand'
 import { ListHorizontal } from './ListHorizontal'
 import { LicensingNotice } from './LicensingNotice'
 import { ListItemLocation } from './ListItemLocation'
-import { ApplicationState } from '../store'
 import { Typography } from '@material-ui/core'
-import { UnregisterServiceButton } from '../buttons/UnregisterServiceButton'
-import { DeleteServiceButton } from '../buttons/DeleteServiceButton'
+import { DeviceOptionMenu } from './DeviceOptionMenu'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { AddUserButton } from '../buttons/AddUserButton'
 import { UsersSelect } from './UsersSelect'
-import { CopyButton } from '../buttons/CopyButton'
 import { Container } from './Container'
 
 export const ServiceHeaderMenu: React.FC<{
@@ -26,9 +21,6 @@ export const ServiceHeaderMenu: React.FC<{
   backgroundColor?: string
 }> = ({ device, service, target, footer, backgroundColor, children }) => {
   const { serviceID = '' } = useParams<{ deviceID: string; serviceID: string }>()
-  const { access } = useSelector((state: ApplicationState) => ({
-    access: state.organization.members.map(m => m.user),
-  }))
 
   if (!service || !device) return <UnauthorizedPage />
 
@@ -41,16 +33,12 @@ export const ServiceHeaderMenu: React.FC<{
           <OutOfBand />
           <Typography variant="h1">
             <Title>{service.name || 'unknown'}</Title>
-            <Route path="/devices/:deviceID/:serviceID/edit">
-              {device.thisDevice ? (
-                <UnregisterServiceButton target={target} />
-              ) : (
-                <DeleteServiceButton device={device} service={service} />
-              )}
-            </Route>
             <RefreshButton device={device} />
-            <AddUserButton to={`/devices/${device.id}/${service.id}/share`} hide={device.shared} />
-            <CopyButton icon="share-alt" title="Copy connection link" value={`${PROTOCOL}connect/${service?.id}`} />
+            <AddUserButton
+              to={`/devices/${device.id}/${service.id}/share`}
+              hide={!device.permissions.includes('MANAGE')}
+            />
+            <DeviceOptionMenu device={device} service={service} target={target} />
           </Typography>
           {service.license === 'UNLICENSED' && <LicensingNotice device={device} fullWidth />}
           <ListHorizontal>
@@ -70,7 +58,7 @@ export const ServiceHeaderMenu: React.FC<{
               pathname={`/devices/${device.id}/${serviceID}/details`}
               dense
             />
-            {!device.shared && (
+            {device.permissions.includes('MANAGE') && (
               <ListItemLocation
                 title="Edit"
                 icon="pen"
@@ -79,7 +67,7 @@ export const ServiceHeaderMenu: React.FC<{
                 dense
               />
             )}
-            <UsersSelect service={service} device={device} access={access} />
+            <UsersSelect service={service} device={device} />
           </ListHorizontal>
         </>
       }

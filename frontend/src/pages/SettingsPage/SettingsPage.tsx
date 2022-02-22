@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { makeStyles, List, Typography, Tooltip, ButtonBase } from '@material-ui/core'
+import { makeStyles, List, Typography, Tooltip, ButtonBase, Divider } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
 import { selectLicenseIndicator } from '../../models/licensing'
@@ -64,6 +64,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="scroll" dense />
         <ListItemLink title="Registrations" href="https://app.remote.it/#registrations" icon="upload" dense />
         <ListItemLink title="Products" href="https://app.remote.it/#products" icon="server" dense />
+        <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Organization"
           subtitle="Device list sharing"
@@ -77,6 +78,12 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
           <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />
         </TestUI>
+      </List>
+      <Divider variant="inset" />
+      <List>
+        <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="scroll" dense />
+        <ListItemLink title="Registrations" href="https://app.remote.it/#registrations" icon="upload" dense />
+        <ListItemLink title="Products" href="https://app.remote.it/#products" icon="server" dense />
       </List>
     </Container>
   )

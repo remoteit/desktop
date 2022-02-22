@@ -16,7 +16,6 @@ import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
-import { apiError } from '../helpers/apiHelper'
 import { REDIRECT_URL } from '../shared/constants'
 import { graphQLUpdateNotification } from '../services/graphQLMutation'
 import { getToken, r3 } from '../services/remote.it'
@@ -29,7 +28,7 @@ function sleep(ms) {
 }
 
 const USER_KEY = 'user'
-
+const HOSTED_UI_KEY = 'amplify-signin-with-hostedUI'
 export const CHECKBOX_REMEMBER_KEY = 'remember-username'
 
 export interface AWSUser {
@@ -273,20 +272,23 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
       }
     },
-    async checkSession(_: void, rootState) {
+    async forceRefreshToken(_: void, rootState) {
+      if (!rootState.auth.authService) return
+      await rootState.auth.authService.forceTokenRefresh()
+    },
+    async checkSession(options: { refreshToken: boolean }, rootState) {
       const { ui } = dispatch
       if (!rootState.auth.authService) return
       try {
-        const result = await rootState.auth.authService.checkSignIn()
+        const result = await rootState.auth.authService.checkSignIn(options)
         if (result.cognitoUser) {
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
           console.error('SESSION ERROR', result.error, result)
           if (result.error?.message) ui.set({ errorMessage: result.error.message })
         }
-      } catch (err) {
-        console.log('check sign in error:')
-        console.log(err)
+      } catch (error) {
+        console.error('Check sign in error', error)
       }
     },
     async handleSignInSuccess(cognitoUser: CognitoUser, state): Promise<void> {
@@ -298,7 +300,7 @@ export default createModel<RootModel>()({
         }
 
         if (cognitoUser?.authProvider === 'Google') {
-          setLocalStorage(state, 'amplify-signin-with-hostedUI', 'true')
+          setLocalStorage(state, HOSTED_UI_KEY, 'true')
         }
         dispatch.auth.setAuthenticated(true)
         dispatch.auth.fetchUser()
@@ -331,9 +333,13 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
       dispatch.auth.setError(error)
     },
-    async signedIn() {
+    async dataReady(_: void, rootState) {
+      if (rootState.backend.initialized && !isPortal()) {
+        console.warn('BACKEND ALREADY INITIALIZED')
+        return
+      }
+      dispatch.backend.set({ initialized: true })
       dispatch.licensing.init()
-      dispatch.ui.init()
       await cloudController.init()
       await dispatch.accounts.init()
       await dispatch.organization.init()
@@ -344,6 +350,10 @@ export default createModel<RootModel>()({
       dispatch.announcements.fetch()
       dispatch.sessions.fetch()
     },
+    async signedIn() {
+      if (isPortal()) dispatch.auth.dataReady()
+      dispatch.ui.init()
+    },
     async signOut(_, rootState) {
       if (rootState.auth.backendAuthenticated) emit('user/sign-out')
       else await dispatch.auth.signedOut()
@@ -353,7 +363,7 @@ export default createModel<RootModel>()({
      */
     async signedOut(_: void, state) {
       await state.auth.authService?.signOut()
-      removeLocalStorage(state, 'amplify-signin-with-hostedUI')
+      removeLocalStorage(state, HOSTED_UI_KEY)
       removeLocalStorage(state, USER_KEY)
       dispatch.auth.signOutFinished()
       dispatch.auth.signInFinished()
@@ -366,6 +376,7 @@ export default createModel<RootModel>()({
       dispatch.search.reset()
       dispatch.licensing.reset()
       dispatch.billing.reset()
+      dispatch.backend.reset()
       dispatch.tags.reset()
       dispatch.ui.reset()
       dispatch.accounts.setActive('')

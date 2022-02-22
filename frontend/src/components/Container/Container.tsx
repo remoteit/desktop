@@ -1,10 +1,11 @@
 import React from 'react'
+import classnames from 'classnames'
 import { makeStyles, Divider } from '@material-ui/core'
 import { spacing } from '../../styling'
 import { Body } from '../Body'
 
 type Props = {
-  header: any
+  header?: any
   sidebar?: any
   footer?: any
   integrated?: boolean
@@ -12,6 +13,7 @@ type Props = {
   bodyRef?: React.RefObject<HTMLDivElement>
   gutterBottom?: boolean
   backgroundColor?: string
+  className?: string
 }
 
 export const Container: React.FC<Props> = ({
@@ -23,16 +25,18 @@ export const Container: React.FC<Props> = ({
   bodyRef,
   gutterBottom,
   backgroundColor,
+  className,
   children,
 }) => {
   const css = useStyles({ backgroundColor })
-
   return (
-    <div className={css.container}>
-      <div className={integrated ? undefined : css.header}>
-        {header}
-        {integrated || !!backgroundColor || <Divider variant="inset" />}
-      </div>
+    <div className={classnames(className, css.container)}>
+      {header && (
+        <div className={integrated ? undefined : css.header}>
+          {header}
+          {integrated || !!backgroundColor || <Divider variant="inset" />}
+        </div>
+      )}
       {sidebar ? (
         <div className={css.sidebar}>
           <Body {...bodyProps} gutterBottom={gutterBottom}>
@@ -67,7 +71,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }),
   header: ({ backgroundColor }: any) => ({
     position: 'relative',
-    zIndex: 3,
+    zIndex: 7,
     backgroundColor: palette.white.main,
     borderBottom: backgroundColor && `1px solid ${palette.grayLighter.main}`,
     '& .MuiTypography-h1': {
@@ -86,12 +90,11 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   sideContent: {
     display: 'flex',
-    boxShadow: `-1px 0 2px ${palette.grayLighter.main}`,
     position: 'relative',
-    zIndex: 2,
+    zIndex: 6,
   },
   footer: {
     position: 'relative',
-    zIndex: 3,
+    zIndex: 7,
   },
 }))

@@ -1,11 +1,9 @@
 import { createModel } from '@rematch/core'
-import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMutation'
-import { graphQLGetErrors } from '../services/graphQL'
+import { graphQLRemoveDevice, graphQLShareDevice } from '../services/graphQLMutation'
 import { getPermissions } from '../helpers/userHelper'
 import { attributeName } from '../shared/nameHelper'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 type ShareParams = { [key: string]: any }
 
@@ -60,8 +58,8 @@ export default createModel<RootModel>()({
       const { deviceId, email } = userDevice
       const { set } = dispatch.shares
       set({ deleting: true })
-      const response = await graphQLUnShareDevice({ deviceId, email: [email] })
-      if (response !== 'ERROR') {
+      const result = await graphQLRemoveDevice({ deviceId, email: [email] })
+      if (result !== 'ERROR') {
         await dispatch.devices.fetchSingle({ id: deviceId })
         dispatch.ui.set({ successMessage: `${email} successfully removed.` })
       }
@@ -72,18 +70,14 @@ export default createModel<RootModel>()({
       const { set } = dispatch.shares
       const device = getDevices(globalState).find((d: IDevice) => d.id === data.deviceId)
       set({ sharing: true })
-      try {
-        const response = await graphQLShareDevice(data)
-        const errors = graphQLGetErrors(response)
-        if (!errors)
-          dispatch.ui.set({
-            successMessage:
-              data.email.length > 1
-                ? `${data.email.length} accounts successfully shared to ${attributeName(device)}.`
-                : `${attributeName(device)} successfully shared to ${data.email[0]}.`,
-          })
-      } catch (error) {
-        await apiError(error)
+      const result = await graphQLShareDevice(data)
+      if (result !== 'ERROR') {
+        dispatch.ui.set({
+          successMessage:
+            data.email.length > 1
+              ? `${data.email.length} accounts successfully shared to ${attributeName(device)}.`
+              : `${attributeName(device)} successfully shared to ${data.email[0]}.`,
+        })
       }
       set({ sharing: false })
     },

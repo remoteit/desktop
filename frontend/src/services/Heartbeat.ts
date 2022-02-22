@@ -1,19 +1,23 @@
+import network from './Network'
+import { isPortal } from './Browser'
 import { HEARTBEAT_INTERVAL } from '../shared/constants'
-import { emit } from './Controller'
 import { store } from '../store'
+import { emit } from './Controller'
 
 class Heartbeat {
   count = 0
   interval?: number = undefined
 
   init() {
-    window.setInterval(this.beat, HEARTBEAT_INTERVAL)
-    window.onfocus = this.beat
+    if (!isPortal()) {
+      window.setInterval(this.beat, HEARTBEAT_INTERVAL)
+      window.onfocus = this.beat
+    }
   }
 
   beat() {
-    const { auth, ui } = store.getState()
-    document.hasFocus() && !ui.offline && auth.backendAuthenticated && emit('heartbeat')
+    const { auth } = store.getState()
+    network.isActive() && auth.backendAuthenticated && emit('heartbeat')
   }
 
   caffeinate() {

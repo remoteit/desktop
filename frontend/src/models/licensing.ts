@@ -9,10 +9,9 @@ import {
   graphQLUpdateSubscription,
   graphQLCreditCard,
 } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getDevices } from './accounts'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 import humanize from 'humanize-duration'
 
 type ILicenseLookup = { productId: string; platform?: number; managePath: string }
@@ -288,7 +287,7 @@ export function parseLicense(data) {
   }
 }
 
-export function getRemoteitLicense(state: ApplicationState) {
+export function getRemoteitLicense(state: ApplicationState): ILicense | null {
   return getLicenses(state).find(l => l.plan.product.id === REMOTEIT_PRODUCT_ID) || null
 }
 

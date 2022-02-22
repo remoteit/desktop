@@ -3,7 +3,7 @@ import { TargetPlatform } from '../components/TargetPlatform'
 import { QualityDetails } from '../components/QualityDetails'
 import { ServiceIndicators } from '../components/ServiceIndicators'
 import { INITIATOR_PLATFORMS } from '../components/InitiatorPlatform'
-import { ListItemText } from '@material-ui/core'
+import { ListItemText, Chip } from '@material-ui/core'
 import { ServiceName } from '../components/ServiceName'
 import { LicenseChip } from '../components/LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
@@ -14,19 +14,30 @@ import { Duration } from '../components/Duration'
 import { toLookup } from './utilHelper'
 import { TestUI } from '../components/TestUI'
 import { Tags } from '../components/Tags'
-// type AttributeParams = Omit<Attribute, 'value'>
 
 export class Attribute {
   id: string = ''
   label: string = ''
-  width?: string = '130px'
   help?: string
-  required?: boolean = false
-  column?: boolean = true
-  type?: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
+  required: boolean = false
+  align?: 'left' | 'right' | 'center'
+  column: boolean = true
+  defaultWidth: number = 150
+  type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
   value: (options: IDataOptions) => any = () => {}
+  width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
-  constructor(options: Attribute) {
+  constructor(options: {
+    id: string
+    label: string
+    help?: string
+    required?: boolean
+    align?: Attribute['align']
+    column?: boolean
+    defaultWidth?: number
+    type?: Attribute['type']
+    value?: Attribute['value']
+  }) {
     Object.assign(this, options)
   }
 }
@@ -44,50 +55,55 @@ class ConnectionAttribute extends Attribute {
 }
 
 const ATTRIBUTES = [
-  'categoryA',
-  'categoryB',
-  'categoryC',
-  'categoryD',
-  'categoryE',
-  'statusA',
-  'statusB',
-  'statusC',
-  'statusD',
-  'statusE',
+  { label: 'Category A', id: 'categoryA' },
+  { label: 'Category B', id: 'categoryB' },
+  { label: 'Category C', id: 'categoryC' },
+  { label: 'Category D', id: 'categoryD' },
+  { label: 'Category E', id: 'categoryE' },
+  { label: 'Status A', id: 'statusA' },
+  { label: 'Status B', id: 'statusB' },
+  { label: 'Status C', id: 'statusC' },
+  { label: 'Status D', id: 'statusD' },
+  { label: 'Status E', id: 'statusE' },
 ]
 
 export const attributes: Attribute[] = [
   new Attribute({
     id: 'deviceName',
-    label: 'Device Name',
+    label: 'Name',
     value: ({ device, connection }) => (
       <ListItemText
         primary={<ServiceName device={device} connection={connection} />}
-        secondary={device?.thisDevice ? 'This device' : undefined}
+        secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
+    defaultWidth: 350,
     required: true,
   }),
   new Attribute({
     id: 'tags',
     label: 'Tags',
+    defaultWidth: 100,
     value: ({ device }) => (TestUI({}) ? <Tags ids={device?.tags || []} small /> : undefined),
-    width: '80px',
+    column: false,
   }),
   new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    width: 'auto',
+    defaultWidth: 360,
+    align: 'right',
   }),
   new DeviceAttribute({
     id: 'tagEditor',
     label: 'tags',
     value: ({ device }) => (TestUI({}) ? <TagEditor device={device} /> : undefined),
+    column: false,
   }),
   new DeviceAttribute({
     id: 'targetPlatform',
     label: 'Platform',
+    defaultWidth: 180,
     value: ({ device }) => TargetPlatform({ id: device?.targetPlatform, label: true }),
   }),
   new DeviceAttribute({
@@ -97,6 +113,19 @@ export const attributes: Attribute[] = [
     column: false,
   }),
   new DeviceAttribute({
+    id: 'permissions',
+    label: 'Permissions',
+    defaultWidth: 210,
+    value: ({ device }) => {
+      const lookup: ILookup<string> = {
+        CONNECT: 'Connect',
+        SCRIPTING: 'Script',
+        MANAGE: 'Manage',
+      }
+      return device?.permissions.map(p => <Chip label={lookup[p]} size="small" variant="outlined" key={p} />)
+    },
+  }),
+  new DeviceAttribute({
     id: 'owner',
     label: 'Owner',
     value: ({ device }) => device?.owner.email,
@@ -104,7 +133,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'lastReported',
     label: 'Last reported',
-    value: ({ device }) => <Duration startDate={device?.lastReported} ago />,
+    value: ({ device }) => (device?.state !== 'active' ? <Duration startDate={device?.lastReported} ago /> : undefined),
   }),
   new DeviceAttribute({ id: 'isp', label: 'ISP', value: ({ device }) => device?.geo?.isp }),
   new DeviceAttribute({
@@ -115,45 +144,72 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'location',
     label: 'Location',
+    column: false,
     value: ({ device, session }) => {
       const geo = device?.geo || session?.geo
       return geo && <DeviceGeo geo={geo} />
     },
   }),
   new DeviceAttribute({
+    id: 'city',
+    label: 'City',
+    defaultWidth: 115,
+    value: ({ device }) => device?.geo?.city,
+  }),
+  new DeviceAttribute({
+    id: 'state',
+    label: 'State',
+    defaultWidth: 100,
+    value: ({ device }) => device?.geo?.stateName,
+  }),
+  new DeviceAttribute({
+    id: 'country',
+    label: 'Country',
+    defaultWidth: 130,
+    value: ({ device }) => device?.geo?.countryName,
+  }),
+  new DeviceAttribute({
     id: 'externalAddress',
-    label: 'External IP address',
+    label: 'External IP',
+    defaultWidth: 180,
     value: ({ device }) => device?.externalAddress,
   }),
   new DeviceAttribute({
     id: 'internalAddress',
-    label: 'Internal IP address',
+    label: 'Internal IP',
     value: ({ device }) => device?.internalAddress,
   }),
-  new DeviceAttribute({ id: 'id', label: 'Device ID', value: ({ device }) => device?.id }),
+  new DeviceAttribute({
+    id: 'id',
+    label: 'Device ID',
+    defaultWidth: 180,
+    value: ({ device }) => device?.id,
+  }),
   new DeviceAttribute({
     id: 'hardwareID',
     label: 'Hardware ID',
+    defaultWidth: 190,
     value: ({ device }) => device?.hardwareID,
   }),
   new DeviceAttribute({
     id: 'version',
     label: 'Daemon version',
+    defaultWidth: 80,
     value: ({ device }) => device?.version,
-    width: '30px',
   }),
   new DeviceAttribute({
     id: 'license',
     label: 'License',
+    defaultWidth: 100,
     value: ({ device }) => <LicenseChip license={device?.license} />,
   }),
   // @TODO add attributes to the device model on graphql request
   ...ATTRIBUTES.map(
-    id =>
+    a =>
       new DeviceAttribute({
-        id,
-        label: id,
-        value: ({ device }) => device?.attributes[id],
+        id: a.id,
+        label: a.label,
+        value: ({ device }) => device?.attributes[a.id],
       })
   ),
   new ServiceAttribute({
@@ -168,23 +224,25 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'servicePort',
-    label: 'Remote Port',
+    label: 'Service Port',
     value: ({ service }) => service?.port,
   }),
   new ServiceAttribute({
     id: 'serviceHost',
-    label: 'Remote Host',
+    label: 'Service Host',
     value: ({ service }) => service?.host,
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',
-    label: 'Remote Protocol',
+    label: 'Service Protocol',
     value: ({ service }) => service?.protocol,
   }),
   new ServiceAttribute({
     id: 'serviceLastReported',
     label: 'Last Reported',
-    value: ({ service }) => <Duration startDate={service?.lastReported} ago />,
+    defaultWidth: 230,
+    value: ({ service }) =>
+      service?.state !== 'active' ? <Duration startDate={service?.lastReported} ago /> : undefined,
   }),
   new ServiceAttribute({
     id: 'serviceType',
@@ -199,12 +257,8 @@ export const attributes: Attribute[] = [
   new ServiceAttribute({
     id: 'license',
     label: 'License',
+    defaultWidth: 100,
     value: ({ service }) => <LicenseChip license={service?.license} />,
-  }),
-  new ConnectionAttribute({
-    id: 'address',
-    label: 'Address',
-    value: ({ connection }) => connection?.address,
   }),
   new ConnectionAttribute({
     id: 'duration',
@@ -246,6 +300,7 @@ export const attributes: Attribute[] = [
     id: 'initiatorPlatform',
     label: 'Platform',
     value: ({ session }) => session && INITIATOR_PLATFORMS[session.platform],
+    column: false,
   }),
 ]
 

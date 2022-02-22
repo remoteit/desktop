@@ -4,14 +4,13 @@ import { makeStyles, Typography, InputLabel, Collapse, Paper } from '@material-u
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { getAttributes } from '../helpers/attributes'
-import { LaunchButton } from '../buttons/LaunchButton'
 import { useApplication } from '../hooks/useApplication'
+import { LaunchButton } from '../buttons/LaunchButton'
 import { DataDisplay } from './DataDisplay'
+import { CopyButton } from '../buttons/CopyButton'
 import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
-import { CommandButton } from '../buttons/CommandButton'
-import { CopyButton } from '../buttons/CopyButton'
 
 type Props = {
   connection?: IConnection
@@ -51,15 +50,31 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
 
   if (!connection && !session) return null
 
-  const name = connection?.host
-  const port = connection?.port
+  let name = connection?.host
+  let port = connection?.port
+
+  if (port === -1 || !name) {
+    name = 'Starting...'
+    port = undefined
+  }
+
+  if (connection?.connecting) {
+    name = 'Connecting...'
+    port = undefined
+  }
+  const p = port ? ':' : ''
 
   const basicDisplay = (
     <div ref={basicRef} className={hover ? css.hide : css.show}>
       <InputLabel shrink>Address</InputLabel>
       <Typography variant="h3" className={css.h3}>
         {name}
-        {port && <>:{port}</>}
+        {port && (
+          <>
+            {p}
+            {port}
+          </>
+        )}
       </Typography>
     </div>
   )
@@ -69,7 +84,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       <InputLabel shrink>Copy Hostname</InputLabel>
       <Typography variant="h3" className={css.h3}>
         {name && <span className={css.active}>{name}</span>}
-        {port && <>:{port}</>}
+        {port && (
+          <>
+            {p}
+            {port}
+          </>
+        )}
       </Typography>
     </div>
   )
@@ -78,7 +98,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
     <div className={hover === 'port' ? css.show : css.hide}>
       <InputLabel shrink>Copy Port</InputLabel>
       <Typography variant="h3" className={css.h3}>
-        {name}:<span className={css.active}>{port}</span>
+        {name}
+        {p}
+        <span className={css.active}>{port}</span>
       </Typography>
     </div>
   )
@@ -88,7 +110,9 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
       <InputLabel shrink>Copy Address</InputLabel>
       <Typography variant="h3" className={css.h3}>
         <span className={css.active}>
-          {name}:{port}
+          {name}
+          {p}
+          {port}
         </span>
       </Typography>
     </div>
@@ -133,12 +157,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                     placement="left"
                     component="span"
                   >
-                    <CommandButton
+                    <CopyButton
                       color="alwaysWhite"
+                      icon="copy"
                       type="regular"
                       size="lg"
-                      connection={connection}
-                      service={service}
+                      value={name + (port ? p + port : '')}
                       onCopy={() => ui.guide({ guide: 'guideAWS', step: 7 })}
                       onMouseEnter={() => setHover('copy')}
                       onMouseLeave={() => setHover(undefined)}
@@ -146,28 +170,33 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                   </GuideStep>
                   {connection?.host && (
                     <>
-                      <CopyButton
-                        color="alwaysWhite"
-                        icon="i-cursor"
-                        type="solid"
-                        size="md"
-                        value={connection.host}
-                        onMouseEnter={() => setHover('name')}
-                        onMouseLeave={() => setHover(undefined)}
-                      />
-                      <CopyButton
-                        color="alwaysWhite"
-                        icon="port"
-                        type="solid"
-                        size="md"
-                        value={connection.port}
-                        onMouseEnter={() => setHover('port')}
-                        onMouseLeave={() => setHover(undefined)}
-                      />
+                      {connection.port && (
+                        <>
+                          <CopyButton
+                            color="alwaysWhite"
+                            icon="i-cursor"
+                            type="solid"
+                            size="md"
+                            value={connection.host}
+                            onMouseEnter={() => setHover('name')}
+                            onMouseLeave={() => setHover(undefined)}
+                          />
+                          <CopyButton
+                            color="alwaysWhite"
+                            icon="port"
+                            type="solid"
+                            size="md"
+                            value={connection.port}
+                            onMouseEnter={() => setHover('port')}
+                            onMouseLeave={() => setHover(undefined)}
+                          />
+                        </>
+                      )}
                       <CopyButton
                         color="alwaysWhite"
                         icon="link"
                         size="md"
+                        app={app}
                         value={app.string}
                         onMouseEnter={() => setHover('launch')}
                         onMouseLeave={() => setHover(undefined)}
@@ -187,8 +216,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       color="alwaysWhite"
                       type="solid"
                       size="md"
-                      connection={connection}
-                      service={service}
+                      app={app}
                       onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
                       onMouseEnter={() => setHover('launch')}
                       onMouseLeave={() => setHover(undefined)}
@@ -223,8 +251,9 @@ const useStyles = makeStyles(({ palette }) => ({
     transitionDelay: '50ms',
   },
   active: {
-    borderRadius: 4,
-    backgroundColor: palette.darken.main,
+    display: 'inline-block',
+    backgroundColor: palette.screen.main,
+    borderBottom: `1px solid ${palette.alwaysWhite.main}`,
   },
   h3: {
     wordBreak: 'break-word',

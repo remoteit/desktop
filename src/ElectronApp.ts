@@ -4,7 +4,6 @@ import electron, { Menu, dialog } from 'electron'
 import TrayMenu from './TrayMenu'
 import debug from 'debug'
 import path from 'path'
-import url from 'url'
 
 const d = debug('r3:headless:ElectronApp')
 
@@ -35,7 +34,7 @@ export default class ElectronApp {
       this.app.quit()
     }
     this.app.setAsDefaultProtocolClient(this.protocol)
-    Logger.info('ELECTRON STARTING UP')
+    Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
     // Windows event
     this.app.on('ready', this.handleAppReady)
@@ -114,12 +113,12 @@ export default class ElectronApp {
     const scheme = this.protocol + '://'
     const authCallbackCode = 'authCallback'
     if (link?.includes(scheme)) {
-      this.deepLinkUrl = link.substr(scheme.length)
+      this.deepLinkUrl = link.substring(scheme.length)
       Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
     }
     if (link?.includes(authCallbackCode)) {
       this.authCallback = true
-      Logger.info('Auth Callback', { link: link })
+      Logger.info('Auth Callback', { link })
     }
   }
 
@@ -149,6 +148,7 @@ export default class ElectronApp {
       titleBarStyle: 'hiddenInset',
       frame: !environment.isMac,
       autoHideMenuBar: true,
+      webPreferences: { preload: path.join(__dirname, 'preload.js') },
     })
 
     this.window.setVisibleOnAllWorkspaces(true)
@@ -157,10 +157,10 @@ export default class ElectronApp {
 
     this.window.loadURL(startUrl)
 
-    this.window.on('close', e => {
+    this.window.on('close', event => {
       d('Window closed')
       if (!this.quitSelected) {
-        e.preventDefault()
+        event.preventDefault()
         this.closeWindow()
       }
     })
@@ -170,9 +170,18 @@ export default class ElectronApp {
       event.preventDefault()
     })
 
-    this.window.webContents.on('new-window', (event, url) => {
-      event.preventDefault()
+    this.window.webContents.setWindowOpenHandler(({ url }) => {
+      Logger.info('OPEN EXTERNAL URL', { url })
       electron.shell.openExternal(url)
+      return { action: 'deny' }
+    })
+
+    this.window.webContents.on('will-navigate', (event, url) => {
+      if (url.includes('auth.remote.it')) {
+        Logger.info('AUTH NAVIGATION DETECTED')
+        event.preventDefault()
+        electron.shell.openExternal(url)
+      }
     })
 
     this.logWebErrors()
@@ -180,40 +189,33 @@ export default class ElectronApp {
 
   private logWebErrors = () => {
     if (!this.window) return
-    this.window.webContents.on('render-process-gone', (event, details) => {
+    const { webContents } = this.window
+    webContents.on('render-process-gone', (event, details) => {
       Logger.error('ELECTRON WEB CONSOLE render-process-gone', { details })
       this.reload()
     })
-    this.window.webContents.on('unresponsive', () => Logger.warn('ELECTRON WEB CONSOLE unresponsive'))
-    this.window.webContents.on('responsive', () => Logger.warn('ELECTRON WEB CONSOLE responsive'))
-    this.window.webContents.on('plugin-crashed', (event, name, version) =>
+    webContents.on('unresponsive', () => Logger.warn('ELECTRON WEB CONSOLE unresponsive'))
+    webContents.on('responsive', () => Logger.warn('ELECTRON WEB CONSOLE responsive'))
+    webContents.on('plugin-crashed', (event, name, version) =>
       Logger.error('ELECTRON WEB CONSOLE plugin-crashed', { name, version })
     )
-    this.window.webContents.on('preload-error', (event, preloadPath, error) =>
+    webContents.on('preload-error', (event, preloadPath, error) =>
       Logger.error('ELECTRON WEB CONSOLE preload-error', { preloadPath, error })
     )
-    this.window.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    webContents.on('console-message', (event, level, message, line, sourceId) => {
       if (level > 2) Logger.error('ELECTRON WEB console error', { level, message, line, sourceId })
     })
   }
 
   private reload() {
-    if (!this.window) return
-    this.window.webContents.reload()
+    const lastWindow = this.window
+    this.window = undefined
+    this.createMainWindow()
+    lastWindow?.destroy()
   }
 
   private getStartUrl(): string {
-    return process.env.NODE_ENV === 'development'
-      ? url.format({
-          protocol: 'http',
-          hostname: 'localhost',
-          port: '3000',
-        })
-      : url.format({
-          protocol: 'http',
-          hostname: 'localhost',
-          port: '29999',
-        })
+    return process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://localhost:29999'
   }
 
   private createSystemTray() {
@@ -262,6 +264,7 @@ export default class ElectronApp {
       Logger.info('Opening', { url: fullUrl })
       this.window.loadURL(fullUrl)
     } else if (location) {
+      Logger.info('Open location', { location })
       this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     }
 

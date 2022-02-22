@@ -33,7 +33,7 @@ export const RemoteManagement: React.FC = () => {
   let diagram: NetworkType[] = [
     { primary: 'You' },
     { primary: 'Local network' },
-    { primary: 'This device', secondary: name },
+    { primary: 'This system', secondary: name },
     { primary: 'Internet devices' },
   ]
 
@@ -68,7 +68,7 @@ export const RemoteManagement: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   container: {
     padding: spacing.sm,
   },

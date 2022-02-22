@@ -10,6 +10,8 @@ import { SettingsPage } from '../pages/SettingsPage'
 import { TestPage } from '../pages/TestPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
+import { SetupLinuxPage } from '../pages/SetupLinuxPage'
+import { DownloadDesktopPage } from '../pages/DownloadDesktopPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
@@ -27,6 +29,7 @@ import { TagsPage } from '../pages/TagsPage'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { UserLogPage } from '../pages/UserLogPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
+import { isPortal, getOs } from '../services/Browser'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
 import { OverviewPage } from '../pages/OverviewPage'
@@ -43,7 +46,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
     redirect: state.ui.redirect,
     targetDevice: state.backend.device,
     registered: !!state.backend.device.uid,
-    os: state.backend.environment.os,
+    os: state.backend.environment.os || getOs(),
   }))
 
   useEffect(() => {
@@ -61,6 +64,20 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         to={{
           pathname: '/connections/:serviceID',
           state: { autoConnect: true },
+        }}
+      />
+      <Redirect
+        from={'/launch/:serviceID'}
+        to={{
+          pathname: '/connections/:serviceID',
+          state: { autoLaunch: true },
+        }}
+      />
+      <Redirect
+        from={'/copy/:serviceID'}
+        to={{
+          pathname: '/connections/:serviceID',
+          state: { autoCopy: true },
         }}
       />
 
@@ -95,6 +112,8 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       <Route path="/devices/setup">
         {registered ? (
           <Redirect to={`/devices/${targetDevice.uid}`} />
+        ) : isPortal() ? (
+          <Redirect to={`/devices/add/${os}`} />
         ) : (
           <Panel>
             <SetupDevice os={os} />
@@ -105,6 +124,18 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       <Route path="/devices/membership">
         <Panel>
           <OrganizationMembershipPage />
+        </Panel>
+      </Route>
+
+      <Route path="/devices/add/linux">
+        <Panel>
+          <SetupLinuxPage />
+        </Panel>
+      </Route>
+
+      <Route path="/devices/add/:icon">
+        <Panel>
+          <DownloadDesktopPage />
         </Panel>
       </Route>
 

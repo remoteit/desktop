@@ -2,12 +2,11 @@ import { createModel } from '@rematch/core'
 import moment from 'moment'
 import { ApplicationState } from '../store'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLicenses, parseLicense } from './licensing'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 import { graphQLCreateAccessKey, graphQLDeleteAccessKeys, graphQLGetAccessKeys, graphQLToggleAccessKeys } from '../services/graphQLAccessKeys'
 
 
@@ -253,6 +252,11 @@ export function getActiveUser(state: ApplicationState): IUserRef | undefined {
     email: m.organization.name,
   }))
   return membershipOrganizations.find(m => m.id === id) || state.auth.user
+}
+
+export function getActiveOrganizationMembership(state: ApplicationState): IOrganizationMembership | undefined {
+  const id = getActiveAccountId(state)
+  return state.accounts.membership.find(m => m.organization.id === id)
 }
 
 export function getDevices(state: ApplicationState, accountId?: string): IDevice[] {

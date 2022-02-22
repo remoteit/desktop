@@ -40,7 +40,6 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
     spin = true
   }
   if (instance?.state === 'inactive') {
-    opacity = 0.3
     title = 'Offline'
     showQuality = false
   }
@@ -55,6 +54,7 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
   }
 
   const css = useStyles({ colorName })
+
   if (mini)
     element = (
       <span className={css.mini}>
@@ -62,11 +62,7 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
       </span>
     )
   else {
-    element = (
-      <span>
-        <Icon {...props} name={name} color={colorName} spin={spin} type={type} size="md" fixedWidth />
-      </span>
-    )
+    element = <Icon {...props} name={name} color={colorName} spin={spin} type={type} size="md" fixedWidth />
   }
 
   if (showQuality && device) {
@@ -106,14 +102,21 @@ export function ConnectionStateIcon({ connection, service, device, mini, ...prop
 
   return (
     <Tooltip title={title} placement="top" arrow>
-      <span style={{ opacity }}>{element}</span>
+      <span className={css.icon}>{element}</span>
     </Tooltip>
   )
 }
 
+type StyleProps = {
+  colorName: Color
+}
+
 const useStyles = makeStyles(({ palette }) => ({
   capitalize: { textTransform: 'capitalize' },
-  mini: ({ colorName }: { colorName: Color }) => ({
+  icon: {
+    lineHeight: 1,
+  },
+  mini: ({ colorName }: StyleProps) => ({
     '& > span': {
       height: 4,
       borderRadius: 4,

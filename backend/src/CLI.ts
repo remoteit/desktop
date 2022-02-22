@@ -31,7 +31,7 @@ type IExec = {
   admin?: boolean
   quiet?: boolean
   force?: boolean
-  onError?: ErrorCallback
+  onError?: (error: Error) => void
 }
 
 type IConnectionStatus = {
@@ -192,6 +192,7 @@ export default class CLI {
         sessionId: c.sessionID?.toLowerCase(),
         restriction: c.restrict,
         timeout: c.timeout,
+        default: false,
       }
 
       if (error) result.error = error
@@ -250,25 +251,25 @@ export default class CLI {
     this.read()
   }
 
-  async addConnection(c: IConnection, onError: ErrorCallback) {
+  async addConnection(c: IConnection, onError: (error: Error) => void) {
     d('ADD CONNECTION', strings.connect(c))
     await this.exec({ cmds: [strings.connect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
-  async removeConnection(c: IConnection, onError: ErrorCallback) {
+  async removeConnection(c: IConnection, onError: (error: Error) => void) {
     d('REMOVE CONNECTION', strings.disconnect(c))
     await this.exec({ cmds: [strings.disconnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
-  async stopConnection(c: IConnection, onError: ErrorCallback) {
+  async stopConnection(c: IConnection, onError: (error: Error) => void) {
     d('STOP CONNECTION', strings.stop(c))
     await this.exec({ cmds: [strings.stop(c)], checkAuthHash: true, onError })
     await this.readConnections()
   }
 
-  async setConnection(c: IConnection, onError: ErrorCallback) {
+  async setConnection(c: IConnection, onError: (error: Error) => void) {
     d('SET CONNECTION', strings.setConnect(c))
     await this.exec({ cmds: [strings.setConnect(c)], checkAuthHash: true, onError })
     await this.readConnections()
@@ -338,13 +339,21 @@ export default class CLI {
     force,
     onError,
   }: IExec) {
-    if (!force && (binaryInstaller?.inProgress || !binaryInstaller.ready)) return ''
+    if (!force && (binaryInstaller.inProgress || !binaryInstaller.ready)) {
+      Logger.info('EXEC EXITED -> CLI NOT READY', {
+        inProgress: binaryInstaller.inProgress,
+        ready: binaryInstaller.ready,
+      })
+      return ''
+    }
     if (!skipSignInCheck && !binaryInstaller.uninstallInitiated) await this.checkSignIn()
-    if (checkAuthHash && !user.signedIn) return ''
+    if (checkAuthHash && !user.signedIn) {
+      Logger.info('EXEC EXITED -> USER NOT SIGNED IN')
+      return ''
+    }
 
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
-    d('COMMAND', commands.toString())
 
     if (!quiet)
       commands.onError = (e: Error) => {

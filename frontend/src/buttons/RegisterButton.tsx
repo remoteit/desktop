@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react'
+import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../shared/constants'
 import {
   makeStyles,
-  Tooltip,
-  Typography,
-  IconButton,
   Popover,
   List,
   ListItem,
+  ListSubheader,
+  ListItemIcon,
+  ListItemText,
   TextField,
-  Button,
+  Divider,
 } from '@material-ui/core'
+import { selectDeviceByAccount } from '../models/devices'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../store'
+import { ListItemLocation } from '../components/ListItemLocation'
+import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
-import { Body } from '../components/Body'
+import { Link } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 
 const CLAIM_CODE_LENGTH = 8
@@ -21,10 +25,14 @@ const CLAIM_CODE_LENGTH = 8
 export const RegisterButton: React.FC = () => {
   const css = useStyles()
   const { devices } = useDispatch<Dispatch>()
-  const [el, setEl] = useState<HTMLButtonElement | null>(null)
+  const [el, setEl] = useState<Element | null>(null)
   const [code, setCode] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
-  const { claiming } = useSelector((state: ApplicationState) => state.ui)
+  const { claiming, hasDemo, hasThisDevice } = useSelector((state: ApplicationState) => ({
+    claiming: state.ui.claiming,
+    hasDemo: selectDeviceByAccount(state, DEMO_DEVICE_ID, state.auth.user?.id) !== undefined,
+    hasThisDevice: !!state.backend.device.uid,
+  }))
 
   const handleClose = () => {
     setEl(null)
@@ -36,7 +44,7 @@ export const RegisterButton: React.FC = () => {
     if (!claiming) handleClose()
   }, [claiming])
 
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleOpen = (event: React.MouseEvent) => {
     setEl(event.currentTarget)
   }
 
@@ -53,71 +61,120 @@ export const RegisterButton: React.FC = () => {
 
   return (
     <>
-      <Tooltip title="Device Registration">
-        <IconButton onClick={handleOpen}>
-          <Icon name="plus" size="sm" type="regular" fixedWidth />
-        </IconButton>
-      </Tooltip>
+      <IconButton
+        title="Add device"
+        variant="contained"
+        onClick={handleOpen}
+        color="primary"
+        icon="plus"
+        size="sm"
+        type="regular"
+        fixedWidth
+      />
       <Popover
         open={!!el}
         onClose={handleClose}
         anchorEl={el}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <Body center className={css.popover}>
-          <Typography variant="caption">Enter your code to register a new device.</Typography>
-          <form
-            onSubmit={e => {
-              e.preventDefault()
-              devices.claimDevice(code)
+        <List className={css.list} disablePadding dense>
+          <ListSubheader>Add a device</ListSubheader>
+          <ListItem
+            button
+            disableGutters
+            disabled={hasThisDevice}
+            onClick={handleClose}
+            to="/devices/setup"
+            component={Link}
+          >
+            <ListItemIcon>
+              <Icon name="hdd" size="md" fixedWidth />
+            </ListItemIcon>
+            <ListItemText primary="This system" secondary={hasThisDevice && 'Already created'} />
+          </ListItem>
+          <ListItemLocation
+            icon="raspberry-pi"
+            iconType="brands"
+            pathname="/devices/add/linux"
+            title="Linux & Raspberry Pi"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            icon="windows"
+            iconType="brands"
+            pathname="/devices/add/windows"
+            title="Windows"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItemLocation
+            icon="apple"
+            iconType="brands"
+            pathname="/devices/add/apple"
+            title="Mac"
+            onClick={handleClose}
+            disableGutters
+          />
+          <ListItem
+            button
+            disableGutters
+            disabled={hasDemo || claiming}
+            onClick={() => {
+              setCode(DEMO_DEVICE_CLAIM_CODE)
+              devices.claimDevice(DEMO_DEVICE_CLAIM_CODE)
             }}
           >
-            <List>
-              <ListItem>
-                <TextField
-                  autoFocus
-                  label="Registration Code"
-                  value={code}
-                  variant="filled"
-                  onChange={handleChange}
-                  fullWidth
-                  InputProps={{
-                    endAdornment: claiming ? (
-                      <Icon name="spinner-third" size="sm" spin type="regular" />
-                    ) : (
-                      valid && <Icon name="check" color="primary" size="sm" type="regular" />
-                    ),
-                  }}
-                />
-              </ListItem>
-              <ListItem>
-                <Button type="submit" variant="contained" color="primary" disabled={claiming || !valid} fullWidth>
-                  {claiming ? 'Working' : 'Register'}
-                </Button>
-                <Button onClick={handleClose} fullWidth>
-                  Cancel
-                </Button>
-              </ListItem>
-            </List>
-          </form>
-        </Body>
+            <ListItemIcon>
+              <Icon name="aws" size="md" type="brands" fixedWidth />
+            </ListItemIcon>
+            <ListItemText primary="remote.it demo device" secondary={hasDemo && 'Already shared'} />
+          </ListItem>
+        </List>
+        <Divider />
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            devices.claimDevice(code)
+          }}
+        >
+          <List className={css.form}>
+            <ListItem disableGutters>
+              <TextField
+                autoFocus
+                label="Claim Code"
+                value={code}
+                variant="filled"
+                disabled={claiming}
+                onChange={handleChange}
+                fullWidth
+              />
+              <IconButton
+                submit
+                title="Claim"
+                icon="check"
+                size="base"
+                color={claiming || !valid ? 'grayDark' : 'success'}
+                loading={claiming}
+                disabled={claiming || !valid}
+              />
+            </ListItem>
+          </List>
+        </form>
       </Popover>
     </>
   )
 }
 
 const useStyles = makeStyles({
-  popover: {
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    '& .MuiList-root, & form': { width: '100%' },
-    '& .MuiListItem-root': { margin: 0, width: '100%' },
+  list: {
+    padding: spacing.xs,
+  },
+  form: {
+    padding: spacing.xs,
+    paddingLeft: spacing.sm,
+    paddingRight: spacing.sm,
+    '& button': { marginLeft: spacing.xs },
   },
 })

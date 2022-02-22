@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Box } from '@material-ui/core'
+import { makeStyles, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
-import { makeStyles } from '@material-ui/core/styles'
 import { SignInPage } from '../../pages/SignInPage'
 import { FooterNav } from '../FooterNav'
 import { Sidebar } from '../Sidebar'
@@ -80,14 +79,6 @@ export const App: React.FC = () => {
 // neuter
 const useStyles = overlapHeader =>
   makeStyles({
-    main: {
-      flexGrow: 1,
-      height: '100%',
-      display: 'flex',
-      flexFlow: 'column',
-      justifyContent: 'space-between',
-      flexWrap: 'nowrap',
-    },
     columns: {
       flexGrow: 1,
       position: 'relative',
@@ -97,13 +88,5 @@ const useStyles = overlapHeader =>
       alignItems: 'start',
       justifyContent: 'start',
       paddingTop: overlapHeader ? 30 : 0,
-    },
-    rows: {
-      flexGrow: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      overflow: 'hidden',
-      position: 'relative',
     },
   })

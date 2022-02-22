@@ -180,9 +180,15 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         root: {
           color: palette.grayDarkest.main,
           fontSize: fontSizes.xxs,
-          lineHeight: '40px',
+          lineHeight: `${spacing.xl}px`,
+          textTransform: 'uppercase',
+          letterSpacing: 2,
+          fontWeight: 500,
         },
-        sticky: { zIndex: 2 },
+        sticky: {
+          zIndex: 5,
+          backgroundColor: palette.white.main,
+        },
       },
       MuiPaper: {
         rounded: { borderRadius: radius },
@@ -261,6 +267,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           paddingLeft: 0,
           paddingRight: spacing.lg,
           color: palette.grayDarkest.main,
+          fontSize: fontSizes.base,
           '&:hover, &:focus': { backgroundColor: palette.primaryLighter.main },
         },
         gutters: {
@@ -283,7 +290,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiInputBase: {
-        input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
+        input: { paddingTop: spacing.xxs, paddingBottom: spacing.xxs, borderRadius: radius },
       },
       MuiInputLabel: {
         shrink: {
@@ -412,10 +419,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   }
 }
 
-export function selectTheme(state?: ApplicationState['ui']) {
+export function selectTheme(themeMode?: ApplicationState['ui']['themeMode']) {
   let darkMode = isSystemDarkMode()
-  if (state?.themeMode === 'dark') darkMode = true
-  if (state?.themeMode === 'light') darkMode = false
+  if (themeMode === 'dark') darkMode = true
+  if (themeMode === 'light') darkMode = false
   console.log('SELECT THEME. DARK MODE:', darkMode)
   const theme = createTheme(jssTheme(darkMode))
   return theme

@@ -1,10 +1,8 @@
 import React from 'react'
 import { Typography } from '@material-ui/core'
-import { useSelector } from 'react-redux'
 import { attributeName } from '../shared/nameHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { RefreshButton } from '../buttons/RefreshButton'
-import { ApplicationState } from '../store'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import { ListHorizontal } from './ListHorizontal'
 import { AddUserButton } from '../buttons/AddUserButton'
@@ -14,8 +12,6 @@ import { Container } from './Container'
 import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({ device, header, children }) => {
-  const access = useSelector((state: ApplicationState) => state.organization.members.map(m => m.user))
-
   if (!device) return <UnauthorizedPage />
 
   return (
@@ -26,7 +22,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
           <Typography variant="h1">
             <Title>{attributeName(device) || 'Unknown'}</Title>
             <RefreshButton device={device} />
-            <AddUserButton to={`/devices/${device.id}/share`} hide={device.shared} />
+            <AddUserButton to={`/devices/${device.id}/share`} hide={!device.permissions.includes('MANAGE')} />
             <DeviceOptionMenu device={device} />
           </Typography>
           <ListHorizontal>
@@ -46,7 +42,7 @@ export const DeviceHeaderMenu: React.FC<{ device?: IDevice; header?: any }> = ({
               pathname={`/devices/${device.id}/edit`}
               dense
             />
-            <UsersSelect device={device} access={access} />
+            <UsersSelect device={device} />
             <ListItemLocation
               title="Logs"
               icon="file-alt"

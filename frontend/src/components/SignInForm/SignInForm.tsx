@@ -13,7 +13,6 @@ export function SignInForm() {
     appVersion: state.binaries.version,
     theme: state.ui.theme,
   }))
-  const [successUser, setSuccessUser] = useState<CognitoUser>()
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const { auth } = useDispatch<Dispatch>()
 
@@ -22,10 +21,6 @@ export function SignInForm() {
     const remember = window.localStorage.getItem(CHECKBOX_REMEMBER_KEY)
     setRememberMe(!!remember)
   }, [])
-
-  useEffect(() => {
-    if (successUser) auth.handleSignInSuccess(successUser)
-  }, [successUser])
 
   const onClickCheckboxRemember = checked => {
     setRememberMe(!!checked)
@@ -42,18 +37,21 @@ export function SignInForm() {
     appVersion,
   }
 
+  console.log('DESKTOP SIGN IN FORM RENDER')
+
   return (
     <CognitoAuth
-      themeOverride={theme}
-      onSignInSuccess={(user: CognitoUser) => setSuccessUser(user)}
-      errorMessage={signInError}
+      fullWidth
+      hideCaptcha
+      showCheckboxRemember
       authService={authService}
-      hideCaptcha={true}
-      inputEmail={localUsername}
-      showCheckboxRemember={true}
-      onClickCheckboxRemember={onClickCheckboxRemember}
       checkedCheckboxRemember={rememberMe}
+      errorMessage={signInError}
+      inputEmail={localUsername}
+      onClickCheckboxRemember={onClickCheckboxRemember}
+      onSignInSuccess={(user: CognitoUser) => auth.handleSignInSuccess(user)}
       segmentSettings={segmentSettings}
+      themeOverride={theme}
     />
   )
 }

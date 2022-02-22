@@ -11,7 +11,7 @@ export function environment() {
   return BROWSER
 }
 
-export function os() {
+export function getOs(): Ios {
   if (isMac()) return 'mac'
   if (isWindows()) return 'windows'
   return 'linux'
@@ -34,18 +34,15 @@ export function isRemote() {
 }
 
 export function isElectron() {
-  const userAgent = navigator.userAgent.toLowerCase()
-  return userAgent.includes('electron')
+  return navigator.userAgent.toLowerCase().includes('electron')
 }
 
 export function isMac() {
-  const platform = navigator.platform.toLowerCase()
-  return platform.includes('mac')
+  return navigator.userAgent.toLowerCase().includes('mac')
 }
 
 export function isWindows() {
-  const platform = navigator.platform.toLowerCase()
-  return platform.includes('win')
+  return navigator.userAgent.toLowerCase().includes('win')
 }
 
 export function isHeadless() {

@@ -18,20 +18,9 @@ export default class PortScanner {
 
     if (start > end) end = start + 1
 
-    // Create a range between start and end port numbers
-    const range = [...Array(end - start).keys()]
-      // Increment the ports from  the starting port number
-      .map(x => x + start)
-      // Remove any reserved ports from our pool of ports
-      .filter(x => !reservedPorts.includes(x))
-
-    // Check if port is free, and if so, return it.
-    for (const port of range) {
-      const free = await this.isPortFree(port)
-      if (free) {
-        d('Found free port:', { free })
-        return port
-      }
+    for (let port = start; port < end; port++) {
+      if (reservedPorts.includes(port)) continue
+      if (await this.isPortFree(port)) return port
     }
   }
 

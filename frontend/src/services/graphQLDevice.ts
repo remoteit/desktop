@@ -1,4 +1,4 @@
-import { graphQLRequest } from './graphQL'
+import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
 import { updateConnections } from '../helpers/connectionHelper'
 import { store } from '../store'
@@ -13,6 +13,7 @@ const DEVICE_SELECT = `
   platform
   version
   configurable
+  permissions
   license
   attributes
   access {
@@ -163,6 +164,7 @@ export function graphQLAdaptor(
       version: d.version,
       geo: d.endpoint?.geo,
       license: d.license,
+      permissions: d.permissions,
       attributes: processDeviceAttributes(d, metaData),
       tags: labelsToTags(d),
       services: d.services.map(
@@ -226,4 +228,20 @@ function labelsToTags(response: any): IDevice['tags'] {
   const attributes = processAttributes(response)
   if (attributes.color) tags.push(1000 + attributes.color)
   return tags
+}
+
+export async function graphQLCreateRegistration(services: IApplicationType['id'][], account: string) {
+  return await graphQLBasicRequest(
+    ` query($account: String, $services: [ServiceInput!]) {
+        login {
+          account(id: $account) {
+            registrationCommand(services: $services)
+          }
+        }
+      }`,
+    {
+      account,
+      services: services.map(s => ({ application: s })),
+    }
+  )
 }

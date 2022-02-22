@@ -17,13 +17,13 @@ export const ConfirmButton: React.FC<Props> = ({
 }) => {
   const [open, setOpen] = React.useState<boolean>(false)
 
-  const handleClick = () => {
+  const handleClick = e => {
     if (confirm) setOpen(true)
-    else onClick && onClick()
+    else onClick && onClick(e)
   }
 
-  const handleConfirm = () => {
-    onClick && onClick()
+  const handleConfirm = e => {
+    onClick && onClick(e)
     setOpen(false)
   }
 

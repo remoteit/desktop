@@ -1,11 +1,10 @@
 import { createModel } from '@rematch/core'
 import { graphQLSetOrganization, graphQLRemoveOrganization, graphQLSetMembers } from '../services/graphQLMutation'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { getRemoteitLicense } from './licensing'
 import { ApplicationState } from '../store'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import { apiError } from '../helpers/apiHelper'
 
 export const ROLE: ILookup<string> = {
   OWNER: 'Admin / Owner',
@@ -114,7 +113,7 @@ export default createModel<RootModel>()({
         if (index > -1) updated[index] = m
         else updated.push(m)
       })
-      dispatch.organization.set({ members: updated })
+      await dispatch.organization.set({ members: updated })
 
       const action = updated.length > state.organization.members.length ? 'added' : 'updated'
       const result = await graphQLSetMembers(

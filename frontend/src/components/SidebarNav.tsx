@@ -73,7 +73,7 @@ export const SidebarNav: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   chip: {
     fontWeight: 500,
   },

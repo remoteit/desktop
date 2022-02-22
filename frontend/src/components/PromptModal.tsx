@@ -53,6 +53,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                 token === 'path' ? (
                   <InlineFileFieldSetting
                     key={token}
+                    disableGutters
                     label="Application path"
                     value={app.value(token)}
                     onSave={value => {
@@ -65,7 +66,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                     }}
                   />
                 ) : (
-                  <ListItem key={token}>
+                  <ListItem key={token} disableGutters>
                     <TextField
                       fullWidth
                       autoFocus={index === 0}

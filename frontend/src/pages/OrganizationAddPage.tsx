@@ -9,7 +9,6 @@ import { ListItemRadio } from '../components/ListItemRadio'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { TestUI } from '../components/TestUI'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { useHistory } from 'react-router-dom'
@@ -27,6 +26,7 @@ export const OrganizationAddPage = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
+  const disabled = !freeLicenses
 
   useEffect(() => {
     analyticsHelper.page('AccountLinkPage')
@@ -68,23 +68,31 @@ export const OrganizationAddPage = () => {
           </Notice>
         </Gutters>
       )}
-      <TestUI>
-        <Typography variant="subtitle1">Role</Typography>
-        <List>
-          <ListItemRadio
-            label="Admin"
-            subLabel="Can connect and manage all devices."
-            checked={role === 'ADMIN'}
-            onClick={() => setRole('ADMIN')}
-          />
-          <ListItemRadio
-            label="Member"
-            subLabel="Can connect to all devices."
-            checked={role === 'MEMBER'}
-            onClick={() => setRole('MEMBER')}
-          />
-        </List>
-      </TestUI>
+      <Typography variant="subtitle1">Role</Typography>
+      <List disablePadding>
+        <ListItemRadio
+          label="Admin"
+          subLabel={
+            <>
+              Can connect and manage all devices.
+              {disabled && (
+                <Typography variant="caption" color="error">
+                  &nbsp; License required.
+                </Typography>
+              )}
+            </>
+          }
+          disabled={disabled}
+          checked={role === 'ADMIN'}
+          onClick={() => setRole('ADMIN')}
+        />
+        <ListItemRadio
+          label="Member"
+          subLabel="Can connect to all devices."
+          checked={role === 'MEMBER'}
+          onClick={() => setRole('MEMBER')}
+        />
+      </List>
       <Gutters>
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length}>
           Add

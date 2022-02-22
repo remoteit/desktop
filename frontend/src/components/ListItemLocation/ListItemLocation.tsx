@@ -10,13 +10,16 @@ export type Props = {
   subtitle?: string
   icon?: string
   iconColor?: Color
+  iconType?: IconType
   disabled?: boolean
   showDisabled?: boolean
+  disableGutters?: boolean
   dense?: boolean
   className?: string
   match?: string | string[]
   exactMatch?: boolean
   badge?: number
+  onClick?: () => void
 }
 
 export const ListItemLocation: React.FC<Props> = ({
@@ -25,6 +28,7 @@ export const ListItemLocation: React.FC<Props> = ({
   subtitle,
   icon,
   iconColor,
+  iconType,
   disabled,
   showDisabled,
   match,
@@ -40,8 +44,11 @@ export const ListItemLocation: React.FC<Props> = ({
   if (typeof match === 'string') match = [match]
   const matches = match?.find(s => (exactMatch ? location.pathname === s : location.pathname.includes(s)))
 
-  const onClick = () => !disabled && history.push(pathname)
-  const iconEl = icon && <Icon name={icon} size="md" color={iconColor} fixedWidth />
+  const onClick = () => {
+    if (props.onClick) props.onClick()
+    if (!disabled) history.push(pathname)
+  }
+  const iconEl = icon && <Icon name={icon} size="md" color={iconColor} type={iconType} fixedWidth />
 
   return (
     <ListItem
