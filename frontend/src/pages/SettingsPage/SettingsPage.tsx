@@ -63,14 +63,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
-        <ListItemLocation
-          title="Organization"
-          subtitle="Device list sharing"
-          pathname="/settings/organization"
-          icon="industry-alt"
-          exactMatch
-          dense
-        />
+        <ListItemLocation title="Organization" pathname="/settings/organization" icon="industry-alt" exactMatch dense />
         <ListItemLocation
           title="Licensing"
           pathname="/settings/licensing"

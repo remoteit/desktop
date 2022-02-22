@@ -26,6 +26,7 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
     <TextField
       {...props}
       select
+      label="Organization"
       variant="filled"
       value={activeId}
       className={css.selectMenu}

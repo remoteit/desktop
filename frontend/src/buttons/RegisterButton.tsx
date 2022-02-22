@@ -98,6 +98,7 @@ export const RegisterButton: React.FC = () => {
             iconType="brands"
             pathname="/devices/add/linux"
             title="Linux & Raspberry Pi"
+            subtitle="Including Jetson and OpenWRT"
             onClick={handleClose}
             disableGutters
           />
@@ -170,6 +171,7 @@ export const RegisterButton: React.FC = () => {
 const useStyles = makeStyles({
   list: {
     padding: spacing.xs,
+    '& .MuiListItem-root': { paddingRight: spacing.md },
   },
   form: {
     padding: spacing.xs,

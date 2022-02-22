@@ -1,8 +1,9 @@
+import { emit } from '../services/Controller'
 import { Theme } from '@material-ui/core'
 import { RootModel } from './rootModel'
 import { createModel } from '@rematch/core'
 import { selectTheme } from '../styling/theme'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
 const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode', 'drawerMenu', 'columns', 'columnWidths']
@@ -163,6 +164,14 @@ export default createModel<RootModel>()({
         if (SAVED_STATES.includes(key)) setLocalStorage(state, `ui-${key}`, params[key] || '')
       })
       dispatch.ui.set(params)
+    },
+    async deprecated(_, globalState) {
+      if (!isElectron() || isHeadless()) return
+      const { preferences } = globalState.backend
+      dispatch.ui.set({
+        errorMessage: 'This version of Desktop is no longer supported. It should auto update shortly.',
+      })
+      emit('preferences', { ...preferences, autoUpdate: true })
     },
   }),
   reducers: {
