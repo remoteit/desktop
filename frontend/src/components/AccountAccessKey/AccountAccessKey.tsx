@@ -14,6 +14,8 @@ import Collapse from '@material-ui/core/Collapse'
 import { TextBlock } from '../TextBlock'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { spacing } from '../../styling'
+import { Gutters } from '../Gutters'
 
 export function AccountAccessKey({ ...props }): JSX.Element {
   const classes = useStyles()
@@ -23,7 +25,7 @@ export function AccountAccessKey({ ...props }): JSX.Element {
   const { keyArray, secretKey, key } = useSelector((state: ApplicationState) => ({
     keyArray: state.accounts.keyArray,
     secretKey: state.accounts.secretKey,
-    key: state.accounts.key
+    key: state.accounts.key,
   }))
   const { accounts } = useDispatch<Dispatch>()
 
@@ -31,8 +33,7 @@ export function AccountAccessKey({ ...props }): JSX.Element {
     accounts.fetchAccessKeys()
   }, [])
 
-
-  const handleToggle = (e) => {
+  const handleToggle = e => {
     const selectedId = e.currentTarget.id
     const selectedKey = keyArray?.filter(item => selectedId === item['key'])
     if (selectedKey?.length) {
@@ -41,7 +42,6 @@ export function AccountAccessKey({ ...props }): JSX.Element {
         enabled: !selectedKey[0]['enabled'],
       }
       accounts.toggleAccessKeys(properties)
-
     }
   }
 
@@ -56,102 +56,83 @@ export function AccountAccessKey({ ...props }): JSX.Element {
 
   return (
     <>
-      <Typography variant="subtitle1">Access key</Typography>
-      <List>
-        <ListItem>
-          <TextBlock>
-            Access keys are used to authenticate you with our API. You can create a
-            new key or delete an existing key at any time. You can also temporarily
-            disable a key.
-            <br />
-            <em>
-              If you lose or forget your secret key, you cannot retreive it. There
-              is a limit of 2 access keys.
-            </em>
-          </TextBlock>
-        </ListItem>
-        <ListItem>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleCreateKey}
-            disabled={!(maxlimit < 2)}
-            style={{ borderRadius: 3 }}
-          >
-            Create Access key
-          </Button>
-        </ListItem>
-        {keyArray?.map((item, index) => {
-          return (
-            <div className={classes.root} key={index}>
-              <List>
-                <ListItem
-                  key={item['key'] + index}
-                  id={item['key']}
-                  button
-                  onClick={handleToggle}
-                >
-                  <ListItemText
-                    primary={
-                      <>
-                        <Typography
-                          component="span"
-                          variant="body1"
-                          color="textPrimary"
-                        >
-                          {item['key']}
-                        </Typography>
-                      </>
-                    }
-                    secondary={
-                      <>
-                        <Typography
-                          component="span"
-                          variant="caption"
-                          color="textSecondary"
-                        >
-                          Created date {item['createdDate']} , {item['lastUsed']}
-                        </Typography>
-                      </>
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    <ListItemIcon>
-                      <DeleteAccessKey
-                        deleteKey={item['key']}
-                        enabled={item['enabled']}
+      <Typography variant="subtitle1" className={classes.titlePadding}>
+        Access key
+      </Typography>
+      <Gutters className={classes.padding}>
+        <List>
+          <ListItem>
+            <Typography variant="body2">
+              Access keys are used to authenticate you with our API. You can create a new key or delete an existing key
+              at any time. You can also temporarily disable a key.
+              <br />
+              <em>If you lose or forget your secret key, you cannot retreive it. There is a limit of 2 access keys.</em>
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreateKey}
+              disabled={!(maxlimit < 2)}
+              style={{ borderRadius: 3 }}
+            >
+              Create Access key
+            </Button>
+          </ListItem>
+          {keyArray?.map((item, index) => {
+            return (
+              <div className={classes.root} key={index}>
+                <List>
+                  <ListItem key={item['key'] + index} id={item['key']} button onClick={handleToggle}>
+                    <ListItemText
+                      primary={
+                        <>
+                          <Typography component="span" variant="body1" color="textPrimary">
+                            {item['key']}
+                          </Typography>
+                        </>
+                      }
+                      secondary={
+                        <>
+                          <Typography component="span" variant="caption" color="textSecondary">
+                            Created date {item['createdDate']} , {item['lastUsed']}
+                          </Typography>
+                        </>
+                      }
+                    />
+                    <ListItemSecondaryAction>
+                      <ListItemIcon>
+                        <DeleteAccessKey deleteKey={item['key']} enabled={item['enabled']} />
+                      </ListItemIcon>
+                      <Switch
+                        id={item['key']}
+                        edge="end"
+                        color="primary"
+                        onChange={handleToggle}
+                        checked={item['enabled']}
                       />
-                    </ListItemIcon>
-                    <Switch
-                      id={item['key']}
-                      edge="end"
-                      color="primary"
-                      onChange={handleToggle}
-                      checked={item['enabled']}
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-                {index === 0 ? (
-                  <Collapse in={showSection}>
-                    <CreateAccessKey
-                      maxlimit={maxlimit}
-                      secretKey={secretKey}
-                      showSection={showSection}
-                      accessKey={key}
-                      closePanel={closePanel}
-                    />
-                  </Collapse>
-                ) : (
-                  <></>
-                )}
-              </List>
-            </div>
-          )
-        })}
-      </List>
-
-
-
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  {index === 0 ? (
+                    <Collapse in={showSection}>
+                      <CreateAccessKey
+                        maxlimit={maxlimit}
+                        secretKey={secretKey}
+                        showSection={showSection}
+                        accessKey={key}
+                        closePanel={closePanel}
+                      />
+                    </Collapse>
+                  ) : (
+                    <></>
+                  )}
+                </List>
+              </div>
+            )
+          })}
+        </List>
+      </Gutters>
     </>
   )
 }
@@ -161,5 +142,12 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     maxWidth: 550,
     backgroundColor: theme.palette.background.paper,
+  },
+  padding: {
+    paddingLeft: spacing.sm,
+    margin: '0px'
+  },
+  titlePadding: {
+    paddingLeft: '33px',
   },
 }))

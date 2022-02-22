@@ -38,13 +38,15 @@ const styles = (theme: Theme) =>
       right: theme.spacing(1),
       top: theme.spacing(1),
       color: theme.palette.grey[500],
-    },
-
+    }
   })
 const useStyles = makeStyles({
   button: {
     borderRadius: 3,
     margin: 10
+  },
+  iconCursor: {
+    cursor: 'pointer'
   }
 })
 
@@ -116,6 +118,7 @@ export function DeleteAccessKey({ ...props }) {
           name="trash-alt"
           fixedWidth
           onClick={handleDeleteClick}
+          className={css.iconCursor}
         />
       ) : (
         <></>
