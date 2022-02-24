@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon'
 import { Title } from '../components/Title'
 import { TagEditor } from '../components/TagEditor'
 import { Container } from '../components/Container'
+import { ColorSelect } from '../components/ColorSelect'
 import { Typography, List } from '@material-ui/core'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
@@ -13,10 +14,9 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const TagsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { removing, renaming, labels, tags } = useSelector((state: ApplicationState) => ({
+  const { removing, updating, tags } = useSelector((state: ApplicationState) => ({
     removing: state.tags.removing,
-    renaming: state.tags.renaming,
-    labels: state.labels,
+    updating: state.tags.updating,
     tags: state.tags.all,
   }))
 
@@ -42,15 +42,15 @@ export const TagsPage: React.FC = () => {
             key={index}
             value={tag.name}
             icon={
-              renaming === tag.name ? (
+              updating === tag.name ? (
                 <Icon name="spinner-third" spin />
               ) : (
-                <Tag dot tag={tag} labels={labels} size="base" />
+                <ColorSelect tag={tag} onSelect={color => dispatch.tags.update({ ...tag, color })} />
               )
             }
             resetValue={tag.name}
             filter={REGEX_TAG_SAFE}
-            disabled={removing === tag.name || renaming === tag.name}
+            disabled={removing === tag.name || updating === tag.name}
             warning="This can not be undone. All devices will have this tag removed from them."
             onDelete={() => dispatch.tags.delete(tag)}
             onSave={value => dispatch.tags.rename({ tag, name: value.toString() })}

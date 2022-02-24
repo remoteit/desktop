@@ -461,6 +461,7 @@ declare global {
   }
 
   type gqlOptions = {
+    tag?: string[]
     size: number
     from: number
     account: string

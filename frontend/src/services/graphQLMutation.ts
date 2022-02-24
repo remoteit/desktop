@@ -244,10 +244,10 @@ export async function graphQLReadNotice(id: string) {
   )
 }
 
-export async function graphQLCreateTag(tag: { name: string; color: number }) {
+export async function graphQLSetTag(tag: { name: string; color: number }) {
   return await graphQLBasicRequest(
     ` mutation query($tag: [TagInput!]!) {
-        createTag(tag: $tag)
+        setTag(tag: $tag)
       }`,
     { tag }
   )

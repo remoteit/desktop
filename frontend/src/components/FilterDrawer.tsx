@@ -12,6 +12,9 @@ const sortFilters = [
   { value: 'state,name', name: 'State' },
   { value: 'attributes.$remoteit.color,name', name: 'Color' },
 ]
+const tagFilters = [
+  // model after platform filters
+]
 const deviceFilters = [
   { value: 'all', name: 'All' },
   { value: 'active', name: 'Online' },
@@ -22,7 +25,6 @@ const ownerFilters = [
   { value: 'me', name: 'Me' },
   { value: 'others', name: 'Others' },
 ]
-
 const platformFilter = [{ value: -1, name: 'All' }].concat(
   Object.keys(TARGET_PLATFORMS)
     .map(p => ({ value: parseInt(p), name: TARGET_PLATFORMS[p] }))

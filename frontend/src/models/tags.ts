@@ -2,7 +2,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { DEFAULT_TARGET, DESKTOP_EPOCH } from '../shared/constants'
 import {
-  graphQLCreateTag,
+  graphQLSetTag,
   graphQLAddTag,
   graphQLRemoveTag,
   graphQLDeleteTag,
@@ -14,7 +14,7 @@ import { RootModel } from './rootModel'
 type ITagState = ILookup<ITag[]> & {
   all: ITag[]
   removing?: string
-  renaming?: string
+  updating?: string
 }
 
 const defaultState: ITagState = {
@@ -85,9 +85,18 @@ export default createModel<RootModel>()({
     },
     async create(tag: ITag, globalState) {
       const tags = globalState.tags.all
-      const result = await graphQLCreateTag({ name: tag.name, color: tag.color })
+      const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
       dispatch.tags.set({ all: [...tags, tag] })
+    },
+    async update(tag: ITag, globalState) {
+      const tags = globalState.tags.all
+      dispatch.tags.set({ updating: tag.name })
+      const result = await graphQLSetTag({ name: tag.name, color: tag.color })
+      if (result === 'ERROR') return
+      const index = tags.findIndex(t => t.name === tag.name)
+      tags[index] = tag
+      dispatch.tags.set({ all: [...tags], updating: undefined })
     },
     async add({ tag, device }: { tag: ITag; device: IDevice }) {
       const result = await graphQLAddTag(device.id, tag.name)
@@ -104,12 +113,12 @@ export default createModel<RootModel>()({
     },
     async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
       const tags = globalState.tags.all
-      dispatch.tags.set({ renaming: tag.name })
+      dispatch.tags.set({ updating: tag.name })
       const result = await graphQLRenameTag(tag.name, name)
       if (result === 'ERROR') return
       const index = tags.findIndex(t => t.name === tag.name)
       tags[index].name = name
-      dispatch.tags.set({ all: [...tags], renaming: undefined })
+      dispatch.tags.set({ all: [...tags], updating: undefined })
     },
     async delete(tag: ITag, globalState) {
       const tags = globalState.tags.all
