@@ -52,7 +52,7 @@ export const TagsPage: React.FC = () => {
             filter={REGEX_TAG_SAFE}
             disabled={removing === tag.name || renaming === tag.name}
             warning="This can not be undone. All devices will have this tag removed from them."
-            onDelete={() => dispatch.tags.remove(tag)}
+            onDelete={() => dispatch.tags.delete(tag)}
             onSave={value => dispatch.tags.rename({ tag, name: value.toString() })}
           />
         ))}

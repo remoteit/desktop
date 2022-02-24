@@ -22,17 +22,11 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
   const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
-
-  const handleRemoveTag = id => {
-    if (!device) return
-    const index = device.tags.indexOf(id)
-    device.tags.splice(index, 1)
-    dispatch.accounts.setDevice({ id: device.id, device })
-  }
+  const handleRemoveTag = tag => device && dispatch.tags.remove({ tag, device })
 
   return (
     <>
-      {device && <Tags tags={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />}
+      {device && <Tags tags={device.tags} onDelete={handleRemoveTag} onClick={console.log} />}
       {button ? (
         <div ref={addRef}>
           <IconButton title="Add Tag" icon="plus" onClick={handleOpen} disabled={open} />

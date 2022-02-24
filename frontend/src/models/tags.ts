@@ -1,7 +1,13 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { DEFAULT_TARGET, DESKTOP_EPOCH } from '../shared/constants'
-import { graphQLCreateTag, graphQLAddTag, graphQLRemoveTag, graphQLRenameTag } from '../services/graphQLMutation'
+import {
+  graphQLCreateTag,
+  graphQLAddTag,
+  graphQLRemoveTag,
+  graphQLDeleteTag,
+  graphQLRenameTag,
+} from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from './rootModel'
 
@@ -89,6 +95,13 @@ export default createModel<RootModel>()({
       device.tags.push(tag)
       dispatch.accounts.setDevice({ id: device.id, device })
     },
+    async remove({ tag, device }: { tag: ITag; device: IDevice }) {
+      const result = await graphQLRemoveTag(device.id, tag.name)
+      if (result === 'ERROR') return
+      const index = device.tags.findIndex(t => t.name === tag.name)
+      device.tags.splice(index, 1)
+      dispatch.accounts.setDevice({ id: device.id, device })
+    },
     async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ renaming: tag.name })
@@ -98,10 +111,10 @@ export default createModel<RootModel>()({
       tags[index].name = name
       dispatch.tags.set({ all: [...tags], renaming: undefined })
     },
-    async remove(tag: ITag, globalState) {
+    async delete(tag: ITag, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ removing: tag.name })
-      const result = await graphQLRemoveTag(tag.name)
+      const result = await graphQLDeleteTag(tag.name)
       if (result === 'ERROR') return
       const index = tags.findIndex(t => t.name === tag.name)
       tags.splice(index, 1)
