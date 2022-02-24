@@ -190,9 +190,10 @@ export default createModel<RootModel>()({
       await dispatch.devices.init()
       await dispatch.connections.init()
       await dispatch.devices.fetch()
-      dispatch.applicationTypes.fetch()
-      dispatch.announcements.fetch()
       dispatch.sessions.fetch()
+      dispatch.tags.fetch()
+      dispatch.announcements.fetch()
+      dispatch.applicationTypes.fetch()
     },
     async signedIn() {
       if (isPortal()) dispatch.auth.dataReady()

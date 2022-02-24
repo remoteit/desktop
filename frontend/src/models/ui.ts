@@ -123,6 +123,7 @@ export default createModel<RootModel>()({
     },
     async refreshAll() {
       dispatch.devices.set({ from: 0 })
+      dispatch.tags.fetch()
       dispatch.accounts.fetch()
       dispatch.organization.fetch()
       dispatch.sessions.fetch()

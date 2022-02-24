@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { Tag } from '../components/Tag'
+import { Icon } from '../components/Icon'
 import { Title } from '../components/Title'
 import { TagEditor } from '../components/TagEditor'
 import { Container } from '../components/Container'
@@ -12,7 +13,9 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const TagsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { labels, tags } = useSelector((state: ApplicationState) => ({
+  const { removing, renaming, labels, tags } = useSelector((state: ApplicationState) => ({
+    removing: state.tags.removing,
+    renaming: state.tags.renaming,
     labels: state.labels,
     tags: state.tags.all,
   }))
@@ -38,18 +41,19 @@ export const TagsPage: React.FC = () => {
           <InlineTextFieldSetting
             key={index}
             value={tag.name}
-            icon={<Tag dot tag={tag} labels={labels} />}
+            icon={
+              renaming === tag.name ? (
+                <Icon name="spinner-third" spin />
+              ) : (
+                <Tag dot tag={tag} labels={labels} size="base" />
+              )
+            }
             resetValue={tag.name}
             filter={REGEX_TAG_SAFE}
+            disabled={removing === tag.name || renaming === tag.name}
             warning="This can not be undone. All devices will have this tag removed from them."
-            onDelete={() => {
-              tags.splice(index, 1)
-              dispatch.tags.set({ tags })
-            }}
-            onSave={value => {
-              tags[index].name = value.toString()
-              dispatch.tags.set({ tags })
-            }}
+            onDelete={() => dispatch.tags.remove(tag)}
+            onSave={value => dispatch.tags.rename({ tag, name: value.toString() })}
           />
         ))}
       </List>

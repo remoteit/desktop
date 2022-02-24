@@ -141,12 +141,13 @@ export const InlineSetting: React.FC<Props> = ({
   return edit ? editForm : viewForm
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   form: {
     display: 'flex',
     width: '100%',
     marginRight: 120,
     alignItems: 'center',
+    '& .MuiInput-input': { paddingTop: 9, paddingBottom: 10.5, marginLeft: spacing.sm },
     '& .MuiFilledInput-input': { paddingTop: 21, paddingBottom: 10, fontSize: 14 },
     '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
     '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },

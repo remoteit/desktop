@@ -1,48 +1,52 @@
 import { createModel } from '@rematch/core'
-import { DEFAULT_TARGET } from '../shared/constants'
-import { graphQLRequest, apiError } from '../services/graphQL'
+import { AxiosResponse } from 'axios'
+import { DEFAULT_TARGET, DESKTOP_EPOCH } from '../shared/constants'
+import { graphQLCreateTag, graphQLAddTag, graphQLRemoveTag, graphQLRenameTag } from '../services/graphQLMutation'
+import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from './rootModel'
 
 type ITagState = ILookup<ITag[]> & {
   all: ITag[]
+  removing?: string
+  renaming?: string
 }
 
 const defaultState: ITagState = {
   all: [
     {
-      id: 1001,
       name: 'Gray',
-      label: 1,
+      color: 1,
+      created: DESKTOP_EPOCH,
     },
     {
-      id: 1002,
       name: 'Red',
-      label: 2,
+      color: 2,
+      created: DESKTOP_EPOCH,
     },
     {
-      id: 1003,
       name: 'Orange',
-      label: 3,
+      color: 3,
+      created: DESKTOP_EPOCH,
     },
     {
-      id: 1004,
       name: 'Yellow',
-      label: 4,
+      color: 4,
+      created: DESKTOP_EPOCH,
     },
     {
-      id: 1005,
       name: 'Green',
-      label: 5,
+      color: 5,
+      created: DESKTOP_EPOCH,
     },
     {
-      id: 1006,
       name: 'Blue',
-      label: 6,
+      color: 6,
+      created: DESKTOP_EPOCH,
     },
     {
-      id: 1007,
       name: 'Purple',
-      label: 7,
+      color: 7,
+      created: DESKTOP_EPOCH,
     },
   ],
 }
@@ -50,19 +54,59 @@ const defaultState: ITagState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch() {
-      try {
-        const result = await graphQLRequest(
-          ` {
-              get tag query
-            }`
-        )
-        // graphQLGetErrors(result)
-        // const all = result?.data?.data?.tags
-        // dispatch.tags.set({ all })
-      } catch (error) {
-        await apiError(error)
-      }
+    async fetch(_, globalState) {
+      const result = await graphQLBasicRequest(
+        ` query {
+            login {
+              tags {
+                name
+                color
+                created
+              }
+            }
+          }`
+      )
+      if (result === 'ERROR') return
+      const all = await dispatch.tags.parse(result)
+      dispatch.tags.set({ all })
+    },
+    async parse(result: AxiosResponse<any> | undefined) {
+      const all = result?.data?.data?.login?.tags
+      const parsed = all
+        .map(t => ({ ...t, created: new Date(t.created) }))
+        .filter(t => !defaultState.all.find(d => d.name === t.name))
+      return defaultState.all.concat(parsed)
+    },
+    async create(tag: ITag, globalState) {
+      const tags = globalState.tags.all
+      const result = await graphQLCreateTag({ name: tag.name, color: tag.color })
+      if (result === 'ERROR') return
+      dispatch.tags.set({ all: [...tags, tag] })
+    },
+    async add({ tag, device }: { tag: ITag; device: IDevice }) {
+      const result = await graphQLAddTag(device.id, tag.name)
+      if (result === 'ERROR') return
+      device.tags.push(tag)
+      dispatch.accounts.setDevice({ id: device.id, device })
+    },
+    async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
+      const tags = globalState.tags.all
+      dispatch.tags.set({ renaming: tag.name })
+      const result = await graphQLRenameTag(tag.name, name)
+      if (result === 'ERROR') return
+      const index = tags.findIndex(t => t.name === tag.name)
+      tags[index].name = name
+      dispatch.tags.set({ all: [...tags], renaming: undefined })
+    },
+    async remove(tag: ITag, globalState) {
+      const tags = globalState.tags.all
+      dispatch.tags.set({ removing: tag.name })
+      const result = await graphQLRemoveTag(tag.name)
+      if (result === 'ERROR') return
+      const index = tags.findIndex(t => t.name === tag.name)
+      tags.splice(index, 1)
+      dispatch.tags.set({ all: [...tags], removing: undefined })
+      dispatch.devices.fetch()
     },
   }),
   reducers: {
@@ -70,7 +114,7 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    set(state: ITagState, params: ILookup<ITag[]>) {
+    set(state: ITagState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },

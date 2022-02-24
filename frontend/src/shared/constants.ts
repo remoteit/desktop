@@ -30,7 +30,6 @@ export const ZENDESK_URL = process.env.ZENDESK_URL || 'https://remot3it.zendesk.
 
 //segment-analytics
 export const SEGMENT_PROJECT_PORTAL_KEY = 'kYemtqKHE7qM7prQ1JWTP1ThMUYZBmym'
-
 export const SEGMENT_PROJECT_KEY = 'tMedSrVUwDIeRs6kndztUPgjPiVlDmAe'
 
 export const IP_OPEN: ipAddress = '0.0.0.0'
@@ -59,6 +58,7 @@ export const MAX_NAME_LENGTH = 100
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const SIDEBAR_WIDTH = 250
 export const ADD_EVENTS_ACTIONS = ['add', 'update']
+export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 
 export const DEFAULT_TARGET: ITarget | ITargetDevice = {
   hardwareID: '',

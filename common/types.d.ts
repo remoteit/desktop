@@ -228,7 +228,7 @@ declare global {
     targetPlatform: number
     availability: number
     instability: number
-    tags: number[]
+    tags: ITag[]
     quality: 'GOOD' | 'MODERATE' | 'POOR' | 'UNKNOWN'
     version: number // daemon version
     configurable: boolean // cloudshift device
@@ -284,6 +284,26 @@ declare global {
       launchTemplate?: string
       commandTemplate?: string
     }
+  }
+
+  type ITag = {
+    name: string
+    color: ILabel['id']
+    created?: Date
+  }
+
+  /* 
+    id: number           // name
+    name: string         // name
+    label?: ILabel['id'] // color
+    color?: string       // none
+  */
+
+  type ILabel = {
+    id: number
+    name: string
+    color: string
+    hidden?: boolean
   }
 
   type ILicenseTypes = 'UNKNOWN' | 'EVALUATION' | 'LICENSED' | 'UNLICENSED' | 'NON_COMMERCIAL' | 'EXEMPT' | string

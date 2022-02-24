@@ -22,11 +22,7 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
   const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
-  const handleAddTag = (tag: ITag) => {
-    if (!device) return
-    device.tags.push(tag.id)
-    dispatch.accounts.setDevice({ id: device.id, device })
-  }
+
   const handleRemoveTag = id => {
     if (!device) return
     const index = device.tags.indexOf(id)
@@ -36,7 +32,7 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
 
   return (
     <>
-      {device && <Tags ids={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />}
+      {device && <Tags tags={device.tags} onDelete={id => handleRemoveTag(id)} onClick={console.log} />}
       {button ? (
         <div ref={addRef}>
           <IconButton title="Add Tag" icon="plus" onClick={handleOpen} disabled={open} />
@@ -56,40 +52,38 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
         />
       )}
       <AutocompleteMenu
-        items={tags.filter(t => (device ? !device.tags.includes(t.id) : !!value?.length))}
+        items={tags.filter(t => (device ? !device.tags.includes(t) : !!value?.length))}
         open={open}
         indicator="tag"
         placeholder="New tag..."
         targetEl={addRef.current}
-        onChange={value => {
-          setValue(value)
-          console.log('onchange', value)
-        }}
-        onItemColor={tag => getColor(tag.label)}
+        onChange={value => setValue(value)}
+        onItemColor={tag => getColor(tag.color)}
         onSelect={(action, tag) => {
           if (action === 'new') setNewValue(tag)
-          else handleAddTag(tag)
+          else if (device) dispatch.tags.add({ tag, device })
         }}
         onClose={handleClose}
         allowAdding
       />
       <AutocompleteMenu
-        items={labels.filter(l => !l.hidden)}
+        items={labels.filter(l => !l.hidden).map(l => ({ name: l.name, color: l.id }))}
         open={Boolean(newValue)}
         placeholder="Choose a color..."
         targetEl={addRef.current}
-        onItemColor={item => item.color || ''}
-        onSelect={(action, label) => {
-          const newTag = { ...(newValue || label), label: label.id, id: tags.length }
+        onItemColor={item => getColor(item.color)}
+        onSelect={async (action, tag) => {
+          if (!newValue) return
+          const newTag: ITag = { ...newValue, color: tag.color }
           setNewValue(undefined)
-          handleAddTag(newTag)
-          dispatch.tags.set({ all: [...tags, newTag] })
+          await dispatch.tags.create(newTag)
+          if (device) dispatch.tags.add({ tag: newTag, device })
         }}
       />
     </>
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   chip: { fontWeight: 'bold', letterSpacing: 1, color: palette.grayDarker.main },
 }))

@@ -18,6 +18,7 @@ type Props = {
   warning?: string
   modified?: boolean
   disableGutters?: boolean
+  debug?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
   onDelete?: () => void

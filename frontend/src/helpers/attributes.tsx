@@ -84,8 +84,7 @@ export const attributes: Attribute[] = [
     id: 'tags',
     label: 'Tags',
     defaultWidth: 100,
-    value: ({ device }) => (TestUI({}) ? <Tags ids={device?.tags || []} small /> : undefined),
-    column: false,
+    value: ({ device }) => (TestUI({}) ? <Tags tags={device?.tags || []} small /> : undefined),
   }),
   new Attribute({
     id: 'services',
