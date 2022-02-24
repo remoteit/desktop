@@ -75,7 +75,7 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
           if (!newValue) return
           const newTag: ITag = { ...newValue, color: tag.color }
           setNewValue(undefined)
-          await dispatch.tags.update(newTag)
+          await dispatch.tags.create(newTag)
           if (device) dispatch.tags.add({ tag: newTag, device })
         }}
       />

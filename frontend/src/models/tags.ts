@@ -83,6 +83,19 @@ export default createModel<RootModel>()({
         .filter(t => !defaultState.all.find(d => d.name === t.name))
       return defaultState.all.concat(parsed)
     },
+    async add({ tag, device }: { tag: ITag; device: IDevice }) {
+      const result = await graphQLAddTag(device.id, tag.name)
+      if (result === 'ERROR') return
+      device.tags.push(tag)
+      dispatch.accounts.setDevice({ id: device.id, device })
+    },
+    async remove({ tag, device }: { tag: ITag; device: IDevice }) {
+      const result = await graphQLRemoveTag(device.id, tag.name)
+      if (result === 'ERROR') return
+      const index = device.tags.findIndex(t => t.name === tag.name)
+      device.tags.splice(index, 1)
+      dispatch.accounts.setDevice({ id: device.id, device })
+    },
     async create(tag: ITag, globalState) {
       const tags = globalState.tags.all
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
@@ -98,19 +111,6 @@ export default createModel<RootModel>()({
       tags[index] = tag
       dispatch.tags.set({ all: [...tags], updating: undefined })
     },
-    async add({ tag, device }: { tag: ITag; device: IDevice }) {
-      const result = await graphQLAddTag(device.id, tag.name)
-      if (result === 'ERROR') return
-      device.tags.push(tag)
-      dispatch.accounts.setDevice({ id: device.id, device })
-    },
-    async remove({ tag, device }: { tag: ITag; device: IDevice }) {
-      const result = await graphQLRemoveTag(device.id, tag.name)
-      if (result === 'ERROR') return
-      const index = device.tags.findIndex(t => t.name === tag.name)
-      device.tags.splice(index, 1)
-      dispatch.accounts.setDevice({ id: device.id, device })
-    },
     async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ updating: tag.name })
@@ -119,6 +119,7 @@ export default createModel<RootModel>()({
       const index = tags.findIndex(t => t.name === tag.name)
       tags[index].name = name
       dispatch.tags.set({ all: [...tags], updating: undefined })
+      dispatch.devices.fetch()
     },
     async delete(tag: ITag, globalState) {
       const tags = globalState.tags.all
