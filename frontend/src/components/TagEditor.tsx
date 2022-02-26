@@ -4,6 +4,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { makeStyles, Chip } from '@material-ui/core'
 import { AutocompleteMenu } from './AutocompleteMenu'
 import { IconButton } from '../buttons/IconButton'
+import { useLabel } from '../hooks/useLabel'
 import { Icon } from './Icon'
 import { Tags } from './Tags'
 
@@ -13,13 +14,13 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
     tags: state.tags.all,
   }))
   const dispatch = useDispatch<Dispatch>()
+  const getColor = useLabel()
   const [newValue, setNewValue] = React.useState<ITag>()
   const [value, setValue] = React.useState<string | undefined>()
   const [open, setOpen] = React.useState<boolean>(false)
   const addRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
 
-  const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
 

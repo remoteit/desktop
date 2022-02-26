@@ -1,6 +1,7 @@
 import React from 'react'
 import { makeStyles, Tooltip, Chip, IconButton } from '@material-ui/core'
 import { spacing, FontSize } from '../styling'
+import { useLabel } from '../hooks/useLabel'
 import { Icon } from '../components/Icon'
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 
 export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, onDelete }) => {
   const css = useStyles()
-  const getColor = id => labels.find(l => l.id === id)?.color || labels[0].color
+  const getColor = useLabel()
 
   if (!tag) return null
 

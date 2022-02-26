@@ -5,6 +5,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { AccordionMenu } from './AccordionMenu'
 import { FilterSelector } from './FilterSelector'
+import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
 
 const sortFilters = [
@@ -12,9 +13,7 @@ const sortFilters = [
   { value: 'state,name', name: 'State' },
   { value: 'attributes.$remoteit.color,name', name: 'Color' },
 ]
-const tagFilters = [
-  // model after platform filters
-]
+const tagFilters = [{ value: '', name: 'All' }]
 const deviceFilters = [
   { value: 'all', name: 'All' },
   { value: 'active', name: 'Online' },
@@ -35,16 +34,19 @@ const platformFilter = [{ value: -1, name: 'All' }].concat(
 )
 
 export const FilterDrawer: React.FC = () => {
-  const { state, open } = useSelector((state: ApplicationState) => ({
+  const getColor = useLabel()
+  const { devices } = useDispatch<Dispatch>()
+  const { state, open, tags } = useSelector((state: ApplicationState) => ({
     state: {
       sort: state.devices.sort,
+      tag: state.devices.tag,
       filter: state.devices.filter,
       owner: state.devices.owner,
       platform: state.devices.platform,
     },
     open: state.ui.drawerMenu === 'FILTER',
+    tags: state.tags.all.map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
   }))
-  const { devices } = useDispatch<Dispatch>()
 
   const update = values => {
     values = { ...values, from: defaultState.from }
@@ -70,6 +72,29 @@ export const FilterDrawer: React.FC = () => {
                   update({ sort: value })
                 }}
                 filterList={sortFilters}
+              />
+            ),
+          },
+          {
+            key: 'tag',
+            subtitle: 'Tags',
+            onClear: state.tag === undefined ? undefined : () => update({ tag: undefined }),
+            children: (
+              <FilterSelector
+                icon="check"
+                value={state.tag === undefined ? [''] : state.tag}
+                onSelect={value => {
+                  let result = Array.isArray(state.tag) ? state.tag : undefined
+                  const index = result && result.indexOf(value)
+
+                  if (index !== undefined && index >= 0) result?.splice(index, 1)
+                  else if (value === '') result = undefined
+                  else result === undefined ? (result = [value]) : result.push(value)
+
+                  if (!result?.length) result = undefined
+                  update({ tag: result })
+                }}
+                filterList={tagFilters.concat(tags)}
               />
             ),
           },

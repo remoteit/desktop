@@ -13,3 +13,6 @@ export const currencyFormatter = (currency?: string, value?: number, digits: num
   if (value < 0) return `(${result})`
   return result
 }
+
+export const caseFindName = (haystack: ILookup<any>[], needle: string) =>
+  haystack.findIndex(h => h.name.toLowerCase() === needle.toLowerCase())

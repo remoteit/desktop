@@ -25,7 +25,7 @@ import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 
-const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
+const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
 type IGetDevice = {
   id: string
@@ -47,6 +47,7 @@ type IDeviceState = {
   append: boolean
   filter: 'all' | 'active' | 'inactive'
   sort: string
+  tag: string[] | undefined
   owner: 'all' | 'me' | 'others'
   platform: number[] | undefined
   size: number
@@ -72,6 +73,7 @@ export const defaultState: IDeviceState = {
   append: false,
   filter: 'all',
   sort: 'name',
+  tag: undefined,
   owner: 'all',
   platform: undefined,
   size: 50,
@@ -106,12 +108,13 @@ export default createModel<RootModel>()({
       const { updateSearch } = dispatch.search
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, mergeDevices, appendUniqueDevices } = dispatch.accounts
-      const { query, sort, owner, filter, size, from, append, searched, platform } = globalState.devices
+      const { query, sort, tag, owner, filter, size, from, append, searched, platform } = globalState.devices
       const options: gqlOptions = {
         size,
         from,
         account: accountId,
         state: filter === 'all' ? undefined : filter,
+        tag,
         name: query,
         ids: append ? undefined : ids.concat(getConnectionIds(globalState)),
         sort,
@@ -373,7 +376,8 @@ export function selectIsFiltered(state: ApplicationState) {
     state.devices.sort !== defaultState.sort ||
     state.devices.filter !== defaultState.filter ||
     state.devices.owner !== defaultState.owner ||
-    state.devices.platform !== defaultState.platform
+    state.devices.platform !== defaultState.platform ||
+    state.devices.tag !== defaultState.tag
   )
 }
 

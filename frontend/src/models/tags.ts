@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
-import { DEFAULT_TARGET, DESKTOP_EPOCH } from '../shared/constants'
+import { caseFindName } from '../helpers/utilHelper'
+import { DESKTOP_EPOCH } from '../shared/constants'
 import {
   graphQLSetTag,
   graphQLAddTag,
@@ -74,7 +75,7 @@ export default createModel<RootModel>()({
       )
       if (result === 'ERROR') return
       const all = await dispatch.tags.parse(result)
-      dispatch.tags.set({ all })
+      dispatch.tags.setOrdered({ all })
     },
     async parse(result: AxiosResponse<any> | undefined) {
       const all = result?.data?.data?.login?.tags
@@ -84,41 +85,55 @@ export default createModel<RootModel>()({
       return defaultState.all.concat(parsed)
     },
     async add({ tag, device }: { tag: ITag; device: IDevice }) {
-      const result = await graphQLAddTag(device.id, tag.name)
-      if (result === 'ERROR') return
+      const original = { ...device }
       device.tags.push(tag)
       dispatch.accounts.setDevice({ id: device.id, device })
+      const result = await graphQLAddTag(device.id, tag.name)
+      if (result === 'ERROR') {
+        dispatch.accounts.setDevice({ id: device.id, device: original })
+      }
     },
     async remove({ tag, device }: { tag: ITag; device: IDevice }) {
-      const result = await graphQLRemoveTag(device.id, tag.name)
-      if (result === 'ERROR') return
-      const index = device.tags.findIndex(t => t.name === tag.name)
+      const original = { ...device }
+      const index = caseFindName(device.tags, tag.name)
       device.tags.splice(index, 1)
       dispatch.accounts.setDevice({ id: device.id, device })
+      const result = await graphQLRemoveTag(device.id, tag.name)
+      if (result === 'ERROR') {
+        dispatch.accounts.setDevice({ id: device.id, device: original })
+      }
     },
     async create(tag: ITag, globalState) {
       const tags = globalState.tags.all
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
-      dispatch.tags.set({ all: [...tags, tag] })
+      dispatch.tags.setOrdered({ all: [...tags, tag] })
     },
     async update(tag: ITag, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ updating: tag.name })
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
-      const index = tags.findIndex(t => t.name === tag.name)
+      const index = caseFindName(tags, tag.name)
       tags[index] = tag
-      dispatch.tags.set({ all: [...tags], updating: undefined })
+      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.set({ updating: undefined })
     },
     async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ updating: tag.name })
       const result = await graphQLRenameTag(tag.name, name)
       if (result === 'ERROR') return
-      const index = tags.findIndex(t => t.name === tag.name)
-      tags[index].name = name
-      dispatch.tags.set({ all: [...tags], updating: undefined })
+      const found = caseFindName(tags, name)
+      const index = caseFindName(tags, tag.name)
+      if (found >= 0) {
+        tags.splice(index, 1)
+        dispatch.ui.set({ noticeMessage: `Tag merged into existing tag ‘${name}.’` })
+      } else {
+        tags[index].name = name
+      }
+      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.set({ updating: undefined })
       dispatch.devices.fetch()
     },
     async delete(tag: ITag, globalState) {
@@ -126,9 +141,10 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ removing: tag.name })
       const result = await graphQLDeleteTag(tag.name)
       if (result === 'ERROR') return
-      const index = tags.findIndex(t => t.name === tag.name)
+      const index = caseFindName(tags, tag.name)
       tags.splice(index, 1)
-      dispatch.tags.set({ all: [...tags], removing: undefined })
+      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.set({ removing: undefined })
       dispatch.devices.fetch()
     },
   }),
@@ -137,27 +153,15 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
+    setOrdered(state: ITagState, params: ILookup<any>) {
+      Object.keys(params).forEach(
+        key => (state[key] = params[key].sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0)))
+      )
+      return state
+    },
     set(state: ITagState, params: ILookup<any>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
   },
 })
-
-export function findType(all: IApplicationType[], typeId?: number) {
-  return all.find(t => t.id === typeId) || all[0] || emptyServiceType
-}
-
-export function getTypeId(all: IApplicationType[], port: number) {
-  const type = all.find(t => t.port === port)
-  return type ? type.id : DEFAULT_TARGET.type
-}
-
-const emptyServiceType = {
-  id: 1,
-  name: '',
-  port: null,
-  proxy: false,
-  protocol: 'TCP',
-  description: '',
-}

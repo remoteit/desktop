@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { Tag } from '../components/Tag'
 import { Icon } from '../components/Icon'
 import { Title } from '../components/Title'
 import { TagEditor } from '../components/TagEditor'

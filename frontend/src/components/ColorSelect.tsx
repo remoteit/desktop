@@ -52,6 +52,6 @@ const useStyles = makeStyles(({ palette }) => ({
     justifyContent: 'center',
   },
   menu: { paddingRight: '0 !important' },
-  menuPaper: { marginLeft: -spacing.md },
+  menuPaper: { marginLeft: -spacing.md, border: `0.5px solid ${palette.grayLighter.main}` },
   icon: { display: 'none' },
 }))

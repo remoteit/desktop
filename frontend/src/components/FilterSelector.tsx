@@ -5,7 +5,7 @@ import { Icon } from './Icon'
 type Props = {
   value: string | number | string[] | number[]
   icon: string
-  filterList: { value: string | number; name: string }[]
+  filterList: { value: string | number; name: string; color?: string }[]
   onSelect: (value: any) => void
 }
 
@@ -23,8 +23,9 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
         <ListItem button dense key={index} onClick={() => onSelect(f.value)}>
           <ListItemIcon>{isActive(f.value) && <Icon name={icon} color="primary" />}</ListItemIcon>
           <ListItemText
+            style={{ color: f.color ? f.color : undefined }}
             primary={f.name}
-            primaryTypographyProps={{ color: isActive(f.value) ? 'primary' : undefined }}
+            primaryTypographyProps={{ color: !f.color && isActive(f.value) ? 'primary' : undefined }}
           />
         </ListItem>
       ))}
