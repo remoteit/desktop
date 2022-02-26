@@ -10,6 +10,7 @@ type Props = {
   actionIcon?: JSX.Element
   displayValue?: string | number
   filter?: RegExp
+  color?: string
   required?: boolean
   disabled?: boolean
   resetValue?: string | number

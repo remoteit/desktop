@@ -15,6 +15,7 @@ type Props = {
   actionIcon?: JSX.Element
   displayValue?: string | number
   disabled?: boolean
+  color?: string
   resetValue?: string | number
   hideIcon?: boolean
   fieldRef?: React.RefObject<HTMLInputElement>
@@ -36,6 +37,7 @@ export const InlineSetting: React.FC<Props> = ({
   actionIcon,
   displayValue,
   disabled,
+  color,
   debug,
   warning,
   resetValue,
@@ -123,7 +125,7 @@ export const InlineSetting: React.FC<Props> = ({
       <ListItem button onClick={triggerEdit} disabled={disabled} disableGutters={disableGutters} dense>
         {icon}
         <Title>
-          <ListItemText>
+          <ListItemText style={{ color }}>
             {label && <InputLabel shrink>{label}</InputLabel>}
             {displayValue || value || '–'}
           </ListItemText>

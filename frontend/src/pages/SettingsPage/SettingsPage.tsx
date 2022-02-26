@@ -62,6 +62,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           dense
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
+        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation title="Organization" pathname="/settings/organization" icon="industry-alt" exactMatch dense />
         <ListItemLocation
@@ -73,7 +74,6 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         />
         <ListItemLocation title="Subscriptions" pathname="/settings/plans" icon="shopping-cart" dense />
         {billing && <ListItemLocation title="Billing" pathname="/settings/billing" icon="credit-card-front" dense />}
-        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />
         <TestUI>
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
           <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />

@@ -9,10 +9,12 @@ import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { REGEX_TAG_SAFE } from '../shared/constants'
+import { useLabel } from '../hooks/useLabel'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const TagsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
+  const getColor = useLabel()
   const { removing, updating, tags } = useSelector((state: ApplicationState) => ({
     removing: state.tags.removing,
     updating: state.tags.updating,
@@ -40,6 +42,7 @@ export const TagsPage: React.FC = () => {
           <InlineTextFieldSetting
             key={index}
             value={tag.name}
+            color={getColor(tag.color)}
             icon={
               updating === tag.name ? (
                 <Icon name="spinner-third" spin />
