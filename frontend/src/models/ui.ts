@@ -12,6 +12,7 @@ type UIState = {
   theme: Theme
   themeMode: 'light' | 'dark' | 'system'
   navigation: ILookup<string>
+  selected: string[]
   connected: boolean
   offline: boolean
   uninstalling: boolean
@@ -56,6 +57,7 @@ export const defaultState: UIState = {
   theme: selectTheme(),
   themeMode: 'system',
   navigation: {},
+  selected: [],
   connected: false,
   offline: false,
   uninstalling: false,

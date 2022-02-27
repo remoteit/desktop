@@ -13,8 +13,9 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 type Props = { restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
-  const { devices, connections, myDevice, fetching, columnWidths, attributes, required } = useSelector(
+  const { selected, devices, connections, myDevice, fetching, columnWidths, attributes, required } = useSelector(
     (state: ApplicationState) => ({
+      selected: state.ui.selected,
       attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id) && !a.required),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
       fetching: state.devices.fetching,
@@ -50,6 +51,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
           primary={required}
           restore={restore}
           select={select}
+          selected={selected}
         />
       )}
       <DialogNewFeatures />

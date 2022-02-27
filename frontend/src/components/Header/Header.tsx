@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { makeStyles } from '@material-ui/core'
-import { ApplicationState } from '../../store'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { useNavigation } from '../../hooks/useNavigation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
-import { useSelector } from 'react-redux'
-import { Typography } from '@material-ui/core'
+import { Typography, Chip } from '@material-ui/core'
 import { RegisterButton } from '../../buttons/RegisterButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
@@ -20,12 +20,14 @@ import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
-  const { searched, navigationBack, navigationForward, device } = useSelector((state: ApplicationState) => ({
+  const { selected, searched, navigationBack, navigationForward, device } = useSelector((state: ApplicationState) => ({
+    selected: state.ui.selected,
     searched: state.devices.searched,
     navigationBack: state.ui.navigationBack,
     navigationForward: state.ui.navigationForward,
     device: getOwnDevices(state).find(d => d.id === state.backend.device.uid),
   }))
+  const dispatch = useDispatch<Dispatch>()
   const { handleBack, handleForward } = useNavigation()
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
@@ -83,13 +85,25 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
         {singlePanel && <Breadcrumbs />}
+        {!!selected.length && (
+          <Chip
+            className={css.selected}
+            label={<>{selected.length} selected</>}
+            size="small"
+            color="primary"
+            onDelete={() => dispatch.ui.set({ selected: [] })}
+          />
+        )}
       </Title>
+      <Route path="/devices" exact>
+        <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
+      </Route>
+      <Route path="/devices/select" exact>
+        <IconButton to="/devices" icon="square" title="Multi-select" />
+      </Route>
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <ColumnsButton />
-        <TestUI>
-          <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
-        </TestUI>
       </Route>
     </div>
   )
@@ -119,5 +133,9 @@ const useStyles = makeStyles({
   button: {
     justifyContent: 'flex-start',
     minHeight: spacing.xxl,
+  },
+  selected: {
+    marginRight: spacing.sm,
+    marginLeft: spacing.sm,
   },
 })

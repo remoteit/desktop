@@ -103,7 +103,7 @@ export const NotificationSettings: React.FC<Props> = ({ device }) => {
         size="small"
         deleteIcon={<IconButton icon="times" size="xs" />}
         onDelete={() => onClose(value)}
-      ></Chip>
+      />
     )
   }
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
 import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
@@ -16,28 +16,46 @@ type Props = {
   attributes?: Attribute[]
   restore?: boolean
   select?: boolean
+  selected?: boolean
+  onSelect?: (deviceId: string) => void
 }
 
-export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, attributes = [], restore, select }) => {
+export const DeviceListItem: React.FC<Props> = ({
+  device,
+  connections,
+  primary,
+  attributes = [],
+  restore,
+  select,
+  selected = false,
+  onSelect,
+}) => {
   const connected = connections && connections.find(c => c.enabled)
   const largeScreen = useMediaQuery('(min-width:600px)')
+  const history = useHistory()
   const offline = device?.state === 'inactive'
   const css = useStyles({ offline })
+
   if (!device) return null
 
+  const handleClick = event => {
+    event.stopPropagation()
+    if (select) onSelect && onSelect(device.id)
+    else history.push(`/devices/${device.id}`)
+  }
+
   return (
-    <ListItem className={css.row} to={`/devices/${device.id}`} component={Link} button disableGutters>
+    <ListItem className={css.row} onClick={handleClick} selected={selected} button disableGutters>
       <Box className={css.sticky}>
         <DeviceLabel device={device} />
         <ListItemIcon>
           {select ? (
             <Checkbox
-              // checked={checked}
+              checked={selected}
               // indeterminate={indeterminate}
-              // inputRef={inputRef}
               // onChange={event => onClick(event.target.checked)}
               className={css.checkbox}
-              onClick={event => event.stopPropagation()}
+              onClick={handleClick}
               checkedIcon={<Icon name="check-square" size="md" type="solid" />}
               indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
               icon={<Icon name="square" size="md" />}
@@ -65,7 +83,10 @@ export const DeviceListItem: React.FC<Props> = ({ device, connections, primary, 
 
 const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: { offline: boolean }) => ({
-    '& > div:not(:first-child)': { opacity: offline ? 0.3 : 1 },
+    '& > div:first-child ': { background: palette.white.main },
+    '&:hover > div:first-child ': { background: palette.primaryHighlight.main },
+    '&.Mui-selected > div:first-child ': { background: palette.primaryHighlight.main },
+    '&.Mui-selected:hover > div:first-child ': { background: palette.primaryLighter.main },
     '& > div:first-child > div ': { opacity: offline ? 0.3 : 1 },
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
@@ -74,7 +95,6 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'sticky',
     left: 0,
     zIndex: 4,
-    background: palette.white.main,
     display: 'flex',
     alignItems: 'center',
     borderTopRightRadius: radius,
