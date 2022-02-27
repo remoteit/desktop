@@ -88,7 +88,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
         contained: {
           '&:hover': { backgroundColor: palette.grayDark.main },
-          '&, &.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.white.main },
+          '&, &.Mui-disabled': { backgroundColor: palette.gray.main, color: palette.alwaysWhite.main },
           boxShadow: 'none',
         },
         text: { padding: `${spacing.sm}px ${spacing.md}px` },

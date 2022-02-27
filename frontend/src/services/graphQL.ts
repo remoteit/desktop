@@ -5,11 +5,12 @@ import { store } from '../store'
 import sleep from './sleep'
 
 let errorCount = 0
+const CLIENT_DEPRECATED = '121'
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   try {
     const response = await graphQLRequest(query, variables)
-    const errors =  graphQLGetErrors(response)
+    const errors = graphQLGetErrors(response)
     console.log('BASIC REQUEST GRAPHQL', response, errors)
     return errors ? 'ERROR' : response
   } catch (error) {
@@ -24,7 +25,6 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
     console.warn('Unable to get token for graphQL request.')
     return
   }
-
   const request = {
     url: getGraphQLApi(),
     method: 'post' as 'post',
@@ -54,7 +54,15 @@ export async function graphQLRequest(query: String, variables: ILookup<any> = {}
 
 export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silent?: boolean) {
   if (!response || response === 'ERROR') return
+  const { ui } = store.dispatch
+
   const errors: undefined | { message: string }[] = response?.data?.errors
+  const warning: undefined | string = response?.headers?.['X-R3-Warning']
+
+  if (warning) {
+    const code = warning.split(' ')[0]
+    if (code === CLIENT_DEPRECATED) ui.deprecated()
+  }
 
   if (errors) {
     errors.forEach(error => console.warn('graphQL error:', error))
@@ -75,7 +83,7 @@ export async function apiError(error: unknown) {
 
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401 || error.response?.status === 403) {
-      if( errorCount > 10 ) {
+      if (errorCount > 10) {
         auth.signOut()
       }
       console.log('Incrementing error count: ', errorCount)
