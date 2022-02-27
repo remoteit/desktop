@@ -44,9 +44,9 @@ export const ColumnsDrawer: React.FC = () => {
           const checked = selected.indexOf(data.id)
           return (
             <ListItem
+              dense
               button
               disabled={data.required}
-              dense
               key={data.id}
               onClick={() => (checked >= 0 ? remove(checked) : add(data.id))}
             >

@@ -83,11 +83,11 @@ export const DeviceListItem: React.FC<Props> = ({
 
 const useStyles = makeStyles(({ palette }) => ({
   row: ({ offline }: { offline: boolean }) => ({
-    '& > div:first-child ': { background: palette.white.main },
-    '&:hover > div:first-child ': { background: palette.primaryHighlight.main },
-    '&.Mui-selected > div:first-child ': { background: palette.primaryHighlight.main },
-    '&.Mui-selected:hover > div:first-child ': { background: palette.primaryLighter.main },
-    '& > div:first-child > div ': { opacity: offline ? 0.3 : 1 },
+    '& > div:first-child': { background: palette.white.main },
+    '&:hover > div:first-child': { background: palette.primaryHighlight.main },
+    '&.Mui-selected > div:first-child': { background: palette.primaryHighlight.main },
+    '&.Mui-selected:hover > div:first-child': { background: palette.primaryLighter.main },
+    '& > div:first-child .MuiListItemText-root': { opacity: offline ? 0.3 : 1 },
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }),

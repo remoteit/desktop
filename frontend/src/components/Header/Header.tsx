@@ -96,10 +96,10 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         )}
       </Title>
       <Route path="/devices" exact>
-        <IconButton to="/devices/select" icon="check-square" title="Multi-select" />
+        <IconButton to="/devices/select" icon="check-square" title="Show Select" />
       </Route>
       <Route path="/devices/select" exact>
-        <IconButton to="/devices" icon="square" title="Multi-select" />
+        <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
       </Route>
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />

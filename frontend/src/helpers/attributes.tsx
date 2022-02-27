@@ -77,20 +77,31 @@ export const attributes: Attribute[] = [
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
-    defaultWidth: 420,
+    defaultWidth: 400,
     required: true,
+  }),
+  new Attribute({
+    id: 'active',
+    label: 'Online',
+    defaultWidth: 100,
+    value: ({ device }) =>
+      device?.state === 'active' ? (
+        <Chip label="Online" size="small" color="primary" />
+      ) : (
+        <Chip label="Offline" size="small" />
+      ),
   }),
   new Attribute({
     id: 'tags',
     label: 'Tags',
     defaultWidth: 100,
-    value: ({ device }) => (TestUI({}) ? <Tags tags={device?.tags || []} small /> : undefined),
+    value: ({ device }) => <Tags tags={device?.tags || []} small />,
   }),
   new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 590,
+    defaultWidth: 440,
     align: 'right',
   }),
   new DeviceAttribute({

@@ -65,7 +65,7 @@ export const defaultState: UIState = {
   routingLock: undefined,
   routingMessage: undefined,
   drawerMenu: null,
-  columns: ['deviceName', 'services'],
+  columns: ['deviceName', 'tags', 'services'],
   columnWidths: {},
   serviceContextMenu: undefined,
   redirect: undefined,
