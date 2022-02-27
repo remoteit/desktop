@@ -41,6 +41,7 @@ export const NotificationMode: React.FC = () => {
   const onWebChange = (value: boolean) => {
     setWebhook(value)
     setWebhookUrl('')
+    setError(false)
   }
 
   const checkWebHookUrl = (value: string) => {
