@@ -104,7 +104,6 @@ export const MFAPhoneForm = connect(
             color='primary'
             variant='contained'
             style={{ borderRadius: 3 }}
-            color="primary"
           >
             Submit
           </Button>

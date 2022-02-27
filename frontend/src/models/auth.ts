@@ -1,7 +1,7 @@
 import analyticsHelper from '../helpers/analyticsHelper'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
-import { graphQLRequest, graphQLGetErrors } from '../services/graphQL'
+import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import {
   CLIENT_ID,
   CALLBACK_URL,

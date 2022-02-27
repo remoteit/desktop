@@ -24,7 +24,6 @@ export const MFAConfigureSms: React.FC<Props> = ({
   sendVerifyPhone,
   hasOldSentVerification,
   verificationCode,
-  loading,
   resendCode,
   setCancelShowVerificationCode
 }) => {
