@@ -6,6 +6,7 @@ import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, ApplicationState } from '../../store'
+import { isWebUri } from 'valid-url'
 
 export const NotificationMode: React.FC = () => {
   const { notificationUrl, urlNotifications, emailNotifications, desktopNotifications } = useSelector(
@@ -40,11 +41,15 @@ export const NotificationMode: React.FC = () => {
   const onWebChange = (value: boolean) => {
     setWebhook(value)
     setWebhookUrl('')
+    setError(false)
   }
 
   const checkWebHookUrl = (value: string) => {
     setWebhookUrl(value)
-    if (webHook) setError(!REGEX_VALID_URL.test(value))
+    if (webHook) {
+      isWebUri(value) ? setError(false) : setError(true)
+      // setError(!REGEX_VALID_URL.test(value))
+    }
   }
 
   const onSave = async () => {
