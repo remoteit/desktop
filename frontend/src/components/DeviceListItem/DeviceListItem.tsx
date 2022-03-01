@@ -5,7 +5,7 @@ import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { RestoreButton } from '../../buttons/RestoreButton'
 import { DeviceLabel } from '../DeviceLabel'
-import { Attribute } from '../../helpers/attributes'
+import { Attribute } from '../Attributes'
 import { radius, spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -47,7 +47,7 @@ export const DeviceListItem: React.FC<Props> = ({
   return (
     <ListItem className={css.row} onClick={handleClick} selected={selected} button disableGutters>
       <Box className={css.sticky}>
-        <DeviceLabel device={device} />
+        {/* <DeviceLabel device={device} /> */}
         <ListItemIcon>
           {select ? (
             <Checkbox

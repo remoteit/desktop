@@ -3,7 +3,7 @@ import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { useMediaQuery, makeStyles, Checkbox, ListSubheader, ListItemIcon, LinearProgress } from '@material-ui/core'
 import { DeviceListHeaderTitle } from './DeviceListHeaderTitle'
-import { Attribute } from '../helpers/attributes'
+import { Attribute } from './Attributes'
 import { Icon } from './Icon'
 
 const MIN_WIDTH = 50

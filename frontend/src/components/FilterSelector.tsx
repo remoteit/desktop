@@ -9,8 +9,13 @@ type Props = {
   onSelect: (value: any) => void
 }
 
-export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSelect }) => {
+export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSelect, children }) => {
   const css = useStyles()
+
+  if (value === undefined) {
+    console.warn('FilterSelector: value is undefined', filterList)
+    return null
+  }
 
   const isActive = v => {
     if (Array.isArray(value)) return value.includes(v as never)
@@ -29,6 +34,7 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
           />
         </ListItem>
       ))}
+      {children}
     </List>
   )
 }

@@ -292,12 +292,12 @@ declare global {
     created?: Date
   }
 
-  /* 
-    id: number           // name
-    name: string         // name
-    label?: ILabel['id'] // color
-    color?: string       // none
-  */
+  type ITagOperator = 'ALL' | 'ANY'
+
+  type ITagFilter = {
+    operator: ITagOperator
+    names: string[]
+  }
 
   type ILabel = {
     id: number
@@ -461,7 +461,7 @@ declare global {
   }
 
   type gqlOptions = {
-    tag?: string[]
+    tag?: ITagFilter
     size: number
     from: number
     account: string

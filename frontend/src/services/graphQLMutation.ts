@@ -253,7 +253,7 @@ export async function graphQLSetTag(tag: { name: string; color: number }) {
   )
 }
 
-export async function graphQLAddTag(serviceId: string, name: string) {
+export async function graphQLAddTag(serviceId: string | string[], name: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: [String!]!, $name: [String!]!) {
         addTag(serviceId: $serviceId, name: $name)

@@ -2,6 +2,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { caseFindName } from '../helpers/utilHelper'
 import { DESKTOP_EPOCH } from '../shared/constants'
+import { eachDevice } from '../helpers/selectedHelper'
 import {
   graphQLSetTag,
   graphQLAddTag,
@@ -12,8 +13,9 @@ import {
 import { graphQLBasicRequest } from '../services/graphQL'
 import { RootModel } from './rootModel'
 
-type ITagState = ILookup<ITag[]> & {
+type ITagState = {
   all: ITag[]
+  processing: [number, number]
   removing?: string
   updating?: string
 }
@@ -56,6 +58,7 @@ const defaultState: ITagState = {
       created: DESKTOP_EPOCH,
     },
   ],
+  processing: [0, 0], // [current, total]
 }
 
 export default createModel<RootModel>()({
@@ -92,6 +95,16 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') {
         dispatch.accounts.setDevice({ id: device.id, device: original })
       }
+    },
+    async addSelected({ tag, selected }: { tag: ITag; selected: string[] }, globalState) {
+      dispatch.tags.set({ processing: [1, selected.length] })
+      eachDevice(globalState, selected, device => {
+        device.tags.push(tag)
+        dispatch.accounts.setDevice({ id: device.id, device })
+        dispatch.tags.set({ processing: [1, selected.length] })
+      })
+      await graphQLAddTag(selected, tag.name)
+      dispatch.tags.set({ processing: [0, 0] })
     },
     async remove({ tag, device }: { tag: ITag; device: IDevice }) {
       const original = { ...device }

@@ -1,10 +1,11 @@
 import React from 'react'
-import { TARGET_PLATFORMS } from '../helpers/platformHelper'
 import { defaultState } from '../models/devices'
+import { TARGET_PLATFORMS } from '../helpers/platformHelper'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { AccordionMenu } from './AccordionMenu'
+import { TagFilterToggle } from './TagFilterToggle'
 import { FilterSelector } from './FilterSelector'
+import { AccordionMenu } from './AccordionMenu'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
 
@@ -82,20 +83,22 @@ export const FilterDrawer: React.FC = () => {
             children: (
               <FilterSelector
                 icon="check"
-                value={state.tag === undefined ? [''] : state.tag}
+                value={state.tag?.names || ['']}
                 onSelect={value => {
-                  let result = Array.isArray(state.tag) ? state.tag : undefined
+                  let result = state.tag?.names
                   const index = result && result.indexOf(value)
 
                   if (index !== undefined && index >= 0) result?.splice(index, 1)
                   else if (value === '') result = undefined
                   else result === undefined ? (result = [value]) : result.push(value)
 
-                  if (!result?.length) result = undefined
-                  update({ tag: result })
+                  if (!result?.length) update({ tag: undefined })
+                  else update({ tag: { names: result, operator: state.tag?.operator || 'ANY' } })
                 }}
                 filterList={tagFilters.concat(tags)}
-              />
+              >
+                <TagFilterToggle tag={state.tag} onUpdate={update} />
+              </FilterSelector>
             ),
           },
           {

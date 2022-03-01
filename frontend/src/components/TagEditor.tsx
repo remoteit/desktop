@@ -6,17 +6,21 @@ import { AutocompleteMenu } from './AutocompleteMenu'
 import { IconButton } from '../buttons/IconButton'
 import { useLabel } from '../hooks/useLabel'
 import { Icon } from './Icon'
-import { Tags } from './Tags'
 
-export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ device, button }) => {
-  const { labels, tags } = useSelector((state: ApplicationState) => ({
+type Props = {
+  tags?: ITag[]
+  button?: string
+  onSelect?: (tag: ITag) => void
+}
+
+export const TagEditor: React.FC<Props> = ({ tags = [], button, onSelect }) => {
+  const { labels, all } = useSelector((state: ApplicationState) => ({
     labels: state.labels,
-    tags: state.tags.all,
+    all: state.tags.all,
   }))
   const dispatch = useDispatch<Dispatch>()
   const getColor = useLabel()
-  const [newValue, setNewValue] = React.useState<ITag>()
-  const [value, setValue] = React.useState<string | undefined>()
+  const [value, setValue] = React.useState<ITag>()
   const [open, setOpen] = React.useState<boolean>(false)
   const addRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
@@ -26,16 +30,9 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
 
   return (
     <>
-      {device && (
-        <Tags
-          tags={device.tags}
-          onDelete={tag => device && dispatch.tags.remove({ tag, device })}
-          onClick={console.log}
-        />
-      )}
       {button ? (
         <div ref={addRef}>
-          <IconButton title="Add Tag" icon="plus" onClick={handleOpen} disabled={open} />
+          <IconButton title="Add Tag" type="solid" icon={button} onClick={handleOpen} disabled={open} />
         </div>
       ) : (
         <Chip
@@ -52,32 +49,31 @@ export const TagEditor: React.FC<{ device?: IDevice; button?: boolean }> = ({ de
         />
       )}
       <AutocompleteMenu
-        items={tags.filter(t => (device ? !device.tags.includes(t) : !!value?.length))}
+        items={all.filter(a => !tags.find(t => t.name === a.name))}
         open={open}
         indicator="tag"
         placeholder="New tag..."
         targetEl={addRef.current}
-        onChange={value => setValue(value)}
         onItemColor={tag => getColor(tag.color)}
         onSelect={(action, tag) => {
-          if (action === 'new') setNewValue(tag)
-          else if (device) dispatch.tags.add({ tag, device })
+          if (action === 'new') setValue(tag)
+          else if (onSelect) onSelect(tag)
         }}
         onClose={handleClose}
         allowAdding
       />
       <AutocompleteMenu
         items={labels.filter(l => !l.hidden).map(l => ({ name: l.name, color: l.id }))}
-        open={Boolean(newValue)}
+        open={Boolean(value)}
         placeholder="Choose a color..."
         targetEl={addRef.current}
         onItemColor={item => getColor(item.color)}
         onSelect={async (action, tag) => {
-          if (!newValue) return
-          const newTag: ITag = { ...newValue, color: tag.color }
-          setNewValue(undefined)
+          if (!value) return
+          const newTag: ITag = { ...value, color: tag.color }
+          setValue(undefined)
           await dispatch.tags.create(newTag)
-          if (device) dispatch.tags.add({ tag: newTag, device })
+          if (onSelect) onSelect(newTag)
         }}
       />
     </>

@@ -32,7 +32,7 @@ export const TagsPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Tags</Title>
-            <TagEditor button />
+            <TagEditor button="plus" />
           </Typography>
         </>
       }

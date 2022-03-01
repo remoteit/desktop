@@ -20,6 +20,7 @@ type Props = {
   hideIcon?: boolean
   label: string | React.ReactElement
   subLabel?: string | React.ReactElement
+  size?: 'small' | 'medium'
   button?: string
   toggle?: boolean
   tooltip?: string
@@ -41,6 +42,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       hideIcon,
       label,
       subLabel,
+      size,
       button,
       toggle,
       tooltip,
@@ -107,7 +109,9 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
                 {button}
               </Button>
             )}
-            {showToggle && <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={onClick} />}
+            {showToggle && (
+              <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={onClick} size={size} />
+            )}
           </ListItemSecondaryAction>
         </ListItem>
         {confirm && onClick && (

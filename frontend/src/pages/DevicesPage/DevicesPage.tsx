@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { DialogNewFeatures } from '../../components/DialogNewFeatures'
+import { DeviceActionsBar } from '../../components/DeviceActionsBar'
 import { ApplicationState } from '../../store'
 import { DeviceListEmpty } from '../../components/DeviceListEmpty'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { DevicesHeader } from '../../components/DevicesHeader'
 import { DeviceList } from '../../components/DeviceList'
 import { getDevices, getOwnDevices } from '../../models/accounts'
-import { masterAttributes, deviceAttributes } from '../../helpers/attributes'
-import { DialogNewFeatures } from '../../components/DialogNewFeatures'
+import { masterAttributes, deviceAttributes } from '../../components/Attributes'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 type Props = { restore?: boolean; select?: boolean }
@@ -36,23 +37,25 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   }, [])
 
   return (
-    <DevicesHeader myDevice={myDevice}>
+    <DevicesHeader myDevice={myDevice} select={select}>
       {fetching && !devices.length ? (
         <LoadingMessage message="Loading devices..." />
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceList
-          devices={devices}
-          connections={connections}
-          attributes={attributes}
-          columnWidths={columnWidths}
-          fetching={fetching}
-          primary={required}
-          restore={restore}
-          select={select}
-          selected={selected}
-        />
+        <DeviceActionsBar selected={selected}>
+          <DeviceList
+            devices={devices}
+            connections={connections}
+            attributes={attributes}
+            columnWidths={columnWidths}
+            fetching={fetching}
+            primary={required}
+            restore={restore}
+            select={select}
+            selected={selected}
+          />
+        </DeviceActionsBar>
       )}
       <DialogNewFeatures />
     </DevicesHeader>

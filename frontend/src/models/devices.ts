@@ -47,7 +47,7 @@ type IDeviceState = {
   append: boolean
   filter: 'all' | 'active' | 'inactive'
   sort: string
-  tag: string[] | undefined
+  tag: ITagFilter | undefined
   owner: 'all' | 'me' | 'others'
   platform: number[] | undefined
   size: number

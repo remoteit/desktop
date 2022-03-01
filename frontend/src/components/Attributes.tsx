@@ -1,19 +1,19 @@
 import React from 'react'
-import { TargetPlatform } from '../components/TargetPlatform'
-import { QualityDetails } from '../components/QualityDetails'
-import { ServiceIndicators } from '../components/ServiceIndicators'
-import { INITIATOR_PLATFORMS } from '../components/InitiatorPlatform'
+import { TargetPlatform } from './TargetPlatform'
+import { QualityDetails } from './QualityDetails'
+import { ServiceIndicators } from './ServiceIndicators'
+import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
+import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListItemText, Chip } from '@material-ui/core'
-import { ServiceName } from '../components/ServiceName'
-import { LicenseChip } from '../components/LicenseChip'
+import { ServiceName } from './ServiceName'
+import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { lanShared } from '../helpers/lanSharing'
-import { DeviceGeo } from '../components/DeviceGeo'
-import { TagEditor } from '../components/TagEditor'
-import { Duration } from '../components/Duration'
-import { toLookup } from './utilHelper'
-import { TestUI } from '../components/TestUI'
-import { Tags } from '../components/Tags'
+import { DeviceGeo } from './DeviceGeo'
+import { Duration } from './Duration'
+import { toLookup } from '../helpers/utilHelper'
+import { TestUI } from './TestUI'
+import { Tags } from './Tags'
 
 export class Attribute {
   id: string = ''
@@ -107,7 +107,7 @@ export const attributes: Attribute[] = [
   new DeviceAttribute({
     id: 'tagEditor',
     label: 'tags',
-    value: ({ device }) => (TestUI({}) ? <TagEditor device={device} /> : undefined),
+    value: ({ device }) => (TestUI({}) ? <DeviceTagEditor device={device} /> : undefined),
     column: false,
   }),
   new DeviceAttribute({
