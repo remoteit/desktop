@@ -5,15 +5,17 @@ import { makeStyles, Chip } from '@material-ui/core'
 import { AutocompleteMenu } from './AutocompleteMenu'
 import { IconButton } from '../buttons/IconButton'
 import { useLabel } from '../hooks/useLabel'
+import { Color } from '../styling'
 import { Icon } from './Icon'
 
 type Props = {
   tags?: ITag[]
   button?: string
+  color?: Color
   onSelect?: (tag: ITag) => void
 }
 
-export const TagEditor: React.FC<Props> = ({ tags = [], button, onSelect }) => {
+export const TagEditor: React.FC<Props> = ({ tags = [], button, color, onSelect }) => {
   const { labels, all } = useSelector((state: ApplicationState) => ({
     labels: state.labels,
     all: state.tags.all,
@@ -32,7 +34,7 @@ export const TagEditor: React.FC<Props> = ({ tags = [], button, onSelect }) => {
     <>
       {button ? (
         <div ref={addRef}>
-          <IconButton title="Add Tag" type="solid" icon={button} onClick={handleOpen} disabled={open} />
+          <IconButton title="Add Tag" type="solid" color={color} icon={button} onClick={handleOpen} disabled={open} />
         </div>
       ) : (
         <Chip

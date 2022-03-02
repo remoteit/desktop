@@ -52,8 +52,6 @@ export const DeviceListItem: React.FC<Props> = ({
           {select ? (
             <Checkbox
               checked={selected}
-              // indeterminate={indeterminate}
-              // onChange={event => onClick(event.target.checked)}
               className={css.checkbox}
               onClick={handleClick}
               checkedIcon={<Icon name="check-square" size="md" type="solid" />}

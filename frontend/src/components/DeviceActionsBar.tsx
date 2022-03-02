@@ -1,16 +1,14 @@
 import React from 'react'
 import { makeStyles, Box, Typography, Collapse } from '@material-ui/core'
-import { Dispatch } from '../store'
+import { SelectedTagEditor } from './SelectedTagEditor'
 import { useDispatch } from 'react-redux'
-import { spacing, radius } from '../styling'
+import { Title } from './Title'
+import { Dispatch } from '../store'
 import { Container } from './Container'
 import { IconButton } from '../buttons/IconButton'
-import { TagEditor } from './TagEditor'
-import { Title } from './Title'
+import { spacing, radius } from '../styling'
 
-type Props = {
-  selected: string[]
-}
+type Props = { selected: string[] }
 
 export const DeviceActionsBar: React.FC<Props> = ({ selected = [], children }) => {
   const dispatch = useDispatch<Dispatch>()
@@ -23,8 +21,10 @@ export const DeviceActionsBar: React.FC<Props> = ({ selected = [], children }) =
       header={
         <Collapse in={!!selected.length} timeout={600}>
           <Box className={css.actions}>
-            <Typography variant="subtitle1">{selected.length} Selected</Typography>
-            {/* <TagEditor selected={selected} button="tag" /> */}
+            <Title>
+              <Typography variant="subtitle1">{selected.length} Selected</Typography>
+            </Title>
+            <SelectedTagEditor selected={selected} button="tag" />
             <IconButton
               icon="times"
               title="Clear selection"

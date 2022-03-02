@@ -103,7 +103,11 @@ export default createModel<RootModel>()({
         dispatch.accounts.setDevice({ id: device.id, device })
         dispatch.tags.set({ processing: [1, selected.length] })
       })
-      await graphQLAddTag(selected, tag.name)
+      const result = await graphQLAddTag(selected, tag.name)
+      if (result !== 'ERROR')
+        dispatch.ui.set({
+          successMessage: `${tag.name} added to ${selected.length} device${selected.length > 1 ? 's' : ''}.`,
+        })
       dispatch.tags.set({ processing: [0, 0] })
     },
     async remove({ tag, device }: { tag: ITag; device: IDevice }) {
