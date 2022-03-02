@@ -20,6 +20,7 @@ type UIState = {
   routingLock?: IRouteType
   routingMessage?: string
   drawerMenu: 'FILTER' | 'COLUMNS' | null
+  drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
   serviceContextMenu?: IContextMenu
@@ -65,6 +66,7 @@ export const defaultState: UIState = {
   routingLock: undefined,
   routingMessage: undefined,
   drawerMenu: null,
+  drawerAccordion: 'sort',
   columns: ['deviceName', 'tags', 'services'],
   columnWidths: {},
   serviceContextMenu: undefined,

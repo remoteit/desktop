@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
-import { Divider } from '@material-ui/core'
+import React from 'react'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { AccordionMenuItem } from './AccordionMenuItem'
+import { Divider } from '@material-ui/core'
 
 type IAccordionMenu = {
   key: number | string
@@ -9,13 +11,11 @@ type IAccordionMenu = {
   children: React.ReactElement
 }
 
-type Props = {
-  menus: IAccordionMenu[]
-  defaultExpanded?: string | number
-}
+type Props = { menus: IAccordionMenu[] }
 
-export const AccordionMenu: React.FC<Props> = ({ menus, defaultExpanded }) => {
-  const [expanded, setExpanded] = useState<string | number | undefined>(defaultExpanded)
+export const AccordionMenu: React.FC<Props> = ({ menus }) => {
+  const { drawerAccordion } = useSelector((state: ApplicationState) => state.ui)
+  const { ui } = useDispatch<Dispatch>()
 
   return (
     <>
@@ -23,8 +23,8 @@ export const AccordionMenu: React.FC<Props> = ({ menus, defaultExpanded }) => {
         <React.Fragment key={index}>
           {!!index && <Divider />}
           <AccordionMenuItem
-            expanded={expanded === menu.key}
-            onClick={expanded => setExpanded(expanded ? menu.key : undefined)}
+            expanded={drawerAccordion === menu.key}
+            onClick={expanded => ui.set({ drawerAccordion: expanded ? menu.key : undefined })}
             onClear={menu.onClear}
             subtitle={menu.subtitle}
             square

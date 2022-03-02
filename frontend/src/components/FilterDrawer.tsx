@@ -58,7 +58,6 @@ export const FilterDrawer: React.FC = () => {
   return (
     <Drawer open={open}>
       <AccordionMenu
-        defaultExpanded="sort"
         menus={[
           {
             key: 'sort',
