@@ -9,9 +9,9 @@ import { Container } from './Container'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, radius } from '../styling'
 
-type Props = { selected: string[] }
+type Props = { select?: boolean; selected: string[] }
 
-export const DeviceActionsBar: React.FC<Props> = ({ selected = [], children }) => {
+export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], children }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
@@ -20,7 +20,7 @@ export const DeviceActionsBar: React.FC<Props> = ({ selected = [], children }) =
       integrated
       gutterBottom
       header={
-        <Collapse in={!!selected.length} timeout={600}>
+        <Collapse in={!!select} timeout={400}>
           <Box className={css.actions}>
             <Title>
               <Typography variant="subtitle1">{selected.length} Selected</Typography>

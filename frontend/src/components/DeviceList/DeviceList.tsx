@@ -41,6 +41,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     <>
       <List className={css.grid} disablePadding>
         <DeviceListHeader
+          devices={devices}
           primary={primary}
           attributes={attributes}
           select={select}

@@ -50,15 +50,11 @@ export const DeviceListItem: React.FC<Props> = ({
         {/* <DeviceLabel device={device} /> */}
         <ListItemIcon>
           {select ? (
-            <Checkbox
-              checked={selected}
-              className={css.checkbox}
-              onClick={handleClick}
-              checkedIcon={<Icon name="check-square" size="md" type="solid" />}
-              indeterminateIcon={<Icon name="minus-square" size="md" type="solid" />}
-              icon={<Icon name="square" size="md" />}
-              color="primary"
-            />
+            selected ? (
+              <Icon name="check-square" size="md" type="solid" color="primary" />
+            ) : (
+              <Icon name="square" size="md" type="light" />
+            )
           ) : (
             <ConnectionStateIcon device={device} connection={connected} size="lg" />
           )}
