@@ -24,6 +24,7 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
 
   return (
     <List dense className={css.list}>
+      {children}
       {filterList.map((f, index) => (
         <ListItem button dense key={index} onClick={() => onSelect(f.value)}>
           <ListItemIcon>{isActive(f.value) && <Icon name={icon} color="primary" />}</ListItemIcon>
@@ -34,7 +35,6 @@ export const FilterSelector: React.FC<Props> = ({ value, icon, filterList, onSel
           />
         </ListItem>
       ))}
-      {children}
     </List>
   )
 }

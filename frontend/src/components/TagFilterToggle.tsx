@@ -13,11 +13,8 @@ export const TagFilterToggle: React.FC<Props> = ({ tag, onUpdate }) => {
   const matchAny = tag?.operator !== 'ALL'
   return (
     <>
-      <Divider className={css.divider} />
       <ListItemSetting
         label=""
-        // size="small"
-        // toggle={matchAny}
         subLabel={`Match ${matchAny ? 'any tag' : 'all tags'}`}
         disabled={!tag}
         onClick={() =>
@@ -30,13 +27,14 @@ export const TagFilterToggle: React.FC<Props> = ({ tag, onUpdate }) => {
           })
         }
       />
+      <Divider className={css.divider} />
     </>
   )
 }
 
 const useStyles = makeStyles({
   divider: {
-    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
     marginRight: spacing.lg,
     marginLeft: 70,
   },
