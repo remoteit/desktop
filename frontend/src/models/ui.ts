@@ -6,7 +6,16 @@ import { selectTheme } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
-const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode', 'drawerMenu', 'columns', 'columnWidths']
+
+const SAVED_STATES = [
+  'guideAWS',
+  'guideLaunch',
+  'themeMode',
+  'drawerMenu',
+  'drawerAccordion',
+  'columns',
+  'columnWidths',
+]
 
 type UIState = {
   theme: Theme

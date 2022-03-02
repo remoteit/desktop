@@ -24,7 +24,7 @@ export const AccordionMenu: React.FC<Props> = ({ menus }) => {
           {!!index && <Divider />}
           <AccordionMenuItem
             expanded={drawerAccordion === menu.key}
-            onClick={expanded => ui.set({ drawerAccordion: expanded ? menu.key : undefined })}
+            onClick={expanded => ui.setPersistent({ drawerAccordion: expanded ? menu.key : undefined })}
             onClear={menu.onClear}
             subtitle={menu.subtitle}
             square
