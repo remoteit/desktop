@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles, Box, Typography, Collapse } from '@material-ui/core'
 import { SelectedTagEditor } from './SelectedTagEditor'
 import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { Title } from './Title'
 import { Dispatch } from '../store'
 import { Container } from './Container'
@@ -12,8 +13,8 @@ type Props = { selected: string[] }
 
 export const DeviceActionsBar: React.FC<Props> = ({ selected = [], children }) => {
   const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
   const css = useStyles()
-
   return (
     <Container
       integrated
@@ -29,7 +30,10 @@ export const DeviceActionsBar: React.FC<Props> = ({ selected = [], children }) =
               icon="times"
               title="Clear selection"
               color="alwaysWhite"
-              onClick={() => dispatch.ui.set({ selected: [] })}
+              onClick={() => {
+                dispatch.ui.set({ selected: [] })
+                history.push('/devices')
+              }}
             />
           </Box>
         </Collapse>
