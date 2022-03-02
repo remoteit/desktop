@@ -112,7 +112,7 @@ export const SeatsSetting: React.FC<{ license: ILicense | null }> = ({ license }
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   group: {
     border: `1px solid ${palette.grayLighter.main}`,
     borderRadius: spacing.md,
@@ -135,6 +135,8 @@ const useStyles = makeStyles( ({ palette }) => ({
       fontWeight: 500,
       textAlign: 'center',
       marginTop: 0,
+      marginLeft: 0,
+      paddingTop: spacing.xxs,
     },
   },
 }))
