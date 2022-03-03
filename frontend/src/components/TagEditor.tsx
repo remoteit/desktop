@@ -16,13 +16,13 @@ type Props = {
 }
 
 export const TagEditor: React.FC<Props> = ({ tags = [], button, color, onSelect }) => {
-  const { labels, all } = useSelector((state: ApplicationState) => ({
-    labels: state.labels,
+  const { all } = useSelector((state: ApplicationState) => ({
+    // labels: state.labels,
     all: state.tags.all,
   }))
   const dispatch = useDispatch<Dispatch>()
   const getColor = useLabel()
-  const [value, setValue] = React.useState<ITag>()
+  // const [value, setValue] = React.useState<ITag>()
   const [open, setOpen] = React.useState<boolean>(false)
   const addRef = React.useRef<HTMLDivElement>(null)
   const css = useStyles()
@@ -57,14 +57,14 @@ export const TagEditor: React.FC<Props> = ({ tags = [], button, color, onSelect 
         placeholder="New tag..."
         targetEl={addRef.current}
         onItemColor={tag => getColor(tag.color)}
-        onSelect={(action, tag) => {
-          if (action === 'new') setValue(tag)
-          else if (onSelect) onSelect(tag)
+        onSelect={async (action, tag) => {
+          if (action === 'new') await dispatch.tags.create(tag)
+          if (onSelect) onSelect(tag)
         }}
         onClose={handleClose}
         allowAdding
       />
-      <AutocompleteMenu
+      {/* <AutocompleteMenu
         items={labels.filter(l => !l.hidden).map(l => ({ name: l.name, color: l.id }))}
         open={Boolean(value)}
         placeholder="Choose a color..."
@@ -77,7 +77,7 @@ export const TagEditor: React.FC<Props> = ({ tags = [], button, color, onSelect 
           await dispatch.tags.create(newTag)
           if (onSelect) onSelect(newTag)
         }}
-      />
+      /> */}
     </>
   )
 }

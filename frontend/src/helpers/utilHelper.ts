@@ -14,5 +14,10 @@ export const currencyFormatter = (currency?: string, value?: number, digits: num
   return result
 }
 
-export const caseFindName = (haystack: ILookup<any>[], needle: string) =>
+export const findTagIndex = (haystack: ILookup<any>[], needle: string) =>
   haystack.findIndex(h => h.name.toLowerCase() === needle.toLowerCase())
+
+export const mergeTags = (legacy: ITag[], tags: ITag[]) => {
+  const unique = legacy.filter(l => findTagIndex(tags, l.name) === -1) || []
+  return tags.concat(unique)
+}

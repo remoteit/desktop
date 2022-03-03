@@ -105,7 +105,6 @@ export default createModel<RootModel>()({
       const ids = globalState.backend.device.uid ? [globalState.backend.device.uid] : []
       if (!userId) return console.error('NO AUTH USER ID')
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
-      const { updateSearch } = dispatch.search
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, mergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, sort, tag, owner, filter, size, from, append, searched, platform } = globalState.devices
@@ -136,8 +135,10 @@ export default createModel<RootModel>()({
         await mergeDevices({ devices: connections, accountId: userId })
       }
 
-      updateSearch()
-      if (!error) cleanOrphanConnections(options.ids)
+      if (!error) {
+        dispatch.search.updateSearch()
+        cleanOrphanConnections(options.ids)
+      }
 
       // @TODO pull contacts out into its own model / request on page load
       set({ fetching: false, append: false, initialized: true, contacts })
@@ -412,4 +413,8 @@ export function findService(devices: IDevice[], id?: string) {
       })
   )
   return [service, device] as [IService | undefined, IDevice | undefined]
+}
+
+export function eachDevice(state: ApplicationState, callback: (device: IDevice) => void) {
+  getAllDevices(state).forEach(device => callback(device))
 }

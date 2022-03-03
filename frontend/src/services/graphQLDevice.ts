@@ -1,8 +1,6 @@
 import { graphQLRequest, graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '../shared/nameHelper'
 import { updateConnections } from '../helpers/connectionHelper'
-import { labelLookup } from '../models/labels'
-import { DESKTOP_EPOCH } from '../shared/constants'
 import { store } from '../store'
 
 const DEVICE_SELECT = `
@@ -175,7 +173,7 @@ export function graphQLAdaptor(
       license: d.license,
       permissions: d.permissions,
       attributes: processDeviceAttributes(d, metaData),
-      tags: processTags(d).concat(d.tags.map(t => ({ ...t, created: new Date(t.created) }))),
+      tags: d.tags.map(t => ({ ...t, created: new Date(t.created) })),
       services: d.services.map(
         (s: any): IService => ({
           id: s.id,
@@ -230,16 +228,6 @@ function processAttributes(response: any): ILookup<any> {
   let result = { ...root, ...$ }
   delete result.$remoteit
   return result
-}
-
-function processTags(response: any): IDevice['tags'] {
-  let tags: IDevice['tags'] = []
-  const attributes = processAttributes(response)
-  if (attributes.color) {
-    const label = labelLookup[attributes.color]
-    tags.push({ name: label.name, color: label.id, created: DESKTOP_EPOCH })
-  }
-  return tags
 }
 
 export async function graphQLCreateRegistration(services: IApplicationType['id'][], account: string) {

@@ -68,7 +68,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         value={editValue}
         variant="filled"
         className={css.field}
-        helperText={error}
+        helperText={label ? error : undefined}
         onChange={event => {
           let value = event.target.value
           if (required && !value.length) {

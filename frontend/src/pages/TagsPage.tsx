@@ -6,7 +6,7 @@ import { Confirm } from '../components/Confirm'
 import { TagEditor } from '../components/TagEditor'
 import { Container } from '../components/Container'
 import { ColorSelect } from '../components/ColorSelect'
-import { caseFindName } from '../helpers/utilHelper'
+import { findTagIndex } from '../helpers/utilHelper'
 import { Typography, List } from '@material-ui/core'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
@@ -30,7 +30,7 @@ export const TagsPage: React.FC = () => {
   }, [])
 
   const rename = (tag: ITag, name: string) => {
-    if (caseFindName(tags, name) >= 0) {
+    if (findTagIndex(tags, name) >= 0) {
       setConfirm({ tag, name })
     } else {
       dispatch.tags.rename({ tag, name })

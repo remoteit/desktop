@@ -7,7 +7,7 @@ import { Icon } from './Icon'
 
 export const ColorSelect: React.FC<{ tag: ITag; onSelect: (color: number) => void }> = ({ tag, onSelect }) => {
   const [tooltip, setTooltip] = useState<boolean>(false)
-  const { labels } = useSelector((state: ApplicationState) => state)
+  const labels = useSelector((state: ApplicationState) => state.labels.filter(l => !l.hidden))
   const selected = labels.find(l => l.id === tag.color) || labels[0]
   const css = useStyles()
 
@@ -15,7 +15,7 @@ export const ColorSelect: React.FC<{ tag: ITag; onSelect: (color: number) => voi
     <Tooltip title={`Change ${selected.name}`} open={tooltip}>
       <Select
         disableUnderline
-        value={selected.id}
+        value={selected.id.toString()}
         classes={{ icon: css.icon, selectMenu: css.menu }}
         MenuProps={{ classes: { paper: css.menuPaper } }}
         onMouseEnter={() => setTooltip(true)}
@@ -29,8 +29,8 @@ export const ColorSelect: React.FC<{ tag: ITag; onSelect: (color: number) => voi
       >
         {labels.map(
           l =>
-            l.id && (
-              <MenuItem key={l.id} value={l.id} className={css.item}>
+            l.id.toString() && (
+              <MenuItem key={l.id} value={l.id.toString()} className={css.item}>
                 <Icon name="tag" color={l.color} type="solid" size="md" />
               </MenuItem>
             )

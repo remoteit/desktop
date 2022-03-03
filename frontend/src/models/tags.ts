@@ -1,8 +1,6 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
-import { caseFindName } from '../helpers/utilHelper'
-import { DESKTOP_EPOCH } from '../shared/constants'
-import { eachDevice } from '../helpers/selectedHelper'
+import { eachSelectedDevice } from '../helpers/selectedHelper'
 import {
   graphQLSetTag,
   graphQLAddTag,
@@ -10,61 +8,28 @@ import {
   graphQLDeleteTag,
   graphQLRenameTag,
 } from '../services/graphQLMutation'
+import { findTagIndex, mergeTags } from '../helpers/utilHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { getNextLabel } from './labels'
 import { RootModel } from './rootModel'
 
 type ITagState = {
   all: ITag[]
-  processing: [number, number]
+  legacy: ITag[]
   removing?: string
   updating?: string
 }
 
 const defaultState: ITagState = {
-  all: [
-    {
-      name: 'Gray',
-      color: 1,
-      created: DESKTOP_EPOCH,
-    },
-    {
-      name: 'Red',
-      color: 2,
-      created: DESKTOP_EPOCH,
-    },
-    {
-      name: 'Orange',
-      color: 3,
-      created: DESKTOP_EPOCH,
-    },
-    {
-      name: 'Yellow',
-      color: 4,
-      created: DESKTOP_EPOCH,
-    },
-    {
-      name: 'Green',
-      color: 5,
-      created: DESKTOP_EPOCH,
-    },
-    {
-      name: 'Blue',
-      color: 6,
-      created: DESKTOP_EPOCH,
-    },
-    {
-      name: 'Purple',
-      color: 7,
-      created: DESKTOP_EPOCH,
-    },
-  ],
-  processing: [0, 0], // [current, total]
+  all: [],
+  legacy: [],
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async fetch(_, globalState) {
+      const { legacy } = globalState.tags
       const result = await graphQLBasicRequest(
         ` query {
             login {
@@ -77,16 +42,52 @@ export default createModel<RootModel>()({
           }`
       )
       if (result === 'ERROR') return
-      const all = await dispatch.tags.parse(result)
+      const parsed = await dispatch.tags.parse(result)
+      const all = mergeTags(legacy, parsed)
       dispatch.tags.setOrdered({ all })
     },
-    async parse(result: AxiosResponse<any> | undefined) {
+
+    async parse(result: AxiosResponse<any> | undefined, globalState) {
       const all = result?.data?.data?.login?.tags
-      const parsed = all
-        .map(t => ({ ...t, created: new Date(t.created) }))
-        .filter(t => !defaultState.all.find(d => d.name === t.name))
-      return defaultState.all.concat(parsed)
+      const parsed = all.map(t => ({
+        name: t.name,
+        color: t.color,
+        created: new Date(t.created),
+      }))
+      return parsed
     },
+    // async migrate(_, globalState) {
+
+    //     TODO
+    //       if we want to migrate colors in desktop this will have to be run on every query
+
+    // import { labelLookup } from './labels'
+    // import { DESKTOP_EPOCH } from '../shared/constants'
+    // import { eachDevice } from './devices'
+
+    //     remove color from device
+    //         device.attributes = { ...device.attributes, color }
+    //         devices.setAttributes(device)
+    //     add color as tag
+    //     add tag to device
+
+    //   eachDevice(globalState, device => {
+    //     if (device.attributes.color) {
+    //       const label = labelLookup[device.attributes.color]
+    //       const tag = { name: label.name, color: label.id, created: DESKTOP_EPOCH }
+    //       tags.push(tag)
+    //       store.dispatch.tags.migrateLegacy({ tag, deviceId: response.id })
+    //     }
+    //   })
+
+    //   const { all, legacy } = globalState.tags
+    //   const found = findTagIndex(all.concat(legacy), tag.name)
+    //   if (found >= 0) return
+    //   legacy.push(tag)
+    //   dispatch.tags.set({ legacy })
+    //   dispatch.tags.setOrdered({ all: [...all, tag] })
+    // },
+
     async add({ tag, device }: { tag: ITag; device: IDevice }) {
       const original = { ...device }
       device.tags.push(tag)
@@ -96,23 +97,22 @@ export default createModel<RootModel>()({
         dispatch.accounts.setDevice({ id: device.id, device: original })
       }
     },
+
     async addSelected({ tag, selected }: { tag: ITag; selected: string[] }, globalState) {
-      dispatch.tags.set({ processing: [1, selected.length] })
-      eachDevice(globalState, selected, device => {
+      eachSelectedDevice(globalState, selected, device => {
         device.tags.push(tag)
         dispatch.accounts.setDevice({ id: device.id, device })
-        dispatch.tags.set({ processing: [1, selected.length] })
       })
       const result = await graphQLAddTag(selected, tag.name)
       if (result !== 'ERROR')
         dispatch.ui.set({
           successMessage: `${tag.name} added to ${selected.length} device${selected.length > 1 ? 's' : ''}.`,
         })
-      dispatch.tags.set({ processing: [0, 0] })
     },
+
     async remove({ tag, device }: { tag: ITag; device: IDevice }) {
       const original = { ...device }
-      const index = caseFindName(device.tags, tag.name)
+      const index = findTagIndex(device.tags, tag.name)
       device.tags.splice(index, 1)
       dispatch.accounts.setDevice({ id: device.id, device })
       const result = await graphQLRemoveTag(device.id, tag.name)
@@ -120,29 +120,33 @@ export default createModel<RootModel>()({
         dispatch.accounts.setDevice({ id: device.id, device: original })
       }
     },
+
     async create(tag: ITag, globalState) {
       const tags = globalState.tags.all
+      tag.color = tag.color || getNextLabel(globalState)
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
       dispatch.tags.setOrdered({ all: [...tags, tag] })
     },
+
     async update(tag: ITag, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ updating: tag.name })
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
-      const index = caseFindName(tags, tag.name)
+      const index = findTagIndex(tags, tag.name)
       tags[index] = tag
       dispatch.tags.setOrdered({ all: [...tags] })
       dispatch.tags.set({ updating: undefined })
     },
+
     async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ updating: tag.name })
       const result = await graphQLRenameTag(tag.name, name)
       if (result === 'ERROR') return
-      const found = caseFindName(tags, name)
-      const index = caseFindName(tags, tag.name)
+      const found = findTagIndex(tags, name)
+      const index = findTagIndex(tags, tag.name)
       if (found >= 0) {
         tags.splice(index, 1)
         dispatch.ui.set({ noticeMessage: `Tag merged into existing tag ‘${name}.’` })
@@ -153,12 +157,13 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ updating: undefined })
       dispatch.devices.fetch()
     },
+
     async delete(tag: ITag, globalState) {
       const tags = globalState.tags.all
       dispatch.tags.set({ removing: tag.name })
       const result = await graphQLDeleteTag(tag.name)
       if (result === 'ERROR') return
-      const index = caseFindName(tags, tag.name)
+      const index = findTagIndex(tags, tag.name)
       tags.splice(index, 1)
       dispatch.tags.setOrdered({ all: [...tags] })
       dispatch.tags.set({ removing: undefined })

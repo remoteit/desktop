@@ -189,9 +189,9 @@ export default createModel<RootModel>()({
       await dispatch.organization.init()
       await dispatch.devices.init()
       await dispatch.connections.init()
-      await dispatch.devices.fetch()
+      await dispatch.tags.fetch()
+      dispatch.devices.fetch()
       dispatch.sessions.fetch()
-      dispatch.tags.fetch()
       dispatch.announcements.fetch()
       dispatch.applicationTypes.fetch()
     },
