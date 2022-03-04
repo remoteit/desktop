@@ -7,6 +7,8 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
+import { TagAdd } from '../../assets/TagAdd'
+import { TagRemove } from '../../assets/TagRemove'
 import { Advantech } from '../../assets/Advantech'
 import { OpenWrt } from '../../assets/OpenWrt'
 import { Nvidia } from '../../assets/Nvidia'
@@ -59,6 +61,8 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     if (name === 'advantech') return <Advantech className={css.icon} {...props} />
     if (name === 'linux') return <Linux className={css.icon} {...props} />
     if (name === 'axis') return <Axis className={css.icon} {...props} />
+    if (name === 'tag-add') return <TagAdd className={css.icon} {...props} />
+    if (name === 'tag-remove') return <TagRemove className={css.icon} {...props} />
 
     let fontType: IconPrefix = 'far'
 

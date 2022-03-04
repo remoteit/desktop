@@ -14,7 +14,6 @@ const sortFilters = [
   { value: 'state,name', name: 'State' },
   { value: 'attributes.$remoteit.color,name', name: 'Color' },
 ]
-const tagFilters = [{ value: '', name: 'All' }]
 const deviceFilters = [
   { value: 'all', name: 'All' },
   { value: 'active', name: 'Online' },
@@ -94,7 +93,7 @@ export const FilterDrawer: React.FC = () => {
                   if (!result?.length) update({ tag: undefined })
                   else update({ tag: { names: result, operator: state.tag?.operator || 'ANY' } })
                 }}
-                filterList={tagFilters.concat(tags)}
+                filterList={tags}
               >
                 <TagFilterToggle tag={state.tag} onUpdate={update} />
               </FilterSelector>

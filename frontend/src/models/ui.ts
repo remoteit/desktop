@@ -21,7 +21,7 @@ type UIState = {
   theme: Theme
   themeMode: 'light' | 'dark' | 'system'
   navigation: ILookup<string>
-  selected: string[]
+  selected: IDevice['id'][]
   connected: boolean
   offline: boolean
   uninstalling: boolean

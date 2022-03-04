@@ -19,8 +19,8 @@ export const TagsPage: React.FC = () => {
   const getColor = useLabel()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
-  const { removing, updating, tags } = useSelector((state: ApplicationState) => ({
-    removing: state.tags.removing,
+  const { deleting, updating, tags } = useSelector((state: ApplicationState) => ({
+    deleting: state.tags.deleting,
     updating: state.tags.updating,
     tags: state.tags.all,
   }))
@@ -64,7 +64,7 @@ export const TagsPage: React.FC = () => {
             }
             resetValue={tag.name}
             filter={REGEX_TAG_SAFE}
-            disabled={removing === tag.name || updating === tag.name}
+            disabled={deleting === tag.name || updating === tag.name}
             warning="This can not be undone. All devices will have this tag removed from them."
             onDelete={() => dispatch.tags.delete(tag)}
             onSave={value => rename(tag, value.toString())}

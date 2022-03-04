@@ -39,7 +39,12 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
   return (
     <Chip
       className={css.chip}
-      label={tag.name}
+      label={
+        <>
+          <Icon name="tag" type="solid" size={size} />
+          {tag.name}
+        </>
+      }
       size="small"
       style={{ color: getColor(tag.color) }}
       deleteIcon={

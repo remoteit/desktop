@@ -262,7 +262,7 @@ export async function graphQLAddTag(serviceId: string | string[], name: string) 
   )
 }
 
-export async function graphQLRemoveTag(serviceId: string, name: string) {
+export async function graphQLRemoveTag(serviceId: string | string[], name: string) {
   return await graphQLBasicRequest(
     ` mutation query($serviceId: [String!]!, $name: [String!]!) {
         removeTag(serviceId: $serviceId, name: $name)

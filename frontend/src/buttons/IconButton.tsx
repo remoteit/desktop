@@ -7,7 +7,7 @@ import classnames from 'classnames'
 
 export type ButtonProps = IconProps & {
   title?: string
-  icon: string
+  icon?: string
   disabled?: boolean
   to?: string
   variant?: 'text' | 'contained'

@@ -43,7 +43,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
       ) : !devices.length ? (
         <DeviceListEmpty />
       ) : (
-        <DeviceActionsBar selected={selected} select={select}>
+        <DeviceActionsBar selected={selected} select={select} devices={devices}>
           <DeviceList
             devices={devices}
             connections={connections}

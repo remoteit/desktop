@@ -1,17 +1,23 @@
 import React from 'react'
 import { makeStyles, Box, Typography, Collapse } from '@material-ui/core'
-import { SelectedTagEditor } from './SelectedTagEditor'
-import { useDispatch } from 'react-redux'
+import { ApplicationState, Dispatch } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { getSelectedTags } from '../helpers/selectedHelper'
 import { useHistory } from 'react-router-dom'
+import { TagEditor } from './TagEditor'
 import { Title } from './Title'
-import { Dispatch } from '../store'
 import { Container } from './Container'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, radius } from '../styling'
 
-type Props = { select?: boolean; selected: string[] }
+type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[] }
 
-export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], children }) => {
+export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devices, children }) => {
+  const { tags, adding, removing } = useSelector((state: ApplicationState) => ({
+    tags: state.tags.all,
+    adding: state.tags.adding,
+    removing: state.tags.removing,
+  }))
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
@@ -25,7 +31,19 @@ export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], child
             <Title>
               <Typography variant="subtitle1">{selected.length} Selected</Typography>
             </Title>
-            <SelectedTagEditor selected={selected} button="tag" />
+            <TagEditor
+              button="tag-add"
+              tags={tags}
+              buttonProps={{ title: 'Add Tag', color: 'alwaysWhite', loading: adding, disabled: adding }}
+              onSelect={tag => dispatch.tags.addSelected({ tag, selected })}
+            />
+            <TagEditor
+              allowAdding={false}
+              tags={getSelectedTags(devices, selected)}
+              button="tag-remove"
+              buttonProps={{ title: 'Remove Tag', color: 'alwaysWhite', loading: removing, disabled: removing }}
+              onSelect={tag => dispatch.tags.removeSelected({ tag, selected })}
+            />
             <IconButton
               icon="times"
               title="Clear selection"

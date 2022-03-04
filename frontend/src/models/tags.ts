@@ -16,7 +16,9 @@ import { RootModel } from './rootModel'
 type ITagState = {
   all: ITag[]
   legacy: ITag[]
-  removing?: string
+  adding?: boolean
+  removing?: boolean
+  deleting?: string
   updating?: string
 }
 
@@ -98,7 +100,8 @@ export default createModel<RootModel>()({
       }
     },
 
-    async addSelected({ tag, selected }: { tag: ITag; selected: string[] }, globalState) {
+    async addSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, globalState) {
+      dispatch.tags.set({ adding: true })
       eachSelectedDevice(globalState, selected, device => {
         device.tags.push(tag)
         dispatch.accounts.setDevice({ id: device.id, device })
@@ -108,6 +111,7 @@ export default createModel<RootModel>()({
         dispatch.ui.set({
           successMessage: `${tag.name} added to ${selected.length} device${selected.length > 1 ? 's' : ''}.`,
         })
+      dispatch.tags.set({ adding: false })
     },
 
     async remove({ tag, device }: { tag: ITag; device: IDevice }) {
@@ -119,6 +123,25 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') {
         dispatch.accounts.setDevice({ id: device.id, device: original })
       }
+    },
+
+    async removeSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, globalState) {
+      let count = 0
+      dispatch.tags.set({ removing: true })
+      eachSelectedDevice(globalState, selected, device => {
+        const index = findTagIndex(device.tags, tag.name)
+        if (index >= 0) {
+          count++
+          device.tags.splice(index, 1)
+          dispatch.accounts.setDevice({ id: device.id, device })
+        }
+      })
+      const result = await graphQLRemoveTag(selected, tag.name)
+      if (result !== 'ERROR')
+        dispatch.ui.set({
+          successMessage: `${tag.name} removed from ${count} device${count > 1 ? 's' : ''}.`,
+        })
+      dispatch.tags.set({ removing: false })
     },
 
     async create(tag: ITag, globalState) {
@@ -160,13 +183,13 @@ export default createModel<RootModel>()({
 
     async delete(tag: ITag, globalState) {
       const tags = globalState.tags.all
-      dispatch.tags.set({ removing: tag.name })
+      dispatch.tags.set({ deleting: tag.name })
       const result = await graphQLDeleteTag(tag.name)
       if (result === 'ERROR') return
       const index = findTagIndex(tags, tag.name)
       tags.splice(index, 1)
       dispatch.tags.setOrdered({ all: [...tags] })
-      dispatch.tags.set({ removing: undefined })
+      dispatch.tags.set({ deleting: undefined })
       dispatch.devices.fetch()
     },
   }),
