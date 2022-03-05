@@ -87,14 +87,6 @@ export const AvatarMenu: React.FC = () => {
             handleClose()
           }}
         />
-        <ListItemLink title="Account" icon="user" href="https://link.remote.it/portal/account" dense />
-        <ListItemLink
-          title="Support"
-          icon="life-ring"
-          href="https://link.remote.it/documentation-desktop/overview"
-          dense
-        />
-        <ListItemLink title="Documentation" icon="books" href="https://link.remote.it/docs/api" dense />
         {altMenu && (
           <ListItemSetting
             confirm
