@@ -11,8 +11,6 @@ import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
 import { Box, Typography } from '@material-ui/core'
 
-
-
 export function CreateAccessKey({ ...props }) {
   const classes = useStyles()
   const { user } = useSelector((state: ApplicationState) => ({
@@ -97,12 +95,12 @@ export function CreateAccessKey({ ...props }) {
                         {props.secretKey}
                         <CopyButton icon='copy' value={props.secretKey} />
                       </Typography>
-
                       <Typography
                         color="primary"
                         component="a"
                         gutterBottom
                         onClick={handleShowAccessKey}
+                        className={classes.cursor}
                       >
                         Hide secret access key
                       </Typography>
@@ -114,6 +112,7 @@ export function CreateAccessKey({ ...props }) {
                         component="a"
                         gutterBottom
                         onClick={handleShowAccessKey}
+                        className={classes.cursor}
                       >
                         Show secret access key
                       </Typography>
@@ -168,6 +167,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     download: {
       marginTop: 10
+    },
+    cursor: {
+      cursor: 'pointer'
     }
   })
 )
