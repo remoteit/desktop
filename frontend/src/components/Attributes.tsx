@@ -1,19 +1,19 @@
 import React from 'react'
-import { TargetPlatform } from '../components/TargetPlatform'
-import { QualityDetails } from '../components/QualityDetails'
-import { ServiceIndicators } from '../components/ServiceIndicators'
-import { INITIATOR_PLATFORMS } from '../components/InitiatorPlatform'
+import { TargetPlatform } from './TargetPlatform'
+import { QualityDetails } from './QualityDetails'
+import { ServiceIndicators } from './ServiceIndicators'
+import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
+import { DeviceTagEditor } from './DeviceTagEditor'
 import { ListItemText, Chip } from '@material-ui/core'
-import { ServiceName } from '../components/ServiceName'
-import { LicenseChip } from '../components/LicenseChip'
+import { ServiceName } from './ServiceName'
+import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
 import { lanShared } from '../helpers/lanSharing'
-import { DeviceGeo } from '../components/DeviceGeo'
-import { TagEditor } from '../components/TagEditor'
-import { Duration } from '../components/Duration'
-import { toLookup } from './utilHelper'
-import { TestUI } from '../components/TestUI'
-import { Tags } from '../components/Tags'
+import { DeviceGeo } from './DeviceGeo'
+import { Duration } from './Duration'
+import { toLookup } from '../helpers/utilHelper'
+import { TestUI } from './TestUI'
+import { Tags } from './Tags'
 
 export class Attribute {
   id: string = ''
@@ -77,27 +77,37 @@ export const attributes: Attribute[] = [
         secondary={device?.thisDevice ? 'This system' : undefined}
       />
     ),
-    defaultWidth: 420,
+    defaultWidth: 400,
     required: true,
+  }),
+  new Attribute({
+    id: 'active',
+    label: 'Online',
+    defaultWidth: 100,
+    value: ({ device }) =>
+      device?.state === 'active' ? (
+        <Chip label="Online" size="small" color="primary" />
+      ) : (
+        <Chip label="Offline" size="small" />
+      ),
   }),
   new Attribute({
     id: 'tags',
     label: 'Tags',
     defaultWidth: 100,
-    value: ({ device }) => (TestUI({}) ? <Tags ids={device?.tags || []} small /> : undefined),
-    column: false,
+    value: ({ device }) => <Tags tags={device?.tags || []} small />,
   }),
   new Attribute({
     id: 'services',
     label: 'Services',
     value: ({ device, connections }) => <ServiceIndicators device={device} connections={connections} />,
-    defaultWidth: 590,
+    defaultWidth: 440,
     align: 'right',
   }),
   new DeviceAttribute({
     id: 'tagEditor',
     label: 'tags',
-    value: ({ device }) => (TestUI({}) ? <TagEditor device={device} /> : undefined),
+    value: ({ device }) => (TestUI({}) ? <DeviceTagEditor device={device} /> : undefined),
     column: false,
   }),
   new DeviceAttribute({

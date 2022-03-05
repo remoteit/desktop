@@ -1,3 +1,4 @@
+import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 import { toLookup } from '../helpers/utilHelper'
@@ -5,52 +6,74 @@ import { toLookup } from '../helpers/utilHelper'
 const state: ILabel[] = [
   {
     id: 0,
-    key: 'NONE',
     name: 'none',
-    color: 'none',
+    color: 'inherit',
     hidden: true,
   },
   {
     id: 1,
-    key: 'GRAY',
-    name: 'gray',
+    name: 'Gray',
     color: '#797c86',
   },
   {
     id: 2,
-    key: 'RED',
-    name: 'red',
-    color: '#e65b4c',
+    name: 'Red',
+    color: '#E65B4C',
   },
   {
     id: 3,
-    key: 'ORANGE',
-    name: 'orange',
-    color: '#ed9332',
+    name: 'Orange',
+    color: '#EF922E',
   },
   {
     id: 4,
-    key: 'YELLOW',
-    name: 'yellow',
-    color: '#f5d33d',
+    name: 'Yellow',
+    color: '#F5CC17',
   },
   {
     id: 5,
-    key: 'GREEN',
-    name: 'green',
-    color: '#61c951',
+    name: 'Lime',
+    color: '#BBD40F',
   },
   {
     id: 6,
-    key: 'BLUE',
-    name: 'blue',
-    color: '#61bced',
+    name: 'Green',
+    color: '#61C951',
   },
   {
     id: 7,
-    key: 'PURPLE',
-    name: 'purple',
-    color: '#8f4eba',
+    name: 'Teal',
+    color: '#31C49E',
+  },
+  {
+    id: 8,
+    name: 'Sky',
+    color: '#4AB8F4',
+  },
+  {
+    id: 9,
+    name: 'Blue',
+    color: '#6193FE',
+  },
+  {
+    id: 10,
+    name: 'Violet',
+    color: '#6F54CC',
+  },
+  {
+    id: 11,
+    name: 'Purple',
+    color: '#8F4EBA',
+  },
+  {
+    id: 12,
+    name: 'Berry',
+    color: '#C236AB',
+  },
+  {
+    id: 13,
+    name: 'Pink',
+    color: '#E13F88',
   },
 ]
 
@@ -62,3 +85,30 @@ export default createModel<RootModel>()({
     // setup as a model for when we can edit labels
   },
 })
+
+export function getNextLabel(state: ApplicationState) {
+  const used = state.tags.all.reduce((colors: number[], tag: ITag) => {
+    if (!colors.includes(tag.color)) colors.push(tag.color)
+    return colors
+  }, [])
+  let available = state.labels.filter(l => !used.includes(l.id) && !l.hidden)
+  if (!available.length) available = state.labels.filter(l => !l.hidden)
+  const index = Math.floor(Math.random() * available.length)
+  return available[index].id
+}
+
+/* 
+  Problem:
+    Randomly select the next unused color label
+
+  State:
+    labels: ILabel[]
+    tags: ITag[]
+
+  Questions:
+    How do we handle the case where there are no unused colors available?
+
+  Considerations:
+    Don't select hidden labels
+    How to we ensure we balance the results so that it will auto select the least used color?
+*/
