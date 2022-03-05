@@ -25,7 +25,7 @@ import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 
-const SAVED_STATES = ['filter', 'sort', 'owner', 'platform', 'sortServiceOption']
+const SAVED_STATES = ['filter', 'sort', 'tag', 'owner', 'platform', 'sortServiceOption']
 
 type IGetDevice = {
   id: string
@@ -47,6 +47,7 @@ type IDeviceState = {
   append: boolean
   filter: 'all' | 'active' | 'inactive'
   sort: string
+  tag: ITagFilter | undefined
   owner: 'all' | 'me' | 'others'
   platform: number[] | undefined
   size: number
@@ -72,6 +73,7 @@ export const defaultState: IDeviceState = {
   append: false,
   filter: 'all',
   sort: 'name',
+  tag: undefined,
   owner: 'all',
   platform: undefined,
   size: 50,
@@ -103,15 +105,15 @@ export default createModel<RootModel>()({
       const ids = globalState.backend.device.uid ? [globalState.backend.device.uid] : []
       if (!userId) return console.error('NO AUTH USER ID')
       if (!accountId) return console.error('FETCH WITH MISSING ACCOUNT ID')
-      const { updateSearch } = dispatch.search
       const { set, graphQLFetchProcessor } = dispatch.devices
       const { setDevices, mergeDevices, appendUniqueDevices } = dispatch.accounts
-      const { query, sort, owner, filter, size, from, append, searched, platform } = globalState.devices
+      const { query, sort, tag, owner, filter, size, from, append, searched, platform } = globalState.devices
       const options: gqlOptions = {
         size,
         from,
         account: accountId,
         state: filter === 'all' ? undefined : filter,
+        tag,
         name: query,
         ids: append ? undefined : ids.concat(getConnectionIds(globalState)),
         sort,
@@ -133,8 +135,10 @@ export default createModel<RootModel>()({
         await mergeDevices({ devices: connections, accountId: userId })
       }
 
-      updateSearch()
-      if (!error) cleanOrphanConnections(options.ids)
+      if (!error) {
+        dispatch.search.updateSearch()
+        cleanOrphanConnections(options.ids)
+      }
 
       // @TODO pull contacts out into its own model / request on page load
       set({ fetching: false, append: false, initialized: true, contacts })
@@ -373,7 +377,8 @@ export function selectIsFiltered(state: ApplicationState) {
     state.devices.sort !== defaultState.sort ||
     state.devices.filter !== defaultState.filter ||
     state.devices.owner !== defaultState.owner ||
-    state.devices.platform !== defaultState.platform
+    state.devices.platform !== defaultState.platform ||
+    state.devices.tag !== defaultState.tag
   )
 }
 
@@ -408,4 +413,8 @@ export function findService(devices: IDevice[], id?: string) {
       })
   )
   return [service, device] as [IService | undefined, IDevice | undefined]
+}
+
+export function eachDevice(state: ApplicationState, callback: (device: IDevice) => void) {
+  getAllDevices(state).forEach(device => callback(device))
 }

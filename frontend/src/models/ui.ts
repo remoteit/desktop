@@ -6,12 +6,22 @@ import { selectTheme } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
-const SAVED_STATES = ['guideAWS', 'guideLaunch', 'themeMode', 'drawerMenu', 'columns', 'columnWidths']
+
+const SAVED_STATES = [
+  'guideAWS',
+  'guideLaunch',
+  'themeMode',
+  'drawerMenu',
+  'drawerAccordion',
+  'columns',
+  'columnWidths',
+]
 
 type UIState = {
   theme: Theme
   themeMode: 'light' | 'dark' | 'system'
   navigation: ILookup<string>
+  selected: IDevice['id'][]
   connected: boolean
   offline: boolean
   uninstalling: boolean
@@ -19,6 +29,7 @@ type UIState = {
   routingLock?: IRouteType
   routingMessage?: string
   drawerMenu: 'FILTER' | 'COLUMNS' | null
+  drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
   serviceContextMenu?: IContextMenu
@@ -56,6 +67,7 @@ export const defaultState: UIState = {
   theme: selectTheme(),
   themeMode: 'system',
   navigation: {},
+  selected: [],
   connected: false,
   offline: false,
   uninstalling: false,
@@ -63,7 +75,8 @@ export const defaultState: UIState = {
   routingLock: undefined,
   routingMessage: undefined,
   drawerMenu: null,
-  columns: ['deviceName', 'services'],
+  drawerAccordion: 'sort',
+  columns: ['deviceName', 'tags', 'services'],
   columnWidths: {},
   serviceContextMenu: undefined,
   redirect: undefined,
@@ -123,6 +136,7 @@ export default createModel<RootModel>()({
     },
     async refreshAll() {
       dispatch.devices.set({ from: 0 })
+      dispatch.tags.fetch()
       dispatch.accounts.fetch()
       dispatch.organization.fetch()
       dispatch.sessions.fetch()

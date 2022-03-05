@@ -1,19 +1,21 @@
 import React from 'react'
 import { makeStyles, Tooltip, Chip, IconButton } from '@material-ui/core'
-import { spacing } from '../styling'
+import { spacing, FontSize } from '../styling'
+import { useLabel } from '../hooks/useLabel'
 import { Icon } from '../components/Icon'
 
 type Props = {
   tag?: ITag
   labels: ILabel[]
   dot?: boolean
+  size?: FontSize
   onClick?: () => void
   onDelete?: () => void
 }
 
-export const Tag: React.FC<Props> = ({ tag, labels, dot, onClick, onDelete }) => {
+export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, onDelete }) => {
   const css = useStyles()
-  const getColor = (id = 0) => labels[id].color
+  const getColor = useLabel()
 
   if (!tag) return null
 
@@ -29,7 +31,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, onClick, onDelete }) =>
         arrow
       >
         <span className={css.dot}>
-          <Icon name="tag" color={getColor(tag.label)} type="solid" size="xxs" />
+          <Icon name="tag" color={getColor(tag.color)} type="solid" size={size} />
         </span>
       </Tooltip>
     )
@@ -39,12 +41,12 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, onClick, onDelete }) =>
       className={css.chip}
       label={
         <>
-          <Icon name="tag" type="solid" size="xxs" />
+          <Icon name="tag" type="solid" size={size} />
           {tag.name}
         </>
       }
       size="small"
-      style={{ color: getColor(tag.label) }}
+      style={{ color: getColor(tag.color) }}
       deleteIcon={
         <IconButton>
           <Icon name="times" size="xs" />
@@ -61,6 +63,7 @@ const useStyles = makeStyles({
     '& + span': { marginLeft: spacing.xxs },
   },
   chip: {
+    marginBottom: spacing.xxs,
     '& .MuiChip-label > *': { marginRight: spacing.xs },
     '& .MuiChip-deleteIconSmall': {
       marginLeft: -spacing.sm,

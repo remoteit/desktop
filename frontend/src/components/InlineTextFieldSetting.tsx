@@ -10,6 +10,7 @@ type Props = {
   actionIcon?: JSX.Element
   displayValue?: string | number
   filter?: RegExp
+  color?: string
   required?: boolean
   disabled?: boolean
   resetValue?: string | number
@@ -18,6 +19,7 @@ type Props = {
   warning?: string
   modified?: boolean
   disableGutters?: boolean
+  debug?: boolean
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
   onDelete?: () => void
@@ -66,7 +68,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         value={editValue}
         variant="filled"
         className={css.field}
-        helperText={error}
+        helperText={label ? error : undefined}
         onChange={event => {
           let value = event.target.value
           if (required && !value.length) {

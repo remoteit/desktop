@@ -33,12 +33,11 @@ export const AutocompleteMenu: React.FC<Props> = ({
 }) => {
   const [inputValue, setInputValue] = React.useState<string>('')
   const css = useStyles()
-
   const options =
-    allowAdding && inputValue.length && !items.find(t => t.name === inputValue)
+    allowAdding && inputValue.length && !items.find(t => t.name.toLowerCase() === inputValue.toLowerCase())
       ? items.concat({
-          name: `Add tag: ${inputValue}`,
-          id: -1,
+          name: `Add: ${inputValue}`,
+          color: 0,
         })
       : items
 
@@ -64,7 +63,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
           onClose={onClose}
           onChange={(event, value, reason) => {
             if (!value || !onSelect) return
-            if (value.id === -1) onSelect('new', { name: inputValue, id: -1 })
+            if (!value.created) onSelect('new', { name: inputValue, color: value.color, created: new Date() })
             else onSelect('add', value)
           }}
           PaperComponent={Box as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
@@ -79,8 +78,8 @@ export const AutocompleteMenu: React.FC<Props> = ({
             <>
               <ListItemIcon>
                 <Icon
-                  name={option.id === -1 ? 'plus' : indicator || 'circle'}
-                  color={option.id === -1 ? undefined : onItemColor ? onItemColor(option) : undefined}
+                  name={!option.name ? 'plus' : indicator || 'circle'}
+                  color={!option.name ? undefined : onItemColor ? onItemColor(option) : undefined}
                   type="solid"
                   size="base"
                 />
@@ -110,7 +109,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   container: { width: 200 },
   listbox: { shadow: 'none', paddingTop: 0 },
   textField: { width: '100%', padding: `${spacing.xs}px ${spacing.xs}px 0` },
@@ -127,14 +126,15 @@ const useStyles = makeStyles( ({ palette }) => ({
     display: 'none',
   },
   spanItem: {
-    color: palette.primary.main
+    color: palette.primary.main,
+    fontWeight: 500,
   },
   option: {
     borderRadius: radius,
     marginLeft: spacing.xs,
     marginRight: spacing.xs,
     marginBottom: 1,
-    padding: `${2}px ${spacing.xxs}px`,
+    padding: `2px ${spacing.xxs}px`,
     color: palette.grayDarker.main,
     '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
     '&[aria-selected="true"]': { backgroundColor: palette.primaryHighlight.main },

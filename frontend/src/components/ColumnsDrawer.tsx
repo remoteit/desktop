@@ -2,7 +2,7 @@ import React from 'react'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { makeStyles, ListSubheader, List, ListItemText, ListItem, ListItemIcon, Button } from '@material-ui/core'
-import { masterAttributes, deviceAttributes } from '../helpers/attributes'
+import { masterAttributes, deviceAttributes } from './Attributes'
 import { defaultState } from '../models/ui'
 import { spacing } from '../styling'
 import { Drawer } from './Drawer'
@@ -44,9 +44,9 @@ export const ColumnsDrawer: React.FC = () => {
           const checked = selected.indexOf(data.id)
           return (
             <ListItem
+              dense
               button
               disabled={data.required}
-              dense
               key={data.id}
               onClick={() => (checked >= 0 ? remove(checked) : add(data.id))}
             >

@@ -203,21 +203,6 @@ declare global {
     connections?: IConnection[]
   }
 
-  interface ILabel {
-    id: number
-    key: 'NONE' | 'GRAY' | 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'PURPLE'
-    name: string
-    color: string
-    hidden?: boolean
-  }
-
-  interface ITag {
-    id: number
-    name: string
-    label?: ILabel['id']
-    color?: string
-  }
-
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
 }
 

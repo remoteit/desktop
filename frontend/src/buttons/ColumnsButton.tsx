@@ -14,7 +14,7 @@ export const ColumnsButton: React.FC = () => {
   const css = useStyles({ open })
   const icon = open ? 'times' : 'line-columns'
   return (
-    <Tooltip title="Columns" className={css.button}>
+    <Tooltip title={open ? 'Hide Columns' : 'Show Columns'} className={css.button}>
       <IconButton onClick={() => ui.setPersistent({ drawerMenu: open ? null : 'COLUMNS' })}>
         {changed ? (
           <Badge variant="dot" color="primary">

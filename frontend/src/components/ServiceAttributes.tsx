@@ -1,5 +1,5 @@
 import React from 'react'
-import { getAttributes } from '../helpers/attributes'
+import { getAttributes } from './Attributes'
 import { DataDisplay } from './DataDisplay'
 import { Gutters } from './Gutters'
 

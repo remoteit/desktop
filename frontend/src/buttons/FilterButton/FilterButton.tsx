@@ -14,7 +14,7 @@ export const FilterButton: React.FC = () => {
   const css = useStyles({ open })
   const icon = open ? 'times' : 'filter'
   return (
-    <Tooltip title={open ? 'Hide filters' : 'Show filters'} className={css.button}>
+    <Tooltip title={open ? 'Hide Filters' : 'Show Filters'} className={css.button}>
       <IconButton onMouseDown={() => ui.setPersistent({ drawerMenu: open ? null : 'FILTER' })}>
         {changed ? (
           <Badge variant="dot" color="primary">
