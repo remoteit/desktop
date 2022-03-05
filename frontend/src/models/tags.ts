@@ -8,14 +8,13 @@ import {
   graphQLDeleteTag,
   graphQLRenameTag,
 } from '../services/graphQLMutation'
-import { findTagIndex, mergeTags } from '../helpers/utilHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { findTagIndex } from '../helpers/utilHelper'
 import { getNextLabel } from './labels'
 import { RootModel } from './rootModel'
 
 type ITagState = {
   all: ITag[]
-  legacy: ITag[]
   adding?: boolean
   removing?: boolean
   deleting?: string
@@ -24,14 +23,12 @@ type ITagState = {
 
 const defaultState: ITagState = {
   all: [],
-  legacy: [],
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_, globalState) {
-      const { legacy } = globalState.tags
+    async fetch() {
       const result = await graphQLBasicRequest(
         ` query {
             login {
@@ -44,8 +41,7 @@ export default createModel<RootModel>()({
           }`
       )
       if (result === 'ERROR') return
-      const parsed = await dispatch.tags.parse(result)
-      const all = mergeTags(legacy, parsed)
+      const all = await dispatch.tags.parse(result)
       dispatch.tags.setOrdered({ all })
     },
 
