@@ -19,7 +19,7 @@ export const AccountSharePage = () => {
   } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     access: state.organization.members.map(m => m.user),
-    contacts: state.devices.contacts,
+    contacts: state.contacts.all,
   }))
 
   const [emails, setEmails] = React.useState<string[]>([])
