@@ -16,7 +16,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 
 export const OrganizationAddPage = () => {
   const { contacts, organization, freeLicenses } = useSelector((state: ApplicationState) => ({
-    contacts: state.devices.contacts.filter(c => !state.organization.members.find(s => s.user.id === c.id)) || [],
+    contacts: state.contacts.all.filter(c => !state.organization.members.find(s => s.user.id === c.id)) || [],
     organization: state.organization,
     freeLicenses: getFreeLicenses(state),
   }))

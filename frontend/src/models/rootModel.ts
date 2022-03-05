@@ -8,6 +8,7 @@ import backend from './backend'
 import billing from './billing'
 import binaries from './binaries'
 import connections from './connections'
+import contacts from './contacts'
 import devices from './devices'
 import feedback from './feedback'
 import labels from './labels'
@@ -30,6 +31,7 @@ export interface RootModel extends Models<RootModel> {
   billing: typeof billing
   binaries: typeof binaries
   connections: typeof connections
+  contacts: typeof contacts
   devices: typeof devices
   feedback: typeof feedback
   labels: typeof labels
@@ -53,6 +55,7 @@ export const models: RootModel = {
   billing,
   binaries,
   connections,
+  contacts,
   devices,
   feedback,
   labels,

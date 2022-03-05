@@ -39,7 +39,7 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(data: { email?: string; serviceID: string; device?: IDevice }, globalState) {
       const { set } = dispatch.shares
-      const user = globalState.devices.contacts.find(c => c.email === data.email)
+      const user = globalState.contacts.all.find(c => c.email === data.email)
       const permissions = data.device && getPermissions(data.device, data.email)
 
       set({
@@ -54,6 +54,7 @@ export default createModel<RootModel>()({
         },
       })
     },
+
     async delete(userDevice: { deviceId: string; email: string }) {
       const { deviceId, email } = userDevice
       const { set } = dispatch.shares
@@ -68,8 +69,8 @@ export default createModel<RootModel>()({
 
     async share(data: IShareProps, globalState) {
       const { set } = dispatch.shares
-      const device = getDevices(globalState).find((d: IDevice) => d.id === data.deviceId)
       set({ sharing: true })
+      const device = getDevices(globalState).find((d: IDevice) => d.id === data.deviceId)
       const result = await graphQLShareDevice(data)
       if (result !== 'ERROR') {
         dispatch.ui.set({
@@ -142,7 +143,7 @@ export default createModel<RootModel>()({
 
       const currentDevice = globalState.shares.currentDevice
       const { device, serviceID } = currentDevice
-      const contacts = globalState.devices.contacts
+      const contacts = globalState.contacts.all
 
       let userSelectedServices: string[][] = emails.map(email => {
         return device ? getPermissions(device, email, true).services.map(s => s.id) : []
@@ -234,7 +235,8 @@ export default createModel<RootModel>()({
         return service
       })
       await dispatch.devices.updateShareDevice(device)
-      await dispatch.devices.fetchSingle({ id: device.id })
+      dispatch.devices.fetchSingle({ id: device.id })
+      dispatch.contacts.fetch()
     },
   }),
   reducers: {
