@@ -215,7 +215,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           marginRight: spacing.md,
         },
         button: {
-          // '&:hover, &:focus': { backgroundColor: palette.primaryHighlight.main },
           '&:hover': { backgroundColor: palette.primaryHighlight.main },
         },
         secondaryAction: {
@@ -225,7 +224,6 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         container: {
           '& .MuiListItemSecondaryAction-root': {},
           '& .MuiListItemSecondaryAction-root.hidden': { display: 'none' },
-          // '&:hover, &:focus': {
           '&:hover': {
             '& .MuiListItemSecondaryAction-root.hidden': { display: 'block' },
             '& .hoverHide': { display: 'none' },

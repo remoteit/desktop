@@ -2,7 +2,7 @@ import React from 'react'
 import { List, ListItem, Tooltip } from '@material-ui/core'
 import { fontSizes } from '../../styling'
 import { makeStyles } from '@material-ui/core/styles'
-import { Attribute } from '../../helpers/attributes'
+import { Attribute } from '../Attributes'
 import { Icon } from '../Icon'
 
 type Props = IDataOptions & {
@@ -41,7 +41,7 @@ export const DataDisplay: React.FC<Props> = ({ attributes, width = 140, disableP
 }
 
 const useStyles = minWidth =>
-  makeStyles( ({ palette }) => ({
+  makeStyles(({ palette }) => ({
     list: { width: '100%' },
     item: {
       padding: `4px 0`,

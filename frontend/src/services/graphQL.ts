@@ -11,7 +11,7 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
   try {
     const response = await graphQLRequest(query, variables)
     const errors = graphQLGetErrors(response)
-    console.log('BASIC REQUEST GRAPHQL', response, errors)
+    console.log('BASIC REQUEST GRAPHQL', query, response, errors)
     return errors ? 'ERROR' : response
   } catch (error) {
     await apiError(error)
@@ -65,7 +65,7 @@ export function graphQLGetErrors(response: AxiosResponse | 'ERROR' | void, silen
   }
 
   if (errors) {
-    errors.forEach(error => console.warn('graphQL error:', error))
+    errors.forEach(error => console.error('graphQL error:', error))
     if (!silent) store.dispatch.ui.set({ errorMessage: 'GraphQL: ' + errors[0].message })
   } else {
     // console.log('No errors, setting count to 0')

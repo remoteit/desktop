@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles, Box } from '@material-ui/core'
-import { Attribute } from '../helpers/attributes'
+import { Attribute } from './Attributes'
 import { spacing } from '../styling'
 
 type Props = {

@@ -16,6 +16,11 @@ const DEVICE_SELECT = `
   permissions
   license
   attributes
+  tags {
+    name
+    color
+    created
+  }
   access {
     user {
       id
@@ -70,6 +75,7 @@ const DEVICE_SELECT = `
 `
 
 export async function graphQLFetchDevices({
+  tag,
   size,
   from,
   state,
@@ -81,11 +87,11 @@ export async function graphQLFetchDevices({
   platform,
 }: gqlOptions) {
   return await graphQLRequest(
-    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
+    ` query($ids: [String!]!, $size: Int, $from: Int, $name: String, $state: String, $tag: TagFilter, $account: String, $sort: String, $owner: Boolean, $platform: [Int!]) {
         login {
           id
           account(id: $account) {
-            devices(size: $size, from: $from, name: $name, state: $state, sort: $sort, owner: $owner, platform: $platform) {
+            devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, platform: $platform) {
               total
               items {
                 ${DEVICE_SELECT}
@@ -103,6 +109,7 @@ export async function graphQLFetchDevices({
       }`,
     {
       ids,
+      tag,
       size,
       from,
       state,
@@ -166,7 +173,7 @@ export function graphQLAdaptor(
       license: d.license,
       permissions: d.permissions,
       attributes: processDeviceAttributes(d, metaData),
-      tags: labelsToTags(d),
+      tags: d.tags.map(t => ({ ...t, created: new Date(t.created) })),
       services: d.services.map(
         (s: any): IService => ({
           id: s.id,
@@ -221,13 +228,6 @@ function processAttributes(response: any): ILookup<any> {
   let result = { ...root, ...$ }
   delete result.$remoteit
   return result
-}
-
-function labelsToTags(response: any): IDevice['tags'] {
-  let tags: IDevice['tags'] = []
-  const attributes = processAttributes(response)
-  if (attributes.color) tags.push(1000 + attributes.color)
-  return tags
 }
 
 export async function graphQLCreateRegistration(services: IApplicationType['id'][], account: string) {

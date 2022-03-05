@@ -1,9 +1,11 @@
 import React from 'react'
+import { Dispatch } from '../../store'
+import { useDispatch } from 'react-redux'
 import { ServiceContextualMenu } from '../ServiceContextualMenu'
 import { DeviceListHeader } from '../DeviceListHeader'
 import { makeStyles, List } from '@material-ui/core'
 import { DeviceListItem } from '../DeviceListItem'
-import { Attribute } from '../../helpers/attributes'
+import { Attribute } from '../Attributes'
 import { isOffline } from '../../models/devices'
 import { GuideStep } from '../GuideStep'
 import { LoadMore } from '../LoadMore'
@@ -18,6 +20,7 @@ export interface DeviceListProps {
   devices?: IDevice[]
   restore?: boolean
   select?: boolean
+  selected?: string[]
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
@@ -29,13 +32,16 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   primary,
   restore,
   select,
+  selected = [],
 }) => {
   const css = useStyles({ attributes, primary, columnWidths })
+  const dispatch = useDispatch<Dispatch>()
 
   return (
     <>
       <List className={css.grid} disablePadding>
         <DeviceListHeader
+          devices={devices}
           primary={primary}
           attributes={attributes}
           select={select}
@@ -52,6 +58,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
         >
           {devices?.map(device => {
             const canRestore = isOffline(device) && !device.shared
+            const isSelected = selected?.includes(device.id)
             if (restore && !canRestore) return null
             return (
               <DeviceListItem
@@ -62,6 +69,16 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                 attributes={attributes}
                 restore={restore && canRestore}
                 select={select}
+                selected={isSelected}
+                onSelect={deviceId => {
+                  if (isSelected) {
+                    const index = selected.indexOf(deviceId)
+                    selected.splice(index, 1)
+                  } else {
+                    selected.push(deviceId)
+                  }
+                  dispatch.ui.set({ selected: [...selected] })
+                }}
               />
             )
           })}

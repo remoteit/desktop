@@ -87,7 +87,12 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <Snackbar
         key={noticeMessage || 'notice'}
         open={snackbar === 'notice'}
-        message={noticeMessage}
+        message={
+          <>
+            <Icon name="info-circle" size="md" color="primary" type="regular" fixedWidth inlineLeft />
+            {noticeMessage}
+          </>
+        }
         onClose={() => ui.set({ noticeMessage: '' })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         autoHideDuration={20000}

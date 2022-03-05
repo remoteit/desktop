@@ -244,6 +244,51 @@ export async function graphQLReadNotice(id: string) {
   )
 }
 
+export async function graphQLSetTag(tag: { name: string; color: number }) {
+  return await graphQLBasicRequest(
+    ` mutation query($tag: [TagInput!]!) {
+        setTag(tag: $tag)
+      }`,
+    { tag }
+  )
+}
+
+export async function graphQLAddTag(serviceId: string | string[], name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: [String!]!, $name: [String!]!) {
+        addTag(serviceId: $serviceId, name: $name)
+    }`,
+    { serviceId, name }
+  )
+}
+
+export async function graphQLRemoveTag(serviceId: string | string[], name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($serviceId: [String!]!, $name: [String!]!) {
+        removeTag(serviceId: $serviceId, name: $name)
+    }`,
+    { serviceId, name }
+  )
+}
+
+export async function graphQLRenameTag(from: string, to: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($from: String!, $to: String!) {
+        renameTag(from: $from, to: $to)
+    }`,
+    { from, to }
+  )
+}
+
+export async function graphQLDeleteTag(name: string) {
+  return await graphQLBasicRequest(
+    ` mutation query($name: [String!]!) {
+        deleteTag(name: $name)
+      }`,
+    { name }
+  )
+}
+
 export async function graphQLUpdateNotification(params: INotificationSetting) {
   return await graphQLBasicRequest(
     `  mutation UpdateUserMetadata(

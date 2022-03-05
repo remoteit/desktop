@@ -48,7 +48,7 @@ export type Color =
 export const lightColors: { [key in Color]: string } = {
   primary: '#0096e7',
   primaryLight: '#9ed3f0',
-  primaryLighter: '#e7f2f9',
+  primaryLighter: '#e3f4ff', //'#e7f2f9',
   primaryHighlight: '#edf8ff',
   secondary: '#75bd00',
   successLight: '#a4db4c',

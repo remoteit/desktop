@@ -1,6 +1,6 @@
 {
   "name": "remoteit-headless",
-  "version": "3.6.0",
+  "version": "3.7.0-alpha.0",
   "private": true,
   "main": "build/index.js",
   "scripts": {
@@ -34,7 +34,7 @@
     "lolex": "^6.0.0",
     "netmask": "^2.0.2",
     "network": "^0.6.1",
-    "plist": "^3.0.1",
+    "plist": "^3.0.4",
     "portfinder": "^1.0.28",
     "realpath-native": "^3.0.0",
     "remote.it": "^0.47.1",
