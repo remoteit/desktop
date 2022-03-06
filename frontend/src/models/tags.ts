@@ -16,6 +16,7 @@ import { RootModel } from './rootModel'
 type ITagState = {
   all: ITag[]
   adding?: boolean
+  creating?: boolean
   removing?: boolean
   deleting?: string
   updating?: string
@@ -111,10 +112,12 @@ export default createModel<RootModel>()({
 
     async create(tag: ITag, globalState) {
       const tags = globalState.tags.all
+      dispatch.tags.set({ creating: true })
       tag.color = tag.color || getNextLabel(globalState)
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
       dispatch.tags.setOrdered({ all: [...tags, tag] })
+      dispatch.tags.set({ creating: false })
     },
 
     async update(tag: ITag, globalState) {

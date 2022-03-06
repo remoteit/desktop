@@ -9,13 +9,23 @@ import { Icon } from './Icon'
 
 type Props = {
   tags?: ITag[]
+  filter?: ITag[]
   allowAdding?: boolean
+  createOnly?: boolean
   button?: string
   buttonProps?: ButtonProps
   onSelect?: (tag: ITag) => void
 }
 
-export const TagEditor: React.FC<Props> = ({ tags = [], allowAdding = true, button, buttonProps, onSelect }) => {
+export const TagEditor: React.FC<Props> = ({
+  tags = [],
+  filter = [],
+  allowAdding = true,
+  createOnly,
+  button,
+  buttonProps,
+  onSelect,
+}) => {
   const dispatch = useDispatch<Dispatch>()
   const getColor = useLabel()
   const [open, setOpen] = React.useState<boolean>(false)
@@ -49,6 +59,8 @@ export const TagEditor: React.FC<Props> = ({ tags = [], allowAdding = true, butt
         items={tags}
         open={open}
         indicator="tag"
+        filter={filter}
+        createOnly={createOnly}
         placeholder={allowAdding ? 'New tag...' : 'Remove a tag...'}
         targetEl={addRef.current}
         onItemColor={tag => getColor(tag.color)}
