@@ -7,7 +7,7 @@ import { Icon } from '../Icon'
 import { spacing } from '../../styling'
 
 export interface LoadingMessageProps {
-  message?: string
+  message?: React.ReactElement | string
   spinner?: boolean
   logo?: boolean
 }

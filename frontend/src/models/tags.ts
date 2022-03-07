@@ -57,6 +57,7 @@ export default createModel<RootModel>()({
     },
 
     async add({ tag, device }: { tag: ITag; device: IDevice }) {
+      if (!device) return
       const original = { ...device }
       device.tags.push(tag)
       dispatch.accounts.setDevice({ id: device.id, device })

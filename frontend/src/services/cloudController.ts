@@ -27,6 +27,7 @@ class CloudController {
     }
     this.connect()
     network.on('connect', this.reconnect)
+    network.on('disconnect', this.close)
     this.startPing()
     this.initialized = true
   }
