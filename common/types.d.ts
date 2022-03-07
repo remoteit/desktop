@@ -378,7 +378,7 @@ declare global {
     target: {
       id: string
       deviceId: string
-      platform: number
+      platform?: number
       name: string // combined service + device names
     }
   }

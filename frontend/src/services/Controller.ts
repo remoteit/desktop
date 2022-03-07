@@ -30,6 +30,8 @@ class Controller extends EventEmitter {
     const state = store.getState()
     const { ui, auth } = store.dispatch
 
+    if (!navigator.onLine) return
+
     this.log('ONLINE - CONNECT LOCAL SOCKET')
 
     if (state.auth.backendAuthenticated) {
