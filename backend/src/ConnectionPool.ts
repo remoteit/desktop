@@ -69,14 +69,16 @@ export default class ConnectionPool {
 
     // start any connections: desktop -> cli
     this.pool.forEach(connection => {
-      if (!connection.params.enabled || connection.params.public) return
+      if (!(connection.params.enabled || connection.params.connected) || connection.params.public) return
 
       const cliConnection = cliData.find(c => c.id === connection.params.id)
+
       if (!cliConnection) {
         Logger.info('SYNC CONNECTION DESKTOP -> CLI', { connection: connection.params })
         connection.start()
         update = true
       }
+
       if (connection.params.host === IP_PRIVATE && preferences.get().useCertificate) {
         if (!connection.params.error) {
           Logger.warn('CERTIFICATE HOSTNAME ERROR', { connection: connection.params })

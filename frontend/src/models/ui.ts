@@ -69,7 +69,7 @@ export const defaultState: UIState = {
   navigation: {},
   selected: [],
   connected: false,
-  offline: false,
+  offline: !navigator.onLine,
   uninstalling: false,
   claiming: false,
   routingLock: undefined,
