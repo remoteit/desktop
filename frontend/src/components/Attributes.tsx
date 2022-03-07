@@ -12,6 +12,7 @@ import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
+import { Avatar } from './Avatar'
 import { TestUI } from './TestUI'
 import { Tags } from './Tags'
 
@@ -139,6 +140,16 @@ export const attributes: Attribute[] = [
     id: 'owner',
     label: 'Owner',
     value: ({ device }) => device?.owner.email,
+  }),
+  new DeviceAttribute({
+    id: 'access',
+    label: 'Access',
+    value: ({ device }) =>
+      device?.shared ? (
+        <Avatar email={device?.owner.email} size={22} tooltip />
+      ) : (
+        device?.access.map((u, i) => <Avatar key={i} email={u.email} size={22} tooltip />)
+      ),
   }),
   new DeviceAttribute({
     id: 'lastReported',

@@ -14,14 +14,16 @@ type Props = {
 }
 
 export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, onDelete }) => {
-  const css = useStyles()
   const getColor = useLabel()
+  const color = tag ? getColor(tag.color) : undefined
+  const css = useStyles({ color })
 
   if (!tag) return null
 
   if (dot)
     return (
       <Tooltip
+        classes={{ tooltip: css.tooltip }}
         title={
           <>
             <Icon name="tag" type="solid" size="xxxs" inlineLeft />
@@ -31,7 +33,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
         arrow
       >
         <span className={css.dot}>
-          <Icon name="tag" color={getColor(tag.color)} type="solid" size={size} />
+          <Icon name="tag" color={color} type="solid" size={size} />
         </span>
       </Tooltip>
     )
@@ -46,7 +48,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
         </>
       }
       size="small"
-      style={{ color: getColor(tag.color) }}
+      style={{ color }}
       deleteIcon={
         <IconButton>
           <Icon name="times" size="xs" />
@@ -59,6 +61,7 @@ export const Tag: React.FC<Props> = ({ tag, labels, dot, size = 'xxs', onClick, 
 }
 
 const useStyles = makeStyles({
+  tooltip: ({ color }: any) => ({ backgroundColor: color }),
   dot: {
     '& + span': { marginLeft: spacing.xxs },
   },

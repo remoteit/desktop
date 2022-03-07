@@ -38,7 +38,7 @@ export const AvatarMenu: React.FC = () => {
     <>
       <Tooltip title={user?.email || 'Sign in'} placement="right">
         <ButtonBase onClick={handleOpen} ref={buttonRef}>
-          <Avatar email={user?.email} button />
+          <Avatar email={user?.email || ''} button />
         </ButtonBase>
       </Tooltip>
       <Menu
