@@ -39,7 +39,7 @@ export const SettingsAccountPage: React.FC<{ singlePanel?: boolean }> = ({ singl
       }
     >
       <List>
-        <ListItemLocation title="Overviews" pathname="/settingsAccount/overview" icon="home" match={['/settingsAccount/overview']} exactMatch={true} dense />
+        <ListItemLocation title="Overviews" pathname="/settingsAccount/overview" icon="home" exactMatch={true} dense />
         <ListItemLocation title="Security & Login" pathname="/settingsAccount/security" icon="file-alt" dense />
         <ListItemLocation title="Notifications" pathname="/settingsAccount/notifications" icon="bell" dense />
         <ListItemLocation title="Licensing" pathname="/settingsAccount/licensing" icon="id-badge" badge={licenseIndicator} dense />
