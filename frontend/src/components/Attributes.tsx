@@ -141,7 +141,7 @@ export const attributes: Attribute[] = [
     label: 'Owner',
     value: ({ device }) => device?.owner.email,
   }),
-  new DeviceAttribute({
+  new Attribute({
     id: 'access',
     label: 'Access',
     value: ({ device }) =>
