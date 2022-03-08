@@ -194,7 +194,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                       )}
                       <CopyButton
                         color="alwaysWhite"
-                        icon="link"
+                        icon={app.launchType === 'URL' ? 'link' : 'terminal'}
                         size="md"
                         app={app}
                         value={app.string}
@@ -204,25 +204,27 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, connection
                     </>
                   )}
                 </span>
-                <span>
-                  <InputLabel shrink>Launch</InputLabel>
-                  <GuideStep
-                    guide="guideAWS"
-                    step={7}
-                    instructions="Or for web and some other services you can use the launch button."
-                    placement="left"
-                  >
-                    <LaunchButton
-                      color="alwaysWhite"
-                      type="solid"
-                      size="md"
-                      app={app}
-                      onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
-                      onMouseEnter={() => setHover('launch')}
-                      onMouseLeave={() => setHover(undefined)}
-                    />
-                  </GuideStep>
-                </span>
+                {app.canLaunch && (
+                  <span>
+                    <InputLabel shrink>Launch</InputLabel>
+                    <GuideStep
+                      guide="guideAWS"
+                      step={7}
+                      instructions="Or for web and some other services you can use the launch button."
+                      placement="left"
+                    >
+                      <LaunchButton
+                        color="alwaysWhite"
+                        type="solid"
+                        size="md"
+                        app={app}
+                        onLaunch={() => ui.guide({ guide: 'guideAWS', step: 0, done: true })}
+                        onMouseEnter={() => setHover('launch')}
+                        onMouseLeave={() => setHover(undefined)}
+                      />
+                    </GuideStep>
+                  </span>
+                )}
               </Gutters>
             </>
           )}
