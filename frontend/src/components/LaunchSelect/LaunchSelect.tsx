@@ -35,16 +35,6 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
 
   const handleClick = () => setOpen(!open)
 
-  let inputProps = {
-    select: true,
-    disabled: false,
-  }
-
-  if (isPortal()) {
-    inputProps.select = false
-    inputProps.disabled = true
-  }
-
   return (
     <>
       <ListItem dense className={css.field} onClick={handleClick} button>
@@ -52,11 +42,11 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
           <Icon name={app.icon} size="md" modified={app.template !== app.defaultTemplate} fixedWidth />
         </ListItemIcon>
         <TextField
-          {...inputProps}
+          select
           fullWidth
           SelectProps={{ open }}
           label="Launch type"
-          value={isPortal() ? 'URL' : app.launchType}
+          value={app.launchType}
           onChange={e => handleChange(e.target.value)}
         >
           <MenuItem value={LAUNCH_TYPE.URL}>URL</MenuItem>
@@ -76,7 +66,7 @@ export const LaunchSelect: React.FC<Props> = ({ service, connection }) => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   menu: { textTransform: 'capitalize' },
   indent: { marginRight: -spacing.lg },
   field: { '&:hover': { backgroundColor: palette.primaryHighlight.main } },

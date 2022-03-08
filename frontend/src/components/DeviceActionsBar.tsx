@@ -74,6 +74,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderRadius: radius,
     marginLeft: spacing.sm,
     marginRight: spacing.sm,
+    marginBottom: spacing.xs,
     paddingRight: spacing.sm,
     '& .MuiTypography-root': {
       marginTop: spacing.xs,

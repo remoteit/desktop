@@ -58,7 +58,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
         color: 0,
       })
     : items
-  console.log('AutocompleteMenu', { exists, options })
+
   return (
     <Popper anchorEl={targetEl} open={open} placement="bottom-start">
       <Paper className={css.container} elevation={1}>
