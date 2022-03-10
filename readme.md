@@ -138,7 +138,8 @@ Tests are written using Jest.
 
 ### Setup
 
-Copy the `backend/.env.example` file to `backend/.env` and then fill in the values.
+Get a copy of the .env file
+place the .env file at the root (/) and in frontend /frontend
 
 To use the fontawesome fonts:
 [Installation Instructions](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro)
