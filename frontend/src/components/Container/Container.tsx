@@ -2,14 +2,14 @@ import React from 'react'
 import classnames from 'classnames'
 import { makeStyles, Divider } from '@material-ui/core'
 import { spacing } from '../../styling'
-import { Body } from '../Body'
+import { Body, BodyProps } from '../Body'
 
 type Props = {
   header?: any
   sidebar?: any
   footer?: any
   integrated?: boolean
-  bodyProps?: any
+  bodyProps?: BodyProps
   bodyRef?: React.RefObject<HTMLDivElement>
   gutterBottom?: boolean
   backgroundColor?: string

@@ -13,7 +13,6 @@ import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
 import { toLookup } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
-import { TestUI } from './TestUI'
 import { Tags } from './Tags'
 
 export class Attribute {
@@ -25,6 +24,7 @@ export class Attribute {
   column: boolean = true
   defaultWidth: number = 150
   type: 'MASTER' | 'SERVICE' | 'DEVICE' | 'CONNECTION' = 'MASTER'
+  feature?: string
   value: (options: IDataOptions) => any = () => {}
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
@@ -36,10 +36,15 @@ export class Attribute {
     align?: Attribute['align']
     column?: boolean
     defaultWidth?: number
+    feature?: string
     type?: Attribute['type']
     value?: Attribute['value']
   }) {
     Object.assign(this, options)
+  }
+
+  show(feature: ILookup<boolean>) {
+    return !this.feature ? true : feature[this.feature]
   }
 }
 
@@ -97,6 +102,7 @@ export const attributes: Attribute[] = [
     label: 'Tags',
     defaultWidth: 100,
     value: ({ device }) => <Tags tags={device?.tags || []} small />,
+    feature: 'tagging',
   }),
   new Attribute({
     id: 'services',
@@ -107,9 +113,10 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'tagEditor',
-    label: 'tags',
-    value: ({ device }) => (TestUI({}) ? <DeviceTagEditor device={device} /> : undefined),
+    label: 'Tags',
+    value: ({ device }) => <DeviceTagEditor device={device} />,
     column: false,
+    feature: 'tagging',
   }),
   new DeviceAttribute({
     id: 'targetPlatform',

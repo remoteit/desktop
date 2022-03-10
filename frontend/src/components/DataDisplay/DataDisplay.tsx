@@ -7,18 +7,20 @@ import { Icon } from '../Icon'
 
 type Props = IDataOptions & {
   attributes: Attribute[]
+  feature?: ILookup<boolean>
   device?: IDevice
   service?: IService
   disablePadding?: boolean
   width?: number
 }
 
-export const DataDisplay: React.FC<Props> = ({ attributes, width = 140, disablePadding, ...props }) => {
+export const DataDisplay: React.FC<Props> = ({ attributes, feature, width = 140, disablePadding, ...props }) => {
   const css = useStyles(width)()
   if (!props) return null
   return (
     <List className={css.list} disablePadding={disablePadding}>
       {attributes.map(attribute => {
+        if (feature && !attribute.show(feature)) return null
         const value = attribute.value(props)
         return (
           value != null && (

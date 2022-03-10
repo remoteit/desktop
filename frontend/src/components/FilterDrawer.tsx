@@ -36,7 +36,7 @@ const platformFilter = [{ value: -1, name: 'All' }].concat(
 export const FilterDrawer: React.FC = () => {
   const getColor = useLabel()
   const { devices } = useDispatch<Dispatch>()
-  const { state, open, tags } = useSelector((state: ApplicationState) => ({
+  const { state, open, tags, feature } = useSelector((state: ApplicationState) => ({
     state: {
       sort: state.devices.sort,
       tag: state.devices.tag,
@@ -46,6 +46,7 @@ export const FilterDrawer: React.FC = () => {
     },
     open: state.ui.drawerMenu === 'FILTER',
     tags: state.tags.all.map(t => ({ name: t.name, value: t.name, color: getColor(t.color) })),
+    feature: state.ui.feature,
   }))
 
   const update = values => {
@@ -78,6 +79,7 @@ export const FilterDrawer: React.FC = () => {
             key: 'tag',
             subtitle: 'Tags',
             onClear: state.tag === undefined ? undefined : () => update({ tag: undefined }),
+            disabled: !feature.tagging,
             children: (
               <FilterSelector
                 icon="check"

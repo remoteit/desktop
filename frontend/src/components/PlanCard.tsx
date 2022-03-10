@@ -10,13 +10,17 @@ type Props = {
   price?: string
   caption: string | React.ReactElement
   note?: string
-  feature?: string
   features?: string[]
   button: string
   disabled?: boolean
   selected?: boolean
   loading?: boolean
+  wide?: boolean
   onSelect?: () => void
+}
+
+type StyleProps = {
+  wide?: boolean
 }
 
 export const PlanCard: React.FC<Props> = ({
@@ -25,15 +29,15 @@ export const PlanCard: React.FC<Props> = ({
   price,
   caption,
   note,
-  feature,
   features = [],
   button,
   disabled,
   selected,
   loading,
+  wide,
   onSelect,
 }) => {
-  const css = useStyles()
+  const css = useStyles({ wide })
   return (
     <div className={classnames(css.card, selected && css.selected)}>
       {selected && <header>Current plan</header>}
@@ -42,33 +46,34 @@ export const PlanCard: React.FC<Props> = ({
         <Typography variant="caption">{description}</Typography>
       </div>
       <Divider flexItem variant="inset" />
-      <div className={css.price}>
-        {price !== undefined && <Typography variant="h1">{price}</Typography>}
-        <Typography variant="body2">{caption}</Typography>
-        {note !== undefined && <Typography variant="caption">{note}</Typography>}
-      </div>
-      <Button
-        onClick={onSelect}
-        size="small"
-        color="primary"
-        variant={'contained'}
-        disabled={loading || disabled}
-        className={css.select}
-      >
-        {loading ? 'Processing...' : button}
-      </Button>
-      <div className={css.features}>
-        {/* <Typography variant="body2">Features:</Typography> */}
-        <List dense>
-          {feature && (
-            <Item>
-              <b>{feature}</b>
-            </Item>
-          )}
-          {features.map((f, index) => (
-            <Item key={index}>{f}</Item>
-          ))}
-        </List>
+      <div className="planCardColumn">
+        <div>
+          <div className={css.price}>
+            {price !== undefined && <Typography variant="h1">{price}</Typography>}
+            <Typography variant="body2">{caption}</Typography>
+            {note !== undefined && <Typography variant="caption">{note}</Typography>}
+          </div>
+          <Button
+            onClick={onSelect}
+            size="small"
+            color="primary"
+            variant="contained"
+            disabled={loading || disabled}
+            className={css.select}
+          >
+            {loading ? 'Processing...' : button}
+          </Button>
+        </div>
+        <div className={css.features}>
+          <List dense>
+            {features[0] && (
+              <Item>
+                <b>{features[0]}</b>
+              </Item>
+            )}
+            {features.map((f, index) => index > 0 && <Item key={index}>{f}</Item>)}
+          </List>
+        </div>
       </div>
     </div>
   )
@@ -86,7 +91,18 @@ export const Item: React.FC = ({ children }) => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  card: { display: 'flex', width: '100%', maxWidth: 260, flexDirection: 'column', alignItems: 'center' },
+  card: ({ wide }: StyleProps) => ({
+    display: 'flex',
+    width: '100%',
+    maxWidth: wide ? 600 : 280,
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    '& .planCardColumn': {
+      display: wide ? 'flex' : 'block',
+      '& > div + div': { marginLeft: wide ? spacing.md : undefined },
+    },
+  }),
   selected: {
     backgroundColor: palette.primaryHighlight.main,
     borderRadius: radius,
@@ -101,7 +117,7 @@ const useStyles = makeStyles(({ palette }) => ({
       backgroundColor: palette.primaryLight.main,
       letterSpacing: spacing.xxs,
       fontSize: fontSizes.xxxs,
-      color: palette.white.main,
+      color: palette.alwaysWhite.main,
       fontWeight: 600,
       lineHeight: 2,
     },
@@ -131,6 +147,7 @@ const useStyles = makeStyles(({ palette }) => ({
     fontSize: fontSizes.sm,
     maxWidth: 250,
     lineHeight: 1.3,
+    marginLeft: -spacing.md,
     '& b': { fontWeight: 400, color: palette.grayDarkest.main },
     '& .MuiListItemIcon-root': { minWidth: 40 },
   },

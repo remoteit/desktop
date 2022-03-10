@@ -9,10 +9,11 @@ import { Drawer } from './Drawer'
 import { Icon } from './Icon'
 
 export const ColumnsDrawer: React.FC = () => {
-  const { open, columnWidths, selected } = useSelector((state: ApplicationState) => ({
+  const { open, columnWidths, selected, feature } = useSelector((state: ApplicationState) => ({
     open: state.ui.drawerMenu === 'COLUMNS',
     columnWidths: state.ui.columnWidths,
     selected: state.ui.columns,
+    feature: state.ui.feature,
   }))
   const { ui } = useDispatch<Dispatch>()
   const css = useStyles()
@@ -23,7 +24,8 @@ export const ColumnsDrawer: React.FC = () => {
     ui.setPersistent({ columns: [...selected] })
   }
 
-  const attributes = masterAttributes.concat(deviceAttributes).filter(a => a.column)
+  const attributes = masterAttributes.concat(deviceAttributes).filter(a => a.column && a.show(feature))
+
   const onReset = () => {
     const deviceName = attributes.find(a => a.id === 'deviceName')?.defaultWidth
     const services = attributes.find(a => a.id === 'services')?.defaultWidth
