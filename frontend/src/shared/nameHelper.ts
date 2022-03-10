@@ -86,13 +86,7 @@ export function safeFilename(name: string) {
 }
 
 export function serviceNameValidation(name: string) {
-  const value = name.replace(REGEX_NAME_SAFE, '')
-  if (value !== name) {
-    return {
-      error: 'Can only contain alpha numeric characters',
-      value,
-    }
-  }
+  const value = name
   if (value.length > MAX_NAME_LENGTH) {
     return {
       error: `Cannot exceed ${MAX_NAME_LENGTH} characters`,
