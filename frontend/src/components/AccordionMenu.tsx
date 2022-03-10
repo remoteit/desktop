@@ -6,6 +6,7 @@ import { Divider } from '@material-ui/core'
 
 type IAccordionMenu = {
   key: number | string
+  disabled?: boolean
   subtitle: string
   onClear?: () => void
   children: React.ReactElement
@@ -19,20 +20,23 @@ export const AccordionMenu: React.FC<Props> = ({ menus }) => {
 
   return (
     <>
-      {menus.map((menu, index) => (
-        <React.Fragment key={index}>
-          {!!index && <Divider />}
-          <AccordionMenuItem
-            expanded={drawerAccordion === menu.key}
-            onClick={expanded => ui.setPersistent({ drawerAccordion: expanded ? menu.key : undefined })}
-            onClear={menu.onClear}
-            subtitle={menu.subtitle}
-            square
-          >
-            {menu.children}
-          </AccordionMenuItem>
-        </React.Fragment>
-      ))}
+      {menus.map(
+        (menu, index) =>
+          menu.disabled || (
+            <React.Fragment key={index}>
+              {!!index && <Divider />}
+              <AccordionMenuItem
+                expanded={drawerAccordion === menu.key}
+                onClick={expanded => ui.setPersistent({ drawerAccordion: expanded ? menu.key : undefined })}
+                onClear={menu.onClear}
+                subtitle={menu.subtitle}
+                square
+              >
+                {menu.children}
+              </AccordionMenuItem>
+            </React.Fragment>
+          )
+      )}
     </>
   )
 }

@@ -104,7 +104,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   showScroll: {
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: `${palette.darken.main} !important`,
+      backgroundColor: `${palette.grayLight.main} !important`,
     },
   },
 }))

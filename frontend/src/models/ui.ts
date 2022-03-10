@@ -32,6 +32,7 @@ type UIState = {
   drawerAccordion: string | number
   columns: string[]
   columnWidths: ILookup<number>
+  feature: ILookup<boolean>
   serviceContextMenu?: IContextMenu
   redirect?: string
   restoring: boolean
@@ -78,6 +79,7 @@ export const defaultState: UIState = {
   drawerAccordion: 'sort',
   columns: ['deviceName', 'tags', 'services'],
   columnWidths: {},
+  feature: { tagging: true },
   serviceContextMenu: undefined,
   redirect: undefined,
   restoring: false,

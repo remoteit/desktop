@@ -17,7 +17,9 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { selected, devices, connections, myDevice, fetching, columnWidths, attributes, required } = useSelector(
     (state: ApplicationState) => ({
       selected: state.ui.selected,
-      attributes: masterAttributes.concat(deviceAttributes).filter(a => state.ui.columns.includes(a.id) && !a.required),
+      attributes: masterAttributes
+        .concat(deviceAttributes)
+        .filter(a => a.show(state.ui.feature) && state.ui.columns.includes(a.id) && !a.required),
       required: masterAttributes.find(a => a.required) || masterAttributes[0],
       fetching: state.devices.fetching,
       columnWidths: state.ui.columnWidths,

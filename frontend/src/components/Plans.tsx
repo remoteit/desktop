@@ -33,7 +33,7 @@ const Features = {
   ],
   [BUSINESS_PLAN_ID]: [
     'Devices* are not limited',
-    'Commercial and resale usage',
+    'Commercial resale usage',
     '1 year of activity logs',
     'Custom user roles',
     'Device tagging user access',

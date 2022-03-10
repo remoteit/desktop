@@ -18,10 +18,11 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
-  const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
+  const { billing, preferences, licenseIndicator, feature } = useSelector((state: ApplicationState) => ({
     billing: !!getRemoteitLicense(state)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
+    feature: state.ui.feature,
   }))
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           dense
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
-        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />
+        {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />}
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation title="Organization" pathname="/settings/organization" icon="industry-alt" exactMatch dense />
         <ListItemLocation
