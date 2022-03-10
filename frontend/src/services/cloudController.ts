@@ -27,6 +27,7 @@ class CloudController {
     }
     this.connect()
     network.on('connect', this.reconnect)
+    network.on('disconnect', this.close)
     this.startPing()
     this.initialized = true
   }
@@ -40,6 +41,9 @@ class CloudController {
       this.log('CLOUD SOCKET ALREADY CONNECTED')
       return
     }
+
+    if (!navigator.onLine) return
+
     const url = getWebSocketURL()
     this.log('CONNECT CLOUD SOCKET', url, this.socket)
     this.socket = new ReconnectingWebSocket(url, [], {})

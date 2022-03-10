@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles, TextField, Input } from '@material-ui/core'
+import { makeStyles, TextField, TextFieldProps, Input } from '@material-ui/core'
 import { InlineSetting } from './InlineSetting'
 import { spacing } from '../styling'
 
 type Props = {
   value?: string | number
-  label?: string | JSX.Element
-  icon?: JSX.Element | string
-  actionIcon?: JSX.Element
+  label?: React.ReactElement | string
+  icon?: React.ReactElement | string
+  actionIcon?: React.ReactElement
   displayValue?: string | number
   filter?: RegExp
   color?: string
@@ -16,7 +16,7 @@ type Props = {
   resetValue?: string | number
   maxLength?: number
   hideIcon?: boolean
-  warning?: string
+  warning?: React.ReactElement | string
   modified?: boolean
   disableGutters?: boolean
   debug?: boolean
@@ -45,7 +45,15 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
     onError && onError(error)
   }, [error])
 
-  const Field = label ? TextField : Input
+  let Field
+  let FieldProps: TextFieldProps = {}
+
+  if (label) {
+    Field = TextField
+    FieldProps.helperText = error
+  } else {
+    Field = Input
+  }
 
   return (
     <InlineSetting
@@ -60,6 +68,7 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
       onShowEdit={() => setEditValue(value)}
     >
       <Field
+        {...FieldProps}
         autoFocus
         multiline={value?.toString().length > 30}
         inputRef={fieldRef}
@@ -68,7 +77,6 @@ export const InlineTextFieldSetting: React.FC<Props> = ({
         value={editValue}
         variant="filled"
         className={css.field}
-        helperText={label ? error : undefined}
         onChange={event => {
           let value = event.target.value
           if (required && !value.length) {

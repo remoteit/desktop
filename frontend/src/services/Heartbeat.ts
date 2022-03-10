@@ -1,8 +1,10 @@
 import network from './Network'
 import { isPortal } from './Browser'
-import { HEARTBEAT_INTERVAL } from '../shared/constants'
 import { store } from '../store'
 import { emit } from './Controller'
+
+const HEARTBEAT_INTERVAL = 1000 * 15 // 15 SEC
+const CAFFEINATE_INTERVAL = 1000 // 1 SEC
 
 class Heartbeat {
   count = 0
@@ -29,7 +31,7 @@ class Heartbeat {
         this.interval = undefined
       }
       this.beat()
-    }, 1000)
+    }, CAFFEINATE_INTERVAL)
   }
 }
 

@@ -66,14 +66,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   let disabled = !permissions?.includes('CONNECT')
   let variant: 'text' | 'outlined' | 'contained' | undefined
 
+  if (connection?.autoLaunch) title += ' + Launch'
+
   if (chip && chip.show) {
     color = chip.colorName
     title = chip.disabled ? chip.name : title
     if (chip.disabled) clickHandler = () => history.push('/settings/plans')
     variant = 'text'
   }
-
-  if (connection?.autoLaunch) title += ' + Launch'
 
   if (state === 'ready') {
     title = 'Connecting'

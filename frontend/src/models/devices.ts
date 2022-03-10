@@ -52,7 +52,6 @@ type IDeviceState = {
   platform: number[] | undefined
   size: number
   from: number
-  contacts: IUserRef[]
   eventsUrl: string
   sortServiceOption: 'ATOZ' | 'ZTOA' | 'NEWEST' | 'OLDEST'
   userAttributes: string[]
@@ -78,7 +77,6 @@ export const defaultState: IDeviceState = {
   platform: undefined,
   size: 50,
   from: 0,
-  contacts: [],
   eventsUrl: '',
   sortServiceOption: 'ATOZ',
   userAttributes: [],
@@ -122,7 +120,7 @@ export default createModel<RootModel>()({
       }
 
       set({ fetching: true })
-      const { devices, connections, total, contacts, error } = await graphQLFetchProcessor(options)
+      const { devices, connections, total, error } = await graphQLFetchProcessor(options)
 
       if (searched) set({ results: total })
       else set({ total })
@@ -140,8 +138,7 @@ export default createModel<RootModel>()({
         cleanOrphanConnections(options.ids)
       }
 
-      // @TODO pull contacts out into its own model / request on page load
-      set({ fetching: false, append: false, initialized: true, contacts })
+      set({ fetching: false, append: false, initialized: true })
     },
 
     /*
@@ -175,10 +172,10 @@ export default createModel<RootModel>()({
     async graphQLFetchProcessor(options: gqlOptions) {
       try {
         const gqlResponse = await graphQLFetchDevices(options)
-        const [deviceData, connectionData, total, loginId, contacts, error] = graphQLMetadata(gqlResponse)
+        const [deviceData, connectionData, total, loginId, error] = graphQLMetadata(gqlResponse)
         const connections = graphQLAdaptor(connectionData, loginId, options.account, true)
         const devices = graphQLAdaptor(deviceData, loginId, options.account)
-        return { devices, connections, total, contacts, error }
+        return { devices, connections, total, error }
       } catch (error) {
         await apiError(error)
         return { devices: [], total: 0, error }
@@ -368,8 +365,8 @@ function graphQLMetadata(gqlData?: AxiosResponse) {
   const error = graphQLGetErrors(gqlData)
   const total = gqlData?.data?.data?.login?.account?.devices?.total || 0
   const devices = gqlData?.data?.data?.login?.account?.devices?.items || {}
-  const { connections, contacts, id } = gqlData?.data?.data?.login || {}
-  return [devices, connections, total, id, contacts, error]
+  const { connections, id } = gqlData?.data?.data?.login || {}
+  return [devices, connections, total, id, error]
 }
 
 export function selectIsFiltered(state: ApplicationState) {

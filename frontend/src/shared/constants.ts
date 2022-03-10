@@ -24,7 +24,6 @@ export const CALLBACK_URL =
 export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://ws.remote.it/v1'
 export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL || 'wss://ws.remote.it/beta'
 export const PORT = process.env.REACT_APP_PORT || 29999
-export const HEARTBEAT_INTERVAL = 1000 * 15 // 15 SEC
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
 

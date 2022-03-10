@@ -33,7 +33,6 @@ export const DeviceNameSetting: React.FC<{ device: IDevice; targetDevice: ITarge
       disabled={!device.permissions.includes('MANAGE')}
       resetValue={defaultValue}
       maxLength={MAX_NAME_LENGTH}
-      filter={REGEX_NAME_SAFE}
       onSave={name => {
         if (device.shared) {
           // we use device attributes:

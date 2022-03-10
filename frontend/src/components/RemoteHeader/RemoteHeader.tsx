@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { isElectron, isMac, isRemote } from '../../services/Browser'
+import { isMac, isRemote } from '../../services/Browser'
 import { TargetPlatform } from '../TargetPlatform'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -54,7 +54,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, color, children }) => {
 }
 
 const useStyles = showBorder =>
-  makeStyles( ({ palette }) => ({
+  makeStyles(({ palette }) => ({
     full: {
       top: 0,
       left: 0,

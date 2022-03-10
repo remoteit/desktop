@@ -21,8 +21,8 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
     userSelected,
     deleting,
   } = useSelector((state: ApplicationState) => ({
-    contacts: state.devices.contacts,
-    user: state.devices.contacts.find(c => c.email === email),
+    contacts: state.contacts.all,
+    user: state.contacts.all.find(c => c.email === email),
     userSelected: state.shares.currentDevice?.userSelected,
     deleting: state.shares.deleting,
   }))
@@ -65,13 +65,7 @@ export const SharePage: React.FC<{ device?: IDevice }> = ({ device }) => {
                 )}
               </>
             ) : (
-              device && (
-                <ContactSelector
-                  contacts={contacts}
-                  selected={contacts.filter(c => device.access.find(s => s.email === c.email))}
-                  onChange={handleChange}
-                />
-              )
+              device && <ContactSelector contacts={contacts} onChange={handleChange} />
             )}
           </Typography>
         </>

@@ -1,11 +1,15 @@
 import React, { useEffect } from 'react'
-import { Gutters } from '../../components/Gutters'
-import { DataDisplay } from '../../components/DataDisplay'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../../store'
 import { DeviceHeaderMenu } from '../../components/DeviceHeaderMenu'
 import { deviceAttributes } from '../../components/Attributes'
+import { DataDisplay } from '../../components/DataDisplay'
+import { Gutters } from '../../components/Gutters'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => {
+  const feature = useSelector((state: ApplicationState) => state.ui.feature)
+
   useEffect(() => {
     analyticsHelper.page('DevicesDetailPage')
   }, [])
@@ -16,7 +20,7 @@ export const DeviceDetailPage: React.FC<{ device?: IDevice }> = ({ device }) => 
     <DeviceHeaderMenu device={device}>
       <Gutters bottom={null}></Gutters>
       <Gutters>
-        <DataDisplay attributes={deviceAttributes} device={device} />
+        <DataDisplay attributes={deviceAttributes} device={device} feature={feature} />
       </Gutters>
     </DeviceHeaderMenu>
   )

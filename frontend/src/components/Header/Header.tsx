@@ -19,7 +19,8 @@ import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
 export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
-  const { searched, navigationBack, navigationForward, device } = useSelector((state: ApplicationState) => ({
+  const { searched, navigationBack, navigationForward, feature, device } = useSelector((state: ApplicationState) => ({
+    feature: state.ui.feature,
     selected: state.ui.selected,
     searched: state.devices.searched,
     navigationBack: state.ui.navigationBack,
@@ -97,12 +98,16 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         <FilterButton />
         <ColumnsButton />
       </Route>
-      <Route path="/devices" exact>
-        <IconButton to="/devices/select" icon="check-square" title="Show Select" />
-      </Route>
-      <Route path="/devices/select" exact>
-        <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
-      </Route>
+      {feature.tagging && (
+        <>
+          <Route path="/devices" exact>
+            <IconButton to="/devices/select" icon="check-square" title="Show Select" />
+          </Route>
+          <Route path="/devices/select" exact>
+            <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
+          </Route>
+        </>
+      )}
     </div>
   )
 }

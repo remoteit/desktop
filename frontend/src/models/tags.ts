@@ -8,15 +8,15 @@ import {
   graphQLDeleteTag,
   graphQLRenameTag,
 } from '../services/graphQLMutation'
-import { findTagIndex, mergeTags } from '../helpers/utilHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { findTagIndex } from '../helpers/utilHelper'
 import { getNextLabel } from './labels'
 import { RootModel } from './rootModel'
 
 type ITagState = {
   all: ITag[]
-  legacy: ITag[]
   adding?: boolean
+  creating?: boolean
   removing?: boolean
   deleting?: string
   updating?: string
@@ -24,14 +24,12 @@ type ITagState = {
 
 const defaultState: ITagState = {
   all: [],
-  legacy: [],
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(_, globalState) {
-      const { legacy } = globalState.tags
+    async fetch() {
       const result = await graphQLBasicRequest(
         ` query {
             login {
@@ -44,8 +42,7 @@ export default createModel<RootModel>()({
           }`
       )
       if (result === 'ERROR') return
-      const parsed = await dispatch.tags.parse(result)
-      const all = mergeTags(legacy, parsed)
+      const all = await dispatch.tags.parse(result)
       dispatch.tags.setOrdered({ all })
     },
 
@@ -58,39 +55,9 @@ export default createModel<RootModel>()({
       }))
       return parsed
     },
-    // async migrate(_, globalState) {
-
-    //     TODO
-    //       if we want to migrate colors in desktop this will have to be run on every query
-
-    // import { labelLookup } from './labels'
-    // import { DESKTOP_EPOCH } from '../shared/constants'
-    // import { eachDevice } from './devices'
-
-    //     remove color from device
-    //         device.attributes = { ...device.attributes, color }
-    //         devices.setAttributes(device)
-    //     add color as tag
-    //     add tag to device
-
-    //   eachDevice(globalState, device => {
-    //     if (device.attributes.color) {
-    //       const label = labelLookup[device.attributes.color]
-    //       const tag = { name: label.name, color: label.id, created: DESKTOP_EPOCH }
-    //       tags.push(tag)
-    //       store.dispatch.tags.migrateLegacy({ tag, deviceId: response.id })
-    //     }
-    //   })
-
-    //   const { all, legacy } = globalState.tags
-    //   const found = findTagIndex(all.concat(legacy), tag.name)
-    //   if (found >= 0) return
-    //   legacy.push(tag)
-    //   dispatch.tags.set({ legacy })
-    //   dispatch.tags.setOrdered({ all: [...all, tag] })
-    // },
 
     async add({ tag, device }: { tag: ITag; device: IDevice }) {
+      if (!device) return
       const original = { ...device }
       device.tags.push(tag)
       dispatch.accounts.setDevice({ id: device.id, device })
@@ -146,10 +113,12 @@ export default createModel<RootModel>()({
 
     async create(tag: ITag, globalState) {
       const tags = globalState.tags.all
+      dispatch.tags.set({ creating: true })
       tag.color = tag.color || getNextLabel(globalState)
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
       dispatch.tags.setOrdered({ all: [...tags, tag] })
+      dispatch.tags.set({ creating: false })
     },
 
     async update(tag: ITag, globalState) {

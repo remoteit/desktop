@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import classnames from 'classnames'
-import { spacing } from '../../styling'
+import { spacing } from '../styling'
 import { makeStyles } from '@material-ui/core/styles'
 
-type Props = {
+export type BodyProps = {
   inset?: boolean
   center?: boolean
   flex?: boolean
@@ -11,9 +11,10 @@ type Props = {
   className?: string
   maxHeight?: string
   gutterBottom?: boolean
+  insetShadow?: boolean
 }
 
-export const Body: React.FC<Props> = ({
+export const Body: React.FC<BodyProps> = ({
   inset,
   center,
   flex,
@@ -21,6 +22,7 @@ export const Body: React.FC<Props> = ({
   maxHeight,
   className = '',
   gutterBottom,
+  insetShadow = true,
   children,
 }) => {
   const css = useStyles()
@@ -32,7 +34,8 @@ export const Body: React.FC<Props> = ({
     center && css.center,
     inset && css.inset,
     hover && css.showScroll,
-    gutterBottom && css.gutterBottom
+    gutterBottom && css.gutterBottom,
+    insetShadow && css.insetShadow
   )
   let style = maxHeight ? { maxHeight } : {}
   return (
@@ -66,6 +69,17 @@ const useStyles = makeStyles(({ palette }) => ({
       backgroundColor: palette.white.main,
     },
   },
+  insetShadow: {
+    '&::after': {
+      content: '""',
+      position: 'fixed',
+      height: 30,
+      width: '100%',
+      zIndex: 1000,
+      bottom: 0,
+      boxShadow: `inset 0px -20px 20px -15px ${palette.white.main}`,
+    },
+  },
   inset: {
     padding: `${spacing.sm}px ${spacing.xl}px`,
   },
@@ -90,7 +104,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   showScroll: {
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: `${palette.darken.main} !important`,
+      backgroundColor: `${palette.grayLight.main} !important`,
     },
   },
 }))
