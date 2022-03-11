@@ -4,32 +4,31 @@
   
   ONLY EDIT THE SOURCE FILE IN frontend
 */
-export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID || '26g0ltne0gr8lk1vs51mihrmig'
-export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL || 'https://api.remote.it/apv/v27'
-export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
-export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
-export const DEVELOPER_KEY =
-  process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
+
+export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID
+export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL
+export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API
+export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API
+export const DEVELOPER_KEY = process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY
 export const PROTOCOL =
   process.env.PROTOCOL || process.env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
 export const PORTAL = (process.env.REACT_APP_PORTAL || process.env.PORTAL) === 'true' ? true : false
 export const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL || process.env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const CALLBACK_URL =
   process.env.REACT_APP_CALLBACK_URL || process.env.CALLBACK_URL || process.env.NODE_ENV === 'development'
-    ? 'https://dev-auth.internal.remote.it/v1/callback/'
-    : 'https://auth.api.remote.it/v1/callback/'
-export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://ws.remote.it/v1'
-export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL || 'wss://ws.remote.it/beta'
+    ? process.env.REACT_APP_DEV_CALLBACK_URL
+    : process.env.REACT_APP_PROD_CALLBACK_URL
+export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL
+export const WEBSOCKET_BETA_URL = process.env.REACT_APP_WEBSOCKET_BETA_URL
 export const PORT = process.env.REACT_APP_PORT || 29999
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
 
 //API Zendesk
-export const ZENDESK_URL = process.env.ZENDESK_URL || 'https://remot3it.zendesk.com/api/v2/'
-
+export const ZENDESK_URL = process.env.ZENDESK_URL || process.env.REACT_APP_ZENDESK_URL
 //segment-analytics
-export const SEGMENT_PROJECT_PORTAL_KEY = 'kYemtqKHE7qM7prQ1JWTP1ThMUYZBmym'
-export const SEGMENT_PROJECT_KEY = 'tMedSrVUwDIeRs6kndztUPgjPiVlDmAe'
+export const SEGMENT_PROJECT_PORTAL_KEY = process.env.REACT_APP_SEGMENT_PROJECT_PORTAL_KEY
+export const SEGMENT_PROJECT_KEY = process.env.REACT_APP_SEGMENT_PROJECT_KEY
 
 export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'
