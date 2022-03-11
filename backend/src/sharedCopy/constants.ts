@@ -5,8 +5,12 @@
   ONLY EDIT THE SOURCE FILE IN frontend
 */
 export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID || '26g0ltne0gr8lk1vs51mihrmig'
+export const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
+export const COGNITO_AUTH_DOMAIN = process.env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
 export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL || 'https://api.remote.it/apv/v27'
-export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
+export const AUTH_API_URL =
+  process.env.REACT_AUTH_API_URL || process.env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
+export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API || 'https://api.remote.it/graphql/beta'
 export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
 export const DEVELOPER_KEY =
   process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
@@ -79,6 +83,7 @@ export const DEFAULT_CONNECTION: IConnection = {
   timeout: 15,
   enabled: false,
   ip: IP_PRIVATE,
+  targetHost: '',
   autoLaunch: false,
   restriction: IP_OPEN,
   publicRestriction: IP_LATCH,
