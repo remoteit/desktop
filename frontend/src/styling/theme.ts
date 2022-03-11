@@ -92,7 +92,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           boxShadow: 'none',
         },
         text: { padding: `${spacing.sm}px ${spacing.md}px` },
-        outlined: { borderColor: palette.grayLighter.main },
+        outlined: { padding: `${spacing.sm}px ${spacing.md}px`, borderColor: palette.grayLighter.main },
         sizeLarge: {
           fontSize: fontSizes.sm,
           padding: `${spacing.sm}px ${spacing.xl}px`,

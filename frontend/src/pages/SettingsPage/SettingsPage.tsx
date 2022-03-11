@@ -61,7 +61,6 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />}
-        <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation title="Organization" pathname="/settings/organization" icon="industry-alt" exactMatch dense />
         <TestUI>
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />

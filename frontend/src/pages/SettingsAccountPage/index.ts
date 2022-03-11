@@ -1,1 +1,0 @@
-export { SettingsAccountPage } from './SettingsAccountPage'

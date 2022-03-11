@@ -34,7 +34,7 @@ import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
 import { OverviewPage } from '../pages/OverviewPage'
 import { OrganizationPage } from '../pages/OrganizationPage'
-import { SettingsAccountPage } from '../pages/SettingsAccountPage/SettingsAccountPage'
+import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 
@@ -233,8 +233,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               <Route path={['/settings/options', '/settings']}>
                 <OptionsPage />
               </Route>
-
-
             </Switch>
           }
           singlePanel={singlePanel}
@@ -242,43 +240,42 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         />
       </Route>
 
-      <Route path="/settingsAccount">
+      <Route path="/account">
         <DynamicPanel
-          primary={<SettingsAccountPage singlePanel={singlePanel} />}
+          primary={<AccountPage singlePanel={singlePanel} />}
           secondary={
             <Switch>
-              <Route path='/settingsAccount/overview'>
+              <Route path="/account/overview">
                 <OverviewPage />
               </Route>
 
-              <Route path="/settingsAccount/security">
+              <Route path="/account/security">
                 <SecurityPage />
               </Route>
 
-              <Route path="/settingsAccount/plans">
+              <Route path="/account/plans">
                 <PlansPage />
               </Route>
 
-              <Route path="/settingsAccount/notifications">
+              <Route path="/account/notifications">
                 <NotificationsPage />
               </Route>
 
-              <Route path="/settingsAccount/licensing">
+              <Route path="/account/licensing">
                 <LicensingPage />
               </Route>
 
-              <Route path="/settingsAccount/billing">
+              <Route path="/account/billing">
                 <BillingPage />
               </Route>
 
-              <Route path="/settingsAccount/accessKey">
+              <Route path="/account/accessKey">
                 <AccessKeyPage />
               </Route>
-
             </Switch>
           }
           singlePanel={singlePanel}
-          root={['/settingsAccount']}
+          root={['/account']}
         />
       </Route>
 

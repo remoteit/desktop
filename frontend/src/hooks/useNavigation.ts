@@ -110,7 +110,7 @@ export function useNavigation(): INavigationHook {
       match: '/announcements',
       icon: 'megaphone',
       badge: unreadAnnouncements,
-      show: !remoteUI
+      show: !remoteUI,
     },
     {
       label: 'Feedback',
@@ -126,8 +126,8 @@ export function useNavigation(): INavigationHook {
       match: '/settings',
       icon: 'ellipsis-h',
       badge: licenseIndicator,
-      show: true
-    }
+      show: true,
+    },
   ]
 
   return { menu, menuItems, handleBack, handleForward }

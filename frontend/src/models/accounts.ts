@@ -1,14 +1,18 @@
 import { createModel } from '@rematch/core'
-import moment from 'moment'
 import { ApplicationState } from '../store'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import { graphQLLicenses, parseLicense } from './licensing'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
+import { dateOptions } from '../components/Duration/Duration'
 import { RootModel } from './rootModel'
-import { graphQLCreateAccessKey, graphQLDeleteAccessKeys, graphQLGetAccessKeys, graphQLToggleAccessKeys } from '../services/graphQLAccessKeys'
-
+import {
+  graphQLCreateAccessKey,
+  graphQLDeleteAccessKeys,
+  graphQLGetAccessKeys,
+  graphQLToggleAccessKeys,
+} from '../services/graphQLAccessKeys'
 
 const ACCOUNT_KEY = 'account'
 
@@ -25,7 +29,7 @@ const accountsState: IAccountsState = {
   membership: [],
   activeId: undefined,
   keyArray: [],
-  apiKey: undefined
+  apiKey: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -84,7 +88,7 @@ export default createModel<RootModel>()({
             licenses: m.organization?.licenses?.map(l => parseLicense(l)),
           },
         })),
-        apiKey: gqlData.apiKey.key
+        apiKey: gqlData.apiKey.key,
       })
       if (!membership.find(m => m.organization.id === state.accounts.activeId)) {
         dispatch.accounts.setActive('')
@@ -165,11 +169,10 @@ export default createModel<RootModel>()({
         const arr = data.map(element => {
           let obj = {}
           obj['key'] = element.key
-          let dateCr = moment(new Date(element.created)).format('MM/DD/YYYY')
+          let dateCr = new Date(element.created).toLocaleString(undefined, dateOptions)
           obj['createdDate'] = dateCr
           let dateLastUsed = element.lastUsed
-            ? 'Last used ' +
-            moment(new Date(element.lastUsed)).format('MM/DD/YYYY')
+            ? 'Last used ' + new Date(element.lastUsed).toLocaleString(undefined, dateOptions)
             : 'Never used'
           obj['lastUsed'] = dateLastUsed
           obj['enabled'] = element.enabled
@@ -181,7 +184,7 @@ export default createModel<RootModel>()({
         await apiError(error)
       }
     },
-    async toggleAccessKeys(properties: { key: never, enabled: boolean, }) {
+    async toggleAccessKeys(properties: { key: never; enabled: boolean }) {
       try {
         const result = await graphQLToggleAccessKeys(properties)
         graphQLGetErrors(result)
@@ -212,7 +215,6 @@ export default createModel<RootModel>()({
       } catch (error) {
         await apiError(error)
       }
-
     },
     async setActive(id: string, globalState) {
       setLocalStorage(globalState, ACCOUNT_KEY, id)

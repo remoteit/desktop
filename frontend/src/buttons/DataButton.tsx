@@ -9,12 +9,22 @@ type Props = {
   label?: string
   icon: string | React.ReactElement
   iconColor?: Color
+  fullWidth?: boolean
   showBackground?: boolean
   onClick: (event?: any) => void
 }
 
-export const DataButton: React.FC<Props> = ({ title, value, label, icon, iconColor, showBackground, onClick }) => {
-  const css = useStyles({ showBackground })
+export const DataButton: React.FC<Props> = ({
+  title,
+  value,
+  label,
+  icon,
+  iconColor,
+  fullWidth,
+  showBackground,
+  onClick,
+}) => {
+  const css = useStyles({ showBackground, fullWidth })
 
   return (
     <Tooltip title={title} enterDelay={500} placement="top" arrow>
@@ -30,14 +40,14 @@ export const DataButton: React.FC<Props> = ({ title, value, label, icon, iconCol
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  box: ({ showBackground }: { showBackground?: boolean }) => ({
+  box: ({ showBackground, fullWidth }: { showBackground?: boolean; fullWidth?: boolean }) => ({
     display: 'flex',
     alignItems: 'center',
     textAlign: 'left',
     padding: spacing.sm,
     paddingLeft: spacing.xxs,
-    paddingRight: spacing.md,
-    width: '100%',
+    paddingRight: spacing.lg,
+    width: fullWidth ? '100%' : undefined,
     backgroundColor: showBackground ? palette.grayLightest.main : undefined,
     '&:hover': { backgroundColor: showBackground ? palette.primaryHighlight.main : undefined },
     '& svg': { minWidth: 60 },

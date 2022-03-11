@@ -3,6 +3,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { ListItemLocation } from './ListItemLocation'
 import { ListItemSetting } from './ListItemSetting'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
@@ -12,14 +13,12 @@ import { spacing } from '../styling'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
 import { windowOpen } from '../services/Browser'
-import { useHistory } from 'react-router-dom'
 
 export const AvatarMenu: React.FC = () => {
   const [open, setOpen] = React.useState<boolean>(false)
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const dispatch = useDispatch<Dispatch>()
-  const history = useHistory()
   const { user, remoteUI, preferences, backendAuthenticated } = useSelector((state: ApplicationState) => ({
     user: state.auth.user,
     remoteUI: isRemoteUI(state),
@@ -54,39 +53,17 @@ export const AvatarMenu: React.FC = () => {
         disableScrollLock
         elevation={2}
       >
-        <ListItemSetting
-          label="Account"
-          icon="user"
-          onClick={() => {
-            history.push('/settingsAccount/overview')
-            handleClose()
-          }}
-        />
-        <ListItemSetting
-          label="Settings"
-          icon="cog"
-          onClick={() => {
-            history.push('/settings')
-            handleClose()
-          }}
-        />
-        <Divider className={css.divider} />
-        <ListItemSetting
-          label="Support"
+        <div>
+          <ListItemLocation dense title="Account" icon="user" pathname="/account/overview" onClick={handleClose} />
+          <ListItemLocation dense title="Settings" icon="cog" pathname="/settings" onClick={handleClose} />
+        </div>
+        <ListItemLink
+          title="Support"
           icon="life-ring"
-          onClick={() => {
-            windowOpen('https://link.remote.it/documentation-desktop/overview')
-            handleClose()
-          }}
+          href="https://link.remote.it/documentation-desktop/overview"
+          dense
         />
-        <ListItemSetting
-          label="Documentation"
-          icon="books"
-          onClick={() => {
-            windowOpen('https://link.remote.it/docs/api')
-            handleClose()
-          }}
-        />
+        <ListItemLink title="Documentation" icon="books" href="https://link.remote.it/docs/api" dense />{' '}
         {altMenu && (
           <ListItemSetting
             confirm
@@ -122,7 +99,6 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         </DesktopUI>
-
         <ListItemSetting
           confirm={backendAuthenticated}
           label="Sign out"
@@ -133,9 +109,8 @@ export const AvatarMenu: React.FC = () => {
             analyticsHelper.track('signOut')
           }}
         />
-        <DesktopUI>
-          {remoteUI || <Divider className={css.divider} />}
-          {remoteUI || (
+        {remoteUI || (
+          <DesktopUI>
             <ListItemSetting
               confirm
               label="Quit"
@@ -144,8 +119,8 @@ export const AvatarMenu: React.FC = () => {
               confirmMessage="Quitting will not close your connections."
               onClick={() => emit('user/quit')}
             />
-          )}
-        </DesktopUI>
+          </DesktopUI>
+        )}
       </Menu>
     </>
   )
@@ -168,11 +143,11 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItem-root': {
       paddingLeft: 0,
       paddingRight: spacing.lg,
-      borderRadius: spacing.xxs
+      borderRadius: spacing.xxs,
     },
   },
   divider: {
     marginTop: 10,
-    marginBottom: 10
-  }
+    marginBottom: 10,
+  },
 }))

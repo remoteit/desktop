@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react'
-import { Box, Button, Typography } from '@material-ui/core'
+import { Button, Typography, Divider } from '@material-ui/core'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
-import analyticsHelper from '../helpers/analyticsHelper'
+import { Gutters } from '../components/Gutters'
 import { ChangePassword } from '../components/ChangePassword'
 import { MFAPreference } from '../components/MFAPreference'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import analyticsHelper from '../helpers/analyticsHelper'
 
 export const SecurityPage: React.FC = () => {
-
   useEffect(() => {
     analyticsHelper.page('SecurityPage')
   }, [])
@@ -18,19 +18,16 @@ export const SecurityPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <>
-          <Typography variant="h1">
-            <Title>Security & Login</Title>
-
-          </Typography>
-
-        </>
+        <Typography variant="h1">
+          <Title>Security</Title>
+        </Typography>
       }
     >
       <ChangePassword />
+      <Divider variant="inset" />
       <MFAPreference />
+      <Divider variant="inset" />
       <GlobalSignOut />
-
     </Container>
   )
 }
@@ -41,19 +38,18 @@ function GlobalSignOut(): JSX.Element {
     auth.globalSignOut()
   }
   return (
-    <Box m={4} >
-      <Typography variant="subtitle1" gutterBottom style={{ padding: 0 }}>
+    <>
+      <Typography variant="subtitle1" gutterBottom>
         Sign out everywhere
       </Typography>
-      <Box mt={3}>
-        <Typography variant='body2'>
-          This Logs you out of remote.it everywhere you're logged in.
-        </Typography>
-      </Box>
-
-      <Box mt={3}>
-        <Button variant='outlined' color='primary' style={{ borderRadius: 3 }} onClick={signedOut}>Sign Out Everywhere</Button>
-      </Box>
-    </Box>
+      <Gutters>
+        <Typography variant="body2">This Logs you out of remote.it everywhere you're logged in.</Typography>
+      </Gutters>
+      <Gutters>
+        <Button color="primary" variant="outlined" onClick={signedOut}>
+          Sign Out Everywhere
+        </Button>
+      </Gutters>
+    </>
   )
 }

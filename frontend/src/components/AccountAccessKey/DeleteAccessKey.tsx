@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  createStyles,
-  Theme,
-  withStyles,
-  WithStyles,
-} from '@material-ui/core/styles'
+import { createStyles, Theme, withStyles, WithStyles } from '@material-ui/core/styles'
 
 import Dialog from '@material-ui/core/Dialog'
 import MuiDialogTitle from '@material-ui/core/DialogTitle'
@@ -18,8 +13,6 @@ import { Icon } from '../Icon'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../../store'
 import { Button, makeStyles } from '@material-ui/core'
-
-
 
 export interface DialogTitleProps extends WithStyles<typeof styles> {
   id: string
@@ -38,16 +31,16 @@ const styles = (theme: Theme) =>
       right: theme.spacing(1),
       top: theme.spacing(1),
       color: theme.palette.grey[500],
-    }
+    },
   })
 const useStyles = makeStyles({
   button: {
     borderRadius: 3,
-    margin: 10
+    margin: 10,
   },
   iconCursor: {
-    cursor: 'pointer'
-  }
+    cursor: 'pointer',
+  },
 })
 
 const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
@@ -56,12 +49,8 @@ const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h6">{children}</Typography>
       {onClose ? (
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={onClose}
-        >
-          <Icon name='times' size='lg' />
+        <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+          <Icon name="times" size="lg" />
         </IconButton>
       ) : null}
     </MuiDialogTitle>
@@ -114,49 +103,25 @@ export function DeleteAccessKey({ ...props }) {
   return (
     <div>
       {!visiblility ? (
-        <Icon
-          name="trash-alt"
-          fixedWidth
-          onClick={handleDeleteClick}
-          className={css.iconCursor}
-        />
+        <Icon name="trash-alt" fixedWidth onClick={handleDeleteClick} className={css.iconCursor} />
       ) : (
         <></>
       )}
       {open ? (
         <form onSubmit={confirmDelete}>
-          <Dialog
-            onClose={handleClose}
-            aria-labelledby="delete-dialog-title"
-            open={true}
-          >
+          <Dialog onClose={handleClose} aria-labelledby="delete-dialog-title" open={true}>
             <DialogTitle id="delete-dialog-title" onClose={handleClose}>
               Delete Access Key
             </DialogTitle>
             <DialogContent dividers>
-              <Typography gutterBottom>
-                This access key will be permanently deleted and cannot be
-                undone.
-              </Typography>
+              <Typography gutterBottom>This access key will be permanently deleted and cannot be undone.</Typography>
               <Typography gutterBottom>Type DELETE to confirm</Typography>
               <FormControl fullWidth>
-                <TextField
-                  required
-                  autoFocus
-                  variant="filled"
-                  onChange={handleChange}
-                  value={deleteConfirmText}
-                />
+                <TextField required autoFocus variant="filled" onChange={handleChange} value={deleteConfirmText} />
               </FormControl>
             </DialogContent>
             <DialogActions>
-              <Button
-                variant='outlined'
-                size="small"
-                color="primary"
-                onClick={handleClose}
-                className={css.button}
-              >
+              <Button variant="outlined" size="small" color="primary" onClick={handleClose} className={css.button}>
                 CANCEL
               </Button>
               <Button
@@ -178,6 +143,3 @@ export function DeleteAccessKey({ ...props }) {
     </div>
   )
 }
-
-
-

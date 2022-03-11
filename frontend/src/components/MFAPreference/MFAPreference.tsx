@@ -8,7 +8,7 @@ import { MFAMethod } from './MFAMethod'
 import { MFASelectMethod } from './MFASelectMethod'
 import { MFAConfigureApp } from './MFAConfigureApp'
 import { MFAConfigureSms } from './MFAConfigureSms'
-import { Box, Button, makeStyles, Typography } from '@material-ui/core'
+import { Box, Button, Typography } from '@material-ui/core'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type MFASectionProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
@@ -43,7 +43,6 @@ export const MFAPreference = connect(
     const { t } = useTranslation()
     const { auth } = useDispatch<Dispatch>()
     const [totpVerified] = React.useState<boolean>(false)
-
     const [cancelShowVerificationCode, setCancelShowVerificationCode] = useState<boolean>(false)
     const [backupCode, setBackupCode] = React.useState<string>(AWSUser['custom:backup_code'] || '')
     const [hasOldSentVerification, setHasOldSentVerification] = React.useState<boolean>(
@@ -52,7 +51,16 @@ export const MFAPreference = connect(
     const [showLearnMore, setShowLearnMore] = React.useState<boolean>(false)
     const [verificationMethod, setVerificationMethod] = React.useState<string>('sms')
     const { mfa } = useDispatch<Dispatch>()
-    const { verificationCode, showMFASelection, showSMSConfig, lastCode, totpVerificationCode, error, showAuthenticatorConfig, showEnableSelection } = useSelector((state: ApplicationState) => ({
+    const {
+      verificationCode,
+      showMFASelection,
+      showSMSConfig,
+      lastCode,
+      totpVerificationCode,
+      error,
+      showAuthenticatorConfig,
+      showEnableSelection,
+    } = useSelector((state: ApplicationState) => ({
       verificationCode: state.mfa.verificationCode,
       showMFASelection: state.mfa.showMFASelection,
       showSMSConfig: state.mfa.showSMSConfig,
@@ -60,9 +68,8 @@ export const MFAPreference = connect(
       totpVerificationCode: state.mfa.totpVerificationCode,
       error: state.mfa.error,
       showAuthenticatorConfig: state.mfa.showAuthenticatorConfig,
-      showEnableSelection: state.mfa.showEnableSelection
+      showEnableSelection: state.mfa.showEnableSelection,
     }))
-    const css = useStyles()
 
     useEffect(() => {
       analyticsHelper.page('mfaMethod')
@@ -233,22 +240,24 @@ export const MFAPreference = connect(
     if (AWSUser && AWSUser.authProvider === 'Google') {
       return (
         <Box m={4}>
-          <Typography variant='subtitle1'>Two-factor Authentication</Typography>
-          <TextBlock>You are signed in with your Google account. You can enable two-factor authentication in your Google account settings. If you also have remote.it login and password, you can sign in with those credentials and then enable two-factor authentication.</TextBlock>
+          <Typography variant="subtitle1">Two-factor Authentication</Typography>
+          <TextBlock>
+            You are signed in with your Google account. You can enable two-factor authentication in your Google account
+            settings. If you also have remote.it login and password, you can sign in with those credentials and then
+            enable two-factor authentication.
+          </TextBlock>
         </Box>
       )
     } else if (AWSUser) {
       return (
-
-        <Box m={4} >
-          <Typography variant='subtitle1' style={{ padding: 0 }}>Two-factor Authentication</Typography>
+        <Box m={4}>
+          <Typography variant="subtitle1" style={{ padding: 0 }}>
+            Two-factor Authentication
+          </Typography>
           <p>
-            Two-factor authentication adds an additional layer of security to your account by requiring more than just a password to sign in.{' '}
-            <a onClick={toggleShowLearnMore}>
-              {showLearnMore ? `Close` : `Learn more`}
-            </a>
+            Two-factor authentication adds an additional layer of security to your account by requiring more than just a
+            password to sign in. <a onClick={toggleShowLearnMore}>{showLearnMore ? `Close` : `Learn more`}</a>
           </p>
-
 
           <MFAMethod
             method={mfaMethod}
@@ -271,7 +280,7 @@ export const MFAPreference = connect(
                 <p>
                   Two-Factor Authentication is <b>OFF</b>
                 </p>
-                <Button variant="contained" color="primary" type="submit" className={css.button}>
+                <Button variant="contained" color="primary" type="submit">
                   Turn on
                 </Button>
               </Box>
@@ -316,15 +325,13 @@ export const MFAPreference = connect(
             />
           )}
 
-
           {/* Display Error */}
           {error && (
-            <Alert className="my-md" type="danger" >
+            <Alert className="my-md" type="danger">
               {error}
             </Alert>
           )}
         </Box>
-
       )
     } else {
       checkSession()
@@ -332,20 +339,3 @@ export const MFAPreference = connect(
     }
   }
 )
-
-
-const useStyles = makeStyles(({ palette }) => ({
-  input: {
-    // fontSize: 10,
-    minWidth: 350,
-  },
-  button: {
-    borderRadius: 3
-  },
-  subtitle: {
-    margin: 0,
-    padding: 0,
-    color: palette.grayDark.main,
-    fontSize: 9
-  }
-}))

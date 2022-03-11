@@ -1,26 +1,13 @@
 import React from 'react'
-import {
-  makeStyles,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Button,
-  Box,
-} from '@material-ui/core'
+import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, Button, Box } from '@material-ui/core'
 import { dateOptions } from './Duration/Duration'
 import { LicensingIcon } from './LicensingIcon'
 import { LicensingNotice } from './LicensingNotice'
 import { DataCopy } from './DataCopy'
 import { LimitSetting } from './LimitSetting'
 import { Link } from 'react-router-dom'
-import { spacing } from '../styling'
-import { Quote } from './Quote'
 
 export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
-  const css = useStyles()
-
   if (!licenses.length) return null
 
   return (
@@ -54,18 +41,19 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
             {!!(license.id || license.limits?.length) && (
               <ListItem>
                 <ListItemIcon></ListItemIcon>
-                <Quote margin={0}>
-                  <Box width={400} marginBottom={2} marginTop={1}>
-                    {license.limits?.map(limit => (
-                      <LimitSetting key={limit.name} limit={limit} />
-                    ))}
-                  </Box>
-                  <DataCopy label="License Key" value={license.id} />
-                </Quote>
+                <Box>
+                  {license.limits && (
+                    <Box width={400} marginBottom={3} marginTop={1}>
+                      {license.limits?.map(limit => (
+                        <LimitSetting key={limit.name} limit={limit} />
+                      ))}
+                    </Box>
+                  )}
+                  <DataCopy label="License Key" value={license.id} showBackground />
+                </Box>
               </ListItem>
             )}
           </List>
-          {/* <Divider className={css.divider} /> */}
         </React.Fragment>
       ))}
       <List>
@@ -79,7 +67,3 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
     </>
   )
 }
-
-const useStyles = makeStyles({
-  divider: { margin: `${spacing.sm}px ${spacing.xl}px ${spacing.xs}px 80px` },
-})
