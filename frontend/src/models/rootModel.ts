@@ -11,16 +11,17 @@ import connections from './connections'
 import contacts from './contacts'
 import devices from './devices'
 import feedback from './feedback'
+import keys from './keys'
 import labels from './labels'
 import licensing from './licensing'
 import logs from './logs'
+import mfa from './mfa'
 import organization from './organization'
 import search from './search'
 import sessions from './sessions'
 import shares from './shares'
 import tags from './tags'
 import ui from './ui'
-import mfa from './mfa'
 
 export interface RootModel extends Models<RootModel> {
   accounts: typeof accounts
@@ -35,16 +36,17 @@ export interface RootModel extends Models<RootModel> {
   contacts: typeof contacts
   devices: typeof devices
   feedback: typeof feedback
+  keys: typeof keys
   labels: typeof labels
   licensing: typeof licensing
   logs: typeof logs
+  mfa: typeof mfa
   organization: typeof organization
   search: typeof search
   sessions: typeof sessions
   shares: typeof shares
   tags: typeof tags
   ui: typeof ui
-  mfa: typeof mfa
 }
 
 export const models: RootModel = {
@@ -60,14 +62,15 @@ export const models: RootModel = {
   contacts,
   devices,
   feedback,
+  keys,
   labels,
   licensing,
   logs,
+  mfa,
   organization,
   search,
   sessions,
   shares,
   tags,
   ui,
-  mfa
 }

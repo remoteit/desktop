@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import IconButton from '@material-ui/core/IconButton'
 import Button from '@material-ui/core/Button'
 import { Icon } from '../Icon'
 import Paper from '@material-ui/core/Paper'
 import Grid from '@material-ui/core/Grid'
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
-
 import { ApplicationState } from '../../store'
 import { useSelector } from 'react-redux'
 import { CopyButton } from '../../buttons/CopyButton'
@@ -29,7 +27,7 @@ export function CreateAccessKey(props) {
     csv += '\n'
     csv += '# ' + user?.email
     csv += '\n'
-    csv += 'R3_ACCESS_KEY_ID' + '=' + props.key
+    csv += 'R3_ACCESS_KEY_ID' + '=' + props.newKey
     csv += '\n'
     csv += 'R3_SECRET_ACCESS_KEY' + '=' + props.secretKey
     csv += '\n'
@@ -56,8 +54,8 @@ export function CreateAccessKey(props) {
             </Grid>
             <Grid item xs zeroMinWidth>
               <Typography noWrap>
-                {props.key}
-                <CopyButton icon="copy" value={props.key} />
+                {props.newKey}
+                <CopyButton icon="copy" value={props.newKey} />
               </Typography>
             </Grid>
           </Grid>

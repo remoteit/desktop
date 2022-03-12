@@ -12,7 +12,6 @@ import { PortalUI } from './PortalUI'
 import { spacing } from '../styling'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
-import { windowOpen } from '../services/Browser'
 
 export const AvatarMenu: React.FC = () => {
   const [open, setOpen] = React.useState<boolean>(false)
@@ -55,7 +54,7 @@ export const AvatarMenu: React.FC = () => {
       >
         <div>
           <ListItemLocation dense title="Account" icon="user" pathname="/account/overview" onClick={handleClose} />
-          <ListItemLocation dense title="Settings" icon="cog" pathname="/settings" onClick={handleClose} />
+          {/* <ListItemLocation dense title="Settings" icon="sliders-h" pathname="/settings" onClick={handleClose} /> */}
         </div>
         <ListItemLink
           title="Support"
@@ -63,7 +62,7 @@ export const AvatarMenu: React.FC = () => {
           href="https://link.remote.it/documentation-desktop/overview"
           dense
         />
-        <ListItemLink title="Documentation" icon="books" href="https://link.remote.it/docs/api" dense />{' '}
+        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />{' '}
         {altMenu && (
           <ListItemSetting
             confirm

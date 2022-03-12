@@ -36,6 +36,8 @@ export const AccountPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }
         <ListItemLocation title="Profile" pathname="/account/overview" icon="user" exactMatch={true} dense />
         <ListItemLocation title="Security" pathname="/account/security" icon="lock" dense />
         <ListItemLocation title="Notifications" pathname="/account/notifications" icon="bell" dense />
+        <ListItemLocation title="Subscription" pathname="/account/plans" icon="shopping-cart" dense />
+        {billing && <ListItemLocation title="Transactions" pathname="/account/billing" icon="receipt" dense />}
         <ListItemLocation
           title="Licensing"
           pathname="/account/licensing"
@@ -43,8 +45,6 @@ export const AccountPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }
           badge={licenseIndicator}
           dense
         />
-        <ListItemLocation title="Subscriptions" pathname="/account/plans" icon="shopping-cart" dense />
-        {billing && <ListItemLocation title="Transactions" pathname="/account/billing" icon="receipt" dense />}
         <ListItemLocation title="Access Keys" pathname="/account/accessKey" icon="key" dense />
       </List>
     </Container>

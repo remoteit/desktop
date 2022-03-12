@@ -15,47 +15,31 @@ import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
+import { dateOptions } from '../Duration/Duration'
 import { Gutters } from '../Gutters'
+import { Icon } from '../Icon'
 import { spacing } from '../../styling'
 
 export const AccountAccessKey: React.FC = () => {
-  const [showSection, setShowSection] = useState(false)
-  const { keyArray, secretKey, key } = useSelector((state: ApplicationState) => ({
-    keyArray: state.accounts.keyArray,
-    secretKey: state.accounts.secretKey,
-    key: state.accounts.key,
-  }))
-  const { accounts } = useDispatch<Dispatch>()
+  const [showDialog, setShowDialog] = useState(false)
+  const { accessKeys, secretKey, key, updating } = useSelector((state: ApplicationState) => state.keys)
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
   useEffect(() => {
-    accounts.fetchAccessKeys()
+    dispatch.keys.init()
   }, [])
 
-  const handleToggle = e => {
-    const selectedId = e.currentTarget.id
-    const selectedKey = keyArray?.filter(item => selectedId === item['key'])
-    if (selectedKey?.length) {
-      const properties = {
-        key: selectedKey[0]['key'],
-        enabled: !selectedKey[0]['enabled'],
-      }
-      accounts.toggleAccessKeys(properties)
-    }
-  }
-
-  const handleCreateKey = () => {
-    accounts.createAccessKey()
-    setShowSection(true)
-  }
-
-  function closePanel() {
-    setShowSection(false)
+  const handleToggle = k => {
+    dispatch.keys.toggleAccessKeys({
+      key: k.key,
+      enabled: !k.enabled,
+    })
   }
 
   return (
     <>
-      <Typography variant="subtitle1">Access key</Typography>
+      <Typography variant="subtitle1">Authentication</Typography>
       <Gutters>
         <Typography variant="body2" gutterBottom>
           Access keys are used to authenticate you with our API. You can create a new key or delete an existing key at
@@ -63,33 +47,66 @@ export const AccountAccessKey: React.FC = () => {
           <br />
           <em>If you lose or forget your secret key, you cannot retrieve it. There is a limit of 2 access keys.</em>
         </Typography>
-        <Button variant="contained" color="primary" onClick={handleCreateKey}>
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={accessKeys.length > 1}
+          onClick={() => {
+            dispatch.keys.createAccessKey()
+            setShowDialog(true)
+          }}
+        >
           Create Access key
         </Button>
       </Gutters>
       <List>
-        {keyArray?.map((item, index) => (
-          <ListItem className={css.row} key={index} id={item['key']} onClick={handleToggle} button dense>
-            <ListItemText primary={item['key']} secondary={`Created ${item['createdDate']}, ${item['lastUsed']}`} />
+        {accessKeys?.map((k, index) => (
+          <ListItem
+            className={css.row}
+            key={index}
+            onClick={() => handleToggle(k)}
+            disabled={updating === k.key}
+            button
+            dense
+          >
+            <ListItemText
+              classes={{ primary: css.primary }}
+              primary={k.key}
+              secondary={
+                <>
+                  Created {k.created.toLocaleString(undefined, dateOptions)} &nbsp;/ &nbsp;
+                  {k.lastUsed ? 'Last used ' + k.lastUsed.toLocaleString(undefined, dateOptions) : 'Never used'}
+                </>
+              }
+            />
             <ListItemSecondaryAction>
               <ListItemIcon>
-                <DeleteAccessKey deleteKey={item['key']} enabled={item['enabled']} />
+                <DeleteAccessKey deleteKey={k} />
               </ListItemIcon>
-              <Switch id={item['key']} edge="end" color="primary" onChange={handleToggle} checked={item['enabled']} />
+              {updating === k.key ? (
+                <Icon name="spinner-third" spin size="lg" inlineLeft />
+              ) : (
+                <Switch color="primary" onChange={() => handleToggle(k)} checked={k.enabled} />
+              )}
             </ListItemSecondaryAction>
           </ListItem>
         ))}
       </List>
-      <Dialog open={showSection} onClose={closePanel} fullWidth>
-        <CreateAccessKey key={key} secretKey={secretKey} />
+      <Dialog
+        open={showDialog}
+        onClose={() => {
+          setShowDialog(false)
+          dispatch.keys.set({ key: undefined, secretKey: undefined })
+        }}
+        fullWidth
+      >
+        <CreateAccessKey newKey={key} secretKey={secretKey} />
       </Dialog>
     </>
   )
 }
 
 const useStyles = makeStyles(theme => ({
-  row: {
-    '& .MuiListItemText-root': { marginLeft: spacing.md },
-    '& .MuiListItemText-primary': { fontFamily: 'Roboto Mono', fontWeight: 100, color: theme.palette.grayDark },
-  },
+  row: { '& .MuiListItemText-root': { marginLeft: spacing.md } },
+  primary: { fontFamily: 'Roboto Mono', color: theme.palette.grayDarkest.main, letterSpacing: 0.5 },
 }))
