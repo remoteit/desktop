@@ -8,6 +8,7 @@ import classnames from 'classnames'
 export type ButtonProps = IconProps & {
   title?: string
   icon?: string
+  name?: string
   disabled?: boolean
   to?: string
   variant?: 'text' | 'contained'
@@ -25,6 +26,7 @@ export type ButtonProps = IconProps & {
 export const IconButton: React.FC<ButtonProps> = ({
   title,
   icon,
+  name,
   disabled,
   to,
   color,
@@ -45,6 +47,7 @@ export const IconButton: React.FC<ButtonProps> = ({
   const history = useHistory()
   const css = useStyles({ color })
   const contained = variant === 'contained'
+  icon = icon || name
   if (loading) {
     icon = 'spinner-third'
     props.spin = true

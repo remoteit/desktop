@@ -28,6 +28,7 @@ type UIState = {
   claiming: boolean
   routingLock?: IRouteType
   routingMessage?: string
+  sidebarMenu: boolean
   drawerMenu: 'FILTER' | 'COLUMNS' | null
   drawerAccordion: string | number
   columns: string[]
@@ -75,6 +76,7 @@ export const defaultState: UIState = {
   claiming: false,
   routingLock: undefined,
   routingMessage: undefined,
+  sidebarMenu: false,
   drawerMenu: null,
   drawerAccordion: 'sort',
   columns: ['deviceName', 'tags', 'services'],

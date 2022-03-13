@@ -45,17 +45,18 @@ export function useNavigation(): INavigationHook {
   const menu = match ? match[0] : '/devices'
 
   useEffect(() => {
-    let newValues: any = {}
+    let newValues: ILookup<any> = {}
     if (
       location?.pathname &&
       location?.pathname !== '/' &&
       shouldUpdate &&
       navigationBack.slice(-1)[0] !== location.pathname
     ) {
-      newValues = { navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] }
+      newValues.navigationBack = navigationBack.concat([location?.pathname])
+      newValues.navigationForward = []
     }
     if (navigation[menu] !== location.pathname) {
-      newValues = { ...newValues, navigation: { ...navigation, [menu]: location.pathname } }
+      newValues.navigation = { ...navigation, [menu]: location.pathname }
     }
 
     if (
@@ -63,7 +64,7 @@ export function useNavigation(): INavigationHook {
       (newValues.navigationBack || newValues.navigation)
     ) {
       setCurrentUIPayload(newValues)
-      ui.set(newValues)
+      ui.set({ ...newValues, sidebarMenu: false })
     }
   }, [location?.pathname])
 

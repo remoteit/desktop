@@ -53,7 +53,7 @@ export const AvatarMenu: React.FC = () => {
         elevation={2}
       >
         <div>
-          <ListItemLocation dense title="Account" icon="user" pathname="/account/overview" onClick={handleClose} />
+          <ListItemLocation dense title="Account" icon="user" pathname="/account" onClick={handleClose} />
           {/* <ListItemLocation dense title="Settings" icon="sliders-h" pathname="/settings" onClick={handleClose} /> */}
         </div>
         <ListItemLink

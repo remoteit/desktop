@@ -1,16 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles } from '@material-ui/core'
-import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
+import { makeStyles, useMediaQuery } from '@material-ui/core'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { useNavigation } from '../../hooks/useNavigation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
-import { RegisterButton } from '../../buttons/RegisterButton'
-import { RefreshButton } from '../../buttons/RefreshButton'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
-import { AccountSelect } from '../AccountSelect'
 import { FilterButton } from '../../buttons/FilterButton'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
@@ -31,7 +28,9 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
+  const hideSidebar = useMediaQuery('(max-width:1000px)')
   const inputRef = useRef<HTMLInputElement>(null)
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
   useEffect(() => {
@@ -41,20 +40,14 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
   return (
     <div className={css.header}>
-      {singlePanel && (
-        <>
-          <RegisterButton />
-          <RefreshButton />
-          <AccountSelect label="Device List" />
-        </>
-      )}
+      {hideSidebar && <IconButton name="bars" size="lg" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />}
       <IconButton
         title="Back"
         disabled={disabledBack}
         onClick={handleBack}
         icon="chevron-left"
         size="lg"
-        color={disabledBack ? 'grayLight' : 'grayDark'}
+        color={disabledBack ? 'grayLight' : 'grayDarkest'}
       />
       <IconButton
         title="Forward"
@@ -62,7 +55,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         onClick={handleForward}
         icon="chevron-right"
         size="lg"
-        color={disabledForward ? 'grayLight' : 'grayDark'}
+        color={disabledForward ? 'grayLight' : 'grayDarkest'}
       />
       <Title className={css.search}>
         {!showSearch && !searched && (
@@ -83,17 +76,8 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           </IconButton>
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
-        {singlePanel && <Breadcrumbs />}
-        {/* {!!selected.length && (
-          <Chip
-            className={css.selected}
-            label={<>{selected.length} selected</>}
-            size="small"
-            color="primary"
-            onDelete={() => dispatch.ui.set({ selected: [] })}
-          />
-        )} */}
       </Title>
+      {singlePanel && <Breadcrumbs />}
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <ColumnsButton />

@@ -64,22 +64,22 @@ export const Breadcrumbs: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   header: {
-    marginLeft: spacing.md,
+    marginTop: spacing.xs,
     marginBottom: spacing.xs,
     color: palette.grayDark.main,
     position: 'relative',
     zIndex: 2,
+    '& .MuiTypography-root': { marginLeft: 0 },
     '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
     '& .MuiLink-root': {
       fontFamily: 'Roboto Mono',
       fontSize: fontSizes.xs,
       color: palette.grayDark.main,
       padding: `${spacing.xxs}px ${spacing.xs}px`,
-      marginLeft: spacing.xs,
-      marginRight: spacing.xs,
-      // letterSpacing: 2,
+      marginLeft: spacing.xxs,
+      marginRight: spacing.xxs,
     },
   },
 }))

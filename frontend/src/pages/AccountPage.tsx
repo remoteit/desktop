@@ -33,7 +33,14 @@ export const AccountPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }
       }
     >
       <List>
-        <ListItemLocation title="Profile" pathname="/account/overview" icon="user" exactMatch={true} dense />
+        <ListItemLocation
+          title="Profile"
+          pathname="/account/overview"
+          match={['/account', '/account/overview']}
+          icon="user"
+          exactMatch
+          dense
+        />
         <ListItemLocation title="Security" pathname="/account/security" icon="lock" dense />
         <ListItemLocation title="Notifications" pathname="/account/notifications" icon="bell" dense />
         <ListItemLocation title="Subscription" pathname="/account/plans" icon="shopping-cart" dense />
