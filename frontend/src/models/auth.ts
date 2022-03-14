@@ -5,20 +5,19 @@ import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
 import {
   CLIENT_ID,
   CALLBACK_URL,
-  DEVELOPER_KEY,
   AUTH_API_URL,
   COGNITO_USER_POOL_ID,
   COGNITO_AUTH_DOMAIN,
+  REDIRECT_URL,
 } from '../shared/constants'
 import { getLocalStorage, isElectron, isPortal, removeLocalStorage, setLocalStorage } from '../services/Browser'
+import { graphQLUpdateNotification } from '../services/graphQLMutation'
+import { getToken, r3 } from '../services/remote.it'
 import { CognitoUser } from '@remote.it/types'
 import { AuthService } from '@remote.it/services'
 import { createModel } from '@rematch/core'
 import { RootModel } from './rootModel'
 import { Dispatch } from '../store'
-import { REDIRECT_URL } from '../shared/constants'
-import { graphQLUpdateNotification } from '../services/graphQLMutation'
-import { getToken, r3 } from '../services/remote.it'
 import axios from 'axios'
 
 function sleep(ms) {
