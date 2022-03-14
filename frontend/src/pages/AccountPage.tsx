@@ -44,7 +44,7 @@ export const AccountPage: React.FC = () => {
         <ListItemLocation title="Security" pathname="/account/security" icon="lock" dense />
         <ListItemLocation title="Notifications" pathname="/account/notifications" icon="bell" dense />
         <ListItemLocation title="Subscription" pathname="/account/plans" icon="shopping-cart" dense />
-        {billing && <ListItemLocation title="Transactions" pathname="/account/billing" icon="receipt" dense />}
+        {billing && <ListItemLocation title="Billing" pathname="/account/billing" icon="credit-card-front" dense />}
         <ListItemLocation
           title="Licensing"
           pathname="/account/licensing"
