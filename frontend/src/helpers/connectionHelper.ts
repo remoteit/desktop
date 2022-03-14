@@ -28,7 +28,7 @@ export function sanitizeName(name: string) {
 
 export function connectionName(service?: nameObj, device?: nameObj): string {
   let name = sanitizeName(combinedName(service, device))
-  if (name.length > MAX_CONNECTION_NAME_LENGTH) name = name.substr(0, MAX_CONNECTION_NAME_LENGTH)
+  if (name.length > MAX_CONNECTION_NAME_LENGTH) name = name.substring(0, MAX_CONNECTION_NAME_LENGTH)
   return name
 }
 

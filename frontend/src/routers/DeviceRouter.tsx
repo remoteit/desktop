@@ -21,7 +21,7 @@ import { SharePage } from '../pages/SharePage'
 import { useDispatch, useSelector } from 'react-redux'
 import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
-export const DeviceRouter: React.FC<{ layout?: ILayout }> = ({ layout }) => {
+export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
   const { remoteUI, device, targetDevice, targets, fetching } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),

@@ -38,7 +38,7 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 
-export const Router: React.FC<{ layout?: ILayout }> = ({ layout }) => {
+export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
   const { remoteUI, redirect, targetDevice, registered, os } = useSelector((state: ApplicationState) => ({

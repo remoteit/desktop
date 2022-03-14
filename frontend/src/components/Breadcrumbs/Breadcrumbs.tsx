@@ -24,7 +24,7 @@ export const Breadcrumbs: React.FC = () => {
   const location = useLocation()
   const devices = useSelector((state: ApplicationState) => getAllDevices(state))
   const parentPath = location.pathname.replace(REGEX_LAST_PATH, '')
-  const crumbs = parentPath.substr(1).split('/')
+  const crumbs = parentPath.substring(1).split('/')
 
   const findDevice = (id: string) => devices.find((d: IDevice) => d.id === id)
   const pageName = (path: string) => {

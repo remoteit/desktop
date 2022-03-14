@@ -36,7 +36,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
   }
 
   useEffect(() => {
-    const crumbs = location.pathname.substr(1).split('/')
+    const crumbs = location.pathname.substring(1).split('/')
     crumbs[2] !== 'users' && handleChangeServices([crumbs[2]])
   }, [])
 
