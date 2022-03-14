@@ -581,6 +581,7 @@ declare global {
   type IPreferences = {
     version: string
     cliVersion: string
+    cliConfigVersion?: number
     autoUpdate?: boolean
     openAtLogin?: boolean
     remoteUIOverride?: boolean

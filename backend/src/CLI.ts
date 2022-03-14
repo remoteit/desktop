@@ -16,6 +16,7 @@ import user from './User'
 const d = debug('cli')
 
 type IData = {
+  configVersion?: number
   user?: UserCredentials
   admin?: UserCredentials
   device: ITargetDevice
@@ -62,6 +63,7 @@ type IConnectionDefaults = {
 
 export default class CLI {
   data: IData = {
+    configVersion: undefined,
     user: undefined,
     admin: undefined,
     device: DEFAULT_TARGET,
@@ -96,7 +98,7 @@ export default class CLI {
   }
 
   areDefaultsSet() {
-    this.readConnectionDefaults()
+    this.readSettings()
     const defaults = this.data.connectionDefaults
     if (defaults?.enableOneHTTPSListener || defaults?.enableOneHTTPListener) return false
     const useCert: boolean = !!defaults?.enableCertificate
@@ -110,8 +112,7 @@ export default class CLI {
     this.readDevice()
     this.readTargets()
     this.readConnections()
-    this.readConnectionDefaults()
-    this.readOverrides()
+    this.readSettings()
   }
 
   readUser() {
@@ -141,19 +142,17 @@ export default class CLI {
     }))
   }
 
-  private readFile() {
-    return this.configFile.read() || {}
-  }
-
-  readOverrides() {
+  readSettings() {
     const config = this.readFile()
     d('READ overrides', config.overrides)
     environment.overrides = config?.overrides || {}
+
+    this.data.connectionDefaults = config.connectionDefaults
+    this.data.configVersion = config.version
   }
 
-  readConnectionDefaults() {
-    const config = this.readFile()
-    this.data.connectionDefaults = config.connectionDefaults
+  private readFile() {
+    return this.configFile.read() || {}
   }
 
   async readConnections() {
