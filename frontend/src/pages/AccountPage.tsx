@@ -8,7 +8,7 @@ import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import analyticsHelper from '../helpers/analyticsHelper'
 
-export const AccountPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const AccountPage: React.FC = () => {
   const { billing, preferences, licenseIndicator } = useSelector((state: ApplicationState) => ({
     billing: !!getRemoteitLicense(state)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),

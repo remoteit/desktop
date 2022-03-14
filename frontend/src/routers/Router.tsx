@@ -38,7 +38,7 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 
-export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const Router: React.FC<{ layout?: ILayout }> = ({ layout }) => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
   const { remoteUI, redirect, targetDevice, registered, os } = useSelector((state: ApplicationState) => ({
@@ -84,7 +84,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       {/* Connections */}
       <Route path={['/connections/new/:deviceID/:serviceID', '/connections']}>
         <DynamicPanel
-          primary={<ConnectionsPage singlePanel={singlePanel} />}
+          primary={<ConnectionsPage />}
           secondary={
             <Switch>
               <Route path={['/connections/:serviceID/lan', '/connections/new/:deviceID/:serviceID/lan']}>
@@ -104,7 +104,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          singlePanel={singlePanel}
+          layout={layout}
           root={['/connections', '/connections/new']}
         />
       </Route>
@@ -115,44 +115,44 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         ) : isPortal() ? (
           <Redirect to={`/devices/add/${os}`} />
         ) : (
-          <Panel singlePanel={singlePanel}>
+          <Panel layout={layout}>
             <SetupDevice os={os} />
           </Panel>
         )}
       </Route>
 
       <Route path="/devices/membership">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <OrganizationMembershipPage />
         </Panel>
       </Route>
 
       <Route path="/devices/add/linux">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <SetupLinuxPage />
         </Panel>
       </Route>
 
       <Route path="/devices/add/:icon">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <DownloadDesktopPage />
         </Panel>
       </Route>
 
       <Route path="/devices/setupWaiting">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <SetupWaiting os={os} targetDevice={targetDevice} />
         </Panel>
       </Route>
 
       <Route path="/devices/restore">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <DevicesPage restore />
         </Panel>
       </Route>
 
       <Route path="/devices/select">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <DevicesPage select />
         </Panel>
       </Route>
@@ -162,36 +162,36 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           registered ? (
             <Redirect to={`/devices/${targetDevice.uid}`} />
           ) : (
-            <Panel singlePanel={singlePanel}>
+            <Panel layout={layout}>
               <SetupDevice os={os} />
             </Panel>
           )
         ) : (
-          <Panel singlePanel={singlePanel}>
+          <Panel layout={layout}>
             <DevicesPage />
           </Panel>
         )}
       </Route>
 
       <Route path="/devices/:deviceID/:serviceID?">
-        <DeviceRouter singlePanel={singlePanel} />
+        <DeviceRouter layout={layout} />
       </Route>
 
       <Route path="/announcements">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <AnnouncementsPage />
         </Panel>
       </Route>
 
       <Route path="/shareFeedback">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <ShareFeedback />
         </Panel>
       </Route>
 
       <Route path="/settings">
         <DynamicPanel
-          primary={<SettingsPage singlePanel={singlePanel} />}
+          primary={<SettingsPage />}
           secondary={
             <Switch>
               <Route path={['/settings/membership/share', '/settings/access/share']}>
@@ -235,14 +235,14 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          singlePanel={singlePanel}
+          layout={layout}
           root={['/settings']}
         />
       </Route>
 
       <Route path="/account">
         <DynamicPanel
-          primary={<AccountPage singlePanel={singlePanel} />}
+          primary={<AccountPage />}
           secondary={
             <Switch>
               <Route path="/account/security">
@@ -274,7 +274,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          singlePanel={singlePanel}
+          layout={layout}
           root={['/account']}
         />
       </Route>

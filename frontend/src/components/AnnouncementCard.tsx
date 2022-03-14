@@ -78,12 +78,11 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
 }
 
 const useStyles = ({ unread }) =>
-  makeStyles( ({ palette }) => ({
+  makeStyles(({ palette }) => ({
     card: {
       width: 500,
       overflow: 'hidden',
       marginTop: spacing.md,
-      marginRight: spacing.md,
       backgroundColor: palette.grayLightest.main,
       '& .MuiButtonBase-root': { float: 'right' },
     },

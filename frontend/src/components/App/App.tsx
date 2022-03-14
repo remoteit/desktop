@@ -18,9 +18,11 @@ export const App: React.FC = () => {
     signedOut: state.auth.initialized && !state.auth.authenticated,
     uninstalling: state.ui.uninstalling,
   }))
-  const hideSidebar = useMediaQuery('(max-width:1000px)')
-  const singlePanel = useMediaQuery('(max-width:750px)')
-  const css = useStyles({ overlapHeader: singlePanel && isElectron() && isMac() })
+  const layout: ILayout = {
+    hideSidebar: useMediaQuery('(max-width:1000px)'),
+    singlePanel: useMediaQuery('(max-width:750px)'),
+  }
+  const css = useStyles({ overlapHeader: layout.hideSidebar && isElectron() && isMac() })
 
   if (uninstalling)
     return (
@@ -53,8 +55,8 @@ export const App: React.FC = () => {
   return (
     <Page>
       <Box className={css.columns}>
-        {hideSidebar ? <SidebarMenu /> : <Sidebar />}
-        <Router singlePanel={singlePanel} />
+        {layout.hideSidebar ? <SidebarMenu /> : <Sidebar />}
+        <Router layout={layout} />
       </Box>
     </Page>
   )

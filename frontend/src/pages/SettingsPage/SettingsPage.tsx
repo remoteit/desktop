@@ -6,7 +6,6 @@ import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { windowOpen } from '../../services/Browser'
 import { ListItemLink } from '../../components/ListItemLink'
-import { AvatarMenu } from '../../components/AvatarMenu'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
 import { spacing } from '../../styling'
@@ -15,7 +14,7 @@ import { Title } from '../../components/Title'
 import { Logo } from '../../components/Logo'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const SettingsPage: React.FC = () => {
   const css = useStyles()
   const { preferences, feature } = useSelector((state: ApplicationState) => ({
     preferences: state.backend.preferences,
@@ -41,7 +40,6 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
                 </ButtonBase>
               </Tooltip>
             </Title>
-            {singlePanel && <AvatarMenu />}
             <OutOfBand inline />
           </Typography>
           <List disablePadding>

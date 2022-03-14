@@ -87,7 +87,7 @@ const useStyles = makeStyles(({ palette }) => ({
     display: 'flex',
     alignContent: 'flex-start',
     flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
   },
   gutterBottom: {
     paddingBottom: spacing.xxl,

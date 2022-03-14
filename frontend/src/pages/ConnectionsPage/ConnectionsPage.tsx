@@ -13,7 +13,7 @@ import { Body } from '../../components/Body'
 import analyticsHelper from '../../helpers/analyticsHelper'
 import heartbeat from '../../services/Heartbeat'
 
-export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const ConnectionsPage: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
   const { local, proxy, other, recent } = useSelector((state: ApplicationState) => {

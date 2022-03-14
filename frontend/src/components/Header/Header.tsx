@@ -15,7 +15,7 @@ import { Title } from '../Title'
 import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
-export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
   const { searched, navigationBack, navigationForward, feature, device } = useSelector((state: ApplicationState) => ({
     feature: state.ui.feature,
     selected: state.ui.selected,
@@ -77,7 +77,7 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
-      {singlePanel && <Breadcrumbs />}
+      {breadcrumbs && <Breadcrumbs />}
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <ColumnsButton />
@@ -109,7 +109,6 @@ const useStyles = makeStyles({
     zIndex: 8,
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
-    '& .MuiTypography-root': { marginLeft: spacing.lg, letterSpacing: 0.5 },
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {

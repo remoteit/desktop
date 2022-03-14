@@ -204,6 +204,11 @@ declare global {
   }
 
   type IContextMenu = { el?: HTMLElement; serviceID?: string }
+
+  type ILayout = {
+    hideSidebar: boolean
+    singlePanel: boolean
+  }
 }
 
 declare module 'remote.it' {}
