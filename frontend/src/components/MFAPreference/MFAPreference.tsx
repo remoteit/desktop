@@ -19,12 +19,12 @@ const mapState = (state: ApplicationState) => ({
 })
 
 const mapDispatch = (dispatch: any) => ({
-  verifyPhone: dispatch.auth.verifyPhone,
-  updatePhone: dispatch.auth.updatePhone,
+  verifyPhone: dispatch.mfa.verifyPhone,
+  updatePhone: dispatch.mfa.updatePhone,
   setMFAPreference: dispatch.mfa.setMFAPreference,
-  checkSession: dispatch.auth.checkSession,
-  getLastCode: dispatch.auth.getLastCode,
-  verifyTopCode: dispatch.auth.verifyTopCode,
+  checkSession: dispatch.mfa.checkSession,
+  getLastCode: dispatch.mfa.getLastCode,
+  verifyTopCode: dispatch.mfa.verifyTopCode,
 })
 export const MFAPreference = connect(
   mapState,
@@ -41,7 +41,7 @@ export const MFAPreference = connect(
     checkSession,
   }: MFASectionProps) => {
     const { t } = useTranslation()
-    const { auth } = useDispatch<Dispatch>()
+    const { mfa } = useDispatch<Dispatch>()
     const [totpVerified] = React.useState<boolean>(false)
     const [cancelShowVerificationCode, setCancelShowVerificationCode] = useState<boolean>(false)
     const [backupCode, setBackupCode] = React.useState<string>(AWSUser['custom:backup_code'] || '')
@@ -50,7 +50,6 @@ export const MFAPreference = connect(
     )
     const [showLearnMore, setShowLearnMore] = React.useState<boolean>(false)
     const [verificationMethod, setVerificationMethod] = React.useState<string>('sms')
-    const { mfa } = useDispatch<Dispatch>()
     const {
       verificationCode,
       showMFASelection,
@@ -73,11 +72,11 @@ export const MFAPreference = connect(
 
     useEffect(() => {
       analyticsHelper.page('mfaMethod')
-      auth.getAuthenticatedUserInfo()
+      mfa.getAuthenticatedUserInfo()
     }, [])
 
     const loadLastCode = async () => {
-      auth.getLastCode()
+      mfa.getLastCode()
       setLastCode(lastCode)
     }
 
