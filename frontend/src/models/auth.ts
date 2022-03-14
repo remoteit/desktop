@@ -35,7 +35,7 @@ export interface AWSUser {
   email?: string
   email_verified?: boolean
   phone_number?: string
-  phone_number_verified: boolean
+  phone_number_verified?: boolean
   given_name?: string //first_name
   family_name?: string //last_name
   gender?: string
@@ -44,7 +44,6 @@ export interface AWSUser {
 
 export interface AuthState {
   initialized: boolean
-  signInStarted: boolean
   authenticated: boolean
   backendAuthenticated: boolean
   signInError?: string
@@ -61,16 +60,13 @@ const state: AuthState = {
   initialized: false,
   authenticated: false,
   backendAuthenticated: false,
-  signInStarted: false,
   signInError: undefined,
   user: undefined,
   authService: undefined,
   localUsername: undefined,
   notificationSettings: {},
   mfaMethod: '',
-  AWSUser: {
-    authProvider: '',
-  } as AWSUser,
+  AWSUser: { authProvider: '' },
   loggedIn: false,
 }
 
@@ -97,24 +93,6 @@ export default createModel<RootModel>()({
         dispatch.auth.set({ authService })
       }
       dispatch.auth.set({ initialized: true })
-    },
-    async signInSuccess() {
-      const { auth } = dispatch as Dispatch
-      auth.set({ signInStarted: false })
-    },
-    async changeLanguage(language: string) {
-      const { setLanguage } = dispatch.auth
-      await r3.post('/user/language/', { language })
-      setLanguage(language)
-    },
-    async changeEmail(email: string) {
-      const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
-      if (mailFormat.test(email)) {
-        r3.post('/user/email/', { email }).then(() => dispatch.auth.setAWSUserEmail(email))
-        dispatch.ui.set({ successMessage: `Email modified successfully.` })
-      } else {
-        dispatch.ui.set({ errorMessage: `Invalid format.` })
-      }
     },
     async fetchUser(_, state) {
       const { auth } = dispatch as Dispatch
@@ -181,6 +159,21 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ successMessage: `Password Changed Successfully` })
       } catch (error) {
         dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
+      }
+    },
+    async changeLanguage(language: string) {
+      const { setLanguage } = dispatch.auth
+      await r3.post('/user/language/', { language })
+      setLanguage(language)
+    },
+    /* TODO validate and hook changeEmail up */
+    async changeEmail(email: string) {
+      const mailFormat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
+      if (mailFormat.test(email)) {
+        r3.post('/user/email/', { email }).then(() => dispatch.auth.setAWSUserEmail(email))
+        dispatch.ui.set({ successMessage: `Email modified successfully.` })
+      } else {
+        dispatch.ui.set({ errorMessage: `Invalid format.` })
       }
     },
     async forceRefreshToken(_: void, rootState) {
@@ -278,7 +271,7 @@ export default createModel<RootModel>()({
       await state.auth.authService?.signOut()
       removeLocalStorage(state, HOSTED_UI_KEY)
       removeLocalStorage(state, USER_KEY)
-      dispatch.auth.set({ user: undefined, signInStarted: false })
+      dispatch.auth.set({ user: undefined })
       dispatch.organization.reset()
       dispatch.accounts.reset()
       dispatch.connections.reset()
@@ -303,9 +296,7 @@ export default createModel<RootModel>()({
     async globalSignOut() {
       const Authorization = await getToken()
       const response = await axios.get(`${AUTH_API_URL}/globalSignout`, {
-        headers: {
-          Authorization,
-        },
+        headers: { Authorization },
       })
       console.log(`globalSignOut: `, response)
       dispatch.auth.signOut()
