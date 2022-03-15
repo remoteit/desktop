@@ -198,14 +198,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <AccountSharePage />
               </Route>
 
-              <Route path="/settings/organization/share">
-                <OrganizationAddPage />
-              </Route>
-
-              <Route path="/settings/organization">
-                <OrganizationPage />
-              </Route>
-
               <Route path="/settings/access">
                 <AccountAccessPage />
               </Route>
@@ -255,6 +247,14 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
               <Route path="/account/notifications">
                 <NotificationsPage />
+              </Route>
+
+              <Route path="/account/organization/share">
+                <OrganizationAddPage />
+              </Route>
+
+              <Route path="/account/organization">
+                <OrganizationPage />
               </Route>
 
               <Route path="/account/licensing">

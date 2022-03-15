@@ -59,7 +59,6 @@ export const SettingsPage: React.FC = () => {
         />
         <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
         {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />}
-        <ListItemLocation title="Organization" pathname="/settings/organization" icon="industry-alt" exactMatch dense />
         <TestUI>
           <ListItemLocation title="Reports" pathname="/settings/reports" icon="chart-line" dense />
           <ListItemLocation title="Test Settings" pathname="/settings/test" icon="vial" dense />
