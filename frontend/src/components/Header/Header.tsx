@@ -47,7 +47,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         onClick={handleBack}
         icon="chevron-left"
         size="lg"
-        color={disabledBack ? 'grayLight' : 'grayDarkest'}
+        color={disabledBack ? 'grayLight' : 'grayDarker'}
       />
       <IconButton
         title="Forward"
@@ -55,7 +55,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         onClick={handleForward}
         icon="chevron-right"
         size="lg"
-        color={disabledForward ? 'grayLight' : 'grayDarkest'}
+        color={disabledForward ? 'grayLight' : 'grayDarker'}
       />
       <Title className={css.search}>
         {!showSearch && !searched && (
@@ -63,6 +63,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
             size="lg"
             icon="search"
             className={css.button}
+            color="grayDarker"
             onClick={() => {
               setShowSearch(true)
               setTimeout(() => inputRef.current?.focus(), 20)
