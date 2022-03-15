@@ -8,6 +8,7 @@ import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
+import { RefreshButton } from '../../buttons/RefreshButton'
 import { FilterButton } from '../../buttons/FilterButton'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
@@ -40,13 +41,15 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
 
   return (
     <div className={css.header}>
-      {hideSidebar && <IconButton name="bars" size="lg" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />}
+      {hideSidebar && (
+        <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
+      )}
       <IconButton
         title="Back"
         disabled={disabledBack}
         onClick={handleBack}
         icon="chevron-left"
-        size="lg"
+        size="md"
         color={disabledBack ? 'grayLight' : 'grayDarker'}
       />
       <IconButton
@@ -54,13 +57,14 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         disabled={disabledForward}
         onClick={handleForward}
         icon="chevron-right"
-        size="lg"
+        size="md"
         color={disabledForward ? 'grayLight' : 'grayDarker'}
       />
+      <RefreshButton size="base" type="regular" color="grayDarker" />
       <Title className={css.search}>
         {!showSearch && !searched && (
           <IconButton
-            size="lg"
+            size="md"
             icon="search"
             className={css.button}
             color="grayDarker"

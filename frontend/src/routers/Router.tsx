@@ -177,6 +177,12 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         <DeviceRouter layout={layout} />
       </Route>
 
+      <Route path="/logs">
+        <Panel layout={layout}>
+          <UserLogPage />
+        </Panel>
+      </Route>
+
       <Route path="/announcements">
         <Panel layout={layout}>
           <AnnouncementsPage />
@@ -202,8 +208,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <AccountAccessPage />
               </Route>
 
-              <Route path="/settings/logs">
-                <UserLogPage />
+              <Route path="/settings/notifications">
+                <NotificationsPage />
               </Route>
 
               <Route path="/settings/tags">
@@ -243,10 +249,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
               <Route path="/account/plans">
                 <PlansPage />
-              </Route>
-
-              <Route path="/account/notifications">
-                <NotificationsPage />
               </Route>
 
               <Route path="/account/organization/share">

@@ -4,7 +4,6 @@ import { makeStyles, Box, ListItem } from '@material-ui/core'
 import { isElectron, isMac } from '../services/Browser'
 import { RemoteManagement } from './RemoteManagement'
 import { RegisterButton } from '../buttons/RegisterButton'
-import { RefreshButton } from '../buttons/RefreshButton'
 import { AccountSelect } from './AccountSelect'
 import { SidebarNav } from './SidebarNav'
 import { AvatarMenu } from './AvatarMenu'
@@ -19,8 +18,6 @@ export const Sidebar: React.FC = () => {
       <section className={css.header}>
         <AvatarMenu />
         <span className={css.header}>
-          <RefreshButton />
-          &nbsp;
           <RegisterButton />
         </span>
       </section>

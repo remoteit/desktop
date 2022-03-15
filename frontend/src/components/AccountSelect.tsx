@@ -27,7 +27,6 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
       {...props}
       select
       label="Organization"
-      variant="filled"
       value={activeId}
       className={css.selectMenu}
       onChange={async event => {
@@ -52,7 +51,7 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  selectMenu: { '& .MuiChip-root': { display: 'none' } },
+  selectMenu: { '& .MuiChip-root': { display: 'none' }, marginLeft: spacing.sm },
   menu: {
     display: 'flex',
     justifyContent: 'space-between',

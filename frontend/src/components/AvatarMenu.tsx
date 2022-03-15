@@ -3,6 +3,7 @@ import analyticsHelper from '../helpers/analyticsHelper'
 import { makeStyles, ButtonBase, Divider, Tooltip, Menu } from '@material-ui/core'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { selectLicenseIndicator } from '../models/licensing'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemSetting } from './ListItemSetting'
 import { ListItemLink } from './ListItemLink'
@@ -18,12 +19,15 @@ export const AvatarMenu: React.FC = () => {
   const [altMenu, setAltMenu] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const dispatch = useDispatch<Dispatch>()
-  const { user, remoteUI, preferences, backendAuthenticated } = useSelector((state: ApplicationState) => ({
-    user: state.auth.user,
-    remoteUI: isRemoteUI(state),
-    preferences: state.backend.preferences,
-    backendAuthenticated: state.auth.backendAuthenticated,
-  }))
+  const { user, remoteUI, preferences, backendAuthenticated, licenseIndicator } = useSelector(
+    (state: ApplicationState) => ({
+      user: state.auth.user,
+      remoteUI: isRemoteUI(state),
+      preferences: state.backend.preferences,
+      backendAuthenticated: state.auth.backendAuthenticated,
+      licenseIndicator: selectLicenseIndicator(state),
+    })
+  )
 
   const css = useStyles()
   const handleClose = () => {
@@ -54,7 +58,14 @@ export const AvatarMenu: React.FC = () => {
       >
         <div>
           <ListItemLocation dense title="Account" icon="user" pathname="/account" onClick={handleClose} />
-          {/* <ListItemLocation dense title="Settings" icon="sliders-h" pathname="/settings" onClick={handleClose} /> */}
+          <ListItemLocation
+            dense
+            title="Settings"
+            icon="cog"
+            pathname="/settings"
+            badge={licenseIndicator}
+            onClick={handleClose}
+          />
         </div>
         <ListItemLink
           title="Support"

@@ -3,9 +3,13 @@ import network from '../../services/Network'
 import { Dispatch, ApplicationState } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { IconButton } from '../IconButton'
+import { IconButton, ButtonProps } from '../IconButton'
 
-export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
+type Props = ButtonProps & {
+  device?: IDevice
+}
+
+export const RefreshButton: React.FC<Props> = ({ device, ...props }) => {
   const { fetching } = useSelector((state: ApplicationState) => ({
     fetching: state.devices.fetching || (device && state.logs.fetching),
   }))
@@ -31,10 +35,10 @@ export const RefreshButton: React.FC<{ device?: IDevice }> = ({ device }) => {
       disabled={fetching}
       title={title}
       icon="sync"
-      size="sm"
-      type="regular"
+      type="light"
       spin={fetching}
       fixedWidth
+      {...props}
     />
   )
 }

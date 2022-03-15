@@ -11,6 +11,7 @@ export type BodyProps = {
   className?: string
   maxHeight?: string
   gutterBottom?: boolean
+  gutterTop?: boolean
   insetShadow?: boolean
 }
 
@@ -22,6 +23,7 @@ export const Body: React.FC<BodyProps> = ({
   maxHeight,
   className = '',
   gutterBottom,
+  gutterTop,
   insetShadow = true,
   children,
 }) => {
@@ -35,6 +37,7 @@ export const Body: React.FC<BodyProps> = ({
     inset && css.inset,
     hover && css.showScroll,
     gutterBottom && css.gutterBottom,
+    gutterTop && css.gutterTop,
     insetShadow && css.insetShadow
   )
   let style = maxHeight ? { maxHeight } : {}
@@ -91,6 +94,9 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   gutterBottom: {
     paddingBottom: spacing.xxl,
+  },
+  gutterTop: {
+    paddingTop: spacing.md,
   },
   center: {
     display: 'flex',

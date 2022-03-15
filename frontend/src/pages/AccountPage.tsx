@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react'
-import { List, Typography } from '@material-ui/core'
+import { List, Typography, Tooltip, ButtonBase } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { getRemoteitLicense, selectLicenseIndicator } from '../models/licensing'
 import { ListItemLocation } from '../components/ListItemLocation'
+import { windowOpen } from '../services/Browser'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
+import { Logo } from '../components/Logo'
 import analyticsHelper from '../helpers/analyticsHelper'
 
 export const AccountPage: React.FC = () => {
@@ -27,7 +29,11 @@ export const AccountPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Account</Title>
+            <Tooltip title="Visit remote.it on the web">
+              <ButtonBase onClick={() => windowOpen('https://remote.it')}>
+                <Logo width={110} />
+              </ButtonBase>
+            </Tooltip>
           </Typography>
         </>
       }
@@ -42,7 +48,6 @@ export const AccountPage: React.FC = () => {
           dense
         />
         <ListItemLocation title="Security" pathname="/account/security" icon="lock" dense />
-        <ListItemLocation title="Notifications" pathname="/account/notifications" icon="bell" dense />
         <ListItemLocation title="Organization" pathname="/account/organization" icon="industry-alt" exactMatch dense />
         <ListItemLocation title="Subscription" pathname="/account/plans" icon="shopping-cart" dense />
         {billing && <ListItemLocation title="Billing" pathname="/account/billing" icon="credit-card-front" dense />}
