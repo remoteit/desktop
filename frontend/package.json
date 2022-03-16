@@ -4,7 +4,8 @@
   "private": true,
   "main": "src/server/initialize.js",
   "scripts": {
-    "start": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 SKIP_PREFLIGHT_CHECK=true npm-run-all -p watch-*",
+    "start": "cross-env DEBUG_COLORS=1 FORCE_COLOR=1 SKIP_PREFLIGHT_CHECK=true npm-run-all -p copy watch-*",
+    "copy": "cp ../.env ./",
     "build": "react-scripts build",
     "test": "NODE_ENV=test react-scripts test",
     "eject": "react-scripts eject",

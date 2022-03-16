@@ -43,9 +43,10 @@ class CloudController {
       return
     }
 
-    if (!navigator.onLine) return
-
     const url = getWebSocketURL()
+
+    if (!navigator.onLine || !url) return
+
     this.log('CONNECT CLOUD SOCKET', url, this.socket)
     if(url) {
       this.socket = new ReconnectingWebSocket(url, [], {})
