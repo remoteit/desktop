@@ -8,8 +8,7 @@ export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID
 export const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
 export const COGNITO_AUTH_DOMAIN = process.env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
 export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL
-export const AUTH_API_URL =
-  process.env.REACT_AUTH_API_URL || process.env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
+export const AUTH_API_URL = process.env.REACT_AUTH_API_URL || process.env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API
 export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API
 export const DEVELOPER_KEY = process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY
