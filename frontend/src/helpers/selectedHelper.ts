@@ -21,6 +21,5 @@ export function getSelectedTags(devices?: IDevice[], selected?: IDevice['id'][])
     }
   })
   // sort
-  console.log('getSelectedTags', result, selected)
   return result
 }

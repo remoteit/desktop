@@ -1,13 +1,14 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
+import { useDispatch, useSelector } from 'react-redux'
+import { Dispatch, ApplicationState } from '../store'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
 
-type Props = { device?: IDevice; selected?: string[]; button?: string }
+type Props = { device?: IDevice; button?: string }
 
-export const DeviceTagEditor: React.FC<Props> = ({ device, selected, button }) => {
+export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
+  const tags = useSelector((state: ApplicationState) => state.tags.all)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
 
@@ -24,7 +25,12 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, selected, button }) =
           history.push('/devices')
         }}
       />
-      <TagEditor onSelect={tag => dispatch.tags.add({ tag, device })} tags={device.tags} button={button} />
+      <TagEditor
+        onSelect={tag => dispatch.tags.add({ tag, device })}
+        tags={tags}
+        filter={device.tags}
+        button={button}
+      />
     </>
   )
 }

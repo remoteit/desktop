@@ -10,9 +10,9 @@ import { Icon } from '../Icon'
 
 type Props = {
   value?: string | number
-  label?: JSX.Element | string
-  icon?: JSX.Element | string
-  actionIcon?: JSX.Element
+  label?: React.ReactElement | string
+  icon?: React.ReactElement | string
+  actionIcon?: React.ReactElement
   displayValue?: string | number
   disabled?: boolean
   color?: string
@@ -20,7 +20,7 @@ type Props = {
   hideIcon?: boolean
   fieldRef?: React.RefObject<HTMLInputElement>
   debug?: boolean
-  warning?: string
+  warning?: React.ReactElement | string
   modified?: boolean
   disableGutters?: boolean
   onSubmit: () => void

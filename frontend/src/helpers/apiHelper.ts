@@ -3,7 +3,7 @@ import { store } from '../store'
 import { version } from '../../package.json'
 
 
-export function getGraphQLApi(): string {
+export function getGraphQLApi(): string | undefined {
   if (!store) return GRAPHQL_API
 
   const { apiGraphqlURL, switchApi } = store.getState().backend.preferences
@@ -14,7 +14,7 @@ export function getGraphQLApi(): string {
   return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
 }
 
-export function getRestApi(): string {
+export function getRestApi(): string | undefined {
   try {
     if (!store) return API_URL
     const { apiURL, switchApi } = store.getState().backend.preferences
@@ -24,7 +24,7 @@ export function getRestApi(): string {
   }
 }
 
-export function getWebSocketURL(): string {
+export function getWebSocketURL(): string | undefined {
   if (!store) return WEBSOCKET_URL
 
   const { webSocketURL, switchApi } = store.getState().backend.preferences

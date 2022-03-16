@@ -16,7 +16,7 @@ type Props = {
 
 export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) => {
   const { contacts = [], transferring } = useSelector((state: ApplicationState) => ({
-    contacts: state.devices.contacts,
+    contacts: state.contacts.all,
     transferring: state.devices.transferring,
   }))
   const history = useHistory()
@@ -42,12 +42,7 @@ export const DeviceTransferPage: React.FC<Props> = ({ targetDevice, device }) =>
         <>
           <Typography variant="h1">Transfer Device</Typography>
           <Gutters top={null}>
-            <ContactSelector
-              contacts={contacts}
-              selected={contacts.filter(c => device.access.find(s => s.email === c.email))}
-              onChange={handleChange}
-              isTransfer={true}
-            />
+            <ContactSelector contacts={contacts} onChange={handleChange} isTransfer={true} />
           </Gutters>
         </>
       }

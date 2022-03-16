@@ -19,6 +19,8 @@ type ILicenseLookup = { productId: string; platform?: number; managePath: string
 export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
 export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
+export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
+export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
 
 export const LicenseLookup: ILicenseLookup[] = [
   {
@@ -177,14 +179,23 @@ export default createModel<RootModel>()({
       })
     },
 
-    async subscribe(form: IPurchase) {
+    async subscribe(form: IPurchase, globalState) {
       dispatch.licensing.set({ purchasing: form.planId })
       localStorage.setItem('licensing.purchasing', form.planId || '')
+
+      const license = getRemoteitLicense(globalState)
+      if (license?.subscription) {
+        await dispatch.licensing.unsubscribe(form.planId)
+      }
       const result = await graphQLSubscribe(form)
       if (result !== 'ERROR') {
         const checkout = result?.data?.data?.createSubscription
         console.log('PURCHASE', checkout)
         if (checkout?.url) window.location.href = checkout.url
+        else {
+          dispatch.ui.set({ errorMessage: 'Error purchasing license' })
+          dispatch.licensing.set({ purchasing: undefined })
+        }
       }
     },
 
@@ -206,14 +217,14 @@ export default createModel<RootModel>()({
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
 
-    async unsubscribe() {
-      dispatch.licensing.set({ purchasing: 'true' })
+    async unsubscribe(planId: string | undefined) {
+      dispatch.licensing.set({ purchasing: planId })
       await graphQLUnsubscribe()
-      await dispatch.devices.fetch()
+      dispatch.devices.fetch()
       console.log('UNSUBSCRIBE')
     },
 
-    async updateCreditCard(last: string | undefined, globalState) {
+    async updateCreditCard(last: string | undefined) {
       dispatch.licensing.set({ updating: last || true })
       localStorage.setItem('licensing.updating', last || '')
       const result = await graphQLCreditCard()

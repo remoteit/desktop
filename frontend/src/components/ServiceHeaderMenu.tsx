@@ -28,6 +28,7 @@ export const ServiceHeaderMenu: React.FC<{
     <Container
       gutterBottom
       backgroundColor={backgroundColor}
+      bodyProps={{ insetShadow: !backgroundColor }}
       header={
         <>
           <OutOfBand />

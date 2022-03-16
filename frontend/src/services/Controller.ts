@@ -19,6 +19,7 @@ class Controller extends EventEmitter {
     this.url = protocol === 'file:' || isDev ? `http://localhost:${PORT}` : '/'
     this.onNetworkConnect()
     network.on('connect', this.onNetworkConnect)
+    network.on('disconnect', this.close)
   }
 
   log(...args) {
@@ -28,6 +29,8 @@ class Controller extends EventEmitter {
   onNetworkConnect = () => {
     const state = store.getState()
     const { ui, auth } = store.dispatch
+
+    if (!navigator.onLine) return
 
     this.log('ONLINE - CONNECT LOCAL SOCKET')
 

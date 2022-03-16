@@ -127,11 +127,11 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         },
       },
       MuiSnackbar: {
-        root: { '& .MuiSnackbarContent-root': { flexWrap: 'nowrap' } },
-        anchorOriginBottomLeft: { bottom: '80px !important' },
+        anchorOriginBottomLeft: { bottom: '80px !important', marginRight: spacing.lg },
       },
       MuiSnackbarContent: {
-        root: { borderRadius: radius },
+        root: { borderRadius: radius, flexWrap: 'nowrap', paddingRight: spacing.lg },
+        action: { '& .MuiIconButton-root': { marginRight: -spacing.sm } },
       },
       MuiCardHeader: {
         root: {

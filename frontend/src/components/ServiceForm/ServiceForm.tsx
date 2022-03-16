@@ -41,6 +41,7 @@ export const ServiceForm: React.FC<Props> = ({
     isValid: state.backend.reachablePort,
   }))
   const initForm = () => {
+    setError(undefined)
     const defaultAppType = findType(applicationTypes, target.type)
     return {
       hostname: service?.host || target.hostname,

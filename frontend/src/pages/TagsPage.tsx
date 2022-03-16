@@ -19,9 +19,10 @@ export const TagsPage: React.FC = () => {
   const getColor = useLabel()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
-  const { deleting, updating, tags } = useSelector((state: ApplicationState) => ({
+  const { deleting, updating, creating, tags } = useSelector((state: ApplicationState) => ({
     deleting: state.tags.deleting,
     updating: state.tags.updating,
+    creating: state.tags.creating,
     tags: state.tags.all,
   }))
 
@@ -44,7 +45,12 @@ export const TagsPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>Tags</Title>
-            <TagEditor button="plus" />
+            <TagEditor
+              createOnly
+              button="plus"
+              tags={tags}
+              buttonProps={{ title: 'Add Tag', loading: creating, disabled: creating }}
+            />
           </Typography>
         </>
       }
@@ -65,7 +71,14 @@ export const TagsPage: React.FC = () => {
             resetValue={tag.name}
             filter={REGEX_TAG_SAFE}
             disabled={deleting === tag.name || updating === tag.name}
-            warning="This can not be undone. All devices will have this tag removed from them."
+            warning={
+              <>
+                <Notice severity="danger" gutterBottom fullWidth>
+                  This cannot be undone.
+                </Notice>
+                All devices will have this tag removed from them.
+              </>
+            }
             onDelete={() => dispatch.tags.delete(tag)}
             onSave={value => rename(tag, value.toString())}
           />

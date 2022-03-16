@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { makeStyles, List, Typography, Tooltip, ButtonBase, Divider } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { selectLicenseIndicator } from '../../models/licensing'
+import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { windowOpen } from '../../services/Browser'
@@ -18,9 +18,11 @@ import analyticsHelper from '../../helpers/analyticsHelper'
 
 export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
   const css = useStyles()
-  const { preferences } = useSelector((state: ApplicationState) => ({
+  const { billing, preferences, licenseIndicator, feature } = useSelector((state: ApplicationState) => ({
+    billing: !!getRemoteitLicense(state)?.plan?.billing,
     licenseIndicator: selectLicenseIndicator(state),
     preferences: state.backend.preferences,
+    feature: state.ui.feature,
   }))
 
   useEffect(() => {
@@ -64,7 +66,7 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
         <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="scroll" dense />
         <ListItemLink title="Registrations" href="https://app.remote.it/#registrations" icon="upload" dense />
         <ListItemLink title="Products" href="https://app.remote.it/#products" icon="server" dense />
-        <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />
+        {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />}
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         <ListItemLocation
           title="Organization"

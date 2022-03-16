@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { selectById } from '../models/devices'
 import { DEFAULT_TARGET } from '../shared/constants'
-import { getLocalStorage, setLocalStorage } from '../services/Browser'
+import { getLocalStorage, setLocalStorage, getOs, isPortal } from '../services/Browser'
 import { ApplicationState } from '../store'
 import { RootModel } from './rootModel'
 import { version } from '../../package.json'
@@ -31,6 +31,7 @@ type IBackendState = {
     hostname: string
     oobAvailable: boolean
     overrides: IOverrides
+    portal?: boolean
   }
   preferences: IPreferences
   deferredAttributes?: IService['attributes']
@@ -49,7 +50,7 @@ const defaultState: IBackendState = {
   freePort: undefined,
   updateReady: undefined,
   environment: {
-    os: undefined,
+    os: getOs(),
     osVersion: '',
     arch: '',
     manufacturerDetails: undefined,
@@ -59,6 +60,7 @@ const defaultState: IBackendState = {
     hostname: '',
     oobAvailable: false,
     overrides: {},
+    portal: isPortal(),
   },
   preferences: {
     version: '',

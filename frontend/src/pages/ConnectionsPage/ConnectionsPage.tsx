@@ -49,7 +49,7 @@ export const ConnectionsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePan
         target: {
           id: connection.id,
           deviceId: device?.id || '',
-          platform: device?.targetPlatform || 0,
+          platform: device?.targetPlatform,
           name: connection.name || service?.name || '',
         },
       }
