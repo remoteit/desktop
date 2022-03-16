@@ -188,8 +188,8 @@ export const ServiceForm: React.FC<Props> = ({
                 }}
               />
               <Typography variant="caption">
-                Local network IP address or fully qualified domain name to host this service. Leave blank for this
-                system to host.
+                Do not change if hosting a local service. Use a local network IP address or fully qualified domain name
+                to configure this as a jump service to system on your local network.
                 <br />
                 <i>AWS example:</i>
                 <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>

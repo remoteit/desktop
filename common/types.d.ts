@@ -214,7 +214,7 @@ declare global {
     disabled: boolean //    service enabled / disabled
   }
 
-  interface ITargetDevice extends ITarget { }
+  interface ITargetDevice extends ITarget {}
 
   interface IDevice {
     id: string
@@ -440,6 +440,13 @@ declare global {
     password: string
   }
 
+  interface IAccessKey {
+    key: string
+    enabled: boolean
+    created: Date
+    lastUsed: Date
+  }
+
   type IRouteType = 'failover' | 'p2p' | 'proxy'
 
   interface IEvent {
@@ -574,6 +581,7 @@ declare global {
   type IPreferences = {
     version: string
     cliVersion: string
+    cliConfigVersion?: number
     autoUpdate?: boolean
     openAtLogin?: boolean
     remoteUIOverride?: boolean
@@ -657,4 +665,4 @@ declare global {
   }
 }
 
-export { }
+export {}

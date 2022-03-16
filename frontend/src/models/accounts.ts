@@ -1,5 +1,4 @@
 import { createModel } from '@rematch/core'
-import moment from 'moment'
 import { ApplicationState } from '../store'
 import { getLocalStorage, setLocalStorage } from '../services/Browser'
 import { graphQLRequest, graphQLGetErrors, apiError } from '../services/graphQL'
@@ -7,25 +6,17 @@ import { graphQLLicenses, parseLicense } from './licensing'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from './rootModel'
-import { graphQLCreateAccessKey, graphQLDeleteAccessKeys, graphQLGetAccessKeys, graphQLToggleAccessKeys } from '../services/graphQLAccessKeys'
-
 
 const ACCOUNT_KEY = 'account'
 
 export type IAccountsState = {
   membership: IOrganizationMembership[]
   activeId?: string // user.id
-  keyArray?: []
-  apiKey?: string
-  key?: string
-  secretKey?: string
 }
 
 const accountsState: IAccountsState = {
   membership: [],
   activeId: undefined,
-  keyArray: [],
-  apiKey: undefined
 }
 
 export default createModel<RootModel>()({
@@ -41,10 +32,6 @@ export default createModel<RootModel>()({
         const result = await graphQLRequest(
           ` query {
               login {
-                apiKey {
-                  key
-                  updated
-                }
                 membership {
                   created
                   role
@@ -84,7 +71,6 @@ export default createModel<RootModel>()({
             licenses: m.organization?.licenses?.map(l => parseLicense(l)),
           },
         })),
-        apiKey: gqlData.apiKey.key
       })
       if (!membership.find(m => m.organization.id === state.accounts.activeId)) {
         dispatch.accounts.setActive('')
@@ -156,63 +142,6 @@ export default createModel<RootModel>()({
       // Add if new
       if (!exists && device) devices.push(device)
       await dispatch.accounts.setDevices({ devices, accountId })
-    },
-    async fetchAccessKeys() {
-      try {
-        const result = await graphQLGetAccessKeys()
-        graphQLGetErrors(result)
-        const data = result?.data.data.login.accessKeys
-        const arr = data.map(element => {
-          let obj = {}
-          obj['key'] = element.key
-          let dateCr = moment(new Date(element.created)).format('MM/DD/YYYY')
-          obj['createdDate'] = dateCr
-          let dateLastUsed = element.lastUsed
-            ? 'Last used ' +
-            moment(new Date(element.lastUsed)).format('MM/DD/YYYY')
-            : 'Never used'
-          obj['lastUsed'] = dateLastUsed
-          obj['enabled'] = element.enabled
-
-          return obj
-        })
-        await dispatch.accounts.set({ keyArray: arr })
-      } catch (error) {
-        await apiError(error)
-      }
-    },
-    async toggleAccessKeys(properties: { key: never, enabled: boolean, }) {
-      try {
-        const result = await graphQLToggleAccessKeys(properties)
-        graphQLGetErrors(result)
-        await dispatch.accounts.fetchAccessKeys()
-      } catch (error) {
-        await apiError(error)
-      }
-    },
-    async deleteAccessKeys(properties: { key: string }) {
-      try {
-        const result = await graphQLDeleteAccessKeys(properties)
-        graphQLGetErrors(result)
-        await dispatch.accounts.fetchAccessKeys()
-      } catch (error) {
-        await apiError(error)
-      }
-    },
-    async createAccessKey() {
-      try {
-        const result = await graphQLCreateAccessKey()
-        graphQLGetErrors(result)
-        const data = result?.data.data.createAccessKey
-        dispatch.accounts.set({ key: data.key, secretKey: data.secret })
-        await dispatch.accounts.fetchAccessKeys()
-        // // setKey(data.key)
-        // // setSecretKey(data.secret)
-        // return result
-      } catch (error) {
-        await apiError(error)
-      }
-
     },
     async setActive(id: string, globalState) {
       setLocalStorage(globalState, ACCOUNT_KEY, id)

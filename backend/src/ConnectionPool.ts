@@ -261,15 +261,26 @@ export default class ConnectionPool {
   }
 
   private migrateConnectionData(connections: IConnection[]) {
-    // migrate active to enabled and connected
-    return connections.map(c => {
-      // @ts-ignore
-      c.enabled = !!(c.enabled || c.active)
-      // @ts-ignore
-      delete c.active
-      // setup safe names for hostname
-      c.name = c.name?.toLowerCase().replace(/[-\s]+/g, '-')
-      return { ...c }
-    })
+    const previousCLI = preferences.get().cliConfigVersion || 0
+    const thisCLI = cli.data.configVersion || 0
+
+    if (previousCLI < thisCLI && thisCLI === 3) {
+      Logger.info('MIGRATING CONNECTION DATA', { previousVersion: previousCLI, thisVersion: thisCLI })
+
+      // migrate active to enabled and connected
+      connections = connections.map(c => {
+        // @ts-ignore
+        c.enabled = !!(c.enabled || c.active)
+        // @ts-ignore
+        delete c.active
+        // setup safe names for hostname
+        c.name = c.name?.toLowerCase().replace(/[-\s]+/g, '-')
+        c.targetHost = undefined
+        return { ...c }
+      })
+    }
+
+    preferences.update({ cliConfigVersion: thisCLI })
+    return connections
   }
 }

@@ -4,8 +4,6 @@ import { ApplicationState, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { selectConnections } from '../helpers/connectionHelper'
-import { selectAnnouncements } from '../models/announcements'
-import { selectLicenseIndicator } from '../models/licensing'
 import { isRemoteUI } from '../helpers/uiHelper'
 
 interface INavigationHook {
@@ -19,25 +17,16 @@ export function useNavigation(): INavigationHook {
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
-  const {
-    connections,
-    devices,
-    navigation,
-    remoteUI,
-    licenseIndicator,
-    unreadAnnouncements,
-    navigationBack,
-    navigationForward,
-  } = useSelector((state: ApplicationState) => ({
-    connections: selectConnections(state).filter(connection => connection.enabled).length,
-    devices: state.devices.total,
-    navigation: state.ui.navigation,
-    navigationBack: state.ui.navigationBack,
-    navigationForward: state.ui.navigationForward,
-    licenseIndicator: selectLicenseIndicator(state),
-    unreadAnnouncements: selectAnnouncements(state, true).length,
-    remoteUI: isRemoteUI(state),
-  }))
+  const { connections, devices, navigation, remoteUI, navigationBack, navigationForward } = useSelector(
+    (state: ApplicationState) => ({
+      connections: selectConnections(state).filter(connection => connection.enabled).length,
+      devices: state.devices.total,
+      navigation: state.ui.navigation,
+      navigationBack: state.ui.navigationBack,
+      navigationForward: state.ui.navigationForward,
+      remoteUI: isRemoteUI(state),
+    })
+  )
   const [shouldUpdate, setShouldUpdate] = useState<boolean>(true)
   const [currentUIPayload, setCurrentUIPayload] = useState({})
 
@@ -45,17 +34,18 @@ export function useNavigation(): INavigationHook {
   const menu = match ? match[0] : '/devices'
 
   useEffect(() => {
-    let newValues: any = {}
+    let newValues: ILookup<any> = {}
     if (
       location?.pathname &&
       location?.pathname !== '/' &&
       shouldUpdate &&
       navigationBack.slice(-1)[0] !== location.pathname
     ) {
-      newValues = { navigationBack: navigationBack.concat([location?.pathname]), navigationForward: [] }
+      newValues.navigationBack = navigationBack.concat([location?.pathname])
+      newValues.navigationForward = []
     }
     if (navigation[menu] !== location.pathname) {
-      newValues = { ...newValues, navigation: { ...navigation, [menu]: location.pathname } }
+      newValues.navigation = { ...navigation, [menu]: location.pathname }
     }
 
     if (
@@ -63,7 +53,7 @@ export function useNavigation(): INavigationHook {
       (newValues.navigationBack || newValues.navigation)
     ) {
       setCurrentUIPayload(newValues)
-      ui.set(newValues)
+      ui.set({ ...newValues, sidebarMenu: false })
     }
   }, [location?.pathname])
 
@@ -104,30 +94,6 @@ export function useNavigation(): INavigationHook {
       show: !remoteUI,
       chip: devices.toLocaleString(),
     },
-    {
-      label: 'Announcements',
-      path: '/announcements',
-      match: '/announcements',
-      icon: 'megaphone',
-      badge: unreadAnnouncements,
-      show: !remoteUI
-    },
-    {
-      label: 'Feedback',
-      path: '/shareFeedback',
-      match: '/shareFeedback',
-      icon: 'comment-smile',
-      footer: true,
-      show: true,
-    },
-    {
-      label: 'More',
-      path: '/settings',
-      match: '/settings',
-      icon: 'ellipsis-h',
-      badge: licenseIndicator,
-      show: true
-    }
   ]
 
   return { menu, menuItems, handleBack, handleForward }

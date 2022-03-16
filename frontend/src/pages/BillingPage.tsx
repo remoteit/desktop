@@ -16,7 +16,7 @@ export const BillingPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>Transactions</Title>
+          <Title>Billing</Title>
         </Typography>
       }
     >

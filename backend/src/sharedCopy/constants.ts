@@ -10,6 +10,10 @@ export const API_URL = process.env.REACT_APP_API_URL || process.env.API_URL
 export const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API
 export const GRAPHQL_BETA_API = process.env.REACT_APP_GRAPHQL_BETA_API
 export const DEVELOPER_KEY = process.env.REACT_APP_DEVELOPER_KEY || process.env.DEVELOPER_KEY
+export const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
+export const COGNITO_AUTH_DOMAIN = process.env.COGNITO_AUTH_DOMAIN || 'auth.remote.it'
+export const AUTH_API_URL =
+  process.env.REACT_AUTH_API_URL || process.env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 export const PROTOCOL =
   process.env.PROTOCOL || process.env.NODE_ENV === 'development' ? 'remoteitdev://' : 'remoteit://'
 export const PORTAL = (process.env.REACT_APP_PORTAL || process.env.PORTAL) === 'true' ? true : false
@@ -49,8 +53,8 @@ export const REGEX_VALID_HOSTNAME =
   /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 export const REGEX_TAG_SAFE = /[^a-zA-Z0-9-]/g
 export const REGEX_VALID_URL = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/
-export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]/g
-
+export const REGEX_CONNECTION_NAME = /[^a-zA-Z0-9-]+/g
+export const REGEX_CONNECTION_TRIM = /^-|-$/
 export const FRONTEND_RETRY_DELAY = 20000
 export const MAX_NAME_LENGTH = 100
 export const MAX_CONNECTION_NAME_LENGTH = 62
@@ -78,6 +82,7 @@ export const DEFAULT_CONNECTION: IConnection = {
   timeout: 15,
   enabled: false,
   ip: IP_PRIVATE,
+  targetHost: '',
   autoLaunch: false,
   restriction: IP_OPEN,
   publicRestriction: IP_LATCH,

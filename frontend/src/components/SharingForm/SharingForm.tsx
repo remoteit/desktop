@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
+import { REGEX_LAST_PATH } from '../../shared/constants'
 import { Divider, List, ListItem, Typography } from '@material-ui/core'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ServiceCheckboxes } from './ServiceCheckboxes'
 import { ShareSaveActions } from '../ShareSaveActions'
-import { useHistory, useParams, useLocation } from 'react-router-dom'
-import { useSelector } from '../../hooks/reactReduxHooks'
+import { useHistory, useLocation } from 'react-router-dom'
 import { ApplicationState, Dispatch } from '../../store'
+import { useSelector } from '../../hooks/reactReduxHooks'
 import { useDispatch } from 'react-redux'
 
 export interface SharingDetails {
@@ -35,7 +36,7 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
   }
 
   useEffect(() => {
-    const crumbs = location.pathname.substr(1).split('/')
+    const crumbs = location.pathname.substring(1).split('/')
     crumbs[2] !== 'users' && handleChangeServices([crumbs[2]])
   }, [])
 
@@ -71,12 +72,10 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
     if (device && shareData) {
       await shares.updateDeviceState({ device, emails: shareData.email, scripting: script, services, isNew })
     }
-    goToNext()
+    goBack()
   }
-  const goToNext = () =>
-    user
-      ? history.push(location.pathname.replace(`/${user.email}`, ''))
-      : history.push(location.pathname.replace('/share', ''))
+
+  const goBack = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
 
   const action = () => {
     let action = false
@@ -127,7 +126,6 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
           onClick={handleChangeScripting}
         />
       </List>
-
       <ShareSaveActions
         onCancel={() => history.push(location.pathname.replace(user ? `/${user.email}` : '/share', ''))}
         onSave={action}

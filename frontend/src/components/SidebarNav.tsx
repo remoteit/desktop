@@ -1,5 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigation } from '../hooks/useNavigation'
+import { useSelector } from 'react-redux'
+import { ApplicationState } from '../store'
+import { selectAnnouncements } from '../models/announcements'
 import { useHistory, useLocation, matchPath } from 'react-router-dom'
 import {
   makeStyles,
@@ -8,21 +11,23 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
+  Divider,
   Chip,
-  Badge,
 } from '@material-ui/core'
+import { ListItemLocation } from './ListItemLocation'
+import { ListItemLink } from './ListItemLink'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 import classnames from 'classnames'
 
 export const SidebarNav: React.FC = () => {
+  const { unreadAnnouncements } = useSelector((state: ApplicationState) => ({
+    unreadAnnouncements: selectAnnouncements(state, true).length,
+  }))
   const { menuItems } = useNavigation()
-  const [viewBadge, setViewBadge] = useState(true)
   const location = useLocation()
   const history = useHistory()
   const css = useStyles()
-
-  const dismissBadge = () => setViewBadge(false)
 
   return (
     <List className={css.list}>
@@ -32,25 +37,13 @@ export const SidebarNav: React.FC = () => {
           items.push(
             <React.Fragment key={index}>
               <ListItem
-                key={m.path}
-                className={classnames(active && css.active, m.footer && css.footer)}
+                className={classnames(active && 'Mui-selected')}
                 onClick={() => history.push(m.path)}
                 button
                 dense
               >
                 <ListItemIcon>
-                  {m.badge && viewBadge ? (
-                    <Badge
-                      onClick={dismissBadge}
-                      variant={m.badge > 1 ? undefined : 'dot'}
-                      badgeContent={m.badge}
-                      color="error"
-                    >
-                      <Icon size="md" type="regular" name={m.icon} color={active ? 'black' : 'grayDark'} />
-                    </Badge>
-                  ) : (
-                    <Icon size="md" type="regular" name={m.icon} color={active ? 'black' : 'grayDark'} />
-                  )}
+                  <Icon size="md" type="regular" name={m.icon} color={active ? 'black' : 'grayDark'} />
                 </ListItemIcon>
                 <ListItemText primary={m.label} />
                 {!!Number(m.chip) && (
@@ -64,11 +57,24 @@ export const SidebarNav: React.FC = () => {
                   </ListItemSecondaryAction>
                 )}
               </ListItem>
-              {m.Menu && <m.Menu />}
             </React.Fragment>
           )
         return items
       }, [])}
+      <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
+      <Divider variant="inset" />
+      <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="scroll" dense />
+      <ListItemLink title="Registrations" href="https://app.remote.it/#registrations" icon="upload" dense />
+      <ListItemLink title="Products" href="https://app.remote.it/#products" icon="server" dense />
+      <Divider variant="inset" />
+      <ListItemLocation
+        title="Announcements"
+        pathname="/announcements"
+        icon="megaphone"
+        badge={unreadAnnouncements}
+        dense
+      />
+      <ListItemLocation title="Feedback" className={css.footer} pathname="/shareFeedback" icon="comment-smile" dense />
     </List>
   )
 }
@@ -83,11 +89,12 @@ const useStyles = makeStyles(({ palette }) => ({
     '& .MuiListItemText-primary': { color: palette.grayDark.main },
     '& .MuiListItem-button:hover .MuiListItemText-primary': { color: palette.black.main },
     '& .MuiListItem-button:hover path': { color: palette.grayDarkest.main },
-  },
-  active: {
-    backgroundColor: palette.white.main,
-    '& .MuiListItemText-primary': {
-      color: palette.black.main,
+    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, backgroundColor: palette.grayLight.main },
+    '& .Mui-selected': {
+      backgroundColor: palette.white.main,
+      '& .MuiListItemText-primary': {
+        color: palette.black.main,
+      },
     },
   },
   footer: {

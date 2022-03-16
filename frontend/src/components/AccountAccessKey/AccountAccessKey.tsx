@@ -1,153 +1,112 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import Switch from '@material-ui/core/Switch'
-import Typography from '@material-ui/core/Typography'
+import {
+  makeStyles,
+  Dialog,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Typography,
+  Switch,
+} from '@material-ui/core'
 import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
-import Button from '@material-ui/core/Button'
-import Collapse from '@material-ui/core/Collapse'
-import { TextBlock } from '../TextBlock'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
-import { spacing } from '../../styling'
+import { dateOptions } from '../Duration/Duration'
 import { Gutters } from '../Gutters'
+import { Icon } from '../Icon'
+import { spacing } from '../../styling'
 
-export function AccountAccessKey({ ...props }): JSX.Element {
-  const classes = useStyles()
-  const [maxlimit, setMaxLimit] = useState(0)
-  const [showSection, setShowSection] = useState(false)
-
-  const { keyArray, secretKey, key } = useSelector((state: ApplicationState) => ({
-    keyArray: state.accounts.keyArray,
-    secretKey: state.accounts.secretKey,
-    key: state.accounts.key,
-  }))
-  const { accounts } = useDispatch<Dispatch>()
+export const AccountAccessKey: React.FC = () => {
+  const [showDialog, setShowDialog] = useState(false)
+  const { accessKeys, secretKey, key, updating } = useSelector((state: ApplicationState) => state.keys)
+  const dispatch = useDispatch<Dispatch>()
+  const css = useStyles()
 
   useEffect(() => {
-    accounts.fetchAccessKeys()
+    dispatch.keys.init()
   }, [])
 
-  const handleToggle = e => {
-    const selectedId = e.currentTarget.id
-    const selectedKey = keyArray?.filter(item => selectedId === item['key'])
-    if (selectedKey?.length) {
-      const properties = {
-        key: selectedKey[0]['key'],
-        enabled: !selectedKey[0]['enabled'],
-      }
-      accounts.toggleAccessKeys(properties)
-    }
-  }
-
-  const handleCreateKey = () => {
-    accounts.createAccessKey()
-    setShowSection(true)
-  }
-
-  function closePanel() {
-    setShowSection(false)
+  const handleToggle = k => {
+    dispatch.keys.toggleAccessKeys({
+      key: k.key,
+      enabled: !k.enabled,
+    })
   }
 
   return (
     <>
-      <Typography variant="subtitle1" className={classes.titlePadding}>
-        Access key
-      </Typography>
-      <Gutters className={classes.padding}>
-        <List>
-          <ListItem>
-            <Typography variant="body2">
-              Access keys are used to authenticate you with our API. You can create a new key or delete an existing key
-              at any time. You can also temporarily disable a key.
-              <br />
-              <em>If you lose or forget your secret key, you cannot retreive it. There is a limit of 2 access keys.</em>
-            </Typography>
-          </ListItem>
-          <ListItem>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCreateKey}
-              disabled={!(maxlimit < 2)}
-              style={{ borderRadius: 3 }}
-            >
-              Create Access key
-            </Button>
-          </ListItem>
-          {keyArray?.map((item, index) => {
-            return (
-              <div className={classes.root} key={index}>
-                <List>
-                  <ListItem key={item['key'] + index} id={item['key']} button onClick={handleToggle}>
-                    <ListItemText
-                      primary={
-                        <>
-                          <Typography component="span" variant="body1" color="textPrimary">
-                            {item['key']}
-                          </Typography>
-                        </>
-                      }
-                      secondary={
-                        <>
-                          <Typography component="span" variant="caption" color="textSecondary">
-                            Created date {item['createdDate']} , {item['lastUsed']}
-                          </Typography>
-                        </>
-                      }
-                    />
-                    <ListItemSecondaryAction>
-                      <ListItemIcon>
-                        <DeleteAccessKey deleteKey={item['key']} enabled={item['enabled']} />
-                      </ListItemIcon>
-                      <Switch
-                        id={item['key']}
-                        edge="end"
-                        color="primary"
-                        onChange={handleToggle}
-                        checked={item['enabled']}
-                      />
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                  {index === 0 ? (
-                    <Collapse in={showSection}>
-                      <CreateAccessKey
-                        maxlimit={maxlimit}
-                        secretKey={secretKey}
-                        showSection={showSection}
-                        accessKey={key}
-                        closePanel={closePanel}
-                      />
-                    </Collapse>
-                  ) : (
-                    <></>
-                  )}
-                </List>
-              </div>
-            )
-          })}
-        </List>
+      <Typography variant="subtitle1">Authentication</Typography>
+      <Gutters>
+        <Typography variant="body2" gutterBottom>
+          Access keys are used to authenticate you with our API. You can create a new key or delete an existing key at
+          any time. You can also temporarily disable a key.
+          <br />
+          <em>If you lose or forget your secret key, you cannot retrieve it. There is a limit of 2 access keys.</em>
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={accessKeys.length > 1}
+          onClick={() => {
+            dispatch.keys.createAccessKey()
+            setShowDialog(true)
+          }}
+        >
+          Create Access key
+        </Button>
       </Gutters>
+      <List>
+        {accessKeys?.map((k, index) => (
+          <ListItem
+            className={css.row}
+            key={index}
+            onClick={() => handleToggle(k)}
+            disabled={updating === k.key}
+            button
+            dense
+          >
+            <ListItemText
+              classes={{ primary: css.primary }}
+              primary={k.key}
+              secondary={
+                <>
+                  Created {k.created.toLocaleString(undefined, dateOptions)} &nbsp;/ &nbsp;
+                  {k.lastUsed ? 'Last used ' + k.lastUsed.toLocaleString(undefined, dateOptions) : 'Never used'}
+                </>
+              }
+            />
+            <ListItemSecondaryAction>
+              <ListItemIcon>
+                <DeleteAccessKey deleteKey={k} />
+              </ListItemIcon>
+              {updating === k.key ? (
+                <Icon name="spinner-third" spin size="lg" inlineLeft />
+              ) : (
+                <Switch color="primary" onChange={() => handleToggle(k)} checked={k.enabled} />
+              )}
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
+      </List>
+      <Dialog
+        open={showDialog}
+        onClose={() => {
+          setShowDialog(false)
+          dispatch.keys.set({ key: undefined, secretKey: undefined })
+        }}
+        fullWidth
+      >
+        <CreateAccessKey newKey={key} secretKey={secretKey} />
+      </Dialog>
     </>
   )
 }
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    width: '100%',
-    maxWidth: 550,
-    backgroundColor: theme.palette.background.paper,
-  },
-  padding: {
-    paddingLeft: spacing.sm,
-    margin: '0px'
-  },
-  titlePadding: {
-    paddingLeft: '33px',
-  },
+  row: { '& .MuiListItemText-root': { marginLeft: spacing.md } },
+  primary: { fontFamily: 'Roboto Mono', color: theme.palette.grayDarkest.main, letterSpacing: 0.5 },
 }))
