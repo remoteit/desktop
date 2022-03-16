@@ -1,8 +1,7 @@
-import React, { useEffect, } from 'react'
+import React, { useEffect } from 'react'
 import { List, Typography } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../../store'
-import { selectLicenseIndicator, getRemoteitLicense } from '../../models/licensing'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { DeviceSetupItem } from '../../components/DeviceSetupItem'
 import { OutOfBand } from '../../components/OutOfBand'
@@ -11,10 +10,8 @@ import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
-export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
-  const { billing, preferences, licenseIndicator, feature } = useSelector((state: ApplicationState) => ({
-    billing: !!getRemoteitLicense(state)?.plan?.billing,
-    licenseIndicator: selectLicenseIndicator(state),
+export const SettingsPage: React.FC = () => {
+  const { preferences, feature } = useSelector((state: ApplicationState) => ({
     preferences: state.backend.preferences,
     feature: state.ui.feature,
   }))
@@ -49,10 +46,6 @@ export const SettingsPage: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           exactMatch
           dense
         />
-        <ListItemLocation title="Logs" pathname="/settings/logs" icon="file-alt" dense />
-        <ListItemLocation title="Scripting" pathname="https://app.remote.it/#scripting" icon="scroll" dense />
-        <ListItemLocation title="Registrations" pathname="https://app.remote.it/#registrations" icon="upload" dense />
-        <ListItemLocation title="Products" pathname="https://app.remote.it/#products" icon="server" dense />
         <ListItemLocation title="Notifications" pathname="/settings/notifications" icon="bell" dense />
         {feature.tagging && <ListItemLocation title="Tags" pathname="/settings/tags" icon="tag" dense />}
         <TestUI>
