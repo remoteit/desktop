@@ -47,11 +47,13 @@ class CloudController {
 
     const url = getWebSocketURL()
     this.log('CONNECT CLOUD SOCKET', url, this.socket)
-    this.socket = new ReconnectingWebSocket(url, [], {})
-    this.socket.addEventListener('open', this.onOpen)
-    this.socket.addEventListener('message', this.onMessage)
-    this.socket.addEventListener('close', this.onClose)
-    this.socket.addEventListener('error', this.onError)
+    if(url) {
+      this.socket = new ReconnectingWebSocket(url, [], {})
+      this.socket.addEventListener('open', this.onOpen)
+      this.socket.addEventListener('message', this.onMessage)
+      this.socket.addEventListener('close', this.onClose)
+      this.socket.addEventListener('error', this.onError)
+    }
   }
 
   startPing() {

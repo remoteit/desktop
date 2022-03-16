@@ -43,7 +43,7 @@ function GlobalSignOut(): JSX.Element {
         Sign out everywhere
       </Typography>
       <Gutters>
-        <Typography variant="body2">This Logs you out of remote.it everywhere you're logged in.</Typography>
+        <Typography variant="body2">This logs you out of remote.it everywhere you're logged in.</Typography>
       </Gutters>
       <Gutters>
         <Button color="primary" variant="outlined" onClick={signedOut}>
