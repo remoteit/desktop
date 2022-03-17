@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon } from '../Icon'
-import { MFAPhoneForm } from '../MFAPreference/MFAPhoneForm'
+import { MFAPhoneForm } from './MFAPhoneForm'
 import { Box, Button, Input, makeStyles } from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
