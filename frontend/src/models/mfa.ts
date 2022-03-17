@@ -7,6 +7,7 @@ import { RootModel } from './rootModel'
 import axios from 'axios'
 
 type IMfa = {
+  mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA'
   verificationCode: string
   showPhone: boolean
   showMFASelection: boolean
@@ -20,6 +21,7 @@ type IMfa = {
 }
 
 const defaultState: IMfa = {
+  mfaMethod: 'NO_MFA',
   verificationCode: '',
   showPhone: false,
   showMFASelection: false,
@@ -50,7 +52,7 @@ export default createModel<RootModel>()({
           Authorization,
         },
       })
-      dispatch.auth.set({ MfaMethod: response.data['MfaPref'] })
+      dispatch.mfa.set({ mfaMethod: response.data['MfaPref'] })
       if (userInfo && userInfo.attributes) {
         delete userInfo.attributes['identities']
         delete userInfo.attributes['sub']
@@ -67,9 +69,8 @@ export default createModel<RootModel>()({
       }
       dispatch.mfa.set({ showEnableSelection: response.data['MfaPref'] === 'NO_MFA' })
     },
-    async setMFAPreference(mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA') {
+    async setMFAPreference(mfaMethod: IMfa['mfaMethod']) {
       const Authorization = await getToken()
-      const { auth } = dispatch
       try {
         const response = await axios.post(
           `${AUTH_API_URL}/mfaPref`,
@@ -83,7 +84,7 @@ export default createModel<RootModel>()({
             },
           }
         )
-        auth.set({ MfaMethod: response.data['MfaPref'] })
+        dispatch.mfa.set({ mfaMethod: response.data['MfaPref'] })
         dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
       } catch (error) {
         if (error instanceof Error) {
@@ -108,7 +109,6 @@ export default createModel<RootModel>()({
       setMFAPreference('SOFTWARE_TOKEN_MFA')
     },
     async getMfaMethod() {
-      const { auth } = dispatch
       const Authorization = await getToken()
       // Get MFA Preference
       const response = await axios.get(`${AUTH_API_URL}/mfaPref`, {
@@ -118,7 +118,7 @@ export default createModel<RootModel>()({
         },
       })
       console.log('getMfaMethod ', { response })
-      auth.set({ MfaMethod: response.data['MfaPref'] })
+      dispatch.mfa.set({ mfaMethod: response.data['MfaPref'] })
     },
     async updatePhone(params: { originalPhone: string; phone: string }, state) {
       const { setMFAPreference, getAuthenticatedUserInfo } = dispatch.mfa

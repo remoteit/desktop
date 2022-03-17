@@ -51,7 +51,6 @@ export interface AuthState {
   user?: IUser
   localUsername?: string
   notificationSettings: INotificationSetting
-  mfaMethod: string
   AWSUser: AWSUser
   loggedIn?: boolean
 }
@@ -65,7 +64,6 @@ const state: AuthState = {
   authService: undefined,
   localUsername: undefined,
   notificationSettings: {},
-  mfaMethod: '',
   AWSUser: { authProvider: '' },
   loggedIn: false,
 }

@@ -8,14 +8,14 @@ import { MFAMethod } from './MFAMethod'
 import { MFASelectMethod } from './MFASelectMethod'
 import { MFAConfigureApp } from './MFAConfigureApp'
 import { MFAConfigureSms } from './MFAConfigureSms'
-import { Box, Button, Typography } from '@material-ui/core'
+import { Box, Button, Typography, Chip } from '@material-ui/core'
 import analyticsHelper from '../../helpers/analyticsHelper'
 
 export type MFASectionProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
 const mapState = (state: ApplicationState) => ({
   AWSUser: state.auth.AWSUser,
-  mfaMethod: state.auth.mfaMethod,
+  mfaMethod: state.mfa.mfaMethod,
 })
 
 const mapDispatch = (dispatch: any) => ({
@@ -276,9 +276,10 @@ export const MFAPreference = connect(
               }}
             >
               <Box mt={3}>
-                <p>
-                  Two-Factor Authentication is <b>OFF</b>
-                </p>
+                <Typography variant="body2" gutterBottom>
+                  Two-Factor Authentication is &nbsp;
+                  <Chip label="OFF" size="small" variant="outlined" color="primary" />
+                </Typography>
                 <Button variant="contained" color="primary" type="submit">
                   Turn on
                 </Button>

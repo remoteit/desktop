@@ -1,5 +1,4 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
 import { Icon } from '../Icon'
 import { MFAPhoneForm } from '../MFAPreference/MFAPhoneForm'
 import { Box, Button, Input, makeStyles } from '@material-ui/core'
@@ -25,15 +24,14 @@ export const MFAConfigureSms: React.FC<Props> = ({
   hasOldSentVerification,
   verificationCode,
   resendCode,
-  setCancelShowVerificationCode
+  setCancelShowVerificationCode,
 }) => {
-  const { t } = useTranslation()
   const css = useStyles()
   const { mfa } = useDispatch<Dispatch>()
   const { showPhone, showVerificationCode, phone_number } = useSelector((state: ApplicationState) => ({
     showPhone: state.mfa.showPhone,
     showVerificationCode: state.mfa.showVerificationCode,
-    phone_number: state.auth.AWSUser.phone_number
+    phone_number: state.auth.AWSUser.phone_number,
   }))
   return (
     <>
@@ -52,13 +50,11 @@ export const MFAConfigureSms: React.FC<Props> = ({
           <div>
             <form onSubmit={sendVerifyPhone} style={{ maxWidth: '360px' }}>
               <div className={css.modalMessage}>
-                <Icon name="info-circle" className={css.icon} fixedWidth size='md' />
+                <Icon name="info-circle" className={css.icon} fixedWidth size="md" />
                 <div className={css.message}>
                   {hasOldSentVerification
                     ? `A verification code had previously been sent to your mobile device. A code is only valid for 24 hours; please request the code again if it has been over 24 hours since requested.`
-                    : `A verification code has been sent to your mobile device. ${phone_number?.toString()} This code is only valid for 24 hours.`
-                  }
-
+                    : `A verification code has been sent to your mobile device. ${phone_number?.toString()} This code is only valid for 24 hours.`}
                 </div>
               </div>
 
@@ -71,14 +67,13 @@ export const MFAConfigureSms: React.FC<Props> = ({
                   onChange={e => mfa.set({ verificationCode: e.currentTarget.value.trim() })}
                   value={verificationCode}
                   style={{ marginRight: 3 }}
-                  placeholder='Enter verification code'
-
+                  placeholder="Enter verification code"
                 />
                 <Button
                   disabled={verificationCode === '' || verificationCode.length < 6}
                   type="submit"
-                  color='primary'
-                  variant='contained'
+                  color="primary"
+                  variant="contained"
                   style={{ borderRadius: 3 }}
                 >
                   Submit
@@ -97,7 +92,7 @@ export const MFAConfigureSms: React.FC<Props> = ({
               onClick={() => {
                 mfa.set({
                   showPhone: true,
-                  showVerificationCode: false
+                  showVerificationCode: false,
                 })
                 setCancelShowVerificationCode(true)
               }}
@@ -125,7 +120,7 @@ const useStyles = makeStyles({
   },
   message: {
     color: '',
-    fontWeight: 500
+    fontWeight: 500,
   },
   icon: {
     marginRight: 12,

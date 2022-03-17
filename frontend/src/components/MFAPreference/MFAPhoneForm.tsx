@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { ApplicationState } from '../../store'
 import { connect } from 'react-redux'
 import { startsWith } from 'lodash'
+import { Notice } from '../Notice'
 import 'react-phone-input-2/lib/material.css'
 import PhoneInput from 'react-phone-input-2'
 import { Typography, makeStyles, Button, Box } from '@material-ui/core'
@@ -14,7 +15,7 @@ export type MFAPhoneProps = Props & ReturnType<typeof mapState> & ReturnType<typ
 
 const mapState = (state: ApplicationState) => ({
   AWSUser: state.auth.AWSUser,
-  mfaMethod: state.auth.mfaMethod,
+  mfaMethod: state.mfa.mfaMethod,
 })
 
 const mapDispatch = (dispatch: any) => ({
@@ -29,8 +30,6 @@ export const MFAPhoneForm = connect(
   const originalPhone = AWSUser.phone_number
   const [phone, setPhone] = useState<string | undefined>(AWSUser && AWSUser.phone_number)
   const [validPhone, setValidPhone] = React.useState<boolean>(!!AWSUser.phone_number_verified)
-  const [error, setError] = React.useState<string | null>(null)
-  const [message, setMessage] = React.useState<string | null>(null)
   const country = 'us'
   const handleOnChange = (value, data, event) => {
     const newValue = value.replace(/[^0-9]+/g, '')
@@ -54,41 +53,41 @@ export const MFAPhoneForm = connect(
   }
   return (
     <>
-      {error && <div className="danger my-md fw-bold">{error}</div>}
-      {message && <div className="success my-md fw-bold">{message}</div>}
       {AWSUser && AWSUser.phone_number_verified && AWSUser.phone_number && (
         <>
           {mfaMethod === 'SMS_MFA' && (
-            <div className="warning my-md fw-bold">Updating your mobile device number will disable two-factor authentication until the number is verified.</div>
+            <Notice severity="warning">
+              Updating your mobile device number will disable two-factor authentication until the number is verified.
+            </Notice>
           )}
-          <Box m={2}>Update your mobile device number and send verification code.</Box>
+          <Typography variant="h3" gutterBottom>
+            Update your mobile device number and send verification code.
+          </Typography>
         </>
       )}
       {AWSUser && !AWSUser.phone_number && (
-        <Box m={2}>
-          <b>Enter your mobile number so we can send you the verification code</b>
-        </Box>
+        <Typography variant="h3" gutterBottom>
+          Enter your mobile number so we can send you the verification code
+        </Typography>
       )}
       <form>
-        <Box mt={3}>
+        <Box mt={3} className={css.phone}>
           <PhoneInput
             value={phone}
             enableSearch
             country={country}
             preserveOrder={['preferredCountries', 'onlyCountries']}
             preferredCountries={['us', 'jp']}
-            searchPlaceholder='Search'
-            placeholder='Enter your mobile number'
-            onChange={(value, data, event) => {
-              handleOnChange(value, data, event)
-            }}
-            inputProps={{
-              required: true,
-            }}
+            searchPlaceholder="Search"
+            placeholder="Enter your mobile number"
+            onChange={handleOnChange}
+            inputProps={{ required: true }}
           />
         </Box>
         {AWSUser.phone_number_verified && AWSUser.phone_number && AWSUser.phone_number === phone && (
-          <Box className={css.success} p={1} mt={1}>Your mobile device is verified.</Box>
+          <Box className={css.success} p={1} mt={1}>
+            Your mobile device is verified.
+          </Box>
         )}
         <Box mt={3}>
           <Typography variant="caption" className={css.caption}>
@@ -96,20 +95,10 @@ export const MFAPhoneForm = connect(
           </Typography>
         </Box>
         <Box mt={3}>
-          <Button
-            disabled={!validPhone}
-            onClick={e => {
-              updateUsersPhone(e)
-            }}
-            color='primary'
-            variant='contained'
-            style={{ borderRadius: 3 }}
-          >
+          <Button disabled={!validPhone} onClick={updateUsersPhone} color="primary" variant="contained">
             Submit
           </Button>
-          <Button onClick={onClose} >
-            Cancel
-          </Button>
+          <Button onClick={onClose}>Cancel</Button>
         </Box>
       </form>
     </>
@@ -120,29 +109,39 @@ const useStyles = makeStyles(({ palette }) => ({
   caption: {
     fontWeight: 400,
     fontSize: 11,
-    color: '#999',
-  },
-  modalMessage: {
-    backgroundColor: '#fef4e5',
-    padding: 11,
-    display: 'flex',
-    borderRadius: 4,
-    fontSize: 14,
-    color: '#efa831',
-    marginBottom: 10,
-  },
-  message: {
-    color: '#693e03',
-  },
-  icon: {
-    marginRight: 12,
-    padding: '7px 0',
-    display: 'flex',
-    fontSize: '22px',
-    opacity: '0.9',
+    color: palette.grayDark.main,
   },
   success: {
     color: palette.success.main,
     fontWeight: 'bold',
-  }
+  },
+  phone: {
+    '& .react-tel-input .form-control': {
+      backgroundColor: palette.white.main,
+      color: palette.grayDarkest.main,
+      borderColor: palette.grayLight.main,
+    },
+    '& .react-tel-input .form-control:hover': { borderColor: palette.primary.main },
+    '& .react-tel-input .special-label': { backgroundColor: palette.white.main, color: palette.grayDarkest.main },
+    '& .react-tel-input .country-list': {
+      backgroundColor: palette.grayLightest.main,
+      color: palette.grayDarkest.main,
+      maxHeight: 400,
+    },
+    '& .react-tel-input .country-list .search': { backgroundColor: palette.grayLightest.main },
+    '& .react-tel-input .country-list .search-box': {
+      color: palette.grayDarkest.main,
+      borderColor: palette.grayLight.main,
+      backgroundColor: palette.grayLightest.main,
+    },
+    '& .react-tel-input .country-list .divider': { borderBottomColor: palette.grayLight.main },
+    '& .react-tel-input .country-list .country.highlight': {
+      backgroundColor: palette.primaryHighlight.main,
+      color: palette.grayDarkest.main,
+    },
+    '& .react-tel-input .country-list .country:hover': {
+      backgroundColor: palette.primaryHighlight.main,
+      color: palette.grayDarkest.main,
+    },
+  },
 }))
