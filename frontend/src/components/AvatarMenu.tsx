@@ -61,7 +61,7 @@ export const AvatarMenu: React.FC = () => {
           <ListItemLocation
             dense
             title="Settings"
-            icon="cog"
+            icon="sliders-h"
             pathname="/settings"
             badge={licenseIndicator}
             onClick={handleClose}
