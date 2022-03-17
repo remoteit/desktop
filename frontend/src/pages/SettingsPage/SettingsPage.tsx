@@ -39,9 +39,9 @@ export const SettingsPage: React.FC = () => {
     >
       <List>
         <ListItemLocation
-          title="General"
+          title="Application"
           pathname="/settings/options"
-          icon="sliders-h"
+          icon="browser"
           match={['/settings', '/settings/options']}
           exactMatch
           dense

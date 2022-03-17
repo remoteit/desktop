@@ -81,7 +81,7 @@ export const defaultState: UIState = {
   drawerAccordion: 'sort',
   columns: ['deviceName', 'tags', 'services'],
   columnWidths: {},
-  feature: { tagging: true },
+  feature: { tagging: false },
   serviceContextMenu: undefined,
   redirect: undefined,
   restoring: false,

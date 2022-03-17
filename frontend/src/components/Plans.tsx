@@ -81,7 +81,7 @@ export const Plans: React.FC = () => {
   React.useEffect(() => {
     if (location.pathname.includes('success')) dispatch.licensing.restore()
   }, [])
-  console.log('plans', plans)
+
   return (
     <>
       <Gutters size="lg" top="xl" className={css.plans}>
