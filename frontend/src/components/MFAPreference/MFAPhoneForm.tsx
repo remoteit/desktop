@@ -1,32 +1,24 @@
-import React, { useState } from 'react'
-import { ApplicationState } from '../../store'
-import { connect } from 'react-redux'
-import { startsWith } from 'lodash'
-import { Notice } from '../Notice'
 import 'react-phone-input-2/lib/material.css'
 import PhoneInput from 'react-phone-input-2'
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { ApplicationState, Dispatch } from '../../store'
 import { Typography, makeStyles, Button, Box } from '@material-ui/core'
+import { startsWith } from 'lodash'
+import { Notice } from '../Notice'
 
 export interface Props {
   onClose: () => void
-  onSuccess: (orignalNumber, newNumber) => void
+  onSuccess: (orignalNumber: string, newNumber: string) => void
 }
-export type MFAPhoneProps = Props & ReturnType<typeof mapState> & ReturnType<typeof mapDispatch>
 
-const mapState = (state: ApplicationState) => ({
-  AWSUser: state.auth.AWSUser,
-  mfaMethod: state.mfa.mfaMethod,
-})
-
-const mapDispatch = (dispatch: any) => ({
-  updatePhone: dispatch.auth.updatePhone,
-  checkSession: dispatch.auth.checkSession,
-})
-export const MFAPhoneForm = connect(
-  mapState,
-  mapDispatch
-)(({ AWSUser, mfaMethod, updatePhone, onClose, onSuccess }: MFAPhoneProps) => {
+export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   const css = useStyles()
+  const { AWSUser, mfaMethod } = useSelector((state: ApplicationState) => ({
+    AWSUser: state.auth.AWSUser,
+    mfaMethod: state.mfa.mfaMethod,
+  }))
+  const { mfa } = useDispatch<Dispatch>()
   const originalPhone = AWSUser.phone_number
   const [phone, setPhone] = useState<string | undefined>(AWSUser && AWSUser.phone_number)
   const [validPhone, setValidPhone] = React.useState<boolean>(!!AWSUser.phone_number_verified)
@@ -45,8 +37,12 @@ export const MFAPhoneForm = connect(
   }
   const updateUsersPhone = event => {
     event.preventDefault()
+    if (!originalPhone || !phone) {
+      console.warn('No phone number to update', { originalPhone, phone })
+      return
+    }
     if (AWSUser.phone_number !== phone) {
-      updatePhone({ originalPhone, phone })
+      mfa.updatePhone({ originalPhone, phone })
     } else {
       onSuccess(originalPhone, phone)
     }
@@ -103,7 +99,7 @@ export const MFAPhoneForm = connect(
       </form>
     </>
   )
-})
+}
 
 const useStyles = makeStyles(({ palette }) => ({
   caption: {

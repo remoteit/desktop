@@ -15,9 +15,9 @@ type IMfa = {
   showSMSConfig: boolean
   lastCode: string | null
   totpVerificationCode: string
-  error: string | null
   showAuthenticatorConfig: boolean
   showEnableSelection: boolean
+  error: string | null
 }
 
 const defaultState: IMfa = {
@@ -29,9 +29,9 @@ const defaultState: IMfa = {
   showSMSConfig: false,
   lastCode: null,
   totpVerificationCode: '',
-  error: null,
   showAuthenticatorConfig: false,
   showEnableSelection: false,
+  error: null,
 }
 
 export default createModel<RootModel>()({
@@ -86,6 +86,8 @@ export default createModel<RootModel>()({
         )
         dispatch.mfa.set({ mfaMethod: response.data['MfaPref'] })
         dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
+        console.log('SET MFA PREFERENCE', response)
+        return response.data
       } catch (error) {
         if (error instanceof Error) {
           dispatch.ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
