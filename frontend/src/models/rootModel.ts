@@ -40,6 +40,7 @@ export interface RootModel extends Models<RootModel> {
   labels: typeof labels
   licensing: typeof licensing
   logs: typeof logs
+  // @ts-ignore
   mfa: typeof mfa
   organization: typeof organization
   search: typeof search

@@ -9,21 +9,25 @@ import { Notice } from '../Notice'
 
 export interface Props {
   onClose: () => void
-  onSuccess: (orignalNumber: string, newNumber: string) => void
+  onSuccess: (orignalNumber, newNumber) => void
 }
 
 export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   const css = useStyles()
-  const { AWSUser, mfaMethod } = useSelector((state: ApplicationState) => ({
+  const { AWSPhone, AWSUser, mfaMethod } = useSelector((state: ApplicationState) => ({
+    AWSPhone: state.auth.AWSUser.phone_number || '',
     AWSUser: state.auth.AWSUser,
     mfaMethod: state.mfa.mfaMethod,
   }))
   const { mfa } = useDispatch<Dispatch>()
   const originalPhone = AWSUser.phone_number
-  const [phone, setPhone] = useState<string | undefined>(AWSUser && AWSUser.phone_number)
-  const [validPhone, setValidPhone] = React.useState<boolean>(!!AWSUser.phone_number_verified)
+  const [phone, setPhone] = useState<string>(AWSPhone)
+  const [validPhone, setValidPhone] = React.useState<boolean>(!!AWSPhone)
+  const [error, setError] = React.useState<string | null>(null)
+  const [message, setMessage] = React.useState<string | null>(null)
+  const [loading, setLoading] = React.useState<boolean>(false)
   const country = 'us'
-  const handleOnChange = (value, data, event) => {
+  const handleOnChange = (value, data) => {
     const newValue = value.replace(/[^0-9]+/g, '')
 
     if (newValue !== '' && startsWith(newValue, data.dialCode)) {
@@ -37,19 +41,32 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   }
   const updateUsersPhone = event => {
     event.preventDefault()
-    if (!originalPhone || !phone) {
-      console.warn('No phone number to update', { originalPhone, phone })
-      return
-    }
     if (AWSUser.phone_number !== phone) {
-      mfa.updatePhone({ originalPhone, phone })
+      setError(null)
+      setMessage(null)
+      setLoading(true)
+      // console.log('Update phone number')
+      mfa
+        .updatePhone(phone)
+        .then(() => {
+          onSuccess(originalPhone, phone)
+        })
+        .catch(error => {
+          console.error(error)
+          setError(error.message)
+        })
+        .finally(() => {
+          setLoading(false)
+        })
     } else {
       onSuccess(originalPhone, phone)
     }
   }
   return (
-    <>
-      {AWSUser && AWSUser.phone_number_verified && AWSUser.phone_number && (
+    <Box mt={4}>
+      {error && <Notice severity="danger">{error}</Notice>}
+      {message && <Notice severity="success">{message}</Notice>}
+      {AWSUser && AWSUser.phone_number_verified && AWSPhone && (
         <>
           {mfaMethod === 'SMS_MFA' && (
             <Notice severity="warning">
@@ -61,7 +78,7 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
           </Typography>
         </>
       )}
-      {AWSUser && !AWSUser.phone_number && (
+      {AWSUser && !AWSPhone && (
         <Typography variant="h3" gutterBottom>
           Enter your mobile number so we can send you the verification code
         </Typography>
@@ -80,37 +97,26 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
             inputProps={{ required: true }}
           />
         </Box>
-        {AWSUser.phone_number_verified && AWSUser.phone_number && AWSUser.phone_number === phone && (
-          <Box className={css.success} p={1} mt={1}>
-            Your mobile device is verified.
-          </Box>
+        {AWSUser.phone_number_verified && AWSPhone === phone && (
+          <Notice severity="success">Your mobile device is verified.</Notice>
         )}
         <Box mt={3}>
-          <Typography variant="caption" className={css.caption}>
-            remote.it will only use this number for account security. Message and data rates may apply.
+          <Typography variant="caption">
+            We will only use this number for account security. Message and data rates may apply.
           </Typography>
         </Box>
         <Box mt={3}>
-          <Button disabled={!validPhone} onClick={updateUsersPhone} color="primary" variant="contained">
-            Submit
+          <Button disabled={phone === '' || !validPhone} variant="contained" onClick={updateUsersPhone} color="primary">
+            {loading ? 'Updating...' : 'Submit'}
           </Button>
           <Button onClick={onClose}>Cancel</Button>
         </Box>
       </form>
-    </>
+    </Box>
   )
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  caption: {
-    fontWeight: 400,
-    fontSize: 11,
-    color: palette.grayDark.main,
-  },
-  success: {
-    color: palette.success.main,
-    fontWeight: 'bold',
-  },
   phone: {
     '& .react-tel-input .form-control': {
       backgroundColor: palette.white.main,

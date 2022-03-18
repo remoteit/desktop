@@ -62,7 +62,8 @@ const useStyles = makeStyles(({ palette }) => ({
   notice: ({ fullWidth, gutterBottom, gutterTop }: Props) => ({
     flexGrow: 1,
     alignItems: 'center',
-    margin: `0 ${fullWidth ? 0 : spacing.md}px`,
+    marginLeft: fullWidth ? 0 : spacing.md,
+    marginRight: fullWidth ? 0 : spacing.md,
     marginBottom: gutterBottom ? spacing.md : 0,
     marginTop: gutterTop ? spacing.md : 0,
     padding: `${spacing.sm}px ${spacing.md}px`,

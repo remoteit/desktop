@@ -1,37 +1,37 @@
 import React from 'react'
-import { Icon } from '../Icon'
+import { Notice } from '../Notice'
 import { MFAPhoneForm } from './MFAPhoneForm'
-import { Box, Button, Input, makeStyles } from '@material-ui/core'
+import { makeStyles, Box, Button, TextField, Link, Typography } from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { ApplicationState, Dispatch } from '../../store'
 
 type Props = {
   cancelEditPhone: () => void
-  setShowEnableSelection: (event: any) => void
   successfulPhoneUpdate: (orginalNumber: any, newNumber: any) => Promise<void>
   sendVerifyPhone: (event: any) => void
   hasOldSentVerification: boolean
   verificationCode: string
+  loading: boolean
   resendCode: (event: any) => void
   setCancelShowVerificationCode: (event: any) => void
 }
 
 export const MFAConfigureSms: React.FC<Props> = ({
   cancelEditPhone,
-  setShowEnableSelection,
   successfulPhoneUpdate,
   sendVerifyPhone,
   hasOldSentVerification,
   verificationCode,
+  loading,
   resendCode,
   setCancelShowVerificationCode,
 }) => {
   const css = useStyles()
   const { mfa } = useDispatch<Dispatch>()
-  const { showPhone, showVerificationCode, phone_number } = useSelector((state: ApplicationState) => ({
+  const { showPhone, showVerificationCode, AWSPhone } = useSelector((state: ApplicationState) => ({
     showPhone: state.mfa.showPhone,
     showVerificationCode: state.mfa.showVerificationCode,
-    phone_number: state.auth.AWSUser.phone_number,
+    AWSPhone: state.auth.AWSUser.phone_number || '',
   }))
   return (
     <>
@@ -39,7 +39,6 @@ export const MFAConfigureSms: React.FC<Props> = ({
         <MFAPhoneForm
           onClose={() => {
             cancelEditPhone()
-            setShowEnableSelection(true)
             mfa.set({ showSMSConfig: false })
           }}
           onSuccess={successfulPhoneUpdate}
@@ -47,59 +46,47 @@ export const MFAConfigureSms: React.FC<Props> = ({
       )}
       {showVerificationCode && (
         <>
-          <div>
-            <form onSubmit={sendVerifyPhone} style={{ maxWidth: '360px' }}>
-              <div className={css.modalMessage}>
-                <Icon name="info-circle" className={css.icon} fixedWidth size="md" />
-                <div className={css.message}>
-                  {hasOldSentVerification
-                    ? `A verification code had previously been sent to your mobile device. A code is only valid for 24 hours; please request the code again if it has been over 24 hours since requested.`
-                    : `A verification code has been sent to your mobile device. ${phone_number?.toString()} This code is only valid for 24 hours.`}
-                </div>
-              </div>
-
-              <Box mt={3} mb={3}>
-                <Input
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  required
-                  onChange={e => mfa.set({ verificationCode: e.currentTarget.value.trim() })}
-                  value={verificationCode}
-                  style={{ marginRight: 3 }}
-                  placeholder="Enter verification code"
-                />
-                <Button
-                  disabled={verificationCode === '' || verificationCode.length < 6}
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  style={{ borderRadius: 3 }}
-                >
-                  Submit
-                </Button>
-              </Box>
-            </form>
-            <Box mt={2}>
-              Didn't receive the verification code?{' '}
-              <a onClick={resendCode} data-force-resend="true">
-                Resend Verification Code
-              </a>
+          <form onSubmit={sendVerifyPhone}>
+            <Notice severity="success" gutterTop fullWidth>
+              {hasOldSentVerification
+                ? 'A verification code had previously been sent to your mobile device. A code is only valid for 24 hours. Please request the code again if it has been over 24 hours since requested.'
+                : `A verification code has been sent to your mobile device. ${AWSPhone} This code is only valid for 24 hours.`}
+            </Notice>
+            <Box mt={3} mb={3} display="flex" alignItems="center">
+              <TextField
+                autoCorrect="off"
+                autoCapitalize="none"
+                autoComplete="off"
+                required
+                label="Verification Code"
+                variant="filled"
+                onChange={e => mfa.set({ verificationCode: e.currentTarget.value.trim() })}
+                value={verificationCode}
+              />
+              &nbsp; &nbsp;
+              <Button
+                disabled={verificationCode === '' || verificationCode.length < 6}
+                variant="contained"
+                color="primary"
+                type="submit"
+              >
+                {loading ? 'Loading...' : 'Save'}
+              </Button>
+              <Button onClick={cancelEditPhone}>Cancel</Button>
             </Box>
-          </div>
-          <Box mt={3}>
-            <a
+          </form>
+          <Typography variant="caption">
+            Didn't receive the verification code?
+            <Link onClick={resendCode}>Resend Verification Code</Link> or
+            <Link
               onClick={() => {
-                mfa.set({
-                  showPhone: true,
-                  showVerificationCode: false,
-                })
+                mfa.set({ showPhone: true, showVerificationCode: false })
                 setCancelShowVerificationCode(true)
               }}
             >
               Change your verification phone number
-            </a>
-          </Box>
+            </Link>
+          </Typography>
         </>
       )}
     </>
@@ -116,7 +103,6 @@ const useStyles = makeStyles({
     color: '#3aa1db',
     marginBottom: 10,
     minWidth: 500,
-    marginTop: 10,
   },
   message: {
     color: '',
@@ -124,5 +110,9 @@ const useStyles = makeStyles({
   },
   icon: {
     marginRight: 12,
+    padding: '7px 0',
+    display: 'flex',
+    fontSize: '22px',
+    opacity: '0.9',
   },
 })

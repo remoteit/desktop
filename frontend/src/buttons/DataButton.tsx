@@ -3,7 +3,7 @@ import { makeStyles, ListItemText, IconButton, InputLabel, Tooltip } from '@mate
 import { spacing, fontSizes, Color } from '../styling'
 import { Icon } from '../components/Icon'
 
-type Props = {
+export type DataButtonProps = {
   title: string
   value?: string
   label?: string
@@ -14,7 +14,7 @@ type Props = {
   onClick: (event?: any) => void
 }
 
-export const DataButton: React.FC<Props> = ({
+export const DataButton: React.FC<DataButtonProps> = ({
   title,
   value,
   label,

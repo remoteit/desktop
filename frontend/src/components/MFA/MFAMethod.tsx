@@ -2,28 +2,26 @@ import React from 'react'
 import { List } from '@material-ui/core'
 import { Quote } from '../Quote'
 import { ListItemCopy } from '../ListItemCopy'
-import { useTranslation } from 'react-i18next'
+import { IMfa } from '../../models/mfa'
 
 type Props = {
-  method?: any
-  phoneNumber?: string
+  method?: IMfa['mfaMethod']
+  phoneNumber: string
   verified?: boolean
   backupCode?: string
   turnOff: () => void
 }
 
 export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, backupCode, turnOff }) => {
-
-  const { t } = useTranslation()
   return (
     <>
       {/* Authenticator Enabled */}
       {method === 'SOFTWARE_TOKEN_MFA' && (
         <div>
           <p>
-            {'Two-Factor Authentication is '}
-            <b style={{ color: '#81c606' }}>{' ON '}</b>
-            <b>{' (Authenticator App)'}</b>
+            Two-factor configured with
+            <b style={{ color: '#81c606' }}> ON </b>
+            <b> (Authenticator App)</b>
           </p>
         </div>
       )}
@@ -32,14 +30,14 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
       {method === 'SMS_MFA' && (
         <div>
           <p>
-            {'Two-Factor Authentication is '}
-            <b style={{ color: '#81c606' }}>{' ON '}</b>
-            <b>{' (SMS) '}</b>
+            Two-factor configured with
+            <b style={{ color: '#81c606' }}> ON </b>
+            <b>(SMS)</b>
           </p>
           {verified && (
             <p>
               {phoneNumber}
-              <span style={{ color: '#81c606' }}>{' Verified '}</span>
+              <span style={{ color: '#81c606' }}> Verified </span>
             </p>
           )}
         </div>
@@ -48,11 +46,8 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
       {(method === 'SMS_MFA' || method === 'SOFTWARE_TOKEN_MFA') && (
         <>
           <List>
-            <Quote margin={10} noInset={true}>
-              <ListItemCopy
-                label={t('pages.auth-mfa.recovery-code-title').toUpperCase()}
-                value={backupCode}
-              />
+            <Quote margin={10} paddingLeft={40}>
+              <ListItemCopy label="RECOVERY CODE" value={backupCode} />
             </Quote>
           </List>
           {turnOff()}
