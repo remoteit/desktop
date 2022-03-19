@@ -10,7 +10,7 @@ export const Panel: React.FC<Props> = ({ layout, children }) => {
 
   return (
     <div className={css.panel}>
-      <Header breadcrumbs={layout.hideSidebar} />
+      <Header breadcrumbs={layout.singlePanel} />
       {children}
     </div>
   )

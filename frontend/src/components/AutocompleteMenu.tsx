@@ -1,7 +1,16 @@
 import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import { Autocomplete } from '@material-ui/lab'
-import { makeStyles, Box, ListItemIcon, ListItemText, Paper, Popper, TextField } from '@material-ui/core'
+import {
+  makeStyles,
+  Box,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Popper,
+  TextField,
+  TextFieldProps,
+} from '@material-ui/core'
 import { spacing, radius, fontSizes } from '../styling'
 import { REGEX_TAG_SAFE } from '../shared/constants'
 import { tagsInclude } from '../helpers/utilHelper'
@@ -16,6 +25,7 @@ interface Props {
   allowAdding?: boolean
   createOnly?: boolean
   indicator?: string
+  InputProps?: TextFieldProps['InputProps']
   onItemColor?: (value: ITag) => string
   onSelect?: (action: 'add' | 'new', value: ITag) => void
   onChange?: (value?: string) => void
@@ -35,6 +45,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
   onClose,
   allowAdding,
   createOnly,
+  InputProps = {},
 }) => {
   const [inputValue, setInputValue] = React.useState<string>('')
   const css = useStyles()
@@ -115,6 +126,7 @@ export const AutocompleteMenu: React.FC<Props> = ({
               ref={params.InputProps.ref}
               inputProps={params.inputProps}
               className={css.textField}
+              InputProps={InputProps}
               autoFocus
               variant="filled"
               placeholder={placeholder}

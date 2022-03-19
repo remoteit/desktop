@@ -44,22 +44,26 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
       {hideSidebar && (
         <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
       )}
-      <IconButton
-        title="Back"
-        disabled={disabledBack}
-        onClick={handleBack}
-        icon="chevron-left"
-        size="md"
-        color={disabledBack ? 'grayLight' : 'grayDarker'}
-      />
-      <IconButton
-        title="Forward"
-        disabled={disabledForward}
-        onClick={handleForward}
-        icon="chevron-right"
-        size="md"
-        color={disabledForward ? 'grayLight' : 'grayDarker'}
-      />
+      {showSearch || searched || (
+        <>
+          <IconButton
+            title="Back"
+            disabled={disabledBack}
+            onClick={handleBack}
+            icon="chevron-left"
+            size="md"
+            color={disabledBack ? 'grayLight' : 'grayDarker'}
+          />
+          <IconButton
+            title="Forward"
+            disabled={disabledForward}
+            onClick={handleForward}
+            icon="chevron-right"
+            size="md"
+            color={disabledForward ? 'grayLight' : 'grayDarker'}
+          />
+        </>
+      )}
       <RefreshButton size="base" type="regular" color="grayDarker" />
       <Title className={css.search}>
         {!showSearch && !searched && (
@@ -82,7 +86,12 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
       </Title>
-      {breadcrumbs && <Breadcrumbs />}
+      {breadcrumbs && (
+        <>
+          bread
+          <Breadcrumbs />
+        </>
+      )}
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <ColumnsButton />
