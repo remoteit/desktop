@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ApplicationState, Dispatch } from '../../store'
-import { Box, Button, Typography, Chip, Divider } from '@material-ui/core'
+import { makeStyles, Box, Button, Typography, Chip, Divider } from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { MFASelectMethod } from './MFASelectMethod'
 import { MFAConfigureApp } from './MFAConfigureApp'
@@ -20,18 +20,19 @@ export const MFAPreference: React.FC = () => {
       showSMSConfig: state.mfa.showSMSConfig,
     })
   )
+  const css = useStyles()
   const { mfa } = useDispatch<Dispatch>()
   const [showEnableSelection, setShowEnableSelection] = useState<boolean>(mfaMethod === 'NO_MFA')
   const [showAuthenticatorConfig, setShowAuthenticatorConfig] = useState<boolean>(false)
-  const [totpCode, setTotpCode] = React.useState<string | null>(null)
-  const [totpVerified] = React.useState<boolean>(false)
-  const [totpVerificationCode, setTotpVerificationCode] = React.useState<string>('')
+  const [totpCode, setTotpCode] = useState<string | null>(null)
+  const [totpVerified] = useState<boolean>(false)
+  const [totpVerificationCode, setTotpVerificationCode] = useState<string>('')
   const [cancelShowVerificationCode, setCancelShowVerificationCode] = useState<boolean>(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const [backupCode, setBackupCode] = React.useState<string>(AWSUser['custom:backup_code'] || '')
-  const [loading, setLoading] = React.useState<boolean>(false)
-  const [verificationMethod, setVerificationMethod] = React.useState<string>('sms')
-  const [hasOldSentVerification, setHasOldSentVerification] = React.useState<boolean>(
+  const [error, setError] = useState<string | null>(null)
+  const [backupCode, setBackupCode] = useState<string>(AWSUser['custom:backup_code'] || '')
+  const [loading, setLoading] = useState<boolean>(false)
+  const [verificationMethod, setVerificationMethod] = useState<string>('sms')
+  const [hasOldSentVerification, setHasOldSentVerification] = useState<boolean>(
     AWSUser && !AWSUser.phone_number_verified
   )
 
@@ -41,6 +42,10 @@ export const MFAPreference: React.FC = () => {
   const setShowMFASelection = (showMFASelection: boolean) => mfa.set({ showMFASelection })
   const setShowVerificationCode = (showVerificationCode: boolean) => mfa.set({ showVerificationCode })
   const setShowSMSConfig = (showSMSConfig: boolean) => mfa.set({ showSMSConfig })
+
+  useEffect(() => {
+    if (AWSUser['custom:backup_code']) setBackupCode(AWSUser['custom:backup_code'])
+  }, [AWSUser])
 
   const sendVerifyTotp = event => {
     event.preventDefault()
@@ -159,24 +164,6 @@ export const MFAPreference: React.FC = () => {
     }
   }
 
-  const turnOff = () => (
-    <form
-      onSubmit={e => {
-        e.preventDefault()
-        // console.log('Disable Software Token MFA')
-        setShowEnableSelection(true)
-        mfa.setMFAPreference('NO_MFA')
-        setError(null)
-      }}
-    >
-      <Box>
-        <Button disabled={loading} type="submit" variant="outlined" color="primary">
-          Turn off
-        </Button>
-      </Box>
-    </form>
-  )
-
   if (AWSUser && AWSUser.authProvider === 'Google') {
     return (
       <>
@@ -199,40 +186,39 @@ export const MFAPreference: React.FC = () => {
         <Typography variant="subtitle1">Two-factor Authentication</Typography>
         <Gutters bottom="xl">
           <Typography variant="body2" gutterBottom>
-            Two-factor authentication adds an additional layer of security to your account by requiring more than just a
-            password to sign in.
+            Add an additional layer of security to your account by requiring more than just a password to sign in.
           </Typography>
-
           <Divider />
-
           <MFAMethod
             method={mfaMethod}
             phoneNumber={AWSPhone}
             backupCode={backupCode}
             verified={AWSUser.phone_number_verified}
-            turnOff={turnOff}
+            loading={loading}
+            onClick={() => {
+              setShowEnableSelection(true)
+              mfa.setMFAPreference('NO_MFA')
+              setError(null)
+            }}
           />
 
           {/* Show Enable Two-Factor*/}
           {mfaMethod === 'NO_MFA' && showEnableSelection && (
-            <form
-              onSubmit={e => {
-                e.preventDefault()
-                // startEnable()
-                setShowEnableSelection(false)
-                setShowMFASelection(true)
-              }}
-            >
-              <Box mt={3}>
-                <Typography variant="body2" gutterBottom>
-                  Two-Factor Authentication is &nbsp;
-                  <Chip label="OFF" size="small" variant="outlined" color="primary" />
-                </Typography>
-                <Button variant="contained" color="primary" type="submit">
-                  Turn on
-                </Button>
+            <Box mt={2}>
+              <Box>
+                <Chip className={css.disabled} label="OFF / Two-factor disabled" />
               </Box>
-            </form>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  setShowEnableSelection(false)
+                  setShowMFASelection(true)
+                }}
+              >
+                Turn on
+              </Button>
+            </Box>
           )}
 
           {/* Select Two-Factor Method */}
@@ -283,3 +269,7 @@ export const MFAPreference: React.FC = () => {
 
   return null
 }
+
+const useStyles = makeStyles(theme => ({
+  disabled: { color: theme.palette.text.disabled, marginBottom: theme.spacing(3) },
+}))

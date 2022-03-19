@@ -51,11 +51,12 @@ export interface AuthState {
   user?: IUser
   localUsername?: string
   notificationSettings: INotificationSetting
+  mfaMethod: string
   AWSUser: AWSUser
   loggedIn?: boolean
 }
 
-const state: AuthState = {
+const defaultState: AuthState = {
   initialized: false,
   authenticated: false,
   backendAuthenticated: false,
@@ -64,6 +65,7 @@ const state: AuthState = {
   authService: undefined,
   localUsername: undefined,
   notificationSettings: {},
+  mfaMethod: '',
   AWSUser: { authProvider: '' },
   loggedIn: false,
 }
@@ -79,15 +81,14 @@ export const authServiceConfig = {
 }
 
 export default createModel<RootModel>()({
-  state,
+  state: defaultState,
   effects: dispatch => ({
-    async init(_: void, rootState) {
-      let { user } = rootState.auth
+    async init(_: void, state) {
+      let { user } = state.auth
       console.log('AUTH INIT', { user })
       if (!user) {
         const authService = new AuthService(authServiceConfig)
         await sleep(500)
-        await authService.checkSignIn()
         dispatch.auth.set({ authService })
       }
       dispatch.auth.set({ initialized: true })
@@ -174,15 +175,15 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: `Invalid format.` })
       }
     },
-    async forceRefreshToken(_: void, rootState) {
-      if (!rootState.auth.authService) return
-      await rootState.auth.authService.forceTokenRefresh()
+    async forceRefreshToken(_: void, state) {
+      if (!state.auth.authService) return
+      await state.auth.authService.forceTokenRefresh()
     },
-    async checkSession(options: { refreshToken: boolean }, rootState) {
+    async checkSession(options: { refreshToken: boolean }, state) {
       const { ui } = dispatch
-      if (!rootState.auth.authService) return
+      if (!state.auth.authService) return
       try {
-        const result = await rootState.auth.authService.checkSignIn(options)
+        const result = await state.auth.authService.checkSignIn(options)
         if (result.cognitoUser) {
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
@@ -206,20 +207,21 @@ export default createModel<RootModel>()({
         }
         dispatch.auth.set({ authenticated: true })
         dispatch.auth.fetchUser()
+        dispatch.mfa.getAuthenticatedUserInfo()
       }
     },
     async getUsernameLocal() {
       const localUsername = localStorage.getItem('username')
       dispatch.auth.set({ localUsername })
     },
-    async backendAuthenticated(_: void, rootState) {
-      if (rootState.auth.authenticated) {
+    async backendAuthenticated(_: void, state) {
+      if (state.auth.authenticated) {
         dispatch.auth.set({ backendAuthenticated: true })
       }
     },
-    async disconnect(_: void, rootState) {
+    async disconnect(_: void, state) {
       console.log('DISCONNECT')
-      if (!rootState.auth.authenticated && !rootState.auth.backendAuthenticated && !isPortal()) {
+      if (!state.auth.authenticated && !state.auth.backendAuthenticated && !isPortal()) {
         await dispatch.auth.signedOut()
         dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
       }
@@ -235,8 +237,8 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
       dispatch.auth.set({ signInError })
     },
-    async dataReady(_: void, rootState) {
-      if (rootState.backend.initialized && !isPortal()) {
+    async dataReady(_: void, state) {
+      if (state.backend.initialized && !isPortal()) {
         console.warn('BACKEND ALREADY INITIALIZED')
         return
       }
@@ -258,8 +260,8 @@ export default createModel<RootModel>()({
       if (isPortal()) dispatch.auth.dataReady()
       dispatch.ui.init()
     },
-    async signOut(_, rootState) {
-      if (rootState.auth.backendAuthenticated) emit('user/sign-out')
+    async signOut(_, state) {
+      if (state.auth.backendAuthenticated) emit('user/sign-out')
       else await dispatch.auth.signedOut()
     },
     /**

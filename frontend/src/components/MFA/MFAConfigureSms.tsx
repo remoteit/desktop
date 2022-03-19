@@ -48,9 +48,20 @@ export const MFAConfigureSms: React.FC<Props> = ({
         <>
           <form onSubmit={sendVerifyPhone}>
             <Notice severity="success" gutterTop fullWidth>
-              {hasOldSentVerification
-                ? 'A verification code had previously been sent to your mobile device. A code is only valid for 24 hours. Please request the code again if it has been over 24 hours since requested.'
-                : `A verification code has been sent to your mobile device. ${AWSPhone} This code is only valid for 24 hours.`}
+              {hasOldSentVerification ? (
+                <>
+                  A verification code had previously been sent to your mobile device.{' '}
+                  <em>
+                    A code is only valid for 24 hours. Please request the code again if it has been over 24 hours since
+                    requested.
+                  </em>
+                </>
+              ) : (
+                <>
+                  A verification code has been sent to your mobile device. {AWSPhone}
+                  <em>This code is only valid for 24 hours.</em>
+                </>
+              )}
             </Notice>
             <Box mt={3} mb={3} display="flex" alignItems="center">
               <TextField
@@ -70,7 +81,7 @@ export const MFAConfigureSms: React.FC<Props> = ({
                 color="primary"
                 type="submit"
               >
-                {loading ? 'Loading...' : 'Save'}
+                {loading ? 'Confirming...' : 'Confirm'}
               </Button>
               <Button onClick={cancelEditPhone}>Cancel</Button>
             </Box>

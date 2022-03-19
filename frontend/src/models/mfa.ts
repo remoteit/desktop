@@ -1,4 +1,6 @@
 import { createModel } from '@rematch/core'
+import { AUTH_API_URL, DEVELOPER_KEY } from '../shared/constants'
+import { CognitoUserResult } from '@remote.it/types'
 import { getToken } from '../services/remote.it'
 import { RootModel } from './rootModel'
 import axios from 'axios'
@@ -34,53 +36,52 @@ const defaultState: IMfa = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init() {
-      await dispatch.licensing.fetch()
-      dispatch.licensing.set({ initialized: true })
-    },
     // updated
-    async getAuthenticatedUserInfo(_, state) {
+    async getAuthenticatedUserInfo(_fetch, state) {
       const userInfo = await state.auth.authService?.currentUserInfo()
       if (!userInfo) {
-        console.warn('No user info in authService')
+        console.error('Could not get getAuthenticatedUserInfo', userInfo)
         return
       }
-
       const Authorization = await getToken()
       // Get MFA Preference
-      const response = await axios.get(`${process.env.AUTH_API_URL}/mfaPref`, {
-        headers: { developerKey: process.env.DEVELOPER_KEY, Authorization },
+      const response = await axios.get(`${AUTH_API_URL}/mfaPref`, {
+        headers: {
+          developerKey: DEVELOPER_KEY,
+          Authorization,
+        },
       })
-      dispatch.mfa.set({ mfaMethod: response.data['MfaPref'] })
-      if (userInfo && userInfo.attributes) {
+      dispatch.mfa.set({ mfaMethod: response.data.MfaPref })
+      if (userInfo.attributes) {
         delete userInfo.attributes['identities']
         delete userInfo.attributes['sub']
       }
       const AWSUser = {
+        ...state.auth.AWSUser,
         ...userInfo.attributes,
         authProvider: userInfo.username.includes('Google') || userInfo.username.includes('google') ? 'Google' : '',
       }
-      const updatedAWSUser = { ...state.auth.AWSUser, ...AWSUser }
-
-      if (state.auth.AWSUser !== updatedAWSUser) {
-        console.log('setAwsUser')
-        dispatch.auth.set({ AWSUser: updatedAWSUser })
+      if (state.auth.AWSUser !== AWSUser) {
+        console.log('set AWSUser', AWSUser)
+        dispatch.auth.set({ AWSUser })
       }
-      return updatedAWSUser
+      return AWSUser
     },
     // updated
     async setMFAPreference(mfaMethod: IMfa['mfaMethod']) {
       const Authorization = await getToken()
       try {
         const response = await axios.post(
-          `${process.env.AUTH_API_URL}/mfaPref`,
+          `${AUTH_API_URL}/mfaPref`,
           { MfaPref: mfaMethod },
-          { headers: { developerKey: process.env.DEVELOPER_KEY, Authorization } }
+          { headers: { developerKey: DEVELOPER_KEY, Authorization } }
         )
-        dispatch.mfa.set({ mfaMethod: response.data['MfaPref'] })
-        dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
+        dispatch.mfa.set({ mfaMethod: response.data.MfaPref })
+        if (response.data.MfaPref !== 'NO_MFA') {
+          dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
+        }
         console.log('SET MFA PREFERENCE', response)
-        return response.data['backupCode']
+        return response.data.backupCode
       } catch (error) {
         if (error instanceof Error) {
           dispatch.ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
@@ -92,10 +93,9 @@ export default createModel<RootModel>()({
       try {
         await state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
         await dispatch.mfa.getAuthenticatedUserInfo()
-
         await state.auth.authService?.verifyCurrentUserAttribute('phone_number')
         dispatch.mfa.setMFAPreference('NO_MFA')
-        dispatch.ui.set({ successMessage: 'Phone Number updated!.' })
+        dispatch.ui.set({ successMessage: 'Verification sent.' })
         return true
       } catch (error) {
         console.error(error)
@@ -108,7 +108,7 @@ export default createModel<RootModel>()({
         await state.auth.authService?.verifyCurrentUserAttributeSubmit('phone_number', verificationCode)
         // @ts-ignore -- FIXME maybe save the backup code instead of returning it
         const backupCode = await dispatch.mfa.setMFAPreference('SMS_MFA')
-        dispatch.mfa.getAuthenticatedUserInfo()
+        await dispatch.mfa.getAuthenticatedUserInfo()
         return backupCode
       } catch (error) {
         console.log(error)

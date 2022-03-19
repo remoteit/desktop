@@ -5,6 +5,7 @@ import { DataButton } from '../buttons/DataButton'
 type Props = {
   value?: string
   label: string
+  showBackground?: boolean
 }
 
 export const ListItemCopy: React.FC<Props> = props => {

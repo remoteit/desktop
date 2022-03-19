@@ -1,6 +1,7 @@
 import React from 'react'
 import QRCode from 'qrcode.react'
-import { Box, Button, TextField, Typography, Link } from '@material-ui/core'
+import { makeStyles, Box, Button, TextField, Typography, Chip } from '@material-ui/core'
+import { spacing, radius } from '../../styling'
 
 type Props = {
   email?: string
@@ -25,37 +26,60 @@ export const MFAConfigureApp: React.FC<Props> = ({
   loading,
   cancel,
 }) => {
+  const css = useStyles()
+
   return (
-    <Box mt={2}>
-      <Typography variant="body1">Scan the QR below with your preferred Authenticator app to configure.</Typography>
-      {totpCode && (
-        <Box>
-          <QRCode value={`otpauth://totp/AWSCognito:${email}?secret=${totpCode}&issuer=remote.it`}></QRCode>
-          <Typography variant="h4">Code: {totpCode}</Typography>
-          <Link onClick={() => loadTotpCode()}>Generate new QR Code</Link>
-        </Box>
-      )}
-      {!totpVerified && (
-        <form onSubmit={sendVerifyTotp} style={{ maxWidth: '360px' }}>
-          <Box mt={3}>
-            <TextField
-              autoCorrect="off"
-              autoCapitalize="none"
-              autoComplete="off"
-              required
-              onChange={e => setTotpVerificationCode(e.currentTarget.value.trim())}
-              value={totpVerificationCode}
-              placeholder="Enter verification code"
-            />
-          </Box>
-          <Box mt={3}>
-            <Button disabled={!totpVerificationCode || totpVerificationCode.length < 6} type="submit">
-              {loading ? 'Processing...' : 'Submit'}
-            </Button>
-            <Button onClick={cancel}>Cancel</Button>
-          </Box>
-        </form>
-      )}
+    <Box mt={3} display="flex" alignItems="end">
+      <Box className={css.qrcode}>
+        <QRCode value={`otpauth://totp/AWSCognito:${email}?secret=${totpCode}&issuer=remote.it`} />
+      </Box>
+      <Box ml={3}>
+        <Typography variant="body1" gutterBottom>
+          Scan this QR Code with your Authenticator app.
+        </Typography>
+        <Typography variant="h4">Code: {totpCode}</Typography>
+        <Chip
+          variant="outlined"
+          color="primary"
+          size="small"
+          label="Generate new QR Code"
+          onClick={() => loadTotpCode()}
+        ></Chip>
+        {!totpVerified && (
+          <form onSubmit={sendVerifyTotp}>
+            <Box mt={3} display="flex" alignItems="center">
+              <TextField
+                required
+                variant="filled"
+                autoCorrect="off"
+                autoCapitalize="none"
+                autoComplete="off"
+                label="Verification Code"
+                onChange={e => setTotpVerificationCode(e.currentTarget.value.trim())}
+                value={totpVerificationCode}
+              />
+              &nbsp; &nbsp;
+              <Button
+                disabled={!totpVerificationCode || totpVerificationCode.length < 6}
+                variant="contained"
+                color="primary"
+                type="submit"
+              >
+                {loading ? 'Processing...' : 'Submit'}
+              </Button>
+              <Button onClick={cancel}>Cancel</Button>
+            </Box>
+          </form>
+        )}
+      </Box>
     </Box>
   )
 }
+
+const useStyles = makeStyles(({ palette }) => ({
+  qrcode: {
+    padding: spacing.md,
+    backgroundColor: palette.alwaysWhite.main,
+    borderRadius: radius,
+  },
+}))

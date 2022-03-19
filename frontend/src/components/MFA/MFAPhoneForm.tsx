@@ -64,12 +64,20 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
   }
   return (
     <Box mt={4}>
-      {error && <Notice severity="danger">{error}</Notice>}
-      {message && <Notice severity="success">{message}</Notice>}
+      {error && (
+        <Notice severity="danger" fullWidth>
+          {error}
+        </Notice>
+      )}
+      {message && (
+        <Notice severity="success" fullWidth>
+          {message}
+        </Notice>
+      )}
       {AWSUser && AWSUser.phone_number_verified && AWSPhone && (
         <>
           {mfaMethod === 'SMS_MFA' && (
-            <Notice severity="warning">
+            <Notice severity="warning" fullWidth>
               Updating your mobile device number will disable two-factor authentication until the number is verified.
             </Notice>
           )}
@@ -83,7 +91,12 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
           Enter your mobile number so we can send you the verification code
         </Typography>
       )}
-      <form>
+      {AWSUser.phone_number_verified && AWSPhone === phone && (
+        <Notice severity="success" fullWidth gutterBottom>
+          Your mobile device is verified.
+        </Notice>
+      )}
+      <form onSubmit={updateUsersPhone}>
         <Box mt={3} className={css.phone}>
           <PhoneInput
             value={phone}
@@ -97,17 +110,14 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
             inputProps={{ required: true }}
           />
         </Box>
-        {AWSUser.phone_number_verified && AWSPhone === phone && (
-          <Notice severity="success">Your mobile device is verified.</Notice>
-        )}
-        <Box mt={3}>
+        <Box mt={1}>
           <Typography variant="caption">
             We will only use this number for account security. Message and data rates may apply.
           </Typography>
         </Box>
         <Box mt={3}>
-          <Button disabled={phone === '' || !validPhone} variant="contained" onClick={updateUsersPhone} color="primary">
-            {loading ? 'Updating...' : 'Submit'}
+          <Button disabled={phone === '' || !validPhone} variant="contained" type="submit" color="primary">
+            {loading ? 'Sending...' : 'Submit'}
           </Button>
           <Button onClick={onClose}>Cancel</Button>
         </Box>

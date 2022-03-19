@@ -19,7 +19,7 @@ export const App: React.FC = () => {
     uninstalling: state.ui.uninstalling,
   }))
   const layout: ILayout = {
-    hideSidebar: useMediaQuery('(max-width:1000px)'),
+    hideSidebar: useMediaQuery('(max-width:1200px)'),
     singlePanel: useMediaQuery('(max-width:750px)'),
   }
   const css = useStyles({ overlapHeader: layout.hideSidebar && isElectron() && isMac() })
