@@ -32,7 +32,7 @@ interface Props {
   onClose?: () => void
 }
 
-export const AutocompleteMenu: React.FC<Props> = ({
+export const TagAutocomplete: React.FC<Props> = ({
   open,
   items,
   filter = [],

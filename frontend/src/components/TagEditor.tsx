@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { makeStyles, Chip, Tooltip } from '@material-ui/core'
-import { AutocompleteMenu } from './AutocompleteMenu'
+import { TagAutocomplete } from './TagAutocomplete'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
 import { useLabel } from '../hooks/useLabel'
 import { Icon } from './Icon'
@@ -69,7 +69,7 @@ export const TagEditor: React.FC<Props> = ({
           ref={addRef}
         />
       )}
-      <AutocompleteMenu
+      <TagAutocomplete
         items={tags}
         open={open}
         indicator="tag"
