@@ -3,12 +3,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ApplicationState, Dispatch } from '../store'
 import { REGEX_FIRST_PATH } from '../shared/constants'
 import { useHistory, useLocation } from 'react-router-dom'
-import { selectConnections } from '../helpers/connectionHelper'
-import { isRemoteUI } from '../helpers/uiHelper'
 
 interface INavigationHook {
-  menu: string
-  menuItems: INavigation[]
   handleBack: () => void
   handleForward: () => void
 }
@@ -17,16 +13,11 @@ export function useNavigation(): INavigationHook {
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
-  const { connections, devices, navigation, remoteUI, navigationBack, navigationForward } = useSelector(
-    (state: ApplicationState) => ({
-      connections: selectConnections(state).filter(connection => connection.enabled).length,
-      devices: state.devices.total,
-      navigation: state.ui.navigation,
-      navigationBack: state.ui.navigationBack,
-      navigationForward: state.ui.navigationForward,
-      remoteUI: isRemoteUI(state),
-    })
-  )
+  const { navigation, navigationBack, navigationForward } = useSelector((state: ApplicationState) => ({
+    navigation: state.ui.navigation,
+    navigationBack: state.ui.navigationBack,
+    navigationForward: state.ui.navigationForward,
+  }))
   const [shouldUpdate, setShouldUpdate] = useState<boolean>(true)
   const [currentUIPayload, setCurrentUIPayload] = useState({})
 
@@ -75,26 +66,5 @@ export function useNavigation(): INavigationHook {
     })
   }
 
-  const menuItems: INavigation[] = [
-    { label: 'This Device', path: '/devices', match: '/devices/:any?/:any?/:any?', icon: 'hdd', show: remoteUI },
-    {
-      label: 'Network',
-      icon: 'chart-network',
-      path: '/connections', // recallPath('/connections')
-      match: '/connections/:any?/:any?/:any?',
-      show: !remoteUI,
-      chip: connections.toLocaleString(),
-      chipPrimary: true,
-    },
-    {
-      label: 'Devices',
-      path: '/devices',
-      match: '/devices',
-      icon: 'hdd',
-      show: !remoteUI,
-      chip: devices.toLocaleString(),
-    },
-  ]
-
-  return { menu, menuItems, handleBack, handleForward }
+  return { handleBack, handleForward }
 }

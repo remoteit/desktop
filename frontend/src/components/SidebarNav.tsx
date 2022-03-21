@@ -1,66 +1,60 @@
 import React from 'react'
-import { useNavigation } from '../hooks/useNavigation'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { selectAnnouncements } from '../models/announcements'
-import { useHistory, useLocation, matchPath } from 'react-router-dom'
-import {
-  makeStyles,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Divider,
-  Chip,
-} from '@material-ui/core'
+import { makeStyles, List, ListItemSecondaryAction, Tooltip, Divider, Chip } from '@material-ui/core'
+import { selectConnections } from '../helpers/connectionHelper'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
+import { isRemoteUI } from '../helpers/uiHelper'
 import { spacing } from '../styling'
-import { Icon } from './Icon'
-import classnames from 'classnames'
 
 export const SidebarNav: React.FC = () => {
-  const { unreadAnnouncements } = useSelector((state: ApplicationState) => ({
+  const { unreadAnnouncements, connections, sessions, devices, remoteUI } = useSelector((state: ApplicationState) => ({
     unreadAnnouncements: selectAnnouncements(state, true).length,
+    connections: selectConnections(state).filter(connection => connection.enabled).length,
+    sessions: state.sessions.all.length,
+    devices: state.devices.total,
+    remoteUI: isRemoteUI(state),
   }))
-  const { menuItems } = useNavigation()
-  const location = useLocation()
-  const history = useHistory()
-  const css = useStyles()
+  const css = useStyles({ sessions })
 
   return (
     <List className={css.list}>
-      {menuItems.reduce((items: JSX.Element[], m, index) => {
-        const active = matchPath(location.pathname, { path: m.match, exact: true })
-        if (m.show)
-          items.push(
-            <React.Fragment key={index}>
-              <ListItem
-                className={classnames(active && 'Mui-selected')}
-                onClick={() => history.push(m.path)}
-                button
-                dense
-              >
-                <ListItemIcon>
-                  <Icon size="md" type="regular" name={m.icon} color={active ? 'black' : 'grayDark'} />
-                </ListItemIcon>
-                <ListItemText primary={m.label} />
-                {!!Number(m.chip) && (
-                  <ListItemSecondaryAction>
-                    <Chip
-                      size="small"
-                      label={m.chip}
-                      className={m.chipPrimary ? css.chip : undefined}
-                      color={m.chipPrimary ? 'primary' : undefined}
-                    />
-                  </ListItemSecondaryAction>
-                )}
-              </ListItem>
-            </React.Fragment>
-          )
-        return items
-      }, [])}
+      {remoteUI ? (
+        <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" />
+      ) : (
+        <>
+          <ListItemLocation
+            title="Network"
+            icon="chart-network"
+            pathname="/connections"
+            match="/connections/:any?/:any?/:any?"
+          >
+            <ListItemSecondaryAction>
+              {!!connections && (
+                <Tooltip title="Added" placement="top" arrow>
+                  <Chip size="small" label={connections.toLocaleString()} className={css.connections} />
+                </Tooltip>
+              )}
+              {!!sessions && (
+                <Tooltip title="Connected" placement="top" arrow>
+                  <Chip size="small" label={sessions.toLocaleString()} className={css.sessions} color="primary" />
+                </Tooltip>
+              )}
+            </ListItemSecondaryAction>
+          </ListItemLocation>
+          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices">
+            {!!devices && (
+              <ListItemSecondaryAction>
+                <Tooltip title="Total" placement="top" arrow>
+                  <Chip size="small" label={devices.toLocaleString()} />
+                </Tooltip>
+              </ListItemSecondaryAction>
+            )}
+          </ListItemLocation>
+        </>
+      )}
       <ListItemLocation title="Logs" pathname="/logs" icon="file-alt" dense />
       <Divider variant="inset" />
       <ListItemLink title="Scripting" href="https://app.remote.it/#scripting" icon="scroll" dense />
@@ -80,9 +74,6 @@ export const SidebarNav: React.FC = () => {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  chip: {
-    fontWeight: 500,
-  },
   list: {
     position: 'static',
     marginTop: spacing.sm,
@@ -96,6 +87,15 @@ const useStyles = makeStyles(({ palette }) => ({
         color: palette.black.main,
       },
     },
+  },
+  connections: ({ sessions }: { sessions: number }) => ({
+    borderTopRightRadius: sessions ? 0 : undefined,
+    borderBottomRightRadius: sessions ? 0 : undefined,
+    paddingRight: sessions ? spacing.xs : undefined,
+  }),
+  sessions: {
+    marginLeft: `-${spacing.xs}px !important`,
+    fontWeight: 500,
   },
   footer: {
     position: 'absolute',

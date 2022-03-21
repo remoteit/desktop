@@ -1,10 +1,9 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { AttributeValue } from '../AttributeValue'
-import { makeStyles, Checkbox, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
+import { makeStyles, Box, ListItemIcon, ListItem, useMediaQuery } from '@material-ui/core'
 import { ConnectionStateIcon } from '../ConnectionStateIcon'
 import { RestoreButton } from '../../buttons/RestoreButton'
-import { DeviceLabel } from '../DeviceLabel'
 import { Attribute } from '../Attributes'
 import { radius, spacing } from '../../styling'
 import { Icon } from '../Icon'
@@ -38,8 +37,7 @@ export const DeviceListItem: React.FC<Props> = ({
 
   if (!device) return null
 
-  const handleClick = event => {
-    event.stopPropagation()
+  const handleClick = () => {
     if (select) onSelect && onSelect(device.id)
     else history.push(`/devices/${device.id}`)
   }
