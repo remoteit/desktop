@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { ApplicationState, Dispatch } from '../../store'
 import { makeStyles, Box, Button, Typography, Chip, Divider } from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,10 +7,9 @@ import { MFAConfigureApp } from './MFAConfigureApp'
 import { MFAConfigureSms } from './MFAConfigureSms'
 import { MFAMethod } from './MFAMethod'
 import { Gutters } from '../Gutters'
-import { Notice } from '../Notice'
 
 export const MFAPreference: React.FC = () => {
-  const { AWSPhone, AWSUser, mfaMethod, verificationCode, showMFASelection, showSMSConfig } = useSelector(
+  const { AWSPhone, AWSUser, mfaMethod, verificationCode, showMFASelection, showSMSConfig, backupCode } = useSelector(
     (state: ApplicationState) => ({
       AWSPhone: state.auth.AWSUser.phone_number || '',
       AWSUser: state.auth.AWSUser,
@@ -18,18 +17,17 @@ export const MFAPreference: React.FC = () => {
       verificationCode: state.mfa.verificationCode,
       showMFASelection: state.mfa.showMFASelection,
       showSMSConfig: state.mfa.showSMSConfig,
+      backupCode: state.mfa.backupCode,
     })
   )
   const css = useStyles()
   const { mfa } = useDispatch<Dispatch>()
   const [showEnableSelection, setShowEnableSelection] = useState<boolean>(mfaMethod === 'NO_MFA')
   const [showAuthenticatorConfig, setShowAuthenticatorConfig] = useState<boolean>(false)
-  const [totpCode, setTotpCode] = useState<string | null>(null)
+  const [totpCode, setTotpCode] = useState<string | undefined>()
   const [totpVerified] = useState<boolean>(false)
   const [totpVerificationCode, setTotpVerificationCode] = useState<string>('')
   const [cancelShowVerificationCode, setCancelShowVerificationCode] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
-  const [backupCode, setBackupCode] = useState<string>(AWSUser['custom:backup_code'] || '')
   const [loading, setLoading] = useState<boolean>(false)
   const [verificationMethod, setVerificationMethod] = useState<string>('sms')
   const [hasOldSentVerification, setHasOldSentVerification] = useState<boolean>(
@@ -43,31 +41,15 @@ export const MFAPreference: React.FC = () => {
   const setShowVerificationCode = (showVerificationCode: boolean) => mfa.set({ showVerificationCode })
   const setShowSMSConfig = (showSMSConfig: boolean) => mfa.set({ showSMSConfig })
 
-  useEffect(() => {
-    if (AWSUser['custom:backup_code']) setBackupCode(AWSUser['custom:backup_code'])
-  }, [AWSUser])
-
-  const sendVerifyTotp = event => {
+  const sendVerifyTotp = async event => {
     event.preventDefault()
-    setError(null)
     setLoading(true)
-    mfa
-      .verifyTotpCode(totpVerificationCode)
-      .then(async (backupCode: string | boolean) => {
-        if (typeof backupCode == 'string') {
-          setBackupCode(backupCode)
-          setShowAuthenticatorConfig(false)
-        } else {
-          setError('Invalid TOTP Code')
-        }
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    await mfa.verifyTotpCode(totpVerificationCode)
+    setShowAuthenticatorConfig(false)
+    setLoading(false)
   }
 
   const cancelTotp = event => {
-    setError(null)
     setShowEnableSelection(true)
     setShowAuthenticatorConfig(false)
   }
@@ -77,8 +59,7 @@ export const MFAPreference: React.FC = () => {
     setVerificationCode('')
     if (AWSUser && AWSUser.phone_number_verified && orginalNumber === newNumber && mfaMethod !== 'SMS_MFA') {
       //no update to verified phone number, so just enable MFA
-      const backupCode = await mfa.setMFAPreference('SMS_MFA')
-      setBackupCode(backupCode)
+      await mfa.setMFAPreference('SMS_MFA')
       setShowSMSConfig(false)
     } else if (AWSUser && orginalNumber === newNumber && !AWSUser.phone_number_verified) {
       //not updating the phone but it needs to verify
@@ -91,49 +72,28 @@ export const MFAPreference: React.FC = () => {
     }
   }
 
-  const sendVerifyPhone = event => {
+  const sendVerifyPhone = async event => {
     event.preventDefault()
-    setError(null)
     setLoading(true)
-    mfa
-      .verifyPhone(verificationCode)
-      .then(async (backupCode: string) => {
-        setVerificationCode('')
-        setCancelShowVerificationCode(false)
-        setHasOldSentVerification(false)
-        setShowPhone(false)
-        setShowVerificationCode(false)
-        setBackupCode(backupCode)
-      })
-      .catch(error => {
-        console.error(error)
-        if (error instanceof Error) setError(error.message)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    await mfa.verifyPhone(verificationCode)
+    setVerificationCode('')
+    setCancelShowVerificationCode(false)
+    setHasOldSentVerification(false)
+    setShowPhone(false)
+    setShowVerificationCode(false)
+    setLoading(false)
   }
 
-  const resendCode = event => {
+  const resendCode = async event => {
     event.preventDefault()
-    setError(null)
     setLoading(true)
-    mfa
-      .updatePhone(AWSPhone)
-      .then(() => {
-        setHasOldSentVerification(false)
-        setVerificationCode('')
-        setShowVerificationCode(true)
-        setShowPhone(false)
-        setCancelShowVerificationCode(true)
-      })
-      .catch(error => {
-        console.error(error)
-        if (error instanceof Error) setError(error.message)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    await mfa.updatePhone(AWSPhone)
+    setHasOldSentVerification(false)
+    setVerificationCode('')
+    setShowVerificationCode(true)
+    setShowPhone(false)
+    setCancelShowVerificationCode(true)
+    setLoading(false)
   }
 
   const cancelEditPhone = () => {
@@ -198,7 +158,6 @@ export const MFAPreference: React.FC = () => {
             onClick={() => {
               setShowEnableSelection(true)
               mfa.setMFAPreference('NO_MFA')
-              setError(null)
             }}
           />
 
@@ -259,9 +218,6 @@ export const MFAPreference: React.FC = () => {
               setCancelShowVerificationCode={setCancelShowVerificationCode}
             />
           )}
-
-          {/* Display Error */}
-          {error && <Notice severity="danger">{error}</Notice>}
         </Gutters>
       </>
     )

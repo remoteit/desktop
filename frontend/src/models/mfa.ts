@@ -1,6 +1,5 @@
 import { createModel } from '@rematch/core'
 import { AUTH_API_URL, DEVELOPER_KEY } from '../shared/constants'
-import { CognitoUserResult } from '@remote.it/types'
 import { getToken } from '../services/remote.it'
 import { RootModel } from './rootModel'
 import axios from 'axios'
@@ -8,6 +7,7 @@ import axios from 'axios'
 export type IMfa = {
   mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA'
   verificationCode: string
+  backupCode?: string
   showPhone: boolean
   showMFASelection: boolean
   showVerificationCode: boolean
@@ -22,6 +22,7 @@ export type IMfa = {
 const defaultState: IMfa = {
   mfaMethod: 'NO_MFA',
   verificationCode: '',
+  backupCode: undefined,
   showPhone: false,
   showMFASelection: false,
   showVerificationCode: false,
@@ -34,21 +35,18 @@ const defaultState: IMfa = {
 }
 
 export default createModel<RootModel>()({
-  state: defaultState,
+  state: { ...defaultState },
   effects: dispatch => ({
-    // updated
-    async getAuthenticatedUserInfo(_fetch, state) {
+    async getAWSUser(_fetch, state) {
       const userInfo = await state.auth.authService?.currentUserInfo()
       if (!userInfo) {
-        console.error('Could not get getAuthenticatedUserInfo', userInfo)
+        console.error('Could not getAWSUser', userInfo)
         return
       }
-      const Authorization = await getToken()
-      // Get MFA Preference
       const response = await axios.get(`${AUTH_API_URL}/mfaPref`, {
         headers: {
           developerKey: DEVELOPER_KEY,
-          Authorization,
+          Authorization: await getToken(),
         },
       })
       dispatch.mfa.set({ mfaMethod: response.data.MfaPref })
@@ -61,76 +59,76 @@ export default createModel<RootModel>()({
         ...userInfo.attributes,
         authProvider: userInfo.username.includes('Google') || userInfo.username.includes('google') ? 'Google' : '',
       }
-      if (state.auth.AWSUser !== AWSUser) {
-        console.log('set AWSUser', AWSUser)
-        dispatch.auth.set({ AWSUser })
-      }
-      return AWSUser
+      await dispatch.auth.set({ AWSUser, backupCode: AWSUser['custom:backup_code'] })
     },
-    // updated
+
     async setMFAPreference(mfaMethod: IMfa['mfaMethod']) {
-      const Authorization = await getToken()
+      const { mfa, ui } = dispatch
       try {
         const response = await axios.post(
           `${AUTH_API_URL}/mfaPref`,
           { MfaPref: mfaMethod },
-          { headers: { developerKey: DEVELOPER_KEY, Authorization } }
+          { headers: { developerKey: DEVELOPER_KEY, Authorization: await getToken() } }
         )
-        dispatch.mfa.set({ mfaMethod: response.data.MfaPref })
+        mfa.set({ mfaMethod: response.data.MfaPref, backupCode: response.data.backupCode })
         if (response.data.MfaPref !== 'NO_MFA') {
-          dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
+          ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
         }
         console.log('SET MFA PREFERENCE', response)
-        return response.data.backupCode
       } catch (error) {
         if (error instanceof Error) {
-          dispatch.ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
+          ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
         }
       }
     },
-    // updated
+
     async updatePhone(phone: string, state) {
+      const { mfa, ui } = dispatch
       try {
         await state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone })
-        await dispatch.mfa.getAuthenticatedUserInfo()
+        await mfa.getAWSUser()
         await state.auth.authService?.verifyCurrentUserAttribute('phone_number')
-        dispatch.mfa.setMFAPreference('NO_MFA')
-        dispatch.ui.set({ successMessage: 'Verification sent.' })
+        await mfa.setMFAPreference('NO_MFA')
+        ui.set({ successMessage: 'Verification sent.' })
         return true
       } catch (error) {
         console.error(error)
-        dispatch.ui.set({ errorMessage: ' Update phone error: ' + error })
+        if (error instanceof Error) {
+          ui.set({ errorMessage: ' Update phone error: ' + error.message })
+        }
       }
     },
-    // updated
+
     async verifyPhone(verificationCode: string, state) {
+      const { mfa, ui } = dispatch
       try {
         await state.auth.authService?.verifyCurrentUserAttributeSubmit('phone_number', verificationCode)
-        // @ts-ignore -- FIXME maybe save the backup code instead of returning it
-        const backupCode = await dispatch.mfa.setMFAPreference('SMS_MFA')
-        await dispatch.mfa.getAuthenticatedUserInfo()
-        return backupCode
+        await mfa.setMFAPreference('SMS_MFA')
+        await mfa.getAWSUser()
       } catch (error) {
-        console.log(error)
-        throw error
+        console.error(error)
+        if (error instanceof Error) {
+          ui.set({ errorMessage: 'Phone verification error: ' + error.message })
+        }
       }
     },
-    // updated
+
     async getTotpCode(_, state) {
       return state.auth.authService?.setupTOTP()
     },
-    // updated
+
     async verifyTotpCode(code: string, state) {
-      // const awsUser = await window.authService.currentAuthenticatedUser()
+      const { mfa, ui } = dispatch
       try {
         await state.auth.authService?.verifyTotpToken(code)
       } catch (error) {
-        if (error instanceof Error) console.error(error.message)
-        return false
+        console.error(error)
+        if (error instanceof Error) {
+          ui.set({ errorMessage: `Invalid TOTP Code. (${error.message})` })
+        }
+        return
       }
-      const backupCode = await dispatch.mfa.setMFAPreference('SOFTWARE_TOKEN_MFA')
-      console.log('VERIFY TOTP backupCode', backupCode)
-      return backupCode
+      await mfa.setMFAPreference('SOFTWARE_TOKEN_MFA')
     },
   }),
   reducers: {

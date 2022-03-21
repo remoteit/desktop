@@ -207,7 +207,7 @@ export default createModel<RootModel>()({
         }
         dispatch.auth.set({ authenticated: true })
         dispatch.auth.fetchUser()
-        dispatch.mfa.getAuthenticatedUserInfo()
+        dispatch.mfa.getAWSUser()
       }
     },
     async getUsernameLocal() {
