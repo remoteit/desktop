@@ -279,11 +279,13 @@ export default createModel<RootModel>()({
       dispatch.sessions.reset()
       dispatch.logs.reset()
       dispatch.search.reset()
+      dispatch.announcements.reset()
       dispatch.licensing.reset()
       dispatch.contacts.reset()
       dispatch.billing.reset()
       dispatch.backend.reset()
       dispatch.tags.reset()
+      dispatch.mfa.reset()
       dispatch.ui.reset()
       dispatch.accounts.setActive('')
       window.location.hash = ''
