@@ -1,6 +1,7 @@
 import md5 from 'md5'
 import React from 'react'
-import fallbackImage from './user.png'
+import seedRandom from 'seedrandom'
+import { labelLookup } from '../../models/labels'
 import { makeStyles, Avatar as MuiAvatar, Tooltip } from '@material-ui/core'
 
 export interface Props {
@@ -12,23 +13,14 @@ export interface Props {
 }
 
 export const Avatar: React.FC<Props> = ({ email, size = 40, button, label, tooltip }) => {
-  const css = useStyles(size)()
   const url = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
-  const style = { height: size, width: size }
+  const color = Math.ceil(seedRandom(email || '')() * 12)
+  const css = useStyles({ size, color })
 
   const Element = (
-    <span className={label ? css.label : ''}>
-      <MuiAvatar
-        component="span"
-        className={css.avatar + ' ' + (button ? css.button : '')}
-        alt={email}
-        style={style}
-        src={url}
-      >
-        <img src={fallbackImage} alt={email} className={css.img} style={style} />
-      </MuiAvatar>
-      {label && email}
-    </span>
+    <MuiAvatar className={css.avatar + ' ' + (button ? css.button : '')} alt={email} src={url}>
+      <div>{email.substring(0, 1).toUpperCase()}</div>
+    </MuiAvatar>
   )
 
   return tooltip ? (
@@ -40,21 +32,23 @@ export const Avatar: React.FC<Props> = ({ email, size = 40, button, label, toolt
   )
 }
 
-const useStyles = size =>
-  makeStyles(({ palette }) => ({
-    label: {
-      display: 'inline-flex',
-      borderRadius: '50%',
-    },
-    avatar: { display: 'inline-block', marginRight: 1 },
-    button: {
-      borderWidth: 3,
-      borderStyle: 'solid',
-      borderColor: palette.white.main,
-      '&:hover': { borderColor: palette.primaryLight.main },
-      backgroundColor: `${palette.primary.main} !important`,
-    },
-    img: {
-      backgroundColor: `${palette.primary.main} !important`,
-    },
-  }))
+const useStyles = makeStyles(({ palette }) => ({
+  avatar: ({ size, color }: { size: number; color: number }) => ({
+    color: palette.white.main,
+    fontSize: size * 0.625,
+    height: size,
+    width: size,
+    fontFamily: 'Roboto Mono',
+    backgroundColor: labelLookup[color].color,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: palette.white.main,
+  }),
+  button: {
+    borderWidth: 3,
+    borderStyle: 'solid',
+    borderColor: palette.white.main,
+    '&:hover': { borderColor: palette.primaryLight.main },
+    // backgroundColor: `${palette.primary.main} !important`,
+  },
+}))

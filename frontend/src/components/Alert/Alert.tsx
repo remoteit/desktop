@@ -2,7 +2,6 @@ import React from 'react'
 import classnames from 'classnames'
 import { IconButton } from '@material-ui/core'
 import { Icon } from '../Icon'
-// import styles from './Alert.module.css'
 
 export interface AlertProps {
   className?: string

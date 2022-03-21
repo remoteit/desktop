@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
-import { makeStyles, Chip } from '@material-ui/core'
-import { AutocompleteMenu } from './AutocompleteMenu'
+import { makeStyles, Chip, Tooltip } from '@material-ui/core'
+import { TagAutocomplete } from './TagAutocomplete'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
 import { useLabel } from '../hooks/useLabel'
 import { Icon } from './Icon'
@@ -35,6 +35,20 @@ export const TagEditor: React.FC<Props> = ({
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
 
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === '#') {
+      event.preventDefault()
+      handleOpen()
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [])
+
   return (
     <>
       {button ? (
@@ -55,7 +69,7 @@ export const TagEditor: React.FC<Props> = ({
           ref={addRef}
         />
       )}
-      <AutocompleteMenu
+      <TagAutocomplete
         items={tags}
         open={open}
         indicator="tag"
@@ -64,6 +78,13 @@ export const TagEditor: React.FC<Props> = ({
         placeholder={allowAdding ? 'New tag...' : 'Remove a tag...'}
         targetEl={addRef.current}
         onItemColor={tag => getColor(tag.color)}
+        InputProps={{
+          endAdornment: (
+            <Tooltip title="Keyboard shortcut '#'" placement="top" arrow>
+              <Chip label="#" size="small" />
+            </Tooltip>
+          ),
+        }}
         onSelect={async (action, tag) => {
           if (action === 'new') await dispatch.tags.create(tag)
           if (onSelect) onSelect(tag)

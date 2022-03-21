@@ -101,6 +101,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             label="Search"
             variant="filled"
             inputRef={inputRef}
+            className={css.input}
             onBlur={() => onClose && onClose()}
             InputProps={{
               ...params.InputProps,
@@ -162,6 +163,10 @@ const useStyles = makeStyles(({ palette }) => ({
     padding: 0,
     width: '100%',
     zIndex: 1,
+  },
+  input: {
+    '& .MuiFilledInput-root': { padding: 0 },
+    '& .MuiFilledInput-input': { padding: '22px 12px 10px !important' },
   },
   button: { marginBottom: -spacing.sm },
   enabled: { color: palette.primary.main },

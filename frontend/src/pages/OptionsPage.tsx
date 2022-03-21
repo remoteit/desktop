@@ -40,13 +40,13 @@ export const OptionsPage: React.FC = () => {
   return (
     <Container
       gutterBottom
+      bodyProps={{ gutterTop: true }}
       header={
         <Typography variant="h1">
-          <Title>Settings</Title>
+          <Title>Application</Title>
         </Typography>
       }
     >
-      <Typography variant="subtitle1">General</Typography>
       <List>
         <ListItemSelect
           label="Theme"

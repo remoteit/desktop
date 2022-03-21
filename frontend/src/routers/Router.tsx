@@ -15,7 +15,6 @@ import { DownloadDesktopPage } from '../pages/DownloadDesktopPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { LicensingPage } from '../pages/LicensingPage'
-import { OrganizationPage } from '../pages/OrganizationPage'
 import { AccountSharePage } from '../pages/AccountSharePage'
 import { AnnouncementsPage } from '../pages/AnnouncementsPage'
 import { AccountAccessPage } from '../pages/AccountAccessPage'
@@ -33,8 +32,13 @@ import { NotificationsPage } from '../pages/NotificationsPage'
 import { isPortal, getOs } from '../services/Browser'
 import { ShareFeedback } from '../pages/ShareFeedback'
 import { Panel } from '../components/Panel'
+import { OverviewPage } from '../pages/OverviewPage'
+import { OrganizationPage } from '../pages/OrganizationPage'
+import { AccountPage } from '../pages/AccountPage'
+import { SecurityPage } from '../pages/SecurityPage'
+import { AccessKeyPage } from '../pages/AccessKeyPage'
 
-export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const history = useHistory()
   const { ui } = useDispatch<Dispatch>()
   const { remoteUI, redirect, targetDevice, registered, os } = useSelector((state: ApplicationState) => ({
@@ -80,7 +84,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
       {/* Connections */}
       <Route path={['/connections/new/:deviceID/:serviceID', '/connections']}>
         <DynamicPanel
-          primary={<ConnectionsPage singlePanel={singlePanel} />}
+          primary={<ConnectionsPage />}
           secondary={
             <Switch>
               <Route path={['/connections/:serviceID/lan', '/connections/new/:deviceID/:serviceID/lan']}>
@@ -100,7 +104,7 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          singlePanel={singlePanel}
+          layout={layout}
           root={['/connections', '/connections/new']}
         />
       </Route>
@@ -111,44 +115,44 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
         ) : isPortal() ? (
           <Redirect to={`/devices/add/${os}`} />
         ) : (
-          <Panel>
+          <Panel layout={layout}>
             <SetupDevice os={os} />
           </Panel>
         )}
       </Route>
 
       <Route path="/devices/membership">
-        <Panel>
+        <Panel layout={layout}>
           <OrganizationMembershipPage />
         </Panel>
       </Route>
 
       <Route path="/devices/add/linux">
-        <Panel>
+        <Panel layout={layout}>
           <SetupLinuxPage />
         </Panel>
       </Route>
 
       <Route path="/devices/add/:icon">
-        <Panel>
+        <Panel layout={layout}>
           <DownloadDesktopPage />
         </Panel>
       </Route>
 
       <Route path="/devices/setupWaiting">
-        <Panel>
+        <Panel layout={layout}>
           <SetupWaiting os={os} targetDevice={targetDevice} />
         </Panel>
       </Route>
 
       <Route path="/devices/restore">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <DevicesPage restore />
         </Panel>
       </Route>
 
       <Route path="/devices/select">
-        <Panel singlePanel={singlePanel}>
+        <Panel layout={layout}>
           <DevicesPage select />
         </Panel>
       </Route>
@@ -158,56 +162,54 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           registered ? (
             <Redirect to={`/devices/${targetDevice.uid}`} />
           ) : (
-            <Panel>
+            <Panel layout={layout}>
               <SetupDevice os={os} />
             </Panel>
           )
         ) : (
-          <Panel singlePanel={singlePanel}>
+          <Panel layout={layout}>
             <DevicesPage />
           </Panel>
         )}
       </Route>
 
       <Route path="/devices/:deviceID/:serviceID?">
-        <DeviceRouter singlePanel={singlePanel} />
+        <DeviceRouter layout={layout} />
+      </Route>
+
+      <Route path="/logs">
+        <Panel layout={layout}>
+          <UserLogPage />
+        </Panel>
       </Route>
 
       <Route path="/announcements">
-        <Panel>
+        <Panel layout={layout}>
           <AnnouncementsPage />
         </Panel>
       </Route>
 
       <Route path="/shareFeedback">
-        <Panel>
+        <Panel layout={layout}>
           <ShareFeedback />
         </Panel>
       </Route>
 
       <Route path="/settings">
         <DynamicPanel
-          primary={<SettingsPage singlePanel={singlePanel} />}
+          primary={<SettingsPage />}
           secondary={
             <Switch>
               <Route path={['/settings/membership/share', '/settings/access/share']}>
                 <AccountSharePage />
               </Route>
 
-              <Route path="/settings/organization/share">
-                <OrganizationAddPage />
-              </Route>
-
-              <Route path="/settings/organization">
-                <OrganizationPage />
-              </Route>
-
               <Route path="/settings/access">
                 <AccountAccessPage />
               </Route>
 
-              <Route path="/settings/logs">
-                <UserLogPage />
+              <Route path="/settings/notifications">
+                <NotificationsPage />
               </Route>
 
               <Route path="/settings/tags">
@@ -222,18 +224,6 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
                 <ReportsPage />
               </Route>
 
-              <Route path="/settings/notifications">
-                <NotificationsPage />
-              </Route>
-
-              <Route path="/settings/licensing">
-                <LicensingPage />
-              </Route>
-
-              <Route path="/settings/billing">
-                <BillingPage />
-              </Route>
-
               <Route path="/settings/test">
                 <TestPage />
               </Route>
@@ -243,8 +233,51 @@ export const Router: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
               </Route>
             </Switch>
           }
-          singlePanel={singlePanel}
+          layout={layout}
           root={['/settings']}
+        />
+      </Route>
+
+      <Route path="/account">
+        <DynamicPanel
+          primary={<AccountPage />}
+          secondary={
+            <Switch>
+              <Route path="/account/security">
+                <SecurityPage />
+              </Route>
+
+              <Route path="/account/plans">
+                <PlansPage />
+              </Route>
+
+              <Route path="/account/organization/share">
+                <OrganizationAddPage />
+              </Route>
+
+              <Route path="/account/organization">
+                <OrganizationPage />
+              </Route>
+
+              <Route path="/account/licensing">
+                <LicensingPage />
+              </Route>
+
+              <Route path="/account/billing">
+                <BillingPage />
+              </Route>
+
+              <Route path="/account/accessKey">
+                <AccessKeyPage />
+              </Route>
+
+              <Route path={['/account', '/account/overview']}>
+                <OverviewPage />
+              </Route>
+            </Switch>
+          }
+          layout={layout}
+          root={['/account']}
         />
       </Route>
 

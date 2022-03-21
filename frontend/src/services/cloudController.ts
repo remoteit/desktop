@@ -10,6 +10,7 @@ import { selectById } from '../models/devices'
 import { combinedName } from '../shared/nameHelper'
 import { setConnection, findLocalConnection } from '../helpers/connectionHelper'
 import { graphQLGetErrors } from './graphQL'
+import { getActiveAccountId } from '../models/accounts'
 import { agent } from '../services/Browser'
 import { emit } from './Controller'
 
@@ -42,9 +43,10 @@ class CloudController {
       return
     }
 
-    if (!navigator.onLine) return
-
     const url = getWebSocketURL()
+
+    if (!navigator.onLine || !url) return
+
     this.log('CONNECT CLOUD SOCKET', url, this.socket)
     if(url) {
       this.socket = new ReconnectingWebSocket(url, [], {})
@@ -95,7 +97,10 @@ class CloudController {
   authenticate = async () => {
     const message = JSON.stringify({
       action: 'subscribe',
-      headers: { authorization: await getToken(), 'User-Agent': `remoteit/${version} ${agent()}` },
+      headers: {
+        authorization: await getToken(),
+        'User-Agent': `remoteit/${version} ${agent()}`,
+      },
       query: `
       {
         event {
@@ -245,7 +250,8 @@ class CloudController {
 
           // if new unknown device discovered
           if (!target.device && target.id === target.deviceId && state === 'active') {
-            if (store.getState().devices.registrationCommand) {
+            const state = store.getState()
+            if (target.owner.id === getActiveAccountId(state) && state.devices.registrationCommand) {
               ui.set({
                 redirect: `/devices/${target.deviceId}`,
                 successMessage: `${target.name} registered successfully!`,

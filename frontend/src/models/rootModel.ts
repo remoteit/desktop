@@ -11,9 +11,11 @@ import connections from './connections'
 import contacts from './contacts'
 import devices from './devices'
 import feedback from './feedback'
+import keys from './keys'
 import labels from './labels'
 import licensing from './licensing'
 import logs from './logs'
+import mfa from './mfa'
 import organization from './organization'
 import search from './search'
 import sessions from './sessions'
@@ -34,9 +36,12 @@ export interface RootModel extends Models<RootModel> {
   contacts: typeof contacts
   devices: typeof devices
   feedback: typeof feedback
+  keys: typeof keys
   labels: typeof labels
   licensing: typeof licensing
   logs: typeof logs
+  // @ts-ignore
+  mfa: typeof mfa
   organization: typeof organization
   search: typeof search
   sessions: typeof sessions
@@ -58,9 +63,11 @@ export const models: RootModel = {
   contacts,
   devices,
   feedback,
+  keys,
   labels,
   licensing,
   logs,
+  mfa,
   organization,
   search,
   sessions,

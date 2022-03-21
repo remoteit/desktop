@@ -92,7 +92,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           boxShadow: 'none',
         },
         text: { padding: `${spacing.sm}px ${spacing.md}px` },
-        outlined: { borderColor: palette.grayLighter.main },
+        outlined: { padding: `${spacing.sm}px ${spacing.md}px`, borderColor: palette.grayLighter.main },
         sizeLarge: {
           fontSize: fontSizes.sm,
           padding: `${spacing.sm}px ${spacing.xl}px`,
@@ -327,18 +327,18 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
           '&:focused': { backgroundColor: palette.primaryHighlight.main },
         },
         input: { padding: '22px 12px 10px' },
-        underline: {
-          '&:before, &:after': { display: 'none' },
-        },
+        underline: { '&:before, &:after': { display: 'none' } },
         inputHiddenLabel: {
           paddingTop: spacing.sm,
           paddingBottom: spacing.sm,
         },
       },
+      MuiOutlinedInput: {
+        root: { borderRadius: radius },
+      },
       MuiSelect: {
-        select: {
-          '&:focus': { backgroundColor: 'none' },
-        },
+        // root: { borderRadius: radius, padding: `${spacing.sm}px ${spacing.md}px` },
+        select: { '&:focus': { backgroundColor: 'none' } },
       },
       MuiFormControl: {
         marginDense: {

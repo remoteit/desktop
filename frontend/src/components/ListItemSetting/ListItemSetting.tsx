@@ -26,7 +26,7 @@ type Props = {
   tooltip?: string
   disabled?: boolean
   confirm?: boolean
-  confirmMessage?: string
+  confirmMessage?: string | React.ReactElement
   confirmTitle?: string
   quote?: boolean
   modified?: boolean
@@ -89,13 +89,13 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     return (
       <>
         <ListItem
+          dense
           ref={ref}
           button={!!onClick as true}
           onClick={handleClick}
           disabled={disabled}
           onMouseEnter={() => setShowTip(true)}
           onMouseLeave={() => setShowTip(false)}
-          dense
         >
           <TooltipWrapper>
             <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>

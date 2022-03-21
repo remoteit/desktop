@@ -65,10 +65,10 @@ export const FilterDrawer: React.FC = () => {
             onClear: defaultState.sort === state.sort ? undefined : () => update({ sort: defaultState.sort }),
             children: (
               <FilterSelector
-                icon={state.sort.substr(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
+                icon={state.sort.substring(0, 1) === '-' ? 'sort-amount-up' : 'sort-amount-down'}
                 value={state.sort}
                 onSelect={value => {
-                  if (state.sort === value) value = value.substr(0, 1) === '-' ? value : `-${value}`
+                  if (state.sort === value) value = value.substring(0, 1) === '-' ? value : `-${value}`
                   update({ sort: value })
                 }}
                 filterList={sortFilters}

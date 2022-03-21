@@ -106,6 +106,7 @@ export class Environment {
       hostname: os.hostname(),
       oobAvailable: this.oobAvailable,
       overrides: this.overrides,
+      portal: false,
     }
   }
 

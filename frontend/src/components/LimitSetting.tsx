@@ -27,6 +27,10 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       template = 'text'
       message = `Services are granted an evaluation period of ${humanizeDays(limit.value)}`
       break
+    // case 'tagging':
+    //   template = 'text'
+    //   message = limit.value ? 'Tagging is enabled.' : 'Tagging is not available.'
+    //   break
     case 'log-limit':
       template = 'text'
       message = `Log history is available for ${humanizeDays(limit.value)}`
@@ -78,7 +82,7 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   }
 }
 
-const useStyles = makeStyles( ({ palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   box: {
     width: '70%',
     marginBottom: spacing.sm,

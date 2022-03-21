@@ -1,16 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles } from '@material-ui/core'
-import { ApplicationState } from '../../store'
-import { useSelector } from 'react-redux'
+import { makeStyles, useMediaQuery } from '@material-ui/core'
+import { ApplicationState, Dispatch } from '../../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { Typography } from '@material-ui/core'
 import { useNavigation } from '../../hooks/useNavigation'
 import { getOwnDevices } from '../../models/accounts'
 import { attributeName } from '../../shared/nameHelper'
 import { GlobalSearch } from '../GlobalSearch'
-import { RegisterButton } from '../../buttons/RegisterButton'
-import { RefreshButton } from '../../buttons/RefreshButton'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
-import { AccountSelect } from '../AccountSelect'
+import { RefreshButton } from '../../buttons/RefreshButton'
 import { FilterButton } from '../../buttons/FilterButton'
 import { Breadcrumbs } from '../Breadcrumbs'
 import { IconButton } from '../../buttons/IconButton'
@@ -18,7 +16,7 @@ import { Title } from '../Title'
 import { Route } from 'react-router-dom'
 import { spacing } from '../../styling'
 
-export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => {
   const { searched, navigationBack, navigationForward, feature, device } = useSelector((state: ApplicationState) => ({
     feature: state.ui.feature,
     selected: state.ui.selected,
@@ -31,7 +29,9 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
+  const hideSidebar = useMediaQuery('(max-width:1150px)')
   const inputRef = useRef<HTMLInputElement>(null)
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
 
   useEffect(() => {
@@ -41,35 +41,37 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
 
   return (
     <div className={css.header}>
-      {singlePanel && (
+      {hideSidebar && (
+        <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
+      )}
+      {showSearch || searched || (
         <>
-          <RegisterButton />
-          <RefreshButton />
-          <AccountSelect label="Device List" />
+          <IconButton
+            title="Back"
+            disabled={disabledBack}
+            onClick={handleBack}
+            icon="chevron-left"
+            size="md"
+            color={disabledBack ? 'grayLight' : 'grayDarker'}
+          />
+          <IconButton
+            title="Forward"
+            disabled={disabledForward}
+            onClick={handleForward}
+            icon="chevron-right"
+            size="md"
+            color={disabledForward ? 'grayLight' : 'grayDarker'}
+          />
         </>
       )}
-      <IconButton
-        title="Back"
-        disabled={disabledBack}
-        onClick={handleBack}
-        icon="chevron-left"
-        size="lg"
-        color={disabledBack ? 'grayLight' : 'grayDark'}
-      />
-      <IconButton
-        title="Forward"
-        disabled={disabledForward}
-        onClick={handleForward}
-        icon="chevron-right"
-        size="lg"
-        color={disabledForward ? 'grayLight' : 'grayDark'}
-      />
+      <RefreshButton size="base" type="regular" color="grayDarker" />
       <Title className={css.search}>
         {!showSearch && !searched && (
           <IconButton
-            size="lg"
+            size="md"
             icon="search"
             className={css.button}
+            color="grayDarker"
             onClick={() => {
               setShowSearch(true)
               setTimeout(() => inputRef.current?.focus(), 20)
@@ -83,17 +85,13 @@ export const Header: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => 
           </IconButton>
         )}
         {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
-        {singlePanel && <Breadcrumbs />}
-        {/* {!!selected.length && (
-          <Chip
-            className={css.selected}
-            label={<>{selected.length} selected</>}
-            size="small"
-            color="primary"
-            onDelete={() => dispatch.ui.set({ selected: [] })}
-          />
-        )} */}
       </Title>
+      {breadcrumbs && (
+        <>
+          bread
+          <Breadcrumbs />
+        </>
+      )}
       <Route path={['/devices', '/devices/select']} exact>
         <FilterButton />
         <ColumnsButton />
@@ -125,7 +123,6 @@ const useStyles = makeStyles({
     zIndex: 8,
     // pointerEvents: 'none',
     // '-webkit-text-selection': 'none',
-    '& .MuiTypography-root': { marginLeft: spacing.lg, letterSpacing: 0.5 },
     '& .MuiIconButton-root': { '-webkit-app-region': 'no-drag', zIndex: 1 },
   },
   search: {

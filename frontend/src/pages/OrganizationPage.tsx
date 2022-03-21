@@ -53,7 +53,7 @@ export const OrganizationPage: React.FC = () => {
                     dispatch.organization.removeOrganization()
                   }}
                 />
-                <IconButton title="Add member" icon="user-plus" to="/settings/organization/share" size="md" />
+                <IconButton title="Add member" icon="user-plus" to="/account/organization/share" size="md" />
               </>
             )}
           </Typography>

@@ -8,6 +8,7 @@ import { ListItemText, Chip } from '@material-ui/core'
 import { ServiceName } from './ServiceName'
 import { LicenseChip } from './LicenseChip'
 import { replaceHost } from '../shared/nameHelper'
+import { AvatarList } from './AvatarList'
 import { lanShared } from '../helpers/lanSharing'
 import { DeviceGeo } from './DeviceGeo'
 import { Duration } from './Duration'
@@ -150,13 +151,9 @@ export const attributes: Attribute[] = [
   }),
   new Attribute({
     id: 'access',
-    label: 'Access',
+    label: 'Users',
     value: ({ device }) =>
-      device?.shared ? (
-        <Avatar email={device?.owner.email} size={22} tooltip />
-      ) : (
-        device?.access.map((u, i) => <Avatar key={i} email={u.email} size={22} tooltip />)
-      ),
+      device?.shared ? <Avatar email={device?.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
   }),
   new DeviceAttribute({
     id: 'lastReported',

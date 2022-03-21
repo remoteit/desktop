@@ -9,7 +9,7 @@ export function usePanelWidth(): [number, (value: number) => void] {
   const location = useLocation()
 
   const match = location.pathname.match(REGEX_FIRST_PATH)
-  const resize = match ? match[0].substr(1) : ''
+  const resize = match ? match[0].substring(1) : ''
   const panelWidth = useSelector((state: ApplicationState) => state.ui.panelWidth)
 
   const setPanelWidth = (value: number) => {

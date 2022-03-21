@@ -170,12 +170,23 @@ export default createModel<RootModel>()({
       if (!gqlResponse) return
       const data = gqlResponse?.data?.data
       console.log('LICENSING', data)
-      dispatch.licensing.set({
+      await dispatch.licensing.set({
         plans: data.plans,
         licenses: data?.login.licenses.map(l => parseLicense(l)),
         limits: data?.login.limits,
         purchasing: undefined,
         updating: undefined,
+      })
+      await dispatch.licensing.limitFeatures()
+    },
+
+    async limitFeatures(_, globalState) {
+      const limits = getLimits(globalState)
+      const { feature } = globalState.ui
+      limits.forEach(l => {
+        if (feature[l.name] !== undefined) {
+          dispatch.ui.set({ feature: { ...feature, [l.name]: l.value } })
+        }
       })
     },
 
@@ -199,12 +210,12 @@ export default createModel<RootModel>()({
       }
     },
 
-    async updateSubscription({ priceId, quantity }: IPurchase) {
+    async updateSubscription({ priceId, planId, quantity }: IPurchase) {
       if (!priceId) {
         dispatch.ui.set({ errorMessage: `Plan selection incomplete (${priceId})` })
         return
       }
-      dispatch.licensing.set({ purchasing: 'true' })
+      dispatch.licensing.set({ purchasing: planId })
       const result = await graphQLUpdateSubscription({ priceId, quantity })
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
@@ -214,6 +225,7 @@ export default createModel<RootModel>()({
         }
       }
       await dispatch.organization.fetch()
+      setTimeout(() => dispatch.licensing.set({ purchasing: undefined }), 30 * 1000)
       console.log('UPDATE SUBSCRIPTION', { priceId, quantity, result })
     },
 

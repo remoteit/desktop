@@ -2,9 +2,9 @@ import React from 'react'
 import { spacing } from '../styling'
 import { makeStyles, Box } from '@material-ui/core'
 
-type Props = { margin?: number; listItem?: boolean; noInset?: boolean }
+type Props = { margin?: number; listItem?: boolean; noInset?: boolean, paddingLeft?: number }
 
-export const Quote: React.FC<Props> = ({ margin = spacing.lg, listItem, noInset, children }) => {
+export const Quote: React.FC<Props> = ({ margin = spacing.lg, listItem, noInset, children, paddingLeft = undefined }) => {
   const css = useStyles({ margin, noInset, listItem })
   return <Box className={css.quote}>{children}</Box>
 }

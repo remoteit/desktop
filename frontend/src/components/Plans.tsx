@@ -29,14 +29,15 @@ const Features = {
     'Commercial usage',
     '30 days of activity logs',
     'Basic device tagging',
-    'Email or Zoom support',
+    'Email support',
   ],
   [BUSINESS_PLAN_ID]: [
     'Devices* are not limited',
-    'Commercial resale usage',
+    'Commercial usage',
+    'Advanced org management',
     '1 year of activity logs',
     'Custom user roles',
-    'Device tagging user access',
+    'User access control',
     'SAML single sign on (SSO)',
     'Enhanced support',
     'Unrestricted API usage',
@@ -80,7 +81,7 @@ export const Plans: React.FC = () => {
   React.useEffect(() => {
     if (location.pathname.includes('success')) dispatch.licensing.restore()
   }, [])
-  console.log('plans', plans)
+
   return (
     <>
       <Gutters size="lg" top="xl" className={css.plans}>

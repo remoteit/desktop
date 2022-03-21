@@ -8,6 +8,7 @@ export class Preferences {
   data: IPreferences = {
     version: '',
     cliVersion: '',
+    cliConfigVersion: undefined,
     autoUpdate: false,
     openAtLogin: true,
     remoteUIOverride: false,

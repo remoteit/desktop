@@ -21,7 +21,7 @@ import { SharePage } from '../pages/SharePage'
 import { useDispatch, useSelector } from 'react-redux'
 import { DeviceTransferPage } from '../pages/DeviceTransferPage'
 
-export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel }) => {
+export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
   const { remoteUI, device, targetDevice, targets, fetching } = useSelector((state: ApplicationState) => ({
     remoteUI: isRemoteUI(state),
@@ -60,9 +60,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           <Route path="/devices/:deviceID/add">
             <ServiceAddPage targetDevice={targetDevice} device={device} />
           </Route>
-          <Route
-            path={['/devices/:deviceID/users/share', '/devices/:deviceID/users/:email', '/devices/:deviceID/share']}
-          >
+          <Route path={['/devices/:deviceID/users/:email', '/devices/:deviceID/share']}>
             <SharePage device={device} />
           </Route>
           <Route path="/devices/:deviceID/edit">
@@ -106,7 +104,7 @@ export const DeviceRouter: React.FC<{ singlePanel?: boolean }> = ({ singlePanel 
           </Route>
         </Switch>
       }
-      singlePanel={singlePanel}
+      layout={layout}
       root="/devices/:deviceID"
     />
   )

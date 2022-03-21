@@ -1,6 +1,6 @@
 import React from 'react'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
-import { DEFAULT_CONNECTION, IP_PRIVATE } from '../shared/constants'
+import { DEFAULT_CONNECTION } from '../shared/constants'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 
 export const TargetHostSetting: React.FC<{ service: IService; connection?: IConnection }> = ({
@@ -12,7 +12,7 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
   if (connection.timeout === undefined) connection.timeout = DEFAULT_CONNECTION.timeout
 
   const disabled = connection.enabled || connection.public
-  const resetValue = service.host || IP_PRIVATE
+  const resetValue = ''
   let host: string = connection.targetHost || resetValue
 
   const save = (targetHost: string) =>
@@ -28,7 +28,7 @@ export const TargetHostSetting: React.FC<{ service: IService; connection?: IConn
       displayValue={host}
       modified={host !== resetValue}
       icon="bullseye"
-      label="Remote Host Address"
+      label="HTTP host override"
       disabled={disabled}
       resetValue={resetValue}
       onSave={value => save(value.toString())}

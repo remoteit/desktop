@@ -318,6 +318,8 @@ declare global {
     created?: Date
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
+    apiKey?: string
+    language?: string
   }
 
   type INotificationSetting = {
@@ -431,6 +433,18 @@ declare global {
     icon: string
     name: string
     description: string
+  }
+
+  interface IPasswordValue {
+    currentPassword: string
+    password: string
+  }
+
+  interface IAccessKey {
+    key: string
+    enabled: boolean
+    created: Date
+    lastUsed: Date
   }
 
   type IRouteType = 'failover' | 'p2p' | 'proxy'
@@ -567,6 +581,7 @@ declare global {
   type IPreferences = {
     version: string
     cliVersion: string
+    cliConfigVersion?: number
     autoUpdate?: boolean
     openAtLogin?: boolean
     remoteUIOverride?: boolean
@@ -646,6 +661,7 @@ declare global {
     footer?: boolean
     chipPrimary?: boolean
     Menu?: React.FC
+    divider?: boolean
   }
 }
 

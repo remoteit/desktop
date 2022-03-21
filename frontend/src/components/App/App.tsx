@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
-import { makeStyles, Box } from '@material-ui/core'
+import { useMediaQuery, makeStyles, Box } from '@material-ui/core'
 import { isElectron, isMac } from '../../services/Browser'
 import { ApplicationState } from '../../store'
 import { InstallationNotice } from '../InstallationNotice'
 import { LoadingMessage } from '../LoadingMessage'
 import { SignInPage } from '../../pages/SignInPage'
-import { FooterNav } from '../FooterNav'
+import { SidebarMenu } from '../SidebarMenu'
 import { Sidebar } from '../Sidebar'
 import { Router } from '../../routers/Router'
 import { Page } from '../../pages/Page'
@@ -18,17 +18,11 @@ export const App: React.FC = () => {
     signedOut: state.auth.initialized && !state.auth.authenticated,
     uninstalling: state.ui.uninstalling,
   }))
-  const [pageWidth, setPageWidth] = useState<number>(window.innerWidth)
-  const updateWidth = () => setPageWidth(window.innerWidth)
-  const singlePanel = pageWidth < 1000
-  const css = useStyles(singlePanel && isElectron() && isMac())()
-
-  useEffect(() => {
-    window.addEventListener('resize', updateWidth)
-    return function cleanup() {
-      window.removeEventListener('resize', updateWidth)
-    }
-  })
+  const layout: ILayout = {
+    hideSidebar: useMediaQuery('(max-width:1150px)'),
+    singlePanel: useMediaQuery('(max-width:750px)'),
+  }
+  const css = useStyles({ overlapHeader: layout.hideSidebar && isElectron() && isMac() })
 
   if (uninstalling)
     return (
@@ -60,33 +54,24 @@ export const App: React.FC = () => {
 
   return (
     <Page>
-      {singlePanel ? (
-        <>
-          <Box className={css.columns}>
-            <Router singlePanel />
-          </Box>
-          <FooterNav />
-        </>
-      ) : (
-        <Box className={css.columns}>
-          <Sidebar />
-          <Router />
-        </Box>
-      )}
+      <Box className={css.columns}>
+        {layout.hideSidebar ? <SidebarMenu /> : <Sidebar />}
+        <Router layout={layout} />
+      </Box>
     </Page>
   )
 }
+
 // neuter
-const useStyles = overlapHeader =>
-  makeStyles({
-    columns: {
-      flexGrow: 1,
-      position: 'relative',
-      display: 'flex',
-      overflow: 'hidden',
-      flexDirection: 'row',
-      alignItems: 'start',
-      justifyContent: 'start',
-      paddingTop: overlapHeader ? 30 : 0,
-    },
-  })
+const useStyles = makeStyles({
+  columns: ({ overlapHeader }: any) => ({
+    flexGrow: 1,
+    position: 'relative',
+    display: 'flex',
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'start',
+    justifyContent: 'start',
+    paddingTop: overlapHeader ? 30 : 0,
+  }),
+})
