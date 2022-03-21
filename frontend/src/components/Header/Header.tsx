@@ -29,7 +29,7 @@ export const Header: React.FC<{ breadcrumbs?: boolean }> = ({ breadcrumbs }) => 
   const [disabledForward, setDisabledForward] = useState<boolean>(false)
   const [disabledBack, setDisabledBack] = useState<boolean>(false)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const hideSidebar = useMediaQuery('(max-width:1200px)')
+  const hideSidebar = useMediaQuery('(max-width:1150px)')
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
