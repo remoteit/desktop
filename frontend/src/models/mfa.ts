@@ -135,7 +135,7 @@ export default createModel<RootModel>()({
   }),
   reducers: {
     reset(state: IMfa) {
-      state = defaultState
+      state = { ...defaultState }
       return state
     },
     set(state: IMfa, params: ILookup<any>) {
