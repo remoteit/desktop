@@ -116,7 +116,7 @@ export const DevicePage: React.FC<Props> = ({ device }) => {
             guide="guideAWS"
             step={4}
             instructions="Select the service below."
-            hide={!s.name.includes('Start here')}
+            hide={!s.name.includes('Start')}
             highlight
             autoNext
           >

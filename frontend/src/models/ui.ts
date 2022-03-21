@@ -105,7 +105,7 @@ export const defaultState: UIState = {
   panelWidth: { devices: 400, connections: 500, settings: 350, account: 350 },
   navigationBack: [],
   navigationForward: [],
-  guideAWS: { title: 'AWS Guide', step: 1, total: 7 },
+  guideAWS: { title: 'AWS Guide', step: 1, total: 5 },
   guideLaunch: { title: 'Launch Guide', active: true, step: 1, total: 1 },
   accordion: { config: true, configConnected: false },
   autoConnect: false,
