@@ -10,7 +10,7 @@ import { useHistory } from 'react-router-dom'
 export const AccountSelect: React.FC<TextFieldProps> = props => {
   const css = useStyles()
   const history = useHistory()
-  const { accounts, devices } = useDispatch<Dispatch>()
+  const { accounts, devices, tags } = useDispatch<Dispatch>()
   const { user, options, activeId, orgName } = useSelector((state: ApplicationState) => ({
     user: state.auth.user || { id: '', email: '' },
     activeId: getActiveAccountId(state),
@@ -35,6 +35,7 @@ export const AccountSelect: React.FC<TextFieldProps> = props => {
           await accounts.setActive(id.toString())
           devices.set({ query: '', searched: false, from: 0 })
           devices.fetch()
+          tags.fetch()
         }
       }}
     >

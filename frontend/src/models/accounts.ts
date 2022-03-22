@@ -88,7 +88,7 @@ export default createModel<RootModel>()({
       accountId = accountId || devices[0]?.accountId
       if (!devices) debugger
       if (!accountId) return console.error('SET DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
-      const all = { ...state.devices.all }
+      let all = { ...state.devices.all }
       all[accountId] = devices
       dispatch.devices.set({ all })
     },

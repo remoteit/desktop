@@ -2,6 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { ApplicationState } from '../store'
 import { Chip, Box } from '@material-ui/core'
+import { selectTags } from '../models/tags'
 import { Tag } from './Tag'
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 export const Tags: React.FC<Props> = ({ tags, small, onClick, onDelete }) => {
   const { labels, all } = useSelector((state: ApplicationState) => ({
     labels: state.labels,
-    all: state.tags.all,
+    all: selectTags(state),
   }))
 
   const dot = tags.length > 1 && small

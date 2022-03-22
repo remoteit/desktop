@@ -12,6 +12,7 @@ import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { REGEX_TAG_SAFE } from '../shared/constants'
+import { selectTags } from '../models/tags'
 import { useLabel } from '../hooks/useLabel'
 import analyticsHelper from '../helpers/analyticsHelper'
 
@@ -23,7 +24,7 @@ export const TagsPage: React.FC = () => {
     deleting: state.tags.deleting,
     updating: state.tags.updating,
     creating: state.tags.creating,
-    tags: state.tags.all,
+    tags: selectTags(state),
   }))
 
   useEffect(() => {

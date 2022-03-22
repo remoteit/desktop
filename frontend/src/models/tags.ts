@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
+import { getActiveAccountId } from './accounts'
 import {
   graphQLSetTag,
   graphQLAddTag,
@@ -9,12 +10,13 @@ import {
   graphQLRenameTag,
 } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { ApplicationState } from '../store'
 import { findTagIndex } from '../helpers/utilHelper'
 import { getNextLabel } from './labels'
 import { RootModel } from './rootModel'
 
 type ITagState = {
-  all: ITag[]
+  all: { [accountId: string]: ITag[] }
   adding?: boolean
   creating?: boolean
   removing?: boolean
@@ -23,31 +25,37 @@ type ITagState = {
 }
 
 const defaultState: ITagState = {
-  all: [],
+  all: {},
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch() {
+    async fetch(_, state) {
       const result = await graphQLBasicRequest(
-        ` query {
+        ` query($account: String) {
             login {
-              tags {
-                name
-                color
-                created
+              account(id: $account) {
+                tags {
+                  name
+                  color
+                  created
+                }
               }
             }
-          }`
+          }`,
+        {
+          account: getActiveAccountId(state),
+        }
       )
       if (result === 'ERROR') return
       const all = await dispatch.tags.parse(result)
-      dispatch.tags.setOrdered({ all })
+      dispatch.tags.setTags(all)
     },
 
-    async parse(result: AxiosResponse<any> | undefined, globalState) {
-      const all = result?.data?.data?.login?.tags
+    async parse(result: AxiosResponse<any> | undefined) {
+      const all = result?.data?.data?.login?.account?.tags
+      if (!all) return
       const parsed = all.map(t => ({
         name: t.name,
         color: t.color,
@@ -67,9 +75,9 @@ export default createModel<RootModel>()({
       }
     },
 
-    async addSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, globalState) {
+    async addSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, state) {
       dispatch.tags.set({ adding: true })
-      eachSelectedDevice(globalState, selected, device => {
+      eachSelectedDevice(state, selected, device => {
         device.tags.push(tag)
         dispatch.accounts.setDevice({ id: device.id, device })
       })
@@ -92,10 +100,10 @@ export default createModel<RootModel>()({
       }
     },
 
-    async removeSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, globalState) {
+    async removeSelected({ tag, selected }: { tag: ITag; selected: IDevice['id'][] }, state) {
       let count = 0
       dispatch.tags.set({ removing: true })
-      eachSelectedDevice(globalState, selected, device => {
+      eachSelectedDevice(state, selected, device => {
         const index = findTagIndex(device.tags, tag.name)
         if (index >= 0) {
           count++
@@ -111,29 +119,29 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ removing: false })
     },
 
-    async create(tag: ITag, globalState) {
-      const tags = globalState.tags.all
+    async create(tag: ITag, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ creating: true })
-      tag.color = tag.color || getNextLabel(globalState)
+      tag.color = tag.color || getNextLabel(state)
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
-      dispatch.tags.setOrdered({ all: [...tags, tag] })
+      dispatch.tags.setTags([...tags, tag])
       dispatch.tags.set({ creating: false })
     },
 
-    async update(tag: ITag, globalState) {
-      const tags = globalState.tags.all
+    async update(tag: ITag, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ updating: tag.name })
       const result = await graphQLSetTag({ name: tag.name, color: tag.color })
       if (result === 'ERROR') return
       const index = findTagIndex(tags, tag.name)
       tags[index] = tag
-      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.setTags(tags)
       dispatch.tags.set({ updating: undefined })
     },
 
-    async rename({ tag, name }: { tag: ITag; name: string }, globalState) {
-      const tags = globalState.tags.all
+    async rename({ tag, name }: { tag: ITag; name: string }, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ updating: tag.name })
       const result = await graphQLRenameTag(tag.name, name)
       if (result === 'ERROR') return
@@ -145,32 +153,33 @@ export default createModel<RootModel>()({
       } else {
         tags[index].name = name
       }
-      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.setTags(tags)
       dispatch.tags.set({ updating: undefined })
       dispatch.devices.fetch()
     },
 
-    async delete(tag: ITag, globalState) {
-      const tags = globalState.tags.all
+    async delete(tag: ITag, state) {
+      const tags = selectTags(state)
       dispatch.tags.set({ deleting: tag.name })
       const result = await graphQLDeleteTag(tag.name)
       if (result === 'ERROR') return
       const index = findTagIndex(tags, tag.name)
       tags.splice(index, 1)
-      dispatch.tags.setOrdered({ all: [...tags] })
+      dispatch.tags.setTags(tags)
       dispatch.tags.set({ deleting: undefined })
       dispatch.devices.fetch()
+    },
+    async setTags(tags: ITag[], state) {
+      const accountId = getActiveAccountId(state)
+      tags = tags.sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0))
+      let all = { ...state.tags.all }
+      all[accountId] = tags
+      dispatch.tags.set({ all })
     },
   }),
   reducers: {
     reset(state: ITagState) {
       state = { ...defaultState }
-      return state
-    },
-    setOrdered(state: ITagState, params: ILookup<any>) {
-      Object.keys(params).forEach(
-        key => (state[key] = params[key].sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0)))
-      )
       return state
     },
     set(state: ITagState, params: ILookup<any>) {
@@ -179,3 +188,8 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+export function selectTags(state: ApplicationState) {
+  const accountId = getActiveAccountId(state)
+  return state.tags.all[accountId] || []
+}

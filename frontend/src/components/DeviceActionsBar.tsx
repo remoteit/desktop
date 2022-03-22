@@ -4,6 +4,7 @@ import { ApplicationState, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { getSelectedTags } from '../helpers/selectedHelper'
 import { useHistory } from 'react-router-dom'
+import { selectTags } from '../models/tags'
 import { TagEditor } from './TagEditor'
 import { Title } from './Title'
 import { Container } from './Container'
@@ -14,7 +15,7 @@ type Props = { select?: boolean; selected: IDevice['id'][]; devices?: IDevice[] 
 
 export const DeviceActionsBar: React.FC<Props> = ({ select, selected = [], devices, children }) => {
   const { tags, adding, removing } = useSelector((state: ApplicationState) => ({
-    tags: state.tags.all,
+    tags: selectTags(state),
     adding: state.tags.adding,
     removing: state.tags.removing,
   }))

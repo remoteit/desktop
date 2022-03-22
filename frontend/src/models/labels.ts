@@ -1,5 +1,6 @@
 import { ApplicationState } from '../store'
 import { createModel } from '@rematch/core'
+import { selectTags } from './tags'
 import { RootModel } from './rootModel'
 import { toLookup } from '../helpers/utilHelper'
 
@@ -87,7 +88,7 @@ export default createModel<RootModel>()({
 })
 
 export function getNextLabel(state: ApplicationState) {
-  const used = state.tags.all.reduce((colors: number[], tag: ITag) => {
+  const used = selectTags(state).reduce((colors: number[], tag: ITag) => {
     if (!colors.includes(tag.color)) colors.push(tag.color)
     return colors
   }, [])
