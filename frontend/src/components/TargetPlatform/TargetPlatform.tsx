@@ -10,14 +10,19 @@ export const TargetPlatform: React.FC<{
   tooltip?: boolean
   label?: boolean
   color?: string
+  fullColor?: boolean
   inlineLeft?: boolean
-}> = ({ id, tooltip, label, color, ...props }) => {
+}> = ({ id, tooltip, label, color, fullColor, ...props }) => {
   const { name, type, size } = getTargetPlatformIcon(id)
 
   if (!name) return null
 
   const icon = (
-    <Icon {...{ name, type, size: props.size || size, color }} inlineLeft={props.inlineLeft || !!label} fixedWidth />
+    <Icon
+      {...{ name, type, size: props.size || size, color, fullColor }}
+      inlineLeft={props.inlineLeft || !!label}
+      fixedWidth
+    />
   )
 
   if (tooltip)

@@ -25,12 +25,7 @@ export const SidebarNav: React.FC = () => {
         <ListItemLocation title="This Device" pathname="/devices" match="/devices/:any?/:any?/:any?" icon="hdd" />
       ) : (
         <>
-          <ListItemLocation
-            title="Network"
-            icon="chart-network"
-            pathname="/connections"
-            match="/connections/:any?/:any?/:any?"
-          >
+          <ListItemLocation title="Network" icon="chart-network" pathname="/connections" match="/connections">
             <ListItemSecondaryAction>
               {!!connections && (
                 <Tooltip title="Added" placement="top" arrow>
@@ -44,7 +39,7 @@ export const SidebarNav: React.FC = () => {
               )}
             </ListItemSecondaryAction>
           </ListItemLocation>
-          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices">
+          <ListItemLocation title="Devices" icon="hdd" pathname="/devices" match="/devices" exactMatch>
             {!!devices && (
               <ListItemSecondaryAction>
                 <Tooltip title="Total" placement="top" arrow>

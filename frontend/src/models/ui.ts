@@ -2,7 +2,7 @@ import { emit } from '../services/Controller'
 import { Theme } from '@material-ui/core'
 import { RootModel } from './rootModel'
 import { createModel } from '@rematch/core'
-import { selectTheme } from '../styling/theme'
+import { selectTheme, isDarkMode } from '../styling/theme'
 import { getLocalStorage, setLocalStorage, isElectron, isHeadless } from '../services/Browser'
 
 export const DEFAULT_INTERFACE = 'searching'
@@ -20,6 +20,7 @@ const SAVED_STATES = [
 type UIState = {
   theme: Theme
   themeMode: 'light' | 'dark' | 'system'
+  themeDark: boolean
   navigation: ILookup<string>
   selected: IDevice['id'][]
   connected: boolean
@@ -68,6 +69,7 @@ type UIState = {
 export const defaultState: UIState = {
   theme: selectTheme(),
   themeMode: 'system',
+  themeDark: isDarkMode(),
   navigation: {},
   selected: [],
   connected: false,
@@ -151,7 +153,7 @@ export default createModel<RootModel>()({
     async setTheme(themeMode: UIState['themeMode'] | undefined, globalState) {
       themeMode = themeMode || globalState.ui.themeMode
       dispatch.ui.setPersistent({ themeMode })
-      dispatch.ui.set({ theme: selectTheme(themeMode) })
+      dispatch.ui.set({ theme: selectTheme(themeMode), themeDark: isDarkMode(themeMode) })
     },
     async resizeColumn(params: { id: string; width: number }, globalState) {
       const columnWidths = { ...globalState.ui.columnWidths, [params.id]: params.width }

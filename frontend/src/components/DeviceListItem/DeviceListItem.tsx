@@ -54,7 +54,7 @@ export const DeviceListItem: React.FC<Props> = ({
               <Icon name="square" size="md" type="light" />
             )
           ) : (
-            <ConnectionStateIcon device={device} connection={connected} size="lg" />
+            <ConnectionStateIcon device={device} connection={connected} />
           )}
         </ListItemIcon>
         <AttributeValue device={device} connection={connected} attribute={primary} />
@@ -79,7 +79,7 @@ const useStyles = makeStyles(({ palette }) => ({
     '&:hover > div:first-child': { background: palette.primaryHighlight.main },
     '&.Mui-selected > div:first-child': { background: palette.primaryHighlight.main },
     '&.Mui-selected:hover > div:first-child': { background: palette.primaryLighter.main },
-    '& > div:first-child .MuiListItemText-root': { opacity: offline ? 0.3 : 1 },
+    '& > div:first-child > *': { opacity: offline ? 0.3 : 1 },
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   }),

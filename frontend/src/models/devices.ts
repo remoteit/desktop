@@ -71,7 +71,7 @@ export const defaultState: IDeviceState = {
   query: '',
   append: false,
   filter: 'all',
-  sort: 'name',
+  sort: 'state,name',
   tag: undefined,
   owner: 'all',
   platform: undefined,

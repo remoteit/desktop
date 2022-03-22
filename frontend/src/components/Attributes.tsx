@@ -152,6 +152,7 @@ export const attributes: Attribute[] = [
   new Attribute({
     id: 'access',
     label: 'Users',
+    defaultWidth: 175,
     value: ({ device }) =>
       device?.shared ? <Avatar email={device?.owner.email} size={22} tooltip /> : <AvatarList users={device?.access} />,
   }),
